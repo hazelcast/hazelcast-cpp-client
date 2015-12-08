@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 21/08/14.
 //
 
+#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ClientProperties.h"
 

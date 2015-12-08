@@ -16,15 +16,11 @@
 //
 // Created by sancar koyunlu on 6/24/13.
 
-
-
-
-
 #ifndef HAZELCAST_ITEM_EVENT_HANDLER
 #define HAZELCAST_ITEM_EVENT_HANDLER
 
+#include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/impl/PortableItemEvent.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -34,38 +30,33 @@ namespace hazelcast {
     namespace client {
         namespace impl {
 
-            template<typename E>
-            class ItemEventHandler : public impl::BaseEventHandler {
+            template<typename E, typename BaseType>
+            class ItemEventHandler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService, serialization::pimpl::SerializationService &serializationService, ItemListener<E> &listener, bool includeValue)
-                :instanceName(instanceName)
-                , clusterService(clusterService)
-                , serializationService(serializationService)
-                , listener(listener)
-                , includeValue(includeValue) {
+                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                                 serialization::pimpl::SerializationService &serializationService,
+                                 ItemListener<E> &listener, bool includeValue)
+                        : instanceName(instanceName), clusterService(clusterService),
+                          serializationService(serializationService), listener(listener), includeValue(includeValue) {
 
                 };
 
-                void handle(const client::serialization::pimpl::Data &data) {
-                    boost::shared_ptr<PortableItemEvent> event = serializationService.toObject<PortableItemEvent>(data);
-                    handle(*event);
-                }
-
-                void handle(const PortableItemEvent &event) {
-                    boost::shared_ptr<E> item;
+                virtual void handleItem(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
+                                        const int32_t &eventType) {
+                    boost::shared_ptr<E> obj;
                     if (includeValue) {
-                        item = serializationService.toObject<E>(event.getItem());
+                        obj = serializationService.toObject<E>(*item);
                     }
-                    Member member = clusterService.getMember(event.getUuid());
-                    ItemEventType type = event.getEventType();
-                    ItemEvent<E> itemEvent(instanceName, type, *item, member);
-                    if (type == EntryEventType::ADDED) {
+                    std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                    ItemEventType type((ItemEventType::Type) eventType);
+                    ItemEvent<E> itemEvent(instanceName, type, *obj, *member);
+                    if (type == ItemEventType::ADDED) {
                         listener.itemAdded(itemEvent);
-                    } else if (type == EntryEventType::REMOVED) {
+                    } else if (type == ItemEventType::REMOVED) {
                         listener.itemRemoved(itemEvent);
                     }
+                }
 
-                };
             private:
                 const std::string &instanceName;
                 spi::ClusterService &clusterService;

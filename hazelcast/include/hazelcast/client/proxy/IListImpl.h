@@ -57,13 +57,13 @@ namespace hazelcast {
 
                 void clear();
 
-                serialization::pimpl::Data get(int index);
+                std::auto_ptr<serialization::pimpl::Data> get(int index);
 
-                serialization::pimpl::Data set(int index, const serialization::pimpl::Data& element);
+                std::auto_ptr<serialization::pimpl::Data> set(int index, const serialization::pimpl::Data& element);
 
                 void add(int index, const serialization::pimpl::Data& element);
 
-                serialization::pimpl::Data remove(int index);
+                std::auto_ptr<serialization::pimpl::Data> remove(int index);
 
                 int indexOf(const serialization::pimpl::Data& element);
 

@@ -21,7 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include <stdio.h>
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IClassCastException.h"
@@ -59,7 +59,7 @@ namespace hazelcast {
                     if (expectedType != currentType) {
                         char message[200];
                         SerializationConstants sc;
-                        sprintf(message, "Received data of type %s(%d) but expected data type %s(%d)",
+                        util::snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
                                 sc.typeIdToName(currentType).c_str(), currentType,
                                 sc.typeIdToName(expectedType).c_str(), expectedType);
 
@@ -82,14 +82,13 @@ namespace hazelcast {
                 Data SerializationService::toData<byte>(const byte  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_BYTE);
 
-
                     output.writeByte(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -100,14 +99,13 @@ namespace hazelcast {
                 Data SerializationService::toData<bool>(const bool  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_BOOLEAN);
 
-
                     output.writeBoolean(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -118,14 +116,13 @@ namespace hazelcast {
                 Data SerializationService::toData<char>(const char  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR);
 
-
                     output.writeChar(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -136,14 +133,13 @@ namespace hazelcast {
                 Data SerializationService::toData<short>(const short  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT);
 
-
                     output.writeShort(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -154,14 +150,13 @@ namespace hazelcast {
                 Data SerializationService::toData<int>(const int  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER);
 
-
                     output.writeInt(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -172,14 +167,13 @@ namespace hazelcast {
                 Data SerializationService::toData<long>(const long *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG);
 
-
                     output.writeLong(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -190,14 +184,13 @@ namespace hazelcast {
                 Data SerializationService::toData<float>(const float  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT);
 
-
                     output.writeFloat(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -208,14 +201,13 @@ namespace hazelcast {
                 Data SerializationService::toData<double>(const double  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE);
 
-
                     output.writeDouble(*object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -225,14 +217,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<char> >(const std::vector<char> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY);
 
-
                     output.writeCharArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -242,14 +233,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY);
 
-
                     output.writeBooleanArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -260,14 +250,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<short> >(const std::vector<short> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY);
 
-
                     output.writeShortArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -278,14 +267,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<int> >(const std::vector<int> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY);
 
-
                     output.writeIntArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -296,14 +284,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<long> >(const std::vector<long> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY);
 
-
                     output.writeLongArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -314,14 +301,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY);
 
-
                     output.writeFloatArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -332,14 +318,13 @@ namespace hazelcast {
                 Data SerializationService::toData<std::vector<double> >(const std::vector<double> *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY);
 
-
                     output.writeDoubleArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -350,31 +335,29 @@ namespace hazelcast {
                 Data SerializationService::toData<std::string>(const std::string  *object) {
                     DataOutput output;
 
+                    // write partition hash
+                    writeHash(output);
+
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_STRING);
 
-
                     output.writeUTF(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
                 }
 
                 template<>
-                Data SerializationService::toData<std::vector<const std::string *> >(const std::vector<const std::string *> *object) {
+                Data SerializationService::toData<std::vector<std::string> >(const std::vector<std::string> *object) {
                     DataOutput output;
+
+                    // write partition hash
+                    writeHash(output);
 
                     // write type
                     output.writeInt(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY);
 
-
                     output.writeUTFArray(object);
-
-                    // write partition hash
-                    writeHash(output);
 
                     Data data(output.toByteArray());
                     return data;
@@ -621,8 +604,8 @@ namespace hazelcast {
                 }
 
                 template<>
-                boost::shared_ptr<common::containers::ManagedPointerVector<std::string> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(common::containers::ManagedPointerVector<std::string>);
+                boost::shared_ptr<std::vector<std::string> > SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(std::vector<std::string>);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
@@ -630,9 +613,12 @@ namespace hazelcast {
 
                     checkClassType(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY, typeId);
 
-                    return boost::shared_ptr<common::containers::ManagedPointerVector<std::string> > (dataInput.readUTFArray());
+                    return boost::shared_ptr<std::vector<std::string> > (dataInput.readUTFArray());
                 }
 
+                const byte SerializationService::getVersion() const {
+                    return 1;
+                }
             }
         }
     }

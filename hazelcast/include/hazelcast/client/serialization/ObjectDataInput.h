@@ -29,7 +29,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
-#include "hazelcast/client/common/containers/ManagedPointerVector.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
@@ -68,12 +67,6 @@ namespace hazelcast {
                 * Internal API. Constructor
                 */
                 ObjectDataInput(pimpl::DataInput&, pimpl::PortableContext&);
-
-                /**
-                * Internal API.
-                * @return portableContext
-                */
-                pimpl::PortableContext *getPortableContext();
 
                 /**
                 * fills all content to given byteArray
@@ -193,7 +186,7 @@ namespace hazelcast {
                 * @return the array of strings
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::auto_ptr<common::containers::ManagedPointerVector<std::string> > readUTFArray();
+                std::auto_ptr<std::vector<std::string> > readUTFArray();
 
                 /**
                 * Object can be Portable, IdentifiedDataSerializable or custom serializable

@@ -42,13 +42,16 @@ namespace hazelcast {
             bool LifecycleService::start() {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
                 active = true;
+
                 if (!clientContext.getConnectionManager().start()) {
                     return false;
                 }
+
                 if (!clientContext.getClusterService().start()) {
                     return false;
                 }
                 clientContext.getInvocationService().start();
+
                 if (!clientContext.getPartitionService().start()) {
                     return false;
                 }

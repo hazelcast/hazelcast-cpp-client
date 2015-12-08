@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 07/04/14.
 //
 
-#include "hazelcast/client/impl/ServerException.h"
 #include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/exception/pimpl/ExceptionHandler.h"

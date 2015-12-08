@@ -15,14 +15,14 @@
  */
 //
 // Created by sancar koyunlu on 5/7/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 #ifndef HAZELCAST_CREDENTIALS
 #define HAZELCAST_CREDENTIALS
 
-
-#include "hazelcast/client/Credentials.h"
 #include <string>
 #include <vector>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,32 +36,20 @@ namespace hazelcast {
              * Credentials is a container object for endpoint (Members and Clients)
              * security attributes.
              *
-             * It is used on authentication process by javax.security.auth.spi.LoginModules.
+             * It is used on authentication process.
              */
-            class HAZELCAST_API UsernamePasswordCredentials : public Credentials {
+            class HAZELCAST_API UsernamePasswordCredentials {
             public:
 
                 UsernamePasswordCredentials(const std::string &principal, const std::string &password);
 
-                int getFactoryId() const;
-
-                int getClassId() const;
-
-                void writePortable(serialization::PortableWriter &writer) const;
-
-                void readPortable(serialization::PortableReader &reader);
-
-                const std::string &getEndpoint() const;
-
-                void setEndpoint(const std::string &endpoint);
-
                 const std::string &getPrincipal() const;
+
+                const std::string &getPassword() const;
 
             private:
                 std::string principal;
-
-                std::string endpoint;
-                std::vector<byte> password;
+                std::string password;
             };
         }
     }

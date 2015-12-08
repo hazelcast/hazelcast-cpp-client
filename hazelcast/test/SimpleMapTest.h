@@ -23,18 +23,19 @@
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/Util.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 
 using namespace hazelcast::client;
 
-int THREAD_COUNT = 1;
-int ENTRY_COUNT = 1000;
-int VALUE_SIZE = 1000;
+int THREAD_COUNT = 40;
+int ENTRY_COUNT = 10000;
+int VALUE_SIZE = 10;
 int STATS_SECONDS = 10;
-int GET_PERCENTAGE = 30;
-int PUT_PERCENTAGE = 30;
+int GET_PERCENTAGE = 40;
+int PUT_PERCENTAGE = 40;
 
 
 class Stats {
@@ -103,20 +104,26 @@ public:
 
         std::vector<char> value(VALUE_SIZE);
         bool running = true;
+        int getCount = 0;
+        int putCount = 0;
+        int removeCount = 0;
+
+        int updateIntervalCount = 1000;
         while (running) {
             int key = rand() % ENTRY_COUNT;
             int operation = (rand() % 100);
             try {
                 if (operation < GET_PERCENTAGE) {
                     map.get(key);
-                    ++stats.getCount;
+                    ++getCount;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
                     boost::shared_ptr<std::vector<char> > vector = map.put(key, value);
-                    ++stats.putCount;
+                    ++putCount;
                 } else {
                     map.remove(key);
-                    ++stats.removeCount;
+                    ++removeCount;
                 }
+                updateStats(updateIntervalCount, getCount, putCount, removeCount);
             } catch(hazelcast::client::exception::IOException &e) {
                 std::cerr << ">hz " << e.what() << std::endl;
             } catch(hazelcast::client::exception::InstanceNotActiveException &e) {
@@ -128,6 +135,22 @@ public:
             }
 
         }
+    }
+
+    void updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
+        if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
+                        int current = stats.getCount;
+                        stats.getCount = current + getCount;
+                        getCount = 0;
+
+                        current = stats.putCount;
+                        stats.putCount = current + putCount;
+                        putCount = 0;
+
+                        current = stats.removeCount;
+                        stats.removeCount = current + removeCount;
+                        removeCount = 0;
+                    }
     }
 
     void run() {

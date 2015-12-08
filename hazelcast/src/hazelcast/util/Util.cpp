@@ -15,17 +15,18 @@
  */
 //
 // Created by sancar koyunlu on 5/3/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 //
 // To change the template use AppCode | Preferences | File Templates.
 //
 
 
 #include "hazelcast/util/Util.h"
-
 #include "hazelcast/util/Thread.h"
 
 #include <string.h>
+ #include <stdio.h>
+#include <stdarg.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
@@ -69,6 +70,17 @@ namespace hazelcast {
             #endif
 
             return returnCode;
+        }
+
+        int snprintf(char *str, size_t len, const char *format, ...) {
+            va_list args;
+            va_start(args, format);
+
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            return vsnprintf_s(str, len, len-1, format, args);
+            #else
+            return vsnprintf(str, len, format, args);
+            #endif
         }
     }
 }

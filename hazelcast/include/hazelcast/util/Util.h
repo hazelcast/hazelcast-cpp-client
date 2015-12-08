@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/3/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 //
 // To change the template use AppCode | Preferences | File Templates.
 //
@@ -42,6 +42,11 @@ namespace hazelcast {
          * @return 0 on success, non-zero on error
          */
         HAZELCAST_API int localtime(const time_t *clock, struct tm *result);
+
+        /**
+         * Portable snprintf implementation
+         */
+        HAZELCAST_API int snprintf(char *str, size_t len, const char *format, ...);
     }
 }
 

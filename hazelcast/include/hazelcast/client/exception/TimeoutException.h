@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 21/08/14.
 //
 
-
 #ifndef HAZELCAST_ITimeoutException
 #define HAZELCAST_ITimeoutException
 

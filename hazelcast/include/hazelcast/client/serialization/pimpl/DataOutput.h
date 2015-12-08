@@ -85,7 +85,7 @@ namespace hazelcast {
 
                     void writeDoubleArray(const std::vector<double> *data);
 
-                    void writeUTFArray(const std::vector<const std::string *> *data);
+                    void writeUTFArray(const std::vector<std::string> *data);
 
                     void writeByte(int index, int i);
 

@@ -17,10 +17,15 @@
 // Created by sancar koyunlu on 01/10/14.
 //
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/TransactionalQueueImpl.h"
-#include "hazelcast/client/queue/TxnOfferRequest.h"
-#include "hazelcast/client/queue/TxnPollRequest.h"
-#include "hazelcast/client/queue/TxnSizeRequest.h"
+
+// Includes for parameters classes
+#include "hazelcast/client/protocol/codec/TransactionalQueueOfferCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalQueueTakeCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalQueuePollCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalQueuePeekCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalQueueSizeCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,20 +36,27 @@ namespace hazelcast {
             }
 
             bool TransactionalQueueImpl::offer(const serialization::pimpl::Data& e, long timeoutInMillis) {
-                queue::TxnOfferRequest *request = new queue::TxnOfferRequest(getName(), timeoutInMillis, e);
-                boost::shared_ptr<bool> result = toObject<bool>(invoke(request));
-                return *result;
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalQueueOfferCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), e, timeoutInMillis);
+
+                return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(request);
             }
 
-            serialization::pimpl::Data TransactionalQueueImpl::poll(long timeoutInMillis) {
-                queue::TxnPollRequest *request = new queue::TxnPollRequest(getName(), timeoutInMillis);
-                return invoke(request);
+            std::auto_ptr<serialization::pimpl::Data> TransactionalQueueImpl::poll(long timeoutInMillis) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalQueuePollCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), timeoutInMillis);
+
+                return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalQueuePollCodec::ResponseParameters>(request);
             }
 
             int TransactionalQueueImpl::size() {
-                queue::TxnSizeRequest *request = new queue::TxnSizeRequest(getName());
-                boost::shared_ptr<int> result = toObject<int>(invoke(request));
-                return *result;
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalQueueSizeCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId());
+
+                return invokeAndGetResult<int, protocol::codec::TransactionalQueueSizeCodec::ResponseParameters>(request);
             }
         }
     }

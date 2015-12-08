@@ -15,13 +15,10 @@
  */
 //
 // Created by sancar koyunlu on 8/2/13.
-
-
-
 #ifndef HAZELCAST_TransactionOptions
 #define HAZELCAST_TransactionOptions
 
-#include "hazelcast/client/serialization/pimpl/DataSerializable.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -67,7 +64,7 @@ namespace hazelcast {
         /**
         * Contains the configuration for a Hazelcast transaction.
         */
-        class HAZELCAST_API TransactionOptions : public serialization::pimpl::DataSerializable {
+        class HAZELCAST_API TransactionOptions {
         public:
             /**
             * Creates a new default configured TransactionsOptions.
@@ -132,18 +129,6 @@ namespace hazelcast {
             * @throws IllegalArgumentException if durability smaller than 0.
             */
             TransactionOptions& setDurability(int durability);
-
-            /**
-            *
-            * @see DataSerializable::writeData
-            */
-            void writeData(serialization::ObjectDataOutput& out) const;
-
-            /**
-            *
-            * @see DataSerializable::readData
-            */
-            void readData(serialization::ObjectDataInput& in);
 
         private:
             int timeoutSeconds;

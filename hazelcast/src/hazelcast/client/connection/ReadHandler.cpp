@@ -23,7 +23,7 @@
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/serialization/pimpl/Packet.h"
+
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include <ctime>
 
@@ -36,9 +36,8 @@ namespace hazelcast {
             : IOHandler(connection, iListener)
             , buffer(new char[bufferSize])
             , byteBuffer(buffer, bufferSize)
-            , lastData(NULL)
-            , clientContext(clientContext){
-		connection.lastRead = (int)time(NULL);
+            , builder(&clientContext.getInvocationService(), connection) {
+		        connection.lastRead = (int)time(NULL);
             }
 
             ReadHandler::~ReadHandler() {
@@ -66,17 +65,7 @@ namespace hazelcast {
                 byteBuffer.flip();
 
                 while (byteBuffer.hasRemaining()) {
-                    if (lastData == NULL) {
-                        lastData = new serialization::pimpl::Packet(getPortableContext());
-                    }
-                    bool complete = lastData->readFrom(byteBuffer);
-                    if (complete) {
-                        clientContext.getInvocationService().handlePacket(connection, *lastData);
-                        delete lastData;
-                        lastData = NULL;
-                    } else {
-                        break;
-                    }
+                    builder.onData(byteBuffer);
                 }
 
                 if (byteBuffer.hasRemaining()) {
@@ -84,11 +73,6 @@ namespace hazelcast {
                 } else {
                     byteBuffer.clear();
                 }
-            }
-
-
-            serialization::pimpl::PortableContext& ReadHandler::getPortableContext() {
-                return clientContext.getSerializationService().getPortableContext();
             }
         }
     }

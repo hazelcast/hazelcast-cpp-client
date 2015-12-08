@@ -20,7 +20,7 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
-#include <stdio.h>
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
@@ -52,7 +52,7 @@ namespace hazelcast {
                     return fieldDefinitionsMap.find(name)->second;
                 }
                 char msg[200];
-                sprintf(msg, "Field (%s) does not exist", NULL != name ? name : "");
+                util::snprintf(msg, 200, "Field (%s) does not exist", NULL != name ? name : "");
                 throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
             }
 

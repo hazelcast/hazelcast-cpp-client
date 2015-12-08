@@ -15,42 +15,24 @@
  */
 //
 // Created by sancar koyunlu on 5/20/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
-
 
 #include "hazelcast/client/protocol/Principal.h"
-#include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/PortableWriter.h"
-#include "hazelcast/client/protocol/ProtocolConstants.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
 
-
-            Principal::Principal() {
-
+            Principal::Principal(std::auto_ptr<std::string> id, std::auto_ptr<std::string> owner) : uuid(id),
+                                                                              ownerUuid(owner) {
             }
 
-            int Principal::getFactoryId() const {
-                return ProtocolConstants::CLIENT_PORTABLE_FACTORY;
+            const std::string *Principal::getUuid() const {
+                return uuid.get();
             }
 
-            int Principal::getClassId() const {
-                return ProtocolConstants::PRINCIPAL_ID;
+            const std::string *Principal::getOwnerUuid() const {
+                return ownerUuid.get();
             }
-
-            void Principal::writePortable(serialization::PortableWriter &writer) const {
-                writer.writeUTF("uuid", uuid.get());
-                writer.writeUTF("ownerUuid", ownerUuid.get());
-            }
-
-            void Principal::readPortable(serialization::PortableReader& reader) {
-                uuid = reader.readUTF("uuid");
-                ownerUuid = reader.readUTF("ownerUuid");
-            }
-
-
         }
     }
 }

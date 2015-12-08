@@ -22,11 +22,13 @@
 #include "hazelcast/util/ThreadArgs.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/impl/ClientPingRequest.h"
 #include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/client/protocol/codec/ClientPingCodec.h"
+
 #include <ctime>
 
 namespace hazelcast {
@@ -54,7 +56,7 @@ namespace hazelcast {
 
             void HeartBeater::run(util::Thread *currentThread) {
                 currentThread->interruptibleSleep(heartBeatIntervalSeconds);
-                spi::InvocationService& invocationService = clientContext.getInvocationService();
+
                 connection::ConnectionManager& connectionManager = clientContext.getConnectionManager();
                 while (live) {
                     std::vector<boost::shared_ptr<Connection> > connections = connectionManager.getConnections();
@@ -68,8 +70,9 @@ namespace hazelcast {
                         }
 
                         if (now - connection->lastRead > heartBeatIntervalSeconds) {
-                            impl::ClientPingRequest *request = new impl::ClientPingRequest();
-                            invocationService.invokeOnConnection(request, connection);
+                            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::RequestParameters::encode();
+
+                            clientContext.getInvocationService().invokeOnConnection(request, connection);
                         } else {
                             connection->heartBeatingSucceed();
                         }

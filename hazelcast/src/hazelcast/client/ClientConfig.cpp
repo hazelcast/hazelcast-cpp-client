@@ -145,14 +145,8 @@ namespace hazelcast {
             return *this;
         }
 
-        Credentials& ClientConfig::getCredentials() {
-            if (credentials != NULL) {
-                return *credentials;
-            }
-            if (defaultCredentials.get() == NULL) {
-                defaultCredentials.reset(new protocol::UsernamePasswordCredentials(groupConfig.getName(), groupConfig.getPassword()));
-            }
-            return *defaultCredentials;
+        const Credentials *ClientConfig::getCredentials() {
+            return defaultCredentials.get();
         }
 
         ClientConfig& ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {

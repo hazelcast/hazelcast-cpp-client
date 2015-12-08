@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-
 #ifndef HAZELCAST_NIOListener
 #define HAZELCAST_NIOListener
 

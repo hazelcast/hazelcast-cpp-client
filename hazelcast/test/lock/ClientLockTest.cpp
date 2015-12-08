@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hazelcast/util/Util.h"
 #include "lock/ClientLockTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"

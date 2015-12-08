@@ -70,7 +70,7 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
-                std::string id = topic->addMessageListener(listener);
+                std::string id = topic->addMessageListener<MyMessageListener>(listener);
 
                 for (int i = 0; i < 10; i++) {
                     topic->publish(std::string("naber") + util::IOUtil::to_string(i));

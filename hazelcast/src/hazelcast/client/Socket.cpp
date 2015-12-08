@@ -156,7 +156,7 @@ namespace hazelcast {
         }
 
 
-        void Socket::setRemoteEndpoint(client::Address &address) {
+        void Socket::setRemoteEndpoint(const client::Address &address) {
             remoteEndpoint = address;
         }
 

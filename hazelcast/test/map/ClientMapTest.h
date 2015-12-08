@@ -106,6 +106,10 @@ namespace hazelcast {
 
                 void testMapStoreRelatedRequests();
 
+                void testExecuteOnKey();
+
+                void testExecuteOnEntries();
+
             private:
                 HazelcastServer instance;
                 HazelcastServer instance2;

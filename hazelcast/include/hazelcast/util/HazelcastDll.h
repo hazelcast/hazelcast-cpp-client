@@ -25,7 +25,7 @@
 //# pragma warning(pop)
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-    #if NOT (defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
+    #if !(defined(HAZELCAST_USE_STATIC) || defined(HAZELCAST_USE_SHARED))
         #ifndef HAZELCAST_EXPORTS
             #error Please define compilation flag HAZELCAST_USE_STATIC or HAZELCAST_USE_SHARED.
         #endif

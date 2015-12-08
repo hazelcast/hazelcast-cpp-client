@@ -16,7 +16,6 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-
 #ifndef HAZELCAST_CLUSTER_LISTENER_THREAD
 #define HAZELCAST_CLUSTER_LISTENER_THREAD
 
@@ -25,6 +24,9 @@
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/Thread.h"
+#include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
+#include "hazelcast/client/MembershipEvent.h"
+
 #include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -34,17 +36,12 @@
 
 namespace hazelcast {
     namespace client {
-
-        class Member;
+        namespace protocol {
+            class ClientMessage;
+        }
 
         namespace spi {
             class ClientContext;
-        }
-
-        namespace impl {
-            class ClientMembershipEvent;
-
-            class MemberAttributeChange;
         }
 
         namespace connection {
@@ -52,7 +49,7 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API ClusterListenerThread {
+            class HAZELCAST_API ClusterListenerThread : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
 
@@ -64,9 +61,18 @@ namespace hazelcast {
 
                 void stop();
 
+                virtual void handleMember(const Member &member, const int32_t &eventType);
+
+                virtual void handleMemberList(const std::vector<Member> &initialMembers);
+
+                virtual void handleMemberAttributeChange(const std::string &uuid, const std::string &key,
+                                                         const int32_t &operationType,
+                                                         std::auto_ptr<std::string> value);
+
                 std::vector<Address> getSocketAddresses();
 
                 util::CountDownLatch startLatch;
+
                 bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
@@ -76,17 +82,28 @@ namespace hazelcast {
 
                 std::auto_ptr<util::Thread> clusterListenerThread;
 
+                bool isInitialMembersLoaded;
+                bool isRegistrationIdReceived;
+
                 void loadInitialMemberList();
 
                 void listenMembershipEvents();
 
                 void updateMembersRef();
 
-                void fireMemberAttributeEvent(impl::MemberAttributeChange const &, Member &member);
-
                 std::vector<Address> getClusterAddresses() const;
 
                 std::vector<Address> getConfigAddresses() const;
+
+                void memberAdded(const Member &member);
+
+                void memberRemoved(const Member &member);
+
+                std::vector<MembershipEvent> detectMembershipEvents(std::auto_ptr<std::map<std::string, Member> > prevMembers) const;
+
+                void applyMemberListChanges();
+
+                void fireMembershipEvents(const std::vector<MembershipEvent> &events) const;
             };
         }
     }

@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 20/08/14.
 //
 
-
 #ifndef HAZELCAST_HeartBeater
 #define HAZELCAST_HeartBeater
 

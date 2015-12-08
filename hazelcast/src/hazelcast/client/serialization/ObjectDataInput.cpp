@@ -35,10 +35,6 @@ namespace hazelcast {
 
             }
 
-            pimpl::PortableContext *ObjectDataInput::getPortableContext() {
-                return &portableContext;
-            }
-
             void ObjectDataInput::readFully(std::vector<byte>& bytes) {
                 dataInput.readFully(bytes);
             }
@@ -127,13 +123,11 @@ namespace hazelcast {
                 return dataInput.readShortArray();
             }
 
-            std::auto_ptr<common::containers::ManagedPointerVector<std::string> > ObjectDataInput::readUTFArray() {
+            std::auto_ptr<std::vector<std::string> > ObjectDataInput::readUTFArray() {
                 return dataInput.readUTFArray();
             }
 
             void ObjectDataInput::readPortable(Portable * object) {
-                ObjectDataInput in(dataInput, portableContext);
-                
                 int factoryId = readInt();
                 int classId = readInt();
                 serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);

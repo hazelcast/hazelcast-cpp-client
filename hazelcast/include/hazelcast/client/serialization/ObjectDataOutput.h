@@ -24,7 +24,6 @@
 #define HAZELCAST_ObjectDataOutput
 
 #include <list>
-#include "hazelcast/client/common/containers/ManagedPointerVector.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"

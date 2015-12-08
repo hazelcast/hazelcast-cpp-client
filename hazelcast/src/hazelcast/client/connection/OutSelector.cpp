@@ -21,6 +21,7 @@
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/ILogger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

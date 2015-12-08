@@ -23,10 +23,12 @@
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 
+#define SECONDS_IN_A_MINUTE     60
+
 namespace hazelcast {
     namespace client {
         TransactionOptions::TransactionOptions()
-        : timeoutSeconds(2 * 60)//2 minutes
+        : timeoutSeconds(2 * SECONDS_IN_A_MINUTE)//2 minutes
         , durability(1)
         , transactionType(TransactionType::TWO_PHASE) {
 
@@ -65,20 +67,7 @@ namespace hazelcast {
             return *this;
         }
 
-        void TransactionOptions::writeData(serialization::ObjectDataOutput &out) const {
-            out.writeLong(1000L * timeoutSeconds);
-            out.writeInt(durability);
-            out.writeInt(transactionType);
-        }
-
-        void TransactionOptions::readData(serialization::ObjectDataInput &in) {
-            timeoutSeconds = (int)in.readLong()/1000;
-            durability = in.readInt();
-            transactionType = in.readInt();
-        }
-
         TransactionType::TransactionType(Type value):value(value) {
-
         }
 
         TransactionType::operator int() const {
@@ -92,6 +81,5 @@ namespace hazelcast {
                 value = LOCAL;
             }
         }
-
     }
 }

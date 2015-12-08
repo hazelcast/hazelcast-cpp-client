@@ -14,11 +14,23 @@
  * limitations under the License.
  */
 #include "hazelcast/client/IAtomicLong.h"
-#include "hazelcast/client/atomiclong/AddAndGetRequest.h"
-#include "hazelcast/client/atomiclong/CompareAndSetRequest.h"
-#include "hazelcast/client/atomiclong/GetAndAddRequest.h"
-#include "hazelcast/client/atomiclong/GetAndSetRequest.h"
-#include "hazelcast/client/atomiclong/SetRequest.h"
+
+// Includes for parameters classes
+#include "hazelcast/client/protocol/codec/AtomicLongApplyCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongAlterCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongAlterAndGetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongGetAndAlterCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongCompareAndSetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongDecrementAndGetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongGetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongGetAndAddCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongGetAndSetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongIncrementAndGetCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongGetAndIncrementCodec.h"
+#include "hazelcast/client/protocol/codec/AtomicLongSetCodec.h"
+
+#include "hazelcast/client/proxy/ProxyImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,17 +43,17 @@ namespace hazelcast {
         }
 
         long IAtomicLong::addAndGet(long delta) {
-            atomiclong::AddAndGetRequest *request = new atomiclong::AddAndGetRequest(getName(), delta);
-            serialization::pimpl::Data data = invoke(request, partitionId);
-            DESERIALIZE(data, long);
-            return *result;
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::AtomicLongAddAndGetCodec::RequestParameters::encode(getName(), delta);
+
+            return invokeAndGetResult<long, protocol::codec::AtomicLongAddAndGetCodec::ResponseParameters>(request, partitionId);
         }
 
         bool IAtomicLong::compareAndSet(long expect, long update) {
-            atomiclong::CompareAndSetRequest *request = new atomiclong::CompareAndSetRequest(getName(), expect, update);
-            serialization::pimpl::Data data = invoke(request, partitionId);
-            DESERIALIZE(data, bool);
-            return *result;
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::AtomicLongCompareAndSetCodec::RequestParameters::encode(getName(), expect, update);
+
+            return invokeAndGetResult<bool, protocol::codec::AtomicLongCompareAndSetCodec::ResponseParameters>(request, partitionId);
         }
 
         long IAtomicLong::decrementAndGet() {
@@ -53,17 +65,17 @@ namespace hazelcast {
         }
 
         long IAtomicLong::getAndAdd(long delta) {
-            atomiclong::GetAndAddRequest *request = new atomiclong::GetAndAddRequest(getName(), delta);
-            serialization::pimpl::Data data = invoke(request, partitionId);
-            DESERIALIZE(data, long);
-            return *result;
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::AtomicLongGetAndAddCodec::RequestParameters::encode(getName(), delta);
+
+            return invokeAndGetResult<long, protocol::codec::AtomicLongGetAndAddCodec::ResponseParameters>(request, partitionId);
         }
 
         long IAtomicLong::getAndSet(long newValue) {
-            atomiclong::GetAndSetRequest *request = new atomiclong::GetAndSetRequest(getName(), newValue);
-            serialization::pimpl::Data data = invoke(request, partitionId);
-            DESERIALIZE(data, long);
-            return *result;
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::AtomicLongGetAndSetCodec::RequestParameters::encode(getName(), newValue);
+
+            return invokeAndGetResult<long, protocol::codec::AtomicLongGetAndSetCodec::ResponseParameters>(request, partitionId);
         }
 
         long IAtomicLong::incrementAndGet() {
@@ -75,7 +87,9 @@ namespace hazelcast {
         }
 
         void IAtomicLong::set(long newValue) {
-            atomiclong::SetRequest *request = new atomiclong::SetRequest(getName(), newValue);
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::AtomicLongSetCodec::RequestParameters::encode(getName(), newValue);
+
             invoke(request, partitionId);
         }
     }

@@ -22,10 +22,8 @@
 #ifndef HAZELCAST_TransactionalObject
 #define HAZELCAST_TransactionalObject
 
-
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/txn/TransactionProxy.h"
+
 #include <string>
 #include <vector>
 
@@ -36,8 +34,20 @@
 
 namespace hazelcast {
     namespace client {
+        namespace connection {
+            class Connection;
+        }
+
         namespace txn {
             class BaseTxnRequest;
+        }
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+        namespace protocol {
+            class ClientMessage;
         }
         namespace proxy {
 
@@ -57,8 +67,8 @@ namespace hazelcast {
                 virtual void onDestroy();
 
                 template<typename T>
-                serialization::pimpl::Data toData(const T& object) {
-                    return context->getSerializationService().template toData<T>(&object);
+                serialization::pimpl::Data toData(const T *object) {
+                    return context->getSerializationService().template toData<T>(object);
                 }
 
                 template<typename T>
@@ -66,8 +76,18 @@ namespace hazelcast {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
+                template<typename T>
+                boost::shared_ptr<T> toObject(const serialization::pimpl::Data *data) {
+                    return context->getSerializationService().template toObject<T>(data);
+                }
+
+                template<typename T>
+                boost::shared_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                    return context->getSerializationService().template toObject<T>(data.get());
+                }
+
                 template<typename K>
-                std::vector<K> toObjectCollection(const std::vector<serialization::pimpl::Data>& keyDataSet) {
+                std::vector<K> toObjectCollection(const std::vector<serialization::pimpl::Data> &keyDataSet) {
                     int size = keyDataSet.size();
                     std::vector<K> keys(size);
                     for (int i = 0; i < size; i++) {
@@ -77,8 +97,18 @@ namespace hazelcast {
                     return keys;
                 }
 
-                serialization::pimpl::Data invoke(txn::BaseTxnRequest *request);
+                std::string getTransactionId() const;
 
+                int getTimeoutInMilliseconds() const;
+
+                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+
+                template<typename T, typename CODEC>
+                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request) {
+                    std::auto_ptr<protocol::ClientMessage> response = invoke(request);
+
+                    return CODEC::decode(*response).response;
+                }
             private:
                 const std::string serviceName;
                 const std::string name;

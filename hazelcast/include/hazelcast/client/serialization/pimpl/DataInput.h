@@ -25,8 +25,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
-#include "hazelcast/client/common/containers/ManagedPointerVector.h"
-#include "hazelcast/client/exception/UTFDataFormatException.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include <vector>
 #include <string>
@@ -63,7 +61,7 @@ namespace hazelcast {
 
                     short readShort();
 
-                    // TODO: change to return 2 bytes char
+                    // TODO: change to return 2 bytes char as in java
                     char readChar();
 
                     int readInt();
@@ -92,7 +90,7 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<short> > readShortArray();
 
-                    std::auto_ptr<common::containers::ManagedPointerVector<std::string> > readUTFArray();
+                    std::auto_ptr<std::vector<std::string> > readUTFArray();
 
                     int position();
 

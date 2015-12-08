@@ -26,6 +26,11 @@
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
 
 namespace hazelcast {
+    namespace serialization {
+        namespace pimpl {
+            class Data;
+        }
+    }
     namespace client {
 
         /**
@@ -46,7 +51,7 @@ namespace hazelcast {
             * @see IMap#containsKey(key)
             */
             bool containsKey(const K& key) {
-                return proxy::TransactionalMapImpl::containsKey(toData(key));
+                return proxy::TransactionalMapImpl::containsKey(toData(&key));
             }
 
             /**
@@ -55,7 +60,7 @@ namespace hazelcast {
             * @see IMap#get(keu)
             */
             boost::shared_ptr<V> get(const K& key) {
-                return toObject<V>(proxy::TransactionalMapImpl::get(toData(key)));
+                return toObject<V>(proxy::TransactionalMapImpl::get(toData(&key)));
             }
 
             /**
@@ -84,7 +89,7 @@ namespace hazelcast {
             * @see IMap#put(key, value)
             */
             boost::shared_ptr<V> put(const K& key, const V& value) {
-                return toObject<V>(proxy::TransactionalMapImpl::put(toData(key), toData(value)));
+                return toObject<V>(proxy::TransactionalMapImpl::put(toData(&key), toData(&value)));
             };
 
             /**
@@ -95,7 +100,7 @@ namespace hazelcast {
             * @see IMap#set(key, value)
             */
             void set(const K& key, const V& value) {
-                proxy::TransactionalMapImpl::set(toData(key), toData(value));
+                proxy::TransactionalMapImpl::set(toData(&key), toData(&value));
             }
 
             /**
@@ -106,7 +111,7 @@ namespace hazelcast {
             * @see IMap#putIfAbsent(key, value)
             */
             boost::shared_ptr<V> putIfAbsent(const K& key, const V& value) {
-                return toObject<V>(proxy::TransactionalMapImpl::putIfAbsent(toData(key), toData(value)));
+                return toObject<V>(proxy::TransactionalMapImpl::putIfAbsent(toData(&key), toData(&value)));
             };
 
             /**
@@ -117,7 +122,7 @@ namespace hazelcast {
             * @see IMap#replace(key, value)
             */
             boost::shared_ptr<V> replace(const K& key, const V& value) {
-                return toObject<V>(proxy::TransactionalMapImpl::replace(toData(key), toData(value)));
+                return toObject<V>(proxy::TransactionalMapImpl::replace(toData(&key), toData(&value)));
             };
 
             /**
@@ -128,7 +133,7 @@ namespace hazelcast {
             * @see IMap#replace(key, value, oldValue)
             */
             bool replace(const K& key, const V& oldValue, const V& newValue) {
-                return proxy::TransactionalMapImpl::replace(toData(key), toData(oldValue), toData(newValue));
+                return proxy::TransactionalMapImpl::replace(toData(&key), toData(&oldValue), toData(&newValue));
             };
 
             /**
@@ -139,7 +144,7 @@ namespace hazelcast {
             * @see IMap#remove(key)
             */
             boost::shared_ptr<V> remove(const K& key) {
-                return toObject<V>(proxy::TransactionalMapImpl::remove(toData(key)));
+                return toObject<V>(proxy::TransactionalMapImpl::remove(toData(&key)));
             };
 
             /**
@@ -151,7 +156,7 @@ namespace hazelcast {
             */
 
             void deleteEntry(const K& key) {
-                proxy::TransactionalMapImpl::deleteEntry(toData(key));
+                proxy::TransactionalMapImpl::deleteEntry(toData(&key));
             };
 
             /**
@@ -162,7 +167,7 @@ namespace hazelcast {
             * @see IMap#remove(key, value)
             */
             bool remove(const K& key, const V& value) {
-                return proxy::TransactionalMapImpl::remove(toData(key), toData(value));
+                return proxy::TransactionalMapImpl::remove(toData(&key), toData(&value));
             }
 
             /**
@@ -181,7 +186,7 @@ namespace hazelcast {
             *
             * @see IMap#keySet(predicate)
             */
-            std::vector<K> keySet(const std::string& predicate) {
+            std::vector<K> keySet(const serialization::IdentifiedDataSerializable *predicate) {
                 return toObjectCollection<K>(proxy::TransactionalMapImpl::keySet(predicate));
             }
 
@@ -200,7 +205,7 @@ namespace hazelcast {
             *
             * @see IMap#values(Predicate)
             */
-            std::vector<V> values(const std::string& predicate) {
+            std::vector<V> values(const serialization::IdentifiedDataSerializable *predicate) {
                 return toObjectCollection<K>(proxy::TransactionalMapImpl::values(predicate));
             }
 

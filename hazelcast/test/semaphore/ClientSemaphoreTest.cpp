@@ -18,6 +18,7 @@
 
 
 
+#include "hazelcast/util/Util.h"
 #include "ClientSemaphoreTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"

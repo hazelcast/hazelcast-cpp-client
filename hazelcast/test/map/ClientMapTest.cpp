@@ -18,8 +18,11 @@
 
 
 
+#include "hazelcast/client/query/SqlPredicate.h"
+#include "hazelcast/util/Util.h"
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/EntryAdapter.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "TestHelperFunctions.h"
@@ -42,6 +45,7 @@ namespace hazelcast {
             }
 
             void ClientMapTest::addTests() {
+/*
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -68,6 +72,9 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
                 addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
+*/
+                addTest(&ClientMapTest::testExecuteOnKey, "testExecuteOnKey");
+                addTest(&ClientMapTest::testExecuteOnEntries, "testExecuteOnEntries");
             }
 
             void ClientMapTest::beforeClass() {
@@ -456,7 +463,8 @@ namespace hazelcast {
 
                 fillMap();
                 std::vector<std::string> tempVector;
-                tempVector = imap->values("this == value1");
+                query::SqlPredicate predicate("this == value1");
+                tempVector = imap->values(predicate);
                 assertEqual(1U, tempVector.size());
 
                 std::vector<std::string>::iterator it = tempVector.begin();
@@ -573,20 +581,22 @@ namespace hazelcast {
             void ClientMapTest::testBasicPredicate() {
 
                 fillMap();
+
+                query::SqlPredicate predicate("this = 'value1'");
                 std::vector<std::string> tempVector;
-                tempVector = imap->values("this = 'value1'");
+                tempVector = imap->values(predicate);
 
                 assertEqual("value1", tempVector[0]);
 
                 std::vector<std::string> tempVector2;
-                tempVector2 = imap->keySet("this = 'value1'");
+                tempVector2 = imap->keySet(predicate);
 
                 std::vector<std::string>::iterator it2 = tempVector2.begin();
                 assertEqual("key1", *it2);
 
 
                 std::vector<std::pair<std::string, std::string> > tempVector3;
-                tempVector3 = imap->entrySet("this == value1");
+                tempVector3 = imap->entrySet(predicate);
 
                 std::vector<std::pair<std::string, std::string> >::iterator it3 = tempVector3.begin();
                 assertEqual("key1", (*it3).first);
@@ -605,14 +615,15 @@ namespace hazelcast {
                 assertNull(map.put(emp2, emp2).get());
                 assertEqual(2, (int)map.size());
                 assertEqual(2, (int)map.keySet().size());
-                assertEqual(0, (int)map.keySet("a = 10").size());
-                assertEqual(0, (int)map.values("a = 10").size());
-                assertEqual(2, (int)map.keySet("a >= 10").size());
-                assertEqual(2, (int)map.values("a >= 10").size());
+                query::SqlPredicate predicate("a = 10");
+                assertEqual(0, (int)map.keySet(predicate).size());
+                predicate.setSql("a = 10");
+                assertEqual(0, (int)map.values(predicate).size());
+                predicate.setSql("a >= 10");
+                assertEqual(2, (int)map.keySet(predicate).size());
+                assertEqual(2, (int)map.values(predicate).size());
                 assertEqual(2, (int)map.size());
                 assertEqual(2, (int)map.values().size());
-
-
             }
 
             void ClientMapTest::testMapWithPortable() {
@@ -639,6 +650,91 @@ namespace hazelcast {
                 assertFalse(imap->evict("deli"));
                 assertTrue(imap->evict("ali"));
                 assertNull(imap->get("ali").get());
+            }
+
+            class EntryMultiplier : public serialization::IdentifiedDataSerializable {
+            public:
+                EntryMultiplier(int multiplier) : multiplier(multiplier) { }
+
+                /**
+                 * @return factory id
+                 */
+                int getFactoryId() const {
+                    return 666;
+                }
+
+                /**
+                 * @return class id
+                 */
+                int getClassId() const {
+                    return 3;
+                }
+
+                /**
+                 * Defines how this class will be written.
+                 * @param writer ObjectDataOutput
+                 */
+                void writeData(serialization::ObjectDataOutput &writer) const {
+                    writer.writeInt(multiplier);
+                }
+
+                /**
+                 *Defines how this class will be read.
+                 * @param reader ObjectDataInput
+                 */
+                void readData(serialization::ObjectDataInput &reader) {
+                    multiplier = reader.readInt();
+                }
+
+                int getMultiplier() const {
+                    return multiplier;
+                }
+
+            private:
+                int multiplier;
+            };
+
+            void ClientMapTest::testExecuteOnKey() {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+
+                EntryMultiplier processor(4);
+
+                boost::shared_ptr<int> result = employees.executeOnKey<int, EntryMultiplier>(4, processor);
+
+                ASSERT_NOTEQUAL(NULL, result.get());
+                ASSERT_EQUAL(4 * processor.getMultiplier(), *result);
+            }
+
+            void ClientMapTest::testExecuteOnEntries() {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+
+                EntryMultiplier processor(4);
+
+
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(processor);
+
+                ASSERT_EQUAL(3, result.size());
+                ASSERT_EQUAL(true, (result.end() != result.find(3)));
+                ASSERT_EQUAL(true, (result.end() != result.find(4)));
+                ASSERT_EQUAL(true, (result.end() != result.find(5)));
+                ASSERT_EQUAL(3 * processor.getMultiplier(), *result[3]);
+                ASSERT_EQUAL(4 * processor.getMultiplier(), *result[4]);
+                ASSERT_EQUAL(5 * processor.getMultiplier(), *result[5]);
+
             }
         }
     }

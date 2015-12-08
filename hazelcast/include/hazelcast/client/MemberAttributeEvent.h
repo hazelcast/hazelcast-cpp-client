@@ -39,8 +39,6 @@ namespace hazelcast {
         class Member;
 
         /**
-         * Membership event fired when a new member is added
-         * to the cluster and/or when a member leaves the cluster.
          *
          * @see MembershipListener
          */
@@ -58,7 +56,8 @@ namespace hazelcast {
             /**
             * InternalAPI. constructor
             */
-            MemberAttributeEvent(Cluster &cluster, Member &member, MemberAttributeOperationType operationType, const std::string &key, const std::string &value, util::IOUtil::PRIMITIVE_ID primitive_id);
+            MemberAttributeEvent(Cluster &cluster, const Member &member, MemberAttributeOperationType operationType,
+                                 const std::string &key, std::string &value, const std::vector<Member> &memberList);
 
             /**
              *
@@ -81,34 +80,14 @@ namespace hazelcast {
              *  => MemberAttributeOperationType is remove(REMOVE).
              * @return value of changed attribute.
              */
-            template<typename T>
-            boost::shared_ptr<T> getValue() const {
-                T *tag = NULL;
-                boost::shared_ptr<T> v(getValueResolved(tag));
-                return v;
-            }
+            const std::string &getValue() const;
 
         private:
+            Member member;
             MemberAttributeOperationType operationType;
             std::string key;
             std::string value;
-            util::IOUtil::PRIMITIVE_ID primitive_id;
-
-            int *getValueResolved(int *tag) const;
-
-            float *getValueResolved(float *tag) const;
-
-            short *getValueResolved(short *tag) const;
-
-            long *getValueResolved(long *tag) const;
-
-            byte *getValueResolved(byte *tag) const;
-
-            bool *getValueResolved(bool *tag) const;
-
-            std::string *getValueResolved(std::string *tag) const;
-
-            double *getValueResolved(double *tag) const;
+            std::vector<Member> members;
         };
 
     }

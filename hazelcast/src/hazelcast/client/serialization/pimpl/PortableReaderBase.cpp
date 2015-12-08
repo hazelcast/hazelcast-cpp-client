@@ -17,7 +17,7 @@
 // Created by İhsan Demir on 25/03/15.
 //
 
-#include <stdio.h>
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Bits.h"
@@ -45,7 +45,7 @@ namespace hazelcast {
                     }
                     if (fieldCount != cd->getFieldCount()) {
                         char msg[50];
-                        sprintf(msg, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
+                        util::snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
                         throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
                     }
                     this->offset = input.position();
@@ -222,12 +222,12 @@ namespace hazelcast {
                 void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const {
                     if (factoryId != fd.getFactoryId()) {
                         char msg[100];
-                        sprintf(msg, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
+                        util::snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                     if (classId != fd.getClassId()) {
                         char msg[100];
-                        sprintf(msg, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
+                        util::snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                 }

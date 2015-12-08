@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 30/12/13.
 //
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -53,11 +54,16 @@ namespace hazelcast {
             }
 
             void IOHandler::handleSocketException(const std::string& message) {
-                std::stringstream warningStr;
                 Address const& address = connection.getRemoteEndpoint();
-                (warningStr << " Closing socket to endpoint " << address.getHost() << ":" << address.getPort()
-                << ", Cause:" << message);
-                util::ILogger::getLogger().getLogger().warning(warningStr.str());
+
+                size_t len = message.length() + 150;
+                char *msg = new char[len];
+                util::snprintf(msg, len, "[IOHandler::handleSocketException] Closing socket to endpoint %s:%d, Cause:%s\n",
+                        address.getHost().c_str(), address.getPort(), message.c_str());
+                util::ILogger::getLogger().getLogger().warning(msg);
+
+                // TODO: This call shall resend pending requests and reregister events, hence it can be off-loaded
+                // to another thread in order not to block the critical IO thread
                 connection.close();
             }
         }

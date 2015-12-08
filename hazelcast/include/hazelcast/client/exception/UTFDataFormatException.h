@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 7/11/13.
 
-
-
-
-
 #ifndef HAZELCAST_UTFDATAFORMATEXCEPTION
 #define HAZELCAST_UTFDATAFORMATEXCEPTION
 

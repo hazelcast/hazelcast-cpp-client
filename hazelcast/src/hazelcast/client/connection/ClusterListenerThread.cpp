@@ -17,33 +17,30 @@
 // Created by sancar koyunlu on 5/23/13.
 
 
+#include "hazelcast/util/Util.h"
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/protocol/AddMembershipListenerRequest.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientResponse.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/serialization/pimpl/Packet.h"
-#include "hazelcast/client/impl/ClientMemberShipEvent.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
-            ClusterListenerThread::ClusterListenerThread(spi::ClientContext& clientContext)
-            : startLatch(1)
-            , clientContext(clientContext)
-            , deletingConnection(false) {
+            ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
+                    : startLatch(1), clientContext(clientContext), deletingConnection(false) {
 
             }
 
-            void ClusterListenerThread::staticRun(util::ThreadArgs& args) {
-                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *)args.arg0;
+            void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
+                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
                 clusterListenerThread->run(args.currentThread);
             }
 
@@ -57,22 +54,27 @@ namespace hazelcast {
                         if (conn.get() == NULL) {
                             try {
                                 conn = clientContext.getClusterService().connectToOne();
-                            } catch (std::exception& e) {
-                                util::ILogger::getLogger().severe(std::string("Error while connecting to cluster! =>") + e.what());
+                            } catch (std::exception &e) {
+                                util::ILogger::getLogger().severe(
+                                        std::string("Error while connecting to cluster! =>") + e.what());
                                 isStartedSuccessfully = false;
                                 startLatch.countDown();
                                 return;
                             }
                         }
+
+                        isInitialMembersLoaded = false;
+                        isRegistrationIdReceived = false;
                         loadInitialMemberList();
                         clientContext.getServerListenerService().triggerFailedListeners();
                         isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
-                    } catch (std::exception& e) {
+                    } catch (std::exception &e) {
                         if (clientContext.getLifecycleService().isRunning()) {
-                            util::ILogger::getLogger().warning(std::string("Error while listening cluster events! -> ") + e.what());
+                            util::ILogger::getLogger().warning(
+                                    std::string("Error while listening cluster events! -> ") + e.what());
                         }
 
                         clientContext.getConnectionManager().onCloseOwnerConnection();
@@ -88,7 +90,6 @@ namespace hazelcast {
                 }
 
             }
-
 
             void ClusterListenerThread::stop() {
                 if (deletingConnection.compareAndSet(false, true)) {
@@ -112,157 +113,58 @@ namespace hazelcast {
             }
 
             void ClusterListenerThread::loadInitialMemberList() {
-                protocol::AddMembershipListenerRequest requestObject;
-                boost::shared_ptr<ClientResponse> response = conn->sendAndReceive(requestObject);
-                boost::shared_ptr<impl::SerializableCollection> coll = clientContext.getSerializationService().toObject<impl::SerializableCollection>(response->getData());
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::ClientAddMembershipListenerCodec::RequestParameters::encode(false);
 
-                std::map<std::string, Member> prevMembers;
-                if (!members.empty()) {
-                    for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                        prevMembers[(*it).getUuid()] = *it;
-                    }
-                    members.clear();
-                }
+                conn->writeBlocking(*request);
 
-                const std::vector<serialization::pimpl::Data>& collection = coll->getCollection();
-                for (std::vector<serialization::pimpl::Data>::const_iterator it = collection.begin(); it != collection.end(); ++it) {
-                    boost::shared_ptr<Member> member = clientContext.getSerializationService().toObject<Member>(*it);
-                    members.push_back(*member);
-                }
-                updateMembersRef();
-                std::vector<MembershipEvent> events;
+                std::auto_ptr<protocol::ClientMessage> response;
 
-                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                    if (prevMembers.count((*it).getUuid()) > 0) {
-                        prevMembers.erase((*it).getUuid());
+                do {
+                    response = conn->readBlocking();
+                    if (protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters::TYPE ==
+                        response->getMessageType()) {
+                        protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters result = protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters::decode(
+                                *response);
+                        registrationId = result.response;
+                        isRegistrationIdReceived = true;
                     } else {
-                        events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_ADDED, (*it)));
+                        handle(response);
                     }
-                }
-
-                for (std::map<std::string, Member>::iterator it = prevMembers.begin(); it != prevMembers.end(); ++it) {
-                    Member& member = it->second;
-                    events.push_back(MembershipEvent(clientContext.getCluster(), MembershipEvent::MEMBER_REMOVED, member));
-                    if (clientContext.getClusterService().isMemberExists(member.getAddress())) {
-                        clientContext.getConnectionManager().removeEndpoint(member.getAddress());
-                    }
-                }
-
-
-                for (std::vector<MembershipEvent>::iterator it = events.begin(); it != events.end(); ++it) {
-                    clientContext.getClusterService().fireMembershipEvent((*it));
-                }
+                } while (!isInitialMembersLoaded || !isRegistrationIdReceived);
             }
 
             void ClusterListenerThread::listenMembershipEvents() {
                 while (clientContext.getLifecycleService().isRunning()) {
-                    serialization::pimpl::Packet packet = conn->readBlocking();
-                    serialization::pimpl::Data const& data = packet.getData();
-                    if (!clientContext.getLifecycleService().isRunning())
+                    std::auto_ptr<protocol::ClientMessage> clientMessage = conn->readBlocking();
+                    if (!clientContext.getLifecycleService().isRunning()) {
                         break;
-                    boost::shared_ptr<connection::ClientResponse> response = clientContext.getSerializationService().toObject<connection::ClientResponse>(data);
-                    boost::shared_ptr<impl::ClientMembershipEvent> event = clientContext.getSerializationService().toObject<impl::ClientMembershipEvent>(response->getData());
-                    Member member = event->getMember();
-                    bool membersUpdated = false;
-                    if (event->getEventType() == MembershipEvent::MEMBER_ADDED) {
-                        members.push_back(member);
-                        membersUpdated = true;
-                        clientContext.getConnectionManager().removeEndpoint(member.getAddress());
-                    } else if (event->getEventType() == MembershipEvent::MEMBER_REMOVED) {
-                        std::vector<Member>::iterator it = std::find(members.begin(), members.end(), member);
-                        if (members.end() != it) {
-                            members.erase(it);
-                        }
-                        membersUpdated = true;
-                    } else if (event->getEventType() == MembershipEvent::MEMBER_ATTRIBUTE_CHANGED) {
-                        impl::MemberAttributeChange const& memberAttributeChange = event->getMemberAttributeChange();
-                        for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                            Member& target = *it;
-                            if (target.getUuid() == memberAttributeChange.getUuid()) {
-                                fireMemberAttributeEvent(memberAttributeChange, target);
-                            }
-                        }
                     }
-                    if (membersUpdated) {
-                        updateMembersRef();
-                        MembershipEvent membershipEvent(clientContext.getCluster(), event->getEventType(), member);
-                        clientContext.getClusterService().fireMembershipEvent(membershipEvent);
-                    }
-                }
-            }
 
-
-            void ClusterListenerThread::fireMemberAttributeEvent(hazelcast::client::impl::MemberAttributeChange const& memberAttributeChange, Member& target) {
-                MemberAttributeEvent::MemberAttributeOperationType operationType = memberAttributeChange.getOperationType();
-                const std::string& value = memberAttributeChange.getValue();
-                util::IOUtil::PRIMITIVE_ID primitive_id = memberAttributeChange.getTypeId();
-                const std::string& key = memberAttributeChange.getKey();
-                if (operationType == MemberAttributeEvent::PUT) {//PUT
-                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
-                        target.setAttribute(key, util::IOUtil::to_value<bool>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
-                        target.setAttribute(key, util::IOUtil::to_value<byte>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
-                        target.setAttribute(key, util::IOUtil::to_value<double>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
-                        target.setAttribute(key, util::IOUtil::to_value<float>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
-                        target.setAttribute(key, util::IOUtil::to_value<int>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
-                        target.setAttribute(key, util::IOUtil::to_value<long>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
-                        target.setAttribute(key, util::IOUtil::to_value<short>(value));
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
-                        target.setAttribute(key, value);
-                    }
-                } else if (operationType == MemberAttributeEvent::REMOVE) {//REMOVE
-                    if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BOOLEAN) {
-                        target.removeAttribute<bool>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_BYTE) {
-                        target.removeAttribute<byte>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_DOUBLE) {
-                        target.removeAttribute<double>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_FLOAT) {
-                        target.removeAttribute<float>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_INTEGER) {
-                        target.removeAttribute<int>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_LONG) {
-                        target.removeAttribute<long>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_SHORT) {
-                        target.removeAttribute<short>(key);
-                    } else if (primitive_id == util::IOUtil::PRIMITIVE_TYPE_UTF) {
-                        target.removeAttribute<std::string>(key);
-                    }
+                    handle(clientMessage);
                 }
-                MemberAttributeEvent memberAttributeEvent(clientContext.getCluster(), target, operationType, key, value, primitive_id);
-                clientContext.getClusterService().fireMemberAttributeEvent(memberAttributeEvent);
             }
 
             void ClusterListenerThread::updateMembersRef() {
-                std::map<Address, Member, addressComparator> map;
-                std::stringstream memberInfo;
-                memberInfo << std::endl << "Members [" << members.size() << "]  {" << std::endl;
-                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
-                    (memberInfo << "\t" << (*it) << std::endl);
-                    map[(*it).getAddress()] = (*it);
+                std::auto_ptr<std::map<Address, Member, addressComparator> > addrMap(
+                        new std::map<Address, Member, addressComparator>());
+                for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
+                    (*addrMap)[it->getAddress()] = *it;
                 }
-                memberInfo << "}" << std::endl;
-                util::ILogger::getLogger().info(memberInfo.str());
-                clientContext.getClusterService().setMembers(map);
-
+                clientContext.getClusterService().setMembers(addrMap);
             }
 
             std::vector<Address> ClusterListenerThread::getClusterAddresses() const {
                 std::vector<Address> socketAddresses;
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    socketAddresses.push_back((*it).getAddress());
+                    socketAddresses.push_back(it->getAddress());
                 }
                 return socketAddresses;
             }
 
             std::vector<Address>  ClusterListenerThread::getConfigAddresses() const {
                 std::vector<Address> socketAddresses;
-                std::set<Address, addressComparator>& configAddresses = clientContext.getClientConfig().getAddresses();
+                std::set<Address, addressComparator> &configAddresses = clientContext.getClientConfig().getAddresses();
                 std::set<Address, addressComparator>::iterator it;
 
                 for (it = configAddresses.begin(); it != configAddresses.end(); ++it) {
@@ -275,6 +177,162 @@ namespace hazelcast {
                 std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
             }
+
+            void ClusterListenerThread::handleMember(const Member &member, const int32_t &eventType) {
+                switch (eventType) {
+                    case MembershipEvent::MEMBER_ADDED:
+                        memberAdded(member);
+                        break;
+                    case MembershipEvent::MEMBER_REMOVED:
+                        memberRemoved(member);
+                        break;
+                    default:
+                        char buf[50];
+                        util::snprintf(buf, 50, "Unknown event type :%d", eventType);
+                        util::ILogger::getLogger().warning(buf);
+                }
+                clientContext.getPartitionService().refreshPartitions();
+            }
+
+            void ClusterListenerThread::handleMemberList(const std::vector<Member> &initialMembers) {
+                std::auto_ptr<std::map<std::string, Member> > prevMembers;
+                if (members.size() > 0) {
+                    prevMembers = std::auto_ptr<std::map<std::string, Member> >(new std::map<std::string, Member>);
+                    for (std::vector<Member>::const_iterator member = members.begin();
+                         member != members.end(); ++member) {
+                        (*prevMembers)[member->getUuid()] = *member;
+                    }
+                    members.clear();
+                }
+
+                for (std::vector<Member>::const_iterator initialMember = initialMembers.begin();
+                     initialMember != initialMembers.end(); ++initialMember) {
+                    members.push_back(*initialMember);
+                }
+
+                std::vector<MembershipEvent> events = detectMembershipEvents(prevMembers);
+                if (events.size() != 0) {
+                    applyMemberListChanges();
+                }
+                fireMembershipEvents(events);
+
+                isInitialMembersLoaded = true;
+            }
+
+            void ClusterListenerThread::handleMemberAttributeChange(const std::string &uuid, const std::string &key,
+                                                                    const int32_t &operationType,
+                                                                    std::auto_ptr<std::string> value) {
+                // find and update the member in local list
+                std::auto_ptr<std::map<Address, Member, addressComparator> > addrMap(new std::map<Address, Member, addressComparator>());
+                std::vector<Member>::const_iterator foundMember = members.end();
+                MemberAttributeEvent::MemberAttributeOperationType type = (MemberAttributeEvent::MemberAttributeOperationType) operationType;
+                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                    if (it->getUuid() == uuid) {
+                        switch (operationType) {
+                            case MemberAttributeEvent::PUT:
+                                it->setAttribute(key, *value);
+                                break;
+                            case MemberAttributeEvent::REMOVE:
+                                it->removeAttribute(key);
+                                break;
+                            default:
+                                char buf[50];
+                                util::snprintf(buf, 50, "Not a known OperationType: %d", operationType);
+                                throw exception::IllegalArgumentException("Member::updateAttribute", buf);
+                        }
+                        foundMember = it;
+                    }
+                    (*addrMap)[it->getAddress()] = *it;
+                }
+
+                if (members.end() != foundMember) {
+                    clientContext.getClusterService().setMembers(addrMap);
+
+                    // fire event
+                    MemberAttributeEvent event(clientContext.getCluster(), *foundMember, type, key, *value, members);
+
+                    clientContext.getClusterService().fireMemberAttributeEvent(event);
+                }
+            }
+
+            void ClusterListenerThread::memberAdded(const Member &member) {
+                members.push_back(member);
+
+                applyMemberListChanges();
+
+                MembershipEvent event(clientContext.getCluster(), member, MembershipEvent::MEMBER_ADDED, members);
+
+                clientContext.getClusterService().fireMembershipEvent(event);
+            }
+
+            void ClusterListenerThread::memberRemoved(const Member &member) {
+                for (std::vector<Member>::iterator it = members.begin(); it != members.end(); ++it) {
+                    if (member == *it) {
+                        members.erase(it);
+                        break;
+                    }
+                }
+
+                applyMemberListChanges();
+
+                clientContext.getConnectionManager().removeEndpoint(member.getAddress());
+
+                MembershipEvent event(clientContext.getCluster(), member, MembershipEvent::MEMBER_REMOVED,
+                                      members);
+
+                clientContext.getClusterService().fireMembershipEvent(event);
+            }
+
+            std::vector<MembershipEvent> ClusterListenerThread::detectMembershipEvents(
+                    std::auto_ptr<std::map<std::string, Member> > prevMembers) const {
+                std::vector<MembershipEvent> events;
+                std::vector<Member> eventMembers(members);
+                if (NULL != prevMembers.get()) {
+                    for (std::vector<Member>::const_iterator member = members.begin();
+                         member != members.end(); ++member) {
+                        std::map<std::string, Member>::iterator former = prevMembers->find(member->getUuid());
+                        if (former == prevMembers->end()) {
+                            events.push_back(
+                                    MembershipEvent(clientContext.getCluster(), *member, MembershipEvent::MEMBER_ADDED,
+                                                    eventMembers));
+                        } else {
+                            prevMembers->erase(former);
+                        }
+                    }
+                    for (std::map<std::string, Member>::const_iterator it = prevMembers->begin();
+                         it != prevMembers->end(); ++it) {
+                        MembershipEvent event(clientContext.getCluster(), it->second, MembershipEvent::MEMBER_REMOVED,
+                                              eventMembers);
+                        events.push_back(event);
+                        const Address &address = it->second.getAddress();
+
+                        if (!clientContext.getClusterService().isMemberExists(address)) {
+                            clientContext.getConnectionManager().removeEndpoint(address);
+                        }
+                    }
+                } else {
+                    for (std::vector<Member>::const_iterator member = members.begin();
+                         member != members.end(); ++member) {
+                        events.push_back(
+                                MembershipEvent(clientContext.getCluster(), *member, MembershipEvent::MEMBER_ADDED,
+                                                eventMembers));
+                    }
+                }
+                return events;
+            }
+
+            void ClusterListenerThread::applyMemberListChanges() {
+                updateMembersRef();
+
+                util::ILogger::getLogger().info(clientContext.getClusterService().membersString());
+            }
+
+            void ClusterListenerThread::fireMembershipEvents(const std::vector<MembershipEvent> &events) const {
+                for (std::vector<MembershipEvent>::const_iterator it = events.begin(); it != events.end(); ++it) {
+                    clientContext.getClusterService().fireMembershipEvent(*it);
+                }
+            }
+
         }
     }
 }

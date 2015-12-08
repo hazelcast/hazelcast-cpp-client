@@ -70,6 +70,12 @@ if %errorlevel% NEQ 0 (
     goto test_failed
 )
 
+call releaseWindows.bat
+if %errorlevel% NEQ 0 (
+    echo "******  Test FAILED. The release script failed!!!"
+    exit /b 1
+)
+
 echo "All Tests PASSED"
 exit /b 0
 

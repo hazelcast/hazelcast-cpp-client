@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 19/08/14.
 //
 
-
 #ifndef HAZELCAST_OwnerConnectionFuture
 #define HAZELCAST_OwnerConnectionFuture
 
@@ -53,7 +52,6 @@ namespace hazelcast {
                 void closeIfAddressMatches(const Address& address);
 
                 void close();
-
             private:
                 boost::shared_ptr<Connection> ownerConnectionPtr;
                 spi::ClientContext& clientContext;

@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 27/10/13.
 
-
-
-
 #ifndef HAZELCAST_HazelcastInstanceNotActiveException
 #define HAZELCAST_HazelcastInstanceNotActiveException
 

@@ -27,6 +27,7 @@
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "HazelcastServer.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
 
 #include <memory>
 
@@ -75,26 +76,26 @@ namespace hazelcast {
                 std::vector<Member> members = cluster.getMembers();
                 assertEqual(1U,members.size());
                 Member &member = members[0];
-                assertTrue(member.lookupAttribute<int>("intAttr"));
-                assertEqual(211,member.getAttribute<int>("intAttr"));
+                assertTrue(member.lookupAttribute("intAttr"));
+                assertEqual("211", *member.getAttribute("intAttr"));
 
-                assertTrue(member.lookupAttribute<bool>("boolAttr"));
-                assertEqual(true,member.getAttribute<bool>("boolAttr"));
+                assertTrue(member.lookupAttribute("boolAttr"));
+                assertEqual("true", *member.getAttribute("boolAttr"));
 
-                assertTrue(member.lookupAttribute<byte>("byteAttr"));
-                assertEqual(7,member.getAttribute<byte>("byteAttr"));
+                assertTrue(member.lookupAttribute("byteAttr"));
+                assertEqual("7", *member.getAttribute("byteAttr"));
 
-                assertTrue(member.lookupAttribute<double>("doubleAttr"));
-                assertEqual(2,member.getAttribute<double>("doubleAttr"));
+                assertTrue(member.lookupAttribute("doubleAttr"));
+                assertEqual("2.0", *member.getAttribute("doubleAttr"));
 
-                assertTrue(member.lookupAttribute<float>("floatAttr"));
-                assertEqual(1.2f,member.getAttribute<float>("floatAttr"));
+                assertTrue(member.lookupAttribute("floatAttr"));
+                assertEqual("1.2", *member.getAttribute("floatAttr"));
 
-                assertTrue(member.lookupAttribute<short>("shortAttr"));
-                assertEqual(3,member.getAttribute<short>("shortAttr"));
+                assertTrue(member.lookupAttribute("shortAttr"));
+                assertEqual("3", *member.getAttribute("shortAttr"));
 
-                assertTrue(member.lookupAttribute<std::string>("strAttr"));
-                assertEqual(std::string("strAttr"),member.getAttribute<std::string>("strAttr"));
+                assertTrue(member.lookupAttribute("strAttr"));
+                assertEqual(std::string("strAttr"), *member.getAttribute("strAttr"));
 
                 instance.shutdown();
             }
@@ -118,39 +119,40 @@ namespace hazelcast {
                         return;
                     }
                     const std::string &key = memberAttributeEvent.getKey();
+
                     if(key == "intAttr"){
-                        boost::shared_ptr<int> ptr = memberAttributeEvent.getValue<int>();
-                        if(ptr.get() != NULL && 211 == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("211" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "boolAttr"){
-                        boost::shared_ptr<bool> ptr = memberAttributeEvent.getValue<bool>();
-                        if(ptr.get() != NULL && true == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("true" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "byteAttr"){
-                        boost::shared_ptr<byte> ptr = memberAttributeEvent.getValue<byte>();
-                        if(ptr.get() != NULL && 7 == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("7" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "doubleAttr"){
-                        boost::shared_ptr<double> ptr = memberAttributeEvent.getValue<double>();
-                        if(ptr.get() != NULL && 2 == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("2.0" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "floatAttr"){
-                        boost::shared_ptr<float> ptr = memberAttributeEvent.getValue<float>();
-                        if(ptr.get() != NULL && 1.2f == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("1.2" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "shortAttr"){
-                        boost::shared_ptr<short> ptr = memberAttributeEvent.getValue<short>();
-                        if(ptr.get() != NULL && 3 == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if("3" == value ){
                             _attributeLatch.countDown();
                         }
                     }else if(key == "strAttr"){
-                        boost::shared_ptr<std::string> ptr = memberAttributeEvent.getValue<std::string>();
-                        if(ptr.get() != NULL && std::string("strAttr") == *ptr ){
+                        const std::string &value = memberAttributeEvent.getValue();
+                        if(std::string("strAttr") == value ){
                             _attributeLatch.countDown();
                         }
                     }

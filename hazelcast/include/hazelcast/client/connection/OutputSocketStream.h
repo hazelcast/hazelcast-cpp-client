@@ -21,7 +21,6 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-
 #ifndef HAZELCAST_OUTPUT_SOCKET_STREAM
 #define HAZELCAST_OUTPUT_SOCKET_STREAM
 
@@ -31,39 +30,24 @@
 
 namespace hazelcast {
     namespace client {
+
         class Socket;
-        namespace serialization {
-            namespace pimpl {
-                class Packet;
-
-                class Data;
-
-                class PortableContext;
-            }
-        }
 
         namespace connection {
 
             class HAZELCAST_API OutputSocketStream {
             public:
-
                 OutputSocketStream(Socket& socket);
 
                 void write(const std::vector<byte>& bytes);
 
                 void writeInt(int i);
-
-                void writePacket(const serialization::pimpl::Packet&);
-
             private:
-                void writeValue(const serialization::pimpl::Data &data);
-
                 Socket& socket;
 
                 void writeShort(int v);
 
                 void writeByte(int i);
-
             };
 
         }

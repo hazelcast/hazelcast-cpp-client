@@ -18,6 +18,8 @@
 //
 
 #include <string.h>
+
+#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"

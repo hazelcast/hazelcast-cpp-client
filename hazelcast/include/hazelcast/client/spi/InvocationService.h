@@ -24,6 +24,7 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include <boost/shared_ptr.hpp>
+#include "hazelcast/client/protocol/IMessageHandler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -40,10 +41,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 class Data;
-
-                class Packet;
             }
-
         }
         namespace impl {
             class ClientRequest;
@@ -57,32 +55,37 @@ namespace hazelcast {
             class CallFuture;
 
             class CallPromise;
-
-            class ClientResponse;
         }
+
+        namespace protocol {
+            class ClientMessage;
+        }
+
         namespace spi {
 
             class ClientContext;
 
-            class HAZELCAST_API InvocationService {
+            class HAZELCAST_API InvocationService : public protocol::IMessageHandler {
             public:
                 InvocationService(spi::ClientContext& clientContext);
 
+                virtual ~InvocationService();
+
                 void start();
 
-                connection::CallFuture invokeOnRandomTarget(const impl::ClientRequest *request);
+                connection::CallFuture invokeOnRandomTarget(std::auto_ptr<protocol::ClientMessage> request);
 
-                connection::CallFuture invokeOnPartitionOwner(const impl::ClientRequest *request, int partitionId);
+                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request, int partitionId);
 
-                connection::CallFuture invokeOnTarget(const impl::ClientRequest *request, const Address& target);
+                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request, const Address& target);
 
-                connection::CallFuture invokeOnRandomTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler);
+                connection::CallFuture invokeOnRandomTarget(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler);
 
-                connection::CallFuture invokeOnTarget(const impl::ClientRequest *request, impl::BaseEventHandler *handler, const Address& target);
+                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler, const Address& target);
 
-                connection::CallFuture invokeOnPartitionOwner(const impl::ClientRequest *request, impl::BaseEventHandler *handler, int partitionId);
+                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler, int partitionId);
 
-                connection::CallFuture invokeOnConnection(const impl::ClientRequest *request, boost::shared_ptr<connection::Connection> connection);
+                connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request, boost::shared_ptr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
@@ -90,7 +93,7 @@ namespace hazelcast {
 
                 int getRetryCount() const;
 
-                void handlePacket(connection::Connection& connection, const serialization::pimpl::Packet& packet);
+                void handleMessage(connection::Connection &connection, std::auto_ptr<protocol::ClientMessage> message);
 
                 /**
                 * Removes event handler corresponding to callId from responsible ClientConnection
@@ -125,15 +128,12 @@ namespace hazelcast {
                 int retryWaitTime;
                 int retryCount;
                 spi::ClientContext& clientContext;
-                util::AtomicInt callIdGenerator;
                 util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int, connection::CallPromise > > callPromises;
                 util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int, connection::CallPromise > > eventHandlerPromises;
 
-                int getNextCallId();
+                bool isAllowedToSentRequest(connection::Connection& connection, protocol::ClientMessage const&);
 
-                bool isAllowedToSentRequest(connection::Connection& connection, impl::ClientRequest const&);
-
-                connection::CallFuture doSend(std::auto_ptr<const impl::ClientRequest>, std::auto_ptr<impl::BaseEventHandler>, boost::shared_ptr<connection::Connection>, int);
+                connection::CallFuture doSend(std::auto_ptr<protocol::ClientMessage> request, std::auto_ptr<hazelcast::client::impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection>, int);
 
                 /**
                 * Returns the actual connection that request is send over,
@@ -148,17 +148,18 @@ namespace hazelcast {
                 boost::shared_ptr<connection::CallPromise> deRegisterCall(connection::Connection& connection, int callId);
 
                 /** **/
-                void registerEventHandler(connection::Connection& connection, boost::shared_ptr<connection::CallPromise> promise);
+                void registerEventHandler(int correlationId,
+                                          connection::Connection& connection, boost::shared_ptr<connection::CallPromise> promise);
 
                 boost::shared_ptr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection, int callId);
 
                 /***** HANDLE PACKET PART ****/
 
                 /* returns shouldSetResponse */
-                bool handleException(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<connection::CallPromise> promise, const  std::string& address);
+                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise, const  std::string& address);
 
                 /* returns shouldSetResponse */
-                bool handleEventUuid(boost::shared_ptr<connection::ClientResponse> response, boost::shared_ptr<connection::CallPromise> promise);
+                bool handleEventUuid(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise);
 
                 /** CallPromise Map **/
 
@@ -166,6 +167,8 @@ namespace hazelcast {
 
                 /** EventHandler Map **/
 
+                // TODO: Put the promise map as a member of the connection object. In this way, we can get the promise map directly from connection object
+                // without a need for a map lookup since we already know the connection and the map is specific to a connection
                 boost::shared_ptr< util::SynchronizedMap<int, connection::CallPromise> > getEventHandlerPromiseMap(connection::Connection& connection);
 
                 boost::shared_ptr<connection::CallPromise> getEventHandlerPromise(connection::Connection& , int callId);

@@ -34,18 +34,16 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            namespace pimpl {
-                class Packet;
-
-                class Data;
-            }
         }
+
+        namespace protocol {
+            class ClientMessage;
+        }
+
         namespace connection {
             class Connection;
 
             class OutSelector;
-
-            class ConnectionManager;
 
             class WriteHandler : public IOHandler {
             public:
@@ -55,19 +53,17 @@ namespace hazelcast {
 
                 void handle();
 
-                void enqueueData(serialization::pimpl::Packet *packet);
+                void enqueueData(protocol::ClientMessage *message);
 
                 void run();
 
             private:
-                char* buffer;
-                util::ByteBuffer byteBuffer;
-                util::ConcurrentQueue<serialization::pimpl::Packet> writeQueue;
-                serialization::pimpl::Packet *lastData;
+                util::ConcurrentQueue<protocol::ClientMessage> writeQueue;
                 bool ready;
                 util::AtomicBoolean informSelector;
-
-
+                protocol::ClientMessage *lastMessage;
+                int32_t numBytesWrittenToSocketForMessage;
+                int32_t lastMessageFrameLen;
             };
         }
     }

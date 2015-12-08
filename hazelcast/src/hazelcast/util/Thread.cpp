@@ -21,7 +21,7 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IException.h"
 #include <memory>
-#include <hazelcast/util/Util.h>
+#include "hazelcast/util/Util.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 

@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 7/11/13.
 
-
-
-
 #ifndef HAZELCAST_HazelcastIllegalStateException
 #define HAZELCAST_HazelcastIllegalStateException
 

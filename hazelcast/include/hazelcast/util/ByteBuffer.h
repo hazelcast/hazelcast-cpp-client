@@ -24,6 +24,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <cstdlib>
+#include <memory>
 
 namespace hazelcast {
     namespace client {
@@ -50,7 +51,10 @@ namespace hazelcast {
 
             size_t readFrom(const client::Socket &socket, int flag = 0);
 
-            void writeTo(const client::Socket &socket);
+            /**
+            * returns number of bytes that could actually be read
+            */
+            size_t readFrom(const client::Socket &socket, int numBytesToRead, int flag = 0);
 
             int readInt();
 
@@ -60,16 +64,18 @@ namespace hazelcast {
 
             void writeShort(short v);
 
-            size_t writeTo(std::vector<byte> &destination, size_t offset, size_t len);
-
-            size_t readFrom(std::vector<byte> const &source, size_t offset, size_t len);
-
             byte readByte();
 
+            /**
+            * returns the number of bytes put into target which shall be less or equal to len
+            * @param len: requested maximum size to to read
+            */
+            size_t readBytes(byte *target, size_t len);
+
             void writeByte(char c);
-        private:
 
             void *ix() const;
+        private:
 
             void safeIncrementPosition(size_t );
 

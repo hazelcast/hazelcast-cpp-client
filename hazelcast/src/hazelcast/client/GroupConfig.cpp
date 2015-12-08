@@ -23,7 +23,7 @@ namespace hazelcast {
 
         }
 
-        GroupConfig::GroupConfig(const std::string& name, const std::string& password)
+        GroupConfig::GroupConfig(const std::string &name, const std::string &password)
         : name(name)
         , password(password) {
         }
@@ -32,12 +32,12 @@ namespace hazelcast {
             return name;
         }
 
-        GroupConfig& GroupConfig::setName(const std::string& name) {
+        GroupConfig &GroupConfig::setName(const std::string &name) {
             this->name = name;
             return (*this);
         }
 
-        GroupConfig& GroupConfig::setPassword(const std::string& password) {
+        GroupConfig &GroupConfig::setPassword(const std::string &password) {
             this->password = password;
             return (*this);
         }

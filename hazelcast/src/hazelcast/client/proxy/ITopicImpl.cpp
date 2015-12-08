@@ -18,34 +18,43 @@
 //
 
 #include "hazelcast/client/proxy/ITopicImpl.h"
-#include "hazelcast/client/topic/PublishRequest.h"
-#include "hazelcast/client/topic/AddMessageListenerRequest.h"
-#include "hazelcast/client/topic/RemoveMessageListenerRequest.h"
+
 #include "hazelcast/client/topic/TopicEventHandler.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+
+// Includes for parameters classes
+#include "hazelcast/client/protocol/codec/TopicPublishCodec.h"
+#include "hazelcast/client/protocol/codec/TopicAddMessageListenerCodec.h"
+#include "hazelcast/client/protocol/codec/TopicRemoveMessageListenerCodec.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            ITopicImpl::ITopicImpl(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::ProxyImpl("hz:impl:topicService", instanceName, context) {
+            ITopicImpl::ITopicImpl(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::ProxyImpl("hz:impl:topicService", instanceName, context) {
                 partitionId = getPartitionId(toData(instanceName));
             }
 
-            void ITopicImpl::publish(const serialization::pimpl::Data& data) {
-                topic::PublishRequest *request = new topic::PublishRequest(getName(), data);
+            void ITopicImpl::publish(const serialization::pimpl::Data &data) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TopicPublishCodec::RequestParameters::encode(getName(), data);
+
                 invoke(request, partitionId);
             }
 
 
             std::string ITopicImpl::addMessageListener(impl::BaseEventHandler *topicEventHandler) {
-                topic::AddMessageListenerRequest *request = new topic::AddMessageListenerRequest(getName());
-                return listen(request, partitionId, topicEventHandler);
+                std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec =
+                        std::auto_ptr<protocol::codec::IAddListenerCodec>(
+                                new protocol::codec::TopicAddMessageListenerCodec(getName(), false));
+
+                return registerListener(addCodec, topicEventHandler);
             }
 
-            bool ITopicImpl::removeMessageListener(const std::string& registrationId) {
-                topic::RemoveMessageListenerRequest *request = new topic::RemoveMessageListenerRequest(getName(), registrationId);
-                return stopListening(request, registrationId);
+            bool ITopicImpl::removeMessageListener(const std::string &registrationId) {
+                protocol::codec::TopicRemoveMessageListenerCodec removeCodec(getName(), registrationId);
+
+                return context->getServerListenerService().deRegisterListener(removeCodec);
             }
         }
     }

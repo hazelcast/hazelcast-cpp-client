@@ -17,15 +17,14 @@
 // Created by sancar koyunlu on 12/11/13.
 
 
-
+#include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/TransactionalObject.h"
-#include "hazelcast/client/impl/ClientDestroyRequest.h"
-#include "hazelcast/client/txn/BaseTxnRequest.h"
-#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
+            #define MILLISECONDS_IN_A_SECOND 1000
+
             TransactionalObject::TransactionalObject(const std::string& serviceName, const std::string& objectName, txn::TransactionProxy *context)
             : serviceName(serviceName), name(objectName), context(context) {
 
@@ -45,7 +44,10 @@ namespace hazelcast {
 
             void TransactionalObject::destroy() {
                 onDestroy();
-                impl::ClientDestroyRequest *request = new impl::ClientDestroyRequest(name, serviceName);
+
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::RequestParameters::encode(
+                        name, serviceName);
+
                 spi::InvocationService& invocationService = context->getInvocationService();
                 invocationService.invokeOnConnection(request, context->getConnection());
             }
@@ -54,11 +56,21 @@ namespace hazelcast {
 
             }
 
-            serialization::pimpl::Data TransactionalObject::invoke(txn::BaseTxnRequest *request) {
-                request->setTxnId(context->getTxnId());
-                request->setThreadId(util::getThreadId());
-                spi::InvocationService& invocationService = context->getInvocationService();
-                connection::CallFuture future = invocationService.invokeOnConnection(request, context->getConnection());
+            std::string TransactionalObject::getTransactionId() const {
+                return context->getTxnId();
+            }
+
+
+            int TransactionalObject::getTimeoutInMilliseconds() const {
+                return context->getTimeoutSeconds() * MILLISECONDS_IN_A_SECOND;
+            }
+
+            std::auto_ptr<protocol::ClientMessage> TransactionalObject::invoke(
+                    std::auto_ptr<protocol::ClientMessage> request) {
+
+                connection::CallFuture future = context->getInvocationService().invokeOnConnection(
+                        request, context->getConnection());
+
                 return future.get();
             }
         }

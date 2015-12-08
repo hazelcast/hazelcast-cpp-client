@@ -48,7 +48,7 @@ namespace hazelcast {
 
             if (!lifecycleService.start()) {
                 lifecycleService.shutdown();
-                throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not started!");
+                throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
             }
             loadBalancer->init(cluster);
         }

@@ -22,7 +22,7 @@
 namespace hazelcast {
     namespace client {
 
-        MapEvent::MapEvent(Member& member, EntryEventType eventType, const std::string& name, int numberOfEntriesAffected)
+        MapEvent::MapEvent(const Member& member, EntryEventType eventType, const std::string& name, int numberOfEntriesAffected)
         : member(member)
         , eventType(eventType)
         , name(name)
