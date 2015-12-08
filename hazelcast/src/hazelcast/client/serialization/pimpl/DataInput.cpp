@@ -16,16 +16,15 @@
 //
 // Created by sancar koyunlu on 8/7/13.
 
-
-
 #include <string.h>
-#include <stdio.h>
 #include <memory>
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/exception/UTFDataFormatException.h"
 
 namespace hazelcast {
     namespace client {
@@ -195,23 +194,18 @@ namespace hazelcast {
                     return readArray<short>();
                 }
 
-                std::auto_ptr<common::containers::ManagedPointerVector<std::string> > DataInput::readUTFArray() {
+                std::auto_ptr<std::vector<std::string> > DataInput::readUTFArray() {
                     int len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
-                        return std::auto_ptr<common::containers::ManagedPointerVector<std::string> > (NULL);
+                        return std::auto_ptr<std::vector<std::string> > (NULL);
                     }
 
-                    if (len > 0) {
-                        std::auto_ptr<common::containers::ManagedPointerVector<std::string> > values(
-                                new common::containers::ManagedPointerVector<std::string>((size_t)len));
-                        for (int i = 0; i < len; ++i) {
-                            values->push_back(readUTF().release());
-                        }
-                        return values;
+                    std::auto_ptr<std::vector<std::string> > values(
+                            new std::vector<std::string>());
+                    for (int i = 0; i < len; ++i) {
+                        values->push_back(*readUTF());
                     }
-
-                    return std::auto_ptr<common::containers::ManagedPointerVector<std::string> >(
-                            new common::containers::ManagedPointerVector<std::string>(0));
+                    return values;
                 }
 
                 void DataInput::checkAvailable(size_t requestedLength) {
@@ -219,7 +213,7 @@ namespace hazelcast {
 
                     if (requestedLength > available) {
                         char msg[100];
-                        sprintf(msg, "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes", (unsigned long)available, (unsigned long)requestedLength);
+                        util::snprintf(msg, 100, "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes", (unsigned long)available, (unsigned long)requestedLength);
                         throw exception::IOException("DataInput::checkBoundary", msg);
                     }
                 }

@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 23/07/14.
 //
-
-
 #ifndef HAZELCAST_IllegalArgumentException
 #define HAZELCAST_IllegalArgumentException
 

@@ -20,6 +20,7 @@
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include <stdexcept>
+#include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,7 +52,8 @@ namespace hazelcast {
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
                 spi::ClusterService& cs = context->getClusterService();
                 serialization::pimpl::SerializationService& ss = context->getSerializationService();
-                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), cs, ss, listener, includeValue);
+                impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
+                        new impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(getName(), cs, ss, listener, includeValue);
                 return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
             }
 

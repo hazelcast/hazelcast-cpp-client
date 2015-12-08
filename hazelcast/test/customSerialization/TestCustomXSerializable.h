@@ -22,11 +22,12 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
+#include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class TestCustomXSerializable {
+            class TestCustomXSerializable : public serialization::SerializerBase {
             public:
                 TestCustomXSerializable();
 
@@ -41,7 +42,7 @@ namespace hazelcast {
                 int id;
             };
 
-            class TestCustomPerson {
+            class TestCustomPerson : public serialization::SerializerBase {
             public:
                 TestCustomPerson();
 

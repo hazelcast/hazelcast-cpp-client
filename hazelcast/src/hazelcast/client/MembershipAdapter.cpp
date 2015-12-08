@@ -18,7 +18,6 @@
 //
 
 #include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/MembershipAdapter.h"
 
 namespace hazelcast {

@@ -17,58 +17,86 @@
 // Created by sancar koyunlu on 01/10/14.
 //
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/TransactionalMultiMapImpl.h"
-#include "hazelcast/client/multimap/TxnMultiMapPutRequest.h"
-#include "hazelcast/client/multimap/TxnMultiMapGetRequest.h"
-#include "hazelcast/client/impl/PortableCollection.h"
-#include "hazelcast/client/multimap/TxnMultiMapRemoveRequest.h"
-#include "hazelcast/client/multimap/TxnMultiMapValueCountRequest.h"
-#include "hazelcast/client/multimap/TxnMultiMapSizeRequest.h"
+
+// Includes for parameters classes
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapPutCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapGetCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveEntryCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapValueCountCodec.h"
+#include "hazelcast/client/protocol/codec/TransactionalMultiMapSizeCodec.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
 
-            TransactionalMultiMapImpl::TransactionalMultiMapImpl(const std::string& name, txn::TransactionProxy *transactionProxy)
-            : TransactionalObject("hz:impl:multiMapService", name, transactionProxy) {
+            TransactionalMultiMapImpl::TransactionalMultiMapImpl(const std::string &name,
+                                                                 txn::TransactionProxy *transactionProxy)
+                    : TransactionalObject("hz:impl:multiMapService", name, transactionProxy) {
 
             }
 
-            bool TransactionalMultiMapImpl::put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
-                multimap::TxnMultiMapPutRequest *request = new multimap::TxnMultiMapPutRequest(getName(), key, value);
-                boost::shared_ptr<bool> result = toObject<bool>(invoke(request));
-                return *result;
+            bool TransactionalMultiMapImpl::put(const serialization::pimpl::Data &key,
+                                                const serialization::pimpl::Data &value) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapPutCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), key, value);
+
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMultiMapPutCodec::ResponseParameters>(
+                        request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::get(const serialization::pimpl::Data& key) {
+            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::get(
+                    const serialization::pimpl::Data &key) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapGetCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), key);
 
-                multimap::TxnMultiMapGetRequest *request = new multimap::TxnMultiMapGetRequest(getName(), key);
-                boost::shared_ptr<impl::PortableCollection> portableCollection = toObject<impl::PortableCollection>(invoke(request));
-                return portableCollection->getCollection();
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMultiMapGetCodec::ResponseParameters>(
+                        request);
+
             }
 
-            bool TransactionalMultiMapImpl::remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
-                multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), key, value);
-                boost::shared_ptr<bool> result = toObject<bool>(invoke(request));
-                return *result;
+            bool TransactionalMultiMapImpl::remove(const serialization::pimpl::Data &key,
+                                                   const serialization::pimpl::Data &value) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapRemoveEntryCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), key, value);
+
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMultiMapRemoveEntryCodec::ResponseParameters>(
+                        request);
+
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::remove(const serialization::pimpl::Data& key) {
-                multimap::TxnMultiMapRemoveRequest *request = new multimap::TxnMultiMapRemoveRequest(getName(), key);
-                boost::shared_ptr<impl::PortableCollection> portableCollection = toObject<impl::PortableCollection>(invoke(request));
-                return portableCollection->getCollection();
+            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::remove(
+                    const serialization::pimpl::Data &key) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapRemoveCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), key);
+
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMultiMapRemoveCodec::ResponseParameters>(
+                        request);
+
             }
 
-            int TransactionalMultiMapImpl::valueCount(const serialization::pimpl::Data& key) {
-                multimap::TxnMultiMapValueCountRequest *request = new multimap::TxnMultiMapValueCountRequest(getName(), key);
-                boost::shared_ptr<int> result = toObject<int>(invoke(request));
-                return *result;
+            int TransactionalMultiMapImpl::valueCount(const serialization::pimpl::Data &key) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapValueCountCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId(), key);
+
+                return invokeAndGetResult<int, protocol::codec::TransactionalMultiMapValueCountCodec::ResponseParameters>(
+                        request);
             }
 
             int TransactionalMultiMapImpl::size() {
-                multimap::TxnMultiMapSizeRequest *request = new multimap::TxnMultiMapSizeRequest(getName());
-                boost::shared_ptr<int> result = toObject<int>(invoke(request));
-                return *result;
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMultiMapSizeCodec::RequestParameters::encode(
+                                getName(), getTransactionId(), util::getThreadId());
+
+                return invokeAndGetResult<int, protocol::codec::TransactionalMultiMapSizeCodec::ResponseParameters>(
+                        request);
             }
 
         }

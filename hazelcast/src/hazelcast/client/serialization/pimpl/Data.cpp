@@ -25,8 +25,8 @@
 #include "hazelcast/util/MurmurHash3.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Bits.h"
+#include "hazelcast/util/Util.h"
 
-#include <stdio.h>
 #include <algorithm>
 
 
@@ -36,24 +36,24 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+                //first 4 byte is partition hash code and next last 4 byte is type id
+                unsigned int Data::PARTITION_HASH_OFFSET = 0;
 
-                // type and partition_hash are always written with BIG_ENDIAN byte-order
-                unsigned int Data::TYPE_OFFSET = 0;
+                unsigned int Data::TYPE_OFFSET = Data::PARTITION_HASH_OFFSET + Bits::INT_SIZE_IN_BYTES;
 
-                unsigned int Data::DATA_OFFSET = Bits::INT_SIZE_IN_BYTES;
+                unsigned int Data::DATA_OFFSET = Data::TYPE_OFFSET + Bits::INT_SIZE_IN_BYTES;
 
-                //first 4 byte is type id + last 4 byte is partition hash code
-                unsigned int Data::DATA_OVERHEAD = DATA_OFFSET + Bits::INT_SIZE_IN_BYTES;
+                unsigned int Data::DATA_OVERHEAD = Data::DATA_OFFSET;
 
                 Data::Data()
                 : data(NULL){
                 }
 
                 Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer) {
-                    if (data.get() != 0 && data->size() > 0 && data->size() < DATA_OVERHEAD) {
+                    if (data.get() != 0 && data->size() > 0 && data->size() < Data::DATA_OVERHEAD) {
                         char msg[100];
-                        sprintf(msg, "Provided buffer should be either empty or "
-                                "should contain more than %u bytes! Provided buffer size:%lu", DATA_OVERHEAD, (unsigned long)data->size());
+                        util::snprintf(msg, 100, "Provided buffer should be either empty or "
+                                "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD, (unsigned long)data->size());
                         throw exception::IllegalArgumentException("Data::setBuffer", msg);
                     }
                 }
@@ -70,7 +70,7 @@ namespace hazelcast {
 
 
                 size_t Data::dataSize() const {
-                    return (size_t)std::max<int>((int)totalSize() - (int)DATA_OVERHEAD, 0);
+                    return (size_t)std::max<int>((int)totalSize() - (int)Data::DATA_OVERHEAD, 0);
                 }
 
                 size_t Data::totalSize() const {
@@ -79,15 +79,15 @@ namespace hazelcast {
 
                 int Data::getPartitionHash() const {
                     if (hasPartitionHash()) {
-                        return Bits::readIntB(*data, data->size() - Bits::INT_SIZE_IN_BYTES);
+                        return Bits::readIntB(*data, Data::PARTITION_HASH_OFFSET);
                     }
                     return hashCode();
                 }
 
                 bool Data::hasPartitionHash() const {
                     size_t length = data->size();
-                    return data.get() != NULL && length >= DATA_OVERHEAD &&
-                            *reinterpret_cast<int *>(&((*data)[length - Bits::INT_SIZE_IN_BYTES])) != 0;
+                    return data.get() != NULL && length >= Data::DATA_OVERHEAD &&
+                            *reinterpret_cast<int *>(&((*data)[PARTITION_HASH_OFFSET])) != 0;
                 }
 
                 std::vector<byte>  &Data::toByteArray() const {
@@ -98,11 +98,11 @@ namespace hazelcast {
                     if (totalSize() == 0) {
                         return SerializationConstants::CONSTANT_TYPE_NULL;
                     }
-                    return Bits::readIntB(*data, TYPE_OFFSET);
+                    return Bits::readIntB(*data, Data::TYPE_OFFSET);
                 }
 
                 int Data::hashCode() const {
-                    return MurmurHash3_x86_32((void*)&((*data)[DATA_OFFSET]) , (int)dataSize());
+                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
                 }
 
             }

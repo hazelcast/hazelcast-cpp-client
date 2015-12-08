@@ -19,6 +19,8 @@ import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.map.EntryBackupProcessor;
+import com.hazelcast.map.EntryProcessor;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
@@ -165,6 +167,42 @@ class SampleCallableTask implements IdentifiedDataSerializable, Callable {
     }
 }
 
+class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Integer, Employee> {
+    private int multiplier;
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 3;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out)
+            throws IOException {
+        out.writeInt(multiplier);
+    }
+
+    @Override
+    public void readData(ObjectDataInput in)
+            throws IOException {
+        multiplier = in.readInt();
+    }
+
+    @Override
+    public Object process(Map.Entry<Integer, Employee> entry) {
+        return multiplier * entry.getKey();
+    }
+
+    @Override
+    public EntryBackupProcessor<Integer, Employee> getBackupProcessor() {
+        return null;
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -228,12 +266,16 @@ public class CppClientListener {
         });
         config.getSerializationConfig().addDataSerializableFactory(666, new DataSerializableFactory() {
             public IdentifiedDataSerializable create(int typeId) {
-                if (typeId == 1) {
-                    return new SampleFailingTask();
-                } else if (typeId == 2) {
-                    return new SampleCallableTask();
+                switch(typeId) {
+                    case 1:
+                        return new SampleFailingTask();
+                    case 2:
+                        return new SampleCallableTask();
+                    case 3:
+                        return new KeyMultiplier();
+                    default:
+                        return null;
                 }
-                return null;
             }
         });
 
@@ -248,13 +290,15 @@ public class CppClientListener {
 
             }
 
-            public void write(ObjectDataOutput out, Person object) throws IOException {
+            public void write(ObjectDataOutput out, Person object)
+                    throws IOException {
                 out.writeInt(999);
                 out.writeUTF(object.getName());
                 out.writeInt(999);
             }
 
-            public Person read(ObjectDataInput in) throws IOException {
+            public Person read(ObjectDataInput in)
+                    throws IOException {
                 if (in.readInt() != 999) {
                     throw new IOException(" wrong value is read expected 999 ");
                 }

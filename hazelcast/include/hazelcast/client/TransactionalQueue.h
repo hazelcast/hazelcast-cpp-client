@@ -53,7 +53,7 @@ namespace hazelcast {
             * @see IQueue::offer(const E &e, long timeoutInMillis)
             */
             bool offer(const E& e, long timeoutInMillis) {
-                return proxy::TransactionalQueueImpl::offer(toData(e), timeoutInMillis);
+                return proxy::TransactionalQueueImpl::offer(toData(&e), timeoutInMillis);
             }
 
             /**

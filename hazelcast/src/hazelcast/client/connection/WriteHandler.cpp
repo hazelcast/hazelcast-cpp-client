@@ -22,29 +22,19 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/serialization/pimpl/Packet.h"
+
 //#define BOOST_THREAD_PROVIDES_FUTURE
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize)
-            : IOHandler(connection, oListener)
-            , buffer(new char[bufferSize])
-            , byteBuffer(buffer, bufferSize)
-            , lastData(NULL)
-            , ready(false)
-            , informSelector(true)
-            {
+                    : IOHandler(connection, oListener), ready(false), informSelector(true), lastMessage(NULL) {
             }
 
 
             WriteHandler::~WriteHandler() {
-                serialization::pimpl::Packet *packet;
-                while ((packet = writeQueue.poll()) != NULL) {
-                    delete packet;
-                }
-                delete [] buffer;
+                // no need to delete the messages since they are owned by their associated future objects
             }
 
             void WriteHandler::run() {
@@ -57,8 +47,9 @@ namespace hazelcast {
                 ready = false;
             }
 
-            void WriteHandler::enqueueData(serialization::pimpl::Packet *packet) {
-                writeQueue.offer(packet);
+            // TODO: Add a fragmentation layer here before putting the message into the write queue
+            void WriteHandler::enqueueData(protocol::ClientMessage *message) {
+                writeQueue.offer(message);
                 if (informSelector.compareAndSet(true, false)) {
                     ioSelector.addTask(this);
                     ioSelector.wakeUp();
@@ -70,43 +61,43 @@ namespace hazelcast {
                     return;
                 }
 
-                if (lastData == NULL) {
-                    lastData = writeQueue.poll();
-                    if (lastData == NULL && byteBuffer.position() == 0) {
+                if (lastMessage == NULL) {
+                    lastMessage = writeQueue.poll();
+                    if (lastMessage == NULL) {
                         ready = true;
                         return;
                     }
-                }
-                while (byteBuffer.hasRemaining() && lastData != NULL) {
-                    bool complete = lastData->writeTo(byteBuffer);
-                    if (complete) {
-                        delete lastData;
-                        lastData = NULL;
-                        lastData = writeQueue.poll();
-                    } else {
-                        break;
+
+                    if (NULL != lastMessage) {
+                        numBytesWrittenToSocketForMessage = 0;
+                        lastMessageFrameLen = lastMessage->getFrameLength();
                     }
                 }
 
-                if (byteBuffer.position() > 0) {
-                    byteBuffer.flip();
+                while (NULL != lastMessage) {
                     try {
-                        byteBuffer.writeTo(connection.getSocket());
+                        numBytesWrittenToSocketForMessage += lastMessage->writeTo(connection.getSocket(),
+                                                               numBytesWrittenToSocketForMessage, lastMessageFrameLen);
+
+                        if (numBytesWrittenToSocketForMessage >= lastMessageFrameLen) {
+                            // Not deleting message since its memory management is at the future object
+                            lastMessage = writeQueue.poll();
+                            if (NULL != lastMessage) {
+                                numBytesWrittenToSocketForMessage = 0;
+                                lastMessageFrameLen = lastMessage->getFrameLength();
+                            }
+                        } else {
+                            // Message could not be sent completely, just continue with another connection
+                            break;
+                        }
                     } catch (exception::IOException &e) {
-                        delete lastData;
-                        lastData = NULL;
                         handleSocketException(e.what());
                         return;
                     }
-                    if (byteBuffer.hasRemaining()) {
-                        byteBuffer.compact();
-                    } else {
-                        byteBuffer.clear();
-                    }
                 }
+
                 ready = false;
                 registerHandler();
-
             }
         }
     }

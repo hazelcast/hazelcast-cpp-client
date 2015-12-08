@@ -21,6 +21,8 @@
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/proxy/IListImpl.h"
+#include "hazelcast/client/protocol/codec/ListAddListenerCodec.h"
+
 #include <stdexcept>
 
 
@@ -48,8 +50,11 @@ namespace hazelcast {
             *  @param includeValue bool value representing value should be included in ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                impl::ItemEventHandler<E> *entryEventHandler = new impl::ItemEventHandler<E>(getName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+            std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
+                impl::ItemEventHandler<E, protocol::codec::ListAddListenerCodec::AbstractEventHandler> *entryEventHandler =
+                        new impl::ItemEventHandler<E, protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
+                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                includeValue);
                 return proxy::IListImpl::addItemListener(entryEventHandler, includeValue);
             }
 
@@ -61,7 +66,7 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-            bool removeItemListener(const std::string& registrationId) {
+            bool removeItemListener(const std::string &registrationId) {
                 return proxy::IListImpl::removeItemListener(registrationId);
             }
 
@@ -87,7 +92,7 @@ namespace hazelcast {
             * @returns true if list contains element
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool contains(const E& element) {
+            bool contains(const E &element) {
                 return proxy::IListImpl::contains(toData(element));
             }
 
@@ -105,7 +110,7 @@ namespace hazelcast {
             * @return true if element is added successfully.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool add(const E& element) {
+            bool add(const E &element) {
                 return proxy::IListImpl::add(toData(element));
             }
 
@@ -115,7 +120,7 @@ namespace hazelcast {
             * @return true if element is removed successfully.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool remove(const E& element) {
+            bool remove(const E &element) {
                 return proxy::IListImpl::remove(toData(element));
             }
 
@@ -125,7 +130,7 @@ namespace hazelcast {
             * @return true if this list contains all elements given in vector.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool containsAll(const std::vector<E>& elements) {
+            bool containsAll(const std::vector<E> &elements) {
                 return proxy::IListImpl::containsAll(toDataCollection(elements));
             }
 
@@ -135,7 +140,7 @@ namespace hazelcast {
             * @return true if all elements given in vector can be added to list.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool addAll(const std::vector<E>& elements) {
+            bool addAll(const std::vector<E> &elements) {
                 return proxy::IListImpl::addAll(toDataCollection(elements));
             }
 
@@ -150,7 +155,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            bool addAll(int index, const std::vector<E>& elements) {
+            bool addAll(int index, const std::vector<E> &elements) {
                 return proxy::IListImpl::addAll(index, toDataCollection(elements));
             }
 
@@ -160,7 +165,7 @@ namespace hazelcast {
             * @return true if all elements are removed successfully.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool removeAll(const std::vector<E>& elements) {
+            bool removeAll(const std::vector<E> &elements) {
                 return proxy::IListImpl::removeAll(toDataCollection(elements));
             }
 
@@ -171,7 +176,7 @@ namespace hazelcast {
             * @return true if operation is successful.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool retainAll(const std::vector<E>& elements) {
+            bool retainAll(const std::vector<E> &elements) {
                 return proxy::IListImpl::retainAll(toDataCollection(elements));
             }
 
@@ -207,7 +212,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            boost::shared_ptr<E> set(int index, const E& element) {
+            boost::shared_ptr<E> set(int index, const E &element) {
                 return toObject<E>(proxy::IListImpl::set(index, toData(element)));
             }
 
@@ -219,7 +224,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            void add(int index, const E& element) {
+            void add(int index, const E &element) {
                 proxy::IListImpl::add(index, toData(element));
             }
 
@@ -241,7 +246,7 @@ namespace hazelcast {
             * Returns -1 if element is not in the list.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            int indexOf(const E& element) {
+            int indexOf(const E &element) {
                 return proxy::IListImpl::indexOf(toData(element));
             }
 
@@ -251,7 +256,7 @@ namespace hazelcast {
             * Returns -1 if element is not in the list.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            int lastIndexOf(const E& element) {
+            int lastIndexOf(const E &element) {
                 return proxy::IListImpl::lastIndexOf(toData(element));
             }
 
@@ -265,8 +270,8 @@ namespace hazelcast {
             }
 
         private:
-            IList(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::IListImpl(instanceName, context) {
+            IList(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::IListImpl(instanceName, context) {
             }
         };
     }

@@ -15,11 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/10/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
 
-
-#include <hazelcast/client/serialization/pimpl/Packet.h>
-#include <hazelcast/client/exception/IllegalArgumentException.h>
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/Socket.h"
 
@@ -28,16 +24,7 @@ namespace hazelcast {
         namespace connection {
 
             InputSocketStream::InputSocketStream(Socket& socket)
-            : socket(socket)
-            , context(NULL) {
-            }
-
-            void InputSocketStream::setPortableContext(serialization::pimpl::PortableContext *context) {
-                this->context = context;
-            }
-
-            void InputSocketStream::readFully(std::vector<byte>& bytes) {
-                socket.receive(&(bytes[0]), bytes.size(), MSG_WAITALL);
+            : socket(socket) {
             }
 
             int InputSocketStream::readInt() {
@@ -62,31 +49,6 @@ namespace hazelcast {
                 byte s;
                 socket.receive(&s, sizeof(byte), MSG_WAITALL);
                 return s;
-            }
-
-
-            void InputSocketStream::readPacket(serialization::pimpl::Packet& packet) {
-                int version = readByte();
-                if(version != serialization::pimpl::Packet::VERSION){
-                    std::stringstream stringstream;
-                    stringstream << "Packet versions are not matching! This -> "
-                    << (int)serialization::pimpl::Packet::VERSION << ", Incoming -> " << version;
-                    throw exception::IllegalArgumentException("Packet::readFrom", stringstream.str());
-                }
-                packet.setHeader(readShort());
-                packet.setPartitionId(readInt());
-
-                readValue(packet.getDataAsModifiable());
-            }
-
-            void InputSocketStream::readValue(serialization::pimpl::Data &data) {
-                size_t size = (size_t)readInt();
-                if (size > 0) {
-                    std::vector<byte> &buffer =  data.toByteArray();
-                    buffer.resize(size);
-                    readFully(buffer);
-                }
-                
             }
 
             bool InputSocketStream::readBoolean() {

@@ -18,6 +18,7 @@
 
 
 
+#include "hazelcast/util/Util.h"
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"

@@ -43,6 +43,8 @@ namespace hazelcast {
                 class HAZELCAST_API Data {
                 public:
                     // type and partition_hash are always written with BIG_ENDIAN byte-order
+                    static unsigned int PARTITION_HASH_OFFSET;
+
                     static unsigned int TYPE_OFFSET;
 
                     static unsigned int DATA_OFFSET;

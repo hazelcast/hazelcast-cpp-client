@@ -20,11 +20,14 @@
 #ifndef HAZELCAST_PARTITION_SERVICE
 #define HAZELCAST_PARTITION_SERVICE
 
+#include "hazelcast/util/ThreadArgs.h"
 #include "hazelcast/client/Address.h"
-#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Mutex.h"
+
+#include <map>
+#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,6 +42,10 @@ namespace hazelcast {
     }
 
     namespace client {
+        namespace protocol {
+            class ClientMessage;
+        }
+
         namespace serialization {
             namespace pimpl {
                 class SerializationService;
@@ -70,6 +77,11 @@ namespace hazelcast {
                  */
                 int getPartitionCount();
 
+                /**
+                 * Refreshes the partition
+                 */
+                void refreshPartitions();
+
             private:
 
                 spi::ClientContext &clientContext;
@@ -80,9 +92,9 @@ namespace hazelcast {
 
                 util::AtomicInt partitionCount;
 
-                util::SynchronizedMap<int, Address> partitions;
+                std::auto_ptr<std::map<int, boost::shared_ptr<Address> > > partitions;
 
-                util::Mutex startLock;
+                util::Mutex lock;
 
                 static void staticRunListener(util::ThreadArgs& args);
 
@@ -90,13 +102,15 @@ namespace hazelcast {
 
                 void runRefresher();
 
-                boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom(const Address &address);
+                std::auto_ptr<protocol::ClientMessage> getPartitionsFrom(const Address &address);
 
-                boost::shared_ptr<impl::PartitionsResponse> getPartitionsFrom();
+                std::auto_ptr<protocol::ClientMessage> getPartitionsFrom();
 
-                void processPartitionResponse(impl::PartitionsResponse &response);
+                bool processPartitionResponse(protocol::ClientMessage &response);
 
                 bool getInitialPartitions();
+
+                static void refreshTask(util::ThreadArgs &args);
             };
         }
     }

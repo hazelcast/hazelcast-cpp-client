@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/21/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 
 
 
@@ -166,6 +166,11 @@ namespace hazelcast {
                     value = current.get() == NULL ? value : current;
                 }
                 return value;
+            }
+
+            size_t size() const {
+                util::LockGuard lg(mapLock);
+                return internalMap.size();
             }
         private:
             std::map<K, boost::shared_ptr<V>, Comparator> internalMap;

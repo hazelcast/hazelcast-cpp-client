@@ -53,7 +53,7 @@ namespace hazelcast {
             * @param message
             */
             void publish(const E& message) {
-                proxy::ITopicImpl::publish(toData(message));
+                proxy::ITopicImpl::publish(toData<E>(message));
             }
 
             /**

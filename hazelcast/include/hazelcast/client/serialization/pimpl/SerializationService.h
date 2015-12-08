@@ -37,7 +37,6 @@
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/common/containers/ManagedPointerVector.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include <boost/shared_ptr.hpp>
@@ -76,24 +75,34 @@ namespace hazelcast {
 
                         ObjectDataOutput dataOutput(output, portableContext);
 
-                        writeObject<T>(dataOutput, object);
-
                         writeHash(output);
+
+                        writeObject<T>(dataOutput, object);
 
                         Data data(output.toByteArray());
                         return data;
                     }
 
                     template<typename T>
+                    inline boost::shared_ptr<T> toObject(const Data *data) {
+                        if (NULL == data) {
+                            return boost::shared_ptr<T>();
+                        }
+                        return toObject<T>(*data);
+                    }
+
+                    template<typename T>
                     inline boost::shared_ptr<T> toObject(const Data &data) {
                         CHECK_NULL(T);
 
-                        DataInput dataInput(data.toByteArray());
+                        DataInput dataInput(data.toByteArray(), Data::TYPE_OFFSET);
 
                         return readObject<T>(dataInput);
                     }
 
                     PortableContext &getPortableContext();
+
+                    const byte getVersion() const;
 
                 private:
                     template <typename T>
@@ -175,7 +184,7 @@ namespace hazelcast {
                 HAZELCAST_API Data SerializationService::toData<std::string>(const std::string  *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<const std::string *> >(const std::vector<const std::string *> *object);
+                HAZELCAST_API Data SerializationService::toData<std::vector<std::string> >(const std::vector<std::string> *object);
 
                 template<>
                 HAZELCAST_API boost::shared_ptr<byte> SerializationService::toObject(const Data &data);
@@ -225,7 +234,7 @@ namespace hazelcast {
                 HAZELCAST_API boost::shared_ptr<std::string> SerializationService::toObject(const Data &data);
 
                 template<>
-                HAZELCAST_API boost::shared_ptr<common::containers::ManagedPointerVector<std::string> > SerializationService::toObject(const Data &data);
+                HAZELCAST_API boost::shared_ptr<std::vector<std::string> > SerializationService::toObject(const Data &data);
             }
         }
     }

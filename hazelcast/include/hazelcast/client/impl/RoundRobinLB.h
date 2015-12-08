@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 5/31/13.
 
-
-
-
 #ifndef HAZELCAST_ROUND_ROBIN_LB
 #define HAZELCAST_ROUND_ROBIN_LB
 

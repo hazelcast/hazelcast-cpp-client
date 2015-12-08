@@ -214,12 +214,12 @@ namespace hazelcast {
                     }
                 }
 
-                void DataOutput::writeUTFArray(const std::vector<const std::string *> *data) {
+                void DataOutput::writeUTFArray(const std::vector<std::string> *data) {
                     int len = (NULL != data) ? (int)data->size() : util::Bits::NULL_ARRAY;
                     writeInt(len);
                     if (len > 0) {
                         for (int i = 0; i < len; ++i) {
-                            writeUTF((*data)[i]);
+                            writeUTF(&((*data)[i]));
                         }
                     }
                 }

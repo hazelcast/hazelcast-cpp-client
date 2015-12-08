@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 02/10/15.
 //
 
+#include "hazelcast/util/Util.h"
 #include "map/ClientExpirationListenerTest.h"
 #include "hazelcast/client/EntryAdapter.h"
 

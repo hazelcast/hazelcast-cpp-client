@@ -75,10 +75,11 @@ namespace hazelcast {
             return bytesReceived;
         }
 
-        void ByteBuffer::writeTo(const client::Socket& socket) {
-            size_t rm = remaining();
-            int bytesSend = socket.send(ix(), (int)rm);
-            safeIncrementPosition((size_t)bytesSend);
+        size_t ByteBuffer::readFrom(client::Socket const &socket, int numBytesToRead, int flag) {
+            size_t calculatedNumber = std::min<size_t>(remaining(), numBytesToRead);
+            size_t bytesReceived = (size_t)socket.receive(ix(), (int)calculatedNumber, flag);
+            safeIncrementPosition(bytesReceived);
+            return bytesReceived;
         }
 
         int ByteBuffer::readInt() {
@@ -112,26 +113,6 @@ namespace hazelcast {
             writeByte(char(v));
         }
 
-        size_t ByteBuffer::writeTo(std::vector<byte>& destination, size_t offset, size_t len) {
-            size_t m = std::min<size_t>(len, remaining());
-            if (destination.size() < offset + m) {
-                // resize the destination vector to the size of the memory needed
-                destination.resize(offset + m);
-            }
-
-            memcpy((void *)(&destination[offset]), ix(), m);
-            safeIncrementPosition(m);
-            return m;
-        }
-
-        size_t ByteBuffer::readFrom(std::vector<byte> const& source, size_t offset, size_t len) {
-            size_t minLen = std::min<size_t>(source.size() - offset, len);
-            size_t m = std::min<size_t>(minLen, remaining());
-            memcpy(ix(), (void *)(&source[offset]), m);
-            safeIncrementPosition(m);
-            return m;
-        }
-
         byte ByteBuffer::readByte() {
             byte b = (byte)buffer[pos];
             safeIncrementPosition(1);
@@ -150,6 +131,13 @@ namespace hazelcast {
         void ByteBuffer::safeIncrementPosition(size_t t) {
             assert(pos + t <= capacity);
             pos += t;
+        }
+
+        size_t ByteBuffer::readBytes(byte *target, size_t len) {
+            size_t numBytesToCopy = std::min<size_t>(capacity - pos, len);
+            memcpy(target, ix(), numBytesToCopy);
+            pos += len;
+            return numBytesToCopy;
         }
     }
 }

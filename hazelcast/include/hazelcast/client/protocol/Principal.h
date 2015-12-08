@@ -15,13 +15,14 @@
  */
 //
 // Created by sancar koyunlu on 5/20/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 #ifndef HAZELCAST_PRINCIPAL
 #define HAZELCAST_PRINCIPAL
 
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
-#include "hazelcast/client/serialization/Portable.h"
 #include <string>
+#include <memory>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,18 +32,13 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class HAZELCAST_API Principal : public serialization::Portable {
+            class HAZELCAST_API Principal {
             public:
-                Principal();
+                Principal(std::auto_ptr<std::string> id, std::auto_ptr<std::string> owner);
 
-                int getFactoryId() const;
+                const std::string *getUuid() const;
 
-                int getClassId() const;
-
-                void writePortable(serialization::PortableWriter &writer) const;
-
-                void readPortable(serialization::PortableReader& reader);
-
+                const std::string *getOwnerUuid() const;
             private:
                 std::auto_ptr<std::string> uuid;
                 std::auto_ptr<std::string> ownerUuid;

@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/2/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 //
 // To change the template use AppCode | Preferences | File Templates.
 //

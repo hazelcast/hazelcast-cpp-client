@@ -20,6 +20,7 @@
 #include "map/ClientMapTest.h"
 #include "map/ClientExpirationListenerTest.h"
 #include "serialization/ClientSerializationTest.h"
+#include "protocol/ClientMessageTest.h"
 #include "list/ClientListTest.h"
 #include "set/ClientSetTest.h"
 #include "atomiclong/IAtomicLongTest.h"
@@ -38,6 +39,7 @@
 #include "cluster/MemberAttributeTest.h"
 #include "issues/IssueTest.h"
 #include "util/ClientUtilTest.h"
+#include "util/BitsTest.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -53,6 +55,8 @@ int unitTests(const char* address) {
     try {
         RUN_TEST_NO_ARGS(ClientUtilTest);
         RUN_TEST_NO_ARGS(ClientSerializationTest);
+        RUN_TEST_NO_ARGS(util::BitsTest);
+        RUN_TEST_NO_ARGS(test::protocol::ClientMessageTest);
         HazelcastServerFactory factory(address);
         RUN_TEST(ClientMapTest, factory);
         RUN_TEST(ClientExpirationListenerTest, factory);

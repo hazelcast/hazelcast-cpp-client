@@ -88,6 +88,14 @@ then
     exit 1
 fi
 
+# Test if the release script is still working
+./releaseLinux.sh
+if [ $? -ne 0 ]
+then
+    echo "******  Test FAILED. The release script failed!!!"
+    exit 1
+fi
+
 echo "All tests PASSED"
 
 exit 0

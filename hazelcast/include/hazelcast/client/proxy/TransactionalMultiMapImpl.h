@@ -25,6 +25,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
         namespace proxy {
             class HAZELCAST_API TransactionalMultiMapImpl : public TransactionalObject {
             protected:

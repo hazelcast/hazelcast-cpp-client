@@ -17,12 +17,10 @@
 // Created by sancar koyunlu on 20/02/14.
 //
 
-
 #ifndef HAZELCAST_DataEntryView
 #define HAZELCAST_DataEntryView
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,15 +30,40 @@
 namespace hazelcast {
     namespace client {
         namespace map {
-            class HAZELCAST_API DataEntryView : public impl::IdentifiedDataSerializableResponse {
+            class HAZELCAST_API DataEntryView {
+
+
             public:
+                DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long cost,
+                              long creationTime, long expirationTime, long hits, long lastAccessTime,
+                              long lastStoredTime, long lastUpdateTime, long version, long evictionCriteriaNumber,
+                              long ttl);
 
-                int getFactoryId() const;
+                const serialization::pimpl::Data &getKey() const;
 
-                int getClassId() const;
+                const serialization::pimpl::Data &getValue() const;
 
-                void readData(serialization::ObjectDataInput &in);
+                long getCost() const;
 
+                long getCreationTime() const;
+
+                long getExpirationTime() const;
+
+                long getHits() const;
+
+                long getLastAccessTime() const;
+
+                long getLastStoredTime() const;
+
+                long getLastUpdateTime() const;
+
+                long getVersion() const;
+
+                long getEvictionCriteriaNumber() const;
+
+                long getTtl() const;
+
+            private:
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
                 long cost;
@@ -51,6 +74,8 @@ namespace hazelcast {
                 long lastStoredTime;
                 long lastUpdateTime;
                 long version;
+                long evictionCriteriaNumber;
+                long ttl;
             };
         }
     }

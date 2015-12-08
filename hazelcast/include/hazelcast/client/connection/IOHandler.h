@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 28/12/13.
 //
 
-
 #ifndef HAZELCAST_IOHandler
 #define HAZELCAST_IOHandler
 
@@ -52,7 +51,6 @@ namespace hazelcast {
                 void registerHandler();
 
                 void handleSocketException(const std::string& message);
-
             };
         }
     }

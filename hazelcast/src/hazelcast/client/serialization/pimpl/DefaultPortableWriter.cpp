@@ -158,7 +158,8 @@ namespace hazelcast {
                         error << "HazelcastSerializationException( Invalid field name: '" << fieldName;
                         error << "' for ClassDefinition {class id: " << util::IOUtil::to_string(cd->getClassId());
                         error << ", factoryId:" + util::IOUtil::to_string(cd->getFactoryId());
-                        error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}";
+                        error << ", version: " << util::IOUtil::to_string(cd->getVersion()) << "}. Error:";
+						error << iae.what();
 
                         throw exception::HazelcastSerializationException("PortableWriter::setPosition", error.str());
                     }

@@ -18,6 +18,7 @@
 
 
 
+#include "hazelcast/client/query/SqlPredicate.h"
 #include "ClientTxnMapTest.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -156,10 +157,12 @@ namespace hazelcast {
 
                 assertEqual(2, (int)txMap.size());
                 assertEqual(2, (int)txMap.keySet().size());
-                assertEqual(0, (int)txMap.keySet("a = 10").size());
-                assertEqual(0, (int)txMap.values("a = 10").size());
-                assertEqual(2, (int)txMap.keySet("a >= 10").size());
-                assertEqual(2, (int)txMap.values("a >= 10").size());
+                query::SqlPredicate predicate("a = 10");
+                assertEqual(0, (int)txMap.keySet(&predicate).size());
+                assertEqual(0, (int)txMap.values(&predicate).size());
+                predicate.setSql("a >= 10");
+                assertEqual(2, (int)txMap.keySet(&predicate).size());
+                assertEqual(2, (int)txMap.values(&predicate).size());
 
                 context.commitTransaction();
 

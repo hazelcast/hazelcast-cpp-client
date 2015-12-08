@@ -25,27 +25,24 @@
 
 namespace hazelcast {
     namespace client {
-        DistributedObject::DistributedObject(const std::string& serviceName, const std::string& objectName)
-        : name(objectName), serviceName(serviceName) {
-
+        DistributedObject::DistributedObject(const std::string &serviceName, const std::string &objectName)
+                : info(serviceName, objectName) {
         }
 
         DistributedObject::~DistributedObject() {
-
         }
 
-        const std::string& DistributedObject::getServiceName() const {
-            return serviceName;
+        const std::string &DistributedObject::getServiceName() const {
+            return info.getServiceName();
         }
 
 
-        const std::string& DistributedObject::getName() const {
-            return name;
+        const std::string &DistributedObject::getName() const {
+            return info.getName();
         }
 
 
         void DistributedObject::onDestroy() {
-
         }
     }
 }

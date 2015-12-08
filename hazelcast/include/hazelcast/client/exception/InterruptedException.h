@@ -16,7 +16,6 @@
 //
 // Created by sancar koyunlu on 7/11/13.
 
-
 #ifndef HAZELCAST_InterruptedException
 #define HAZELCAST_InterruptedException
 

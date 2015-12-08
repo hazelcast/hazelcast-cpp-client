@@ -19,36 +19,34 @@
 
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/impl/ClientRequest.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/connection/CallPromise.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             CallPromise::CallPromise()
-            : future(new util::Future<serialization::pimpl::Data>)
-            , resendCount(0) {
+            : resendCount(0) {
             }
 
-            void CallPromise::setResponse(const serialization::pimpl::Data &data) {
-                this->future->set_value(data);
+            void CallPromise::setResponse(std::auto_ptr<protocol::ClientMessage> message) {
+                this->future.set_value(message);
             }
 
             void CallPromise::setException(const std::string &exceptionName, const std::string &exceptionDetails) {
-                future->set_exception(exceptionName, exceptionDetails);
+                future.set_exception(exceptionName, exceptionDetails);
             }
 
-            void CallPromise::setRequest(std::auto_ptr<const impl::ClientRequest> request) {
+            void CallPromise::setRequest(std::auto_ptr<protocol::ClientMessage> request) {
                 this->request = request;
             }
 
-            const impl::ClientRequest&CallPromise::getRequest() const {
-                return *request;
+            protocol::ClientMessage *CallPromise::getRequest() const {
+                return request.get();
             }
 
-            boost::shared_ptr< util::Future<serialization::pimpl::Data> >  CallPromise::getFuture() {
+            util::Future<std::auto_ptr<protocol::ClientMessage> >  &CallPromise::getFuture() {
                 return future;
             }
 

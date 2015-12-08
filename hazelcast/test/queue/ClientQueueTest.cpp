@@ -18,6 +18,7 @@
 
 
 
+#include "hazelcast/util/Util.h"
 #include "queue/ClientQueueTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ItemListener.h"

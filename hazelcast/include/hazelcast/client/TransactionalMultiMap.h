@@ -44,7 +44,7 @@ namespace hazelcast {
             * @see Multimap#put(key , value)
             */
             bool put(const K& key, const V& value) {
-                return proxy::TransactionalMultiMapImpl::put(toData(key), toData(value));
+                return proxy::TransactionalMultiMapImpl::put(toData(&key), toData(&value));
             };
 
             /**
@@ -53,7 +53,7 @@ namespace hazelcast {
             * @see Multimap#get(key)
             */
             std::vector<V> get(const K& key) {
-                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::get(toData(key)));
+                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::get(toData(&key)));
             };
 
             /**
@@ -62,7 +62,7 @@ namespace hazelcast {
             * @see Multimap#remove(key , value)
             */
             bool remove(const K& key, const V& value) {
-                return proxy::TransactionalMultiMapImpl::remove(toData(key), toData(value));
+                return proxy::TransactionalMultiMapImpl::remove(toData(&key), toData(&value));
             };
 
             /**
@@ -71,7 +71,7 @@ namespace hazelcast {
             * @see Multimap#remove(key)
             */
             std::vector<V> remove(const K& key) {
-                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::remove(toData(key)));
+                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::remove(toData(&key)));
             };
 
 
@@ -81,7 +81,7 @@ namespace hazelcast {
             * @see Multimap#valueCount(key)
             */
             int valueCount(const K& key) {
-                return proxy::TransactionalMultiMapImpl::valueCount(toData(key));
+                return proxy::TransactionalMultiMapImpl::valueCount(toData(&key));
             }
 
             /**

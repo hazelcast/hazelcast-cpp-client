@@ -19,11 +19,8 @@
 #ifndef HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 #define HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 
-#include "hazelcast/client/map/PortableHook.h"
-#include "hazelcast/client/map/DataSerializableHook.h"
 #include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/impl/IdentifiedDataSerializableResponse.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,14 +45,14 @@ namespace hazelcast {
             EntryView(const K &key, const V &value, const map::DataEntryView& rhs)
             : key(key)
             , value(value)
-            , cost (rhs.cost)
-            , creationTime (rhs.creationTime)
-            , expirationTime (rhs.expirationTime)
-            , hits (rhs.hits)
-            , lastAccessTime (rhs.lastAccessTime)
-            , lastStoredTime (rhs.lastStoredTime)
-            , lastUpdateTime (rhs.lastUpdateTime)
-            , version (rhs.version) {
+            , cost (rhs.getCost())
+            , creationTime (rhs.getCreationTime())
+            , expirationTime (rhs.getExpirationTime())
+            , hits (rhs.getHits())
+            , lastAccessTime (rhs.getLastAccessTime())
+            , lastStoredTime (rhs.getLastStoredTime())
+            , lastUpdateTime (rhs.getLastUpdateTime())
+            , version (rhs.getVersion()) {
 
             };
             /**

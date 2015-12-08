@@ -42,7 +42,7 @@ namespace hazelcast {
              * @return true if item is added successfully
              */
             bool add(const E &e) {
-                return proxy::TransactionalListImpl::add(toData(e));
+                return proxy::TransactionalListImpl::add(toData(&e));
             }
 
             /**
@@ -51,7 +51,7 @@ namespace hazelcast {
              * @return true if item is remove successfully
              */
             bool remove(const E &e) {
-                return proxy::TransactionalListImpl::remove(toData(e));
+                return proxy::TransactionalListImpl::remove(toData(&e));
             }
 
             /**

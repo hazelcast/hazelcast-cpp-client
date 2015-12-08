@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-
 #ifndef HAZELCAST_IListener
 #define HAZELCAST_IListener
 

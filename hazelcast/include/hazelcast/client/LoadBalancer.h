@@ -37,7 +37,7 @@ namespace hazelcast {
          * Note Client is smart by default.
          *
          */
-        class LoadBalancer {
+		class HAZELCAST_API LoadBalancer {
         public:
 
             /**

@@ -24,7 +24,7 @@
 #define HAZELCAST_TransactionProxy
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/ClientRequest.h"
+
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -87,7 +87,7 @@ namespace hazelcast {
 
                 TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
 
-                std::string getTxnId() const;
+                const std::string &getTxnId() const;
 
                 TxnState getState() const;
 
@@ -106,7 +106,6 @@ namespace hazelcast {
                 boost::shared_ptr<connection::Connection> getConnection();
 
             private:
-
                 TransactionOptions& options;
                 spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
@@ -119,13 +118,11 @@ namespace hazelcast {
 
                 void onTxnEnd();
 
-                serialization::pimpl::Data invoke(BaseTxnRequest *request);
-
                 void checkThread();
 
                 void checkTimeout();
 
-
+                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
             };
         }
     }

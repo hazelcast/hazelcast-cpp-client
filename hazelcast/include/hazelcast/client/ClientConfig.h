@@ -109,7 +109,7 @@ namespace hazelcast {
             /**
             * Can be used instead of GroupConfig in Hazelcast Extensions.
             */
-            Credentials& getCredentials();
+            const Credentials *getCredentials();
 
             /**
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,

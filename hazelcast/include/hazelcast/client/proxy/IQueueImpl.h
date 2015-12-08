@@ -22,6 +22,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
         namespace proxy {
             class HAZELCAST_API IQueueImpl : public ProxyImpl {
             protected:
@@ -33,7 +38,7 @@ namespace hazelcast {
 
                 bool offer(const serialization::pimpl::Data& element, long timeoutInMillis);
 
-                serialization::pimpl::Data poll(long timeoutInMillis);
+                std::auto_ptr<serialization::pimpl::Data> poll(long timeoutInMillis);
 
                 int remainingCapacity();
 
@@ -43,7 +48,7 @@ namespace hazelcast {
 
                 std::vector<serialization::pimpl::Data>  drainTo(int maxElements);
 
-                serialization::pimpl::Data peek();
+                std::auto_ptr<serialization::pimpl::Data> peek();
 
                 int size();
 

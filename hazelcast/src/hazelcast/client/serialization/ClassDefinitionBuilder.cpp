@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 22/07/14.
 //
 
-#include <stdio.h>
+#include "hazelcast/util/Util.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
@@ -151,7 +151,7 @@ namespace hazelcast {
                 int defIndex = fieldDefinition.getIndex();
                 if (index != defIndex) {
                     char buf[100];
-                    sprintf(buf, "Invalid field index. Index in definition:%d, being added at index:%d",
+                    util::snprintf(buf, 100, "Invalid field index. Index in definition:%d, being added at index:%d",
                             defIndex, index);
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addField", buf);
                 }

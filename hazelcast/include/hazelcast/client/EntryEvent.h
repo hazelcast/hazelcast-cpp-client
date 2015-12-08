@@ -47,7 +47,8 @@ namespace hazelcast {
                 EVICT_ALL = 1 << 4 ,
                 CLEAR_ALL = 1 << 5 ,
                 MERGED = 1 << 6 ,
-                EXPIRED = 1 << 7
+                EXPIRED = 1 << 7,
+                ALL = 0xFF
             };
             /**
              * Type value

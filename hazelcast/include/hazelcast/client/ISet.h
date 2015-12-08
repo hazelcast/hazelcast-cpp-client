@@ -18,9 +18,7 @@
 
 #include "hazelcast/client/proxy/ISetImpl.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/impl/SerializableCollection.h"
-#include <stdexcept>
-
+#include "hazelcast/client/protocol/codec/SetAddListenerCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -45,8 +43,11 @@ namespace hazelcast {
             *  @param includeValue boolean value representing value should be included in incoming ItemEvent or not.
             *  @returns registrationId that can be used to remove item listener
             */
-            std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                impl::ItemEventHandler<E> *itemEventHandler = new impl::ItemEventHandler<E>(getName(), context->getClusterService(), context->getSerializationService(), listener, includeValue);
+            std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
+                impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler> *itemEventHandler =
+                        new impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler>(
+                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                includeValue);
                 return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
             }
 
@@ -58,7 +59,7 @@ namespace hazelcast {
             *
             * @return true if registration is removed, false otherwise
             */
-            bool removeItemListener(const std::string& registrationId) {
+            bool removeItemListener(const std::string &registrationId) {
                 return proxy::ISetImpl::removeItemListener(registrationId);
             }
 
@@ -84,7 +85,7 @@ namespace hazelcast {
             * @returns true if set contains element
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool contains(const E& element) {
+            bool contains(const E &element) {
                 return proxy::ISetImpl::contains(toData(element));
             }
 
@@ -102,7 +103,7 @@ namespace hazelcast {
             * @return true if element is added successfully. If elements was already there returns false.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool add(const E& element) {
+            bool add(const E &element) {
                 return proxy::ISetImpl::add(toData(element));
             }
 
@@ -112,7 +113,7 @@ namespace hazelcast {
             * @return true if element is removed successfully.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool remove(const E& element) {
+            bool remove(const E &element) {
                 return proxy::ISetImpl::remove(toData(element));
             }
 
@@ -122,9 +123,8 @@ namespace hazelcast {
             * @return true if this set contains all elements given in vector.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool containsAll(const std::vector<E>& elements) {
-                std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                return proxy::ISetImpl::containsAll(dataCollection);
+            bool containsAll(const std::vector<E> &elements) {
+                return proxy::ISetImpl::containsAll(toDataCollection(elements));
             }
 
             /**
@@ -133,9 +133,9 @@ namespace hazelcast {
             * @return true if all elements given in vector can be added to set.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool addAll(const std::vector<E>& elements) {
+            bool addAll(const std::vector<E> &elements) {
                 std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
-                return proxy::ISetImpl::addAll(dataCollection);
+                return proxy::ISetImpl::addAll(toDataCollection(elements));
             }
 
             /**
@@ -144,7 +144,7 @@ namespace hazelcast {
             * @return true if all elements are removed successfully.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool removeAll(const std::vector<E>& elements) {
+            bool removeAll(const std::vector<E> &elements) {
                 std::vector<serialization::pimpl::Data> dataCollection = toDataCollection(elements);
                 return proxy::ISetImpl::removeAll(dataCollection);
             }
@@ -156,7 +156,7 @@ namespace hazelcast {
             * @return true if operation is successful.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            bool retainAll(const std::vector<E>& elements) {
+            bool retainAll(const std::vector<E> &elements) {
                 return proxy::ISetImpl::retainAll(toDataCollection(elements));
             }
 
@@ -169,8 +169,8 @@ namespace hazelcast {
             }
 
         private:
-            ISet(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::ISetImpl(instanceName, context) {
+            ISet(const std::string &instanceName, spi::ClientContext *context)
+                    : proxy::ISetImpl(instanceName, context) {
             }
         };
     }

@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 5/21/13.
-// Copyright (c) 2013 sancar koyunlu. All rights reserved.
+
 
 
 #ifndef HAZELCAST_CLUSTER_SERVICE
@@ -75,20 +75,22 @@ namespace hazelcast {
 
                 bool isMemberExists(const Address &address);
 
-                Member getMember(const std::string &uuid);
+                std::auto_ptr<Member> getMember(const std::string &uuid);
 
-                Member getMember(Address &address);
+                const Member &getMember(Address &address);
 
+                // TODO: Using shared_ptr for Member would eliminate this deep copying
                 std::vector<Member> getMemberList();
 
+                std::string membersString();
             private:
                 ClientContext &clientContext;
 
                 connection::ClusterListenerThread clusterThread;
 
-                std::map<Address, Member, addressComparator > members;
-                std::set< MembershipListener *> listeners;
-                std::set< InitialMembershipListener *> initialListeners;
+                std::auto_ptr<std::map<Address, Member, addressComparator> > members;
+                std::set<MembershipListener *> listeners;
+                std::set<InitialMembershipListener *> initialListeners;
                 util::Mutex listenerLock;
                 util::Mutex membersLock;
 
@@ -97,11 +99,11 @@ namespace hazelcast {
                 void initMembershipListeners();
 
                 //--------- Used by CLUSTER LISTENER THREAD ------------
-                void fireMembershipEvent(MembershipEvent &membershipEvent);
+                void fireMembershipEvent(const MembershipEvent &membershipEvent);
 
-                void fireMemberAttributeEvent(MemberAttributeEvent &membershipEvent);
+                void fireMemberAttributeEvent(const MemberAttributeEvent &membershipEvent);
 
-                void setMembers(const std::map<Address, Member, addressComparator > &map);
+                void setMembers(std::auto_ptr<std::map<Address, Member, addressComparator> > map);
 
                 boost::shared_ptr<connection::Connection> connectToOne();
                 // ------------------------------------------------------

@@ -22,6 +22,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
+#include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"

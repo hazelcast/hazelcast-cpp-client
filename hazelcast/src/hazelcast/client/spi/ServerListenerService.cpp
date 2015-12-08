@@ -16,91 +16,99 @@
 //
 // Created by sancar koyunlu on 6/24/13.
 
-
-
+#include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/CallPromise.h"
-#include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/impl/ClientRequest.h"
-#include "hazelcast/client/impl/BaseRemoveListenerRequest.h"
-#include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
+#include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
+#include "hazelcast/client/spi/impl/listener/EventRegistration.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-
-            ServerListenerService::ServerListenerService(spi::ClientContext& clientContext)
-            : clientContext(clientContext) {
-
+            ServerListenerService::ServerListenerService(spi::ClientContext &clientContext)
+                    : clientContext(clientContext) {
             }
 
-            std::string ServerListenerService::listen(const impl::ClientRequest *registrationRequest, int partitionId, impl::BaseEventHandler *handler) {
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnPartitionOwner(registrationRequest, handler, partitionId);
-                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
-                handler->registrationId = *registrationId;
-                registerListener(registrationId, registrationRequest->callId);
+            std::string ServerListenerService::registerListener(
+                    std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
+                    int partitionId, client::impl::BaseEventHandler *handler) {
 
-                return *registrationId;
+                std::auto_ptr<protocol::ClientMessage> request = addListenerCodec->encodeRequest();
+
+                connection::CallFuture future = clientContext.getInvocationService().invokeOnPartitionOwner(
+                        request, handler, partitionId);
+
+                return registerInternal(addListenerCodec, future);
             }
 
-            std::string ServerListenerService::listen(const impl::ClientRequest *registrationRequest, impl::BaseEventHandler *handler) {
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(registrationRequest, handler);
-                boost::shared_ptr<std::string> registrationId = clientContext.getSerializationService().toObject<std::string>(future.get());
-                handler->registrationId = *registrationId;
-                registerListener(registrationId, registrationRequest->callId);
+            std::string ServerListenerService::registerListener(
+                    std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
+                    client::impl::BaseEventHandler *handler) {
+                connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(
+                        addListenerCodec->encodeRequest(), handler);
 
-                return *registrationId;
+                return registerInternal(addListenerCodec, future);
             }
 
-            bool ServerListenerService::stopListening(impl::BaseRemoveListenerRequest *request, const std::string& registrationId) {
-                std::string resolvedRegistrationId = registrationId;
-                bool isValidId = deRegisterListener(resolvedRegistrationId);
-                if (!isValidId) {
-                    delete request;
-                    return false;
-                }
-                request->setRegistrationId(resolvedRegistrationId);
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(request);
-                bool result = *(clientContext.getSerializationService().toObject<bool>(future.get()));
-                return result;
-            }
+            void ServerListenerService::reRegisterListener(std::string registrationId,
+                                                           protocol::ClientMessage *response) {
 
-            void ServerListenerService::registerListener(boost::shared_ptr<std::string> registrationId, int callId) {
-                registrationAliasMap.put(*registrationId, registrationId);
-                registrationIdMap.put(*registrationId, boost::shared_ptr<int>(new int(callId)));
-            }
-
-            void ServerListenerService::reRegisterListener(const std::string& registrationId, boost::shared_ptr<std::string> alias, int callId) {
-                boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
-                if (oldAlias.get() != NULL) {
-                    registrationIdMap.remove(*oldAlias);
-                    registrationIdMap.put(*alias, boost::shared_ptr<int>(new int(callId)));
+                boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.get(
+                        registrationId);
+                if (NULL != registration.get()) {
+                    // registration exists, just change the alias
+                    boost::shared_ptr<std::string> alias(
+                            new std::string(registration->getAddCodec()->decodeResponse(*response)));
+                    boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
+                    if (oldAlias.get() != NULL) {
+                        registrationIdMap.remove(*oldAlias);
+                        registration->setCorrelationId(response->getCorrelationId());
+                        registrationIdMap.put(*alias, registration);
+                    }
                 }
             }
 
-            bool ServerListenerService::deRegisterListener(std::string& registrationId) {
-                boost::shared_ptr<const std::string> uuid = registrationAliasMap.remove(registrationId);
+            bool ServerListenerService::deRegisterListener(protocol::codec::IRemoveListenerCodec &removeListenerCodec) {
+                boost::shared_ptr<const std::string> uuid = registrationAliasMap.remove(removeListenerCodec.getRegistrationId());
                 if (uuid != NULL) {
-                    registrationId = *uuid;
-                    boost::shared_ptr<int> callId = registrationIdMap.remove(*uuid);
-                    clientContext.getInvocationService().removeEventHandler(*callId);
+                    boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.remove(*uuid);
+
+                    clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId());
+
+                    // send a remove listener request
+                    removeListenerCodec.setRegistrationId(*uuid);
+                    std::auto_ptr<protocol::ClientMessage> request = removeListenerCodec.encodeRequest();
+                    try {
+                        connection::CallFuture future = clientContext.getInvocationService().invokeOnTarget(
+                                request, registration->getMemberAddress());
+
+                        std::auto_ptr<protocol::ClientMessage> response = future.get();
+                    } catch (exception::IException &e) {
+                        //if invocation cannot be done that means connection is broken and listener is already removed
+						(void)e; // suppress the unused variable warning
+                    }
+
                     return true;
                 }
                 return false;
             }
 
-            void ServerListenerService::retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise) {
+            void ServerListenerService::retryFailedListener(
+                    boost::shared_ptr<connection::CallPromise> listenerPromise) {
                 try {
-                    InvocationService& invocationService = clientContext.getInvocationService();
-                    boost::shared_ptr<connection::Connection> result = invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
+                    InvocationService &invocationService = clientContext.getInvocationService();
+                    boost::shared_ptr<connection::Connection> result =
+                            invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
                     if (NULL == result.get()) {
                         util::LockGuard lockGuard(failedListenerLock);
                         failedListeners.push_back(listenerPromise);
                     }
-                } catch (exception::IException&) {
+                } catch (exception::IException &) {
                     util::LockGuard lockGuard(failedListenerLock);
                     failedListeners.push_back(listenerPromise);
                 }
@@ -109,22 +117,44 @@ namespace hazelcast {
             void ServerListenerService::triggerFailedListeners() {
                 std::vector<boost::shared_ptr<connection::CallPromise> >::iterator it;
                 std::vector<boost::shared_ptr<connection::CallPromise> > newFailedListeners;
-                InvocationService& invocationService = clientContext.getInvocationService();
+                InvocationService &invocationService = clientContext.getInvocationService();
 
                 util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
                     try {
-                        boost::shared_ptr<connection::Connection> result = invocationService.resend(*it, "internalRetryOfUnkownAddress");
+                        boost::shared_ptr<connection::Connection> result =
+                                invocationService.resend(*it, "internalRetryOfUnkownAddress");
 
                         if (NULL == result.get()) { // resend failed
                             newFailedListeners.push_back(*it);
                         }
-                    } catch (exception::IOException&) {
+                    } catch (exception::IOException &) {
                         newFailedListeners.push_back(*it);
                         continue;
                     }
                 }
                 failedListeners = newFailedListeners;
+            }
+
+            std::string ServerListenerService::registerInternal(
+                    std::auto_ptr<protocol::codec::IAddListenerCodec> &addListenerCodec,
+                    connection::CallFuture &future) {
+                std::auto_ptr<protocol::ClientMessage> response = future.get();
+
+                // get the correlationId for the request
+                int correlationId = future.getCallId();
+
+                std::string registrationId = addListenerCodec->decodeResponse(*response);
+
+                registrationAliasMap.put(registrationId,
+                                         boost::shared_ptr<std::string>(new std::string(registrationId)));
+
+                registrationIdMap.put(registrationId, boost::shared_ptr<spi::impl::listener::EventRegistration>(
+                        new spi::impl::listener::EventRegistration(correlationId,
+                                                                   future.getConnection().getRemoteEndpoint(),
+                                                                   addListenerCodec)));
+
+                return registrationId;
             }
 
         }

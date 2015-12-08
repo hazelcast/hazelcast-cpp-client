@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 21/04/14.
 //
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "HazelcastServerFactory.h"
@@ -74,6 +75,7 @@ namespace hazelcast {
                         map->put(2, 20);
                     } catch (std::exception &e) {
                         // suppress the error
+						(void)e; // suppress the unused variable warning
                     }
                     util::sleep(1);
                 } while (latch->get() > 0);

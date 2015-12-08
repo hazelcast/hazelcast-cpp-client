@@ -60,17 +60,17 @@ namespace hazelcast {
                 return *this;
             }
 
-            serialization::pimpl::Data CallFuture::get() {
+            std::auto_ptr<protocol::ClientMessage> CallFuture::get() {
                 return get(INT_MAX);
             }
 
-            serialization::pimpl::Data CallFuture::get(time_t timeoutInSeconds) {
+            std::auto_ptr<protocol::ClientMessage> CallFuture::get(time_t timeoutInSeconds) {
 				while (timeoutInSeconds > 0) {
                     time_t beg = time(NULL);
                     try {
 						using namespace std;
                         time_t waitSeconds = (time_t)min(timeoutInSeconds, (time_t)heartBeatTimeout);
-                        return promise->getFuture()->get(waitSeconds);
+                        return promise->getFuture().get(waitSeconds);
                     } catch (exception::TimeoutException&) {
                         if (!connection->isHeartBeating()) {
                             std::string address = util::IOUtil::to_string(connection->getRemoteEndpoint());
@@ -83,6 +83,18 @@ namespace hazelcast {
                 throw exception::TimeoutException("CallFuture::get(int timeoutInSeconds)", "Wait is timed out");
             }
 
+            int CallFuture::getCallId() const {
+                int callId = -1;
+                protocol::ClientMessage *req = promise->getRequest();
+                if (req) {
+                    callId = req->getCorrelationId();
+                }
+                return callId;
+            }
+
+            const Connection &CallFuture::getConnection() const {
+                return *connection;
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ namespace hazelcast {
             /**
              * Destructor
              */
-            ~Socket();
+            virtual ~Socket();
             /**
              * connects to given address in constructor.
              * @param timeoutInMillis if not connected within timeout, it will return errorCode
@@ -86,7 +86,7 @@ namespace hazelcast {
              * @return number of bytes send
              * @throw IOException in failure.
              */
-            int send(const void *buffer, int len) const;
+            virtual int send(const void *buffer, int len) const;
 
             /**
              * @param buffer
@@ -105,7 +105,7 @@ namespace hazelcast {
             /**
              * @param address remote endpoint address.
              */
-            void setRemoteEndpoint(client::Address &address);
+            void setRemoteEndpoint(const client::Address &address);
 
             /**
              * @return remoteEndpoint

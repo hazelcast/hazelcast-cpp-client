@@ -26,6 +26,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include "hazelcast/client/exception/IOException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -97,7 +98,11 @@ namespace iTest {
                 } catch (iTestException& e) {
                     (std::cout << e.message << std::endl);
                     isOk = false;
-                } catch (...) {
+                } catch (hazelcast::client::exception::IException &e) {
+                    (std::cout << e.what() << std::endl);
+                    isOk = false;
+                }
+                catch (...) {
                     isOk = false;
                     std::cout << "========== EXCEPTION ======== " << std::endl;
                     throw;

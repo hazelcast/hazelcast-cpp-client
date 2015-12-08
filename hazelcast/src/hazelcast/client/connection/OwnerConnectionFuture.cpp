@@ -17,6 +17,8 @@
 // Created by sancar koyunlu on 19/08/14.
 //
 
+#include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -27,8 +29,6 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-
-
             OwnerConnectionFuture::OwnerConnectionFuture(spi::ClientContext& clientContext)
             : clientContext(clientContext) {
 
@@ -38,11 +38,9 @@ namespace hazelcast {
                 ownerConnectionPtr.reset();
             }
 
-
             boost::shared_ptr<Connection> OwnerConnectionFuture::createNew(const Address& address) {
-                Connection *clientConnection = clientContext.getConnectionManager().connectTo(address, true);
-                clientConnection->setAsOwnerConnection(true);
-                ownerConnectionPtr.reset(clientConnection);
+                ownerConnectionPtr = clientContext.getConnectionManager().connectTo(address, true);
+                ownerConnectionPtr->setAsOwnerConnection(true);
                 return ownerConnectionPtr;
             }
 
@@ -76,7 +74,6 @@ namespace hazelcast {
                     close();
                 }
             }
-
 
             void OwnerConnectionFuture::close() {
                 boost::shared_ptr<Connection> currentOwnerConnection = ownerConnectionPtr;

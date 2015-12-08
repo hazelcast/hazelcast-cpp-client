@@ -44,7 +44,7 @@ namespace hazelcast {
 
             };
 
-            void set_value(const T& value) {
+            void set_value(T& value) {
                 LockGuard guard(mutex);
                 if (exceptionReady || resultReady) {
                     util::ILogger::getLogger().warning(std::string("Future.set_value should not be called twice"));
