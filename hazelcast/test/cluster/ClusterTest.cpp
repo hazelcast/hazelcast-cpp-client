@@ -47,7 +47,7 @@ namespace hazelcast {
             void ClusterTest::addTests() {
                 addTest(&ClusterTest::testClusterListeners, "testClusterListeners");
                 addTest(&ClusterTest::testClusterListenersFromConfig, "testClusterListenersFromConfig");
-//                addTest(&ClusterTest::testListenersWhenClusterDown, "testListenersWhenClusterDown");
+                addTest(&ClusterTest::testListenersWhenClusterDown, "testListenersWhenClusterDown");
                 addTest(&ClusterTest::testBehaviourWhenClusterNotFound, "testBehaviourWhenClusterNotFound");
             }
 
@@ -244,9 +244,11 @@ namespace hazelcast {
 
                 HazelcastServer instance2(hazelcastInstanceFactory);
                 assertTrue(lifecycleLatch.await(120), "Lifecycle latch await timed out!");
+                // Let enough time for the client to re-register the failed listeners
+                util::sleep(1);
                 m.put("sample", "entry");
                 assertTrue(countDownLatch.await(60), "Await timed out !");
-                assertTrue(hazelcastClient.removeLifecycleListener(&lifecycleListener), "Listener could not removed");
+                assertTrue(hazelcastClient.removeLifecycleListener(&lifecycleListener), "Listener could not be removed");
             }
 
             void ClusterTest::testBehaviourWhenClusterNotFound() {

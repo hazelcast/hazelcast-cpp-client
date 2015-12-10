@@ -60,6 +60,7 @@ namespace hazelcast {
 
                 int incrementAndGetResendCount();
 
+                void resetFuture();
             private:
                 util::Future<std::auto_ptr<protocol::ClientMessage> > future;
                 std::auto_ptr<protocol::ClientMessage> request;

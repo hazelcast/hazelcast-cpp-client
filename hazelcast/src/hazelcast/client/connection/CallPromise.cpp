@@ -61,6 +61,10 @@ namespace hazelcast {
             int CallPromise::incrementAndGetResendCount() {
                 return ++resendCount;
             }
+
+            void CallPromise::resetFuture() {
+                future.reset();
+            }
         }
     }
 }
