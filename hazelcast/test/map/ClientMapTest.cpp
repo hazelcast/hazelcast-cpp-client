@@ -45,7 +45,6 @@ namespace hazelcast {
             }
 
             void ClientMapTest::addTests() {
-/*
                 addTest(&ClientMapTest::testContains, "testContains");
                 addTest(&ClientMapTest::testGet, "testGet");
                 addTest(&ClientMapTest::testRemoveAndDelete, "testRemoveAndDelete");
@@ -72,7 +71,6 @@ namespace hazelcast {
                 addTest(&ClientMapTest::testMapWithPortable, "testMapWithPortable");
                 addTest(&ClientMapTest::testMapStoreRelatedRequests, "testMapStoreRelatedRequests");
                 addTest(&ClientMapTest::testKeySetAndValuesWithPredicates, "testKeySetAndValuesWithPredicates");
-*/
                 addTest(&ClientMapTest::testExecuteOnKey, "testExecuteOnKey");
                 addTest(&ClientMapTest::testExecuteOnEntries, "testExecuteOnEntries");
             }
@@ -695,7 +693,7 @@ namespace hazelcast {
             };
 
             void ClientMapTest::testExecuteOnKey() {
-                IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
+                IMap<int, Employee> employees = client->getMap<int, Employee>("executeOnKey");
 
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
@@ -712,7 +710,7 @@ namespace hazelcast {
             }
 
             void ClientMapTest::testExecuteOnEntries() {
-                IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testExecuteOnEntries");
 
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);

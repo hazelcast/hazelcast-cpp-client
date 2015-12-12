@@ -48,7 +48,6 @@ namespace hazelcast {
                 LockGuard guard(mutex);
                 if (exceptionReady || resultReady) {
                     util::ILogger::getLogger().warning(std::string("Future.set_value should not be called twice"));
-                    return;
                 }
                 sharedObject = value;
                 resultReady = true;
@@ -59,7 +58,6 @@ namespace hazelcast {
                 LockGuard guard(mutex);
                 if (exceptionReady || resultReady) {
                     util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exceptionDetails);
-                    return;
                 }
                 this->exceptionName = exceptionName;
                 this->exceptionDetails = exceptionDetails;
@@ -108,6 +106,12 @@ namespace hazelcast {
                 throw client::exception::TimeoutException("Future::get(timeInSeconds)", "Wait is timed out");
             };
 
+            void reset() {
+                LockGuard guard(mutex);
+
+                resultReady = false;
+                exceptionReady = false;
+            }
         private:
             bool resultReady;
             bool exceptionReady;

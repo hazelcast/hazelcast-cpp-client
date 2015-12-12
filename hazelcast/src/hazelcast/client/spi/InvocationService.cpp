@@ -211,6 +211,8 @@ namespace hazelcast {
                                                 " to connection " +
                                                 util::IOUtil::to_string<Address>(connection->getRemoteEndpoint()));
 
+                promise->resetFuture();
+
                 return registerAndEnqueue(connection, promise, -1);
             }
 
