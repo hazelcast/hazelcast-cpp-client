@@ -24,12 +24,12 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace listener {
-                    EventRegistration::EventRegistration(int callId, const Address &member,
+                    EventRegistration::EventRegistration(int64_t callId, const Address &member,
                                                          std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec)
                             : correlationId(callId), memberAddress(member), addCodec(addCodec) {
                     }
 
-                    int32_t EventRegistration::getCorrelationId() const {
+                    int64_t EventRegistration::getCorrelationId() const {
                         return correlationId;
                     }
 
@@ -41,7 +41,7 @@ namespace hazelcast {
                         return addCodec.get();
                     }
 
-                    void EventRegistration::setCorrelationId(int32_t callId) {
+                    void EventRegistration::setCorrelationId(int64_t callId) {
                         correlationId = callId;
                     }
                 }

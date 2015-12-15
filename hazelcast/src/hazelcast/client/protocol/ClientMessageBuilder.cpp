@@ -77,7 +77,7 @@ namespace hazelcast {
             }
 
             void ClientMessageBuilder::addToPartialMessages(std::auto_ptr<ClientMessage> message) {
-                uint32_t id = message->getCorrelationId();
+                int64_t id = message->getCorrelationId();
                 partialMessages[id] = message.release();
             }
 

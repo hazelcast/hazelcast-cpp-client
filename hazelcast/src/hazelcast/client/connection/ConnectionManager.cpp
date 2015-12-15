@@ -338,7 +338,7 @@ namespace hazelcast {
                 }
             }
 
-            uint32_t ConnectionManager::getNextCallId() {
+            int64_t ConnectionManager::getNextCallId() {
                 return ++callIdGenerator;
             }
 

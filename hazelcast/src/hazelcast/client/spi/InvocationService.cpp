@@ -129,7 +129,7 @@ namespace hazelcast {
                 return retryCount;
             }
 
-            void InvocationService::removeEventHandler(int callId) {
+            void InvocationService::removeEventHandler(int64_t callId) {
                 std::vector<boost::shared_ptr<connection::Connection> > connections = clientContext.getConnectionManager().getConnections();
                 std::vector<boost::shared_ptr<connection::Connection> >::iterator it;
                 for (it = connections.begin(); it != connections.end(); ++it) {
@@ -206,7 +206,7 @@ namespace hazelcast {
                 }
 
                 util::ILogger::getLogger().info("[InvocationService::resend] Re-sending the request with id " +
-                                                util::IOUtil::to_string<int>(
+                                                util::IOUtil::to_string<int64_t>(
                                                         promise->getRequest()->getCorrelationId()) +
                                                 " to connection " +
                                                 util::IOUtil::to_string<Address>(connection->getRemoteEndpoint()));
@@ -236,7 +236,7 @@ namespace hazelcast {
 
             void InvocationService::registerCall(connection::Connection &connection,
                                                  boost::shared_ptr<connection::CallPromise> promise) {
-                int callId = clientContext.getConnectionManager().getNextCallId();
+                int64_t callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest()->setCorrelationId(callId);
                 getCallPromiseMap(connection)->put(callId, promise);
                 if (promise->getEventHandler() != NULL) {
@@ -245,18 +245,18 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<connection::CallPromise> InvocationService::deRegisterCall(
-                    connection::Connection &connection, int callId) {
+                    connection::Connection &connection, int64_t callId) {
                 return getCallPromiseMap(connection)->remove(callId);
             }
 
-            void InvocationService::registerEventHandler(int correlationId, connection::Connection &connection,
+            void InvocationService::registerEventHandler(int64_t correlationId, connection::Connection &connection,
                                                          boost::shared_ptr<connection::CallPromise> promise) {
                 getEventHandlerPromiseMap(connection)->put(correlationId, promise);
             }
 
             void InvocationService::handleMessage(connection::Connection &connection,
                                                   std::auto_ptr<protocol::ClientMessage> message) {
-                int correlationId = message->getCorrelationId();
+                int64_t correlationId = message->getCorrelationId();
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     boost::shared_ptr<connection::CallPromise> promise = getEventHandlerPromise(connection,
                                                                                                 correlationId);
@@ -328,12 +328,12 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<connection::CallPromise> InvocationService::getEventHandlerPromise(
-                    connection::Connection &connection, int callId) {
+                    connection::Connection &connection, int64_t callId) {
                 return getEventHandlerPromiseMap(connection)->get(callId);
             }
 
             boost::shared_ptr<connection::CallPromise> InvocationService::deRegisterEventHandler(
-                    connection::Connection &connection, int callId) {
+                    connection::Connection &connection, int64_t callId) {
                 return getEventHandlerPromiseMap(connection)->remove(callId);
             }
 
@@ -348,43 +348,25 @@ namespace hazelcast {
                         tryResend(*it, address);
                     }
 
-/*
-                    Entry_Set entrySet = getCallPromiseMap(connection)->clear();
-                    Entry_Set::iterator it;
-                    for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                        std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
-                        tryResend(it->second, address);
-                    }
-*/
                 }
                 cleanEventHandlers(connection);
             }
 
             void InvocationService::cleanEventHandlers(connection::Connection &connection) {
                 std::vector<boost::shared_ptr<connection::CallPromise> > promises = getEventHandlerPromiseMap(connection)->values();
-                std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
 
                 for (std::vector<boost::shared_ptr<hazelcast::client::connection::CallPromise> >::iterator it = promises.begin();
                      it != promises.end(); ++it) {
                     clientContext.getServerListenerService().retryFailedListener(*it);
                 }
-
-/*
-                typedef std::vector<std::pair<int, boost::shared_ptr<connection::CallPromise> > > Entry_Set;
-                Entry_Set entrySet = getEventHandlerPromiseMap(connection)->clear();
-                Entry_Set::iterator it;
-                for (it = entrySet.begin(); it != entrySet.end(); ++it) {
-                    clientContext.getServerListenerService().retryFailedListener(it->second);
-                }
-*/
             }
 
-            boost::shared_ptr<util::SynchronizedMap<int, connection::CallPromise> > InvocationService::getCallPromiseMap(
+            boost::shared_ptr<util::SynchronizedMap<int64_t, connection::CallPromise> > InvocationService::getCallPromiseMap(
                     connection::Connection &connection) {
                 return callPromises.getOrPutIfAbsent(&connection);
             }
 
-            boost::shared_ptr<util::SynchronizedMap<int, connection::CallPromise> > InvocationService::getEventHandlerPromiseMap(
+            boost::shared_ptr<util::SynchronizedMap<int64_t, connection::CallPromise> > InvocationService::getEventHandlerPromiseMap(
                     connection::Connection &connection) {
                 return eventHandlerPromises.getOrPutIfAbsent(&connection);
             }

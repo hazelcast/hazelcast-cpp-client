@@ -83,8 +83,8 @@ namespace hazelcast {
                 throw exception::TimeoutException("CallFuture::get(int timeoutInSeconds)", "Wait is timed out");
             }
 
-            int CallFuture::getCallId() const {
-                int callId = -1;
+            int64_t CallFuture::getCallId() const {
+                int64_t callId = -1;
                 protocol::ClientMessage *req = promise->getRequest();
                 if (req) {
                     callId = req->getCorrelationId();

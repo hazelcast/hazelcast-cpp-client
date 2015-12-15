@@ -108,8 +108,8 @@ namespace hazelcast {
                 buffer[FLAGS_FIELD_OFFSET] = value;
             }
 
-            void ClientMessage::setCorrelationId(uint32_t id) {
-                util::Bits::nativeToLittleEndian4(&id, buffer + CORRELATION_ID_FIELD_OFFSET);
+            void ClientMessage::setCorrelationId(int64_t id) {
+                util::Bits::nativeToLittleEndian8(&id, buffer + CORRELATION_ID_FIELD_OFFSET);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
@@ -202,9 +202,9 @@ namespace hazelcast {
                 return buffer[VERSION_FIELD_OFFSET];
             }
 
-            uint32_t ClientMessage::getCorrelationId() const {
-                uint32_t value;
-                util::Bits::littleEndianToNative4(buffer + CORRELATION_ID_FIELD_OFFSET, &value);
+            int64_t ClientMessage::getCorrelationId() const {
+                int64_t value;
+                util::Bits::littleEndianToNative8(buffer + CORRELATION_ID_FIELD_OFFSET, &value);
                 return value;
             }
 
