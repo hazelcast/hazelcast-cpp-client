@@ -69,7 +69,7 @@ namespace hazelcast {
                 */
                 bool appendExistingPartialMessage(std::auto_ptr<ClientMessage> message);
 
-                typedef std::map<uint32_t, ClientMessage * > MessageMap;
+                typedef std::map<int64_t, ClientMessage * > MessageMap;
 
                 MessageMap partialMessages;
 

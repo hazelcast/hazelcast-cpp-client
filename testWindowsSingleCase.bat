@@ -36,7 +36,7 @@ cd ..
 cd java
 
 echo "Compiling the java test server"
-call mvn -q clean install
+call mvn -U -q clean install
 
 taskkill /F /FI "WINDOWTITLE eq cpp-java"
 

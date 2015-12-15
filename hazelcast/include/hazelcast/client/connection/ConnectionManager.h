@@ -29,6 +29,7 @@
 #include "hazelcast/util/Atomic.h"
 
 #include <boost/shared_ptr.hpp>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -152,7 +153,7 @@ namespace hazelcast {
                  * TODO: Keep the call id per connection inside the connection object and we may not need to use atomic
                  * int since only one connection io thread shall call it during the actual send operation!!!
                  */
-                uint32_t getNextCallId();
+                int64_t getNextCallId();
 
             private:
 
@@ -189,7 +190,7 @@ namespace hazelcast {
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;
 
-                util::Atomic<uint32_t> callIdGenerator;
+                util::Atomic<int64_t> callIdGenerator;
             };
         }
     }

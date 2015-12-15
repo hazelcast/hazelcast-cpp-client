@@ -45,7 +45,7 @@ cd ..
 cd java
 
 echo "Compiling the java test server"
-mvn -q clean install
+mvn -U -q clean install
 if [ $? -ne 0 ]
 then
     echo "Server compilation and install failed!!!"

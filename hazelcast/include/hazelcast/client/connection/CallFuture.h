@@ -24,6 +24,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #include <boost/shared_ptr.hpp>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
@@ -54,7 +55,7 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> get(time_t timeoutInSeconds);
 
-                int getCallId() const;
+                int64_t getCallId() const;
 
                 const Connection &getConnection() const;
             private:

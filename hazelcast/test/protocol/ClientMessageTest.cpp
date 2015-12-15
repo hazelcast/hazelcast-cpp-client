@@ -102,13 +102,13 @@ namespace hazelcast {
                     ASSERT_EQUAL(hazelcast::client::protocol::ClientMessage::HEADER_SIZE, size);
 
                     byte expectedBytes[hazelcast::client::protocol::ClientMessage::HEADER_SIZE] = {
-                            0x12, 0x0, 0x0, 0x0, // Frame length
+                            0x16, 0x0, 0x0, 0x0, // Frame length
                             0x04, // Version
                             0x05, // Flags
                             0xCD, 0xAB, // Message Type
-                            0x12, 0xEF, 0xCD, 0xAB, // Correlation Id
+                            0x12, 0xEF, 0xCD, 0xAB, 0x00, 0x00, 0x00, 0x00, // Correlation Id
                             0xF1, 0xDE, 0xBC, 0x8A, // Partition Id
-                            0x12, 0x0 // Data Offset
+                            0x16, 0x0 // Data Offset
                     };
 
                     ASSERT_EQUAL(0, memcmp(expectedBytes, buf, hazelcast::client::protocol::ClientMessage::HEADER_SIZE));

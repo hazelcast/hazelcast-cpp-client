@@ -37,6 +37,7 @@
 * |  Version    |B|E|  Flags  |L|               Type              |
 * +-------------+---------------+---------------------------------+
 * |                       CorrelationId                           |
+* |                                                               |
 * +---------------------------------------------------------------+
 * |R|                      PartitionId                            |
 * +-----------------------------+---------------------------------+
@@ -133,7 +134,7 @@ namespace hazelcast {
                 static const int32_t FLAGS_FIELD_OFFSET = VERSION_FIELD_OFFSET + UINT8_SIZE;
                 static const int32_t TYPE_FIELD_OFFSET = FLAGS_FIELD_OFFSET + UINT8_SIZE;
                 static const int32_t CORRELATION_ID_FIELD_OFFSET = TYPE_FIELD_OFFSET + UINT16_SIZE;
-                static const int32_t PARTITION_ID_FIELD_OFFSET = CORRELATION_ID_FIELD_OFFSET + INT32_SIZE;
+                static const int32_t PARTITION_ID_FIELD_OFFSET = CORRELATION_ID_FIELD_OFFSET + INT64_SIZE;
                 static const int32_t DATA_OFFSET_FIELD_OFFSET = PARTITION_ID_FIELD_OFFSET + INT32_SIZE;
 
                 /**
@@ -163,7 +164,7 @@ namespace hazelcast {
 
                 void setFlags(uint8_t value);
 
-                void setCorrelationId(uint32_t id);
+                void setCorrelationId(int64_t id);
 
                 void setPartitionId(int32_t partitionId);
 
@@ -264,7 +265,7 @@ namespace hazelcast {
 
                 uint8_t getVersion();
 
-                uint32_t getCorrelationId() const;
+                int64_t getCorrelationId() const;
 
                 int32_t getPartitionId() const;
 

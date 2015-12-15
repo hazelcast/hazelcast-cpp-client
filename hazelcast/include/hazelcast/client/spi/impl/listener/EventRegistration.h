@@ -45,20 +45,20 @@ namespace hazelcast {
 					class HAZELCAST_API EventRegistration {
 
                     public:
-                        EventRegistration(int callId,
+                        EventRegistration(int64_t callId,
                                           const Address &member,
                                           std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec);
 
-                        int32_t getCorrelationId() const;
+                        int64_t getCorrelationId() const;
 
                         const Address &getMemberAddress() const;
 
                         const protocol::codec::IAddListenerCodec *getAddCodec() const;
 
-                        void setCorrelationId(int32_t callId);
+                        void setCorrelationId(int64_t callId);
 
                     private:
-                        int32_t correlationId;
+                        int64_t correlationId;
                         const Address &memberAddress;
                         std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec;
                     };
