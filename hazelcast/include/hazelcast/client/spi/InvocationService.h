@@ -158,7 +158,7 @@ namespace hazelcast {
                 /***** HANDLE PACKET PART ****/
 
                 /* returns shouldSetResponse */
-                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise, const  std::string& address);
+                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise, const Address& address);
 
                 /* returns shouldSetResponse */
                 bool handleEventUuid(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise);

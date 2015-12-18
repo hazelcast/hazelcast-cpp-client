@@ -271,8 +271,7 @@ namespace hazelcast {
                     return;
                 }
 
-                std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
-                if (!handleException(message.get(), promise, address))
+                if (!handleException(message.get(), promise, connection.getRemoteEndpoint()))
                     return;//if response is exception,then return
 
                 if (!handleEventUuid(message.get(), promise))
@@ -284,12 +283,13 @@ namespace hazelcast {
             /* returns shouldSetResponse */
             bool InvocationService::handleException(protocol::ClientMessage *response,
                                                     boost::shared_ptr<connection::CallPromise> promise,
-                                                    const std::string &address) {
+                                                    const Address &address) {
                 if (protocol::EXCEPTION == response->getMessageType()) {
                     protocol::codec::ErrorCodec error = protocol::codec::ErrorCodec::decode(*response);
 
                     if (error.className == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
-                        tryResend(promise, address);
+                        std::string addrString = util::IOUtil::to_string(address);
+                        tryResend(promise, addrString);
                     } else {
                         promise->setException(error.className, error.toString());
                     }
