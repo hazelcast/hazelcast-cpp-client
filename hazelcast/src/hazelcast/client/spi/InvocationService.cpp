@@ -337,18 +337,15 @@ namespace hazelcast {
                 return getEventHandlerPromiseMap(connection)->remove(callId);
             }
 
-            void InvocationService::cleanResources(connection::Connection &connection) {
-                typedef std::vector<std::pair<int, boost::shared_ptr<connection::CallPromise> > > Entry_Set;
-                {
-                    std::vector<boost::shared_ptr<connection::CallPromise> > promises = getCallPromiseMap(connection)->values();
-                    std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
+            void InvocationService::cleanResources(connection::Connection& connection) {
+                std::vector<boost::shared_ptr<connection::CallPromise> > promises = getCallPromiseMap(connection)->values();
+                std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
 
-                    for (std::vector<boost::shared_ptr<hazelcast::client::connection::CallPromise> >::iterator it = promises.begin();
-                         it != promises.end(); ++it) {
-                        tryResend(*it, address);
-                    }
-
+                for (std::vector<boost::shared_ptr<hazelcast::client::connection::CallPromise> >::iterator it = promises.begin();
+                     it != promises.end(); ++it) {
+                    tryResend(*it, address);
                 }
+
                 cleanEventHandlers(connection);
             }
 
