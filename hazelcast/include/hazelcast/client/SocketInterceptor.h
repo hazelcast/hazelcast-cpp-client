@@ -23,7 +23,6 @@
 #ifndef HAZELCAST_SocketInterceptor
 #define HAZELCAST_SocketInterceptor
 
-
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -35,7 +34,7 @@ namespace hazelcast {
          *
          * @see ClientConfig#setSocketInterceptor(SocketInterceptor *socketInterceptor);
          */
-        class SocketInterceptor {
+        class HAZELCAST_API SocketInterceptor {
         public:
             /**
              * Will be called with the Socket, each time client creates a connection to any Member.

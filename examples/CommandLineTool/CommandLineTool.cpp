@@ -111,7 +111,7 @@ std::vector<std::string> split(std::string input, char anchor) {
 }
 //: public  EntryListener, ItemListener, MessageListener
 
-class TestApp {
+class CommandLineTool {
 private:
     static const int LOAD_EXECUTORS_COUNT = 16;
     static const int ONE_KB = 1024;
@@ -140,7 +140,7 @@ private:
 
     bool running;
 public:
-    TestApp(HazelcastClient &hazelcast)
+    CommandLineTool(HazelcastClient &hazelcast)
     : hazelcast(hazelcast)
     , _namespace("default")
     , echo(false) {
@@ -1524,7 +1524,7 @@ int main() {
     config.addAddress(Address("127.0.0.1", 5701));
     HazelcastClient client(config);
 
-    TestApp testApp(client);
+    CommandLineTool testApp(client);
     testApp.start();
     return 0;
 }

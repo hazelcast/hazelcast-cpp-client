@@ -15,11 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 8/5/13.
-
-
-
-
-
 #ifndef HAZELCAST_TransactionContext
 #define HAZELCAST_TransactionContext
 
@@ -39,13 +34,13 @@
 
 namespace hazelcast {
     namespace client {
-
         namespace spi {
             class ClientContext;
         }
 
         namespace connection {
             class ConnectionManager;
+			class Connection;
         }
 
         /**

@@ -277,7 +277,7 @@ namespace hazelcast {
 
                 template <>
                 long DataInput::read() {
-                    return readLong();
+                    return (long)readLong();
                 }
 
                 template <>

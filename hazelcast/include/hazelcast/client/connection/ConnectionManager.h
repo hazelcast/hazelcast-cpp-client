@@ -27,6 +27,7 @@
 #include "hazelcast/client/connection/HeartBeater.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Thread.h"
 
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
@@ -37,10 +38,6 @@
 #endif
 
 namespace hazelcast {
-    namespace util {
-        class Thread;
-    }
-
     namespace client {
         class SocketInterceptor;
 

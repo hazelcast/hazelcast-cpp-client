@@ -26,7 +26,6 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-
             class HAZELCAST_API InSelector : public IOSelector {
             public:
                 InSelector(ConnectionManager &connectionManager);

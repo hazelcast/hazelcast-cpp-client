@@ -142,7 +142,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> response = future.get();
 
                 // get the correlationId for the request
-                int correlationId = future.getCallId();
+                int64_t correlationId = future.getCallId();
 
                 std::string registrationId = addListenerCodec->decodeResponse(*response);
 

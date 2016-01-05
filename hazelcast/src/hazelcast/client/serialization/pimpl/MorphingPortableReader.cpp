@@ -128,13 +128,13 @@ namespace hazelcast {
                     if (currentFieldType == FieldTypes::TYPE_FLOAT) {
                         return PortableReaderBase::readFloat(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_INT) {
-                        return PortableReaderBase::readInt(fieldName);
+                        return (float)PortableReaderBase::readInt(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_BYTE) {
-                        return PortableReaderBase::readByte(fieldName);
+						return (float)PortableReaderBase::readByte(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_CHAR) {
-                        return PortableReaderBase::readChar(fieldName);
+						return (float)PortableReaderBase::readChar(fieldName);
                     } else if (currentFieldType == FieldTypes::TYPE_SHORT) {
-                        return PortableReaderBase::readShort(fieldName);
+						return (float)PortableReaderBase::readShort(fieldName);
                     } else {
                         throw exception::HazelcastSerializationException("MorphingPortableReader::*", "IncompatibleClassChangeError");
                     }

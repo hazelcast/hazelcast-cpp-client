@@ -55,7 +55,7 @@ namespace hazelcast {
 
                     boost::shared_ptr<E> object = serializationService.toObject<E>(item);
 
-                    Message<E> listenerMsg(instanceName, *object, publishTime, *member);
+                    Message<E> listenerMsg(instanceName, *object, (long)publishTime, *member);
 
                     listener.onMessage(listenerMsg);
 

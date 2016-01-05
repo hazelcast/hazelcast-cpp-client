@@ -29,7 +29,7 @@ namespace hazelcast {
             }
 
             int Portable::getSerializerId() const {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                return pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_PORTABLE;
             }
         }
     }

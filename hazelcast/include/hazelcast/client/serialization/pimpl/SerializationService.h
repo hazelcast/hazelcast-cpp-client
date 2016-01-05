@@ -95,7 +95,9 @@ namespace hazelcast {
                     inline boost::shared_ptr<T> toObject(const Data &data) {
                         CHECK_NULL(T);
 
-                        DataInput dataInput(data.toByteArray(), Data::TYPE_OFFSET);
+                        // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
+                        // let usage of static member.
+                        DataInput dataInput(data.toByteArray(), 4);
 
                         return readObject<T>(dataInput);
                     }

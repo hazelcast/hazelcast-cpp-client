@@ -15,14 +15,11 @@
  */
 //
 // Created by sancar koyunlu on 6/3/13.
-
-
-
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/InvocationService.h"
-
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
