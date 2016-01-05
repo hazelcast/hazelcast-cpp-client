@@ -45,6 +45,19 @@ namespace hazelcast {
         int MapEvent::getNumberOfEntriesAffected() const {
             return numberOfEntriesAffected;
         }
+
+        std::ostream &MapEvent::operator<<(std::ostream &out) const {
+            out << "EntryEvent{entryEventType=" << eventType.value << eventType << ", member="
+                << member << ", name='" << name << "', numberOfEntriesAffected=" << numberOfEntriesAffected;
+
+            return out;
+        }
     }
 }
+
+std::ostream &operator<<(std::ostream &out, const hazelcast::client::MapEvent &event) {
+    event.operator<<(out);
+    return out;
+}
+
 

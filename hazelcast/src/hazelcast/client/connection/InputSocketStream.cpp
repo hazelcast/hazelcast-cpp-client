@@ -52,7 +52,11 @@ namespace hazelcast {
             }
 
             bool InputSocketStream::readBoolean() {
-                return (bool)readByte();
+                if (readByte() == 0) {
+                    return false;
+                } else {
+                    return true;
+                }
             }
         }
     }

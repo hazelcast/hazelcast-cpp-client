@@ -194,7 +194,7 @@ namespace hazelcast {
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request);
 
-                    return CODEC::decode(*response).response;
+                    return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
@@ -202,14 +202,14 @@ namespace hazelcast {
                                      boost::shared_ptr<connection::Connection> conn) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
 
-                    return CODEC::decode(*response).response;
+                    return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
 
-                    return CODEC::decode(*response).response;
+                    return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
@@ -217,7 +217,7 @@ namespace hazelcast {
 
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
 
-                    return CODEC::decode(*response).response;
+                    return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
@@ -225,7 +225,7 @@ namespace hazelcast {
                                      int partitionId, boost::shared_ptr<connection::Connection> conn) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
 
-                    return CODEC::decode(*response).response;
+                    return (T)CODEC::decode(*response).response;
                 }
 
                 spi::ClientContext *context;

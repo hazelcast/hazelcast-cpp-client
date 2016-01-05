@@ -76,7 +76,7 @@ namespace hazelcast {
             bool operator ()(const Address &lhs, const Address &rhs) const;
         };
 
-        std::ostream& operator<<(std::ostream &stream, const Address &address);
+		std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
 
     }
 };

@@ -39,49 +39,41 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationConstants {
                 public:
-                    static int const CONSTANT_TYPE_NULL;
-                    static int const CONSTANT_TYPE_PORTABLE;
-                    static int const CONSTANT_TYPE_DATA;
-                    static int const CONSTANT_TYPE_BYTE;
-                    static int const CONSTANT_TYPE_BOOLEAN;
-                    static int const CONSTANT_TYPE_CHAR;
-                    static int const CONSTANT_TYPE_SHORT;
-                    static int const CONSTANT_TYPE_INTEGER;
-                    static int const CONSTANT_TYPE_LONG;
-                    static int const CONSTANT_TYPE_FLOAT;
-                    static int const CONSTANT_TYPE_DOUBLE;
-                    static int const CONSTANT_TYPE_STRING;
-                    static int const CONSTANT_TYPE_BYTE_ARRAY;
-                    static int const CONSTANT_TYPE_BOOLEAN_ARRAY;
-                    static int const CONSTANT_TYPE_CHAR_ARRAY;
-                    static int const CONSTANT_TYPE_SHORT_ARRAY;
-                    static int const CONSTANT_TYPE_INTEGER_ARRAY;
-                    static int const CONSTANT_TYPE_LONG_ARRAY;
-                    static int const CONSTANT_TYPE_FLOAT_ARRAY;
-                    static int const CONSTANT_TYPE_DOUBLE_ARRAY;
-                    static int const CONSTANT_TYPE_STRING_ARRAY;
-                    static int const CONSTANT_SERIALIZERS_LENGTH;
+                    int const CONSTANT_TYPE_NULL;
+                    int const CONSTANT_TYPE_PORTABLE;
+                    int const CONSTANT_TYPE_DATA;
+                    int const CONSTANT_TYPE_BYTE;
+                    int const CONSTANT_TYPE_BOOLEAN;
+                    int const CONSTANT_TYPE_CHAR;
+                    int const CONSTANT_TYPE_SHORT;
+                    int const CONSTANT_TYPE_INTEGER;
+                    int const CONSTANT_TYPE_LONG;
+                    int const CONSTANT_TYPE_FLOAT;
+                    int const CONSTANT_TYPE_DOUBLE;
+                    int const CONSTANT_TYPE_STRING;
+                    int const CONSTANT_TYPE_BYTE_ARRAY;
+                    int const CONSTANT_TYPE_BOOLEAN_ARRAY;
+                    int const CONSTANT_TYPE_CHAR_ARRAY;
+                    int const CONSTANT_TYPE_SHORT_ARRAY;
+                    int const CONSTANT_TYPE_INTEGER_ARRAY;
+                    int const CONSTANT_TYPE_LONG_ARRAY;
+                    int const CONSTANT_TYPE_FLOAT_ARRAY;
+                    int const CONSTANT_TYPE_DOUBLE_ARRAY;
+                    int const CONSTANT_TYPE_STRING_ARRAY;
                     // ------------------------------------------------------------
-                    static int const DEFAULT_TYPE_CLASS;
-                    static int const DEFAULT_TYPE_DATE;
-                    static int const DEFAULT_TYPE_BIG_INTEGER;
-                    static int const DEFAULT_TYPE_BIG_DECIMAL;
-                    static int const DEFAULT_TYPE_SERIALIZABLE;
-                    static int const DEFAULT_TYPE_EXTERNALIZABLE;
-                    static int const DEFAULT_TYPE_ENUM;
-                    static int const DEFAULT_TYPE_ARRAY_LIST;
-                    static int const DEFAULT_TYPE_LINKED_LIST;
-
-                    SerializationConstants();
 
                     std::string typeIdToName(int typeId);
 
+                    static SerializationConstants *getInstance();
                 private:
                     const int size;
                     std::vector<std::string> typeIdNameVector;
 
-                    int idToIndex(int id);
+                    static SerializationConstants *instance;
 
+                    SerializationConstants();
+
+                    int idToIndex(int id);
                 };
             }
         }

@@ -35,6 +35,8 @@ namespace hazelcast {
 
         HAZELCAST_API void sleep(int seconds);
 
+        HAZELCAST_API void sleepmillis(unsigned long milliseconds);
+
         HAZELCAST_API char *strtok(char *str, const char *sep, char ** context);
 
         /**

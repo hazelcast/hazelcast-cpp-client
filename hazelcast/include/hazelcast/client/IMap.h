@@ -592,9 +592,9 @@ namespace hazelcast {
             std::vector<V> values(const serialization::IdentifiedDataSerializable &predicate) {
                 std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::values(predicate);
                 int size = dataResult.size();
-                std::vector<K> values(size);
+                std::vector<V> values(size);
                 for (int i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> value = toObject<K>(dataResult[i]);
+                    boost::shared_ptr<V> value = toObject<V>(dataResult[i]);
                     values[i] = *value;
                 }
                 return values;

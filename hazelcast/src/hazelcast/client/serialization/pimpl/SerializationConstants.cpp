@@ -23,42 +23,32 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-            	int const SerializationConstants::CONSTANT_TYPE_NULL = 0;
-                int const SerializationConstants::CONSTANT_TYPE_PORTABLE = -1;
-                int const SerializationConstants::CONSTANT_TYPE_DATA = -2;
-                int const SerializationConstants::CONSTANT_TYPE_BYTE = -3;
-                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN = -4;
-                int const SerializationConstants::CONSTANT_TYPE_CHAR = -5;
-                int const SerializationConstants::CONSTANT_TYPE_SHORT = -6;
-                int const SerializationConstants::CONSTANT_TYPE_INTEGER = -7;
-                int const SerializationConstants::CONSTANT_TYPE_LONG = -8;
-                int const SerializationConstants::CONSTANT_TYPE_FLOAT = -9;
-                int const SerializationConstants::CONSTANT_TYPE_DOUBLE = -10;
-                int const SerializationConstants::CONSTANT_TYPE_STRING = -11;
-                int const SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY = -12;
-                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY = -13;
-                int const SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY = -14;
-                int const SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY = -15;
-                int const SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY = -16;
-                int const SerializationConstants::CONSTANT_TYPE_LONG_ARRAY = -17;
-                int const SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY = -18;
-                int const SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY = -19;
-                int const SerializationConstants::CONSTANT_TYPE_STRING_ARRAY = -20;
-                int const SerializationConstants::CONSTANT_SERIALIZERS_LENGTH = 21;
-                // ------------------------------------------------------------
-                int const SerializationConstants::DEFAULT_TYPE_CLASS = -100;
-                int const SerializationConstants::DEFAULT_TYPE_DATE = -101;
-                int const SerializationConstants::DEFAULT_TYPE_BIG_INTEGER = -102;
-                int const SerializationConstants::DEFAULT_TYPE_BIG_DECIMAL = -103;
-                int const SerializationConstants::DEFAULT_TYPE_SERIALIZABLE = -104;
-                int const SerializationConstants::DEFAULT_TYPE_EXTERNALIZABLE = -105;
-                int const SerializationConstants::DEFAULT_TYPE_ENUM = -106;
-                int const SerializationConstants::DEFAULT_TYPE_ARRAY_LIST = -107;
-                int const SerializationConstants::DEFAULT_TYPE_LINKED_LIST = -108;
+                SerializationConstants *SerializationConstants::instance = NULL;
 
                 SerializationConstants::SerializationConstants()
-                :size(30)
-                , typeIdNameVector(size) {
+                : CONSTANT_TYPE_NULL(0)
+                , CONSTANT_TYPE_PORTABLE(-1)
+                , CONSTANT_TYPE_DATA(-2)
+                , CONSTANT_TYPE_BYTE(-3)
+                , CONSTANT_TYPE_BOOLEAN(-4)
+                , CONSTANT_TYPE_CHAR(-5)
+                , CONSTANT_TYPE_SHORT(-6)
+                , CONSTANT_TYPE_INTEGER(-7)
+                , CONSTANT_TYPE_LONG(-8)
+                , CONSTANT_TYPE_FLOAT(-9)
+                , CONSTANT_TYPE_DOUBLE(-10)
+                , CONSTANT_TYPE_STRING(-11)
+                , CONSTANT_TYPE_BYTE_ARRAY(-12)
+                , CONSTANT_TYPE_BOOLEAN_ARRAY(-13)
+                , CONSTANT_TYPE_CHAR_ARRAY(-14)
+                , CONSTANT_TYPE_SHORT_ARRAY(-15)
+                , CONSTANT_TYPE_INTEGER_ARRAY(-16)
+                , CONSTANT_TYPE_LONG_ARRAY(-17)
+                , CONSTANT_TYPE_FLOAT_ARRAY(-18)
+                , CONSTANT_TYPE_DOUBLE_ARRAY(-19)
+                , CONSTANT_TYPE_STRING_ARRAY(-20)
+                , size(21)
+                , typeIdNameVector(size){
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_NULL)] = "null";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DATA)] = "data";
@@ -80,15 +70,6 @@ namespace hazelcast {
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_FLOAT_ARRAY)] = "floatArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_DOUBLE_ARRAY)] = "doubleArray";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING_ARRAY)] = "stringArray";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_CLASS)] = "class";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_DATE)] = "date";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_INTEGER)] = "bigInteger";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_BIG_DECIMAL)] = "bigDecimal";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_SERIALIZABLE)] = "serializable";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_EXTERNALIZABLE)] = "externalizable";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_ENUM)] = "enum";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_ARRAY_LIST)] = "arrayList";
-                    typeIdNameVector[idToIndex(DEFAULT_TYPE_LINKED_LIST)] = "linkedList";
                 }
 
                 std::string SerializationConstants::typeIdToName(int typeId) {
@@ -99,7 +80,14 @@ namespace hazelcast {
                 }
 
                 int SerializationConstants::idToIndex(int id) {
-                    return id + size;
+                    return id + size - 1;
+                }
+
+                SerializationConstants *SerializationConstants::getInstance() {
+                    if (NULL == instance) {
+                        instance = new SerializationConstants();
+                    }
+                    return instance;
                 }
             }
         }

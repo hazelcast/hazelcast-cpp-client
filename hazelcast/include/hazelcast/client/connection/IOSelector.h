@@ -69,7 +69,6 @@ namespace hazelcast {
                 void removeSocket(const Socket &socket);
 
             protected:
-
                 struct timeval t;
                 util::SocketSet socketSet;
                 int wakeUpListenerSocketId;

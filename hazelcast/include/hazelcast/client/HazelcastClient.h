@@ -83,9 +83,7 @@ namespace hazelcast {
  *  * docs/            => html doxygen documentations are here.
  *
  *  And each of the folders above contains following
- *  * examples/
- *     + testApp.exe   => example command line client tool to connect hazelcast servers.
- *     + TestApp.cpp   => code  of the example command line tool.
+ *  * examples/        => Contains code samples for the C++ API usage.
  *
  *  *  hazelcast/
  *      +  lib/        => Contains both shared and static library of hazelcast.

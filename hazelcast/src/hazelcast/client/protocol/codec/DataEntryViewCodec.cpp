@@ -38,8 +38,8 @@ namespace hazelcast {
                     int64_t version = clientMessage.get<int64_t>(); // version
                     int64_t evictionCriteria = clientMessage.get<int64_t>(); // evictionCriteriaNumber
                     int64_t ttl = clientMessage.get<int64_t>();  // ttl
-                    return map::DataEntryView(key, value, cost, creationTime, expirationTime, hits, lastAccessTime,
-                                              lastStoredTime, lastUpdateTime, version, evictionCriteria, ttl);
+					return map::DataEntryView(key, value, cost, creationTime, expirationTime, hits, lastAccessTime,
+						lastStoredTime, lastUpdateTime, version, evictionCriteria, ttl);
                 }
 
                 void DataEntryViewCodec::encode(const map::DataEntryView &view, ClientMessage &clientMessage) {

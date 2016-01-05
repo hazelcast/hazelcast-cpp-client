@@ -16,14 +16,9 @@
 //
 // Created by sancar koyunlu on 8/12/13.
 
-
-
-
-
 #ifndef HAZELCAST_ObjectDataOutput
 #define HAZELCAST_ObjectDataOutput
 
-#include <list>
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
@@ -173,9 +168,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE);
+                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_PORTABLE);
 
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
@@ -194,9 +189,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
+                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_DATA);
                         context->getSerializerHolder().getDataSerializer().write(*this, *object);
                     }
                 }
@@ -211,7 +206,7 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == serializable) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
                     } else {
                         const T *object = static_cast<const T *>(serializable);
                         int type = object->getTypeId();

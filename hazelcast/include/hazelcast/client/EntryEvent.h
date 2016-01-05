@@ -74,7 +74,6 @@ namespace hazelcast {
              * copy method.
              */
             void operator = (int i);
-
         };
 
         /**
@@ -149,7 +148,7 @@ namespace hazelcast {
             *
             * @return
             */
-            const V &getMErgingValue() const {
+            const V &getMergingValue() const {
                 return *mergingValue;
             };
 
@@ -180,6 +179,20 @@ namespace hazelcast {
                 return name;
             };
 
+            std::ostream &operator<< (std::ostream &out) const {
+                out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
+                ", member=" << member << ", name='" << name << "', key=" << *key;
+                if (value.get()) {
+                    out << ", value=" << *value;
+                }
+                if (oldValue.get()) {
+                    out << ", oldValue=" << *oldValue;
+                }
+                if (mergingValue.get()) {
+                    out << ", mergingValue=" << *mergingValue;
+                }
+                return out;
+            }
         private:
             std::string name;
             Member member;
@@ -191,6 +204,12 @@ namespace hazelcast {
 
         };
     }
+}
+
+template <typename K, typename V>
+std::ostream &operator<<(std::ostream &out, const hazelcast::client::EntryEvent<K, V> &event) {
+    event.operator<<(out);
+    return out;
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

@@ -44,10 +44,14 @@ namespace hazelcast {
         }
 
 		void sleep(int seconds){
+            sleepmillis((unsigned long)(1000 * seconds));
+		}
+
+		void sleepmillis(unsigned long milliseconds){
         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-			Sleep(seconds * 1000);
+			Sleep(milliseconds);
         #else
-			::sleep((unsigned int)seconds);
+			::usleep((useconds_t)(1000 * milliseconds));
         #endif
 		}
 

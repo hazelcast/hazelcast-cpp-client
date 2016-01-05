@@ -75,8 +75,8 @@ namespace hazelcast {
                     }
 
                     {
-                        int32_t expected = 0x1A * threeBytesFactor +
-                                           0x9A * twoBytesFactor + 0xAA * oneByteFactor + 0xBA;
+						int32_t expected = 0x1A * (int32_t)threeBytesFactor +
+							0x9A * (int32_t)twoBytesFactor + 0xAA * (int32_t)oneByteFactor + 0xBA;
                         int32_t actual;
                         byte *resBytes = (byte *)&actual;
                         hazelcast::util::Bits::nativeToLittleEndian4(&expected, &actual);

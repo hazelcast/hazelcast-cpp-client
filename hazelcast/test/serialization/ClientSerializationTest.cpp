@@ -480,7 +480,7 @@ namespace hazelcast {
 
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
-                char boolArray[] = {true, false, false, true};
+                bool boolArray[] = {true, false, false, true};
                 std::vector<bool> ba(boolArray, boolArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
