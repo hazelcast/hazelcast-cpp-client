@@ -99,4 +99,7 @@ else
     echo "Test FAILED. Result:${result}"
 fi
 
+echo "Removing the build folder(${BUILD_DIR})"
+rm -rf ${BUILD_DIR}
+
 exit ${result}

@@ -84,3 +84,6 @@ SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
 %BUILD_DIR%\hazelcast\test\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% || exit /b 1
 
 taskkill /F /FI "WINDOWTITLE eq cpp-java"
+
+echo "Removing the build folder(%BUILD_DIR%)"
+rm -rf %BUILD_DIR%
