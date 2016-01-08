@@ -33,8 +33,8 @@ echo "Moving 32bit external libraries to target"
 cp -R external/include/* cpp/Linux_32/external/include/
 
 echo "Moving 32bit examples to target"
-cp examples/*cpp cpp/Linux_32/examples/
-cp ReleaseStatic32/examples/*exe cpp/Linux_32/examples/
+cp -r examples cpp/Linux_32/examples/src
+find ReleaseStatic32/examples -perm +111 -type f -exec cp {} cpp/Linux_32/examples/ \;
 
 echo "Clearing temporary 32bit libraries"
 rm -rf ./ReleaseShared32
@@ -69,8 +69,8 @@ echo "Moving 64bit external libraries to target"
 cp -R external/include/* cpp/Linux_64/external/include/
 
 echo "Moving 64bit examples to target"
-cp examples/*cpp cpp/Linux_64/examples/
-cp ReleaseStatic64/examples/*exe cpp/Linux_64/examples/
+cp -r examples cpp/Linux_64/examples/src
+find ReleaseStatic64/examples -perm +111 -type f -exec cp {} cpp/Linux_64/examples/ \;
 
 echo "Clearing temporary 64bit libraries"
 rm -rf ./ReleaseShared64
