@@ -34,8 +34,8 @@ echo "Moving 32bit external libraries to target"
 xcopy /S /Q external\include\* cpp\Windows_32\external\include\
 
 echo "Moving 32bit examples to target"
-copy examples\*cpp  cpp\Windows_32\examples
-copy ReleaseStatic32\examples\Release\*exe  cpp\Windows_32\examples
+xcopy /S /Q examples  cpp\Windows_32\examples\src\
+for /R ReleaseStatic32\examples %%G IN (*.exe) DO xcopy "%%G" cpp\Windows_32\examples
 
 echo "Clearing temporary 32bit librares"
 rm -rf .\ReleaseShared32
@@ -73,8 +73,8 @@ echo "Moving 64bit external libraries to target"
 xcopy /S /Q external\include\* cpp\Windows_64\external\include\
 
 echo "Moving 64bit examples to target"
-copy examples\*cpp  cpp\Windows_64\examples
-copy ReleaseStatic64\examples\Release\*exe  cpp\Windows_64\examples
+xcopy /S /Q examples  cpp\Windows_64\examples\src\
+for /R ReleaseStatic64\examples %%G IN (*.exe) DO xcopy "%%G" cpp\Windows_64\examples
 
 echo "Clearing tempraroy 64bit librares"
 rm -rf ./ReleaseShared64
