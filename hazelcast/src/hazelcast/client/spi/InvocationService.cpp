@@ -35,6 +35,8 @@
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
+#include <assert.h>
+
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -238,7 +240,13 @@ namespace hazelcast {
                                                  boost::shared_ptr<connection::CallPromise> promise) {
                 int64_t callId = clientContext.getConnectionManager().getNextCallId();
                 promise->getRequest()->setCorrelationId(callId);
-                getCallPromiseMap(connection)->put(callId, promise);
+                if (getCallPromiseMap(connection)->put(callId, promise).get()) {
+                    std::ostringstream out;
+                    out << "[InvocationService::registerCall] The call id map already contains the promise for call "
+                                   "id:" << callId << ". This is unexpected!!!";
+                    hazelcast::util::ILogger::getLogger().severe(out.str());
+                    assert(0); // just fail in debug mode
+                }
                 if (promise->getEventHandler() != NULL) {
                     registerEventHandler(callId, connection, promise);
                 }
@@ -267,8 +275,20 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<connection::CallPromise> promise = deRegisterCall(connection, correlationId);
-                if (promise.get() == NULL) {
-                    return;
+                if (NULL == promise.get()) {
+                    if (connection.live) {
+                        std::ostringstream out;
+                        out << "[InvocationService::handleMessage] Could not find the promise for correlation id:" <<
+                        correlationId << ". This is unexpected!!! ";
+                        std::vector<int64_t> entries = getCallPromiseMap(connection)->keys();
+                        out << "There are " << entries.size() << " entries in the call promise map. Entries are:" << std::endl;
+                        for (std::vector<int64_t>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+                            out << *it << std::endl;
+                        }
+                        hazelcast::util::ILogger::getLogger().severe(out.str());
+                        assert(0); // fail in debug mode
+                        return;
+                    }
                 }
 
                 if (!handleException(message.get(), promise, connection.getRemoteEndpoint()))

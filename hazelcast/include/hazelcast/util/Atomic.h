@@ -50,7 +50,7 @@ namespace hazelcast {
                 return v++;
             }
 
-            T &operator++() {
+            T operator++() {
                 LockGuard lockGuard(mutex);
                 return ++v;
             }
@@ -65,7 +65,7 @@ namespace hazelcast {
                 return v;
             }
 
-            T &operator--() {
+            T operator--() {
                 LockGuard lockGuard(mutex);
                 return --v;
             }
