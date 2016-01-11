@@ -76,6 +76,10 @@ if %errorlevel% NEQ 0 (
     exit /b 1
 )
 
+echo "Cleaning up release directories"
+rm -rf ./Release*
+rm -rf ./cpp
+
 echo "All Tests PASSED"
 exit /b 0
 

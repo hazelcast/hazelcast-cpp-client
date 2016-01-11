@@ -96,6 +96,10 @@ then
     exit 1
 fi
 
+# Remove the release related folder
+rm -rf ./Release*
+rm -rf ./cpp
+
 echo "All tests PASSED"
 
 exit 0
