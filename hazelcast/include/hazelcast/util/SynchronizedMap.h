@@ -149,7 +149,7 @@ namespace hazelcast {
 
             std::vector<K> keys() {
                 util::LockGuard lg(mapLock);
-                std::vector<boost::shared_ptr<V> > keysArray(internalMap.size());
+                std::vector<K> keysArray(internalMap.size());
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
                 int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
