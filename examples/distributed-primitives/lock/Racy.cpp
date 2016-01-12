@@ -20,34 +20,29 @@
 #include <hazelcast/client/IAtomicLong.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IAtomicLong number1 = hz.getIAtomicLong("number1");
-        hazelcast::client::IAtomicLong number2 = hz.getIAtomicLong("number2");
-        std::cout << "Started" << std::endl;
-        for (int k = 0; k < 1000000; k++) {
-            if (k % 10000 == 0) {
-                std::cout << "at:" << k << std::endl;
-            }
-            if (k % 2 == 0) {
-                long n1 = number1.get();
-                hazelcast::util::sleepmillis(100);
-                long n2 = number2.get();
-                if (n1 - n2 != 0) {
-                    std::cout << "Difference detected at" << k << " !" << std::endl;
-                }
-            } else {
-                number1.incrementAndGet();
-                number2.incrementAndGet();
-            }
+    hazelcast::client::IAtomicLong number1 = hz.getIAtomicLong("number1");
+    hazelcast::client::IAtomicLong number2 = hz.getIAtomicLong("number2");
+    std::cout << "Started" << std::endl;
+    for (int k = 0; k < 1000000; k++) {
+        if (k % 10000 == 0) {
+            std::cout << "at:" << k << std::endl;
         }
-
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+        if (k % 2 == 0) {
+            long n1 = number1.get();
+            hazelcast::util::sleepmillis(100);
+            long n2 = number2.get();
+            if (n1 - n2 != 0) {
+                std::cout << "Difference detected at" << k << " !" << std::endl;
+            }
+        } else {
+            number1.incrementAndGet();
+            number2.incrementAndGet();
+        }
     }
+
 
     std::cout << "Finished" << std::endl;
 

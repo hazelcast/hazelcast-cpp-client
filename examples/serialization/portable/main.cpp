@@ -32,15 +32,15 @@ public:
         return name.get();
     }
 
-    int getFactoryId() const{
+    int getFactoryId() const {
         return 1;
     }
 
-    int getClassId() const{
+    int getClassId() const {
         return 1;
     }
 
-    void writePortable(hazelcast::client::serialization::PortableWriter& out) const {
+    void writePortable(hazelcast::client::serialization::PortableWriter &out) const {
         std::cout << "Serialize" << std::endl;
         out.writeUTF("name", name.get());
     }
@@ -54,30 +54,23 @@ private:
     std::auto_ptr<std::string> name;
 };
 
-namespace std{
-    std::ostream &operator<<(std::ostream &out, const Person &p) {
-        const string *str = p.getName();
-        out << ((NULL == str) ? "NULL" : str->c_str());
-        return out;
-    }
+std::ostream &operator<<(std::ostream &out, const Person &p) {
+    const std::string *str = p.getName();
+    out << ((NULL == str) ? "NULL" : str->c_str());
+    return out;
 }
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Person> map = hz.getMap<std::string, Person>("map");
-        Person testPerson("foo");
-        map.put("foo", testPerson);
-        std::cout << "Finished writing" << std::endl;
-        std::cout << map.get("foo");
-        std::cout << "Finished reading" << std::endl;
+    hazelcast::client::IMap<std::string, Person> map = hz.getMap<std::string, Person>("map");
+    Person testPerson("foo");
+    map.put("foo", testPerson);
+    std::cout << "Finished writing" << std::endl;
+    std::cout << map.get("foo");
+    std::cout << "Finished reading" << std::endl;
 
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
 
     std::cout << "Finished" << std::endl;
 

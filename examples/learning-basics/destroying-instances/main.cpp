@@ -19,22 +19,17 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IQueue<std::string> q1 = hz.getQueue<std::string>("q");
-        hazelcast::client::IQueue<std::string> q2 = hz.getQueue<std::string>("q");
+    hazelcast::client::IQueue<std::string> q1 = hz.getQueue<std::string>("q");
+    hazelcast::client::IQueue<std::string> q2 = hz.getQueue<std::string>("q");
 
-        q1.put("foo");
-        std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
+    q1.put("foo");
+    std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
 
-        q1.destroy();
-        std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    q1.destroy();
+    std::cout << "q1.size:" << q1.size() << "  q2.size:" << q2.size() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

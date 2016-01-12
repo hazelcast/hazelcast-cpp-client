@@ -38,23 +38,18 @@ public:
 };
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, std::string> map =
-                hz.getMap<std::string, std::string>("themap");
+    hazelcast::client::IMap<std::string, std::string> map =
+            hz.getMap<std::string, std::string>("themap");
 
-        MapInterceptor interceptor;
-        map.addInterceptor<MapInterceptor>(interceptor);
+    MapInterceptor interceptor;
+    map.addInterceptor<MapInterceptor>(interceptor);
 
-        map.put("1", "1");
+    map.put("1", "1");
 
-        std::cout << "The modified value (modified by the interceptor) at the server:" << map.get("1") << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    std::cout << "The modified value (modified by the interceptor) at the server:" << map.get("1") << std::endl;
 
     std::cout << "Finished" << std::endl;
 

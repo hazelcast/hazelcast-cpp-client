@@ -19,18 +19,14 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<int, std::string> map = hz.getDistributedObject<hazelcast::client::IMap<int, std::string> >("map distributed object");
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    hazelcast::client::IMap<int, std::string> map = hz.getDistributedObject<hazelcast::client::IMap<int, std::string> >(
+            "map distributed object");
 
     std::cout << "Finished" << std::endl;
-    
+
     return 0;
 }
 

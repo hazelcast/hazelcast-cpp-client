@@ -39,10 +39,10 @@ public:
     void incSalary(int amount);
 
     int getSalary() const;
+
 private:
     int salary;
 };
-
 
 
 #endif //HAZELCAST_EXAMPLES_DISTRIBUTED_MAP_ENTRYPROCESSOR_EMPLOYEE_H

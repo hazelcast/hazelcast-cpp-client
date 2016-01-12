@@ -13,19 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(CommandLineTool)
-add_subdirectory(transactions)
-add_subdirectory(spi)
-add_subdirectory(serialization)
-add_subdirectory(network-configuration)
-add_subdirectory(monitoring)
-add_subdirectory(learning-basics)
-add_subdirectory(distributed-topic)
-add_subdirectory(distributed-primitives)
-add_subdirectory(distributed-map)
-add_subdirectory(distributed-collections)
-
-
-
-
+add_executable(setreader ./Reader.cpp)
+add_executable(setwriter ./Writer.cpp)
 

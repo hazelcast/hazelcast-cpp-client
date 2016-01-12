@@ -19,19 +19,14 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
-        std::vector<std::pair<std::string, std::string> > entries = map.entrySet();
-        for (std::vector<std::pair<std::string, std::string> >::const_iterator it = entries.begin();
-             it != entries.end(); ++it) {
-            std::cout << it->first << " " << it->second << std::endl;
-        }
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
+    std::vector<std::pair<std::string, std::string> > entries = map.entrySet();
+    for (std::vector<std::pair<std::string, std::string> >::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+        std::cout << it->first << " " << it->second << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

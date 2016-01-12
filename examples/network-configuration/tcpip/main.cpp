@@ -19,22 +19,17 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        const char *serverIp = "127.0.0.1";
-        const int port = 5701;
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::Address addr(serverIp, port);
-        config.addAddress(addr);
-        hazelcast::client::HazelcastClient hz(config);
+    const char *serverIp = "127.0.0.1";
+    const int port = 5701;
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::Address addr(serverIp, port);
+    config.addAddress(addr);
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("test map");
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("test map");
 
     std::cout << "Finished" << std::endl;
-    
+
     return 0;
 }
 

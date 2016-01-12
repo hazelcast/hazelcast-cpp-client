@@ -83,13 +83,13 @@ private:
     int age;
 };
 
-std::ostream &operator << (std::ostream &out, const Person &p) {
+std::ostream &operator<<(std::ostream &out, const Person &p) {
     const std::string *n = p.getName();
     out << "Person{"
-           << "male=" << p.isMale()
-           << ", name='" << (NULL == n ? "No name" : n->c_str()) << "\'"
-           << ", age=" << p.getAge()
-           << '}';
+    << "male=" << p.isMale()
+    << ", name='" << (NULL == n ? "No name" : n->c_str()) << "\'"
+    << ", age=" << p.getAge()
+    << '}';
     return out;
 }
 
@@ -111,7 +111,8 @@ public:
         return personMap.values(predicate);
     }
 
-    std::vector<Person> getWithNameAndAge(const char *name, int age, hazelcast::client::IMap<std::string, Person> &personMap) {
+    std::vector<Person> getWithNameAndAge(const char *name, int age,
+                                          hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[300];
         hazelcast::util::snprintf(buf, 300, "name == %s AND age == %d", name, age);
         hazelcast::client::query::SqlPredicate predicate(buf);
@@ -145,38 +146,33 @@ public:
 
         std::cout << "Get with name Peter" << std::endl;
         std::vector<Person> values = getWithName("Peter", personMap);
-        for (std::vector<Person>::iterator it = values.begin();it != values.end(); ++it) {
-            std::cout <<  *it << std::endl;
+        for (std::vector<Person>::iterator it = values.begin(); it != values.end(); ++it) {
+            std::cout << *it << std::endl;
         }
 
         std::cout << "Get not with name Peter" << std::endl;
         values = getNotWithName("Peter", personMap);
-        for (std::vector<Person>::const_iterator it = values.begin();it != values.end(); ++it) {
-            std::cout <<  *it << std::endl;
+        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            std::cout << *it << std::endl;
         }
 
         std::cout << "Find name Peter and age 36" << std::endl;
         values = getWithNameAndAge("Peter", 36, personMap);
-        for (std::vector<Person>::const_iterator it = values.begin();it != values.end(); ++it) {
-            std::cout <<  *it << std::endl;
+        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            std::cout << *it << std::endl;
         }
 
         std::cout << "Find name Peter and age 37" << std::endl;
         values = getWithNameAndAge("Peter", 37, personMap);
-        for (std::vector<Person>::const_iterator it = values.begin();it != values.end(); ++it) {
-            std::cout <<  *it << std::endl;
+        for (std::vector<Person>::const_iterator it = values.begin(); it != values.end(); ++it) {
+            std::cout << *it << std::endl;
         }
     }
 };
 
 int main() {
-    try {
-        PredicateMember m;
-        m.run();
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    PredicateMember m;
+    m.run();
 
     std::cout << "Finished" << std::endl;
 

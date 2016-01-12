@@ -22,20 +22,15 @@ class MyInterceptor : public hazelcast::client::SocketInterceptor {
 public:
     void onConnect(const hazelcast::client::Socket &connectedSocket) {
         std::cout << "[MyInterceptor::onConnect] Connected to remote host " <<
-                connectedSocket.getAddress() << std::endl;
+        connectedSocket.getAddress() << std::endl;
     }
 };
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        MyInterceptor interceptor;
-        config.setSocketInterceptor(&interceptor);
-        hazelcast::client::HazelcastClient hz(config);
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    hazelcast::client::ClientConfig config;
+    MyInterceptor interceptor;
+    config.setSocketInterceptor(&interceptor);
+    hazelcast::client::HazelcastClient hz(config);
 
     std::cout << "Finished" << std::endl;
 

@@ -94,7 +94,7 @@ namespace hazelcast {
             /**
              * @returns the item.
              */
-            const E &geItem() const {
+            const E &getItem() const {
                 return item;
             };
 

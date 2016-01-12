@@ -20,24 +20,19 @@
 #include <hazelcast/client/IAtomicLong.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IAtomicLong counter = hz.getIAtomicLong("counter");
+    hazelcast::client::IAtomicLong counter = hz.getIAtomicLong("counter");
 
-        for (int i = 0; i < 1000 * 1000; ++i) {
-            if (i % 500000 == 0) {
-                std::cout << "At:" << i << std::endl;
-            }
-            counter.incrementAndGet();
+    for (int i = 0; i < 1000 * 1000; ++i) {
+        if (i % 500000 == 0) {
+            std::cout << "At:" << i << std::endl;
         }
-
-        std::cout << "Count is:" << counter.get() << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+        counter.incrementAndGet();
     }
+
+    std::cout << "Count is:" << counter.get() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

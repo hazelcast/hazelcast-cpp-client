@@ -17,29 +17,19 @@
 // Created by İhsan Demir on 21/12/15.
 //
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/ICountDownLatch.h>
 
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::ICountDownLatch latch = hz.getICountDownLatch("countDownLatch");
+    hazelcast::client::IList<std::string> list = hz.getList<std::string>("list");
 
-    std::cout << "Starting" << std::endl;
+    list.add("Tokyo");
+    list.add("Paris");
+    list.add("London");
+    list.add("New York");
 
-    //we init the latch with 1, since we only need to complete a single step.
-    latch.trySetCount(1);
-
-    //do some sleeping to simulate doing something
-    hazelcast::util::sleep(30);
-
-    //now we do a countdown which notifies all followers
-    latch.countDown();
-
-    std::cout << "Leader finished" << std::endl;
-
-    //we need to clean up the latch
-    latch.destroy();
+    std::cout << "Putting finished!" << std::endl;
 
     std::cout << "Finished" << std::endl;
 
