@@ -145,7 +145,7 @@ namespace hazelcast {
                         }
                         // ----- Test signed get ends ---------------------------------
 
-                        byte firstChar = 'B';
+                        const byte firstChar = 'B';
                         byte strBytes[8] = {4, 0, 0, 0, /* This part is the len field which is 4 bytes */
                                             firstChar, firstChar + 1, firstChar + 2, firstChar + 3}; // This is string BCDE
 

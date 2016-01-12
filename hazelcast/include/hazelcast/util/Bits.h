@@ -293,7 +293,7 @@ namespace hazelcast {
             }
 
             inline static void swapInplace4(void *orig) {
-                register uint32_t value = * reinterpret_cast<const uint32_t*> (orig);
+                uint32_t value = * reinterpret_cast<const uint32_t*> (orig);
                 swap_4(&value, orig);
             }
 
