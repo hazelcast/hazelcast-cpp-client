@@ -20,21 +20,16 @@
 #include <hazelcast/client/ICountDownLatch.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::ICountDownLatch latch = hz.getICountDownLatch("countDownLatch");
+    hazelcast::client::ICountDownLatch latch = hz.getICountDownLatch("countDownLatch");
 
-        std::cout << "Waiting" << std::endl;
+    std::cout << "Waiting" << std::endl;
 
-        bool success = latch.await(30000);
+    bool success = latch.await(30000);
 
-        std::cout << "Complete:" << success << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    std::cout << "Complete:" << success << std::endl;
 
     std::cout << "Finished" << std::endl;
 

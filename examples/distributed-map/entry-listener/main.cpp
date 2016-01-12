@@ -55,24 +55,19 @@ public:
 };
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
+    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
 
-        MyEntryListener listener;
+    MyEntryListener listener;
 
-        map.addEntryListener(listener, true);
+    map.addEntryListener(listener, true);
 
-        std::cout << "EntryListener registered" << std::endl;
+    std::cout << "EntryListener registered" << std::endl;
 
-        // wait for modify map executable to run
-        hazelcast::util::sleep(10);
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    // wait for modify map executable to run
+    hazelcast::util::sleep(10);
 
     std::cout << "Finished" << std::endl;
 

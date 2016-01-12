@@ -20,19 +20,14 @@
 #include <hazelcast/client/IdGenerator.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IdGenerator idGenerator = hz.getIdGenerator("idGenerator");
-        std::ostringstream out("somemap");
-        out << idGenerator.newId();
-        hazelcast::client::IMap<int, int> map = hz.getMap<int, int>(out.str());
+    hazelcast::client::IdGenerator idGenerator = hz.getIdGenerator("idGenerator");
+    std::ostringstream out("somemap");
+    out << idGenerator.newId();
+    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>(out.str());
 
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
 
     std::cout << "Finished" << std::endl;
 

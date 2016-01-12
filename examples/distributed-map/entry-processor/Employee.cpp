@@ -29,11 +29,11 @@ Employee::Employee() {
 Employee::Employee(int s) : salary(s) {
 }
 
-int Employee::getFactoryId() const{
+int Employee::getFactoryId() const {
     return 1;
 }
 
-int Employee::getClassId() const{
+int Employee::getClassId() const {
     return 5;
 }
 
@@ -41,7 +41,7 @@ void Employee::writeData(hazelcast::client::serialization::ObjectDataOutput &out
     out.writeInt(salary);
 }
 
-void Employee::readData(hazelcast::client::serialization::ObjectDataInput &in){
+void Employee::readData(hazelcast::client::serialization::ObjectDataInput &in) {
     salary = in.readInt();
 }
 

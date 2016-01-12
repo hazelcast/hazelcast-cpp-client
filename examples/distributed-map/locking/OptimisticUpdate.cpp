@@ -55,35 +55,30 @@ public:
 };
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Value> map =
-                hz.getMap<std::string, Value>("map");
+    hazelcast::client::IMap<std::string, Value> map =
+            hz.getMap<std::string, Value>("map");
 
-        std::string key("1");
-        Value v;
-        map.put(key, v);
-        std::cout << "Starting" << std::endl;
-        for (int k = 0; k < 1000; k++) {
-            if (k % 10 == 0) {
-                std::cout << "At: " << k << std::endl;
-            }
-            for (; ;) {
-                boost::shared_ptr<Value> oldValue = map.get(key);
-                Value newValue(*oldValue);
-                hazelcast::util::sleepmillis(10);
-                newValue.amount++;
-                if (map.replace(key, *oldValue, newValue))
-                    break;
-            }
+    std::string key("1");
+    Value v;
+    map.put(key, v);
+    std::cout << "Starting" << std::endl;
+    for (int k = 0; k < 1000; k++) {
+        if (k % 10 == 0) {
+            std::cout << "At: " << k << std::endl;
         }
-        std::cout << "Finished! Result = " << map.get(key)->amount << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+        for (; ;) {
+            boost::shared_ptr<Value> oldValue = map.get(key);
+            Value newValue(*oldValue);
+            hazelcast::util::sleepmillis(10);
+            newValue.amount++;
+            if (map.replace(key, *oldValue, newValue))
+                break;
+        }
     }
+    std::cout << "Finished! Result = " << map.get(key)->amount << std::endl;
 
     std::cout << "Finished" << std::endl;
 

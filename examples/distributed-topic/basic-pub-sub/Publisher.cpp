@@ -19,17 +19,12 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::ITopic<std::string> topic = hz.getTopic<std::string>("testtopic");
-        topic.publish("first message");
-        std::cout << "Published: Published the message." << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    hazelcast::client::ITopic<std::string> topic = hz.getTopic<std::string>("testtopic");
+    topic.publish("first message");
+    std::cout << "Published: Published the message." << std::endl;
 
     std::cout << "Finished" << std::endl;
 

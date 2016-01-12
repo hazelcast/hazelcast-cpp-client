@@ -86,29 +86,24 @@ std::ostream &operator<<(std::ostream &out, const Person &p) {
 }
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Person> map =
-                hz.getMap<std::string, Person>("map");
+    hazelcast::client::IMap<std::string, Person> map =
+            hz.getMap<std::string, Person>("map");
 
-        map.put("1", Person("peter", true, 36));
-        map.put("2", Person("cathy", false, 40));
-        map.put("3", Person("roger", true, 20));
+    map.put("1", Person("peter", true, 36));
+    map.put("2", Person("cathy", false, 40));
+    map.put("3", Person("roger", true, 20));
 
-        hazelcast::client::query::SqlPredicate predicate("active AND age < 30");
-        std::vector<Person> employees = map.values(predicate);
-        std::cout << "Employees:" << std::endl;
-        for (std::vector<Person>::const_iterator it = employees.begin(); it != employees.end(); ++it) {
-            std::cout << (*it) << std::endl;
-        }
-        std::cout << std::endl;
-
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    hazelcast::client::query::SqlPredicate predicate("active AND age < 30");
+    std::vector<Person> employees = map.values(predicate);
+    std::cout << "Employees:" << std::endl;
+    for (std::vector<Person>::const_iterator it = employees.begin(); it != employees.end(); ++it) {
+        std::cout << (*it) << std::endl;
     }
+    std::cout << std::endl;
+
 
     std::cout << "Finished" << std::endl;
 

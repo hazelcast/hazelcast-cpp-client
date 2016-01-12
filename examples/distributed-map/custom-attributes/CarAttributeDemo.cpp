@@ -26,7 +26,7 @@ class Car : public hazelcast::client::serialization::IdentifiedDataSerializable 
 public:
     Car() { }
 
-    Car(const char *name){
+    Car(const char *name) {
         attributes["name"] = name;
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
@@ -56,7 +56,7 @@ public:
     }
 
     void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
-        out.writeInt((int)attributes.size());
+        out.writeInt((int) attributes.size());
         for (std::map<std::string, std::string>::const_iterator it = attributes.begin();
              it != attributes.end(); ++it) {
             out.writeUTF(&it->first);
@@ -85,14 +85,14 @@ private:
     std::map<std::string, std::string> attributes;
 };
 
-std::ostream &operator << (std::ostream &out, const Car &c) {
+std::ostream &operator<<(std::ostream &out, const Car &c) {
     out << "Car{"
-           << "attributes={";
+    << "attributes={";
 
     const std::map<std::string, std::string> &attrs = c.getAttributes();
     for (std::map<std::string, std::string>::const_iterator it = attrs.begin();
          it != attrs.end();) {
-        out <<  "(" << it->first << ", " << it->second << ")";
+        out << "(" << it->first << ", " << it->second << ")";
         ++it;
         if (it != attrs.end()) {
             out << ", ";
@@ -105,27 +105,22 @@ std::ostream &operator << (std::ostream &out, const Car &c) {
 }
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<int, Car> map = hz.getMap<int, Car>("cars");
+    hazelcast::client::IMap<int, Car> map = hz.getMap<int, Car>("cars");
 
-        map.put(1, Car("Audi Q7", 250, 22000));
-        map.put(2, Car("BMW X5", 312, 34000));
-        map.put(3, Car("Porsche Cayenne", 408, 57000));
+    map.put(1, Car("Audi Q7", 250, 22000));
+    map.put(2, Car("BMW X5", 312, 34000));
+    map.put(3, Car("Porsche Cayenne", 408, 57000));
 
-        // we're using a custom attribute called 'attribute' which is provided by the 'CarAttributeExtractor'
-        // we are also passing an argument 'mileage' to the extractor
-        hazelcast::client::query::SqlPredicate criteria("attribute[mileage] < 30000");
-        std::vector<Car> cars = map.values(criteria);
+    // we're using a custom attribute called 'attribute' which is provided by the 'CarAttributeExtractor'
+    // we are also passing an argument 'mileage' to the extractor
+    hazelcast::client::query::SqlPredicate criteria("attribute[mileage] < 30000");
+    std::vector<Car> cars = map.values(criteria);
 
-        for (std::vector<Car>::const_iterator it = cars.begin(); it != cars.end(); ++it) {
-            std::cout << (*it) << std::endl;
-        }
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    for (std::vector<Car>::const_iterator it = cars.begin(); it != cars.end(); ++it) {
+        std::cout << (*it) << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

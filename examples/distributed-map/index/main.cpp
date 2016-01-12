@@ -81,38 +81,33 @@ private:
 };
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Person> map =
-                hz.getMap<std::string, Person>("personsWithIndex");
-        
-        map.addIndex("name", true);
+    hazelcast::client::IMap<std::string, Person> map =
+            hz.getMap<std::string, Person>("personsWithIndex");
 
-        const int mapSize = 200000;
+    map.addIndex("name", true);
 
-        char buf[30];
-        char name[30];
-        time_t start = time(NULL);
-        for (int i = 0; i < mapSize; ++i) {
-           hazelcast::util::snprintf(buf, 30, "person-%d", i);
-           hazelcast::util::snprintf(name, 50, "myname-%d", i % 1000);
-           Person p(name, (i%2==0), (i % 100));
-           map.put(buf, p);
-        }
-        time_t end = time(NULL);
-        std::cout << "Put " << mapSize << " entries into the map in " << end - start << " seconds" << std::endl;
+    const int mapSize = 200000;
 
-        start = time(NULL);
-        hazelcast::client::query::SqlPredicate predicate("name == 'myname-30'");
-        std::vector<std::pair<std::string, Person> > entries = map.entrySet(predicate);
-        end = time(NULL);
-        std::cout << "The query resulted in " << entries.size() << " entries in " << end-start << " seconds" << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    char buf[30];
+    char name[30];
+    time_t start = time(NULL);
+    for (int i = 0; i < mapSize; ++i) {
+        hazelcast::util::snprintf(buf, 30, "person-%d", i);
+        hazelcast::util::snprintf(name, 50, "myname-%d", i % 1000);
+        Person p(name, (i % 2 == 0), (i % 100));
+        map.put(buf, p);
     }
+    time_t end = time(NULL);
+    std::cout << "Put " << mapSize << " entries into the map in " << end - start << " seconds" << std::endl;
+
+    start = time(NULL);
+    hazelcast::client::query::SqlPredicate predicate("name == 'myname-30'");
+    std::vector<std::pair<std::string, Person> > entries = map.entrySet(predicate);
+    end = time(NULL);
+    std::cout << "The query resulted in " << entries.size() << " entries in " << end - start << " seconds" << std::endl;
 
     std::cout << "Finished" << std::endl;
 

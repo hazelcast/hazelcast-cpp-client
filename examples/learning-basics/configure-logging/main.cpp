@@ -20,14 +20,9 @@
 
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        config.setLogLevel(hazelcast::client::FINEST);
-        hazelcast::client::HazelcastClient hz(config);
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    hazelcast::client::ClientConfig config;
+    config.setLogLevel(hazelcast::client::FINEST);
+    hazelcast::client::HazelcastClient hz(config);
 
     std::cout << "Finished" << std::endl;
 

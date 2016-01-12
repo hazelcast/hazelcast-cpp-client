@@ -18,12 +18,8 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/MemberAttributeEvent.h>
-#include <hazelcast/client/MembershipEvent.h>
-#include <hazelcast/client/MembershipListener.h>
 #include <hazelcast/client/InitialMembershipListener.h>
 #include <hazelcast/client/InitialMembershipEvent.h>
-#include <hazelcast/client/Member.h>
-#include <vector>
 
 class MyInitialMemberListener : public hazelcast::client::InitialMembershipListener {
 
@@ -37,7 +33,8 @@ public:
     }
 
     void memberAdded(const hazelcast::client::MembershipEvent &membershipEvent) {
-        std::cout << "[MyInitialMemberListener::memberAdded] New member joined:" << membershipEvent.getMember().getAddress() <<
+        std::cout << "[MyInitialMemberListener::memberAdded] New member joined:" <<
+        membershipEvent.getMember().getAddress() <<
         std::endl;
     }
 
@@ -47,7 +44,8 @@ public:
     }
 
     void memberAttributeChanged(const hazelcast::client::MemberAttributeEvent &memberAttributeEvent) {
-        std::cout << "[MyInitialMemberListener::memberAttributeChanged] Member attribute:" << memberAttributeEvent.getKey()
+        std::cout << "[MyInitialMemberListener::memberAttributeChanged] Member attribute:" <<
+        memberAttributeEvent.getKey()
         << " changed. Value:" << memberAttributeEvent.getValue() << " for member:" <<
         memberAttributeEvent.getMember().getAddress() << std::endl;
     }
@@ -74,25 +72,37 @@ public:
 };
 
 int main() {
+    MyMemberListener memberListener;
+    MyInitialMemberListener initialMemberListener;
+
+    hazelcast::client::Cluster *clusterPtr = NULL;
     try {
         hazelcast::client::ClientConfig config;
         hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::Cluster cluster = hz.getCluster();
+        hazelcast::client::Cluster &cluster = hz.getCluster();
+        clusterPtr = &cluster;
         std::vector<hazelcast::client::Member> members = cluster.getMembers();
         std::cout << "The following are members in the cluster:" << std::endl;
         for (std::vector<hazelcast::client::Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
             std::cout << it->getAddress() << std::endl;
         }
-        
-        MyMemberListener memberListener;
+
         cluster.addMembershipListener(&memberListener);
-        
-        MyInitialMemberListener initialMemberListener;
+
         cluster.addMembershipListener(&initialMemberListener);
-        
+
+        // sleep some time for the events to be delivered before exiting
+        hazelcast::util::sleep(3);
+
+        cluster.removeMembershipListener(&memberListener);
+        cluster.removeMembershipListener(&initialMemberListener);
     } catch (hazelcast::client::exception::IException &e) {
         std::cerr << "Test failed !!! " << e.what() << std::endl;
+        if (NULL != clusterPtr) {
+            clusterPtr->removeMembershipListener(&memberListener);
+            clusterPtr->removeMembershipListener(&initialMemberListener);
+        }
         exit(-1);
     }
 

@@ -19,18 +19,24 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
-        map.put("1", "Tokyo");
-        map.put("2", "Paris");
-        map.put("3", "New York");
-        std::cout << "Finished loading map" << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
+    map.put("1", "Tokyo");
+    map.put("2", "Paris");
+    map.put("3", "New York");
+    std::cout << "Finished loading map" << std::endl;
+
+    hazelcast::client::IMap<int, std::vector<char> > binaryMap = hz.getMap<int, std::vector<char> >("MyBinaryMap");
+    std::vector<char> value(100);
+    int key = 3;
+    binaryMap.put(key, value);
+    std::cout << "Inserted an entry with key 3 and a binary value to the binary map." << std::endl;
+
+    boost::shared_ptr<std::vector<char> > valueFromMap = binaryMap.get(key);
+    if (NULL != valueFromMap.get()) {
+        std::cout << "The binary map returned a binary array of size " << valueFromMap->size() << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

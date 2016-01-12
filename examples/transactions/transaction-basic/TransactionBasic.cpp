@@ -21,7 +21,7 @@
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
-    
+
     hazelcast::client::TransactionOptions txOptions;
     txOptions.setTimeout(10);
 
@@ -30,7 +30,8 @@ int main() {
     try {
         txCxt.beginTransaction();
 
-        hazelcast::client::TransactionalMap<std::string, std::string> map = txCxt.getMap<std::string, std::string>("transaction map");
+        hazelcast::client::TransactionalMap<std::string, std::string> map = txCxt.getMap<std::string, std::string>(
+                "transaction map");
 
         map.put("1", "1");
         hazelcast::util::sleepmillis(20);
@@ -43,7 +44,7 @@ int main() {
     }
 
     std::cout << "Finished" << std::endl;
-    
+
     return 0;
 }
 

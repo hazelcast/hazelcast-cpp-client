@@ -19,30 +19,25 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::MultiMap<std::string, std::string> map =
-                hz.getMultiMap<std::string, std::string>("map");
+    hazelcast::client::MultiMap<std::string, std::string> map =
+            hz.getMultiMap<std::string, std::string>("map");
 
-        std::vector<std::string> keys = map.keySet();
-        
-        for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
-            std::vector<std::string> values = map.get(*it);
-            std::cout << *it << " -> (" ;
-            for (std::vector<std::string>::const_iterator valIt = values.begin();valIt != values.end();) {
-                std::cout << *valIt << std::endl;
-                ++valIt;
-                if (valIt != values.end()) {
-                    std::cout << ", ";
-                }
-             }
-            std::cout << ")" << std::endl;
+    std::vector<std::string> keys = map.keySet();
+
+    for (std::vector<std::string>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
+        std::vector<std::string> values = map.get(*it);
+        std::cout << *it << " -> (";
+        for (std::vector<std::string>::const_iterator valIt = values.begin(); valIt != values.end();) {
+            std::cout << *valIt << std::endl;
+            ++valIt;
+            if (valIt != values.end()) {
+                std::cout << ", ";
+            }
         }
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+        std::cout << ")" << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

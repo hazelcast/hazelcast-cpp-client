@@ -19,20 +19,15 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::MultiMap<std::string, std::string> map =
-                hz.getMultiMap<std::string, std::string>("map");
+    hazelcast::client::MultiMap<std::string, std::string> map =
+            hz.getMultiMap<std::string, std::string>("map");
 
-        map.put("a", "1");
-        map.put("a", "2");
-        map.put("b", "3");
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    map.put("a", "1");
+    map.put("a", "2");
+    map.put("b", "3");
 
     std::cout << "Finished" << std::endl;
 

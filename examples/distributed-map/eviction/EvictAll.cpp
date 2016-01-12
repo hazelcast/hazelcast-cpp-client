@@ -19,35 +19,30 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("evictiontestmap");
+    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("evictiontestmap");
 
-        int numberOfKeysToLock = 4;
-        int numberOfEntriesToAdd = 1000;
+    int numberOfKeysToLock = 4;
+    int numberOfEntriesToAdd = 1000;
 
-        for (int i = 0; i < numberOfEntriesToAdd; i++) {
-            map.put(i, i);
-        }
-
-        for (int i = 0; i < numberOfKeysToLock; i++) {
-            map.lock(i);
-        }
-
-        std::cout << "# Map size before evictAll\t:" << map.size() << std::endl;
-
-        // should keep locked keys and evict all others.
-        map.evictAll();
-
-        std::cout << "# After calling evictAll..." << std::endl;
-        std::cout << "# Expected map size\t: " << numberOfKeysToLock << std::endl;
-        std::cout << "# Actual map size\t: " << map.size() << std::endl;
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    for (int i = 0; i < numberOfEntriesToAdd; i++) {
+        map.put(i, i);
     }
+
+    for (int i = 0; i < numberOfKeysToLock; i++) {
+        map.lock(i);
+    }
+
+    std::cout << "# Map size before evictAll\t:" << map.size() << std::endl;
+
+    // should keep locked keys and evict all others.
+    map.evictAll();
+
+    std::cout << "# After calling evictAll..." << std::endl;
+    std::cout << "# Expected map size\t: " << numberOfKeysToLock << std::endl;
+    std::cout << "# Actual map size\t: " << map.size() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

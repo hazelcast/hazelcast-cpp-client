@@ -21,54 +21,51 @@
 #include <hazelcast/client/ILock.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IAtomicLong number1 = hz.getIAtomicLong("number1");
-        hazelcast::client::IAtomicLong number2 = hz.getIAtomicLong("number2");
-        hazelcast::client::ILock lock = hz.getILock("lock");
-        std::cout << "Started" << std::endl;
-        for (int k = 0; k < 1000000; k++) {
-            if (k % 100 == 0) {
-                std::cout << "at:" << k << std::endl;
-            }
+    hazelcast::client::IAtomicLong number1 = hz.getIAtomicLong("number1");
+    hazelcast::client::IAtomicLong number2 = hz.getIAtomicLong("number2");
+    hazelcast::client::ILock lock = hz.getILock("lock");
+    std::cout << "Started" << std::endl;
+    for (int k = 0; k < 1000000; k++) {
+        if (k % 100 == 0) {
+            std::cout << "at:" << k << std::endl;
+        }
 
-            lock.lock();
+        lock.lock();
 
-            try {
-                if (k % 2 == 0) {
-                    long n1 = number1.get();
-                    hazelcast::util::sleepmillis(10);
-                    long n2 = number2.get();
-                    if (n1 - n2 != 0) {
-                        std::cout << "Datarace detected at" << k << " !" << std::endl;
-                    }
-                } else {
-                    number1.incrementAndGet();
-                    number2.incrementAndGet();
-                }
-            } catch (...) {
-                lock.unlock();
-                throw;
-            }
-
+        try {
             if (k % 2 == 0) {
                 long n1 = number1.get();
-                hazelcast::util::sleepmillis(100);
+                hazelcast::util::sleepmillis(10);
                 long n2 = number2.get();
                 if (n1 - n2 != 0) {
-                    std::cout << "Difference detected at" << k << " !" << std::endl;
+                    std::cout << "Datarace detected at" << k << " !" << std::endl;
                 }
             } else {
                 number1.incrementAndGet();
                 number2.incrementAndGet();
             }
+        } catch (hazelcast::client::exception::IException &e) {
+            lock.unlock();
+            throw;
         }
 
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+        if (k % 2 == 0) {
+            long n1 = number1.get();
+            hazelcast::util::sleepmillis(100);
+            long n2 = number2.get();
+            if (n1 - n2 != 0) {
+                std::cout << "Difference detected at" << k << " !" << std::endl;
+            }
+        } else {
+            number1.incrementAndGet();
+            number2.incrementAndGet();
+        }
+
+        // release the lock
+        lock.unlock();
     }
 
     std::cout << "Finished" << std::endl;

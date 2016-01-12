@@ -39,26 +39,21 @@ public:
 
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Employee> employees = hz.getMap<std::string, Employee>("employees");
+    hazelcast::client::IMap<std::string, Employee> employees = hz.getMap<std::string, Employee>("employees");
 
-        employees.put("John", Employee(1000));
-        employees.put("Mark", Employee(1000));
-        employees.put("Spencer", Employee(1000));
+    employees.put("John", Employee(1000));
+    employees.put("Mark", Employee(1000));
+    employees.put("Spencer", Employee(1000));
 
-        EmployeeRaiseEntryProcessor processor;
-        std::map<std::string, boost::shared_ptr<int> > result =
-                employees.executeOnEntries<int, EmployeeRaiseEntryProcessor>(processor);
+    EmployeeRaiseEntryProcessor processor;
+    std::map<std::string, boost::shared_ptr<int> > result =
+            employees.executeOnEntries<int, EmployeeRaiseEntryProcessor>(processor);
 
-        for (std::map<std::string, boost::shared_ptr<int> >::const_iterator it = result.begin();it != result.end(); ++it) {
-            std::cout << it->first << " salary: " << *it->second << std::endl;
-        }
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    for (std::map<std::string, boost::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
+        std::cout << it->first << " salary: " << *it->second << std::endl;
     }
 
     std::cout << "Finished" << std::endl;

@@ -20,20 +20,15 @@
 #include <hazelcast/client/IdGenerator.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IdGenerator generator = hz.getIdGenerator("idGenerator");
-        for (int i = 0; i < 10000; ++i) {
-            hazelcast::util::sleep(1);
-            std::cout << "Id : " << generator.newId() << std::endl;
-        }
-
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    hazelcast::client::IdGenerator generator = hz.getIdGenerator("idGenerator");
+    for (int i = 0; i < 10000; ++i) {
+        hazelcast::util::sleep(1);
+        std::cout << "Id : " << generator.newId() << std::endl;
     }
+
 
     std::cout << "Finished" << std::endl;
 

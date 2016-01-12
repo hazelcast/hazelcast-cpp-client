@@ -20,36 +20,31 @@
 #include "Employee.h"
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, Employee> employees = hz.getMap<std::string, Employee>("employees");
+    hazelcast::client::IMap<std::string, Employee> employees = hz.getMap<std::string, Employee>("employees");
 
-        employees.put("John", Employee(1000));
-        employees.put("Mark", Employee(1000));
-        employees.put("Spencer", Employee(1000));
+    employees.put("John", Employee(1000));
+    employees.put("Mark", Employee(1000));
+    employees.put("Spencer", Employee(1000));
 
-        std::vector<std::pair<std::string, Employee> > entries = employees.entrySet();
+    std::vector<std::pair<std::string, Employee> > entries = employees.entrySet();
 
-        for (std::vector<std::pair<std::string, Employee> >::const_iterator it = entries.begin(); 
-             it != entries.end(); ++it) {
-            boost::shared_ptr<Employee> employee = employees.get(it->first);
-            employee->incSalary(10);
-            employees.put(it->first, *employee);
-        }
-
-        entries = employees.entrySet();
-
-        for (std::vector<std::pair<std::string, Employee> >::const_iterator it = entries.begin();
-             it != entries.end(); ++it) {
-            std::cout << it->first << " salary: " << it->second.getSalary() << std::endl;
-        }
-
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
+    for (std::vector<std::pair<std::string, Employee> >::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+        boost::shared_ptr<Employee> employee = employees.get(it->first);
+        employee->incSalary(10);
+        employees.put(it->first, *employee);
     }
+
+    entries = employees.entrySet();
+
+    for (std::vector<std::pair<std::string, Employee> >::const_iterator it = entries.begin();
+         it != entries.end(); ++it) {
+        std::cout << it->first << " salary: " << it->second.getSalary() << std::endl;
+    }
+
 
     std::cout << "Finished" << std::endl;
 

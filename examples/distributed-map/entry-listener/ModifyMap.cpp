@@ -19,22 +19,17 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
+    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
 
-        std::ostringstream out;
-        out << time(NULL);
+    std::ostringstream out;
+    out << time(NULL);
 
-        map.put(out.str(), "1");
-        map.put(out.str(), "2");
-        map.deleteEntry(out.str());
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
-    }
+    map.put(out.str(), "1");
+    map.put(out.str(), "2");
+    map.deleteEntry(out.str());
 
     std::cout << "Finished" << std::endl;
 

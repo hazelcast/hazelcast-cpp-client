@@ -21,27 +21,22 @@
 #include <hazelcast/client/IAtomicLong.h>
 
 int main() {
-    try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
 
-        hazelcast::client::ISemaphore semaphore = hz.getISemaphore("semaphore");
-        hazelcast::client::IAtomicLong resource = hz.getIAtomicLong("resource");
-        for (int k = 0; k < 1000; k++) {
-            std::cout << "At iteration: " << k << ", Active Threads: " << resource.get() << std::endl;
-            semaphore.acquire();
-            try {
-                resource.incrementAndGet();
-                hazelcast::util::sleep(1);
-                resource.decrementAndGet();
-            } catch (...) {
-                semaphore.release();
-                throw;
-            }
+    hazelcast::client::ISemaphore semaphore = hz.getISemaphore("semaphore");
+    hazelcast::client::IAtomicLong resource = hz.getIAtomicLong("resource");
+    for (int k = 0; k < 1000; k++) {
+        std::cout << "At iteration: " << k << ", Active Threads: " << resource.get() << std::endl;
+        semaphore.acquire();
+        try {
+            resource.incrementAndGet();
+            hazelcast::util::sleep(1);
+            resource.decrementAndGet();
+        } catch (hazelcast::client::exception::IException &e) {
+            semaphore.release();
+            throw;
         }
-    } catch (hazelcast::client::exception::IException &e) {
-        std::cerr << "Test failed !!! " << e.what() << std::endl;
-        exit(-1);
     }
 
     std::cout << "Finished" << std::endl;
