@@ -59,7 +59,7 @@ namespace hazelcast {
                         #define LARGE_BUFFER_SIZE 20
                         #define START_BYTE_NUMBER  5
 
-                        uint64_t ONE = UINT64_C(1);
+                        uint64_t ONE = 1;
                         uint64_t oneByteFactor = ONE << 8;
                         uint64_t twoBytesFactor = ONE << 16;
                         uint64_t threeBytesFactor = ONE << 24;
