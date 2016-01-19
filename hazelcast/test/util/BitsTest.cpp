@@ -56,7 +56,7 @@ namespace hazelcast {
                 }
 
                 void BitsTest::testLittleEndian() {
-                    uint64_t ONE = UINT64_C(1);
+                    uint64_t ONE = 1;
                     uint64_t oneByteFactor = ONE << 8;
                     uint64_t twoBytesFactor = ONE << 16;
                     uint64_t threeBytesFactor = ONE << 24;
