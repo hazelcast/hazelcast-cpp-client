@@ -31,18 +31,15 @@ namespace hazelcast {
         class HAZELCAST_API LittleEndianBufferWrapper {
         public:
             enum TypeSizes {
-                INT8_SIZE = INT32_C(1),
-                UINT8_SIZE = INT32_C(1),
-                INT16_SIZE = INT32_C(2),
-                UINT16_SIZE = INT32_C(2),
-                INT32_SIZE = INT32_C(4),
-                UINT32_SIZE = INT32_C(4),
-                UINT64_SIZE = INT32_C(8),
-                INT64_SIZE = INT32_C(8)
+                INT8_SIZE = 1,
+                UINT8_SIZE = 1,
+                INT16_SIZE = 2,
+                UINT16_SIZE = 2,
+                INT32_SIZE = 4,
+                UINT32_SIZE = 4,
+                UINT64_SIZE = 8,
+                INT64_SIZE = 8
             };
-
-            #define BUFFER_TRUE UINT8_C(1)
-            #define BUFFER_FALSE UINT8_C(0)
 
             inline void wrapForWrite(byte *buf, int32_t size, int32_t offset) {
                 buffer = buf;
@@ -78,7 +75,7 @@ namespace hazelcast {
             }
 
             inline bool getBoolean() {
-                return BUFFER_FALSE != getUint8();
+                return 0 != getUint8();
             }
 
             inline uint16_t getUint16() {
@@ -155,9 +152,9 @@ namespace hazelcast {
             inline void set(bool value) {
                 assert(checkWriteAvailable(UINT8_SIZE));
                 if (value) {
-                    set((uint8_t)BUFFER_TRUE);
+                    set((uint8_t)1);
                 } else {
-                    set((uint8_t)BUFFER_FALSE);
+                    set((uint8_t)0);
                 }
             }
 

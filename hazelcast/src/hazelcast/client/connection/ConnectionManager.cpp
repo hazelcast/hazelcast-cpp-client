@@ -46,7 +46,7 @@ namespace hazelcast {
                     : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
                       outSelectorThread(NULL), live(true), heartBeater(clientContext),
                       heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
-                      callIdGenerator(UINT32_C(0)) {
+                      callIdGenerator(0) {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
                 PROTOCOL.insert(PROTOCOL.begin(), &protocol_bytes[0], &protocol_bytes[3]);
             }
