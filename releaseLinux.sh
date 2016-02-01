@@ -26,6 +26,7 @@ mkdir -p ./cpp/Linux_32/external/include
 mkdir -p ./cpp/Linux_32/examples/
 
 cp -R hazelcast/include/hazelcast/* cpp/Linux_32/hazelcast/include/hazelcast/
+cp -R hazelcast/generated-sources/include/hazelcast/* cpp/Linux_32/hazelcast/include/hazelcast/
 cp ReleaseShared32/libHazelcastClient* cpp/Linux_32/hazelcast/lib/
 cp ReleaseStatic32/libHazelcastClient* cpp/Linux_32/hazelcast/lib/
 
@@ -62,6 +63,7 @@ mkdir -p ./cpp/Linux_64/external/include
 mkdir -p ./cpp/Linux_64/examples/
 
 cp -R hazelcast/include/hazelcast/* cpp/Linux_64/hazelcast/include/hazelcast/
+cp -R hazelcast/generated-sources/include/hazelcast/* cpp/Linux_64/hazelcast/include/hazelcast/
 cp ReleaseShared64/libHazelcastClient* cpp/Linux_64/hazelcast/lib/
 cp ReleaseStatic64/libHazelcastClient* cpp/Linux_64/hazelcast/lib/
 
