@@ -26,6 +26,7 @@ mkdir .\cpp\Windows_32\external\include
 mkdir .\cpp\Windows_32\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
+xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_32\hazelcast\include\hazelcast\
 
 copy ReleaseShared32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\shared\
 copy ReleaseStatic32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\static\
@@ -65,6 +66,7 @@ mkdir .\cpp\Windows_64\external\include
 mkdir .\cpp\Windows_64\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
+xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
 
 copy ReleaseShared64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\shared\
 copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\static\
