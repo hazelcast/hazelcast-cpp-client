@@ -56,10 +56,6 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationService {
                 public:
-                    #define CHECK_NULL(type) \
-                    if (isNullData(data)) { \
-                        return boost::shared_ptr<type >(); \
-                    }\
 
                     SerializationService(const SerializationConfig& serializationConfig);
 
@@ -77,7 +73,7 @@ namespace hazelcast {
 
                         writeHash(output);
 
-                        writeObject<T>(dataOutput, object);
+                        dataOutput.writeObject<T>(object);
 
                         Data data(output.toByteArray());
                         return data;
@@ -93,46 +89,32 @@ namespace hazelcast {
 
                     template<typename T>
                     inline boost::shared_ptr<T> toObject(const Data &data) {
-                        CHECK_NULL(T);
+                        if (isNullData(data)) {
+                            return boost::shared_ptr<T>();
+                        }
 
                         // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
                         // let usage of static member.
                         DataInput dataInput(data.toByteArray(), 4);
 
-                        return readObject<T>(dataInput);
+                        ObjectDataInput objectDataInput(dataInput, portableContext);
+                        return objectDataInput.readObject<T>();
                     }
-
-                    PortableContext &getPortableContext();
 
                     const byte getVersion() const;
 
                 private:
-                    template <typename T>
-                    inline boost::shared_ptr<T> readObject(DataInput &data) {
-                        ObjectDataInput dataInput(data, portableContext);
-                        return dataInput.readObject<T>();
-                    }
-
-                    template <typename T>
-                    inline void writeObject(ObjectDataOutput &dataOutput, const T *object) {
-                        dataOutput.writeObject<T>(object);
-                    }
-
                     SerializerHolder &getSerializerHolder();
-
-                    boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
                     SerializationService(const SerializationService &);
 
                     SerializationService &operator = (const SerializationService &);
 
                     PortableContext portableContext;
-
+                    SerializationConstants& constants;
                     const SerializationConfig& serializationConfig;
 
-                    void checkClassType(int expectedType, int currentType);
-
-                    static bool isNullData(const Data &data);
+                    bool isNullData(const Data &data);
 
                     void writeHash(DataOutput &out);
                 };

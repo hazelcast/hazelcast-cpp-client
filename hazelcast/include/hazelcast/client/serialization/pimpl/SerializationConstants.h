@@ -64,7 +64,9 @@ namespace hazelcast {
 
                     std::string typeIdToName(int typeId);
 
-                    static SerializationConstants *getInstance();
+                    static void checkClassType(int expectedType, int currentType);
+
+                    static SerializationConstants& getInstance();
                 private:
                     const int size;
                     std::vector<std::string> typeIdNameVector;

@@ -168,9 +168,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(constants.CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_PORTABLE);
+                        writeInt(constants.CONSTANT_TYPE_PORTABLE);
 
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
@@ -189,9 +189,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(constants.CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_DATA);
+                        writeInt(constants.CONSTANT_TYPE_DATA);
                         context->getSerializerHolder().getDataSerializer().write(*this, *object);
                     }
                 }
@@ -206,7 +206,7 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == serializable) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(constants.CONSTANT_TYPE_NULL);
                     } else {
                         const T *object = static_cast<const T *>(serializable);
                         int type = object->getTypeId();
@@ -230,6 +230,7 @@ namespace hazelcast {
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;
                 pimpl::SerializerHolder *serializerHolder;
+                pimpl::SerializationConstants& constants;
                 bool isEmpty;
 
                 size_t position();

@@ -18,12 +18,15 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/IClassCastException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializationConstants *SerializationConstants::instance = NULL;
+                SerializationConstants *SerializationConstants::instance = &getInstance();
 
                 SerializationConstants::SerializationConstants()
                 : CONSTANT_TYPE_NULL(0)
@@ -79,15 +82,28 @@ namespace hazelcast {
                     return typeIdNameVector[i];
                 }
 
+                void SerializationConstants::checkClassType(int expectedType, int currentType) {
+                    if (expectedType != currentType) {
+                        char message[200];
+                        util::snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
+
+                        instance->typeIdToName(currentType).c_str(), currentType,
+                        instance->typeIdToName(expectedType).c_str(), expectedType);
+
+                        util::ILogger::getLogger().severe(message);
+                        throw exception::IClassCastException("SerializationConstants::checkClassType",message);
+                    }
+                }
+
                 int SerializationConstants::idToIndex(int id) {
                     return id + size - 1;
                 }
 
-                SerializationConstants *SerializationConstants::getInstance() {
+                SerializationConstants& SerializationConstants::getInstance() {
                     if (NULL == instance) {
                         instance = new SerializationConstants();
                     }
-                    return instance;
+                    return *instance;
                 }
             }
         }

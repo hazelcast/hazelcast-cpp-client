@@ -70,9 +70,9 @@ namespace hazelcast {
 
                 /**
                  * Not public api. Do not override this method.
-                 * @return serializer id
+                 * @return type id
                  */
-                virtual int getSerializerId() const;
+                virtual int getTypeId() const;
 
             };
         }

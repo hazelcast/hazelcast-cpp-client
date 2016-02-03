@@ -31,8 +31,14 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
+                #define CHECK_NULL(type) \
+                if (isNullData(data)) { \
+                    return boost::shared_ptr<type >(); \
+                }
+
                 SerializationService::SerializationService(const SerializationConfig& serializationConfig)
                 : portableContext(serializationConfig.getPortableVersion())
+                , constants(SerializationConstants::getInstance())
                 , serializationConfig(serializationConfig) {
                     std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
                     std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
@@ -40,10 +46,6 @@ namespace hazelcast {
                     for (it = serializers.begin(); it < serializers.end(); ++it) {
                         serializerHolder.registerSerializer(*it);
                     }
-                }
-
-                PortableContext& SerializationService::getPortableContext() {
-                    return portableContext;
                 }
 
                 SerializerHolder& SerializationService::getSerializerHolder() {
@@ -55,22 +57,8 @@ namespace hazelcast {
                     return getSerializerHolder().registerSerializer(serializer);
                 }
 
-                void SerializationService::checkClassType(int expectedType, int currentType) {
-                    if (expectedType != currentType) {
-                        char message[200];
-                        SerializationConstants *sc = SerializationConstants::getInstance();
-                        util::snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
-                                sc->typeIdToName(currentType).c_str(), currentType,
-                                sc->typeIdToName(expectedType).c_str(), expectedType);
-
-                        util::ILogger::getLogger().severe(message);
-                        throw exception::IClassCastException("SerializationService::checkClassType",
-                                                             message);
-                    }
-                }
-
                 bool SerializationService::isNullData(const Data &data) {
-                    return data.dataSize() == 0 && data.getType() == SerializationConstants::getInstance()->CONSTANT_TYPE_NULL;
+                    return data.dataSize() == 0 && data.getType() == constants.CONSTANT_TYPE_NULL;
                 }
 
                 void SerializationService::writeHash(DataOutput &out) {
@@ -86,7 +74,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_BYTE);
+                    output.writeInt(constants.CONSTANT_TYPE_BYTE);
 
                     output.writeByte(*object);
 
@@ -103,7 +91,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_BOOLEAN);
+                    output.writeInt(constants.CONSTANT_TYPE_BOOLEAN);
 
                     output.writeBoolean(*object);
 
@@ -120,7 +108,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_CHAR);
+                    output.writeInt(constants.CONSTANT_TYPE_CHAR);
 
                     output.writeChar(*object);
 
@@ -137,7 +125,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_SHORT);
+                    output.writeInt(constants.CONSTANT_TYPE_SHORT);
 
                     output.writeShort(*object);
 
@@ -154,7 +142,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_INTEGER);
+                    output.writeInt(constants.CONSTANT_TYPE_INTEGER);
 
                     output.writeInt(*object);
 
@@ -171,7 +159,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_LONG);
+                    output.writeInt(constants.CONSTANT_TYPE_LONG);
 
                     output.writeLong(*object);
 
@@ -188,7 +176,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_FLOAT);
+                    output.writeInt(constants.CONSTANT_TYPE_FLOAT);
 
                     output.writeFloat(*object);
 
@@ -205,7 +193,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_DOUBLE);
+                    output.writeInt(constants.CONSTANT_TYPE_DOUBLE);
 
                     output.writeDouble(*object);
 
@@ -221,7 +209,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_CHAR_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_CHAR_ARRAY);
 
                     output.writeCharArray(object);
 
@@ -237,7 +225,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_BOOLEAN_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_BOOLEAN_ARRAY);
 
                     output.writeBooleanArray(object);
 
@@ -254,7 +242,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_SHORT_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_SHORT_ARRAY);
 
                     output.writeShortArray(object);
 
@@ -271,7 +259,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_INTEGER_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_INTEGER_ARRAY);
 
                     output.writeIntArray(object);
 
@@ -288,7 +276,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_LONG_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_LONG_ARRAY);
 
                     output.writeLongArray(object);
 
@@ -305,7 +293,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_FLOAT_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_FLOAT_ARRAY);
 
                     output.writeFloatArray(object);
 
@@ -322,7 +310,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_DOUBLE_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_DOUBLE_ARRAY);
 
                     output.writeDoubleArray(object);
 
@@ -339,7 +327,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_STRING);
+                    output.writeInt(constants.CONSTANT_TYPE_STRING);
 
                     output.writeUTF(object);
 
@@ -355,7 +343,7 @@ namespace hazelcast {
                     writeHash(output);
 
                     // write type
-                    output.writeInt(SerializationConstants::getInstance()->CONSTANT_TYPE_STRING_ARRAY);
+                    output.writeInt(constants.CONSTANT_TYPE_STRING_ARRAY);
 
                     output.writeUTFArray(object);
 
@@ -371,7 +359,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_BYTE, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_BYTE, typeId);
 
                     boost::shared_ptr<byte> object(new byte);
 
@@ -388,7 +376,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_BOOLEAN, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_BOOLEAN, typeId);
 
                     boost::shared_ptr<bool> object(new bool);
 
@@ -405,7 +393,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_CHAR, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_CHAR, typeId);
 
                     boost::shared_ptr<char> object(new char);
 
@@ -422,7 +410,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_SHORT, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_SHORT, typeId);
 
                     boost::shared_ptr<short> object(new short);
 
@@ -439,7 +427,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_INTEGER, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_INTEGER, typeId);
 
                     boost::shared_ptr<int> object(new int);
 
@@ -456,7 +444,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_LONG, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_LONG, typeId);
 
                     boost::shared_ptr<long> object(new long);
 
@@ -473,7 +461,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_FLOAT, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_FLOAT, typeId);
 
                     boost::shared_ptr<float> object(new float);
 
@@ -490,7 +478,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_DOUBLE, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_DOUBLE, typeId);
 
                     boost::shared_ptr<double> object(new double);
 
@@ -507,7 +495,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_CHAR_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_CHAR_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<char> > (dataInput.readCharArray());
                 }
@@ -520,7 +508,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_BOOLEAN_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_BOOLEAN_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<bool> > (dataInput.readBooleanArray());
                 }
@@ -533,7 +521,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_SHORT_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_SHORT_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<short> > (dataInput.readShortArray());
                 }
@@ -546,7 +534,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_INTEGER_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_INTEGER_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<int> > (dataInput.readIntArray());
                 }
@@ -559,7 +547,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_LONG_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_LONG_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<long> > (dataInput.readLongArray());
                 }
@@ -572,7 +560,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_FLOAT_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_FLOAT_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<float> > (dataInput.readFloatArray());
                 }
@@ -585,7 +573,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<double> > (dataInput.readDoubleArray());
                 }
@@ -598,7 +586,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_STRING, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_STRING, typeId);
 
                     return boost::shared_ptr<std::string> (dataInput.readUTF());
                 }
@@ -611,7 +599,7 @@ namespace hazelcast {
 
                     int typeId = data.getType();
 
-                    checkClassType(SerializationConstants::getInstance()->CONSTANT_TYPE_STRING_ARRAY, typeId);
+                    SerializationConstants::checkClassType(constants.CONSTANT_TYPE_STRING_ARRAY, typeId);
 
                     return boost::shared_ptr<std::vector<std::string> > (dataInput.readUTFArray());
                 }
