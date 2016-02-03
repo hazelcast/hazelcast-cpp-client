@@ -110,8 +110,8 @@ namespace hazelcast {
 
                     SerializationService &operator = (const SerializationService &);
 
+                    SerializationConstants constants;
                     PortableContext portableContext;
-                    SerializationConstants& constants;
                     const SerializationConfig& serializationConfig;
 
                     bool isNullData(const Data &data);

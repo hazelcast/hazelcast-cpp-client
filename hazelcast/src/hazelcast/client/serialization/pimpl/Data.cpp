@@ -96,7 +96,7 @@ namespace hazelcast {
 
                 int Data::getType() const {
                     if (totalSize() == 0) {
-                        return SerializationConstants::getInstance().CONSTANT_TYPE_NULL;
+                        return SerializationConstants::CONSTANT_TYPE_NULL;
                     }
                     return Bits::readIntB(*data, Data::TYPE_OFFSET);
                 }

@@ -196,12 +196,12 @@ namespace hazelcast {
                 template<typename T>
                 boost::shared_ptr<T> readObject() {
                     int typeId = readInt();
-                    pimpl::SerializationConstants& constants = pimpl::SerializationConstants::getInstance();
+                    const pimpl::SerializationConstants& constants = portableContext.getConstants();
                     if (constants.CONSTANT_TYPE_NULL == typeId) {
                         return boost::shared_ptr<T>(static_cast<T *>(NULL));
                     } else {
                         std::auto_ptr<T> result(new T);
-                        pimpl::SerializationConstants::checkClassType(result->getTypeId() , typeId);
+                        constants.checkClassType(result->getTypeId() , typeId);
                         if (constants.CONSTANT_TYPE_DATA == typeId) {
                             readDataSerializable(reinterpret_cast<IdentifiedDataSerializable *>(result.get()));
                         } else if (constants.CONSTANT_TYPE_PORTABLE == typeId) {

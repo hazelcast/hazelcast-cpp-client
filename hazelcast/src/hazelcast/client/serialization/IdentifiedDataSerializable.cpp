@@ -29,7 +29,7 @@ namespace hazelcast {
             }
 
             int IdentifiedDataSerializable::getTypeId() const {
-                return pimpl::SerializationConstants::getInstance().CONSTANT_TYPE_DATA;
+                return pimpl::SerializationConstants::CONSTANT_TYPE_DATA;
             }
         }
     }

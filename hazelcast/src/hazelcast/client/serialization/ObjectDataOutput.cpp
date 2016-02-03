@@ -31,7 +31,6 @@ namespace hazelcast {
             : dataOutput(&dataOutput)
             , context(&portableContext)
             , serializerHolder(&portableContext.getSerializerHolder())
-            , constants(pimpl::SerializationConstants::getInstance())
             , isEmpty(false) {
 
             }
@@ -40,7 +39,6 @@ namespace hazelcast {
             : dataOutput(NULL)
             , context(NULL)
             , serializerHolder(NULL)
-            , constants(pimpl::SerializationConstants::getInstance())
             , isEmpty(true) {
 
             }
