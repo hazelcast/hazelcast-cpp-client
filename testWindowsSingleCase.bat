@@ -12,6 +12,9 @@
 @echo BUILD_DIR=%BUILD_DIR%
 @echo EXECUTABLE_NAME=%EXECUTABLE_NAME%
 
+@REM Let the submodule code be downloaded
+git submodule update --init
+
 RD /S /Q %BUILD_DIR%
 mkdir %BUILD_DIR%
 
@@ -26,7 +29,7 @@ if %HZ_BIT_VERSION% == 32 (
 )
 
 echo "Generating the solution files for ompilation"
-cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE%
+cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 
 echo "Building for platform %BUILDFORPLATFORM%"
 
@@ -81,6 +84,6 @@ echo "Starting the client test now."
 
 SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
 
-%BUILD_DIR%\hazelcast\test\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% || exit /b 1
+%BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml" || exit /b 1
 
 taskkill /F /FI "WINDOWTITLE eq cpp-java"

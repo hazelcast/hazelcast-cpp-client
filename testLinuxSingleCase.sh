@@ -38,12 +38,15 @@ if [ "$4" == "WITH_COVERAGE" ]; then
 echo "Code coverage is ON. Cmake flag: ${HZ_COVERAGE_STRING}"
 fi
 
+# Let the submodule code be downloaded
+git submodule update --init
+
 rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
-cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING}
+cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 
 echo "Running make. Building the project."
 make -j 8 -l 4  # run 8 jobs in parallel and a maximum load of 4
@@ -100,7 +103,7 @@ fi
 cd ..
 
 echo "Starting the client test now."
-${BUILD_DIR}/hazelcast/test/${EXECUTABLE_NAME}
+${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_output="xml:CPP_Client_Test_Report.xml"
 result=$?
 
 

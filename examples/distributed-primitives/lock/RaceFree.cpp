@@ -49,7 +49,7 @@ int main() {
             }
         } catch (hazelcast::client::exception::IException &e) {
             lock.unlock();
-            throw;
+            throw e;
         }
 
         if (k % 2 == 0) {

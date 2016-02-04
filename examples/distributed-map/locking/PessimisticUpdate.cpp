@@ -76,7 +76,7 @@ int main() {
             map.unlock(key);
         } catch (hazelcast::client::exception::IException &e) {
             map.unlock(key);
-            throw;
+            throw e;
         }
     }
     std::cout << "Finished! Result = " << map.get(key)->amount << std::endl;
