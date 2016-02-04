@@ -35,7 +35,7 @@ int main() {
             resource.decrementAndGet();
         } catch (hazelcast::client::exception::IException &e) {
             semaphore.release();
-            throw;
+            throw e;
         }
     }
 
