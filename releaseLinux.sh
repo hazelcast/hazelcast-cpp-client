@@ -1,4 +1,4 @@
-set -e #abort the script at first faiure
+set -e #abort the script at first failure
 
 echo "Cleanup release directories"
 rm -rf ./Release*
@@ -7,14 +7,14 @@ rm -rf ./cpp
 echo "Compiling Static 32bit library"
 mkdir ReleaseStatic32;
 cd ./ReleaseStatic32;
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release
+cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 make -j;
 cd ..;
 
 echo "Compiling Shared 32bit library"
 mkdir ReleaseShared32;
 cd ./ReleaseShared32;
-cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release
+cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 make -j;
 cd ..;
 
@@ -44,14 +44,14 @@ rm -rf ./ReleaseStatic32
 echo "Compiling Static 64bit library"
 mkdir ReleaseStatic64;
 cd ./ReleaseStatic64;
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
+cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 make -j;
 cd ..;
 
 echo "Compiling Shared 64bit library"
 mkdir ReleaseShared64;
 cd ./ReleaseShared64;
-cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
+cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 make -j;
 cd ..;
 
