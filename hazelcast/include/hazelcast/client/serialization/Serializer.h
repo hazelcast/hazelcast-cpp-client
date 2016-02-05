@@ -95,7 +95,8 @@ namespace hazelcast {
              * User than can register serializer via SerializationConfig as follows
              *
 
-                   clientConfig.getSerializationConfig().registerSerializer(new MyCustomSerializer());
+                   clientConfig.getSerializationConfig().registerSerializer(
+                   boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
 
              */
             template <typename Serializable>
