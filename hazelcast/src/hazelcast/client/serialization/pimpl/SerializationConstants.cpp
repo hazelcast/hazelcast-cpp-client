@@ -26,28 +26,6 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                int const SerializationConstants::CONSTANT_TYPE_NULL = 0;
-                int const SerializationConstants::CONSTANT_TYPE_PORTABLE=-1;
-                int const SerializationConstants::CONSTANT_TYPE_DATA=-2;
-                int const SerializationConstants::CONSTANT_TYPE_BYTE=-3;
-                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN=-4;
-                int const SerializationConstants::CONSTANT_TYPE_CHAR=-5;
-                int const SerializationConstants::CONSTANT_TYPE_SHORT=-6;
-                int const SerializationConstants::CONSTANT_TYPE_INTEGER=-7;
-                int const SerializationConstants::CONSTANT_TYPE_LONG=-8;
-                int const SerializationConstants::CONSTANT_TYPE_FLOAT=-9;
-                int const SerializationConstants::CONSTANT_TYPE_DOUBLE=-10;
-                int const SerializationConstants::CONSTANT_TYPE_STRING=-11;
-                int const SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY=-12;
-                int const SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY=-13;
-                int const SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY=-14;
-                int const SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY=-15;
-                int const SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY=-16;
-                int const SerializationConstants::CONSTANT_TYPE_LONG_ARRAY=-17;
-                int const SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY=-18;
-                int const SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY=-19;
-                int const SerializationConstants::CONSTANT_TYPE_STRING_ARRAY=-20;
-
                 SerializationConstants::SerializationConstants()
                 : size(21)
                 , typeIdNameVector(size){
