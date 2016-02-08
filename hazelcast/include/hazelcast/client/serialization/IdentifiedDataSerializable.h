@@ -44,7 +44,9 @@ namespace hazelcast {
                 /**
                  * Destructor
                  */
-                virtual ~IdentifiedDataSerializable();
+                virtual ~IdentifiedDataSerializable(){
+
+                }
 
                 /**
                  * @return factory id
@@ -67,12 +69,6 @@ namespace hazelcast {
                  * @param reader ObjectDataInput
                  */
                 virtual void readData(ObjectDataInput &reader) = 0;
-
-                /**
-                 * Not public api. Do not override this method.
-                 * @return serializer id
-                 */
-                virtual int getSerializerId() const;
 
             };
         }

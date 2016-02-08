@@ -27,13 +27,11 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class TestCustomXSerializable : public serialization::SerializerBase {
+            class TestCustomXSerializable{
             public:
                 TestCustomXSerializable();
 
                 TestCustomXSerializable(int id);
-
-                int getTypeId() const;
 
                 bool operator ==(const TestCustomXSerializable & rhs) const;
 
@@ -42,7 +40,9 @@ namespace hazelcast {
                 int id;
             };
 
-            class TestCustomPerson : public serialization::SerializerBase {
+            int getHazelcastTypeId(const TestCustomXSerializable* );
+
+            class TestCustomPerson {
             public:
                 TestCustomPerson();
 
@@ -52,8 +52,6 @@ namespace hazelcast {
 
                 void setName(const std::string & name);
 
-                int getTypeId() const;
-
                 bool operator ==(const TestCustomPerson & rhs) const;
 
                 bool operator !=(const TestCustomPerson& m) const;
@@ -62,6 +60,8 @@ namespace hazelcast {
             private:
                 std::string name;
             };
+
+            int getHazelcastTypeId(const TestCustomPerson* );
         }
     }
 }

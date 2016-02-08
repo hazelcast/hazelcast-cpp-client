@@ -35,7 +35,7 @@ namespace hazelcast {
 
                 void read(serialization::ObjectDataInput & in, TestCustomPerson& object);
 
-                int getTypeId() const;
+                int getHazelcastTypeId() const;
             };
         }
     }

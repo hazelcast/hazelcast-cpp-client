@@ -18,36 +18,16 @@
 //
 
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/IClassCastException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializationConstants *SerializationConstants::instance = NULL;
-
                 SerializationConstants::SerializationConstants()
-                : CONSTANT_TYPE_NULL(0)
-                , CONSTANT_TYPE_PORTABLE(-1)
-                , CONSTANT_TYPE_DATA(-2)
-                , CONSTANT_TYPE_BYTE(-3)
-                , CONSTANT_TYPE_BOOLEAN(-4)
-                , CONSTANT_TYPE_CHAR(-5)
-                , CONSTANT_TYPE_SHORT(-6)
-                , CONSTANT_TYPE_INTEGER(-7)
-                , CONSTANT_TYPE_LONG(-8)
-                , CONSTANT_TYPE_FLOAT(-9)
-                , CONSTANT_TYPE_DOUBLE(-10)
-                , CONSTANT_TYPE_STRING(-11)
-                , CONSTANT_TYPE_BYTE_ARRAY(-12)
-                , CONSTANT_TYPE_BOOLEAN_ARRAY(-13)
-                , CONSTANT_TYPE_CHAR_ARRAY(-14)
-                , CONSTANT_TYPE_SHORT_ARRAY(-15)
-                , CONSTANT_TYPE_INTEGER_ARRAY(-16)
-                , CONSTANT_TYPE_LONG_ARRAY(-17)
-                , CONSTANT_TYPE_FLOAT_ARRAY(-18)
-                , CONSTANT_TYPE_DOUBLE_ARRAY(-19)
-                , CONSTANT_TYPE_STRING_ARRAY(-20)
-                , size(21)
+                : size(21)
                 , typeIdNameVector(size){
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_NULL)] = "null";
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_PORTABLE)] = "portable";
@@ -72,23 +52,29 @@ namespace hazelcast {
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING_ARRAY)] = "stringArray";
                 }
 
-                std::string SerializationConstants::typeIdToName(int typeId) {
+                std::string SerializationConstants::typeIdToName(int typeId) const{
                     int i = idToIndex(typeId);
                     if (i < 0 || i >= size)
                         return std::string("custom");
                     return typeIdNameVector[i];
                 }
 
-                int SerializationConstants::idToIndex(int id) {
+                void SerializationConstants::checkClassType(int expectedType, int currentType) const{
+                    if (expectedType != currentType) {
+                        char message[200];
+                        util::snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
+                        typeIdToName(currentType).c_str(), currentType,
+                        typeIdToName(expectedType).c_str(), expectedType);
+
+                        util::ILogger::getLogger().severe(message);
+                        throw exception::IClassCastException("SerializationConstants::checkClassType",message);
+                    }
+                }
+
+                int SerializationConstants::idToIndex(int id) const{
                     return id + size - 1;
                 }
 
-                SerializationConstants *SerializationConstants::getInstance() {
-                    if (NULL == instance) {
-                        instance = new SerializationConstants();
-                    }
-                    return instance;
-                }
             }
         }
     }

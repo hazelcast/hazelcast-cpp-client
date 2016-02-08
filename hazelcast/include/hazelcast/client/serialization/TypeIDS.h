@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/12/13.
 
+#ifndef HAZELCAST_TypeIDS
+#define HAZELCAST_TypeIDS
 
-
-#include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            Portable::~Portable() {
+            class Portable;
+            class IdentifiedDataSerializable;
 
-            }
+            int HAZELCAST_API getHazelcastTypeId(const Portable* portable);
 
-            int Portable::getSerializerId() const {
-                return pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_PORTABLE;
-            }
+            int HAZELCAST_API getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable);
+
         }
     }
 }
+
+
+#endif //HAZELCAST_TypeIDS

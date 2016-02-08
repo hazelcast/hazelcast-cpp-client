@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 6/7/13.
 
-
-
-
 #ifndef HAZELCAST_TYPE_SERIALIZER
 #define HAZELCAST_TYPE_SERIALIZER
 
@@ -43,13 +40,14 @@ namespace hazelcast {
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
-                 * for your classes. Also not that your serialized classes needs to implement
+                 * for your classes. Also not that for your serialized classes you need to implement as free function
+                 * in same namespace with your class
                  *
-                 *      int getTypeId();
+                 *      int getHazelcastTypeId(const MyClass*);
                  *
                  *  which should return same id with its serializer.
                  */
-                virtual int getTypeId() const = 0;
+                virtual int getHazelcastTypeId() const = 0;
             };
 
             /**
@@ -64,7 +62,7 @@ namespace hazelcast {
 
                          void read(serialization::ObjectDataInput & in, ExampleBaseClass& object);
 
-                         int getTypeId() const;
+                         int getHazelcastTypeId() const;
 
                      };
                     }
@@ -86,16 +84,24 @@ namespace hazelcast {
                            //.....
                        }
 
-                       int getTypeId() const {
+                       int getHazelcastTypeId() const {
                            //..
                        }
                     };
 
              *
+             * Along with serializer following function should be provided with same namespace that ExampleBaseClass
+             * belongs to
+             *
+             *     int getHazelcastTypeId(const MyClass*);
+             *
+             *  which should return same id with its serializer.
+             *
              * User than can register serializer via SerializationConfig as follows
              *
 
-                   clientConfig.getSerializationConfig().registerSerializer(new MyCustomSerializer());
+                   clientConfig.getSerializationConfig().registerSerializer(
+                   boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
 
              */
             template <typename Serializable>

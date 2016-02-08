@@ -48,18 +48,6 @@ namespace hazelcast {
 
             static void closeResource(Closeable *closable);
 
-            enum PRIMITIVE_ID {
-                PRIMITIVE_TYPE_BOOLEAN = 1,
-                PRIMITIVE_TYPE_BYTE = 2,
-                PRIMITIVE_TYPE_SHORT = 3,
-                PRIMITIVE_TYPE_INTEGER = 4,
-                PRIMITIVE_TYPE_LONG = 5,
-                PRIMITIVE_TYPE_FLOAT = 6,
-                PRIMITIVE_TYPE_DOUBLE = 7,
-                PRIMITIVE_TYPE_UTF = 8,
-                PRIMITIVE_TYPE_NULL = 9
-            };
-
         };
     }
 }

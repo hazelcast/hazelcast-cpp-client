@@ -25,6 +25,7 @@
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/serialization/TypeIDS.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -168,9 +169,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_PORTABLE);
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE);
 
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
@@ -189,9 +190,9 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_DATA);
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
                         context->getSerializerHolder().getDataSerializer().write(*this, *object);
                     }
                 }
@@ -206,10 +207,10 @@ namespace hazelcast {
                     if (isEmpty) return;
 
                     if (NULL == serializable) {
-                        writeInt(pimpl::SerializationConstants::getInstance()->CONSTANT_TYPE_NULL);
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         const T *object = static_cast<const T *>(serializable);
-                        int type = object->getTypeId();
+                        int type = getHazelcastTypeId(object);
                         writeInt(type);
 
                         boost::shared_ptr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
