@@ -54,7 +54,9 @@ namespace hazelcast {
                 /**
                 * Destructor
                 */
-                virtual ~Portable();
+                virtual ~Portable(){
+
+                }
 
                 /**
                 * @return factory id
@@ -78,11 +80,6 @@ namespace hazelcast {
                 */
                 virtual void readPortable(PortableReader& reader) = 0;
 
-                /**
-                * Not public api. Do not override this method.
-                * @return type id
-                */
-                virtual int getTypeId() const;
             };
         }
     }

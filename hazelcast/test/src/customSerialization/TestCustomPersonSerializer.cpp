@@ -37,7 +37,7 @@ namespace hazelcast {
                 assert(i == 999);
             }
 
-            int TestCustomPersonSerializer::getTypeId() const {
+            int TestCustomPersonSerializer::getHazelcastTypeId() const {
                 return 999;
             }
 

@@ -35,15 +35,13 @@ public:
         return name;
     }
 
-    int getTypeId() const{
-        return 666;
-    }
-
 private:
     std::string name;
 };
 
-
+int getHazelcastTypeId(const Person* p){
+    return 666;
+}
 
 class CustomSerializer : public hazelcast::client::serialization::Serializer<Person> {
 public:
@@ -62,7 +60,7 @@ public:
         assert(i == 666);
     }
 
-    int getTypeId() const {
+    int getHazelcastTypeId() const {
         return 666;
     };
 };
