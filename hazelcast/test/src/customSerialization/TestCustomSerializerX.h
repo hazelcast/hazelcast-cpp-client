@@ -48,7 +48,7 @@ namespace hazelcast {
                     assert(i == 666);
                 }
 
-                int getTypeId() const {
+                int getHazelcastTypeId() const {
                     return 666;
                 };
             };

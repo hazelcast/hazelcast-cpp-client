@@ -39,7 +39,7 @@ namespace hazelcast {
                 return !(*this == rhs);
             }
 
-            int TestCustomXSerializable::getTypeId() const {
+            int getHazelcastTypeId(TestCustomXSerializable const* param) {
                 return 666;
             }
 
@@ -71,7 +71,7 @@ namespace hazelcast {
                 return name;
             }
 
-            int TestCustomPerson::getTypeId() const {
+            int getHazelcastTypeId(TestCustomPerson const* param) {
                 return 999;
             }
 
