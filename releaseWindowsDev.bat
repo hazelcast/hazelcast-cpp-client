@@ -37,3 +37,12 @@ echo "Clearing tempraroy 64bit librares"
 rm -rf ./ReleaseShared64
 rm -rf ./ReleaseStatic64
 
+cd examples
+rm -rf build
+mkdir build
+cd build
+cmake .. -DHAZELCAST_INSTALL_DIR=../cpp -DHZ_BIT=32
+MSBuild.exe HazelcastClient.sln /m
+cd ..
+rm -rf build
+cd ..

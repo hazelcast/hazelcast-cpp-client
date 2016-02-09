@@ -82,3 +82,5 @@ echo "Clearing tempraroy 64bit librares"
 rm -rf ./ReleaseShared64
 rm -rf ./ReleaseStatic64
 
+@REM Verify release
+call scripts/verifyReleaseWindows.bat || exit /b 1
