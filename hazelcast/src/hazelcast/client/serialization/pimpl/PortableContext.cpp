@@ -144,6 +144,7 @@ namespace hazelcast {
                     return serializerHolder;
                 }
 
+
                 SerializationConstants const& PortableContext::getConstants() const {
                     return constants;
                 }

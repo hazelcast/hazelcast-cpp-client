@@ -1,0 +1,4 @@
+[submodule "googletest"]
+	path = hazelcast/test/googletest
+	url = git@github.com:ihsandemir/googletest.git
+	branch = hazelcasttest

@@ -6,7 +6,7 @@ echo "Compiling Static 32bit library"
 mkdir ReleaseStatic32
 cd .\ReleaseStatic32
 cd
-cmake .. -G "Visual Studio 12" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release
+cmake .. -G "Visual Studio 12" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release  -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStudioVersion=12.0;Flavor=32;Platform=win32;PlatformTarget=win32
 cd ..
 
@@ -14,7 +14,7 @@ echo "Compiling Shared 32bit library"
 mkdir ReleaseShared32
 cd .\ReleaseShared32
 cd;
-cmake .. -G "Visual Studio 12" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release
+cmake .. -G "Visual Studio 12" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32  -DCMAKE_BUILD_TYPE=Release  -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStudioVersion=12.0;Flavor=32;Platform=win32;PlatformTarget=win32
 cd ..
 
@@ -46,7 +46,7 @@ echo "Compiling Static 64bit library"
 mkdir ReleaseStatic64
 cd .\ReleaseStatic64
 cd;
-cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
+cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release  -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStudioVersion=12.0;Flavor=64;Platform=x64;PlatformTarget=x64
 cd ..
 
@@ -54,7 +54,7 @@ echo "Compiling Shared 64bit library"
 mkdir ReleaseShared64
 cd .\ReleaseShared64
 cd;
-cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release 
+cmake .. -G "Visual Studio 12 Win64" -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release  -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 MSBuild.exe HazelcastClient.sln /m /property:Configuration=Release /p:VisualStudioVersion=12.0;Flavor=64;Platform=x64;PlatformTarget=x64
 cd ..
 
@@ -82,3 +82,5 @@ echo "Clearing tempraroy 64bit librares"
 rm -rf ./ReleaseShared64
 rm -rf ./ReleaseStatic64
 
+@REM Verify release
+call scripts/verifyReleaseWindows.bat || exit /b 1
