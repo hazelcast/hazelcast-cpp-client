@@ -32,6 +32,7 @@
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/client/serialization/TypeIDS.h"
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <string>
@@ -201,7 +202,7 @@ namespace hazelcast {
                         return boost::shared_ptr<T>(static_cast<T *>(NULL));
                     } else {
                         std::auto_ptr<T> result(new T);
-                        constants.checkClassType(result->getTypeId() , typeId);
+                        constants.checkClassType(getHazelcastTypeId(result.get()) , typeId);
                         if (constants.CONSTANT_TYPE_DATA == typeId) {
                             readDataSerializable(reinterpret_cast<IdentifiedDataSerializable *>(result.get()));
                         } else if (constants.CONSTANT_TYPE_PORTABLE == typeId) {

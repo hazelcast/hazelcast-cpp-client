@@ -21,6 +21,14 @@ API Documentation can be generated via doxygen from root with following command
 doxygen docsConfig
 ```
 
+## How to download
+
+Clone the project from github:
+
+git clone --recursive git@github.com:hazelcast/hazelcast-cpp-client.git
+
+We use --recursive flag for our dependency on googletest framework.
+
 ## How to build
 
 First create a build directory from the root of the project and in the directory run the following commands depending on your environment.
@@ -40,9 +48,6 @@ First create a build directory from the root of the project and in the directory
   	cmake .. -G Xcode -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
 
 	cmake .. -G Xcode -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=archive -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=library
-### For Linux Address Sanitizer
-
-        cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_ADDRESS_SANITIZER=ON
 
 ### valgrind sample run with suppresions
 
@@ -55,6 +60,16 @@ First create a build directory from the root of the project and in the directory
 
 	cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
 	cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
+
+### For building the tests
+
+    Add the -DHZ_BUILD_TESTS=ON flag to the cmake flags. e.g.:
+    cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_BUILD_TESTS=ON
+
+### For building the examples
+
+    Add the -DHZ_BUILD_EXAMPLES=ON flag to the cmake flags. e.g.:
+    cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DHZ_BUILD_EXAMPLES=ON
 
 ### For linux valgrind
 
