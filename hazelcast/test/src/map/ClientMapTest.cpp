@@ -151,9 +151,13 @@ namespace hazelcast {
                     key += util::IOUtil::to_string(i);
                     boost::shared_ptr<std::string> temp = imap->get(key);
 
-                   std::string value = "value";
+                    std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp, value);
+                    
+                    // test hazelcast::util::release method also here
+                    std::auto_ptr<std::string> rawPtr(hazelcast::util::release<std::string>(temp));
+                    ASSERT_EQ(*rawPtr, value);
                 }
             }
 

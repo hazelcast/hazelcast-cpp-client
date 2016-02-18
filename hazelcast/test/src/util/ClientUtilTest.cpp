@@ -23,6 +23,7 @@
 
 #include <ctime>
 #include <gtest/gtest.h>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace client {
@@ -156,6 +157,14 @@ namespace hazelcast {
                 thread.join();
                 time_t end = time(NULL);
                 ASSERT_NEAR((int)(end - beg), wakeUpTime , 1);
+            }
+
+            TEST_F (ClientUtilTest, testSharedPtrRelease) {
+                boost::shared_ptr<std::string> myStr(new std::string("Test string"));
+
+                std::auto_ptr<std::string> rawPtr(hazelcast::util::release<std::string>(myStr));
+
+                ASSERT_STREQ("Test string", rawPtr->c_str());
             }
         }
     }
