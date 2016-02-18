@@ -20,13 +20,13 @@
 // To change the template use AppCode | Preferences | File Templates.
 //
 
-
-
 #ifndef HAZELCAST_UTIL_FUNCTIONS
 #define HAZELCAST_UTIL_FUNCTIONS
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
+#include <assert.h>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -49,6 +49,36 @@ namespace hazelcast {
          * Portable snprintf implementation
          */
         HAZELCAST_API int snprintf(char *str, size_t len, const char *format, ...);
+
+        /**
+         * @param[in] value The shared pointer for which we want to get the raw pointer with ownership.
+         * @return The raw pointer with ownership.
+         */
+        template <typename T>
+        T *release(boost::shared_ptr<T> &value) {
+            // sanity check:
+            assert (value.unique());
+
+            // save the pointer:
+            T *raw = &*value;
+            // at this point value owns raw, can't return it
+
+            try {
+                // an exception here would be quite unpleasant
+
+                // now smash value:
+                new (&value) boost::shared_ptr<T> ();
+            } catch (...) {
+                // there is no shared_ptr<T> in value zombie now
+                // can't fix it at this point:
+                // the only fix would be to retry, and it would probably throw again
+                abort ();
+            }
+            // value is a fresh shared_ptr<T> that doesn't own raw
+
+            // at this point, nobody owns raw, can return it
+            return raw;
+        }
     }
 }
 
