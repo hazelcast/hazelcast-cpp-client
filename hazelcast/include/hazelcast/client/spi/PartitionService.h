@@ -48,8 +48,6 @@ namespace hazelcast {
 
         namespace serialization {
             namespace pimpl {
-                class SerializationService;
-
                 class Data;
             }
         }
@@ -71,11 +69,6 @@ namespace hazelcast {
                 boost::shared_ptr<Address> getPartitionOwner(int partitionId);
 
                 int getPartitionId(const serialization::pimpl::Data &key);
-
-                /**
-                 * @return The total number of partitions in the cluster.
-                 */
-                int getPartitionCount();
 
                 /**
                  * Refreshes the partition
@@ -100,8 +93,6 @@ namespace hazelcast {
 
                 void runListener(util::Thread* currentThread);
 
-                void runRefresher();
-
                 std::auto_ptr<protocol::ClientMessage> getPartitionsFrom(const Address &address);
 
                 std::auto_ptr<protocol::ClientMessage> getPartitionsFrom();
@@ -109,8 +100,6 @@ namespace hazelcast {
                 bool processPartitionResponse(protocol::ClientMessage &response);
 
                 bool getInitialPartitions();
-
-                static void refreshTask(util::ThreadArgs &args);
             };
         }
     }
