@@ -88,36 +88,11 @@ namespace hazelcast {
                         if (!clientContext.getLifecycleService().isRunning()) {
                             break;
                         }
-                        runRefresher();
+                        refreshPartitions();
                     } catch (exception::IException& e) {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     }
                 }
-            }
-
-            void PartitionService::runRefresher() {
-
-                if (updating.compareAndSet(false, true)) {
-                    try {
-                        std::auto_ptr<protocol::ClientMessage> partitionResponse;
-                        std::auto_ptr<Address> ptr = clientContext.getClusterService().getMasterAddress();
-                        if (ptr.get() == NULL) {
-                            partitionResponse = getPartitionsFrom();
-                        } else {
-                            partitionResponse = getPartitionsFrom(*ptr.get());
-                        }
-                        if (partitionResponse.get() != NULL) {
-                            processPartitionResponse(*partitionResponse);
-                        }
-                    } catch (hazelcast::client::exception::IException& e) {
-                        util::ILogger::getLogger().finest(std::string("Exception partitionService::runRefresher ") + e.what());
-                    } catch (...) {
-                        util::ILogger::getLogger().finest(std::string("Unkown exception partitionService::runRefresher "));
-                        throw;
-                    }
-                    updating = false;
-                }
-
             }
 
             std::auto_ptr<protocol::ClientMessage> PartitionService::getPartitionsFrom(const Address& address) {
@@ -165,7 +140,7 @@ namespace hazelcast {
                     }
                 }
 
-                int newPartionCount = newPartitions->size();
+                int newPartionCount = (int)newPartitions->size();
                 if (newPartionCount > 0) {
                     util::LockGuard lg(lock);
 
@@ -204,19 +179,28 @@ namespace hazelcast {
                 return result;
             }
 
-
-            int PartitionService::getPartitionCount() {
-                return partitionCount;
-            }
-
-            // TODO: Implement using executor as done in java
+            // TODO: Implement using executor as done in java (especially when the separate owner connection implementation is changed)
             void PartitionService::refreshPartitions() {
-                util::Thread t(refreshTask, this);
-            }
-
-            void PartitionService::refreshTask(util::ThreadArgs &args) {
-                PartitionService *partitionSrv = (PartitionService *)args.arg0;
-                partitionSrv->runRefresher();
+                if (updating.compareAndSet(false, true)) {
+                    try {
+                        std::auto_ptr<protocol::ClientMessage> partitionResponse;
+                        std::auto_ptr<Address> ptr = clientContext.getClusterService().getMasterAddress();
+                        if (ptr.get() == NULL) {
+                            partitionResponse = getPartitionsFrom();
+                        } else {
+                            partitionResponse = getPartitionsFrom(*ptr.get());
+                        }
+                        if (partitionResponse.get() != NULL) {
+                            processPartitionResponse(*partitionResponse);
+                        }
+                    } catch (hazelcast::client::exception::IException& e) {
+                        util::ILogger::getLogger().finest(std::string("Exception in partitionService::refreshPartitions ") + e.what());
+                    } catch (...) {
+                        util::ILogger::getLogger().finest(std::string("Unkown exception in partitionService::refreshPartitions "));
+                        throw;
+                    }
+                    updating = false;
+                }
             }
         }
     }
