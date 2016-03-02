@@ -46,7 +46,11 @@
                 <multicast-port>54327</multicast-port>
             </multicast>
             <tcp-ip enabled="true">
-                <interface>127.0.0.1</interface>
+                <interface>127.0.0.1:5701</interface>
+                <interface>127.0.0.1:5702</interface>
+                <interface>127.0.0.1:5703</interface>
+                <interface>127.0.0.1:5704</interface>
+                <interface>127.0.0.1:5705</interface>
             </tcp-ip>
             <aws enabled="false">
                 <access-key>my-access-key</access-key>
