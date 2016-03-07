@@ -5,7 +5,7 @@ C++ client implementation for [Hazelcast](https://github.com/hazelcast/hazelcast
 
 
 ---
-*This is a new client being developed for the Hazelcast Open Client Protocol v1.0. This work is incomplete but is expected to be finalised around March 2016.*  
+*This is a new client being developed for the Hazelcast Open Client Protocol v1.0. This work is incomplete but is expected to be finalized around March 2016.*  
 
 *We do not recommend you fork this client until it is complete and passes all tests.* 
 
@@ -15,7 +15,7 @@ C++ client implementation for [Hazelcast](https://github.com/hazelcast/hazelcast
 
 ## Documentation
 
-API Documentation can be generated via doxygen from root with following command
+You can generate API Documentation via doxygen from root with the following command.
 
 ```
 doxygen docsConfig
@@ -31,7 +31,7 @@ We use --recursive flag for our dependency on googletest framework.
 
 ## How to build
 
-First create a build directory from the root of the project and in the directory run the following commands depending on your environment.
+First create a build directory from the root of the project. In the build directory, run the following commands depending on your environment.
 
 ### For mac release
 
@@ -49,7 +49,7 @@ First create a build directory from the root of the project and in the directory
 
 	cmake .. -G Xcode -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY=archive -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=library
 
-### valgrind sample run with suppresions
+### valgrind sample run with suppressions
 
         valgrind --leak-check=yes  --gen-suppressions=all --suppressions=../test.sup  ./hazelcast/test/clientTest_STATIC_64.exe  > log.t
 
