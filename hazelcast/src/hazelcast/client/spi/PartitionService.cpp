@@ -54,7 +54,7 @@ namespace hazelcast {
             void PartitionService::shutdown() {
                 util::LockGuard lg(lock);
                 if (partitionListenerThread.get() != NULL) {
-                    partitionListenerThread->interrupt();
+                    partitionListenerThread->cancel();
                     partitionListenerThread->join();
                 }
             }
@@ -200,6 +200,12 @@ namespace hazelcast {
                         throw;
                     }
                     updating = false;
+                }
+            }
+
+            void PartitionService::wakeup() {
+                if (NULL != partitionListenerThread.get()) {
+                    partitionListenerThread->wakeup();
                 }
             }
         }

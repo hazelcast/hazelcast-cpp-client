@@ -16,12 +16,14 @@
 //
 // Created by sancar koyunlu on 31/03/14.
 //
-
 #ifndef HAZELCAST_Thread
 #define HAZELCAST_Thread
 
-
 #include "hazelcast/util/ThreadArgs.h"
+#include "hazelcast/util/ConditionVariable.h"
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/AtomicBoolean.h"
+
 #include <cstdlib>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -65,7 +67,9 @@ namespace hazelcast {
 
 			void interruptibleSleep(int seconds);
 
-            void interrupt();
+            void wakeup();
+
+            void cancel();
 
             bool join();
 
@@ -75,8 +79,8 @@ namespace hazelcast {
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3 );
 
             std::string threadName;
-            bool isJoined;
-			bool isInterrupted;
+            util::AtomicBoolean isJoined;
+			util::AtomicBoolean isInterrupted;
             HANDLE thread;
 			DWORD id;
 			ConditionVariable condition;
@@ -114,19 +118,22 @@ namespace hazelcast {
 
 			void interruptibleSleep(int seconds);
 
-            void interrupt();
+            void wakeup();
+
+            void cancel();
 
             bool join();
-
         private:
             static void *controlledThread(void *args);
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3 );
 
             std::string threadName;
-            bool isJoined;
+            util::AtomicBoolean isJoined;
             pthread_t thread;
             pthread_attr_t attr;
+            ConditionVariable wakeupCondition;
+            Mutex wakeupMutex;
         };
     }
 }

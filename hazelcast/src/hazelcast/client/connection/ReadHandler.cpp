@@ -36,7 +36,7 @@ namespace hazelcast {
             : IOHandler(connection, iListener)
             , buffer(new char[bufferSize])
             , byteBuffer(buffer, bufferSize)
-            , builder(&clientContext.getInvocationService(), connection) {
+            , builder(clientContext.getInvocationService(), connection) {
 		        connection.lastRead = (int)time(NULL);
             }
 
@@ -49,9 +49,6 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                if (!connection.live) {
-                    return;
-                }
                 connection.lastRead = (int)time(NULL);
                 try {
                     byteBuffer.readFrom(connection.getSocket());

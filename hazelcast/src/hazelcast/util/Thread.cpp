@@ -57,8 +57,10 @@ namespace hazelcast {
         }
 
         Thread::~Thread() {
-            interrupt();
-            join();
+            if (!isJoined) {
+                cancel();
+                join();
+            }
             CloseHandle(thread);
         }
 
@@ -69,21 +71,25 @@ namespace hazelcast {
 				throw thread_interrupted();
 			}
             bool wokenUpbyInterruption = condition.waitFor(mutex, seconds);
-            if(wokenUpbyInterruption){
+            if(wokenUpbyInterruption && isInterrupted){
 				isInterrupted = false;
                 throw thread_interrupted();
             }
-
         }
 
-        void Thread::interrupt() {
+        void Thread::wakeup() {
 			LockGuard lock(mutex);
-			isInterrupted = true;
-            condition.notify_all();
+			condition.notify_all();
+        }
+
+        void Thread::cancel() {
+			LockGuard lock(mutex);
+        	isInterrupted = true;
+			condition.notify_all();
         }
 
         bool Thread::join() {
-            if (isJoined) {
+            if (!isJoined.compareAndSet(false, true)) {
                 return true;
             }
             DWORD err = WaitForSingleObject(thread, INFINITE);
@@ -124,11 +130,10 @@ namespace hazelcast {
     }
 }
 
-
-
 #else
 
 #include <sys/errno.h>
+#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
@@ -158,29 +163,43 @@ namespace hazelcast {
         }
 
         Thread::~Thread() {
-            interrupt();
-            join();
+            if (!isJoined) {
+                cancel();
+                join();
+            }
             pthread_attr_destroy(&attr);
         }
 
         void Thread::interruptibleSleep(int seconds) {
-            util::sleep((unsigned int) seconds);
+            LockGuard guard(wakeupMutex);
+            wakeupCondition.waitFor(wakeupMutex, seconds);
         }
 
         std::string Thread::getThreadName() const {
             return threadName;
         }
 
-        void Thread::interrupt() {
-            pthread_cancel(thread);
+        void Thread::wakeup() {
+            LockGuard guard(wakeupMutex);
+            wakeupCondition.notify();
+        }
+
+        void Thread::cancel() {
+            if (!isJoined) {
+                LockGuard guard(wakeupMutex);
+                wakeupCondition.notify();
+
+                pthread_cancel(thread);
+            }
         }
 
         bool Thread::join() {
-            if (isJoined) {
+            if (!isJoined.compareAndSet(false, true)) {
                 return true;
             }
             int err = pthread_join(thread, NULL);
             if (EINVAL == err || ESRCH == err || EDEADLK == err) {
+                isJoined = false;
                 return false;
             }
             isJoined = true;

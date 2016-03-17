@@ -103,6 +103,10 @@ namespace hazelcast {
                 listenerTasks.offer(listenerTask);
             }
 
+            void IOSelector::cancelTask(ListenerTask *listenerTask) {
+                listenerTasks.removeAll(listenerTask);
+            }
+
             void IOSelector::addSocket(const Socket &socket) {
                 socketSet.insertSocket(&socket);
             }

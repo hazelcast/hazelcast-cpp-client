@@ -126,7 +126,14 @@ namespace hazelcast {
         int Socket::send(const void *buffer, int len) const {
             errno = 0;
             int bytesSend = 0;
-            if ((bytesSend = ::send(socketId, (char *)buffer, (size_t)len, 0)) == -1) {
+            /**
+             * In linux, sometimes SIGBUS may be received during this call when the server closes the connection.
+             * The returned error code is still error when this flag is set. Hence, it is safe to use.
+             * MSG_NOSIGNAL (since Linux 2.2)
+             * Requests not to send SIGPIPE on errors on stream oriented sockets when the other end breaks the connection.
+             * The EPIPE error is still returned.
+             */
+            if ((bytesSend = ::send(socketId, (char *)buffer, (size_t)len, MSG_NOSIGNAL)) == -1) {
                 if (errno == EAGAIN) {
                     return 0;
                 }

@@ -22,9 +22,6 @@
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
             namespace util {
                 class BitsTest : public ::testing::Test

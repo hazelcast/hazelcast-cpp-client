@@ -125,15 +125,16 @@ public:
                 }
                 updateStats(updateIntervalCount, getCount, putCount, removeCount);
             } catch(hazelcast::client::exception::IOException &e) {
-                std::cerr << ">hz " << e.what() << std::endl;
+                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IOException] ") + e.what());
             } catch(hazelcast::client::exception::InstanceNotActiveException &e) {
-                std::cerr << ">std " << e.what() << std::endl;
+                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest InstanceNotActiveException] ") + e.what());
+            } catch(hazelcast::client::exception::IException &e) {
+                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IException] ") + e.what());
             } catch(...) {
-                std::cerr << ">unkown exception" << std::endl;
+                hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest unknown exception]");
                 running = false;
                 throw;
             }
-
         }
     }
 

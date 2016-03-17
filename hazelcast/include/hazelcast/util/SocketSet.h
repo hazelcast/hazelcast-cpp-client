@@ -44,8 +44,7 @@ namespace hazelcast {
 
             void removeSocket(client::Socket const *);
         private:
-            typedef std::set<client::Socket const *, client::socketPtrComp> SocketContainer;
-            SocketContainer sockets;
+            std::set<int> sockets;
             util::Mutex accessLock;
         };
 

@@ -114,7 +114,7 @@ namespace hazelcast {
                 // 8. Verify that the 2nd entry is received by the listener
                 ASSERT_EQ(true, latch.await(20, 0)); // timeout of 20 seconds
 
-                t.interrupt();
+                t.cancel();
                 t.join();
 
                 // 9. Shut down the server

@@ -149,7 +149,7 @@ namespace hazelcast {
             }
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
-            boost::shared_ptr<connection::Connection> ClusterService::connectToOne() {
+            boost::shared_ptr<connection::Connection> ClusterService::connectToOne(const Address *previousConnectionAddr) {
                 active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
@@ -162,9 +162,13 @@ namespace hazelcast {
                     }
 
                     time_t tryStartTime = std::time(NULL);
-                    std::vector<Address>::const_iterator it;
-                    std::vector<Address> socketAddresses = clusterThread.getSocketAddresses();
-                    for (it = socketAddresses.begin(); it != socketAddresses.end(); it++) {
+                    std::set<Address, addressComparator> socketAddresses = clusterThread.getSocketAddresses();
+                    if ((Address *)NULL != previousConnectionAddr && !socketAddresses.empty()) {
+                        socketAddresses.erase(*previousConnectionAddr);
+                        socketAddresses.insert(*previousConnectionAddr);
+                    }
+                    for (std::set<Address, addressComparator>::const_iterator it = socketAddresses.begin();
+                         it != socketAddresses.end(); it++) {
                         try {
                             boost::shared_ptr<connection::Connection> pConnection = clientContext.getConnectionManager().createOwnerConnection(
                                     *it);
@@ -174,10 +178,11 @@ namespace hazelcast {
                         } catch (exception::IException &e) {
                             lastError = e;
                             std::ostringstream errorStream;
-                            errorStream << "IO error  during initial connection =>" << e.what();
+                            errorStream << "IO error  during initial connection to " << (*it) << " for owner connection =>" << e.what();
                             util::ILogger::getLogger().warning(errorStream.str());
                         }
                     }
+
                     if (attempt++ >= connectionAttemptLimit) {
                         break;
                     }

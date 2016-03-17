@@ -44,6 +44,8 @@ namespace hazelcast {
                     */
 
                     static std::string INSTANCE_NOT_ACTIVE;
+
+                    static std::string ILLEGAL_STATE;
                     /**
                     * InternalAPI rethrows the exception with appropriate type
                     *
