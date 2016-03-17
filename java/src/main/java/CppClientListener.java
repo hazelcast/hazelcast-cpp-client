@@ -19,6 +19,8 @@ import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.logging.ILogger;
+import com.hazelcast.logging.Logger;
 import com.hazelcast.map.EntryBackupProcessor;
 import com.hazelcast.map.EntryProcessor;
 import com.hazelcast.nio.ObjectDataInput;
@@ -206,6 +208,7 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
 public class CppClientListener {
 
     static final int OK = 5678;
+    static final int FAIL = -1;
     static final int END = 1;
     static final int START = 2;
     static final int SHUTDOWN = 3;
@@ -221,29 +224,54 @@ public class CppClientListener {
         final DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
         final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
 
+        ILogger logger = Logger.getLogger("CppClientListener");
         while (true) {
             final int command = dataInputStream.readInt();
             switch (command) {
                 case START:
-                    System.out.println("NEW INSTANCE OPEN ");
-                    final int id = atomicInteger.incrementAndGet();
-                    map.put(id, getInstance(config));
-                    dataOutputStream.writeInt(id);
+                    System.out.println("START command received: NEW INSTANCE OPEN ");
+                    try {
+                        final int id = atomicInteger.incrementAndGet();
+                        map.put(id, getInstance(config));
+                        dataOutputStream.writeInt(id);
+                    } catch (Exception e) {
+                        logger.warning("START command failed. Error:" + e);
+                        dataOutputStream.writeInt(FAIL);
+                    }
                     break;
                 case SHUTDOWN:
-                    final int id2 = dataInputStream.readInt();
-                    final HazelcastInstance instance = map.get(id2);
-                    if (instance == null) {
+                    logger.info("SHUTDOWN command received");
+                    int id2 = -1;
+                    try {
+                        id2 = dataInputStream.readInt();
+
+                        logger.info("SHUTDOWN command for instance " + id2);
+
+                        final HazelcastInstance instance = map.get(id2);
+                        if (instance == null) {
+                            dataOutputStream.writeInt(OK);
+                            continue;
+                        }
+                        instance.getLifecycleService().shutdown();
                         dataOutputStream.writeInt(OK);
-                        continue;
+
+                        logger.info("SHUTDOWN for instance " + id2 + " is completed.");
+                    } catch (Exception e) {
+                        logger.warning("SHUTDOWN failed for instance " + id2 + ". Error:" + e);
+                        dataOutputStream.writeInt(FAIL);
                     }
-                    instance.getLifecycleService().shutdown();
-                    dataOutputStream.writeInt(OK);
                     break;
                 case SHUTDOWN_ALL:
-                    Hazelcast.shutdownAll();
-                    map.clear();
-                    dataOutputStream.writeInt(OK);
+                    logger.info("SHUTDOWN_ALL command received");
+                    try {
+                        Hazelcast.shutdownAll();
+                        map.clear();
+                        dataOutputStream.writeInt(OK);
+                    } catch (Exception e) {
+                        logger.warning("SHUTDOWN_ALL command failed. Error:" + e);
+                        dataOutputStream.writeInt(FAIL);
+                    }
+
                     break;
                 case END:
                     System.exit(0);

@@ -34,6 +34,8 @@ namespace hazelcast {
 
             class HazelcastServer {
             public:
+                static const int DEFAULT_RETRY_COUNT = 3;
+
                 HazelcastServer(HazelcastServerFactory &);
 
                 /**

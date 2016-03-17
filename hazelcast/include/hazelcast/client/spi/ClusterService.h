@@ -105,7 +105,7 @@ namespace hazelcast {
 
                 void setMembers(std::auto_ptr<std::map<Address, Member, addressComparator> > map);
 
-                boost::shared_ptr<connection::Connection> connectToOne();
+                boost::shared_ptr<connection::Connection> connectToOne(const Address *previousConnectionAddr);
                 // ------------------------------------------------------
 
             };

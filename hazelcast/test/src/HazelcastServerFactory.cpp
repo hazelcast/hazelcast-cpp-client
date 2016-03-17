@@ -18,10 +18,13 @@
 
 
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
 #include <iostream>
 #include <string.h>
+
+#include "HazelcastServerFactory.h"
+#include "HazelcastServer.h"
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/Util.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,23 +35,26 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            HazelcastServerFactory::HazelcastServerFactory(const char* hostAddress)
-            : address(hostAddress, 6543)
-            , socket(address)
-            , outputSocketStream(socket)
-            , inputSocketStream(socket) {
-                if (int error = socket.connect(5000))
-                    std::cout << "HazelcastServerFactory " << strerror(error) << std::endl;
-
+            HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
+                    : address(hostAddress, 6543), socket(address), outputSocketStream(socket),
+                      inputSocketStream(socket), logger(util::ILogger::getLogger()) {
+                if (int error = socket.connect(5000)) {
+                    char msg[200];
+                    util::snprintf(msg, 200,
+                                   "[HazelcastServerFactory] Could not connect to socket %s:6543. Errno:%d, %s",
+                                   hostAddress, error, strerror(error));
+                    logger.severe(msg);
+                }
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
                 try {
-					outputSocketStream.writeInt(END);
+                    outputSocketStream.writeInt(END);
                     inputSocketStream.readInt();
-                } catch(std::exception &e) {
-                    std::cout << e.what() << std::endl;
-                    std::cout.flush();
+                } catch (std::exception &e) {
+                    char msg[200];
+                    util::snprintf(msg, 200, "[HazelcastServerFactory] ~HazelcastServerFactory() exception:%s", e.what());
+                    logger.severe(msg);
                 }
             }
 
@@ -57,7 +63,9 @@ namespace hazelcast {
                 outputSocketStream.writeInt(id);
                 int i = inputSocketStream.readInt();
                 if (i != OK) {
-                    std::cout << "void HazelcastServerFactory::shutdownInstance(int id):" << i << std::endl;
+                    char msg[200];
+                    util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownInstance(int id): %d", i);
+                    logger.info(msg);
                 }
             }
 
@@ -66,22 +74,40 @@ namespace hazelcast {
                 try {
                     int i = inputSocketStream.readInt();
                     if (i != OK) {
-                        std::cout << "void HazelcastServerFactory::shutdownAll():" << i << std::endl;
-                        std::cout.flush();
+                        char msg[200];
+                        util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownAll(): %d", i);
+                        logger.info(msg);
                     }
-                } catch(std::exception &e) {
-                    std::cout << e.what() << std::endl;
+                } catch (std::exception &e) {
+                    char msg[200];
+                    util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownAll exception:%s", e.what());
+                    logger.severe(msg);
                 }
 
             }
 
-            int HazelcastServerFactory::getInstanceId() {
+            int HazelcastServerFactory::getInstanceId(int retryNumber) {
                 outputSocketStream.writeInt(START);
-                return inputSocketStream.readInt();
+                int id = inputSocketStream.readInt();
+                if (FAIL == id) {
+                    char msg[200];
+                    util::snprintf(msg, 200, "[HazelcastServerFactory::getInstanceId] Failed to start server");
+                    logger.warning(msg);
+
+                    while (id == FAIL && retryNumber > 0) {
+                        util::snprintf(msg, 200, "[HazelcastServerFactory::getInstanceId] Retrying to start server. Retry number:%d", retryNumber);
+                        logger.warning(msg);
+                        outputSocketStream.writeInt(START);
+                        id = inputSocketStream.readInt();
+                        --retryNumber;
+                    }
+                }
+
+                return id;
             }
 
 
-            const std::string& HazelcastServerFactory::getServerAddress() const{
+            const std::string &HazelcastServerFactory::getServerAddress() const {
                 return address.getHost();
             }
         }

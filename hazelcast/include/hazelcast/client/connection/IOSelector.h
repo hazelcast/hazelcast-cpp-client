@@ -60,6 +60,8 @@ namespace hazelcast {
 
                 void addTask(ListenerTask *listenerTask);
 
+                void cancelTask(ListenerTask *listenerTask);
+
                 void wakeUp();
 
                 void shutdown();

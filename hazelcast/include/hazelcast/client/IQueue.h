@@ -151,7 +151,7 @@ namespace hazelcast {
             * @param elements the vector that elements will be drained to.
             * @return number of elements drained.
             */
-            int drainTo(std::vector<E>& elements) {
+            size_t drainTo(std::vector<E>& elements) {
                 return drainTo(elements, -1);
             }
 
@@ -162,7 +162,7 @@ namespace hazelcast {
             * @param elements vector that elements will be drained to.
             * @return number of elements drained.
             */
-            int drainTo(std::vector<E>& elements, int maxElements) {
+            size_t drainTo(std::vector<E>& elements, size_t maxElements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainTo(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
                     boost::shared_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
@@ -266,8 +266,7 @@ namespace hazelcast {
             }
         private:
             IQueue(const std::string& instanceName, spi::ClientContext *context)
-            : proxy::IQueueImpl(instanceName, context){
-                
+            : proxy::IQueueImpl(instanceName, context) {
             }
         };
     }

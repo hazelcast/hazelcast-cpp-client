@@ -46,7 +46,7 @@ namespace hazelcast {
                     : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
                       outSelectorThread(NULL), live(true), heartBeater(clientContext),
                       heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
-                      callIdGenerator(0) {
+                      callIdGenerator(0), connectionIdCounter(0) {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
                 PROTOCOL.insert(PROTOCOL.begin(), &protocol_bytes[0], &protocol_bytes[3]);
             }
@@ -69,19 +69,19 @@ namespace hazelcast {
                 live = false;
                 heartBeater.shutdown();
                 if (heartBeatThread.get() != NULL) {
-                    heartBeatThread->interrupt();
+                    heartBeatThread->cancel();
                     heartBeatThread->join();
                     heartBeatThread.reset();
                 }
                 inSelector.shutdown();
                 outSelector.shutdown();
                 if (inSelectorThread.get() != NULL) {
-                    inSelectorThread->interrupt();
+                    inSelectorThread->cancel();
                     inSelectorThread->join();
                     inSelectorThread.reset();
                 }
                 if (outSelectorThread.get() != NULL) {
-                    outSelectorThread->interrupt();
+                    outSelectorThread->cancel();
                     outSelectorThread->join();
                     outSelectorThread.reset();
                 }
@@ -103,31 +103,68 @@ namespace hazelcast {
                 return getOrConnect(address, tryCount);
             }
 
+            boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount,
+                                                                                             const std::string &lastTriedAddress,
+                                                                                             int retryWaitTime) {
+                if (!smartRouting) {
+                    boost::shared_ptr<Connection> conn = getOwnerConnection();
+                    // Check if the retrieved connection is the same as the last one, if so we need to close it so that
+                    // a connection to a new member is established.
+                    if ((Connection *)NULL != conn.get() &&
+                            lastTriedAddress == util::IOUtil::to_string(conn->getRemoteEndpoint())) {
+                        // close the connection
+                        conn->close();
+
+                        // get the connection again
+                        conn = getOwnerConnection();
+                    }
+                    return conn;
+                }
+
+                Address address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
+                std::string newAddr = util::IOUtil::to_string(address);
+                if (newAddr == lastTriedAddress) {
+                    address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
+                }
+                newAddr = util::IOUtil::to_string(address);
+                if (newAddr == lastTriedAddress) {
+                    util::sleep(retryWaitTime);
+                }
+                return getOrConnect(address, tryCount);
+            }
+
             boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address &target,
                                                                                       int tryCount) {
                 checkLive();
 
-                std::auto_ptr<exception::IOException> lastError;
-
                 try {
                     if (clientContext.getClusterService().isMemberExists(target)) {
                         boost::shared_ptr<Connection> connection = getOrConnect(target);
-                        return connection;
+                        // Only return the live connections
+                        if (connection->live) {
+                            return connection;
+                        }
                     }
-                } catch (exception::IOException &e) {
-                    lastError = std::auto_ptr<exception::IOException>(new exception::IOException(e));
+                } catch (exception::IException &e) {
+                    if (tryCount <= 0) {
+                        throw e;
+                    }
                 }
 
                 int count = 0;
-                while (count < tryCount) {
+                while (true) {
                     try {
-                        return getRandomConnection();
-                    } catch (exception::IOException &e) {
-                        lastError = std::auto_ptr<exception::IOException>(new exception::IOException(e));
+                        boost::shared_ptr<Connection> conn = getRandomConnection();
+                        if (conn.get() != (Connection *) NULL && conn->live) {
+                            return conn;
+                        }
+                    } catch (exception::IException &e) {
+                        ++count;
+                        if (count >= tryCount) {
+                            throw e;
+                        }
                     }
-                    count++;
                 }
-                throw *lastError;
             }
 
             boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(const Address &address) {
@@ -146,10 +183,14 @@ namespace hazelcast {
                 checkLive();
                 if (smartRouting) {
                     return getOrConnectResolved(address);
-                } else {
-                    boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
-                    return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
                 }
+
+                return getOwnerConnection();
+            }
+
+            boost::shared_ptr<Connection> ConnectionManager::getOwnerConnection() {
+                boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
+                return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
             }
 
 
@@ -283,13 +324,10 @@ namespace hazelcast {
                 }
             }
 
-            void ConnectionManager::onConnectionClose(const Address &address) {
-                boost::shared_ptr<Connection> conn = getConnectionIfAvailable(address);
-                if (NULL != conn) {
-                    socketConnections.remove(conn->getSocket().getSocketId());
-                    connections.remove(address);
-                    ownerConnectionFuture.closeIfAddressMatches(address);
-                }
+            void ConnectionManager::onConnectionClose(const Address &address, int socketId) {
+                socketConnections.remove(socketId);
+                connections.remove(address);
+                ownerConnectionFuture.closeIfAddressMatches(address);
             }
 
             void ConnectionManager::checkLive() {
@@ -347,8 +385,11 @@ namespace hazelcast {
                                                                           std::auto_ptr<std::string> uuid,
                                                                           std::auto_ptr<std::string> ownerUuid) {
                 connection->setRemoteEndpoint(*addr);
+                connection->setConnectionId(++connectionIdCounter);
+
                 std::stringstream message;
-                (message << "client authenticated by " << *addr);
+                (message << "Connected and authenticated by " << *addr << ". Connection id:" << connection->getConnectionId()
+                 << " , socket id:" << connection->getSocket().getSocketId() << (connection->isOwnerConnection() ? " as owner connection." : "."));
                 util::ILogger::getLogger().info(message.str());
                 if (connection->isOwnerConnection()) {
                     principal = std::auto_ptr<protocol::Principal>(new protocol::Principal(uuid, ownerUuid));

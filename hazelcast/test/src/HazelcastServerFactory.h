@@ -26,6 +26,9 @@
 #include "hazelcast/client/connection/InputSocketStream.h"
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         namespace test {
 
@@ -36,6 +39,7 @@ namespace hazelcast {
 
                 enum {
                     OK = 5678,
+                    FAIL = -1,
                     END = 1,
                     START = 2,
                     SHUTDOWN = 3,
@@ -48,7 +52,7 @@ namespace hazelcast {
 
                 void shutdownAll();
 
-                int getInstanceId();
+                int getInstanceId(int retryNumber = 0);
 
                 ~HazelcastServerFactory();
 
@@ -57,6 +61,7 @@ namespace hazelcast {
                 Socket socket;
                 connection::OutputSocketStream outputSocketStream;
                 connection::InputSocketStream inputSocketStream;
+                util::ILogger &logger;
 
                 void shutdownInstance(int id);
             };

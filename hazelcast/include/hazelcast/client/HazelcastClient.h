@@ -414,6 +414,7 @@ namespace hazelcast {
             /**
             * Constructs a hazelcastClient with given ClientConfig.
             * Note: ClientConfig will be copied.
+            * @param config client configuration to start the client with
             */
             HazelcastClient(ClientConfig&);
 

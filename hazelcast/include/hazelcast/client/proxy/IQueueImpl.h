@@ -46,7 +46,7 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data>  drainTo(int maxElements);
+                std::vector<serialization::pimpl::Data>  drainTo(size_t maxElements);
 
                 std::auto_ptr<serialization::pimpl::Data> peek();
 

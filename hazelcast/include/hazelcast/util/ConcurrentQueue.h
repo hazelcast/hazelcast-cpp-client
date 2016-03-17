@@ -23,7 +23,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/Mutex.h"
-#include <queue>
+#include <deque>
 #include <iostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -43,7 +43,7 @@ namespace hazelcast {
 
             void offer(T *e) {
                 util::LockGuard lg(m);
-                internalQueue.push(e);
+                internalQueue.push_back(e);
             }
 
             T *poll() {
@@ -51,14 +51,43 @@ namespace hazelcast {
                 util::LockGuard lg(m);
                 if (!internalQueue.empty()) {
                     e = internalQueue.front();
-                    internalQueue.pop();
+                    internalQueue.pop_front();
                 }
                 return e;
             }
 
+            /**
+             * Note that this method is not very efficient but it is only called very rarely when the connection is closed
+             * Complexity: N2
+             * @param itemToBeRemoved The item to be removed from the queue
+             * @return number of items removed from the queue
+             */
+            int removeAll(const T *itemToBeRemoved) {
+                util::LockGuard lg(m);
+                int numErased = 0;
+                bool isFound;
+                do {
+                    isFound = false;
+                    for (typename std::deque<T *>::iterator it = internalQueue.begin();it != internalQueue.end(); ++it) {
+                        T *e = *it;
+                        if (itemToBeRemoved == e) {
+                            internalQueue.erase(it);
+                            isFound = true;
+                            ++numErased;
+                            break;
+                        }
+                    }
+                } while (isFound);
+                return numErased;
+            }
+
         private:
             util::Mutex m;
-            std::queue<T *> internalQueue;
+            /**
+             * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
+             * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
+             */
+            std::deque<T *> internalQueue;
         };
     }
 }
