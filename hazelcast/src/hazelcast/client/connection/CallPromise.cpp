@@ -16,7 +16,6 @@
 //
 // Created by sancar koyunlu on 03/01/14.
 //
-
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/Address.h"

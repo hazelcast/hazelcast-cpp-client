@@ -134,7 +134,7 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::readBytes(byte *target, size_t len) {
-            size_t numBytesToCopy = std::min<size_t>(capacity - pos, len);
+            size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
             memcpy(target, ix(), numBytesToCopy);
             pos += len;
             return numBytesToCopy;

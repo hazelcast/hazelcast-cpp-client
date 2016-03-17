@@ -28,6 +28,7 @@
 #include "hazelcast/client/MembershipEvent.h"
 
 #include <boost/shared_ptr.hpp>
+#include <set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -69,7 +70,7 @@ namespace hazelcast {
                                                          const int32_t &operationType,
                                                          std::auto_ptr<std::string> value);
 
-                std::vector<Address> getSocketAddresses();
+                std::set<Address, addressComparator> getSocketAddresses();
 
                 util::CountDownLatch startLatch;
 

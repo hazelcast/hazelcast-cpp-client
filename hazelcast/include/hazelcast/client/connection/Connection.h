@@ -85,6 +85,10 @@ namespace hazelcast {
 
                 virtual void handleMessage(connection::Connection &connection, std::auto_ptr<protocol::ClientMessage> message);
 
+                int getConnectionId() const;
+
+                void setConnectionId(int connectionId);
+
                 util::AtomicInt lastRead;
                 util::AtomicBoolean live;
             private:
@@ -101,6 +105,8 @@ namespace hazelcast {
                 protocol::ClientMessageBuilder messageBuilder;
                 protocol::ClientMessage wrapperMessage;
                 std::auto_ptr<protocol::ClientMessage> responseMessage;
+
+                int connectionId;
             };
 
         }

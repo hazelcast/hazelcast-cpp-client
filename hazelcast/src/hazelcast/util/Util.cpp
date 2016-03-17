@@ -81,7 +81,7 @@ namespace hazelcast {
             va_start(args, format);
 
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            return vsnprintf_s(str, len, len-1, format, args);
+            return vsnprintf_s(str, len, _TRUNCATE, format, args);
             #else
             return vsnprintf(str, len, format, args);
             #endif

@@ -28,10 +28,9 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-
             HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
             :factory(factory)
-            , id(factory.getInstanceId())
+            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT))
             , isShutDown(false) {
             }
 
