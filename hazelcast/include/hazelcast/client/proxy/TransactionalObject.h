@@ -88,9 +88,9 @@ namespace hazelcast {
 
                 template<typename K>
                 std::vector<K> toObjectCollection(const std::vector<serialization::pimpl::Data> &keyDataSet) {
-                    int size = keyDataSet.size();
+                    size_t size = keyDataSet.size();
                     std::vector<K> keys(size);
-                    for (int i = 0; i < size; i++) {
+                    for (size_t i = 0; i < size; i++) {
                         boost::shared_ptr<K> v = toObject<K>(keyDataSet[i]);
                         keys[i] = *v;
                     }

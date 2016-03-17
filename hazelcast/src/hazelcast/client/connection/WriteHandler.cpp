@@ -38,13 +38,15 @@ namespace hazelcast {
             }
 
             void WriteHandler::run() {
-                informSelector = true;
-                if (ready) {
-                    handle();
-                } else {
-                    registerHandler();
+                if (this->connection.live) {
+                    informSelector = true;
+                    if (ready) {
+                        handle();
+                    } else {
+                        registerHandler();
+                    }
+                    ready = false;
                 }
-                ready = false;
             }
 
             // TODO: Add a fragmentation layer here before putting the message into the write queue
@@ -57,10 +59,6 @@ namespace hazelcast {
             }
 
             void WriteHandler::handle() {
-                if (!connection.live) {
-                    return;
-                }
-
                 if (lastMessage == NULL) {
                     lastMessage = writeQueue.poll();
                     if (lastMessage == NULL) {

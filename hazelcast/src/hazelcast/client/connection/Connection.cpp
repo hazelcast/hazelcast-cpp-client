@@ -50,7 +50,8 @@ namespace hazelcast {
             , _isOwnerConnection(isOwner)
             , receiveBuffer(new byte[16 << 10])
             , receiveByteBuffer((char *)receiveBuffer, 16 << 10)
-            , messageBuilder(this, *this) {
+            , messageBuilder(*this, *this)
+            , connectionId(-1) {
                 wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
                 assert(receiveByteBuffer.remaining() >= protocol::ClientMessage::HEADER_SIZE); // Note: Always make sure that the size >= ClientMessage header size.
             }
@@ -64,11 +65,6 @@ namespace hazelcast {
                 int error = socket.connect(timeoutInMillis);
                 if (error) {
                     throw exception::IOException("Socket::connect", strerror(error));
-                } else {
-                    std::stringstream message;
-                    message << "Connected to " << socket.getAddress() << " with socket id " << socket.getSocketId() <<
-                            (_isOwnerConnection ? " as the owner connection." : ".");
-                    util::ILogger::getLogger().info(message.str());
                 }
             }
 
@@ -82,8 +78,11 @@ namespace hazelcast {
                     return;
                 }
 
+                const Address &serverAddr = getRemoteEndpoint();
+                int socketId = socket.getSocketId();
+                
                 std::stringstream message;
-                message << "Closing connection to " << getRemoteEndpoint() << " with socket id " << socket.getSocketId() <<
+                message << "Closing connection (id:" << connectionId << ") to " << serverAddr << " with socket id " << socketId <<
                         (_isOwnerConnection ? " as the owner connection." : ".");
                 util::ILogger::getLogger().warning(message.str());
                 if (!_isOwnerConnection) {
@@ -94,7 +93,8 @@ namespace hazelcast {
                     return;
                 }
 
-                clientContext.getConnectionManager().onConnectionClose(socket.getRemoteEndpoint());
+                clientContext.getConnectionManager().onConnectionClose(serverAddr, socketId);
+
                 clientContext.getInvocationService().cleanResources(*this);
             }
 
@@ -198,6 +198,14 @@ namespace hazelcast {
 
             void Connection::handleMessage(connection::Connection &connection, std::auto_ptr<protocol::ClientMessage> message) {
                 responseMessage = message;
+            }
+
+            int  Connection::getConnectionId() const {
+                return connectionId;
+            }
+
+            void  Connection::setConnectionId(int connectionId) {
+                Connection::connectionId = connectionId;
             }
 
             bool Connection::isOwnerConnection() const {

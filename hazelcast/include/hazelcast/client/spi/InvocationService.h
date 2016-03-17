@@ -15,8 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 5/23/13.
-
-
 #ifndef HAZELCAST_INVOCATION_SERVICE
 #define HAZELCAST_INVOCATION_SERVICE
 
@@ -24,6 +22,7 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
@@ -64,7 +63,6 @@ namespace hazelcast {
         }
 
         namespace spi {
-
             class ClientContext;
 
             class HAZELCAST_API InvocationService : public protocol::IMessageHandler {
@@ -73,21 +71,29 @@ namespace hazelcast {
 
                 virtual ~InvocationService();
 
-                void start();
+                bool start();
+
+                void shutdown();
 
                 connection::CallFuture invokeOnRandomTarget(std::auto_ptr<protocol::ClientMessage> request);
 
-                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request, int partitionId);
+                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request,
+                                                              int partitionId);
 
-                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request, const Address& target);
+                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request,
+                                                      const Address& target);
 
-                connection::CallFuture invokeOnRandomTarget(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler);
+                connection::CallFuture invokeOnRandomTarget(std::auto_ptr<protocol::ClientMessage> request,
+                                                            client::impl::BaseEventHandler *handler);
 
-                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler, const Address& target);
+                connection::CallFuture invokeOnTarget(std::auto_ptr<protocol::ClientMessage> request,
+                                                      client::impl::BaseEventHandler *handler, const Address& target);
 
-                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request, hazelcast::client::impl::BaseEventHandler *handler, int partitionId);
+                connection::CallFuture invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> request,
+                                                              client::impl::BaseEventHandler *handler, int partitionId);
 
-                connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request, boost::shared_ptr<connection::Connection> connection);
+                connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request,
+                                                          boost::shared_ptr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
@@ -123,55 +129,65 @@ namespace hazelcast {
                 /**
                 *  Retries the given promise on an available connection.
                 */
-                boost::shared_ptr<connection::Connection> resend(boost::shared_ptr<connection::CallPromise> promise, const std::string& lastAddress);
+                boost::shared_ptr<connection::Connection> resend(boost::shared_ptr<connection::CallPromise> promise,
+                                                                 const std::string& lastAddress);
             private:
                 bool redoOperation;
                 int heartbeatTimeout;
                 int retryWaitTime;
                 int retryCount;
                 spi::ClientContext& clientContext;
-                util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int64_t, connection::CallPromise > > callPromises;
-                util::SynchronizedMap<connection::Connection* , util::SynchronizedMap<int64_t, connection::CallPromise > > eventHandlerPromises;
+                // Is not using the Connection* for the key due to a possible ABA problem.
+                util::SynchronizedMap<int , util::SynchronizedMap<int64_t, connection::CallPromise > > callPromises;
+                util::SynchronizedMap<int, util::SynchronizedMap<int64_t, connection::CallPromise > > eventHandlerPromises;
+
+                util::AtomicBoolean isOpen;
 
                 bool isAllowedToSentRequest(connection::Connection& connection, protocol::ClientMessage const&);
 
-                connection::CallFuture doSend(std::auto_ptr<protocol::ClientMessage> request, std::auto_ptr<hazelcast::client::impl::BaseEventHandler> eventHandler, boost::shared_ptr<connection::Connection>, int);
+                connection::CallFuture doSend(std::auto_ptr<protocol::ClientMessage> request,
+                                              std::auto_ptr<client::impl::BaseEventHandler> eventHandler,
+                                              boost::shared_ptr<connection::Connection>, int);
 
                 /**
                 * Returns the actual connection that request is send over,
                 * Returns null shared_ptr if request is not send.
                 */
-                boost::shared_ptr<connection::Connection> registerAndEnqueue(boost::shared_ptr<connection::Connection>,boost::shared_ptr<connection::CallPromise>, int partitionId);
+                boost::shared_ptr<connection::Connection> registerAndEnqueue(boost::shared_ptr<connection::Connection> &conn,
+                                                                             boost::shared_ptr<connection::CallPromise>);
 
                 /** CallId Related **/
 
-                void registerCall(connection::Connection& connection, boost::shared_ptr<connection::CallPromise> promise);
+                void registerCall(connection::Connection &connection, boost::shared_ptr<connection::CallPromise> promise);
 
-                boost::shared_ptr<connection::CallPromise> deRegisterCall(connection::Connection& connection, int64_t callId);
+                boost::shared_ptr<connection::CallPromise> deRegisterCall(int connectionId, int64_t callId);
 
                 /** **/
                 void registerEventHandler(int64_t correlationId,
                                           connection::Connection& connection, boost::shared_ptr<connection::CallPromise> promise);
 
-                boost::shared_ptr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection, int64_t callId);
+                boost::shared_ptr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection,
+                                                                                  int64_t callId);
 
                 /***** HANDLE PACKET PART ****/
 
                 /* returns shouldSetResponse */
-                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise, const Address& address);
+                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise,
+                                     const Address& address);
 
                 /* returns shouldSetResponse */
                 bool handleEventUuid(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise);
 
                 /** CallPromise Map **/
 
-                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getCallPromiseMap(connection::Connection& connection);
+                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getCallPromiseMap(int connectionId);
 
                 /** EventHandler Map **/
 
                 // TODO: Put the promise map as a member of the connection object. In this way, we can get the promise map directly from connection object
                 // without a need for a map lookup since we already know the connection and the map is specific to a connection
-                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getEventHandlerPromiseMap(connection::Connection& connection);
+                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getEventHandlerPromiseMap(
+                        connection::Connection& connection);
 
                 boost::shared_ptr<connection::CallPromise> getEventHandlerPromise(connection::Connection& , int64_t callId);
             };

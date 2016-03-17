@@ -28,7 +28,7 @@
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            ClientMessageBuilder::ClientMessageBuilder(IMessageHandler *service, connection::Connection &connection)
+            ClientMessageBuilder::ClientMessageBuilder(IMessageHandler &service, connection::Connection &connection)
             : messageHandler(service), connection(connection) {
             }
 
@@ -56,9 +56,7 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            if (messageHandler) {
-                                messageHandler->handleMessage(connection, message);
-                            }
+                            messageHandler.handleMessage(connection, message);
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
@@ -93,9 +91,7 @@ namespace hazelcast {
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 
-                        if (messageHandler) {
-                            messageHandler->handleMessage(connection, foundMessage);
-                        }
+                        messageHandler.handleMessage(connection, foundMessage);
 
                         result = true;
                     }

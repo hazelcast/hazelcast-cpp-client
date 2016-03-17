@@ -96,10 +96,27 @@ namespace hazelcast {
                 /**
                 * Tries to connect to an address in member list.
                 *
+                * @param tryCount The number of times it shall try during connection establishment if not connected
                 * @return authenticated connection
                 * @throws Exception authentication failed or no connection found
                 */
                 boost::shared_ptr<Connection> getRandomConnection(int tryCount);
+
+                /**
+                * Tries to connect to an address in member list.
+                *
+                * This check is to guarantee that the same server is not retried. This may happen since the
+                * cluster member update and the partition update may be received a little later and/or the load
+                * balancer may produce the same address.
+                *
+                * @param tryCount The number of times it shall try during connection establishment if not connected
+                * @param retryWaitTime The number of seconds to wait if the found random address is the same as the last
+                *              tried address comes out to be the same as the randomly selected server address.
+                * @return authenticated connection
+                * @throws Exception authentication failed or no connection found
+                */
+                boost::shared_ptr<Connection> getRandomConnection(int tryCount, const std::string &lastTriedAddress,
+                                                                  int retryWaitTime);
 
                 /**
                 * Called when an connection is closed.
@@ -107,7 +124,7 @@ namespace hazelcast {
                 *
                 * @param clientConnection closed connection
                 */
-                void onConnectionClose(const Address &address);
+                void onConnectionClose(const Address &address, int socketId);
 
                 /**
                 * Shutdown clientConnectionManager
@@ -168,6 +185,8 @@ namespace hazelcast {
                                                            std::auto_ptr<std::string> uuid,
                                                            std::auto_ptr<std::string> ownerUuid);
 
+                boost::shared_ptr<Connection> getOwnerConnection();
+
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 util::SynchronizedMap<int, Connection> socketConnections;
@@ -188,6 +207,7 @@ namespace hazelcast {
                 OwnerConnectionFuture ownerConnectionFuture;
 
                 util::Atomic<int64_t> callIdGenerator;
+                util::Atomic<int> connectionIdCounter;
             };
         }
     }

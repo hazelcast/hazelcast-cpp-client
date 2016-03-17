@@ -20,6 +20,7 @@
 #include <assert.h>
 #include <iosfwd>
 #include <string.h>
+#include <hazelcast/util/Util.h>
 
 #include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/ILogger.h"
@@ -30,30 +31,46 @@ namespace hazelcast {
         void SocketSet::insertSocket(client::Socket const *socket) {
             assert(NULL != socket);
 
-            LockGuard lockGuard(accessLock);
-            sockets.insert(socket);
+            int socketId = socket->getSocketId();
+            assert(socketId >= 0);
+
+            if (socketId >= 0) {
+                LockGuard lockGuard(accessLock);
+                sockets.insert(socketId);
+            } else {
+                char msg[200];
+                util::snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
+                               socketId);
+                util::ILogger::getLogger().warning(msg);
+            }
         }
 
         void SocketSet::removeSocket(client::Socket const *socket) {
             assert(NULL != socket);
 
-            int searchedSocketId = socket->getSocketId();
+            int socketId = socket->getSocketId();
+            assert(socketId >= 0);
+
             bool found = false;
 
-            LockGuard lockGuard(accessLock);
+            if (socketId >= 0) {
+                LockGuard lockGuard(accessLock);
 
-            for (SocketContainer::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
-                if (searchedSocketId ==  (*it)->getSocketId()) { // found
-                    sockets.erase(it);
-                    found = true;
-                    break;
+                for (std::set<int>::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
+                    if (socketId == *it) { // found
+                        sockets.erase(it);
+                        found = true;
+                        break;
+                    }
                 }
             }
+
             if (!found) {
-                ILogger &logger = util::ILogger::getLogger();
-                std::ostringstream out;
-                out << "[SocketSet::removeSocket] Trying to remove an already removed socket with id " << searchedSocketId << ".";
-                logger.warning(out.str());
+                char msg[200];
+                util::snprintf(msg, 200,
+                               "[SocketSet::removeSocket] Socket with id %d  was not found among the sockets.",
+                               socketId);
+                util::ILogger::getLogger().finest(msg);
             }
         }
 
@@ -66,13 +83,12 @@ namespace hazelcast {
             LockGuard lockGuard(accessLock);
 
             if (!sockets.empty()) {
-                for (SocketContainer::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
-                    int socketId = (*it)->getSocketId();
-                    FD_SET(socketId, &resultSet);
+                for (std::set<int>::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
+                    FD_SET(*it, &resultSet);
                 }
 
-                result.max = (*(sockets.begin()))->getSocketId();
-                result.min = (*(sockets.rbegin()))->getSocketId();
+                result.max = *sockets.rbegin();
+                result.min = *sockets.begin();
             }
 
             return result;

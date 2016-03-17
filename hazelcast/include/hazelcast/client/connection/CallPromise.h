@@ -16,19 +16,13 @@
 //
 // Created by sancar koyunlu on 03/01/14.
 //
-
-
-
-
 #ifndef HAZELCAST_ClientCallPromise
 #define HAZELCAST_ClientCallPromise
-
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/AtomicInt.h"
 
-#include "hazelcast/client/impl/BaseEventHandler.h"
 #include <memory>
 
 namespace hazelcast {

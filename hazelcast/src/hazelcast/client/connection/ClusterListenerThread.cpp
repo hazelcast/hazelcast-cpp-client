@@ -49,11 +49,15 @@ namespace hazelcast {
             }
 
             void ClusterListenerThread::run(util::Thread *currentThread) {
+                Address previousConnectionAddr;
+                Address *previousConnectionAddrPtr = NULL;
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
                         if (conn.get() == NULL) {
                             try {
-                                conn = clientContext.getClusterService().connectToOne();
+                                conn = clientContext.getClusterService().connectToOne(previousConnectionAddrPtr);
+                                previousConnectionAddr = conn->getRemoteEndpoint();
+                                previousConnectionAddrPtr = &previousConnectionAddr;
                             } catch (std::exception &e) {
                                 util::ILogger::getLogger().severe(
                                         std::string("Error while connecting to cluster! =>") + e.what());
@@ -86,9 +90,7 @@ namespace hazelcast {
                         }
                         currentThread->interruptibleSleep(1);
                     }
-
                 }
-
             }
 
             void ClusterListenerThread::stop() {
@@ -97,24 +99,26 @@ namespace hazelcast {
                     conn.reset();
                     deletingConnection = false;
                 }
-                clusterListenerThread->interrupt();
+                clusterListenerThread->cancel();
                 clusterListenerThread->join();
             }
 
-            std::vector<Address> ClusterListenerThread::getSocketAddresses() {
-                std::vector<Address> addresses;
+            std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() {
+                std::set<Address, addressComparator> addresses;
                 if (!members.empty()) {
                     std::vector<Address> clusterAddresses = getClusterAddresses();
-                    addresses.insert(addresses.begin(), clusterAddresses.begin(), clusterAddresses.end());
+                    addresses.insert(clusterAddresses.begin(), clusterAddresses.end());
                 }
                 std::vector<Address> configAddresses = getConfigAddresses();
-                addresses.insert(addresses.end(), configAddresses.begin(), configAddresses.end());
+                addresses.insert(configAddresses.begin(), configAddresses.end());
                 return addresses;
             }
 
             void ClusterListenerThread::loadInitialMemberList() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ClientAddMembershipListenerCodec::RequestParameters::encode(false);
+
+                request->setCorrelationId(clientContext.getConnectionManager().getNextCallId());
 
                 conn->writeBlocking(*request);
 
@@ -191,7 +195,7 @@ namespace hazelcast {
                         util::snprintf(buf, 50, "Unknown event type :%d", eventType);
                         util::ILogger::getLogger().warning(buf);
                 }
-                clientContext.getPartitionService().refreshPartitions();
+                clientContext.getPartitionService().wakeup();
             }
 
             void ClusterListenerThread::handleMemberList(const std::vector<Member> &initialMembers) {

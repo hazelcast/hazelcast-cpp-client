@@ -26,27 +26,26 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientQueueTest::ClientQueueTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , q(new IQueue< std::string>(client->getQueue< std::string >("clientQueueTest"))) {
+                    : instance(*g_srvFactory), client(getNewClient()),
+                      q(new IQueue<std::string>(client->getQueue<std::string>("clientQueueTest"))) {
 
             }
 
             ClientQueueTest::~ClientQueueTest() {
             }
 
-            class QueueTestItemListener : public ItemListener<std::string>  {
+            class QueueTestItemListener : public ItemListener<std::string> {
             public:
                 QueueTestItemListener(util::CountDownLatch &latch)
-                :latch(latch) {
+                        : latch(latch) {
 
                 }
 
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
+                void itemAdded(const ItemEvent<std::string> &itemEvent) {
                     latch.countDown();
                 }
 
-                void itemRemoved(const ItemEvent<std::string>& item) {
+                void itemRemoved(const ItemEvent<std::string> &item) {
                 }
 
             private:
@@ -75,7 +74,7 @@ namespace hazelcast {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
-		std::cout << "item1 is offered" << std::endl;
+                std::cout << "item1 is offered" << std::endl;
             }
 
             TEST_F(ClientQueueTest, testOfferPoll) {
@@ -89,14 +88,14 @@ namespace hazelcast {
                 ASSERT_TRUE(result);
 
                 for (int i = 0; i < 10; i++) {
-                    ASSERT_NE(q->poll().get(), (std::string *)NULL);
+                    ASSERT_NE(q->poll().get(), (std::string *) NULL);
                 }
                 ASSERT_EQ(0, q->size());
 
                 util::Thread t2(testOfferPollThread2, q.get());
-		
-		boost::shared_ptr<std::string> item = q->poll(30 * 1000);
-                ASSERT_NE(item.get(), (std::string *)NULL);
+
+                boost::shared_ptr<std::string> item = q->poll(30 * 1000);
+                ASSERT_NE(item.get(), (std::string *) NULL);
                 ASSERT_EQ("item1", *item);
                 t2.join();
             }
@@ -155,14 +154,14 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer("item5"));
 
                 std::vector<std::string> list;
-                int result = q->drainTo(list, 2);
-                ASSERT_EQ(2, result);
+                size_t result = q->drainTo(list, 2);
+                ASSERT_EQ(2U, result);
                 ASSERT_EQ("item1", list[0]);
                 ASSERT_EQ("item2", list[1]);
 
                 std::vector<std::string> list2;
                 result = q->drainTo(list2);
-                ASSERT_EQ(3, result);
+                ASSERT_EQ(3U, result);
                 ASSERT_EQ("item3", list2[0]);
                 ASSERT_EQ("item4", list2[1]);
                 ASSERT_EQ("item5", list2[2]);
@@ -176,15 +175,15 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer("item5"));
 
                 std::vector<std::string> array = q->toArray();
-                int size = array.size();
-                for (int i = 0; i < size; i++) {
+                size_t size = array.size();
+                for (size_t i = 0; i < size; i++) {
                     ASSERT_EQ(std::string("item") + util::IOUtil::to_string(i + 1), array[i]);
                 }
 
             }
 
             TEST_F(ClientQueueTest, testAddAll) {
-                std::vector<std::string > coll;
+                std::vector<std::string> coll;
                 coll.push_back("item1");
                 coll.push_back("item2");
                 coll.push_back("item3");
@@ -235,7 +234,7 @@ namespace hazelcast {
                 q->clear();
 
                 ASSERT_EQ(0, q->size());
-                ASSERT_EQ(q->poll().get(), (std::string *)NULL);
+                ASSERT_EQ(q->poll().get(), (std::string *) NULL);
             }
         }
     }

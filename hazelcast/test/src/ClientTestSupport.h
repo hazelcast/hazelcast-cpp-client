@@ -35,7 +35,7 @@ namespace hazelcast {
 
             class ClientTestSupport : public ::testing::Test {
             public:
-                std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
+                virtual std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
 
                 std::auto_ptr<HazelcastClient> getNewClient();
             };

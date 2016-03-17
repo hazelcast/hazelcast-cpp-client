@@ -18,8 +18,8 @@
 //
 
 #include "ClientTestSupport.h"
-#include <hazelcast/util/CountDownLatch.h>
-#include <hazelcast/client/MembershipListener.h>
+#include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/MemberAttributeEvent.h"

@@ -46,6 +46,7 @@ namespace hazelcast {
             }
 
             void IOHandler::deRegisterSocket() {
+                ioSelector.cancelTask(this);
                 ioSelector.removeSocket(connection.getSocket());
             }
 

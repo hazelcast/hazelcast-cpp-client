@@ -28,11 +28,11 @@ namespace hazelcast {
             public:
                 const Member next() {
                     std::vector<Member> members = getMembers();
-                    long len = members.size();
+                    size_t len = members.size();
                     if (len == 0) {
                         throw exception::IException("const Member& RoundRobinLB::next()", "No member in member list!!");
                     }
-                    for (int i = 0; i < len; i++) {
+                    for (size_t i = 0; i < len; i++) {
                         if (members[i].getAddress().getPort() == 5701) {
                             return members[i];
                         }
@@ -80,7 +80,7 @@ namespace hazelcast {
             ClientTxnTest::~ClientTxnTest() {
                 g_srvFactory->shutdownAll();
                 client->shutdown();
-                client.reset();                
+                client.reset();
             }
 
             TEST_F(ClientTxnTest, testTxnRollback) {
