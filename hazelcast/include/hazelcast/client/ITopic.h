@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 6/20/13.
-
-
-
-
 #ifndef HAZELCAST_TOPIC
 #define HAZELCAST_TOPIC
 

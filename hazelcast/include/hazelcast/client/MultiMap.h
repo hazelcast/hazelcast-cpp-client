@@ -27,6 +27,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template <typename K, typename V>
+            class RawPointerMultiMap;
+        }
 
         /**
         * A specialized distributed map client whose keys can be associated with multiple values.
@@ -36,6 +40,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class MultiMap : public proxy::MultiMapImpl {
             friend class HazelcastClient;
+            friend class adaptor::RawPointerMultiMap<K, V>;
 
         public:
             /**
@@ -58,7 +63,7 @@ namespace hazelcast {
             * @return the multimap of the values associated with the key.
             */
             std::vector<V> get(const K &key) {
-                return toObjectCollection<V>(proxy::MultiMapImpl::get(toData(key)));
+                return toObjectCollection<V>(proxy::MultiMapImpl::getData(toData(key)));
             }
 
             /**
@@ -80,7 +85,7 @@ namespace hazelcast {
             *         might be modifiable but it has no effect on the multimap
             */
             std::vector<V> remove(const K &key) {
-                return toObjectCollection<V>(proxy::MultiMapImpl::remove(toData(key)));
+                return toObjectCollection<V>(proxy::MultiMapImpl::removeData(toData(key)));
             }
 
             /**
@@ -90,7 +95,7 @@ namespace hazelcast {
             *         but it has no effect on the multimap
             */
             std::vector<K> keySet() {
-                return toObjectCollection<K>(proxy::MultiMapImpl::keySet());
+                return toObjectCollection<K>(proxy::MultiMapImpl::keySetData());
             }
 
             /**
@@ -100,7 +105,7 @@ namespace hazelcast {
             *         but it has no effect on the multimap
             */
             std::vector<V> values() {
-                return toObjectCollection<V>(proxy::MultiMapImpl::values());
+                return toObjectCollection<V>(proxy::MultiMapImpl::valuesData());
             }
 
             /**
@@ -110,7 +115,7 @@ namespace hazelcast {
             *         but it has no effect on the multimap
             */
             std::vector<std::pair<K, V> > entrySet() {
-                return toObjectEntrySet<K, V>(proxy::MultiMapImpl::entrySet());
+                return toObjectEntrySet<K, V>(proxy::MultiMapImpl::entrySetData());
             }
 
             /**

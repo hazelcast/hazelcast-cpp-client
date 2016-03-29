@@ -37,11 +37,11 @@ namespace hazelcast {
 
                 bool put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::vector<serialization::pimpl::Data> get(const serialization::pimpl::Data& key);
+                std::vector<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
 
                 bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::vector<serialization::pimpl::Data> remove(const serialization::pimpl::Data& key);
+                std::vector<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
 
                 int valueCount(const serialization::pimpl::Data& key);
 

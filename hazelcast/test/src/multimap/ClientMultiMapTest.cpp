@@ -15,9 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 8/27/13.
-
-
-
 #include "hazelcast/util/Util.h"
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"

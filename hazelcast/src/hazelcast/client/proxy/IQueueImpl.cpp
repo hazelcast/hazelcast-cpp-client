@@ -74,7 +74,7 @@ namespace hazelcast {
                                                                                                       partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IQueueImpl::poll(long timeoutInMillis) {
+            std::auto_ptr<serialization::pimpl::Data> IQueueImpl::pollData(long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueuePollCodec::RequestParameters::encode(getName(), timeoutInMillis);
 
@@ -105,7 +105,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::QueueContainsCodec::ResponseParameters>(request, partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> IQueueImpl::drainTo(size_t maxElements) {
+            std::vector<serialization::pimpl::Data> IQueueImpl::drainToData(size_t maxElements) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueDrainToMaxSizeCodec::RequestParameters::encode(getName(), maxElements);
 
@@ -114,7 +114,7 @@ namespace hazelcast {
             }
 
 
-            std::auto_ptr<serialization::pimpl::Data> IQueueImpl::peek() {
+            std::auto_ptr<serialization::pimpl::Data> IQueueImpl::peekData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueuePeekCodec::RequestParameters::encode(getName());
 
@@ -130,7 +130,7 @@ namespace hazelcast {
                                                                                                     partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> IQueueImpl::toArray() {
+            std::vector<serialization::pimpl::Data> IQueueImpl::toArrayData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueIteratorCodec::RequestParameters::encode(getName());
 

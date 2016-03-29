@@ -24,6 +24,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template <typename E>
+            class RawPointerQueue;
+        }
 
         /**
         * Concurrent, blocking, distributed, observable, client queue.
@@ -33,6 +37,7 @@ namespace hazelcast {
         template<typename E>
         class IQueue : public proxy::IQueueImpl {
             friend class HazelcastClient;
+            friend class adaptor::RawPointerQueue<E>;
 
         public:
             /**
@@ -116,7 +121,8 @@ namespace hazelcast {
             * @return the head of the queue. If queue is empty waits for specified time.
             */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                return toObject<E>(proxy::IQueueImpl::poll(timeoutInMillis));
+                return boost::shared_ptr<E>(boost::shared_ptr<E>(toObject<E>(
+                        proxy::IQueueImpl::pollData(timeoutInMillis))));
             }
 
             /**
@@ -163,9 +169,9 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             size_t drainTo(std::vector<E>& elements, size_t maxElements) {
-                std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainTo(maxElements);
+                std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    boost::shared_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
+                    std::auto_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
@@ -186,7 +192,7 @@ namespace hazelcast {
             * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
             */
             boost::shared_ptr<E> peek() {
-                return toObject<E>(proxy::IQueueImpl::peek());
+                return boost::shared_ptr<E>(toObject<E>(proxy::IQueueImpl::peekData()));
             }
 
             /**
@@ -210,7 +216,7 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                return toObjectCollection<E>(proxy::IQueueImpl::toArray());
+                return toObjectCollection<E>(proxy::IQueueImpl::toArrayData());
             }
 
             /**

@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-
-
-
 #ifndef HAZELCAST_ClientTxnMapTest
 #define HAZELCAST_ClientTxnMapTest
 
@@ -42,7 +39,6 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
             };
-
         }
     }
 }

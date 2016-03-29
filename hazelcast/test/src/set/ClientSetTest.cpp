@@ -23,6 +23,24 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+            class MySetItemListener : public ItemListener<std::string> {
+            public:
+                MySetItemListener(util::CountDownLatch &latch)
+                        :latch(latch) {
+
+                }
+
+                void itemAdded(const ItemEvent<std::string>& itemEvent) {
+                    latch.countDown();
+                }
+
+                void itemRemoved(const ItemEvent<std::string>& item) {
+                }
+
+            private:
+                util::CountDownLatch &latch;
+            };
+
             ClientSetTest::ClientSetTest()
             : instance(*g_srvFactory)
             , client(getNewClient())
@@ -31,6 +49,17 @@ namespace hazelcast {
 
 
             ClientSetTest::~ClientSetTest() {
+            }
+
+            bool ClientSetTest::itemExists(const std::vector<std::string> &items, const std::string &item) const {
+                bool found = false;
+                for (std::vector<std::string>::const_iterator it = items.begin();it != items.end();++it) {
+                    if (item == *it) {
+                        found = true;
+                        break;
+                    }
+                }
+                return found;
             }
 
             TEST_F(ClientSetTest, testAddAll) {
@@ -79,7 +108,22 @@ namespace hazelcast {
                 ASSERT_TRUE(set->containsAll(l));
             }
 
+            TEST_F(ClientSetTest, testToArray) {
+                ASSERT_TRUE(set->add("item1"));
+                ASSERT_TRUE(set->add("item2"));
+                ASSERT_TRUE(set->add("item3"));
+                ASSERT_TRUE(set->add("item4"));
+                ASSERT_FALSE(set->add("item4"));
 
+                std::vector<std::string> items = set->toArray();
+
+                ASSERT_EQ((size_t)4, items.size());
+                ASSERT_TRUE(itemExists(items, "item1"));
+                ASSERT_TRUE(itemExists(items, "item2"));
+                ASSERT_TRUE(itemExists(items, "item3"));
+                ASSERT_TRUE(itemExists(items, "item4"));
+            }
+            
             TEST_F(ClientSetTest, testRemoveRetainAll) {
                 ASSERT_TRUE(set->add("item1"));
                 ASSERT_TRUE(set->add("item2"));
@@ -106,26 +150,7 @@ namespace hazelcast {
                 ASSERT_EQ(0, set->size());
 
             }
-
-            class MySetItemListener : public ItemListener<std::string> {
-            public:
-                MySetItemListener(util::CountDownLatch &latch)
-                :latch(latch) {
-
-                }
-
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
-                    latch.countDown();
-                }
-
-                void itemRemoved(const ItemEvent<std::string>& item) {
-                }
-
-            private:
-                util::CountDownLatch &latch;
-            };
-
-
+            
             TEST_F(ClientSetTest, testListener) {
                 util::CountDownLatch latch(6);
 

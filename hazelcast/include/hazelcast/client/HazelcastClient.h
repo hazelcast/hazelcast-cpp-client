@@ -436,6 +436,8 @@ namespace hazelcast {
             };
 
             /**
+            * @deprecated "Please use api::IMap<K, V> getMap(const char *name)."
+            *
             * Returns the distributed map instance with the specified name.
             *
             * @tparam K key type
