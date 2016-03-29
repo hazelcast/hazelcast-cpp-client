@@ -56,7 +56,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::TransactionalMapContainsKeyCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::get(const serialization::pimpl::Data& key) {
+            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::getData(const serialization::pimpl::Data& key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapGetCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), key);
@@ -72,7 +72,7 @@ namespace hazelcast {
                 return invokeAndGetResult<int, protocol::codec::TransactionalMapSizeCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::put(
+            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::putData(
                     const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
 
                 std::auto_ptr<protocol::ClientMessage> request =
@@ -91,7 +91,7 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::putIfAbsent(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::putIfAbsentData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapPutIfAbsentCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), key, value);
@@ -99,7 +99,7 @@ namespace hazelcast {
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalMapPutIfAbsentCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
+            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::replaceData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapReplaceCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), key, value);
@@ -115,7 +115,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::TransactionalMapReplaceIfSameCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::remove(const serialization::pimpl::Data& key) {
+            std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::removeData(const serialization::pimpl::Data& key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapRemoveCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), key);
@@ -139,7 +139,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::TransactionalMapRemoveIfSameCodec::ResponseParameters>(request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySet() {
+            std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySetData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapKeySetCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId());
@@ -147,7 +147,7 @@ namespace hazelcast {
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetCodec::ResponseParameters>(request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySet(const serialization::IdentifiedDataSerializable *predicate) {
+            std::vector<serialization::pimpl::Data> TransactionalMapImpl::keySetData(const serialization::IdentifiedDataSerializable *predicate) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapKeySetWithPredicateCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), toData<serialization::IdentifiedDataSerializable>(predicate));
@@ -155,7 +155,7 @@ namespace hazelcast {
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapKeySetWithPredicateCodec::ResponseParameters>(request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::values() {
+            std::vector<serialization::pimpl::Data> TransactionalMapImpl::valuesData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapValuesCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId());
@@ -163,7 +163,7 @@ namespace hazelcast {
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMapValuesCodec::ResponseParameters>(request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMapImpl::values(const serialization::IdentifiedDataSerializable *predicate) {
+            std::vector<serialization::pimpl::Data> TransactionalMapImpl::valuesData(const serialization::IdentifiedDataSerializable *predicate) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMapValuesWithPredicateCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), toData<serialization::IdentifiedDataSerializable>(predicate));

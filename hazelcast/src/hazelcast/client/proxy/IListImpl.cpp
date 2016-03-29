@@ -91,7 +91,7 @@ namespace hazelcast {
                                                                                                         partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> IListImpl::toArray() {
+            std::vector<serialization::pimpl::Data> IListImpl::toArrayData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListGetAllCodec::RequestParameters::encode(getName());
 
@@ -163,7 +163,7 @@ namespace hazelcast {
                 invoke(request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IListImpl::get(int index) {
+            std::auto_ptr<serialization::pimpl::Data> IListImpl::getData(int index) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListGetCodec::RequestParameters::encode(getName(), index);
 
@@ -171,7 +171,7 @@ namespace hazelcast {
                         request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IListImpl::set(int index,
+            std::auto_ptr<serialization::pimpl::Data> IListImpl::setData(int index,
                                                                      const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListSetCodec::RequestParameters::encode(getName(), index, element);
@@ -187,7 +187,7 @@ namespace hazelcast {
                 invoke(request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IListImpl::remove(int index) {
+            std::auto_ptr<serialization::pimpl::Data> IListImpl::removeData(int index) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListRemoveWithIndexCodec::RequestParameters::encode(getName(), index);
 
@@ -211,7 +211,7 @@ namespace hazelcast {
                                                                                                           partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> IListImpl::subList(int fromIndex, int toIndex) {
+            std::vector<serialization::pimpl::Data> IListImpl::subListData(int fromIndex, int toIndex) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListSubCodec::RequestParameters::encode(getName(), fromIndex, toIndex);
 

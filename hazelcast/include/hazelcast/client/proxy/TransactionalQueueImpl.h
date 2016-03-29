@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 01/10/14.
 //
-
-
 #ifndef HAZELCAST_TransactionalQueueProxy
 #define HAZELCAST_TransactionalQueueProxy
 
@@ -32,7 +30,7 @@ namespace hazelcast {
 
                 bool offer(const serialization::pimpl::Data& e, long timeoutInMillis);
 
-                std::auto_ptr<serialization::pimpl::Data> poll(long timeoutInMillis);
+                std::auto_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
 
                 int size();
             };

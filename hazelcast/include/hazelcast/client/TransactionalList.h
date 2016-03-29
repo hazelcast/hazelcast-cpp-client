@@ -15,11 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 8/6/13.
-
-
-
-
-
 #ifndef HAZELCAST_TransactionalList
 #define HAZELCAST_TransactionalList
 

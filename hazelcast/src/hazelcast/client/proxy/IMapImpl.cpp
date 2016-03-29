@@ -105,7 +105,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::MapContainsValueCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::get(const serialization::pimpl::Data &key) {
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::getData(const serialization::pimpl::Data &key) {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
@@ -115,7 +115,7 @@ namespace hazelcast {
                         request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::put(const serialization::pimpl::Data &key,
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::putData(const serialization::pimpl::Data &key,
                                                                     const serialization::pimpl::Data &value) {
                 int partitionId = getPartitionId(key);
 
@@ -127,7 +127,7 @@ namespace hazelcast {
                         request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::remove(const serialization::pimpl::Data &key) {
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::removeData(const serialization::pimpl::Data &key) {
                 int partitionId = getPartitionId(key);
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapRemoveCodec::RequestParameters::encode(getName(), key, util::getThreadId());
@@ -188,7 +188,7 @@ namespace hazelcast {
                                                                                                      partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::put(const serialization::pimpl::Data &key,
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::putData(const serialization::pimpl::Data &key,
                                                                     const serialization::pimpl::Data &value,
                                                                     long ttlInMillis) {
                 int partitionId = getPartitionId(key);
@@ -214,7 +214,7 @@ namespace hazelcast {
                 invoke(request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::putIfAbsent(const serialization::pimpl::Data &key,
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::putIfAbsentData(const serialization::pimpl::Data &key,
                                                                             const serialization::pimpl::Data &value,
                                                                             long ttlInMillis) {
                 int partitionId = getPartitionId(key);
@@ -241,7 +241,7 @@ namespace hazelcast {
                                                                                                             partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::replace(const serialization::pimpl::Data &key,
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::replaceData(const serialization::pimpl::Data &key,
                                                                         const serialization::pimpl::Data &value) {
                 int partitionId = getPartitionId(key);
 
@@ -351,7 +351,7 @@ namespace hazelcast {
                 return registerListener(codec, partitionId, handler);
             }
 
-            std::auto_ptr<map::DataEntryView> IMapImpl::getEntryView(const serialization::pimpl::Data &key) {
+            std::auto_ptr<map::DataEntryView> IMapImpl::getEntryViewData(const serialization::pimpl::Data &key) {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
@@ -379,7 +379,7 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            EntryVector IMapImpl::getAll(
+            EntryVector IMapImpl::getAllData(
                     const std::vector<serialization::pimpl::Data> &keys) {
                 std::map<int, std::vector<serialization::pimpl::Data> > partitionedKeys;
 
@@ -416,7 +416,7 @@ namespace hazelcast {
                 return result;
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::keySet() {
+            std::vector<serialization::pimpl::Data> IMapImpl::keySetData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapKeySetCodec::RequestParameters::encode(getName());
 
@@ -424,7 +424,7 @@ namespace hazelcast {
                         request);
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::keySet(
+            std::vector<serialization::pimpl::Data> IMapImpl::keySetData(
                     const serialization::IdentifiedDataSerializable &predicate) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapKeySetWithPredicateCodec::RequestParameters::encode(getName(),
@@ -434,7 +434,7 @@ namespace hazelcast {
                         request);
             }
 
-            EntryVector IMapImpl::entrySet() {
+            EntryVector IMapImpl::entrySetData() {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapEntrySetCodec::RequestParameters::encode(
                         getName());
@@ -443,7 +443,7 @@ namespace hazelcast {
                         request);
             }
 
-            EntryVector IMapImpl::entrySet(
+            EntryVector IMapImpl::entrySetData(
                     const serialization::IdentifiedDataSerializable &predicate) {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapEntriesWithPredicateCodec::RequestParameters::encode(
@@ -453,7 +453,7 @@ namespace hazelcast {
                         request);
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::values() {
+            std::vector<serialization::pimpl::Data> IMapImpl::valuesData() {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesCodec::RequestParameters::encode(
                         getName());
@@ -462,7 +462,7 @@ namespace hazelcast {
                         request);
             }
 
-            std::vector<serialization::pimpl::Data> IMapImpl::values(
+            std::vector<serialization::pimpl::Data> IMapImpl::valuesData(
                     const serialization::IdentifiedDataSerializable &predicate) {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesWithPredicateCodec::RequestParameters::encode(

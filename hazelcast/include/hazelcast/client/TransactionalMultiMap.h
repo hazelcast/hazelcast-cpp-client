@@ -16,7 +16,6 @@
 //
 // Created by sancar koyunlu on 8/6/13.
 
-
 #ifndef HAZELCAST_TransactionalMultiMap
 #define HAZELCAST_TransactionalMultiMap
 
@@ -24,6 +23,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template<typename K, typename V>
+            class RawPointerTransactionalMultiMap;
+        }
 
         /**
         *
@@ -36,6 +39,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class TransactionalMultiMap : public proxy::TransactionalMultiMapImpl {
             friend class TransactionContext;
+            friend class adaptor::RawPointerTransactionalMultiMap<K, V>;
 
         public:
             /**
@@ -53,7 +57,7 @@ namespace hazelcast {
             * @see Multimap#get(key)
             */
             std::vector<V> get(const K& key) {
-                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::get(toData(&key)));
+                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::getData(toData(&key)));
             };
 
             /**
@@ -71,7 +75,7 @@ namespace hazelcast {
             * @see Multimap#remove(key)
             */
             std::vector<V> remove(const K& key) {
-                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::remove(toData(&key)));
+                return toObjectCollection<V>(proxy::TransactionalMultiMapImpl::removeData(toData(&key)));
             };
 
 

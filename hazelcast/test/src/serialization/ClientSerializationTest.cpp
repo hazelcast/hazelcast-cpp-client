@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
-
-
 #include "customSerialization/TestCustomSerializerX.h"
 #include "customSerialization/TestCustomXSerializable.h"
 #include "customSerialization/TestCustomPersonSerializer.h"
@@ -59,13 +57,13 @@ namespace hazelcast {
 
                 TestCustomXSerializable a(131321);
                 serialization::pimpl::Data data = serializationService.toData<TestCustomXSerializable>(&a);
-                boost::shared_ptr<TestCustomXSerializable> a2 = serializationService.toObject<TestCustomXSerializable>(
+                std::auto_ptr<TestCustomXSerializable> a2 = serializationService.toObject<TestCustomXSerializable>(
                         data);
                 ASSERT_EQ(a, *a2);
 
                 TestCustomPerson b("TestCustomPerson");
                 serialization::pimpl::Data data1 = serializationService.toData<TestCustomPerson>(&b);
-                boost::shared_ptr<TestCustomPerson> b2 = serializationService.toObject<TestCustomPerson>(data1);
+                std::auto_ptr<TestCustomPerson> b2 = serializationService.toObject<TestCustomPerson>(data1);
                 ASSERT_EQ(b, *b2);
             }
 
@@ -83,7 +81,7 @@ namespace hazelcast {
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
-                boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
+                std::auto_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 ASSERT_EQ(p, *x);
             }
 
@@ -95,13 +93,13 @@ namespace hazelcast {
                 TestDataSerializable np(4, 'k');
                 data = serializationService.toData<TestDataSerializable>(&np);
 
-                boost::shared_ptr<TestDataSerializable> tnp1;
+                std::auto_ptr<TestDataSerializable> tnp1;
                 tnp1 = serializationService.toObject<TestDataSerializable>(data);
 
                 ASSERT_EQ(np, *tnp1);
                 int x = 4;
                 data = serializationService.toData<int>(&x);
-                boost::shared_ptr<int> ptr = serializationService.toObject<int>(data);
+                std::auto_ptr<int> ptr = serializationService.toObject<int>(data);
                 int y = *ptr;
                 ASSERT_EQ(x, y);
             }
@@ -119,7 +117,7 @@ namespace hazelcast {
                 TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
 
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
-                boost::shared_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
+                std::auto_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 ASSERT_EQ(p, *x);
 
             }
@@ -159,12 +157,12 @@ namespace hazelcast {
                 TestNamedPortableV2 p2("portable-v2", 123);
                 serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV2>(&p2);
 
-                boost::shared_ptr<TestNamedPortableV2> t2 = serializationService2.toObject<TestNamedPortableV2>(data);
+                std::auto_ptr<TestNamedPortableV2> t2 = serializationService2.toObject<TestNamedPortableV2>(data);
                 ASSERT_EQ(std::string("portable-v1"), t2->name);
                 ASSERT_EQ(111, t2->k);
                 ASSERT_EQ(0, t2->v);
 
-                boost::shared_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
+                std::auto_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
                 ASSERT_EQ(std::string("portable-v2"), t1->name);
                 ASSERT_EQ(123 * 10, t1->k);
 
@@ -179,19 +177,19 @@ namespace hazelcast {
                 int x = 3;
                 data = serializationService.toData<int>(&x);
 
-                boost::shared_ptr<int> returnedInt = serializationService.toObject<int>(data);
+                std::auto_ptr<int> returnedInt = serializationService.toObject<int>(data);
                 ASSERT_EQ(x, *returnedInt);
 
                 short f = 2;
                 data = serializationService.toData<short>(&f);
 
-                boost::shared_ptr<short> temp = serializationService.toObject<short>(data);
+                std::auto_ptr<short> temp = serializationService.toObject<short>(data);
                 ASSERT_EQ(f, *temp);
 
                 TestNamedPortable np("name", 5);
                 data = serializationService.toData<TestNamedPortable>(&np);
 
-                boost::shared_ptr<TestNamedPortable> tnp1, tnp2;
+                std::auto_ptr<TestNamedPortable> tnp1, tnp2;
                 tnp1 = serializationService.toObject<TestNamedPortable>(data);
 
                 tnp2 = serializationService.toObject<TestNamedPortable>(data);
@@ -224,7 +222,7 @@ namespace hazelcast {
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
-                boost::shared_ptr<TestInnerPortable> tip1, tip2;
+                std::auto_ptr<TestInnerPortable> tip1, tip2;
                 tip1 = serializationService.toObject<TestInnerPortable>(data);
 
                 tip2 = serializationService.toObject<TestInnerPortable>(data);
@@ -236,7 +234,7 @@ namespace hazelcast {
                                       "this is main portable object created for testing!", inner);
                 data = serializationService.toData<TestMainPortable>(&main);
 
-                boost::shared_ptr<TestMainPortable> tmp1, tmp2;
+                std::auto_ptr<TestMainPortable> tmp1, tmp2;
                 tmp1 = serializationService.toObject<TestMainPortable>(data);
 
                 tmp2 = serializationService.toObject<TestMainPortable>(data);
@@ -283,7 +281,7 @@ namespace hazelcast {
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
-                boost::shared_ptr<TestInnerPortable> tip1, tip2;
+                std::auto_ptr<TestInnerPortable> tip1, tip2;
                 tip1 = serializationService.toObject<TestInnerPortable>(data);
 
                 tip2 = serializationService.toObject<TestInnerPortable>(data);
@@ -306,19 +304,19 @@ namespace hazelcast {
                 int x = 3;
                 data = serializationService.toData<int>(&x);
 
-                boost::shared_ptr<int> returnedInt = serializationService.toObject<int>(data);
+                std::auto_ptr<int> returnedInt = serializationService.toObject<int>(data);
                 ASSERT_EQ(x, *returnedInt);
 
                 short f = 2;
                 data = serializationService.toData<short>(&f);
 
-                boost::shared_ptr<short> temp = serializationService.toObject<short>(data);
+                std::auto_ptr<short> temp = serializationService.toObject<short>(data);
                 ASSERT_EQ(f, *temp);
 
                 TestNamedPortable np("name", 5);
                 data = serializationService.toData<TestNamedPortable>(&np);
 
-                boost::shared_ptr<TestNamedPortable> tnp1, tnp2;
+                std::auto_ptr<TestNamedPortable> tnp1, tnp2;
                 tnp1 = serializationService.toObject<TestNamedPortable>(data);
 
                 tnp2 = serializationService2.toObject<TestNamedPortable>(data);
@@ -351,7 +349,7 @@ namespace hazelcast {
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
-                boost::shared_ptr<TestInnerPortable> tip1, tip2;
+                std::auto_ptr<TestInnerPortable> tip1, tip2;
                 tip1 = serializationService.toObject<TestInnerPortable>(data);
 
                 tip2 = serializationService2.toObject<TestInnerPortable>(data);
@@ -363,7 +361,7 @@ namespace hazelcast {
                                       "this is main portable object created for testing!", inner);
                 data = serializationService.toData<TestMainPortable>(&main);
 
-                boost::shared_ptr<TestMainPortable> tmp1, tmp2;
+                std::auto_ptr<TestMainPortable> tmp1, tmp2;
                 tmp1 = serializationService.toObject<TestMainPortable>(data);
 
                 tmp2 = serializationService2.toObject<TestMainPortable>(data);
@@ -463,7 +461,7 @@ namespace hazelcast {
                 ObjectCarryingPortable<TestNamedPortable> objectCarryingPortable(namedPortable);
                 serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestNamedPortable> >(
                         &objectCarryingPortable);
-                boost::shared_ptr<ObjectCarryingPortable<TestNamedPortable> > ptr = ss.toObject<ObjectCarryingPortable<TestNamedPortable> >(
+                std::auto_ptr<ObjectCarryingPortable<TestNamedPortable> > ptr = ss.toObject<ObjectCarryingPortable<TestNamedPortable> >(
                         data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
@@ -476,7 +474,7 @@ namespace hazelcast {
                 ObjectCarryingPortable<TestDataSerializable> objectCarryingPortable(testDataSerializable);
                 serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestDataSerializable> >(
                         &objectCarryingPortable);
-                boost::shared_ptr<ObjectCarryingPortable<TestDataSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestDataSerializable> >(
+                std::auto_ptr<ObjectCarryingPortable<TestDataSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestDataSerializable> >(
                         data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
@@ -493,7 +491,7 @@ namespace hazelcast {
                 ObjectCarryingPortable<TestCustomXSerializable> objectCarryingPortable(customXSerializable);
                 serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomXSerializable> >(
                         &objectCarryingPortable);
-                boost::shared_ptr<ObjectCarryingPortable<TestCustomXSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomXSerializable> >(
+                std::auto_ptr<ObjectCarryingPortable<TestCustomXSerializable> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomXSerializable> >(
                         data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
@@ -510,7 +508,7 @@ namespace hazelcast {
                 ObjectCarryingPortable<TestCustomPerson> objectCarryingPortable(testCustomPerson);
                 serialization::pimpl::Data data = ss.toData<ObjectCarryingPortable<TestCustomPerson> >(
                         &objectCarryingPortable);
-                boost::shared_ptr<ObjectCarryingPortable<TestCustomPerson> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomPerson> >(
+                std::auto_ptr<ObjectCarryingPortable<TestCustomPerson> > ptr = ss.toObject<ObjectCarryingPortable<TestCustomPerson> >(
                         data);
                 ASSERT_EQ(objectCarryingPortable, *ptr);
             }
@@ -520,7 +518,7 @@ namespace hazelcast {
                 serialization::pimpl::Data data;
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<int> ptr = ss.toObject<int>(data);
+                std::auto_ptr<int> ptr = ss.toObject<int>(data);
                 ASSERT_EQ(ptr.get(), (int *)NULL);
             }
 
@@ -536,7 +534,7 @@ namespace hazelcast {
                 TestNamedPortableV3 p2("portable-v2", 123);
                 serialization::pimpl::Data data2 = serializationService2.toData<TestNamedPortableV3>(&p2);
 
-                boost::shared_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
+                std::auto_ptr<TestNamedPortable> t1 = serializationService.toObject<TestNamedPortable>(data2);
                 ASSERT_EQ(std::string("portable-v2"), t1->name);
                 ASSERT_EQ(123, t1->k);
             }

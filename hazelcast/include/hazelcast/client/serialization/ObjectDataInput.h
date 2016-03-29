@@ -195,11 +195,11 @@ namespace hazelcast {
                 * @throws IOException if it reaches end of file before finish reading
                 */
                 template<typename T>
-                boost::shared_ptr<T> readObject() {
+                std::auto_ptr<T> readObject() {
                     int typeId = readInt();
                     const pimpl::SerializationConstants& constants = portableContext.getConstants();
                     if (constants.CONSTANT_TYPE_NULL == typeId) {
-                        return boost::shared_ptr<T>(static_cast<T *>(NULL));
+                        return std::auto_ptr<T>();
                     } else {
                         std::auto_ptr<T> result(new T);
                         constants.checkClassType(getHazelcastTypeId(result.get()) , typeId);
@@ -210,7 +210,7 @@ namespace hazelcast {
                         } else {
                             readInternal<T>(typeId, result.get());
                         }
-                        return boost::shared_ptr<T>(result.release());
+                        return std::auto_ptr<T>(result.release());
                     }
                 }
 
