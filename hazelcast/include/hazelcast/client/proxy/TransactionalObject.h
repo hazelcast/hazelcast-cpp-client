@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 12/11/13.
-
-
-
-
 #ifndef HAZELCAST_TransactionalObject
 #define HAZELCAST_TransactionalObject
 
@@ -72,17 +68,17 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(const serialization::pimpl::Data& data) {
+                std::auto_ptr<T> toObject(const serialization::pimpl::Data& data) {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(const serialization::pimpl::Data *data) {
+                std::auto_ptr<T> toObject(const serialization::pimpl::Data *data) {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                std::auto_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
                     return context->getSerializationService().template toObject<T>(data.get());
                 }
 
@@ -91,7 +87,7 @@ namespace hazelcast {
                     size_t size = keyDataSet.size();
                     std::vector<K> keys(size);
                     for (size_t i = 0; i < size; i++) {
-                        boost::shared_ptr<K> v = toObject<K>(keyDataSet[i]);
+                        boost::shared_ptr<K> v(toObject<K>(keyDataSet[i]));
                         keys[i] = *v;
                     }
                     return keys;
@@ -109,7 +105,7 @@ namespace hazelcast {
 
                     return CODEC::decode(*response).response;
                 }
-            private:
+
                 const std::string serviceName;
                 const std::string name;
                 txn::TransactionProxy *context;

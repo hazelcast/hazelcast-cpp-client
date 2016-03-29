@@ -43,7 +43,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(request);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> TransactionalQueueImpl::poll(long timeoutInMillis) {
+            std::auto_ptr<serialization::pimpl::Data> TransactionalQueueImpl::pollData(long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalQueuePollCodec::RequestParameters::encode(
                                 getName(), getTransactionId(), util::getThreadId(), timeoutInMillis);

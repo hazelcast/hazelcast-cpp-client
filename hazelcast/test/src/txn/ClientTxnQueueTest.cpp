@@ -63,7 +63,7 @@ namespace hazelcast {
                 latch.countDown();
                 s = q0.poll(10 * 1000);
                 ASSERT_EQ("item0", *s);
-                q1.offer(*s);
+                ASSERT_TRUE(q1.offer(*s));
 
                 ASSERT_NO_THROW(context.commitTransaction());
 

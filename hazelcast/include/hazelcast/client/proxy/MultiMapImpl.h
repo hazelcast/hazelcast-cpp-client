@@ -29,17 +29,17 @@ namespace hazelcast {
 
                 bool put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::vector<serialization::pimpl::Data> get(const serialization::pimpl::Data& key);
+                std::vector<serialization::pimpl::Data> getData(const serialization::pimpl::Data &key);
 
                 bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::vector<serialization::pimpl::Data> remove(const serialization::pimpl::Data& key);
+                std::vector<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
 
-                std::vector<serialization::pimpl::Data> keySet();
+                std::vector<serialization::pimpl::Data> keySetData();
 
-                std::vector<serialization::pimpl::Data> values();
+                std::vector<serialization::pimpl::Data> valuesData();
 
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet();
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySetData();
 
                 bool containsKey(const serialization::pimpl::Data& key);
 

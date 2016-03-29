@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 9/4/13.
-
-
-
-
 #ifndef HAZELCAST_ClientQueueTest
 #define HAZELCAST_ClientQueueTest
 

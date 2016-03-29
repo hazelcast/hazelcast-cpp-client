@@ -31,19 +31,12 @@
 
 namespace hazelcast {
     namespace client {
-        namespace map {
-            class DataEntryView;
-        }
         namespace connection {
             class Connection;
         }
 
         namespace impl {
             class BaseEventHandler;
-
-            class BaseRemoveListenerRequest;
-
-            class ClientRequest;
         }
 
         namespace serialization {
@@ -79,7 +72,7 @@ namespace hazelcast {
                 * memory ownership is moved to DistributedObject.
                 *
                 * @param partitionId that given request will be send to.
-                * @param request ClientRequest ptr.
+                * @param request Client request message to be sent.
                 */
                 std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
                                                               int partitionId);
@@ -102,7 +95,7 @@ namespace hazelcast {
                 /**
                 * Internal API.
                 *
-                * @param registrationRequest ClientRequest ptr.
+                * @param registrationRequest ClientMessage ptr.
                 * @param partitionId
                 * @param handler
                 */
@@ -112,8 +105,8 @@ namespace hazelcast {
                 /**
                 * Internal API.
                 *
-                * @param registrationRequest ClientRequest ptr.
-                * @param handler
+                * @param addListenerCodec Codec for encoding the listener addition request and the response.
+                * @param handler The handler to use when the event arrives.
                 */
                 std::string registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
                                              impl::BaseEventHandler *handler);
@@ -130,14 +123,14 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(const serialization::pimpl::Data &data) {
+                std::auto_ptr<T> toObject(const serialization::pimpl::Data &data) {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
-                boost::shared_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                std::auto_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
                     if (NULL == data.get()) {
-                        return boost::shared_ptr<T>();
+                        return std::auto_ptr<T>();
                     } else {
                         return toObject<T>(*data);
                     }
@@ -146,12 +139,12 @@ namespace hazelcast {
                 template<typename V>
                 std::vector<V> toObjectCollection(const std::vector<serialization::pimpl::Data> &collection) {
                     size_t size = collection.size();
-                    std::vector<V> multimap(size);
+                    std::vector<V> objectArray(size);
                     for (size_t i = 0; i < size; i++) {
-                        boost::shared_ptr<V> v = toObject<V>(collection[i]);
-                        multimap[i] = *v;
+                        std::auto_ptr<V> v = toObject<V>(collection[i]);
+                        objectArray[i] = *v;
                     }
-                    return multimap;
+                    return objectArray;
                 }
 
                 template<typename T>
@@ -170,24 +163,23 @@ namespace hazelcast {
                     size_t size = dataEntrySet.size();
                     std::vector<std::pair<K, V> > entrySet(size);
                     for (size_t i = 0; i < size; i++) {
-                        boost::shared_ptr<K> key = toObject<K>(dataEntrySet[i].first);
+                        std::auto_ptr<K> key = toObject<K>(dataEntrySet[i].first);
                         entrySet[i].first = *key;
-                        boost::shared_ptr<V> value = toObject<V>(dataEntrySet[i].second);
+                        std::auto_ptr<V> value = toObject<V>(dataEntrySet[i].second);
                         entrySet[i].second = *value;
                     }
                     return entrySet;
                 }
 
                 template<typename K, typename V>
-                EntryVector toDataEntriesSet(std::map<K, V> const &m) {
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entryDataSet(
+                EntryVector toDataEntries(std::map<K, V> const &m) {
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entries(
                             m.size());
-                    typename std::map<K, V>::const_iterator it;
                     int i = 0;
-                    for (it = m.begin(); it != m.end(); ++it) {
-                        entryDataSet[i++] = std::make_pair(toData(it->first), toData(it->second));
+                    for (typename std::map<K, V>::const_iterator it = m.begin(); it != m.end(); ++it) {
+                        entries[i++] = std::make_pair(toData(it->first), toData(it->second));
                     }
-                    return entryDataSet;
+                    return entries;
                 }
 
                 template<typename T, typename CODEC>

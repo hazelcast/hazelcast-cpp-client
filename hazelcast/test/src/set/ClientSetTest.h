@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 9/13/13.
-
-
-
-
 #ifndef HAZELCAST_ClientSetTest
 #define HAZELCAST_ClientSetTest
 
@@ -42,6 +38,8 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<ISet<std::string> > set;
+
+                bool itemExists(const std::vector<std::string> &items, const std::string &item) const;
             };
         }
     }

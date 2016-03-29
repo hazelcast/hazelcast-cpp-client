@@ -48,7 +48,7 @@ namespace hazelcast {
                         request);
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::get(
+            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::getData(
                     const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMultiMapGetCodec::RequestParameters::encode(
@@ -70,7 +70,7 @@ namespace hazelcast {
 
             }
 
-            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::remove(
+            std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::removeData(
                     const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::TransactionalMultiMapRemoveCodec::RequestParameters::encode(
