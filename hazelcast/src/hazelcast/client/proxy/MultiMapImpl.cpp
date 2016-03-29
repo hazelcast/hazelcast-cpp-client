@@ -62,7 +62,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::MultiMapPutCodec::ResponseParameters>(request, partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> MultiMapImpl::get(const serialization::pimpl::Data& key) {
+            std::vector<serialization::pimpl::Data> MultiMapImpl::getData(const serialization::pimpl::Data &key) {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
@@ -80,7 +80,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::MultiMapRemoveEntryCodec::ResponseParameters>(request, partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> MultiMapImpl::remove(const serialization::pimpl::Data& key) {
+            std::vector<serialization::pimpl::Data> MultiMapImpl::removeData(const serialization::pimpl::Data& key) {
                 int partitionId = getPartitionId(key);
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MultiMapRemoveCodec::RequestParameters::encode(getName(), key, util::getThreadId());
@@ -88,21 +88,21 @@ namespace hazelcast {
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MultiMapRemoveCodec::ResponseParameters>(request, partitionId);
             }
 
-            std::vector<serialization::pimpl::Data> MultiMapImpl::keySet() {
+            std::vector<serialization::pimpl::Data> MultiMapImpl::keySetData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MultiMapKeySetCodec::RequestParameters::encode(getName());
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MultiMapKeySetCodec::ResponseParameters>(request);
             }
 
-            std::vector<serialization::pimpl::Data> MultiMapImpl::values() {
+            std::vector<serialization::pimpl::Data> MultiMapImpl::valuesData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MultiMapValuesCodec::RequestParameters::encode(getName());
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MultiMapValuesCodec::ResponseParameters>(request);
             }
 
-            std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > MultiMapImpl::entrySet() {
+            std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > MultiMapImpl::entrySetData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MultiMapEntrySetCodec::RequestParameters::encode(getName());
 

@@ -32,33 +32,33 @@ namespace hazelcast {
 
                 bool containsKey(const serialization::pimpl::Data& key);
 
-                std::auto_ptr<serialization::pimpl::Data> get(const serialization::pimpl::Data& key);
+                std::auto_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
 
                 int size();
 
-                std::auto_ptr<serialization::pimpl::Data> put(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::auto_ptr<serialization::pimpl::Data> putData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
                 void set(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::auto_ptr<serialization::pimpl::Data> putIfAbsent(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::auto_ptr<serialization::pimpl::Data> putIfAbsentData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::auto_ptr<serialization::pimpl::Data> replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
+                std::auto_ptr<serialization::pimpl::Data> replaceData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
                 bool replace(const serialization::pimpl::Data& key, const serialization::pimpl::Data& oldValue, const serialization::pimpl::Data& newValue);
 
-                std::auto_ptr<serialization::pimpl::Data> remove(const serialization::pimpl::Data& key);
+                std::auto_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
 
                 void deleteEntry(const serialization::pimpl::Data& key);
 
                 bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
-                std::vector<serialization::pimpl::Data> keySet();
+                std::vector<serialization::pimpl::Data> keySetData();
 
-                std::vector<serialization::pimpl::Data> keySet(const serialization::IdentifiedDataSerializable *predicate);
+                std::vector<serialization::pimpl::Data> keySetData(const serialization::IdentifiedDataSerializable *predicate);
 
-                std::vector<serialization::pimpl::Data> values();
+                std::vector<serialization::pimpl::Data> valuesData();
 
-                std::vector<serialization::pimpl::Data> values(const serialization::IdentifiedDataSerializable *predicate);
+                std::vector<serialization::pimpl::Data> valuesData(const serialization::IdentifiedDataSerializable *predicate);
 
                 TransactionalMapImpl(const std::string& name, txn::TransactionProxy *transactionProxy);
             };

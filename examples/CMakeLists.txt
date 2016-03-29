@@ -147,6 +147,8 @@ add_subdirectory(distributed-topic)
 add_subdirectory(distributed-primitives)
 add_subdirectory(distributed-map)
 add_subdirectory(distributed-collections)
+add_subdirectory(adaptor)
+
 
 
 

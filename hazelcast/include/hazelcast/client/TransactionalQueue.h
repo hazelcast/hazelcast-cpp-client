@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 8/5/13.
 
-
-
-
-
 #ifndef HAZELCAST_TransactionalQueue
 #define HAZELCAST_TransactionalQueue
 
@@ -27,6 +23,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template<typename E>
+            class RawPointerTransactionalQueue;
+        }
+
         /**
         * Transactional implementation of IQueue.
         *
@@ -36,6 +37,7 @@ namespace hazelcast {
         template<typename E>
         class TransactionalQueue : public proxy::TransactionalQueueImpl {
             friend class TransactionContext;
+            friend class adaptor::RawPointerTransactionalQueue<E>;
 
         public:
             /**
@@ -71,7 +73,7 @@ namespace hazelcast {
             * @see IQueue::poll(long timeoutInMillis)
             */
             boost::shared_ptr<E> poll(long timeoutInMillis) {
-                return toObject<E>(proxy::TransactionalQueueImpl::poll(timeoutInMillis));
+                return boost::shared_ptr<E>(toObject<E>(proxy::TransactionalQueueImpl::pollData(timeoutInMillis)));
             }
 
             /**

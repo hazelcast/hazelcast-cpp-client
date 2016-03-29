@@ -38,7 +38,7 @@ namespace hazelcast {
 
                 bool offer(const serialization::pimpl::Data& element, long timeoutInMillis);
 
-                std::auto_ptr<serialization::pimpl::Data> poll(long timeoutInMillis);
+                std::auto_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
 
                 int remainingCapacity();
 
@@ -46,13 +46,13 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data>  drainTo(size_t maxElements);
+                std::vector<serialization::pimpl::Data>  drainToData(size_t maxElements);
 
-                std::auto_ptr<serialization::pimpl::Data> peek();
+                std::auto_ptr<serialization::pimpl::Data> peekData();
 
                 int size();
 
-                std::vector<serialization::pimpl::Data> toArray();
+                std::vector<serialization::pimpl::Data> toArrayData();
 
                 bool containsAll(const std::vector<serialization::pimpl::Data>& elements);
 

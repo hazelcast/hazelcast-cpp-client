@@ -28,6 +28,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template <typename E>
+            class RawPointerList;
+        }
 
         /**
         * Concurrent, distributed , client implementation of std::list
@@ -37,6 +41,7 @@ namespace hazelcast {
         template<typename E>
         class IList : public proxy::IListImpl {
             friend class HazelcastClient;
+            friend class adaptor::RawPointerList<E>;
 
         public:
             /**
@@ -101,7 +106,7 @@ namespace hazelcast {
             * @returns all elements as std::vector
             */
             std::vector<E> toArray() {
-                return toObjectCollection<E>(proxy::IListImpl::toArray());
+                return toObjectCollection<E>(proxy::IListImpl::toArrayData());
             }
 
             /**
@@ -200,7 +205,7 @@ namespace hazelcast {
             *
             */
             boost::shared_ptr<E> get(int index) {
-                return toObject<E>(proxy::IListImpl::get(index));
+                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::getData(index)));
             }
 
             /**
@@ -213,7 +218,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             boost::shared_ptr<E> set(int index, const E &element) {
-                return toObject<E>(proxy::IListImpl::set(index, toData(element)));
+                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::setData(index, toData(element))));
             }
 
             /**
@@ -236,7 +241,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             boost::shared_ptr<E> remove(int index) {
-                return toObject<E>(proxy::IListImpl::remove(index));
+                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::removeData(index)));
             }
 
             /**
@@ -266,7 +271,7 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
             std::vector<E> subList(int fromIndex, int toIndex) {
-                return toObjectCollection<E>(proxy::IListImpl::subList(fromIndex, toIndex));
+                return toObjectCollection<E>(proxy::IListImpl::subListData(fromIndex, toIndex));
             }
 
         private:

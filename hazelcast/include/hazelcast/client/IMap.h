@@ -34,6 +34,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace adaptor {
+            template <typename K, typename V>
+            class RawPointerMap;
+        }
 
         /**
         * Concurrent, distributed, observable and queryable map client.
@@ -51,6 +55,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class IMap : public proxy::IMapImpl {
             friend class HazelcastClient;
+            friend class adaptor::RawPointerMap<K, V>;
 
         public:
 
@@ -82,7 +87,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             boost::shared_ptr<V> get(const K &key) {
-                return toObject<V>(proxy::IMapImpl::get(toData(key)));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(toData(key))));
             }
 
             /**
@@ -94,7 +99,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             */
             boost::shared_ptr<V> put(const K &key, const V &value) {
-                return toObject<V>(proxy::IMapImpl::put(toData(key), toData(value)));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value))));
             }
 
             /**
@@ -105,7 +110,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
             boost::shared_ptr<V> remove(const K &key) {
-                return toObject<V>(proxy::IMapImpl::remove(toData(key)));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::removeData(toData(key))));
             }
 
             /**
@@ -179,7 +184,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             */
             boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                return toObject<V>(proxy::IMapImpl::put(toData(key), toData(value), ttlInMillis));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value), ttlInMillis)));
             }
 
             /**
@@ -219,7 +224,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             */
             boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
-                return toObject<V>(proxy::IMapImpl::putIfAbsent(toData(key), toData(value), ttlInMillis));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putIfAbsentData(toData(key), toData(value), ttlInMillis)));
             }
 
             /**
@@ -241,7 +246,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             */
             boost::shared_ptr<V> replace(const K &key, const V &value) {
-                return toObject<V>(proxy::IMapImpl::replace(toData(key), toData(value)));
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::replaceData(toData(key), toData(value))));
             }
 
             /**
@@ -465,8 +470,8 @@ namespace hazelcast {
             */
             EntryView<K, V> getEntryView(const K &key) {
                 serialization::pimpl::Data keyData = toData(key);
-                std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryView(keyData);
-                boost::shared_ptr<V> v = toObject<V>(dataEntryView->getValue());
+                std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(keyData);
+                std::auto_ptr<V> v = toObject<V>(dataEntryView->getValue());
                 EntryView<K, V> view(key, *v, *dataEntryView);
                 return view;
             }
@@ -513,12 +518,12 @@ namespace hazelcast {
                     keySet[i++] = toData(*it);
                 }
                 std::map<K, V> result;
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = proxy::IMapImpl::getAll(
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = proxy::IMapImpl::getAllData(
                         keySet);
                 for (std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin();
                      it != entrySet.end(); ++it) {
-                    boost::shared_ptr<K> key = toObject<K>(it->first);
-                    boost::shared_ptr<V> value = toObject<V>(it->second);
+                    std::auto_ptr<K> key = toObject<K>(it->first);
+                    std::auto_ptr<V> value = toObject<V>(it->second);
                     result[*key] = *value;
                 }
                 return result;
@@ -532,11 +537,11 @@ namespace hazelcast {
             * @return a vector clone of the keys contained in this map
             */
             std::vector<K> keySet() {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySet();
+                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData();
                 size_t size = dataResult.size();
                 std::vector<K> keys(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i]);
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i]);
                     keys[i] = *key;
                 }
                 return keys;
@@ -553,11 +558,11 @@ namespace hazelcast {
               * @return result key set of the query
               */
             std::vector<K> keySet(const serialization::IdentifiedDataSerializable &predicate) {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySet(predicate);
+                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData(predicate);
                 size_t size = dataResult.size();
                 std::vector<K> keys(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i]);
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i]);
                     keys[i] = *key;
                 }
                 return keys;
@@ -571,11 +576,11 @@ namespace hazelcast {
             * @return a vector clone of the values contained in this map
             */
             std::vector<V> values() {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::values();
+                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData();
                 size_t size = dataResult.size();
                 std::vector<K> values(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> value = toObject<K>(dataResult[i]);
+                    std::auto_ptr<K> value = toObject<K>(dataResult[i]);
                     values[i] = *value;
                 }
                 return values;
@@ -590,11 +595,11 @@ namespace hazelcast {
             * @return a vector clone of the values contained in this map
             */
             std::vector<V> values(const serialization::IdentifiedDataSerializable &predicate) {
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::values(predicate);
+                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
                 size_t size = dataResult.size();
                 std::vector<V> values(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<V> value = toObject<V>(dataResult[i]);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i]);
                     values[i] = *value;
                 }
                 return values;
@@ -608,12 +613,12 @@ namespace hazelcast {
             * @return a vector clone of the keys mappings in this map
             */
             std::vector<std::pair<K, V> > entrySet() {
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySet();
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData();
                 size_t size = dataResult.size();
                 std::vector<std::pair<K, V> > entries(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i].first);
-                    boost::shared_ptr<V> value = toObject<V>(dataResult[i].second);
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
                     entries[i] = std::make_pair(*key, *value);
                 }
                 return entries;
@@ -630,13 +635,13 @@ namespace hazelcast {
             * @return result entry vector of the query
             */
             std::vector<std::pair<K, V> > entrySet(const serialization::IdentifiedDataSerializable &predicate) {
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySet(
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
                         predicate);
                 size_t size = dataResult.size();
                 std::vector<std::pair<K, V> > entries(size);
                 for (size_t i = 0; i < size; ++i) {
-                    boost::shared_ptr<K> key = toObject<K>(dataResult[i].first);
-                    boost::shared_ptr<V> value = toObject<V>(dataResult[i].second);
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
                     entries[i] = std::make_pair(*key, *value);
                 }
                 return entries;
@@ -694,7 +699,9 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                return proxy::IMapImpl::executeOnKey<K, ResultType, EntryProcessor>(key, entryProcessor);
+                std::auto_ptr<serialization::pimpl::Data> resultData = proxy::IMapImpl::executeOnKeyData<K, EntryProcessor>(key, entryProcessor);
+
+                return boost::shared_ptr<ResultType>(toObject<ResultType>(resultData));
             }
 
             /**
@@ -712,7 +719,14 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
-                return proxy::IMapImpl::executeOnEntries<K, ResultType, EntryProcessor>(entryProcessor);
+                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<K, EntryProcessor>(entryProcessor);
+                std::map<K, boost::shared_ptr<ResultType> > result;
+                for (size_t i = 0; i < entries.size(); ++i) {
+                    std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                    std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                    result[*keyObj] = resObj;
+                }
+                return result;
             }
 
             /**
@@ -758,7 +772,7 @@ namespace hazelcast {
             * @param m mappings to be stored in this map
             */
             void putAll(const std::map<K, V> &entries) {
-                return proxy::IMapImpl::putAll(toDataEntriesSet(entries));
+                return proxy::IMapImpl::putAll(toDataEntries(entries));
             }
 
             /**

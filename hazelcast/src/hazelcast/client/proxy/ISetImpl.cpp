@@ -73,7 +73,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::SetContainsCodec::ResponseParameters>(request, partitionId);
             }
 
-            std::vector<serialization::pimpl::Data>  ISetImpl::toArray() {
+            std::vector<serialization::pimpl::Data>  ISetImpl::toArrayData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetGetAllCodec::RequestParameters::encode(getName());
 

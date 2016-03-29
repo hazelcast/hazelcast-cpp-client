@@ -53,7 +53,7 @@ namespace hazelcast {
                                          const std::string &uuid) {
                     std::auto_ptr<Member> member(clusterService.getMember(uuid));
 
-                    boost::shared_ptr<E> object = serializationService.toObject<E>(item);
+                    std::auto_ptr<E> object = serializationService.toObject<E>(item);
 
                     Message<E> listenerMsg(instanceName, *object, (long)publishTime, *member);
 

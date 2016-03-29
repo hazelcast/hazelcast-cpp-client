@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 9/18/13.
-
-
-
-
 #ifndef HAZELCAST_ClientTxnMultiMApTest
 #define HAZELCAST_ClientTxnMultiMApTest
 
@@ -28,7 +24,6 @@
 
 namespace hazelcast {
     namespace client {
-
         class HazelcastClient;
 
         namespace test {
@@ -43,7 +38,6 @@ namespace hazelcast {
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
             };
-
         }
     }
 }

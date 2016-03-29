@@ -39,7 +39,7 @@ namespace hazelcast {
 
                 bool contains(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data> toArray();
+                std::vector<serialization::pimpl::Data> toArrayData();
 
                 bool add(const serialization::pimpl::Data& element);
 
@@ -57,19 +57,19 @@ namespace hazelcast {
 
                 void clear();
 
-                std::auto_ptr<serialization::pimpl::Data> get(int index);
+                std::auto_ptr<serialization::pimpl::Data> getData(int index);
 
-                std::auto_ptr<serialization::pimpl::Data> set(int index, const serialization::pimpl::Data& element);
+                std::auto_ptr<serialization::pimpl::Data> setData(int index, const serialization::pimpl::Data& element);
 
                 void add(int index, const serialization::pimpl::Data& element);
 
-                std::auto_ptr<serialization::pimpl::Data> remove(int index);
+                std::auto_ptr<serialization::pimpl::Data> removeData(int index);
 
                 int indexOf(const serialization::pimpl::Data& element);
 
                 int lastIndexOf(const serialization::pimpl::Data& element);
 
-                std::vector<serialization::pimpl::Data> subList(int fromIndex, int toIndex);
+                std::vector<serialization::pimpl::Data> subListData(int fromIndex, int toIndex);
 
             private:
                 int partitionId;

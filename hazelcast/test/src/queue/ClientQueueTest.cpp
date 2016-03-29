@@ -74,7 +74,7 @@ namespace hazelcast {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
-                std::cout << "item1 is offered" << std::endl;
+                util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
             }
 
             TEST_F(ClientQueueTest, testOfferPoll) {
@@ -98,6 +98,43 @@ namespace hazelcast {
                 ASSERT_NE(item.get(), (std::string *) NULL);
                 ASSERT_EQ("item1", *item);
                 t2.join();
+            }
+
+            TEST_F(ClientQueueTest, testPeek) {
+                ASSERT_TRUE(q->offer("peek 1"));
+                ASSERT_TRUE(q->offer("peek 2"));
+                ASSERT_TRUE(q->offer("peek 3"));
+
+                boost::shared_ptr<std::string> item = q->peek();
+                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_EQ("peek 1", *item);
+            }
+            
+            TEST_F(ClientQueueTest, testTake) {
+                ASSERT_TRUE(q->offer("peek 1"));
+                ASSERT_TRUE(q->offer("peek 2"));
+                ASSERT_TRUE(q->offer("peek 3"));
+
+                boost::shared_ptr<std::string> item = q->take();
+                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_EQ("peek 1", *item);
+
+                item = q->take();
+                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_EQ("peek 2", *item);
+
+                item = q->take();
+                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_EQ("peek 3", *item);
+
+                ASSERT_TRUE(q->isEmpty());
+
+                // start a thread to insert an item
+                util::Thread t2(testOfferPollThread2, q.get());
+
+                item = q->take();  //  should block till it gets an item
+                ASSERT_NE((std::string *)NULL, item.get());
+                ASSERT_EQ("item1", *item);
             }
 
             TEST_F(ClientQueueTest, testRemainingCapacity) {
@@ -179,7 +216,6 @@ namespace hazelcast {
                 for (size_t i = 0; i < size; i++) {
                     ASSERT_EQ(std::string("item") + util::IOUtil::to_string(i + 1), array[i]);
                 }
-
             }
 
             TEST_F(ClientQueueTest, testAddAll) {
