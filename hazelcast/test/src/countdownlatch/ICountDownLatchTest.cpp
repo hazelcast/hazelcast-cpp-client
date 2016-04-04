@@ -48,6 +48,8 @@ namespace hazelcast {
                 util::Thread t(testLatchThread, l.get());
 
                 ASSERT_TRUE(l->await(10 * 1000));
+
+                t.join();
             }
 
         }
