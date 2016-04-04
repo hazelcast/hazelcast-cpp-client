@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
+#include <hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h>
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeyCodec.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
@@ -131,15 +132,28 @@ namespace hazelcast {
                     return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
                 }
 
-                template<typename KEY, typename ENTRYPROCESSOR>
+                template<typename ENTRYPROCESSOR>
                 EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor) {
-                    serialization::pimpl::Data processor = toData(entryProcessor);
+                    serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
 
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::RequestParameters::encode(getName(), processor);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
                             invokeAndGetResult<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >,
                                     protocol::codec::MapExecuteOnAllKeysCodec::ResponseParameters>(request);
+
+                    return response;
+                }
+
+                template<typename ENTRYPROCESSOR>
+                EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const serialization::IdentifiedDataSerializable &predicate) {
+                    serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
+                    serialization::pimpl::Data predData = toData<>(predicate);
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);
+
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
+                            invokeAndGetResult<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >,
+                                    protocol::codec::MapExecuteWithPredicateCodec::ResponseParameters>(request);
 
                     return response;
                 }
