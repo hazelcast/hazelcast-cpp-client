@@ -719,7 +719,7 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
-                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<K, EntryProcessor>(entryProcessor);
+                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
                 std::map<K, boost::shared_ptr<ResultType> > result;
                 for (size_t i = 0; i < entries.size(); ++i) {
                     std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);

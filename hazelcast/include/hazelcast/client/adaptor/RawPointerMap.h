@@ -665,7 +665,7 @@ namespace hazelcast {
                 */
                 template<typename ResultType, typename EntryProcessor>
                 std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
-                    EntryVector results = map.template executeOnEntriesData<K, EntryProcessor>(entryProcessor);
+                    EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(new EntryArray<K, ResultType>(results, serializationService));
                 }
