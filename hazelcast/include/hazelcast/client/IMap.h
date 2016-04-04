@@ -730,6 +730,32 @@ namespace hazelcast {
             }
 
             /**
+            * Applies the user defined EntryProcessor to the all entries in the map.
+            * Returns the results mapped by each key in the map.
+            *
+            *
+            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+            * with same classId and factoryId.
+            *
+            * @tparam ResultType that entry processor will return
+            * @tparam EntryProcessor type of entry processor class
+            * @tparam predicate The filter to apply for selecting the entries at the server side.
+            * @param entryProcessor that will be applied
+            */
+            template<typename ResultType, typename EntryProcessor>
+            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const serialization::IdentifiedDataSerializable &predicate) {
+                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
+                std::map<K, boost::shared_ptr<ResultType> > result;
+                for (size_t i = 0; i < entries.size(); ++i) {
+                    std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                    std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                    result[*keyObj] = resObj;
+                }
+                return result;
+            }
+
+            /**
             * Puts an entry into this map.
             * Similar to put operation except that set
             * doesn't return the old value which is more efficient.
