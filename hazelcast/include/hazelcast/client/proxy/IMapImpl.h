@@ -148,7 +148,7 @@ namespace hazelcast {
                 template<typename ENTRYPROCESSOR>
                 EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const serialization::IdentifiedDataSerializable &predicate) {
                     serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
-                    serialization::pimpl::Data predData = toData<>(predicate);
+                    serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =

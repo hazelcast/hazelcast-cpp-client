@@ -29,9 +29,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class ObjectDataOutput;
-        }
         namespace query {
             class HAZELCAST_API SqlPredicate : public serialization::IdentifiedDataSerializable {
             public:
