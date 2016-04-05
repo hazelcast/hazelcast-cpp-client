@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 8/27/13.
 
 #include <hazelcast/client/query/AndPredicate.h>
+#include <hazelcast/client/query/BetweenPredicate.h>
 #include "hazelcast/client/query/TruePredicate.h"
 #include "hazelcast/client/query/FalsePredicate.h"
 #include "hazelcast/client/query/SqlPredicate.h"
@@ -32,10 +33,9 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientMapTest::ClientMapTest()
-            : instance(*g_srvFactory)
-            , instance2(*g_srvFactory)
-            , client(getNewClient())
-            , imap(new IMap<std::string, std::string>(client->getMap<std::string, std::string>("clientMapTest"))) {
+                    : instance(*g_srvFactory), instance2(*g_srvFactory), client(getNewClient()),
+                      imap(new IMap<std::string, std::string>(
+                              client->getMap<std::string, std::string>("clientMapTest"))) {
             }
 
 
@@ -54,68 +54,82 @@ namespace hazelcast {
 
             class SampleEntryListener : public EntryAdapter<std::string, std::string> {
             public:
-                SampleEntryListener(util::CountDownLatch& addLatch, util::CountDownLatch& removeLatch, util::CountDownLatch& updateLatch, util::CountDownLatch& evictLatch)
-                : addLatch(addLatch)
-                , removeLatch(removeLatch)
-                , updateLatch(updateLatch)
-                , evictLatch(evictLatch) {
+                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
+                                    util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
+                        : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
+                          evictLatch(evictLatch) {
                 }
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+
+                void entryAdded(const EntryEvent<std::string, std::string> &event) {
                     addLatch.countDown();
                 }
-                void entryRemoved(const EntryEvent<std::string, std::string>& event) {
+
+                void entryRemoved(const EntryEvent<std::string, std::string> &event) {
                     removeLatch.countDown();
                 }
-                void entryUpdated(const EntryEvent<std::string, std::string>& event) {
+
+                void entryUpdated(const EntryEvent<std::string, std::string> &event) {
                     updateLatch.countDown();
                 }
-                void entryEvicted(const EntryEvent<std::string, std::string>& event) {
+
+                void entryEvicted(const EntryEvent<std::string, std::string> &event) {
                     evictLatch.countDown();
                 }
+
             private:
-                util::CountDownLatch& addLatch;
-                util::CountDownLatch& removeLatch;
-                util::CountDownLatch& updateLatch;
-                util::CountDownLatch& evictLatch;
+                util::CountDownLatch &addLatch;
+                util::CountDownLatch &removeLatch;
+                util::CountDownLatch &updateLatch;
+                util::CountDownLatch &evictLatch;
             };
+
             class MyListener : public EntryAdapter<std::string, std::string> {
             public:
-                MyListener(util::CountDownLatch& latch, util::CountDownLatch& nullLatch)
-                : latch(latch), nullLatch(nullLatch) {
+                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
+                        : latch(latch), nullLatch(nullLatch) {
                 }
-                void entryAdded(const EntryEvent<std::string, std::string>& event) {
+
+                void entryAdded(const EntryEvent<std::string, std::string> &event) {
                     latch.countDown();
                 }
-                void entryEvicted(const EntryEvent<std::string, std::string>& event) {
-                    const std::string& oldValue = event.getOldValue();
+
+                void entryEvicted(const EntryEvent<std::string, std::string> &event) {
+                    const std::string &oldValue = event.getOldValue();
                     if (oldValue.compare("")) {
                         nullLatch.countDown();
                     }
                     latch.countDown();
                 }
+
             private:
-                util::CountDownLatch& latch;
-                util::CountDownLatch& nullLatch;
+                util::CountDownLatch &latch;
+                util::CountDownLatch &nullLatch;
             };
+
             class ClearListener : public EntryAdapter<std::string, std::string> {
             public:
-                ClearListener(util::CountDownLatch& latch) : latch(latch) {
+                ClearListener(util::CountDownLatch &latch) : latch(latch) {
                 }
-                void mapCleared(const MapEvent& event) {
+
+                void mapCleared(const MapEvent &event) {
                     latch.countDown();
                 }
+
             private:
-                util::CountDownLatch& latch;
+                util::CountDownLatch &latch;
             };
+
             class EvictListener : public EntryAdapter<std::string, std::string> {
             public:
-                EvictListener(util::CountDownLatch& latch) : latch(latch) {
+                EvictListener(util::CountDownLatch &latch) : latch(latch) {
                 }
-                void mapEvicted(const MapEvent& event) {
+
+                void mapEvicted(const MapEvent &event) {
                     latch.countDown();
                 }
+
             private:
-                util::CountDownLatch& latch;
+                util::CountDownLatch &latch;
             };
 
             TEST_F(ClientMapTest, testIssue537) {
@@ -149,11 +163,11 @@ namespace hazelcast {
             TEST_F(ClientMapTest, testGet) {
                 fillMap();
                 for (int i = 0; i < 10; i++) {
-                   std::string key = "key";
+                    std::string key = "key";
                     key += util::IOUtil::to_string(i);
                     boost::shared_ptr<std::string> temp = imap->get(key);
 
-                   std::string value = "value";
+                    std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp, value);
                 }
@@ -162,14 +176,14 @@ namespace hazelcast {
             TEST_F(ClientMapTest, testRemoveAndDelete) {
                 fillMap();
                 boost::shared_ptr<std::string> temp = imap->remove("key10");
-                ASSERT_EQ(temp.get(), (std::string *)NULL);
+                ASSERT_EQ(temp.get(), (std::string *) NULL);
                 imap->deleteEntry("key9");
                 ASSERT_EQ(imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
-                   std::string key = "key";
+                    std::string key = "key";
                     key += util::IOUtil::to_string(i);
                     boost::shared_ptr<std::string> temp2 = imap->remove(key);
-                   std::string value = "value";
+                    std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp2, value);
                 }
@@ -198,7 +212,7 @@ namespace hazelcast {
                 ASSERT_EQ(imap->size(), 100);
 
                 for (int i = 0; i < 100; i++) {
-                   std::string expected = util::IOUtil::to_string(i);
+                    std::string expected = util::IOUtil::to_string(i);
                     boost::shared_ptr<std::string> actual = imap->get(util::IOUtil::to_string(i));
                     ASSERT_EQ(expected, *actual);
                 }
@@ -215,18 +229,18 @@ namespace hazelcast {
 
             }
 
-            void tryPutThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void tryPutThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 bool result = imap->tryPut("key1", "value3", 1 * 1000);
                 if (!result) {
                     latch->countDown();
                 }
             }
 
-            void tryRemoveThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void tryRemoveThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 bool result = imap->tryRemove("key2", 1 * 1000);
                 if (!result) {
                     latch->countDown();
@@ -263,19 +277,19 @@ namespace hazelcast {
                 ASSERT_EQ(*temp, "value1");
                 ASSERT_TRUE(evict.await(20 * 1000));
                 boost::shared_ptr<std::string> temp2 = imap->get("key1");
-                ASSERT_EQ(temp2.get(), (std::string *)NULL);
+                ASSERT_EQ(temp2.get(), (std::string *) NULL);
 
                 ASSERT_TRUE(imap->removeEntryListener(id));
             }
 
             TEST_F(ClientMapTest, testPutIfAbsent) {
                 boost::shared_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
-                ASSERT_EQ(o.get(), (std::string *)NULL);
+                ASSERT_EQ(o.get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3")));
             }
 
             TEST_F(ClientMapTest, testPutIfAbsentTtl) {
-                ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *)NULL);
+                ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
 
                 ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get());
@@ -295,9 +309,9 @@ namespace hazelcast {
                 ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
             }
 
-            void testLockThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->tryPut("key1", "value2", 1);
                 latch->countDown();
             }
@@ -314,9 +328,9 @@ namespace hazelcast {
 
             }
 
-            void testLockTTLThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockTTLThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->tryPut("key1", "value2", 5 * 1000);
                 latch->countDown();
             }
@@ -334,9 +348,9 @@ namespace hazelcast {
 
             }
 
-            void testLockTTL2Thread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testLockTTL2Thread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (!imap->tryLock("key1")) {
                     latch->countDown();
                 }
@@ -354,17 +368,17 @@ namespace hazelcast {
 
             }
 
-            void testMapTryLockThread1(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapTryLockThread1(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (!imap->tryLock("key1", 2)) {
                     latch->countDown();
                 }
             }
 
-            void testMapTryLockThread2(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapTryLockThread2(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 if (imap->tryLock("key1", 20 * 1000)) {
                     latch->countDown();
                 }
@@ -391,9 +405,9 @@ namespace hazelcast {
 
             }
 
-            void testMapForceUnlockThread(util::ThreadArgs& args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *)args.arg1;
+            void testMapForceUnlockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
                 imap->forceUnlock("key1");
                 latch->countDown();
             }
@@ -422,7 +436,7 @@ namespace hazelcast {
 
             TEST_F(ClientMapTest, testReplace) {
                 boost::shared_ptr<std::string> temp = imap->replace("key1", "value");
-                ASSERT_EQ(temp.get(), (std::string *)NULL);
+                ASSERT_EQ(temp.get(), (std::string *) NULL);
 
                 std::string tempKey = "key1";
                 std::string tempValue = "value1";
@@ -438,21 +452,21 @@ namespace hazelcast {
                 ASSERT_EQ("value3", *(imap->get("key1")));
             }
 
-            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee ,int>{
+            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
             public:
-                SampleEntryListenerForPortableKey(util::CountDownLatch& latch, util::AtomicInt& atomicInteger)
-                : latch(latch), atomicInteger(atomicInteger) {
+                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
+                        : latch(latch), atomicInteger(atomicInteger) {
 
                 }
 
-                void entryAdded(const EntryEvent<Employee, int>& event) {
+                void entryAdded(const EntryEvent<Employee, int> &event) {
                     ++atomicInteger;
                     latch.countDown();
                 }
 
             private:
-                util::CountDownLatch& latch;
-                util::AtomicInt& atomicInteger;
+                util::CountDownLatch &latch;
+                util::AtomicInt &atomicInteger;
             };
 
 
@@ -467,7 +481,7 @@ namespace hazelcast {
                 tradeMap.put(key2, 1);
                 tradeMap.put(key, 3);
                 ASSERT_TRUE(countDownLatch.await(5));
-                ASSERT_EQ(1, (int)atomicInteger);
+                ASSERT_EQ(1, (int) atomicInteger);
 
                 ASSERT_TRUE(tradeMap.removeEntryListener(id));
             }
@@ -558,27 +572,27 @@ namespace hazelcast {
                 Employee emp2("abc-123-xvz", 20);
 
                 map.put(emp1, emp1);
-                ASSERT_EQ(map.put(emp2, emp2).get(), (Employee *)NULL);
-                ASSERT_EQ(2, (int)map.size());
-                ASSERT_EQ(2, (int)map.keySet().size());
+                ASSERT_EQ(map.put(emp2, emp2).get(), (Employee *) NULL);
+                ASSERT_EQ(2, (int) map.size());
+                ASSERT_EQ(2, (int) map.keySet().size());
                 query::SqlPredicate predicate("a = 10");
-                ASSERT_EQ(0, (int)map.keySet(predicate).size());
+                ASSERT_EQ(0, (int) map.keySet(predicate).size());
                 predicate.setSql("a = 10");
-                ASSERT_EQ(0, (int)map.values(predicate).size());
+                ASSERT_EQ(0, (int) map.values(predicate).size());
                 predicate.setSql("a >= 10");
-                ASSERT_EQ(2, (int)map.keySet(predicate).size());
-                ASSERT_EQ(2, (int)map.values(predicate).size());
-                ASSERT_EQ(2, (int)map.size());
-                ASSERT_EQ(2, (int)map.values().size());
+                ASSERT_EQ(2, (int) map.keySet(predicate).size());
+                ASSERT_EQ(2, (int) map.values(predicate).size());
+                ASSERT_EQ(2, (int) map.size());
+                ASSERT_EQ(2, (int) map.values().size());
             }
 
             TEST_F(ClientMapTest, testMapWithPortable) {
                 IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
                 boost::shared_ptr<Employee> n1 = employees.get(1);
-                ASSERT_EQ(n1.get(), (Employee *)NULL);
+                ASSERT_EQ(n1.get(), (Employee *) NULL);
                 Employee employee("sancar", 24);
                 boost::shared_ptr<Employee> ptr = employees.put(1, employee);
-                ASSERT_EQ(ptr.get(), (Employee *)NULL);
+                ASSERT_EQ(ptr.get(), (Employee *) NULL);
                 ASSERT_FALSE(employees.isEmpty());
                 EntryView<int, Employee> view = employees.getEntryView(1);
                 ASSERT_EQ(view.value, employee);
@@ -595,7 +609,7 @@ namespace hazelcast {
                 ASSERT_EQ(1, imap->size());
                 ASSERT_FALSE(imap->evict("deli"));
                 ASSERT_TRUE(imap->evict("ali"));
-                ASSERT_EQ(imap->get("ali").get(), (std::string *)NULL);
+                ASSERT_EQ(imap->get("ali").get(), (std::string *) NULL);
             }
 
             class EntryMultiplier : public serialization::IdentifiedDataSerializable {
@@ -653,7 +667,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<int> result = employees.executeOnKey<int, EntryMultiplier>(4, processor);
 
-                ASSERT_NE((int *)NULL, result.get());
+                ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }
 
@@ -670,9 +684,10 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(processor);
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor);
 
-                ASSERT_EQ(3, (int)result.size());
+                ASSERT_EQ(3, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
@@ -694,9 +709,10 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(processor, *query::TruePredicate::INSTANCE);
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, *query::TruePredicate::INSTANCE);
 
-                ASSERT_EQ(3, (int)result.size());
+                ASSERT_EQ(3, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
@@ -718,9 +734,10 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(processor, *query::FalsePredicate::INSTANCE);
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, *query::FalsePredicate::INSTANCE);
 
-                ASSERT_EQ(0, (int)result.size());
+                ASSERT_EQ(0, (int) result.size());
             }
 
             TEST_F(ClientMapTest, testExecuteOnEntriesWithAndPredicate) {
@@ -734,17 +751,40 @@ namespace hazelcast {
                 employees.put(4, empl2);
                 employees.put(5, empl3);
 
-                std::vector<const serialization::IdentifiedDataSerializable *> predicates;
-                predicates.push_back(query::TruePredicate::INSTANCE);
-                query::SqlPredicate sqlPredicate("a >= 25");
-                predicates.push_back(&sqlPredicate);
-                query::AndPredicate andPredicate(predicates);
+                query::AndPredicate andPredicate;
+                andPredicate.add(
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::TruePredicate())).add(
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::SqlPredicate("a >= 25")));
 
                 EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(processor, andPredicate);
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, andPredicate);
 
-                ASSERT_EQ(2, (int)result.size());
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(3)));
+                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
+                ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
+            }
+
+            TEST_F(ClientMapTest, testExecuteOnEntriesWithBetweenPredicate) {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testExecuteOnEntries");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+
+                EntryMultiplier processor(4);
+
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::BetweenPredicate<int>("a", 25, 35));
+
+                ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);

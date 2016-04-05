@@ -125,6 +125,11 @@ namespace hazelcast {
                 void writeCharArray(const std::vector<char> *value);
 
                 /**
+                * @param value the boolean values to be written
+                */
+                void writeBooleanArray(const std::vector<bool> *value);
+
+                /**
                 * @param value the short array value to be written
                 */
                 void writeShortArray(const std::vector<short> *value);
@@ -203,7 +208,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template <typename T>
-                inline void writeObject(const void *serializable) {
+                void writeObject(const void *serializable) {
                     if (isEmpty) return;
 
                     if (NULL == serializable) {
@@ -225,6 +230,96 @@ namespace hazelcast {
                         Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
 
                         s->write(*this, *object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const byte *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_BYTE);
+                        writeByte(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const bool *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN);
+                        writeBoolean(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const char *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_CHAR);
+                        writeChar(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const short *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_SHORT);
+                        writeShort(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const int *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER);
+                        writeInt(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const long *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_LONG);
+                        writeLong(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const float *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT);
+                        writeFloat(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const double *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE);
+                        writeDouble(*object);
+                    }
+                }
+
+                template <typename T>
+                void writeObject(const std::string *object) {
+                    if (NULL == object) {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
+                    } else {
+                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_STRING);
+                        writeUTF(object);
                     }
                 }
             private:

@@ -26,30 +26,25 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput& dataOutput,
-                    pimpl::PortableContext& portableContext)
-            : dataOutput(&dataOutput)
-            , context(&portableContext)
-            , serializerHolder(&portableContext.getSerializerHolder())
-            , isEmpty(false) {
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput,
+                                               pimpl::PortableContext &portableContext)
+                    : dataOutput(&dataOutput), context(&portableContext),
+                      serializerHolder(&portableContext.getSerializerHolder()), isEmpty(false) {
 
             }
 
             ObjectDataOutput::ObjectDataOutput()
-            : dataOutput(NULL)
-            , context(NULL)
-            , serializerHolder(NULL)
-            , isEmpty(true) {
+                    : dataOutput(NULL), context(NULL), serializerHolder(NULL), isEmpty(true) {
 
             }
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
                 if (isEmpty)
-                    return std::auto_ptr<std::vector<byte> >((std::vector<byte> *)NULL);
+                    return std::auto_ptr<std::vector<byte> >((std::vector<byte> *) NULL);
                 return dataOutput->toByteArray();
             }
 
-            void ObjectDataOutput::write(const std::vector<byte>& bytes) {
+            void ObjectDataOutput::write(const std::vector<byte> &bytes) {
                 if (isEmpty) return;
                 dataOutput->write(bytes);
             }
@@ -91,7 +86,7 @@ namespace hazelcast {
 
             void ObjectDataOutput::writeDouble(double v) {
                 if (isEmpty) return;
-                dataOutput->writeLong((long)v);
+                dataOutput->writeDouble(v);
             }
 
             void ObjectDataOutput::writeUTF(const std::string *str) {
@@ -112,6 +107,11 @@ namespace hazelcast {
             void ObjectDataOutput::writeCharArray(const std::vector<char> *data) {
                 if (isEmpty) return;
                 dataOutput->writeCharArray(data);
+            }
+
+            void ObjectDataOutput::writeBooleanArray(const std::vector<bool> *data) {
+                if (isEmpty) return;
+                dataOutput->writeBooleanArray(data);
             }
 
             void ObjectDataOutput::writeShortArray(const std::vector<short> *data) {
@@ -142,7 +142,7 @@ namespace hazelcast {
             void ObjectDataOutput::writeUTFArray(const std::vector<std::string *> *strings) {
                 if (isEmpty) return;
 
-                int len = NULL != strings ? (int)strings->size() : util::Bits::NULL_ARRAY;
+                int len = NULL != strings ? (int) strings->size() : util::Bits::NULL_ARRAY;
 
                 writeInt(len);
 

@@ -30,6 +30,38 @@ namespace hazelcast {
             int getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_DATA;
             }
+
+            int getHazelcastTypeId(const char *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR;
+            }
+
+            int getHazelcastTypeId(const bool *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN;
+            }
+
+            int getHazelcastTypeId(const byte *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE;
+            }
+
+            int getHazelcastTypeId(const short *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT;
+            }
+
+            int getHazelcastTypeId(const int *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER;
+            }
+
+            int getHazelcastTypeId(const float *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT;
+            }
+
+            int getHazelcastTypeId(const double *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE;
+            }
+
+            int getHazelcastTypeId(const std::string *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_STRING;
+            }
         }
     }
 }
