@@ -17,6 +17,7 @@
 #ifndef HAZELCAST_TypeIDS
 #define HAZELCAST_TypeIDS
 
+#include <string>
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -29,6 +30,23 @@ namespace hazelcast {
 
             int HAZELCAST_API getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable);
 
+            int HAZELCAST_API getHazelcastTypeId(const char *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const bool *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const byte *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const short *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const int *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const long *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const float *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const double *object);
+
+            int HAZELCAST_API getHazelcastTypeId(const std::string *object);
         }
     }
 }

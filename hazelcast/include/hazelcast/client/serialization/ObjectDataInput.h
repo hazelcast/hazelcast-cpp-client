@@ -261,6 +261,33 @@ namespace hazelcast {
                 void operator=(const ObjectDataInput&);
 
             };
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, byte *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, bool *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, char *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, short *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, long *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, float *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, double *object);
+
+            template <>
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, std::string *object);
         }
     }
 }

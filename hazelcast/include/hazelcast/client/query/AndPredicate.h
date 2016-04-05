@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_QUERY_ANDPREDICATE_H_
 
 #include <vector>
+#include <memory>
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
@@ -30,7 +31,9 @@ namespace hazelcast {
         namespace query {
             class HAZELCAST_API AndPredicate : public serialization::IdentifiedDataSerializable {
             public:
-                AndPredicate(const std::vector<const serialization::IdentifiedDataSerializable *> &predicatesVector);
+                virtual ~AndPredicate();
+
+                AndPredicate &add(std::auto_ptr<serialization::IdentifiedDataSerializable> predicate);
 
                 /**
                  * @return factory id
@@ -55,7 +58,7 @@ namespace hazelcast {
                 void readData(serialization::ObjectDataInput &in);
 
             private:
-                const std::vector<const serialization::IdentifiedDataSerializable *> &predicates;
+                std::vector<serialization::IdentifiedDataSerializable *> predicates;
             };
         }
     }
