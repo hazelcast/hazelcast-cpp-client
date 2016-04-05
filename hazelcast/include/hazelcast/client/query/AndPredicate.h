@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_FALSEPREDICATE_H_
-#define HAZELCAST_CLIENT_QUERY_FALSEPREDICATE_H_
+#ifndef HAZELCAST_CLIENT_QUERY_ANDPREDICATE_H_
+#define HAZELCAST_CLIENT_QUERY_ANDPREDICATE_H_
 
+#include <vector>
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
@@ -27,12 +28,9 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API FalsePredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API AndPredicate : public serialization::IdentifiedDataSerializable {
             public:
-                /**
-                 * An instance of the FalsePredicate.
-                 * */
-                static const FalsePredicate *INSTANCE;
+                AndPredicate(const std::vector<const serialization::IdentifiedDataSerializable *> &predicatesVector);
 
                 /**
                  * @return factory id
@@ -55,6 +53,9 @@ namespace hazelcast {
                  * @param reader ObjectDataInput
                  */
                 void readData(serialization::ObjectDataInput &in);
+
+            private:
+                const std::vector<const serialization::IdentifiedDataSerializable *> &predicates;
             };
         }
     }
@@ -64,4 +65,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_QUERY_FALSEPREDICATE_H_ */
+#endif /* HAZELCAST_CLIENT_QUERY_ANDPREDICATE_H_ */
