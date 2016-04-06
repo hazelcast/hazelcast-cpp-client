@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/query/FalsePredicate.h"
+#include "hazelcast/client/query/ILikePredicate.h"
 #include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -22,23 +22,27 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            const FalsePredicate *FalsePredicate::INSTANCE = new FalsePredicate;
+            ILikePredicate::ILikePredicate(const std::string &attribute, const std::string &expression) : attributeName(
+                    attribute), expressionString(expression) {
+            }
 
-            int FalsePredicate::getFactoryId() const {
+            int ILikePredicate::getFactoryId() const {
                 return impl::predicates::F_ID;
             }
 
-            int FalsePredicate::getClassId() const {
-                return impl::predicates::FALSE_PREDICATE;
+            int ILikePredicate::getClassId() const {
+                return impl::predicates::ILIKE_PREDICATE;
             }
 
-            void FalsePredicate::writeData(serialization::ObjectDataOutput &out) const {
+            void ILikePredicate::writeData(serialization::ObjectDataOutput &out) const {
+                out.writeUTF(&attributeName);
+                out.writeUTF(&expressionString);
             }
 
-            void FalsePredicate::readData(serialization::ObjectDataInput &in) {
-                    // Not need to read at the client side
-                    throw exception::IException("FalsePredicate::readData",
-                                                "Client should not need to use readData method!!!");
+            void ILikePredicate::readData(serialization::ObjectDataInput &in) {
+                // Not need to read at the client side
+                throw exception::IException("ILikePredicate::readData",
+                                            "Client should not need to use readData method!!!");
             }
         }
     }

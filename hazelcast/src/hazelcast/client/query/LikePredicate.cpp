@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/query/FalsePredicate.h"
+#include "hazelcast/client/query/LikePredicate.h"
 #include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -22,23 +22,27 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            const FalsePredicate *FalsePredicate::INSTANCE = new FalsePredicate;
+            LikePredicate::LikePredicate(const std::string &attribute, const std::string &expression) : attributeName(
+                    attribute), expressionString(expression) {
+            }
 
-            int FalsePredicate::getFactoryId() const {
+            int LikePredicate::getFactoryId() const {
                 return impl::predicates::F_ID;
             }
 
-            int FalsePredicate::getClassId() const {
-                return impl::predicates::FALSE_PREDICATE;
+            int LikePredicate::getClassId() const {
+                return impl::predicates::LIKE_PREDICATE;
             }
 
-            void FalsePredicate::writeData(serialization::ObjectDataOutput &out) const {
+            void LikePredicate::writeData(serialization::ObjectDataOutput &out) const {
+                out.writeUTF(&attributeName);
+                out.writeUTF(&expressionString);
             }
 
-            void FalsePredicate::readData(serialization::ObjectDataInput &in) {
-                    // Not need to read at the client side
-                    throw exception::IException("FalsePredicate::readData",
-                                                "Client should not need to use readData method!!!");
+            void LikePredicate::readData(serialization::ObjectDataInput &in) {
+                // Not need to read at the client side
+                throw exception::IException("LikePredicate::readData",
+                                            "Client should not need to use readData method!!!");
             }
         }
     }

@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
-#define HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
+#ifndef HAZELCAST_CLIENT_QUERY_IILikePredicate_H
+#define HAZELCAST_CLIENT_QUERY_IILikePredicate_H
 
-#include <memory>
 #include <string>
-
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
@@ -30,9 +28,12 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API SqlPredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API ILikePredicate : public serialization::IdentifiedDataSerializable {
             public:
-                SqlPredicate(const char *sqlString);
+                /**
+                 * @param
+                 */
+                ILikePredicate(const std::string &attribute, const std::string &expression);
 
                 /**
                  * @return factory id
@@ -56,7 +57,8 @@ namespace hazelcast {
                  */
                 void readData(serialization::ObjectDataInput &in);
             private:
-                std::string sql;
+                std::string attributeName;
+                std::string expressionString;
             };
         }
     }
@@ -64,6 +66,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif /* HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_ */
+#endif /* HAZELCAST_CLIENT_QUERY_IILikePredicate_H */
