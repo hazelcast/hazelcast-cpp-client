@@ -16,6 +16,7 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+#include <hazelcast/client/query/OrPredicate.h>
 #include "hazelcast/client/query/NotPredicate.h"
 #include "hazelcast/client/query/InstanceOfPredicate.h"
 #include "hazelcast/client/query/NotEqualPredicate.h"
@@ -760,20 +761,50 @@ namespace hazelcast {
                 employees.put(5, empl3);
 
                 query::AndPredicate andPredicate;
+                /* 25 <= age <= 35 AND age = 35 */
                 andPredicate.add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::TruePredicate())).add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::SqlPredicate("a >= 25")));
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(
+                                new query::BetweenPredicate<int>("a", 25, 35))).add(
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(
+                                new query::NotPredicate<query::EqualPredicate<int> >(query::EqualPredicate<int>("a", 35))));
 
                 EntryMultiplier processor(4);
 
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                         processor, andPredicate);
 
+                ASSERT_EQ(1, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
+            }
+
+            TEST_F(ClientMapTest, testExecuteOnEntriesWithOrPredicate) {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testExecuteOnEntries");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+
+                query::OrPredicate orPredicate;
+                /* age == 21 OR age > 25 */
+                orPredicate.add(
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::EqualPredicate<int>("a", 21))).add(
+                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::GreaterLessPredicate<int>("a", 25, false, false)));
+
+                EntryMultiplier processor(4);
+
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, orPredicate);
+
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
-                ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
+                ASSERT_EQ(4 * processor.getMultiplier(), *result[4]);
             }
 
             TEST_F(ClientMapTest, testExecuteOnEntriesWithBetweenPredicate) {
@@ -984,7 +1015,8 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::NotPredicate<query::EqualPredicate<int> >(query::EqualPredicate<int>("a", 25)));
+                        processor,
+                        query::NotPredicate<query::EqualPredicate<int> >(query::EqualPredicate<int>("a", 25)));
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
@@ -999,7 +1031,8 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(5)));
 
                 result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::NotPredicate<query::BetweenPredicate<int> >(query::BetweenPredicate<int>("a", 25, 35)));
+                        processor,
+                        query::NotPredicate<query::BetweenPredicate<int> >(query::BetweenPredicate<int>("a", 25, 35)));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
