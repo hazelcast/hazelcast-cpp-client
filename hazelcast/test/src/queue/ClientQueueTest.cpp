@@ -135,6 +135,8 @@ namespace hazelcast {
                 item = q->take();  //  should block till it gets an item
                 ASSERT_NE((std::string *)NULL, item.get());
                 ASSERT_EQ("item1", *item);
+
+                t2.join();
             }
 
             TEST_F(ClientQueueTest, testRemainingCapacity) {
