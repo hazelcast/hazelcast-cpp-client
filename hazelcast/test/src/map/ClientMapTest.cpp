@@ -16,6 +16,7 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+#include <hazelcast/client/query/InstanceOfPredicate.h>
 #include "hazelcast/client/query/InPredicate.h"
 #include "hazelcast/client/query/ILikePredicate.h"
 #include "hazelcast/client/query/LikePredicate.h"
@@ -924,6 +925,27 @@ namespace hazelcast {
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
+            }
+
+            TEST_F(ClientMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testExecuteOnEntries");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+
+                EntryMultiplier processor(4);
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::InstanceOfPredicate("Employee"));
+
+                ASSERT_EQ(3, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(3)));
+                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
         }
