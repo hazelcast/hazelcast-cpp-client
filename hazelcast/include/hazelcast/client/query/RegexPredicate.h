@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
-#define HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
+#ifndef HAZELCAST_CLIENT_QUERY_REGEXPREDICATE_H_
+#define HAZELCAST_CLIENT_QUERY_REGEXPREDICATE_H_
 
 #include <string>
 
@@ -29,9 +29,13 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API SqlPredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API RegexPredicate : public serialization::IdentifiedDataSerializable {
             public:
-                SqlPredicate(const char *sqlString);
+                /**
+                 * @param attribute Name of the attribute
+                 * @param Regular expression to match the value of the attribute
+                 */
+                RegexPredicate(const char *attribute, const char *regex);
 
                 /**
                  * @return factory id
@@ -55,7 +59,8 @@ namespace hazelcast {
                  */
                 void readData(serialization::ObjectDataInput &in);
             private:
-                std::string sql;
+                std::string attributeName;
+                std::string regularExpression;
             };
         }
     }
@@ -65,4 +70,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_ */
+#endif /* HAZELCAST_CLIENT_QUERY_REGEXPREDICATE_H_ */
