@@ -16,6 +16,7 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+#include "hazelcast/client/query/GreaterLessPredicate.h"
 #include "hazelcast/client/query/AndPredicate.h"
 #include "hazelcast/client/query/BetweenPredicate.h"
 #include "hazelcast/client/query/EqualPredicate.h"
@@ -815,6 +816,46 @@ namespace hazelcast {
                         processor, query::EqualPredicate<int>("a", 10));
 
                 ASSERT_EQ(0, (int) result.size());
+            }
+
+            TEST_F(ClientMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testExecuteOnEntries");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+
+                EntryMultiplier processor(4);
+
+                std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
+
+                ASSERT_EQ(1, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(4)));
+
+                result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::GreaterLessPredicate<int>("a", 25, true, true)); // <=25 matching
+
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_EQ(true, (result.end() != result.find(5)));
+
+                result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::GreaterLessPredicate<int>("a", 25, false, false)); // >25 matching
+
+                ASSERT_EQ(1, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(3)));
+
+                result = employees.executeOnEntries<int, EntryMultiplier>(
+                        processor, query::GreaterLessPredicate<int>("a", 25, true, false)); // >=25 matching
+
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(true, (result.end() != result.find(3)));
+                ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
         }
