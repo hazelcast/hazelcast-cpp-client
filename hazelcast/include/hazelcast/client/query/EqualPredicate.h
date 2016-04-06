@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_QUERY_BETWEENPREDICATE_H_
-#define HAZELCAST_CLIENT_QUERY_BETWEENPREDICATE_H_
+#ifndef HAZELCAST_CLIENT_QUERY_EQUALPREDICATE_H_
+#define HAZELCAST_CLIENT_QUERY_EQUALPREDICATE_H_
 
 #include <string>
 #include <memory>
@@ -36,15 +36,14 @@ namespace hazelcast {
              * Type T should be a valid serializable and copiable type.
              */
             template <typename T>
-            class BetweenPredicate : public serialization::IdentifiedDataSerializable {
+            class EqualPredicate : public serialization::IdentifiedDataSerializable {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.
-                 * @tparam from The starting value to match (start is inclusive).
-                 * @tparam to The ending value to match (end is inclusive).
+                 * @tparam from The value of the attribute.
                  */
-                BetweenPredicate(const char *attributeName, const T &from, const T &to)
-                        : attrName(attributeName), begin(from), end(to) {
+                EqualPredicate(const char *attributeName, const T &value)
+                        : attrName(attributeName), attrValue(value) {
                 }
 
                 /**
@@ -58,7 +57,7 @@ namespace hazelcast {
                  * @return class id
                  */
                 int getClassId() const {
-                    return impl::predicates::BETWEEN_PREDICATE;
+                    return impl::predicates::EQUAL_PREDICATE;
                 }
 
                 /**
@@ -67,8 +66,7 @@ namespace hazelcast {
                  */
                 void writeData(serialization::ObjectDataOutput &out) const {
                     out.writeUTF(&attrName);
-                    out.writeObject<T>(&end);
-                    out.writeObject<T>(&begin);
+                    out.writeObject<T>(&attrValue);
                 }
 
                 /**
@@ -77,14 +75,13 @@ namespace hazelcast {
                  */
                 void readData(serialization::ObjectDataInput &in) {
                     // Not need to read at the client side
-                    throw exception::IException("BetweenPredicate::readData",
+                    throw exception::IException("EqualPredicate::readData",
                                                 "Client should not need to use readData method!!!");
                 }
 
             private:
                 std::string attrName;
-                T begin;
-                T end;
+                T attrValue;
             };
         }
     }
@@ -94,4 +91,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_QUERY_BETWEENPREDICATE_H_ */
+#endif /* HAZELCAST_CLIENT_QUERY_EQUALPREDICATE_H_ */
