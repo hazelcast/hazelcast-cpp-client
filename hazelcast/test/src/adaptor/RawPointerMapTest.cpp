@@ -599,11 +599,11 @@ namespace hazelcast {
                     ASSERT_EQ(2, (int) map.keySet()->size());
                     query::SqlPredicate predicate("a = 10");
                     ASSERT_EQ(0, (int) map.keySet(predicate)->size());
-                    predicate.setSql("a = 10");
-                    ASSERT_EQ(0, (int) map.values(predicate)->size());
-                    predicate.setSql("a >= 10");
-                    ASSERT_EQ(2, (int) map.keySet(predicate)->size());
-                    ASSERT_EQ(2, (int) map.values(predicate)->size());
+                    query::SqlPredicate predicate2("a = 10");
+                    ASSERT_EQ(0, (int) map.values(predicate2)->size());
+                    query::SqlPredicate predicate3("a >= 10");
+                    ASSERT_EQ(2, (int) map.keySet(predicate3)->size());
+                    ASSERT_EQ(2, (int) map.values(predicate3)->size());
                     ASSERT_EQ(2, (int) map.size());
                     ASSERT_EQ(2, (int) map.values()->size());
                 }

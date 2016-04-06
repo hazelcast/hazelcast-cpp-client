@@ -22,10 +22,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            SqlPredicate::SqlPredicate(const char *sqlString) : sql(new std::string(sqlString)) {
-            }
-
-            SqlPredicate::SqlPredicate(std::auto_ptr<std::string> sqlString) : sql(sqlString) {
+            SqlPredicate::SqlPredicate(const char *sqlString) : sql(sqlString) {
             }
 
             int SqlPredicate::getFactoryId() const {
@@ -37,19 +34,13 @@ namespace hazelcast {
             }
 
             void SqlPredicate::writeData(serialization::ObjectDataOutput &out) const {
-                out.writeUTF(sql.get());
+                out.writeUTF(&sql);
             }
 
             void SqlPredicate::readData(serialization::ObjectDataInput &in) {
-                sql = in.readUTF();
-            }
-
-            void SqlPredicate::setSql(std::auto_ptr<std::string> newSql) {
-                sql = newSql;
-            }
-
-            void SqlPredicate::setSql(const char *newSql) {
-                sql = std::auto_ptr<std::string>(new std::string(newSql));
+                // Not need to read at the client side
+                throw exception::IException("SqlPredicate::readData",
+                                            "Client should not need to use readData method!!!");
             }
         }
     }
