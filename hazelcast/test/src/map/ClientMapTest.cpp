@@ -18,6 +18,7 @@
 
 #include <hazelcast/client/query/OrPredicate.h>
 #include <hazelcast/client/query/RegexPredicate.h>
+#include <hazelcast/client/query/PagingPredicate.h>
 #include "hazelcast/client/query/NotPredicate.h"
 #include "hazelcast/client/query/InstanceOfPredicate.h"
 #include "hazelcast/client/query/NotEqualPredicate.h"
@@ -764,10 +765,9 @@ namespace hazelcast {
                 query::AndPredicate andPredicate;
                 /* 25 <= age <= 35 AND age = 35 */
                 andPredicate.add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(
-                                new query::BetweenPredicate<int>("a", 25, 35))).add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(
-                                new query::NotPredicate<query::EqualPredicate<int> >(query::EqualPredicate<int>("a", 35))));
+                        std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
+                        std::auto_ptr<query::Predicate>(
+                                new query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
 
                 EntryMultiplier processor(4);
 
@@ -793,8 +793,8 @@ namespace hazelcast {
                 query::OrPredicate orPredicate;
                 /* age == 21 OR age > 25 */
                 orPredicate.add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::EqualPredicate<int>("a", 21))).add(
-                        std::auto_ptr<serialization::IdentifiedDataSerializable>(new query::GreaterLessPredicate<int>("a", 25, false, false)));
+                        std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
+                        std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>("a", 25, false, false)));
 
                 EntryMultiplier processor(4);
 
@@ -1016,15 +1016,14 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor,
-                        query::NotPredicate<query::EqualPredicate<int> >(query::EqualPredicate<int>("a", 25)));
+                        processor, query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25))));
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
 
                 result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::NotPredicate<query::FalsePredicate>(query::FalsePredicate()));
+                        processor, query::NotPredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate())));
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
@@ -1033,7 +1032,7 @@ namespace hazelcast {
 
                 result = employees.executeOnEntries<int, EntryMultiplier>(
                         processor,
-                        query::NotPredicate<query::BetweenPredicate<int> >(query::BetweenPredicate<int>("a", 25, 35)));
+                        query::NotPredicate(std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
@@ -1060,7 +1059,52 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
             }
 
+            TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testValuesWithPagingPredicate");
 
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+                Employee empl4("ali", 33);
+                Employee empl5("veli", 44);
+                Employee empl6("aylin", 5);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+                employees.put(6, empl4);
+                employees.put(7, empl5);
+                employees.put(8, empl6);
+
+                query::PagingPredicate<int, Employee> predicate(2);
+                std::vector<Employee> result = employees.values(predicate);
+                ASSERT_EQ(2, (int) result.size());
+
+                predicate.nextPage();
+
+                const std::pair<int, Employee> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int, Employee> *)NULL, anchor);
+                ASSERT_EQ(2, anchor->first);
+                ASSERT_EQ(empl2, anchor->second);
+
+                std::vector<Employee> middleResult = employees.values(predicate);
+                ASSERT_EQ(2, (int) middleResult.size());
+
+                predicate.nextPage();
+                result = employees.values(predicate);
+                ASSERT_EQ(2, (int) result.size());
+
+                predicate.previousPage();
+                result = employees.values(predicate);
+                ASSERT_EQ(2, (int) result.size());
+
+                std::vector<Employee>::const_iterator resIt = result.begin();
+                for (std::vector<Employee>::const_iterator it = middleResult.begin();
+                        it != middleResult.end(); ++it, ++resIt) {
+                    ASSERT_EQ(*it, *resIt);
+                }
+
+            }
         }
     }
 }

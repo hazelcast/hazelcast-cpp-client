@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_QUERY_FALSEPREDICATE_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,7 +27,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API FalsePredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API FalsePredicate : public Predicate {
             public:
                 /**
                  * An instance of the FalsePredicate.

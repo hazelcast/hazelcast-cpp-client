@@ -125,6 +125,14 @@ namespace hazelcast {
                     }
                 }
 
+                void DataOutput::write(const char *str) {
+                    int len = (NULL != str) ? (int)strlen(str) : util::Bits::NULL_ARRAY;
+                    writeInt(len);
+                    if (len > 0) {
+                        outputStream->insert(outputStream->end(), str, str + len);
+                    }
+                }
+
                 void DataOutput::writeInt(int index, int v) {
                     writeByte(index++, (v >> 24));
                     writeByte(index++, (v >> 16));

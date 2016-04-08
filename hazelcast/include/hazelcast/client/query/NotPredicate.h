@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_QUERY_NOTPREDICATE_H_
 
 #include <string>
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/exception/IException.h"
@@ -31,53 +31,37 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            /**
-             * Type T should be a valid serializable and copiable type.
-             */
-            template <typename T>
-            class NotPredicate : public serialization::IdentifiedDataSerializable {
+            class NotPredicate : public Predicate {
             public:
                 /**
                  * @tparam predicate The predicate to be negated
                  */
-                NotPredicate(const T &predicate)
-                        : internalPredicate(predicate) {
-                }
+                NotPredicate(std::auto_ptr<Predicate> predicate);
 
                 /**
                  * @return factory id
                  */
-                int getFactoryId() const {
-                    return impl::predicates::F_ID;
-                }
+                int getFactoryId() const;
 
                 /**
                  * @return class id
                  */
-                int getClassId() const {
-                    return impl::predicates::NOT_PREDICATE;
-                }
+                int getClassId() const;
 
                 /**
                  * Defines how this class will be written.
                  * @param writer ObjectDataOutput
                  */
-                void writeData(serialization::ObjectDataOutput &out) const {
-                    out.writeObject<T>(&internalPredicate);
-                }
+                void writeData(serialization::ObjectDataOutput &out) const;
 
                 /**
                  *Defines how this class will be read.
                  * @param reader ObjectDataInput
                  */
-                void readData(serialization::ObjectDataInput &in) {
-                    // Not need to read at the client side
-                    throw exception::IException("NotPredicate::readData",
-                                                "Client should not need to use readData method!!!");
-                }
+                void readData(serialization::ObjectDataInput &in);
 
             private:
-                T internalPredicate;
+                std::auto_ptr<Predicate> internalPredicate;
             };
         }
     }

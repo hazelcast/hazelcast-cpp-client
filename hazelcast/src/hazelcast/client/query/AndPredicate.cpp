@@ -23,13 +23,13 @@ namespace hazelcast {
     namespace client {
         namespace query {
             AndPredicate::~AndPredicate() {
-                for (std::vector<hazelcast::client::serialization::IdentifiedDataSerializable *>::const_iterator it = predicates.begin();
+                for (std::vector<Predicate *>::const_iterator it = predicates.begin();
                      it != predicates.end(); ++it) {
                     delete *it;
                 }
             }
 
-            AndPredicate &AndPredicate::add(std::auto_ptr<serialization::IdentifiedDataSerializable> predicate) {
+            AndPredicate &AndPredicate::add(std::auto_ptr<Predicate> predicate) {
                 predicates.push_back(predicate.release());
                 return *this;
             }
@@ -44,7 +44,7 @@ namespace hazelcast {
 
             void AndPredicate::writeData(serialization::ObjectDataOutput &out) const {
                 out.writeInt((int)predicates.size());
-                for (std::vector<hazelcast::client::serialization::IdentifiedDataSerializable *>::const_iterator it = predicates.begin();
+                for (std::vector<Predicate *>::const_iterator it = predicates.begin();
                      it != predicates.end(); ++it) {
                     out.writeObject<serialization::IdentifiedDataSerializable>(*it);
                 }

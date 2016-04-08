@@ -67,6 +67,8 @@ namespace hazelcast {
 
                     void writeUTF(const std::string *s);
 
+                    void write(const char *s);
+
                     void writeBytes(const byte *bytes, unsigned int len);
 
                     void writeByteArray(const std::vector<byte> *data);

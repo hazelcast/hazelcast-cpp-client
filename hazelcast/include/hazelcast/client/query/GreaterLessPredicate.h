@@ -18,7 +18,7 @@
 
 #include <string>
 #include <memory>
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/exception/IException.h"
@@ -36,7 +36,7 @@ namespace hazelcast {
              * Type T should be a valid serializable and copiable type.
              */
             template <typename T>
-            class GreaterLessPredicate : public serialization::IdentifiedDataSerializable {
+            class GreaterLessPredicate : public Predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.

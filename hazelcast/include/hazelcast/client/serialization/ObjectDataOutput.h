@@ -110,9 +110,14 @@ namespace hazelcast {
                 void writeDouble(double value);
 
                 /**
-                * @param value the ASCII string value to be written
+                * @param value the UTF string value to be written
                 */
                 void writeUTF(const std::string *value);
+
+                /**
+                * @param value the C string value to be written
+                */
+                void write(const char *value);
 
                 /**
                 * @param value the bytes to be written
