@@ -79,6 +79,7 @@
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
 
 #include <climits>
+#include <hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h>
 
 namespace hazelcast {
     namespace client {
@@ -428,7 +429,7 @@ namespace hazelcast {
                     const serialization::IdentifiedDataSerializable &predicate) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapKeySetWithPredicateCodec::RequestParameters::encode(getName(),
-                                                                                                toData(predicate));
+                                                                                                toData<serialization::IdentifiedDataSerializable>(predicate));
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapKeySetWithPredicateCodec::ResponseParameters>(
                         request);
@@ -466,9 +467,18 @@ namespace hazelcast {
                     const serialization::IdentifiedDataSerializable &predicate) {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesWithPredicateCodec::RequestParameters::encode(
-                        getName(), toData(predicate));
+                        getName(), toData<serialization::IdentifiedDataSerializable>(predicate));
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapValuesWithPredicateCodec::ResponseParameters>(
+                        request);
+            }
+
+            EntryVector IMapImpl::valuesForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate) {
+
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesWithPagingPredicateCodec::RequestParameters::encode(
+                        getName(), toData<serialization::IdentifiedDataSerializable>(predicate));
+
+                return invokeAndGetResult<EntryVector, protocol::codec::MapValuesWithPredicateCodec::ResponseParameters>(
                         request);
             }
 

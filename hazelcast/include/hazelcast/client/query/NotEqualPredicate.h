@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_QUERY_NOTEQUALPREDICATE_H_
 
 #include <string>
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/exception/IException.h"
@@ -35,7 +35,7 @@ namespace hazelcast {
              * Type T should be a valid serializable and copiable type.
              */
             template <typename T>
-            class NotEqualPredicate : public serialization::IdentifiedDataSerializable {
+            class NotEqualPredicate : public Predicate {
             public:
                 /**
                  * @param attributeName The attribute whose value shall be compared to.

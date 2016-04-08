@@ -16,7 +16,8 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
-#include <hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h>
+#include "hazelcast/client/query/Predicate.h"
+#include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeyCodec.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
@@ -111,6 +112,8 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::Data> valuesData(
                         const serialization::IdentifiedDataSerializable &predicate);
 
+                EntryVector valuesForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
+
                 void addIndex(const std::string& attribute, bool ordered);
 
                 int size();
@@ -146,7 +149,7 @@ namespace hazelcast {
                 }
 
                 template<typename ENTRYPROCESSOR>
-                EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const serialization::IdentifiedDataSerializable &predicate) {
+                EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const query::Predicate &predicate) {
                     serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
                     serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);

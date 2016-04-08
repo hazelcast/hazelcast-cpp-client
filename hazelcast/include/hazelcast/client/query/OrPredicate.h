@@ -19,7 +19,7 @@
 #include <vector>
 #include <memory>
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,11 +29,11 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API OrPredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API OrPredicate : public Predicate {
             public:
                 virtual ~OrPredicate();
 
-                OrPredicate &add(std::auto_ptr<serialization::IdentifiedDataSerializable> predicate);
+                OrPredicate &add(std::auto_ptr<Predicate> predicate);
 
                 /**
                  * @return factory id
@@ -58,7 +58,7 @@ namespace hazelcast {
                 void readData(serialization::ObjectDataInput &in);
 
             private:
-                std::vector<serialization::IdentifiedDataSerializable *> predicates;
+                std::vector<Predicate *> predicates;
             };
         }
     }

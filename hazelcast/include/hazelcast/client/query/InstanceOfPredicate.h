@@ -20,7 +20,7 @@
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,7 +30,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class HAZELCAST_API InstanceOfPredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API InstanceOfPredicate : public Predicate {
             public:
                 /**
                  * @param javaClassName The name of the java class as identified by Class.getName() in java.
