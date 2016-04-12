@@ -80,6 +80,8 @@
 
 #include <climits>
 #include <hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h>
+#include <hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h>
+#include <hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h>
 
 namespace hazelcast {
     namespace client {
@@ -435,6 +437,16 @@ namespace hazelcast {
                         request);
             }
 
+            std::vector<serialization::pimpl::Data> IMapImpl::keySetForPagingPredicateData(
+                    const serialization::IdentifiedDataSerializable &predicate) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::MapKeySetWithPagingPredicateCodec::RequestParameters::encode(getName(),
+                                                                                                      toData<serialization::IdentifiedDataSerializable>(predicate));
+
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapKeySetWithPagingPredicateCodec::ResponseParameters>(
+                        request);
+            }
+
             EntryVector IMapImpl::entrySetData() {
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapEntrySetCodec::RequestParameters::encode(
@@ -451,6 +463,16 @@ namespace hazelcast {
                         getName(), toData(predicate));
 
                 return invokeAndGetResult<EntryVector, protocol::codec::MapEntriesWithPredicateCodec::ResponseParameters>(
+                        request);
+            }
+
+            EntryVector IMapImpl::entrySetForPagingPredicateData(
+                    const serialization::IdentifiedDataSerializable &predicate) {
+
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapEntriesWithPagingPredicateCodec::RequestParameters::encode(
+                        getName(), toData(predicate));
+
+                return invokeAndGetResult<EntryVector, protocol::codec::MapEntriesWithPagingPredicateCodec::ResponseParameters>(
                         request);
             }
 
@@ -478,7 +500,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesWithPagingPredicateCodec::RequestParameters::encode(
                         getName(), toData<serialization::IdentifiedDataSerializable>(predicate));
 
-                return invokeAndGetResult<EntryVector, protocol::codec::MapValuesWithPredicateCodec::ResponseParameters>(
+                return invokeAndGetResult<EntryVector, protocol::codec::MapValuesWithPagingPredicateCodec::ResponseParameters>(
                         request);
             }
 

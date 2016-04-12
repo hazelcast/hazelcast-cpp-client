@@ -1060,6 +1060,67 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
+                IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
+
+                const int predSize = 5;
+                const int totalEntries = 25 ;
+
+                for (int i = 0; i < totalEntries; ++i) {
+                    intMap.put(i, i);
+                }
+
+                query::PagingPredicate<int, int> predicate(predSize);
+
+                std::vector<int> values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int)values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int)values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.nextPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int)values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                const std::pair<int, int> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int, int> *)NULL, anchor);
+                ASSERT_EQ(9, anchor->first);
+                ASSERT_EQ(9, anchor->second);
+
+                ASSERT_EQ(1, predicate.getPage());
+
+                predicate.setPage(4);
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int)values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize * 4 + i, values[i]);
+                }
+
+                anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int, int> *)NULL, anchor);
+                ASSERT_EQ(24, anchor->first);
+                ASSERT_EQ(24, anchor->second);
+
+                const std::pair<int, std::pair<int, int> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<int, std::pair<int, int> > *)NULL, anchorEntry);
+                ASSERT_EQ(4, anchorEntry->first);
+                ASSERT_EQ(24, anchorEntry->second.first);
+                ASSERT_EQ(24, anchorEntry->second.second);
+
+
+
+                /*
+
                 IMap<int, Employee> employees = client->getMap<int, Employee>("testValuesWithPagingPredicate");
 
                 Employee empl1("ahmet", 35);
@@ -1103,7 +1164,7 @@ namespace hazelcast {
                         it != middleResult.end(); ++it, ++resIt) {
                     ASSERT_EQ(*it, *resIt);
                 }
-
+*/
             }
         }
     }
