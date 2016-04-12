@@ -22,6 +22,7 @@
 #include <vector>
 #include <stdexcept>
 #include <climits>
+#include <hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h>
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
@@ -423,6 +424,29 @@ namespace hazelcast {
                                 getName(), context->getClusterService(), context->getSerializationService(), listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
+            }
+
+            /**
+            * Adds an entry listener for this map.
+            *
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * otherwise it will slow down the system.
+            *
+            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+            *
+            * @param listener     entry listener
+            * @param predicate The query filter to use when returning the events to the user.
+            * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
+            *                     contain the value.
+            *
+            * @return registrationId of added listener that can be used to remove the entry listener.
+            */
+            std::string addEntryListener(EntryListener<K, V> &listener, const query::Predicate &predicate, bool includeValue) {
+                impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
+                        new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                includeValue);
+                return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
             }
 
             /**

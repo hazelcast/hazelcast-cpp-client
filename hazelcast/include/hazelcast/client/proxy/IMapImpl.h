@@ -86,6 +86,8 @@ namespace hazelcast {
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
 
+                std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const query::Predicate &predicate, bool includeValue);
+
                 bool removeEntryListener(const std::string& registrationId);
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const serialization::pimpl::Data& key, bool includeValue);

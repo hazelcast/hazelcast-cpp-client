@@ -335,6 +335,16 @@ namespace hazelcast {
                 return registerListener(codec, entryEventHandler);
             }
 
+            std::string IMapImpl::addEntryListener(impl::BaseEventHandler *entryEventHandler, const query::Predicate &predicate, bool includeValue) {
+                // TODO: Use appropriate flags for the event type as implemented in Java instead of EntryEventType::ALL
+                serialization::pimpl::Data predicateData = toData<serialization::IdentifiedDataSerializable>(predicate);
+                std::auto_ptr<protocol::codec::IAddListenerCodec> codec(
+                        new protocol::codec::MapAddEntryListenerWithPredicateCodec(getName(), predicateData, includeValue, EntryEventType::ALL,
+                                                                      false));
+
+                return registerListener(codec, entryEventHandler);
+            }
+
             bool IMapImpl::removeEntryListener(const std::string &registrationId) {
                 protocol::codec::MapRemoveEntryListenerCodec codec(getName(), registrationId);
 
