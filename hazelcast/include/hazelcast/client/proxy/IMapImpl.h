@@ -103,9 +103,13 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::Data> keySetData(
                         const serialization::IdentifiedDataSerializable &predicate);
 
+                std::vector<serialization::pimpl::Data> keySetForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
+
                 EntryVector entrySetData();
 
                 EntryVector entrySetData(const serialization::IdentifiedDataSerializable &predicate);
+
+                EntryVector entrySetForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
 
                 std::vector<serialization::pimpl::Data> valuesData();
 

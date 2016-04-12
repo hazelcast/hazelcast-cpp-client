@@ -22,7 +22,7 @@
 #include <vector>
 #include <stdexcept>
 #include <climits>
-#include <hazelcast/client/query/PagingPredicate.h>
+#include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/EntryListener.h"
@@ -588,6 +588,41 @@ namespace hazelcast {
             }
 
             /**
+              *
+              * Queries the map based on the specified predicate and
+              * returns the keys of matching entries.
+              *
+              * Specified predicate runs on all members in parallel.
+              *
+              *
+              * @param predicate query criteria
+              * @return result key set of the query
+              */
+            template <typename Compare>
+            std::vector<K> keySet(query::PagingPredicate<K, V, Compare> &predicate) {
+                predicate.setIterationType(query::KEY);
+
+                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetForPagingPredicateData(predicate);
+                size_t size = dataResult.size();
+
+                std::vector<std::pair<K, V> > entries(size);
+                for (size_t i = 0; i < size; ++i) {
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i]);
+                    entries[i] = std::make_pair(*key, V());
+                }
+
+                std::pair<int, int> range = getSortedQueryResultSet<Compare>(entries, predicate, query::KEY);
+
+                // return the sublist of entries
+                std::vector<K> result;
+                for (int i = range.first; i < range.second; ++i) {
+                    result.push_back(entries[i].first);
+                }
+
+                return result;
+            }
+
+            /**
             * Returns a vector clone of the values contained in this map.
             * The vector is <b>NOT</b> backed by the map,
             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
@@ -644,6 +679,8 @@ namespace hazelcast {
             * The vector is <b>NOT</b> backed by the map,
             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
             *
+            * Compare should be serializable and work as expected by std::sort Compare.
+            *
             * @param predicate the criteria for values to match
             * @return a vector clone of the values contained in this map
             */
@@ -665,37 +702,11 @@ namespace hazelcast {
                     entries[i] = std::make_pair(*key, *value);
                 }
 
-                return getSortedQueryResultSet(entries, predicate, query::VALUE);
-            }
+                std::pair<int, int> range = getSortedQueryResultSet<Compare>(entries, predicate, query::VALUE);
 
-            template <typename Compare>
-            std::vector<V> getSortedQueryResultSet(std::vector<std::pair<K, V> > &entries, query::PagingPredicate<K, V, Compare> predicate, query::IterationType iterationType) {
-                query::EntryComparator<K, V, Compare> comparator(predicate.getComparator(), iterationType);
-                std::sort<std::vector<std::pair<K, V> >::iterator, query::EntryComparator<K, V, Compare> >(entries.begin(), entries.end(), comparator);
-
-                std::pair<int, const std::pair<K, V> * > nearestAnchorEntry = predicate.getNearestAnchorEntry();
-                int nearestPage = nearestAnchorEntry.first;
-                int page = predicate.getPage();
-                int pageSize = predicate.getPageSize();
-                int begin = pageSize * (page - nearestPage - 1);
-                int size = (int)entries.size();
-                if (begin > size) {
-                    return std::vector<V>(0);
-                }
-                int end = begin + pageSize;
-                if (end > size) {
-                    end = size;
-                }
-                
-                // set anchor
-                for (int i = pageSize; i <= size; i += pageSize) {
-                    std::pair<K, V> &anchor = entries[i - 1];
-                    nearestPage++;
-                    predicate.setAnchor(nearestPage, anchor);
-                }
-
+                // return the sublist of entries
                 std::vector<V> result;
-                for (int i = begin; i < end; ++i) {
+                for (int i = range.first; i < range.second; ++i) {
                     result.push_back(entries[i].second);
                 }
 
@@ -722,6 +733,8 @@ namespace hazelcast {
             }
 
             /**
+            * @deprecated This API is deprecated in favor of @sa{values(const query::Predicate &predicate)}
+            *
             * Queries the map based on the specified predicate and
             * returns the matching entries.
             *
@@ -742,6 +755,56 @@ namespace hazelcast {
                     entries[i] = std::make_pair(*key, *value);
                 }
                 return entries;
+            }
+
+            /**
+            * Queries the map based on the specified predicate and
+            * returns the matching entries.
+            *
+            * Specified predicate runs on all members in parallel.
+            *
+            *
+            * @param predicate query criteria
+            * @return result entry vector of the query
+            */
+            std::vector<std::pair<K, V> > entrySet(const query::Predicate &predicate) {
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
+                        predicate);
+                size_t size = dataResult.size();
+                std::vector<std::pair<K, V> > entries(size);
+                for (size_t i = 0; i < size; ++i) {
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                    entries[i] = std::make_pair(*key, *value);
+                }
+                return entries;
+            }
+
+            /**
+            * Queries the map based on the specified predicate and
+            * returns the matching entries.
+            *
+            * Specified predicate runs on all members in parallel.
+            *
+            *
+            * @param predicate query criteria
+            * @return result entry vector of the query
+            */
+            template <typename Compare>
+            std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V, Compare> &predicate) {
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
+                        predicate);
+                size_t size = dataResult.size();
+                std::vector<std::pair<K, V> > entries(size);
+                for (size_t i = 0; i < size; ++i) {
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                    entries[i] = std::make_pair(*key, *value);
+                }
+
+                std::pair<int, int> range = getSortedQueryResultSet<Compare>(entries, predicate, query::ENTRY);
+                typename std::vector<std::pair<K, V> >::iterator start = entries.begin();
+                return std::vector<std::pair<K, V> >(start + range.first, start + range.second);
             }
 
             /**
@@ -934,7 +997,70 @@ namespace hazelcast {
                     : proxy::IMapImpl(instanceName, context) {
             }
 
+            template <typename Compare>
+            std::pair<int, int> getSortedQueryResultSet(std::vector<std::pair<K, V> > &entries, query::PagingPredicate<K, V, Compare> &predicate, query::IterationType iterationType) {
+                if (entries.empty()) {
+                    return std::pair<int, int>(0, 0);
+                }
 
+                sort<Compare>(entries, predicate, iterationType);
+
+                const std::pair<int, std::pair<K, V> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
+                int nearestPage = (NULL == nearestAnchorEntry ? -1 : nearestAnchorEntry->first);
+                int page = predicate.getPage();
+                int pageSize = predicate.getPageSize();
+                int begin = pageSize * (page - nearestPage - 1);
+                int size = (int)entries.size();
+                if (begin > size) {
+                    return std::pair<int, int>(0, 0);
+                }
+                int end = begin + pageSize;
+                if (end > size) {
+                    end = size;
+                }
+
+                setAnchor(entries, predicate, nearestPage);
+
+                return std::pair<int, int>(begin, end);
+            }
+
+            template <typename Compare>
+            void sort(std::vector<std::pair<K, V> > &entries, const query::PagingPredicate<K, V, Compare> &predicate, query::IterationType iterationType) const {
+                if (NULL != predicate.getComparator()) {
+                    std::sort<typename std::vector<std::pair<K, V> >::iterator, Compare>(entries.begin(), entries.end(), *predicate.getComparator());
+                } else {
+                    switch (iterationType) {
+                        case query::VALUE:
+                        {
+                            query::ValueComparator<K, V> comp;
+                            std::sort<typename std::vector<std::pair<K, V> >::iterator, query::ValueComparator<K, V> >(entries.begin(), entries.end(), comp);
+                            break;
+                        }
+                        case query::KEY:
+                        case query::ENTRY:
+                        {
+                            query::KeyComparator<K, V> comp;
+                            std::sort<typename std::vector<std::pair<K, V> >::iterator, query::KeyComparator<K, V> >(entries.begin(), entries.end(), comp);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            template <class Compare>
+            static void setAnchor(std::vector<std::pair<K, V> > &entries, query::PagingPredicate<K, V, Compare> &predicate, int nearestPage) {
+                if (entries.empty()) {
+                    return;
+                }
+
+                size_t size = entries.size();
+                size_t pageSize = (size_t)predicate.getPageSize();
+                for (size_t i = pageSize; i <= size; i += pageSize) {
+                    const std::pair<K, V> &anchor = entries[i - 1];
+                    nearestPage++;
+                    predicate.setAnchor(nearestPage, anchor);
+                }
+            }
         };
     }
 }

@@ -39,6 +39,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -86,6 +87,10 @@ class Employee implements Portable {
     public void readPortable(PortableReader reader) throws IOException {
         name = reader.readUTF("n");
         age = reader.readInt("a");
+    }
+
+    public int getAge() {
+        return age;
     }
 }
 
@@ -205,6 +210,49 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
     }
 }
 
+class EmployeeEntryComparator implements IdentifiedDataSerializable, Comparator<Map.Entry<Integer, Employee>> {
+    private int multiplier;
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 4;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput in)
+            throws IOException {
+    }
+
+    @Override
+    public int compare(Map.Entry<Integer, Employee> lhs, Map.Entry<Integer, Employee> rhs) {
+        Employee lv = lhs.getValue();
+        Employee rv = rhs.getValue();
+
+        if (null == lv) {
+            return -1;
+        }
+
+        if (null == rv) {
+            return 1;
+        }
+
+        Integer la = lv.getAge();
+        Integer ra = rv.getAge();
+
+        return la.compareTo(ra);
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -301,6 +349,8 @@ public class CppClientListener {
                         return new SampleCallableTask();
                     case 3:
                         return new KeyMultiplier();
+                    case 4:
+                        return new EmployeeEntryComparator();
                     default:
                         return null;
                 }

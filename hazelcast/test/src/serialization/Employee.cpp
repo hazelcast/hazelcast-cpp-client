@@ -67,6 +67,14 @@ namespace hazelcast {
                 age = reader.readInt("a");
             }
 
+            int Employee::getAge() const {
+                return age;
+            }
+
+            const std::string &Employee::getName() const {
+                return name;
+            }
+
         }
     }
 }

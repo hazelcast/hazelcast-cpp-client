@@ -46,6 +46,10 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader &reader);
 
+                int getAge() const;
+
+                const std::string &getName() const;
+
             private:
                 int age;
                 std::string name;
