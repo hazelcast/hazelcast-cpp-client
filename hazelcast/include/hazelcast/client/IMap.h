@@ -756,7 +756,7 @@ namespace hazelcast {
             }
 
             /**
-            * @deprecated This API is deprecated in favor of @sa{values(const query::Predicate &predicate)}
+            * @deprecated This API is deprecated in favor of @sa{entrySet(const query::Predicate &predicate)}
             *
             * Queries the map based on the specified predicate and
             * returns the matching entries.

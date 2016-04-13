@@ -535,7 +535,7 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::auto_ptr<DataArray<K> > keySet(const serialization::IdentifiedDataSerializable &predicate) {
+                std::auto_ptr<DataArray<K> > keySet(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = map.keySetData(predicate);
                     return std::auto_ptr<DataArray<K> >(new DataArray<K>(dataResult, serializationService));
                 }
@@ -560,7 +560,7 @@ namespace hazelcast {
                 * @param predicate the criteria for values to match
                 * @return clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values(const serialization::IdentifiedDataSerializable &predicate) {
+                std::auto_ptr<DataArray<V> > values(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = map.valuesData(predicate);
                     return std::auto_ptr<DataArray<V> >(new DataArray<V>(dataResult, serializationService));
                 }
@@ -587,7 +587,7 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry array of the query
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet(const serialization::IdentifiedDataSerializable &predicate) {
+                std::auto_ptr<EntryArray<K, V> > entrySet(const query::Predicate &predicate) {
                     EntryVector entries = map.entrySetData(predicate);
                     return std::auto_ptr<EntryArray<K, V> >(new EntryArray<K, V>(entries, serializationService));
                 }
