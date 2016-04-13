@@ -666,7 +666,24 @@ namespace hazelcast {
                 ASSERT_EQ("myvalue_22_test", strValues[0]);
                 ASSERT_EQ("value2", strValues[1]);
 
+                // SqlPredicate
+                // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+                char sql[100];
+                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::KEY_ATTRIBUTE_NAME);
+                values = intMap.values(query::SqlPredicate(sql));
+                ASSERT_EQ(4, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 4; ++i) {
+                    ASSERT_EQ(2 * i + 4, values[i]);
+                }
 
+                // RegexPredicate
+                // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
+                strValues = imap->values(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
+                ASSERT_EQ(2, strValues.size());
+                std::sort(strValues.begin(), strValues.end());
+                ASSERT_EQ("myvalue_22_test", strValues[0]);
+                ASSERT_EQ("value2", strValues[1]);
             }
 
             TEST_F(ClientMapTest, testReplace) {
