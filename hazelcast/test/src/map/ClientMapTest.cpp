@@ -19,6 +19,7 @@
 #include <hazelcast/client/query/OrPredicate.h>
 #include <hazelcast/client/query/RegexPredicate.h>
 #include <hazelcast/client/query/PagingPredicate.h>
+#include <hazelcast/client/query/QueryConstants.h>
 #include "hazelcast/client/query/NotPredicate.h"
 #include "hazelcast/client/query/InstanceOfPredicate.h"
 #include "hazelcast/client/query/NotEqualPredicate.h"
@@ -434,7 +435,6 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMapTest, testValues) {
-
                 fillMap();
                 std::vector<std::string> tempVector;
                 query::SqlPredicate predicate("this == value1");
@@ -443,6 +443,230 @@ namespace hazelcast {
 
                 std::vector<std::string>::iterator it = tempVector.begin();
                 ASSERT_EQ("value1", *it);
+            }
+
+            TEST_F(ClientMapTest, testValuesWithPredicate) {
+                IMap<int, int> intMap = client->getMap<int, int>("testValuesWithPredicateIntMap");
+                const int numItems = 20;
+                for (int i = 0; i < numItems; ++i) {
+                    intMap.put(i, 2 * i);
+                }
+
+                std::vector<int> values = intMap.values();
+                ASSERT_EQ(numItems, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < numItems; ++i) {
+                    ASSERT_EQ(2 * i, values[i]);
+                }
+
+                // EqualPredicate
+                // key == 5
+                values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
+                ASSERT_EQ(1, values.size());
+                ASSERT_EQ(2 * 5, values[0]);
+
+                // value == 8
+                values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 8));
+                ASSERT_EQ(1, values.size());
+                ASSERT_EQ(8, values[0]);
+
+                // key == numItems
+                values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems));
+                ASSERT_EQ(0, values.size());
+
+                // NotEqual Predicate
+                // key != 5
+                values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
+                ASSERT_EQ(numItems - 1, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < numItems - 1; ++i) {
+                    if (i >= 5) {
+                        ASSERT_EQ(2 * (i + 1), values[i]);
+                    } else {
+                        ASSERT_EQ(2 * i, values[i]);
+                    }
+                }
+
+                // this(value) != 8
+                values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 8));
+                ASSERT_EQ(numItems - 1, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < numItems - 1; ++i) {
+                    if (i >= 4) {
+                        ASSERT_EQ(2 * (i + 1), values[i]);
+                    } else {
+                        ASSERT_EQ(2 * i, values[i]);
+                    }
+                }
+
+                // TruePredicate
+                values = intMap.values(*query::TruePredicate::INSTANCE);
+                ASSERT_EQ(numItems, values.size());
+                std::sort(values.begin(), values.end());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < numItems; ++i) {
+                    ASSERT_EQ(2 * i, values[i]);
+                }
+
+                // FalsePredicate
+                values = intMap.values(*query::FalsePredicate::INSTANCE);
+                ASSERT_EQ(0, values.size());
+
+                // BetweenPredicate
+                // 5 <= key <= 10
+                values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+                std::sort(values.begin(), values.end());
+                ASSERT_EQ(6, values.size());
+                for (int i = 0; i < 6; ++i) {
+                    ASSERT_EQ(2 * (i + 5), values[i]);
+                }
+
+                // 20 <= key <=30
+                values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 20, 30));
+                ASSERT_EQ(0, values.size());
+
+                // GreaterLessPredicate
+                // value <= 10
+                values = intMap.values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 10, true, true));
+                ASSERT_EQ(6, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 6; ++i) {
+                    ASSERT_EQ(2 * i, values[i]);
+                }
+
+                // key < 7
+                values = intMap.values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, false, true));
+                ASSERT_EQ(7, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 7; ++i) {
+                    ASSERT_EQ(2 * i, values[i]);
+                }
+
+                // value >= 15
+                values = intMap.values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 15, true, false));
+                ASSERT_EQ(12, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 12; ++i) {
+                    ASSERT_EQ(2 * (i + 8), values[i]);
+                }
+
+                // key > 5
+                values = intMap.values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, false, false));
+                ASSERT_EQ(14, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 14; ++i) {
+                    ASSERT_EQ(2 * (i + 6), values[i]);
+                }
+
+                // InPredicate
+                // key in {4, 10, 19}
+                std::vector<int> inVals(3);
+                inVals[0] = 4;
+                inVals[1] = 10;
+                inVals[2] = 19;
+                values = intMap.values(query::InPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals));
+                ASSERT_EQ(3, values.size());
+                std::sort(values.begin(), values.end());
+                ASSERT_EQ(2 * 4, values[0]);
+                ASSERT_EQ(2 * 10, values[1]);
+                ASSERT_EQ(2 * 19, values[2]);
+
+                values = intMap.values(query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+                ASSERT_EQ(2, values.size());
+                std::sort(values.begin(), values.end());
+                ASSERT_EQ(4, values[0]);
+                ASSERT_EQ(10, values[1]);
+
+                // InstanceOfPredicate
+                // value instanceof Integer
+/* TODO: Uncomment after fixing instanceofpredicate
+                values = intMap.values(query::InstanceOfPredicate("Integer"));
+                ASSERT_EQ(20, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < numItems; ++i) {
+                    ASSERT_EQ(2 * i, values[i]);
+                }
+
+                values = intMap.values(query::InstanceOfPredicate("String"));
+                ASSERT_EQ(0, values.size());
+*/
+
+                // NotPredicate
+                // !(5 <= key <= 10)
+                std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
+                        query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+                values = intMap.values(query::NotPredicate(bp));
+                ASSERT_EQ(14, values.size());
+                std::sort(values.begin(), values.end());
+                for (int i = 0; i < 14; ++i) {
+                    if (i >= 5) {
+                        ASSERT_EQ(2 * (i + 6), values[i]);
+                    } else {
+                        ASSERT_EQ(2 * i, values[i]);
+                    }
+                }
+
+                // AndPredicate
+                // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+                bp = std::auto_ptr<query::Predicate>(
+                        new query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+                std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+                        new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+                values = intMap.values(query::AndPredicate().add(bp).add(inPred));
+                ASSERT_EQ(1, values.size());
+                std::sort(values.begin(), values.end());
+                ASSERT_EQ(10, values[0]);
+
+                // OrPredicate
+                // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+                bp = std::auto_ptr<query::Predicate>(
+                        new query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+                inPred = std::auto_ptr<query::Predicate>(
+                        new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+                values = intMap.values(query::OrPredicate().add(bp).add(inPred));
+                ASSERT_EQ(7, values.size());
+                std::sort(values.begin(), values.end());
+                ASSERT_EQ(4, values[0]);
+                ASSERT_EQ(10, values[1]);
+
+                for (int i = 0; i < 12; i++) {
+                    std::string key = "key";
+                    key += util::IOUtil::to_string(i);
+                    std::string value = "value";
+                    value += util::IOUtil::to_string(i);
+                    imap->put(key, value);
+                }
+                imap->put("key_111_test", "myvalue_111_test");
+                imap->put("key_22_test", "myvalue_22_test");
+
+                // LikePredicate
+                // value LIKE "value1" : {"value1"}
+                std::vector<std::string> strValues = imap->values(query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
+                ASSERT_EQ(1, strValues.size());
+                ASSERT_EQ("value1", strValues[0]);
+
+                // ILikePredicate
+                // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
+                strValues = imap->values(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
+                ASSERT_EQ(4, strValues.size());
+                std::sort(strValues.begin(), strValues.end());
+                ASSERT_EQ("myvalue_111_test", strValues[0]);
+                ASSERT_EQ("value1", strValues[1]);
+                ASSERT_EQ("value10", strValues[2]);
+                ASSERT_EQ("value11", strValues[3]);
+
+                // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
+                strValues = imap->values(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%"));
+                ASSERT_EQ(2, strValues.size());
+                std::sort(strValues.begin(), strValues.end());
+                ASSERT_EQ("myvalue_22_test", strValues[0]);
+                ASSERT_EQ("value2", strValues[1]);
+
+
             }
 
             TEST_F(ClientMapTest, testReplace) {
@@ -767,7 +991,8 @@ namespace hazelcast {
                 andPredicate.add(
                         std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
                         std::auto_ptr<query::Predicate>(
-                                new query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
+                                new query::NotPredicate(
+                                        std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
 
                 EntryMultiplier processor(4);
 
@@ -1016,7 +1241,8 @@ namespace hazelcast {
 
                 EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25))));
+                        processor,
+                        query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25))));
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
@@ -1032,7 +1258,8 @@ namespace hazelcast {
 
                 result = employees.executeOnEntries<int, EntryMultiplier>(
                         processor,
-                        query::NotPredicate(std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))));
+                        query::NotPredicate(
+                                std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
@@ -1063,7 +1290,7 @@ namespace hazelcast {
                 IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
 
                 const int predSize = 5;
-                const int totalEntries = 25 ;
+                const int totalEntries = 25;
 
                 for (int i = 0; i < totalEntries; ++i) {
                     intMap.put(i, i);
@@ -1072,27 +1299,27 @@ namespace hazelcast {
                 query::PagingPredicate<int, int> predicate(predSize);
 
                 std::vector<int> values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int)values.size());
+                ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int)values.size());
+                ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 predicate.nextPage();
                 values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int)values.size());
+                ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(predSize + i, values[i]);
                 }
 
                 const std::pair<int, int> *anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int, int> *)NULL, anchor);
+                ASSERT_NE((const std::pair<int, int> *) NULL, anchor);
                 ASSERT_EQ(9, anchor->first);
                 ASSERT_EQ(9, anchor->second);
 
@@ -1100,19 +1327,19 @@ namespace hazelcast {
 
                 predicate.setPage(4);
                 values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int)values.size());
+                ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(predSize * 4 + i, values[i]);
                 }
 
                 anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int, int> *)NULL, anchor);
+                ASSERT_NE((const std::pair<int, int> *) NULL, anchor);
                 ASSERT_EQ(24, anchor->first);
                 ASSERT_EQ(24, anchor->second);
 
                 const std::pair<int, std::pair<int, int> > *anchorEntry = predicate.getNearestAnchorEntry();
-                ASSERT_NE((const std::pair<int, std::pair<int, int> > *)NULL, anchorEntry);
+                ASSERT_NE((const std::pair<int, std::pair<int, int> > *) NULL, anchorEntry);
                 ASSERT_EQ(4, anchorEntry->first);
                 ASSERT_EQ(24, anchorEntry->second.first);
                 ASSERT_EQ(24, anchorEntry->second.second);
