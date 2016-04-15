@@ -177,7 +177,7 @@ namespace hazelcast {
                         return std::pair<size_t, size_t>(0, 0);
                     }
 
-                    const std::pair<size_t, std::pair<K, V> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
+                    const std::pair<size_t, std::pair<K *, V *> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
                     int nearestPage = (NULL == nearestAnchorEntry ? -1 : (int)nearestAnchorEntry->first);
                     size_t page = predicate.getPage();
                     size_t pageSize = predicate.getPageSize();
@@ -204,11 +204,13 @@ namespace hazelcast {
 
                     size_t size = entries.size();
                     size_t pageSize = (size_t)predicate.getPageSize();
-                    for (size_t i = pageSize; i <= size; i += pageSize) {
-                        const std::pair<const K *, const V *> &entry = entries[i - 1];
-                        std::pair<K, V> anchor(*entry.first, *entry.second);
+                    int page = (int)predicate.getPage();
+                    for (size_t i = pageSize; i <= size && nearestPage < page; i += pageSize) {
+                        std::auto_ptr<K> key = entries.releaseKey(i - 1);
+                        std::auto_ptr<V> value = entries.releaseValue(i - 1);
+                        std::pair<K *, V *> anchor(key.release(), value.release());
                         nearestPage++;
-                        predicate.setAnchor(nearestPage, anchor);
+                        predicate.setAnchor((size_t)nearestPage, anchor);
                     }
                 }
             };
