@@ -45,7 +45,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientMapTest::ClientMapTest()
-                    : instance(*g_srvFactory), instance2(*g_srvFactory), client(getNewClient()),
+                    : instance(*g_srvFactory)/*, instance2(*g_srvFactory)*/, client(getNewClient()),
                       imap(new IMap<std::string, std::string>(
                               client->getMap<std::string, std::string>("clientMapTest"))) {
             }
@@ -1861,11 +1861,11 @@ namespace hazelcast {
                 ASSERT_EQ(24, anchor->first);
                 ASSERT_EQ(24, anchor->second);
 
-                const std::pair<int, std::pair<int, int> > *anchorEntry = predicate.getNearestAnchorEntry();
-                ASSERT_NE((const std::pair<int, std::pair<int, int> > *) NULL, anchorEntry);
-                ASSERT_EQ(4, anchorEntry->first);
-                ASSERT_EQ(24, anchorEntry->second.first);
-                ASSERT_EQ(24, anchorEntry->second.second);
+                const std::pair<size_t, std::pair<int, int> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<size_t, std::pair<int, int> > *) NULL, anchorEntry);
+                ASSERT_EQ(3, anchorEntry->first);
+                ASSERT_EQ(19, anchorEntry->second.first);
+                ASSERT_EQ(19, anchorEntry->second.second);
 
 
 

@@ -22,7 +22,8 @@
 #include <vector>
 #include <stdexcept>
 #include <climits>
-#include <hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h>
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
+#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/EntryListener.h"
@@ -625,21 +626,21 @@ namespace hazelcast {
             std::vector<K> keySet(query::PagingPredicate<K, V, Compare> &predicate) {
                 predicate.setIterationType(query::KEY);
 
-                std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetForPagingPredicateData(predicate);
-                size_t size = dataResult.size();
+                std::vector<serialization::pimpl::Data> dataResult = keySetForPagingPredicateData(predicate);
 
-                std::vector<std::pair<K, V> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::auto_ptr<K> key = toObject<K>(dataResult[i]);
-                    entries[i] = std::make_pair(*key, V());
+                EntryVector entryResult;
+                for (std::vector<serialization::pimpl::Data>::iterator it = dataResult.begin();it != dataResult.end(); ++it) {
+                    entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it, serialization::pimpl::Data()));
                 }
 
-                std::pair<int, int> range = getSortedQueryResultSet<K, V, Compare>(entries, predicate, query::KEY);
+                adaptor::impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
+                entries.sort(predicate.getComparator(), query::KEY);
 
-                // return the sublist of entries
+                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::KEY);
+
                 std::vector<K> result;
-                for (int i = range.first; i < range.second; ++i) {
-                    result.push_back(entries[i].first);
+                for (size_t i = range.first; i < range.second; ++i) {
+                    result.push_back(*entries.getKey(i));
                 }
 
                 return result;
@@ -712,27 +713,16 @@ namespace hazelcast {
                 predicate.setIterationType(query::VALUE);
 
                 EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
-                size_t size = dataResult.size();
 
-                if (0 == size) {
-                    return std::vector<V>(0);
-                }
+                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                entries.sort(predicate.getComparator(), query::VALUE);
 
-                std::vector<std::pair<K, V> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
-                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
-                    entries[i] = std::make_pair(*key, *value);
-                }
+                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::VALUE);
 
-                std::pair<int, int> range = getSortedQueryResultSet<K, V, Compare>(entries, predicate, query::VALUE);
-
-                // return the sublist of entries
                 std::vector<V> result;
-                for (int i = range.first; i < range.second; ++i) {
-                    result.push_back(entries[i].second);
+                for (size_t i = range.first; i < range.second; ++i) {
+                    result.push_back(*entries.getValue(i));
                 }
-
                 return result;
             }
 
@@ -817,17 +807,18 @@ namespace hazelcast {
             std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V, Compare> &predicate) {
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
                         predicate);
-                size_t size = dataResult.size();
-                std::vector<std::pair<K, V> > entries(size);
-                for (size_t i = 0; i < size; ++i) {
-                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
-                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
-                    entries[i] = std::make_pair(*key, *value);
-                }
 
-                std::pair<int, int> range = getSortedQueryResultSet<K, V, Compare>(entries, predicate, query::ENTRY);
-                typename std::vector<std::pair<K, V> >::iterator start = entries.begin();
-                return std::vector<std::pair<K, V> >(start + range.first, start + range.second);
+                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                entries.sort(predicate.getComparator(), query::ENTRY);
+
+                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::ENTRY);
+
+                std::vector<std::pair<K, V> > result;
+                for (size_t i = range.first; i < range.second; ++i) {
+                    std::pair<const K *, const V *> entry = entries[i];
+                    result.push_back(std::pair<K, V>(*entry.first, *entry.second));
+                }
+                return result;
             }
 
             /**

@@ -131,7 +131,7 @@ namespace hazelcast {
                     std::vector<std::string> items;
 
                     for (size_t i = 0; i < array->size(); ++i) {
-                        std::auto_ptr<std::string> item = array->get(i);
+                        std::auto_ptr<std::string> item = array->release(i);
                         ASSERT_NE((std::string *)NULL, item.get());
                         items.push_back(*item);
                     }

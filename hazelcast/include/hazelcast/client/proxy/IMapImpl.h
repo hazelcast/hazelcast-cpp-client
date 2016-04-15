@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
+#include "hazelcast/client/adaptor/EntryArray.h"
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
@@ -169,65 +170,43 @@ namespace hazelcast {
                 }
 
                 template <typename K, typename V, typename Compare>
-                std::pair<int, int> getSortedQueryResultSet(std::vector<std::pair<K, V> > &entries, query::PagingPredicate<K, V, Compare> &predicate, query::IterationType iterationType) {
-                    if (entries.empty()) {
-                        return std::pair<int, int>(0, 0);
+                std::pair<size_t, size_t> updateAnchor(adaptor::EntryArray<K, V> &entries,
+                                                 query::PagingPredicate<K, V, Compare> &predicate,
+                                                 query::IterationType iterationType) {
+                    if (0 == entries.size()) {
+                        return std::pair<size_t, size_t>(0, 0);
                     }
 
-                    sort<K, V, Compare>(entries, predicate, iterationType);
-
-                    const std::pair<int, std::pair<K, V> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
-                    int nearestPage = (NULL == nearestAnchorEntry ? -1 : nearestAnchorEntry->first);
-                    int page = predicate.getPage();
-                    int pageSize = predicate.getPageSize();
-                    int begin = pageSize * (page - nearestPage - 1);
-                    int size = (int)entries.size();
+                    const std::pair<size_t, std::pair<K, V> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
+                    int nearestPage = (NULL == nearestAnchorEntry ? -1 : (int)nearestAnchorEntry->first);
+                    size_t page = predicate.getPage();
+                    size_t pageSize = predicate.getPageSize();
+                    size_t begin = pageSize * (page - nearestPage - 1);
+                    size_t size = entries.size();
                     if (begin > size) {
-                        return std::pair<int, int>(0, 0);
+                        return std::pair<size_t, size_t>(0, 0);
                     }
-                    int end = begin + pageSize;
+                    size_t end = begin + pageSize;
                     if (end > size) {
                         end = size;
                     }
 
                     setAnchor(entries, predicate, nearestPage);
 
-                    return std::pair<int, int>(begin, end);
+                    return std::pair<size_t, size_t>(begin, end);
                 }
 
                 template <typename K, typename V, typename Compare>
-                void sort(std::vector<std::pair<K, V> > &entries, const query::PagingPredicate<K, V, Compare> &predicate, query::IterationType iterationType) const {
-                    if (NULL != predicate.getComparator()) {
-                        std::sort<typename std::vector<std::pair<K, V> >::iterator, Compare>(entries.begin(), entries.end(), *predicate.getComparator());
-                    } else {
-                        switch (iterationType) {
-                            case query::VALUE:
-                            {
-                                query::ValueComparator<K, V> comp;
-                                std::sort<typename std::vector<std::pair<K, V> >::iterator, query::ValueComparator<K, V> >(entries.begin(), entries.end(), comp);
-                                break;
-                            }
-                            case query::KEY:
-                            case query::ENTRY:
-                            {
-                                query::KeyComparator<K, V> comp;
-                                std::sort<typename std::vector<std::pair<K, V> >::iterator, query::KeyComparator<K, V> >(entries.begin(), entries.end(), comp);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                template <typename K, typename V, typename Compare>
-                static void setAnchor(std::vector<std::pair<K, V> > &entries, query::PagingPredicate<K, V, Compare> &predicate, int nearestPage) {
-                    if (entries.empty()) {
+                static void setAnchor(adaptor::EntryArray<K, V> &entries, query::PagingPredicate<K, V, Compare> &predicate, int nearestPage) {
+                    if (0 == entries.size()) {
                         return;
                     }
 
                     size_t size = entries.size();
                     size_t pageSize = (size_t)predicate.getPageSize();
                     for (size_t i = pageSize; i <= size; i += pageSize) {
-                        const std::pair<K, V> &anchor = entries[i - 1];
+                        const std::pair<const K *, const V *> &entry = entries[i - 1];
+                        std::pair<K, V> anchor(*entry.first, *entry.second);
                         nearestPage++;
                         predicate.setAnchor(nearestPage, anchor);
                     }
