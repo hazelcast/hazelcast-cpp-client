@@ -45,7 +45,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientMapTest::ClientMapTest()
-                    : instance(*g_srvFactory)/*, instance2(*g_srvFactory)*/, client(getNewClient()),
+                    : instance(*g_srvFactory), instance2(*g_srvFactory), client(getNewClient()),
                       imap(new IMap<std::string, std::string>(
                               client->getMap<std::string, std::string>("clientMapTest"))) {
             }
@@ -1841,14 +1841,17 @@ namespace hazelcast {
                     ASSERT_EQ(predSize + i, values[i]);
                 }
 
-                const std::pair<int, int> *anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int, int> *) NULL, anchor);
-                ASSERT_EQ(9, anchor->first);
-                ASSERT_EQ(9, anchor->second);
+                const std::pair<int *, int *> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(9, *anchor->first);
+                ASSERT_EQ(9, *anchor->second);
 
                 ASSERT_EQ(1, predicate.getPage());
 
                 predicate.setPage(4);
+
                 values = intMap.values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
@@ -1857,17 +1860,37 @@ namespace hazelcast {
                 }
 
                 anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int, int> *) NULL, anchor);
-                ASSERT_EQ(24, anchor->first);
-                ASSERT_EQ(24, anchor->second);
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(24, *anchor->first);
+                ASSERT_EQ(24, *anchor->second);
 
-                const std::pair<size_t, std::pair<int, int> > *anchorEntry = predicate.getNearestAnchorEntry();
-                ASSERT_NE((const std::pair<size_t, std::pair<int, int> > *) NULL, anchorEntry);
+                const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
+                ASSERT_NE((int *)NULL, anchorEntry->second.first);
+                ASSERT_NE((int *)NULL, anchorEntry->second.second);
                 ASSERT_EQ(3, anchorEntry->first);
-                ASSERT_EQ(19, anchorEntry->second.first);
-                ASSERT_EQ(19, anchorEntry->second.second);
+                ASSERT_EQ(19, *anchorEntry->second.first);
+                ASSERT_EQ(19, *anchorEntry->second.second);
 
+                predicate.nextPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(0, (int) values.size());
 
+                predicate.setPage(0);
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.previousPage();
+                ASSERT_EQ(0, predicate.getPage());
+
+                predicate.setPage(5);
+                values = intMap.values(predicate);
+                ASSERT_EQ(0, (int) values.size());
 
                 /*
 

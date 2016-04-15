@@ -38,7 +38,7 @@ namespace hazelcast {
                 void fillMap();
             protected:
                 HazelcastServer instance;
-                //HazelcastServer instance2;
+                HazelcastServer instance2;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<IMap<std::string, std::string> > imap;

@@ -59,18 +59,29 @@ namespace hazelcast {
                      */
                     EntryArrayImpl(EntryArrayImpl &array, size_t begin, size_t end) : serializationService(array.serializationService) {
                         if (end < begin) {
-                            throw exception::IllegalArgumentException("EntryArrayImpl", "End should be greater than begin!");
+                            throw exception::IllegalArgumentException("EntryArrayImpl", "end should be greater than begin!");
                         }
 
                         size_t size = array.size();
                         if (end > size) {
-                            throw exception::IllegalArgumentException("EntryArrayImpl", "End should not be greater than array size!");
+                            throw exception::IllegalArgumentException("EntryArrayImpl", "end should not be greater than array size!");
                         }
 
                         for (size_t i = begin; i < end; ++i) {
                             Item &item = array.deserializedEntries[i];
                             dataEntries.push_back(*item.data);
                             deserializedEntries.push_back(item);
+                        }
+                    }
+
+                    ~EntryArrayImpl() {
+                        for (typename std::vector<Item>::const_iterator it = deserializedEntries.begin();it != deserializedEntries.end(); ++it) {
+                            if (it->isKeyDeserialized) {
+                                delete it->key;
+                            }
+                            if (it->isValueDeserialized) {
+                                delete it->value;
+                            }
                         }
                     }
 
@@ -163,15 +174,6 @@ namespace hazelcast {
                         const util::Comparator<std::pair<const K *, const V *> > *comparator;
                         query::IterationType type;
 
-                        ~Item() {
-                            if (isKeyDeserialized) {
-                                delete key;
-                            }
-                            if (isValueDeserialized) {
-                                delete value;
-                            }
-                        }
-
                         const K *getKey() {
                             if (isKeyDeserialized) {
                                 return key;
@@ -205,7 +207,7 @@ namespace hazelcast {
 
                         std::auto_ptr<V> releaseValue() {
                             if (isValueDeserialized) {
-                                std::auto_ptr<V> result(key);
+                                std::auto_ptr<V> result(value);
                                 isValueDeserialized = false;
                                 value = NULL;
                                 return result;

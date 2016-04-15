@@ -184,11 +184,24 @@ namespace hazelcast {
 
                 }
 
+                ~PagingPredicate() {
+                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
+                         it != anchorList.end(); ++it) {
+                        delete it->second.first;
+                        delete it->second.second;
+                    }
+                }
+
                 /**
                  * resets for reuse
                  */
                 void reset() {
                     iterationType = VALUE;
+                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
+                         it != anchorList.end(); ++it) {
+                        delete it->second.first;
+                        delete it->second.second;
+                    }
                     anchorList.clear();
                     page = 0;
                 }
@@ -243,11 +256,11 @@ namespace hazelcast {
                  * <p/>
                  * Note: This method will return `NULL` on the first page of the query result.
                  *
-                 * @return std::pair<K, V> the anchor object which is the last value object on the previous page
+                 * @return std::pair<K *, V *> the anchor object which is the last value object on the previous page
                  */
-                const std::pair<K, V> *getAnchor() const {
+                const std::pair<K *, V *> *getAnchor() const {
                     if (0 == anchorList.size()) {
-                        return (const std::pair<K, V> *)NULL;
+                        return (const std::pair<K *, V *> *)NULL;
                     }
 
                     return &anchorList[page].second;
@@ -262,11 +275,11 @@ namespace hazelcast {
                  *
                  * @return nearest anchored entry for current page
                  */
-                const std::pair<size_t, std::pair<K, V> > *getNearestAnchorEntry() {
+                const std::pair<size_t, std::pair<K *, V *> > *getNearestAnchorEntry() {
                     size_t anchorCount = anchorList.size();
 
                     if (page == 0 || anchorCount == 0) {
-                        return (const std::pair<size_t, std::pair<K, V> > *) NULL;
+                        return (const std::pair<size_t, std::pair<K *, V *> > *) NULL;
                     }
 
                     if (page < anchorCount) {
@@ -301,11 +314,11 @@ namespace hazelcast {
                     out.writeInt((int)pageSize);
                     out.write(IterationNames[iterationType]);
                     out.writeInt((int) anchorList.size());
-                    for (typename std::vector<std::pair<size_t, std::pair<K, V> > >::const_iterator it = anchorList.begin();
+                    for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
                          it != anchorList.end(); ++it) {
                         out.writeInt((int)it->first);
-                        out.writeObject<K>(&it->second.first);
-                        out.writeObject<V>(&it->second.second);
+                        out.writeObject<K>(it->second.first);
+                        out.writeObject<V>(it->second.second);
                     }
                 }
 
@@ -319,12 +332,15 @@ namespace hazelcast {
                                                 "Client should not need to use readData method!!!");
                 }
 
-                void setAnchor(size_t page, const std::pair<K, V> &anchorEntry) {
+                void setAnchor(size_t page, const std::pair<K *, V *> &anchorEntry) {
                     int anchorCount = (int) anchorList.size();
                     if (page < anchorCount) {
-                        anchorList[page] = std::pair<size_t, std::pair<K, V> >(page, anchorEntry);
+                        // release the previous anchoe entry
+                        delete anchorList[page].second.first;
+                        delete anchorList[page].second.second;
+                        anchorList[page] = std::pair<size_t, std::pair<K *, V *> >(page, anchorEntry);
                     } else if (page == anchorCount) {
-                        anchorList.push_back(std::pair<size_t, std::pair<K, V> >(page, anchorEntry));
+                        anchorList.push_back(std::pair<size_t, std::pair<K *, V *> >(page, anchorEntry));
                     } else {
                         char msg[200];
                         util::snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
@@ -336,7 +352,7 @@ namespace hazelcast {
             private:
                 std::auto_ptr<Predicate> innerPredicate;
                 // key is the page number, the value is the map entry as the anchor
-                std::vector<std::pair<size_t, std::pair<K, V> > > anchorList;
+                std::vector<std::pair<size_t, std::pair<K *, V *> > > anchorList;
                 std::auto_ptr<Compare> comparator;
                 size_t pageSize;
                 size_t page;

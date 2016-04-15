@@ -715,6 +715,7 @@ namespace hazelcast {
                 EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
 
                 adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+
                 entries.sort(predicate.getComparator(), query::VALUE);
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::VALUE);
