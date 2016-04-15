@@ -232,20 +232,19 @@ namespace hazelcast {
                     std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
 
                     ASSERT_EQ(2U, m2->size());
-                    std::auto_ptr<std::string> key1 = m2->getKey(0);
+                    std::auto_ptr<std::string> key1 = m2->releaseKey(0);
                     ASSERT_NE((std::string *)NULL, key1.get());
-                    std::auto_ptr<std::string> value1 = m2->getValue(0);
+                    std::auto_ptr<std::string> value1 = m2->releaseValue(0);
                     ASSERT_NE((std::string *)NULL, value1.get());
                     ASSERT_EQ(*key1, *value1);
                     ASSERT_TRUE(*key1 == "1" || *key1 == "3" );
 
-                    std::auto_ptr<std::string> key2 = m2->getKey(1);
-                    ASSERT_NE((std::string *)NULL, key2.get());
-                    std::auto_ptr<std::string> value2 = m2->getValue(1);
-                    ASSERT_NE((std::string *)NULL, value2.get());
-                    ASSERT_EQ(*key2, *value2);
-                    ASSERT_TRUE(*key2 == "1" || *key2 == "3" );
-                    ASSERT_NE(*key1, *key2);
+                    std::pair<const std::string *, const std::string *> entry = (*m2)[1];
+                    ASSERT_NE((std::string *)NULL, entry.first);
+                    ASSERT_NE((std::string *)NULL, entry.second);
+                    ASSERT_EQ(*entry.first, *entry.second);
+                    ASSERT_TRUE(*entry.first == "1" || *entry.first == "3" );
+                    ASSERT_NE(*key1, *entry.first);
                 }
 
                 void tryPutThread(util::ThreadArgs &args) {
@@ -564,24 +563,24 @@ namespace hazelcast {
                     query::SqlPredicate predicate("this = 'value1'");
                     std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > tempArray = imap->values(predicate);
 
-                    std::auto_ptr<std::string> actual = tempArray->get(0);
-                    ASSERT_NE((std::string *)NULL, actual.get());
-                    ASSERT_EQ("value1", *actual);
+                    std::auto_ptr<std::string> actualVal = tempArray->release(0);
+                    ASSERT_NE((std::string *)NULL, actualVal.get());
+                    ASSERT_EQ("value1", *actualVal);
 
                     std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > tempArray2 = imap->keySet(predicate);
 
-                    actual = (*tempArray2)[0];
-                    ASSERT_NE((std::string *)NULL, actual.get());
+                    const std::string *actual = (*tempArray2)[0];
+                    ASSERT_NE((std::string *)NULL, actual);
                     ASSERT_EQ("key1", *actual);
 
 
                     std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > tempArray3 = imap->entrySet(predicate);
                     actual = tempArray3->getKey(0);
-                    ASSERT_NE((std::string *)NULL, actual.get());
+                    ASSERT_NE((std::string *)NULL, actual);
                     ASSERT_EQ("key1", *actual);
 
                     actual = tempArray3->getValue(0);
-                    ASSERT_NE((std::string *)NULL, actual.get());
+                    ASSERT_NE((std::string *)NULL, actual);
                     ASSERT_EQ("value1", *actual);
                 }
 
@@ -714,8 +713,8 @@ namespace hazelcast {
 
                     ASSERT_EQ(3, (int) result->size());
                     for (size_t i = 0;i < result->size();++i) {
-                        std::auto_ptr<int> key = result->getKey(i);
-                        std::auto_ptr<int> value = result->getValue(i);
+                        const int *key = result->getKey(i);
+                        const int *value = result->getValue(i);
                         ASSERT_TRUE(*key == 3 || *key == 4 || *key == 5);
                         ASSERT_EQ((*key) * processor.getMultiplier(), (*value));
                     }

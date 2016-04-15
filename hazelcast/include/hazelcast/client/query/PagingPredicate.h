@@ -21,6 +21,7 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -55,26 +56,13 @@ namespace hazelcast {
             };
 
             template<typename K, typename V>
-            class KeyComparator {
+            class InvalidComparator :  public util::Comparator<std::pair<const K *, const V *> >,
+                                       public serialization::IdentifiedDataSerializable {
             public:
-                bool operator()(const std::pair<K, V> &lhs, const std::pair<K, V> &rhs) {
-                    std::less<K> op;
-                    return op(lhs.first, rhs.first);
+                int compare(const std::pair<const K *, const V *> &lhs, const std::pair<const K *, const V *> &rhs) const {
+                    assert(0);
                 }
-            };
 
-            template<typename K, typename V>
-            class ValueComparator {
-            public:
-                bool operator()(const std::pair<K, V> &lhs, const std::pair<K, V> &rhs) {
-                    std::less<V> op;
-                    return op(lhs.second, rhs.second);
-                }
-            };
-
-            template<typename K, typename V>
-            class InvalidComparator : public serialization::IdentifiedDataSerializable {
-            public:
                 int getFactoryId() const {
                     assert(0);
                     return -1;
@@ -90,10 +78,6 @@ namespace hazelcast {
                 }
 
                 void readData(serialization::ObjectDataInput &reader) {
-                    assert(0);
-                }
-
-                bool operator()(const std::pair<K, V> &lhs, const std::pair<K, V> &rhs) const {
                     assert(0);
                 }
             };
@@ -151,7 +135,7 @@ namespace hazelcast {
                  *
                  * @param predicatePageSize size of the page
                  */
-                PagingPredicate(int predicatePageSize) : pageSize(predicatePageSize), page(0),iterationType(VALUE) {
+                PagingPredicate(size_t predicatePageSize) : pageSize(predicatePageSize), page(0),iterationType(VALUE) {
                 }
 
                 /**
@@ -164,7 +148,7 @@ namespace hazelcast {
                  * @param predicate the inner predicate through which results will be filtered
                  * @param predicatePageSize  the page size
                  */
-                PagingPredicate(std::auto_ptr<Predicate> predicate, int predicatePageSize) : innerPredicate(predicate),
+                PagingPredicate(std::auto_ptr<Predicate> predicate, size_t predicatePageSize) : innerPredicate(predicate),
                                                                                              pageSize(predicatePageSize),
                                                                                              page(0),
                                                                                              iterationType(VALUE) {
@@ -179,7 +163,7 @@ namespace hazelcast {
                  * @param comparatorObj the comparator through which results will be ordered
                  * @param predicatePageSize   the page size
                  */
-                PagingPredicate(std::auto_ptr<Compare> comparatorObj, int predicatePageSize) : comparator(
+                PagingPredicate(std::auto_ptr<Compare> comparatorObj, size_t predicatePageSize) : comparator(
                         comparatorObj), pageSize(predicatePageSize), page(0), iterationType(VALUE) {
                 }
 
@@ -195,7 +179,7 @@ namespace hazelcast {
                  * @param predicatePageSize   the page size
                  */
                 PagingPredicate(std::auto_ptr<Predicate> predicate, std::auto_ptr<Compare> comparatorObj,
-                                int predicatePageSize) : innerPredicate(predicate), comparator(comparatorObj),
+                                size_t predicatePageSize) : innerPredicate(predicate), comparator(comparatorObj),
                                                          pageSize(predicatePageSize), page(0), iterationType(VALUE) {
 
                 }
@@ -233,15 +217,15 @@ namespace hazelcast {
                     iterationType = type;
                 }
 
-                int getPage() const {
+                size_t getPage() const {
                     return page;
                 }
 
-                void setPage(int pageNumber) {
+                void setPage(size_t pageNumber) {
                     page = pageNumber;
                 }
 
-                int getPageSize() const {
+                size_t getPageSize() const {
                     return pageSize;
                 }
 
@@ -278,21 +262,18 @@ namespace hazelcast {
                  *
                  * @return nearest anchored entry for current page
                  */
-                const std::pair<int, std::pair<K, V> > *getNearestAnchorEntry() {
+                const std::pair<size_t, std::pair<K, V> > *getNearestAnchorEntry() {
                     size_t anchorCount = anchorList.size();
 
                     if (page == 0 || anchorCount == 0) {
-                        return (const std::pair<int, std::pair<K, V> > *) NULL;
+                        return (const std::pair<size_t, std::pair<K, V> > *) NULL;
                     }
 
-                    const std::pair<int, std::pair<K, V> > *anchoredEntry = NULL;
                     if (page < anchorCount) {
-                        anchoredEntry = &anchorList[page - 1];
+                        return &anchorList[page - 1];
                     } else {
-                        anchoredEntry = &anchorList[anchorCount - 1];
+                        return &anchorList[anchorCount - 1];
                     }
-
-                    return anchoredEntry;
                 }
 
                 /**
@@ -316,13 +297,13 @@ namespace hazelcast {
                 void writeData(serialization::ObjectDataOutput &out) const {
                     out.writeObject<serialization::IdentifiedDataSerializable>(innerPredicate.get());
                     out.writeObject<Compare>(comparator.get());
-                    out.writeInt(page);
-                    out.writeInt(pageSize);
+                    out.writeInt((int)page);
+                    out.writeInt((int)pageSize);
                     out.write(IterationNames[iterationType]);
                     out.writeInt((int) anchorList.size());
-                    for (typename std::vector<std::pair<int, std::pair<K, V> > >::const_iterator it = anchorList.begin();
+                    for (typename std::vector<std::pair<size_t, std::pair<K, V> > >::const_iterator it = anchorList.begin();
                          it != anchorList.end(); ++it) {
-                        out.writeInt(it->first);
+                        out.writeInt((int)it->first);
                         out.writeObject<K>(&it->second.first);
                         out.writeObject<V>(&it->second.second);
                     }
@@ -338,12 +319,12 @@ namespace hazelcast {
                                                 "Client should not need to use readData method!!!");
                 }
 
-                void setAnchor(int page, const std::pair<K, V> &anchorEntry) {
+                void setAnchor(size_t page, const std::pair<K, V> &anchorEntry) {
                     int anchorCount = (int) anchorList.size();
                     if (page < anchorCount) {
-                        anchorList[page] = std::pair<int, std::pair<K, V> >(page, anchorEntry);
+                        anchorList[page] = std::pair<size_t, std::pair<K, V> >(page, anchorEntry);
                     } else if (page == anchorCount) {
-                        anchorList.push_back(std::pair<int, std::pair<K, V> >(page, anchorEntry));
+                        anchorList.push_back(std::pair<size_t, std::pair<K, V> >(page, anchorEntry));
                     } else {
                         char msg[200];
                         util::snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
@@ -355,10 +336,10 @@ namespace hazelcast {
             private:
                 std::auto_ptr<Predicate> innerPredicate;
                 // key is the page number, the value is the map entry as the anchor
-                std::vector<std::pair<int, std::pair<K, V> > > anchorList;
+                std::vector<std::pair<size_t, std::pair<K, V> > > anchorList;
                 std::auto_ptr<Compare> comparator;
-                int pageSize;
-                int page;
+                size_t pageSize;
+                size_t page;
                 IterationType iterationType;
             };
         }

@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERSET_H_
 
 #include "hazelcast/client/ISet.h"
-#include "hazelcast/client/adaptor/DataArray.h"
+#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -90,7 +90,7 @@ namespace hazelcast {
                 * @returns all elements as std::vector
                 */
                 std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new DataArray<T>(set.toArrayData(), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(set.toArrayData(), serializationService));
                 }
 
                 /**
