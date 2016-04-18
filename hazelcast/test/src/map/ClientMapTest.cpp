@@ -1812,7 +1812,7 @@ namespace hazelcast {
             TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
                 IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
 
-                const int predSize = 5;
+                int predSize = 5;
                 const int totalEntries = 25;
 
                 for (int i = 0; i < totalEntries; ++i) {
@@ -1892,9 +1892,44 @@ namespace hazelcast {
                 values = intMap.values(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
-                /*
+                predicate.setPage(3);
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(3 * predSize + i, values[i]);
+                }
 
-                IMap<int, Employee> employees = client->getMap<int, Employee>("testValuesWithPagingPredicate");
+                predicate.previousPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(2 * predSize + i, values[i]);
+                }
+
+                // test PagingPredicate with inner predicate (value < 10)
+                std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true)));
+                query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+                values = intMap.values(predicate2);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate2.nextPage();
+                // match values 5,6, 7, 8
+                values = intMap.values(predicate2);
+                ASSERT_EQ(predSize - 1, (int) values.size());
+                for (int i = 0; i < predSize - 1; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                predicate2.nextPage();
+                values = intMap.values(predicate2);
+                ASSERT_EQ(0, (int) values.size());
+
+                // test paging predicate with comparator
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
 
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
@@ -1910,34 +1945,18 @@ namespace hazelcast {
                 employees.put(7, empl5);
                 employees.put(8, empl6);
 
-                query::PagingPredicate<int, Employee> predicate(2);
-                std::vector<Employee> result = employees.values(predicate);
+                predSize = 2;
+                query::PagingPredicate<int, Employee, EmployeeEntryComparator> predicate3(std::auto_ptr<EmployeeEntryComparator>(new EmployeeEntryComparator()), (size_t)predSize);
+                std::vector<Employee> result = employees.values(predicate3);
                 ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(empl6, result[0]);
+                ASSERT_EQ(empl2, result[1]);
 
-                predicate.nextPage();
-
-                const std::pair<int, Employee> *anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int, Employee> *)NULL, anchor);
-                ASSERT_EQ(2, anchor->first);
-                ASSERT_EQ(empl2, anchor->second);
-
-                std::vector<Employee> middleResult = employees.values(predicate);
-                ASSERT_EQ(2, (int) middleResult.size());
-
-                predicate.nextPage();
-                result = employees.values(predicate);
+                predicate3.nextPage();
+                result = employees.values(predicate3);
                 ASSERT_EQ(2, (int) result.size());
-
-                predicate.previousPage();
-                result = employees.values(predicate);
-                ASSERT_EQ(2, (int) result.size());
-
-                std::vector<Employee>::const_iterator resIt = result.begin();
-                for (std::vector<Employee>::const_iterator it = middleResult.begin();
-                        it != middleResult.end(); ++it, ++resIt) {
-                    ASSERT_EQ(*it, *resIt);
-                }
-*/
+                ASSERT_EQ(empl3, result[0]);
+                ASSERT_EQ(empl4, result[1]);
             }
         }
     }
