@@ -201,9 +201,10 @@ void queryMapUsingPagingPredicate() {
         intMap.put(i, i);
     }
 
-    query::PagingPredicate<int, int> predicate(predSize);
+    query::PagingPredicate<int, int> predicate((size_t)predSize);
 
     std::vector<int> values = intMap.values(predicate);
+    std::sort(values.begin(), values.end());
 
     predicate.nextPage();
     values = intMap.values(predicate);
@@ -306,17 +307,14 @@ void queryMapUsingDifferentPredicates() {
     // key < 7
     values = intMap.values(
             query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, false, true));
-    std::sort(values.begin(), values.end());
 
     // value >= 15
     values = intMap.values(
             query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 15, true, false));
-    std::sort(values.begin(), values.end());
 
     // key > 5
     values = intMap.values(
             query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, false, false));
-    std::sort(values.begin(), values.end());
 
     // InPredicate
     // key in {4, 10, 19}
@@ -325,25 +323,21 @@ void queryMapUsingDifferentPredicates() {
     inVals[1] = 10;
     inVals[2] = 19;
     values = intMap.values(query::InPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals));
-    std::sort(values.begin(), values.end());
 
     // value in {4, 10, 19}
     values = intMap.values(query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
-    std::sort(values.begin(), values.end());
 
     // InstanceOfPredicate
     // value instanceof Integer
-    values = intMap.values(query::InstanceOfPredicate("Integer"));
-    std::sort(values.begin(), values.end());
+    values = intMap.values(query::InstanceOfPredicate("java.lang.Integer"));
 
-    values = intMap.values(query::InstanceOfPredicate("String"));
+    values = intMap.values(query::InstanceOfPredicate("java.lang.String"));
 
     // NotPredicate
     // !(5 <= key <= 10)
     std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
             query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
     values = intMap.values(query::NotPredicate(bp));
-    std::sort(values.begin(), values.end());
 
     // AndPredicate
     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
@@ -352,7 +346,6 @@ void queryMapUsingDifferentPredicates() {
     std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
     values = intMap.values(query::AndPredicate().add(bp).add(inPred));
-    std::sort(values.begin(), values.end());
 
     // OrPredicate
     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
@@ -361,7 +354,6 @@ void queryMapUsingDifferentPredicates() {
     inPred = std::auto_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
     values = intMap.values(query::OrPredicate().add(bp).add(inPred));
-    std::sort(values.begin(), values.end());
 
 
     IMap<std::string, std::string> imap = client.getMap<std::string, std::string>("StringMap");
@@ -384,12 +376,10 @@ void queryMapUsingDifferentPredicates() {
     char sql[100];
     hazelcast::util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::KEY_ATTRIBUTE_NAME);
     values = intMap.values(query::SqlPredicate(sql));
-    std::sort(values.begin(), values.end());
 
     // RegexPredicate
     // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
     strValues = imap.values(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
-    std::sort(strValues.begin(), strValues.end());
 }
 
 int main() {
