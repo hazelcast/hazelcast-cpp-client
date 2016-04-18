@@ -643,14 +643,14 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                values = intMap.values(query::InstanceOfPredicate("Integer"));
+                values = intMap.values(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                values = intMap.values(query::InstanceOfPredicate("String"));
+                values = intMap.values(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, values.size());
 
                 // NotPredicate
@@ -1043,14 +1043,14 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                keys = intMap.keySet(query::InstanceOfPredicate("Integer"));
+                keys = intMap.keySet(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                keys = intMap.keySet(query::InstanceOfPredicate("String"));
+                keys = intMap.keySet(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, keys.size());
 
                 // NotPredicate
@@ -1442,14 +1442,14 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                entries = intMap.entrySet(query::InstanceOfPredicate("Integer"));
+                entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.Integer"));
                 ASSERT_EQ(20, entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                entries = intMap.entrySet(query::InstanceOfPredicate("String"));
+                entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.String"));
                 ASSERT_EQ(0, entries.size());
 
                 // NotPredicate
