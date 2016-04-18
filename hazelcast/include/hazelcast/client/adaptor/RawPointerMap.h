@@ -553,8 +553,7 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                template <typename Compare>
-                std::auto_ptr<DataArray<K> > keySet(query::PagingPredicate<K, V, Compare> &predicate) {
+                std::auto_ptr<DataArray<K> > keySet(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::KEY);
 
                     std::vector<serialization::pimpl::Data> dataResult = map.keySetForPagingPredicateData(predicate);
@@ -567,7 +566,7 @@ namespace hazelcast {
                     impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
                     entries.sort(predicate.getComparator(), query::KEY);
 
-                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V, Compare>(entries, predicate, query::KEY);
+                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::KEY);
 
                     std::auto_ptr<EntryArray<K, V> > subList(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
 
@@ -609,8 +608,7 @@ namespace hazelcast {
                 * @param predicate the criteria for values to match
                 * @return clone of the values contained in this map
                 */
-                template <typename Compare>
-                std::auto_ptr<DataArray<V> > values(query::PagingPredicate<K, V, Compare> &predicate) {
+                std::auto_ptr<DataArray<V> > values(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::VALUE);
 
                     EntryVector entryResult = map.valuesForPagingPredicateData(predicate);
@@ -618,7 +616,7 @@ namespace hazelcast {
                     impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
                     entries.sort(predicate.getComparator(), query::VALUE);
 
-                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V, Compare>(entries, predicate, query::VALUE);
+                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::VALUE);
 
                     std::auto_ptr<EntryArray<K, V> > subList(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
 
@@ -664,15 +662,14 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry vector of the query
                 */
-                template <typename Compare>
-                std::auto_ptr<EntryArray<K, V> > entrySet(query::PagingPredicate<K, V, Compare> &predicate) {
+                std::auto_ptr<EntryArray<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult =
                             map.entrySetForPagingPredicateData(predicate);
 
                     impl::EntryArrayImpl<K, V> entries(dataResult, map.context->getSerializationService());
                     entries.sort(predicate.getComparator(), query::ENTRY);
 
-                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V, Compare>(entries, predicate, query::ENTRY);
+                    std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
 
                     return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
                 }

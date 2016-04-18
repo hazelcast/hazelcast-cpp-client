@@ -622,8 +622,7 @@ namespace hazelcast {
               * @param predicate query criteria
               * @return result key set of the query
               */
-            template <typename Compare>
-            std::vector<K> keySet(query::PagingPredicate<K, V, Compare> &predicate) {
+            std::vector<K> keySet(query::PagingPredicate<K, V> &predicate) {
                 predicate.setIterationType(query::KEY);
 
                 std::vector<serialization::pimpl::Data> dataResult = keySetForPagingPredicateData(predicate);
@@ -636,7 +635,7 @@ namespace hazelcast {
                 adaptor::impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
                 entries.sort(predicate.getComparator(), query::KEY);
 
-                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::KEY);
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
 
                 std::vector<K> result;
                 for (size_t i = range.first; i < range.second; ++i) {
@@ -703,13 +702,11 @@ namespace hazelcast {
             * The vector is <b>NOT</b> backed by the map,
             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
             *
-            * Compare should be serializable and work as expected by std::sort Compare.
             *
             * @param predicate the criteria for values to match
             * @return a vector clone of the values contained in this map
             */
-            template <typename Compare>
-            std::vector<V> values(query::PagingPredicate<K, V, Compare> &predicate) {
+            std::vector<V> values(query::PagingPredicate<K, V> &predicate) {
                 predicate.setIterationType(query::VALUE);
 
                 EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
@@ -718,7 +715,7 @@ namespace hazelcast {
 
                 entries.sort(predicate.getComparator(), query::VALUE);
 
-                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::VALUE);
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::VALUE);
 
                 std::vector<V> result;
                 for (size_t i = range.first; i < range.second; ++i) {
@@ -804,15 +801,14 @@ namespace hazelcast {
             * @param predicate query criteria
             * @return result entry vector of the query
             */
-            template <typename Compare>
-            std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V, Compare> &predicate) {
+            std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
                         predicate);
 
                 adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
                 entries.sort(predicate.getComparator(), query::ENTRY);
 
-                std::pair<size_t, size_t> range = updateAnchor<K, V, Compare>(entries, predicate, query::ENTRY);
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);
 
                 std::vector<std::pair<K, V> > result;
                 for (size_t i = range.first; i < range.second; ++i) {

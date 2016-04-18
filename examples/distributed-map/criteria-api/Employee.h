@@ -19,10 +19,11 @@
 #ifndef HAZELCAST_Employee
 #define HAZELCAST_Employee
 
-#include "hazelcast/client/serialization/Portable.h"
 #include <string>
-#include <hazelcast/util/Comparator.h>
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
+#include "hazelcast/client/serialization/Portable.h"
+#include "hazelcast/util/Comparator.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/EntryComparator.h"
 
 namespace hazelcast {
     namespace client {
@@ -58,8 +59,7 @@ namespace hazelcast {
 
                 // Compares based on the employee age
                 class EmployeeEntryComparator
-                        : public util::Comparator<std::pair<const int *, const Employee *> >,
-                          public serialization::IdentifiedDataSerializable {
+                        : public query::EntryComparator<int, Employee> {
 
                 public:
                     int getFactoryId() const;

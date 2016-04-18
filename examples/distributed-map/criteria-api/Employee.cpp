@@ -47,7 +47,7 @@ namespace hazelcast {
                 }
 
                 int Employee::getClassId() const {
-                    return 4;
+                    return 2;
                 }
 
                 void Employee::writePortable(serialization::PortableWriter &writer) const {

@@ -47,7 +47,7 @@ namespace hazelcast {
             }
 
             int Employee::getClassId() const {
-                return 4;
+                return 2;
             }
 
             void Employee::writePortable(serialization::PortableWriter &writer) const {
@@ -112,6 +112,36 @@ namespace hazelcast {
 
                 return 1;
             }
+
+
+            int EmployeeEntryKeyComparator::compare(const std::pair<const int *, const Employee *> &lhs,
+                                                    const std::pair<const int *, const Employee *> &rhs) const {
+                const int *key1 = lhs.first;
+                const int *key2 = rhs.first;
+
+                if (NULL == key1) {
+                    return -1;
+                }
+
+                if (NULL == key2) {
+                    return 1;
+                }
+
+                if (*key1 == *key2) {
+                    return 0;
+                }
+
+                if (*key1 < *key2) {
+                    return -1;
+                }
+
+                return 1;
+            }
+
+            int EmployeeEntryKeyComparator::getClassId() const {
+                return 5;
+            }
+
         }
     }
 }
