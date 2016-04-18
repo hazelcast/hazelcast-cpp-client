@@ -18,8 +18,14 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
-#include <memory>
+#include <hazelcast/client/query/PagingPredicate.h>
+#include <hazelcast/client/query/QueryConstants.h>
+#include <hazelcast/client/query/GreaterLessPredicate.h>
 #include <hazelcast/client/query/SqlPredicate.h>
+#include "Employee.h"
+
+using namespace hazelcast::client::examples::criteriaapi;
+using namespace hazelcast::client;
 
 class Person : public hazelcast::client::serialization::IdentifiedDataSerializable {
 public:
@@ -170,9 +176,83 @@ public:
     }
 };
 
+void queryMapUsingPagingPredicate() {
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient client(config);
+
+    IMap<int, int> intMap = client.getMap<int, int>("testIntMapValuesWithPagingPredicate");
+
+    int predSize = 5;
+    const int totalEntries = 25;
+
+    for (int i = 0; i < totalEntries; ++i) {
+        intMap.put(i, i);
+    }
+
+    query::PagingPredicate<int, int> predicate(predSize);
+
+    std::vector<int> values = intMap.values(predicate);
+
+    predicate.nextPage();
+    values = intMap.values(predicate);
+
+    predicate.setPage(4);
+
+    values = intMap.values(predicate);
+
+    predicate.previousPage();
+    values = intMap.values(predicate);
+
+    // PagingPredicate with inner predicate (value < 10)
+    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+            new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true)));
+    query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+    values = intMap.values(predicate2);
+
+    predicate2.nextPage();
+    // match values 5,6, 7, 8
+    values = intMap.values(predicate2);
+
+    predicate2.nextPage();
+    values = intMap.values(predicate2);
+
+    // test paging predicate with comparator
+    IMap<int, Employee> employees = client.getMap<int, Employee>("testComplexObjectWithPagingPredicate");
+
+    Employee empl1("ahmet", 35);
+    Employee empl2("mehmet", 21);
+    Employee empl3("deniz", 25);
+    Employee empl4("ali", 33);
+    Employee empl5("veli", 44);
+    Employee empl6("aylin", 5);
+
+    employees.put(3, empl1);
+    employees.put(4, empl2);
+    employees.put(5, empl3);
+    employees.put(6, empl4);
+    employees.put(7, empl5);
+    employees.put(8, empl6);
+
+    predSize = 2;
+    query::PagingPredicate<int, Employee, EmployeeEntryComparator> predicate3(std::auto_ptr<EmployeeEntryComparator>(new EmployeeEntryComparator()), (size_t)predSize);
+    std::vector<Employee> result = employees.values(predicate3);
+
+    predicate3.nextPage();
+    result = employees.values(predicate3);
+
+}
+
+void queryMapUsingDifferentPredicates() {
+
+}
+
 int main() {
     PredicateMember m;
     m.run();
+
+    queryMapUsingDifferentPredicates();
+
+    queryMapUsingPagingPredicate();
 
     std::cout << "Finished" << std::endl;
 

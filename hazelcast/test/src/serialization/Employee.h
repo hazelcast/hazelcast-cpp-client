@@ -16,14 +16,15 @@
 //
 // Created by sancar koyunlu on 11/11/13.
 
-
-
-
 #ifndef HAZELCAST_Employee
 #define HAZELCAST_Employee
 
-#include "hazelcast/client/serialization/Portable.h"
 #include <string>
+#include "hazelcast/client/serialization/Portable.h"
+#include <hazelcast/util/Comparator.h>
+#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
+#include <hazelcast/client/serialization/ObjectDataInput.h>
+#include <hazelcast/client/serialization/ObjectDataOutput.h>
 
 namespace hazelcast {
     namespace client {
@@ -50,9 +51,29 @@ namespace hazelcast {
 
                 const std::string &getName() const;
 
+                bool operator<(const Employee &rhs) const;
+
             private:
                 int age;
                 std::string name;
+            };
+
+            // Compares based on the employee age
+            class EmployeeEntryComparator
+                    : public util::Comparator<std::pair<const int *, const Employee *> >,
+                      public serialization::IdentifiedDataSerializable {
+
+            public:
+                int getFactoryId() const;
+
+                int getClassId() const;
+
+                void writeData(serialization::ObjectDataOutput &writer) const;
+
+                void readData(serialization::ObjectDataInput &reader);
+
+                int compare(const std::pair<const int *, const Employee *> &lhs,
+                            const std::pair<const int *, const Employee *> &rhs) const;
             };
         }
     }

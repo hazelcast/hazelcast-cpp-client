@@ -197,7 +197,7 @@ namespace hazelcast {
 
                         const V *getValue() {
                             if (isValueDeserialized) {
-                                return key;
+                                return value;
                             }
 
                             value = serializationService->toObject<V>(data->second).release();

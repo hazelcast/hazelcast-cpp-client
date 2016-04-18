@@ -210,6 +210,9 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
     }
 }
 
+/**
+ * Compares based on the employee age
+ */
 class EmployeeEntryComparator implements IdentifiedDataSerializable, Comparator<Map.Entry<Integer, Employee>> {
     private int multiplier;
 
