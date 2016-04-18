@@ -77,11 +77,11 @@
 #include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
+#include "hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h"
+#include "hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h"
+#include "hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h"
 
 #include <climits>
-#include <hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h>
-#include <hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h>
-#include <hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h>
 
 namespace hazelcast {
     namespace client {

@@ -17,11 +17,23 @@
 // Created by İhsan Demir on 21/12/15.
 //
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 #include <hazelcast/client/query/PagingPredicate.h>
 #include <hazelcast/client/query/QueryConstants.h>
 #include <hazelcast/client/query/GreaterLessPredicate.h>
 #include <hazelcast/client/query/SqlPredicate.h>
+#include <hazelcast/client/query/EqualPredicate.h>
+#include <hazelcast/client/query/NotEqualPredicate.h>
+#include <hazelcast/client/query/TruePredicate.h>
+#include <hazelcast/client/query/FalsePredicate.h>
+#include <hazelcast/client/query/BetweenPredicate.h>
+#include <hazelcast/client/query/InPredicate.h>
+#include <hazelcast/client/query/InstanceOfPredicate.h>
+#include <hazelcast/client/query/NotPredicate.h>
+#include <hazelcast/client/query/AndPredicate.h>
+#include <hazelcast/client/query/OrPredicate.h>
+#include <hazelcast/client/query/LikePredicate.h>
+#include <hazelcast/client/query/ILikePredicate.h>
+#include <hazelcast/client/query/RegexPredicate.h>
 #include "Employee.h"
 
 using namespace hazelcast::client::examples::criteriaapi;
@@ -243,7 +255,141 @@ void queryMapUsingPagingPredicate() {
 }
 
 void queryMapUsingDifferentPredicates() {
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient client(config);
+    
+    IMap<int, int> intMap = client.getMap<int, int>("testValuesWithPredicateIntMap");
+    const int numItems = 20;
+    for (int i = 0; i < numItems; ++i) {
+        intMap.put(i, 2 * i);
+    }
 
+    std::vector<int> values = intMap.values();
+
+    // EqualPredicate
+    // key == 5
+    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
+
+    // value == 8
+    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 8));
+
+    // key == numItems
+    values = intMap.values(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems));
+
+    // NotEqual Predicate
+    // key != 5
+    values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5));
+
+    // this(value) != 8
+    values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 8));
+
+    // TruePredicate
+    values = intMap.values(*query::TruePredicate::INSTANCE);
+
+    // FalsePredicate
+    values = intMap.values(*query::FalsePredicate::INSTANCE);
+
+    // BetweenPredicate
+    // 5 <= key <= 10
+    values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+    std::sort(values.begin(), values.end());
+
+    // 20 <= key <=30
+    values = intMap.values(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 20, 30));
+
+    // GreaterLessPredicate
+    // value <= 10
+    values = intMap.values(
+            query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 10, true, true));
+    std::sort(values.begin(), values.end());
+
+    // key < 7
+    values = intMap.values(
+            query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 7, false, true));
+    std::sort(values.begin(), values.end());
+
+    // value >= 15
+    values = intMap.values(
+            query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 15, true, false));
+    std::sort(values.begin(), values.end());
+
+    // key > 5
+    values = intMap.values(
+            query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, false, false));
+    std::sort(values.begin(), values.end());
+
+    // InPredicate
+    // key in {4, 10, 19}
+    std::vector<int> inVals(3);
+    inVals[0] = 4;
+    inVals[1] = 10;
+    inVals[2] = 19;
+    values = intMap.values(query::InPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, inVals));
+    std::sort(values.begin(), values.end());
+
+    // value in {4, 10, 19}
+    values = intMap.values(query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+    std::sort(values.begin(), values.end());
+
+    // InstanceOfPredicate
+    // value instanceof Integer
+    values = intMap.values(query::InstanceOfPredicate("Integer"));
+    std::sort(values.begin(), values.end());
+
+    values = intMap.values(query::InstanceOfPredicate("String"));
+
+    // NotPredicate
+    // !(5 <= key <= 10)
+    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
+            query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+    values = intMap.values(query::NotPredicate(bp));
+    std::sort(values.begin(), values.end());
+
+    // AndPredicate
+    // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
+    bp = std::auto_ptr<query::Predicate>(
+            new query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+            new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+    values = intMap.values(query::AndPredicate().add(bp).add(inPred));
+    std::sort(values.begin(), values.end());
+
+    // OrPredicate
+    // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
+    bp = std::auto_ptr<query::Predicate>(
+            new query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+    inPred = std::auto_ptr<query::Predicate>(
+            new query::InPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, inVals));
+    values = intMap.values(query::OrPredicate().add(bp).add(inPred));
+    std::sort(values.begin(), values.end());
+
+
+    IMap<std::string, std::string> imap = client.getMap<std::string, std::string>("StringMap");
+    
+    // LikePredicate
+    // value LIKE "value1" : {"value1"}
+    std::vector<std::string> strValues = imap.values(query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
+
+    // ILikePredicate
+    // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
+    strValues = imap.values(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
+    std::sort(strValues.begin(), strValues.end());
+
+    // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
+    strValues = imap.values(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%"));
+    std::sort(strValues.begin(), strValues.end());
+
+    // SqlPredicate
+    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+    char sql[100];
+    hazelcast::util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::KEY_ATTRIBUTE_NAME);
+    values = intMap.values(query::SqlPredicate(sql));
+    std::sort(values.begin(), values.end());
+
+    // RegexPredicate
+    // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
+    strValues = imap.values(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
+    std::sort(strValues.begin(), strValues.end());
 }
 
 int main() {

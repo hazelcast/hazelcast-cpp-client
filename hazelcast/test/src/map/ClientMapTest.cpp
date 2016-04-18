@@ -16,10 +16,10 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
-#include <hazelcast/client/query/OrPredicate.h>
-#include <hazelcast/client/query/RegexPredicate.h>
-#include <hazelcast/client/query/PagingPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
+#include "hazelcast/client/query/OrPredicate.h"
+#include "hazelcast/client/query/RegexPredicate.h"
+#include "hazelcast/client/query/PagingPredicate.h"
+#include "hazelcast/client/query/QueryConstants.h"
 #include "hazelcast/client/query/NotPredicate.h"
 #include "hazelcast/client/query/InstanceOfPredicate.h"
 #include "hazelcast/client/query/NotEqualPredicate.h"
@@ -35,6 +35,7 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
+
 #include "map/ClientMapTest.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
