@@ -643,7 +643,6 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-/* TODO: Uncomment after fixing instanceofpredicate
                 values = intMap.values(query::InstanceOfPredicate("Integer"));
                 ASSERT_EQ(20, values.size());
                 std::sort(values.begin(), values.end());
@@ -653,7 +652,6 @@ namespace hazelcast {
 
                 values = intMap.values(query::InstanceOfPredicate("String"));
                 ASSERT_EQ(0, values.size());
-*/
 
                 // NotPredicate
                 // !(5 <= key <= 10)
@@ -1045,7 +1043,6 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-/* TODO: Uncomment after fixing instanceofpredicate
                 keys = intMap.keySet(query::InstanceOfPredicate("Integer"));
                 ASSERT_EQ(20, keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -1055,7 +1052,6 @@ namespace hazelcast {
 
                 keys = intMap.keySet(query::InstanceOfPredicate("String"));
                 ASSERT_EQ(0, keys.size());
-*/
 
                 // NotPredicate
                 // !(5 <= key <= 10)
@@ -1446,7 +1442,6 @@ namespace hazelcast {
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-/* TODO: Uncomment after fixing instanceofpredicate
                 entries = intMap.entrySet(query::InstanceOfPredicate("Integer"));
                 ASSERT_EQ(20, entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -1456,7 +1451,6 @@ namespace hazelcast {
 
                 entries = intMap.entrySet(query::InstanceOfPredicate("String"));
                 ASSERT_EQ(0, entries.size());
-*/
 
                 // NotPredicate
                 // !(5 <= key <= 10)
