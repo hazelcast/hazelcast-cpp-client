@@ -18,6 +18,7 @@
 
 #include <string>
 #include <memory>
+
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Util.h"
@@ -27,6 +28,7 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
+#include "hazelcast/client/query/EntryComparator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -56,8 +58,7 @@ namespace hazelcast {
             };
 
             template<typename K, typename V>
-            class InvalidComparator :  public util::Comparator<std::pair<const K *, const V *> >,
-                                       public serialization::IdentifiedDataSerializable {
+            class InvalidComparator :  public query::EntryComparator<K, V> {
             public:
                 int compare(const std::pair<const K *, const V *> &lhs, const std::pair<const K *, const V *> &rhs) const {
                     assert(0);
@@ -124,7 +125,7 @@ namespace hazelcast {
             /**
              * Type Compare should be a valid serializable type.
              */
-            template<typename K, typename V, typename Compare = InvalidComparator<K, V> >
+            template<typename K, typename V>
             class PagingPredicate : public Predicate {
             public:
                 /**
@@ -163,7 +164,7 @@ namespace hazelcast {
                  * @param comparatorObj the comparator through which results will be ordered
                  * @param predicatePageSize   the page size
                  */
-                PagingPredicate(std::auto_ptr<Compare> comparatorObj, size_t predicatePageSize) : comparator(
+                PagingPredicate(std::auto_ptr<query::EntryComparator<K, V> > comparatorObj, size_t predicatePageSize) : comparator(
                         comparatorObj), pageSize(predicatePageSize), page(0), iterationType(VALUE) {
                 }
 
@@ -178,7 +179,7 @@ namespace hazelcast {
                  * @param comparatorObj the comparator through which results will be ordered
                  * @param predicatePageSize   the page size
                  */
-                PagingPredicate(std::auto_ptr<Predicate> predicate, std::auto_ptr<Compare> comparatorObj,
+                PagingPredicate(std::auto_ptr<Predicate> predicate, std::auto_ptr<query::EntryComparator<K, V> > comparatorObj,
                                 size_t predicatePageSize) : innerPredicate(predicate), comparator(comparatorObj),
                                                          pageSize(predicatePageSize), page(0), iterationType(VALUE) {
 
@@ -246,7 +247,7 @@ namespace hazelcast {
                     return innerPredicate.get();
                 }
 
-                const Compare *getComparator() const {
+                const query::EntryComparator<K, V> *getComparator() const {
                     return comparator.get();
                 }
 
@@ -309,7 +310,7 @@ namespace hazelcast {
                  */
                 void writeData(serialization::ObjectDataOutput &out) const {
                     out.writeObject<serialization::IdentifiedDataSerializable>(innerPredicate.get());
-                    out.writeObject<Compare>(comparator.get());
+                    out.writeObject<serialization::IdentifiedDataSerializable>(comparator.get());
                     out.writeInt((int)page);
                     out.writeInt((int)pageSize);
                     out.write(IterationNames[iterationType]);
@@ -353,7 +354,7 @@ namespace hazelcast {
                 std::auto_ptr<Predicate> innerPredicate;
                 // key is the page number, the value is the map entry as the anchor
                 std::vector<std::pair<size_t, std::pair<K *, V *> > > anchorList;
-                std::auto_ptr<Compare> comparator;
+                std::auto_ptr<query::EntryComparator<K, V> > comparator;
                 size_t pageSize;
                 size_t page;
                 IterationType iterationType;

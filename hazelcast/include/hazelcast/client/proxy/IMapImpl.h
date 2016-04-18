@@ -169,9 +169,9 @@ namespace hazelcast {
                     return response;
                 }
 
-                template <typename K, typename V, typename Compare>
+                template <typename K, typename V>
                 std::pair<size_t, size_t> updateAnchor(adaptor::EntryArray<K, V> &entries,
-                                                 query::PagingPredicate<K, V, Compare> &predicate,
+                                                 query::PagingPredicate<K, V> &predicate,
                                                  query::IterationType iterationType) {
                     if (0 == entries.size()) {
                         return std::pair<size_t, size_t>(0, 0);
@@ -196,8 +196,8 @@ namespace hazelcast {
                     return std::pair<size_t, size_t>(begin, end);
                 }
 
-                template <typename K, typename V, typename Compare>
-                static void setAnchor(adaptor::EntryArray<K, V> &entries, query::PagingPredicate<K, V, Compare> &predicate, int nearestPage) {
+                template <typename K, typename V>
+                static void setAnchor(adaptor::EntryArray<K, V> &entries, query::PagingPredicate<K, V> &predicate, int nearestPage) {
                     if (0 == entries.size()) {
                         return;
                     }

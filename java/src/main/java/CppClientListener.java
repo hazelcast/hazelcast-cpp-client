@@ -256,6 +256,37 @@ class EmployeeEntryComparator implements IdentifiedDataSerializable, Comparator<
     }
 }
 
+class EmployeeEntryKeyComparator extends EmployeeEntryComparator {
+    @Override
+    public int getId() {
+        return 5;
+    }
+
+    @Override
+    public int compare(Map.Entry<Integer, Employee> lhs, Map.Entry<Integer, Employee> rhs) {
+        Integer key1 = lhs.getKey();
+        Integer key2 = rhs.getKey();
+
+        if (null == key1) {
+            return -1;
+        }
+
+        if (null == key2) {
+            return 1;
+        }
+
+        if (key1 == key2) {
+            return 0;
+        }
+
+        if (key1 < key2) {
+            return -1;
+        }
+
+        return 1;
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -354,6 +385,8 @@ public class CppClientListener {
                         return new KeyMultiplier();
                     case 4:
                         return new EmployeeEntryComparator();
+                    case 5:
+                        return new EmployeeEntryKeyComparator();
                     default:
                         return null;
                 }

@@ -51,7 +51,6 @@ namespace hazelcast {
                               client->getMap<std::string, std::string>("clientMapTest"))) {
             }
 
-
             ClientMapTest::~ClientMapTest() {
             }
 
@@ -63,6 +62,72 @@ namespace hazelcast {
                     value += util::IOUtil::to_string(i);
                     imap->put(key, value);
                 }
+            }
+
+            void tryPutThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                bool result = imap->tryPut("key1", "value3", 1 * 1000);
+                if (!result) {
+                    latch->countDown();
+                }
+            }
+
+            void tryRemoveThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                bool result = imap->tryRemove("key2", 1 * 1000);
+                if (!result) {
+                    latch->countDown();
+                }
+            }
+
+            void testLockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                imap->tryPut("key1", "value2", 1);
+                latch->countDown();
+            }
+
+            void testLockTTLThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                imap->tryPut("key1", "value2", 5 * 1000);
+                latch->countDown();
+            }
+
+            void testLockTTL2Thread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                if (!imap->tryLock("key1")) {
+                    latch->countDown();
+                }
+                if (imap->tryLock("key1", 5 * 1000)) {
+                    latch->countDown();
+                }
+            }
+
+            void testMapTryLockThread1(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                if (!imap->tryLock("key1", 2)) {
+                    latch->countDown();
+                }
+            }
+
+            void testMapTryLockThread2(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                if (imap->tryLock("key1", 20 * 1000)) {
+                    latch->countDown();
+                }
+            }
+
+            void testMapForceUnlockThread(util::ThreadArgs &args) {
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                imap->forceUnlock("key1");
+                latch->countDown();
             }
 
             class SampleEntryListener : public EntryAdapter<std::string, std::string> {
@@ -143,6 +208,65 @@ namespace hazelcast {
 
             private:
                 util::CountDownLatch &latch;
+            };
+
+            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
+            public:
+                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
+                        : latch(latch), atomicInteger(atomicInteger) {
+
+                }
+
+                void entryAdded(const EntryEvent<Employee, int> &event) {
+                    ++atomicInteger;
+                    latch.countDown();
+                }
+
+            private:
+                util::CountDownLatch &latch;
+                util::AtomicInt &atomicInteger;
+            };
+
+            class EntryMultiplier : public serialization::IdentifiedDataSerializable {
+            public:
+                EntryMultiplier(int multiplier) : multiplier(multiplier) { }
+
+                /**
+                 * @return factory id
+                 */
+                int getFactoryId() const {
+                    return 666;
+                }
+
+                /**
+                 * @return class id
+                 */
+                int getClassId() const {
+                    return 3;
+                }
+
+                /**
+                 * Defines how this class will be written.
+                 * @param writer ObjectDataOutput
+                 */
+                void writeData(serialization::ObjectDataOutput &writer) const {
+                    writer.writeInt(multiplier);
+                }
+
+                /**
+                 *Defines how this class will be read.
+                 * @param reader ObjectDataInput
+                 */
+                void readData(serialization::ObjectDataInput &reader) {
+                    multiplier = reader.readInt();
+                }
+
+                int getMultiplier() const {
+                    return multiplier;
+                }
+
+            private:
+                int multiplier;
             };
 
             TEST_F(ClientMapTest, testIssue537) {
@@ -242,24 +366,6 @@ namespace hazelcast {
 
             }
 
-            void tryPutThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                bool result = imap->tryPut("key1", "value3", 1 * 1000);
-                if (!result) {
-                    latch->countDown();
-                }
-            }
-
-            void tryRemoveThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                bool result = imap->tryRemove("key2", 1 * 1000);
-                if (!result) {
-                    latch->countDown();
-                }
-            }
-
             TEST_F(ClientMapTest, testTryPutRemove) {
 
                 ASSERT_TRUE(imap->tryPut("key1", "value1", 1 * 1000));
@@ -322,13 +428,6 @@ namespace hazelcast {
                 ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
             }
 
-            void testLockThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->tryPut("key1", "value2", 1);
-                latch->countDown();
-            }
-
             TEST_F(ClientMapTest, testLock) {
                 imap->put("key1", "value1");
                 ASSERT_EQ("value1", *(imap->get("key1")));
@@ -339,13 +438,6 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(imap->get("key1")));
                 imap->forceUnlock("key1");
 
-            }
-
-            void testLockTTLThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->tryPut("key1", "value2", 5 * 1000);
-                latch->countDown();
             }
 
             TEST_F(ClientMapTest, testLockTtl) {
@@ -361,17 +453,6 @@ namespace hazelcast {
 
             }
 
-            void testLockTTL2Thread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (!imap->tryLock("key1")) {
-                    latch->countDown();
-                }
-                if (imap->tryLock("key1", 5 * 1000)) {
-                    latch->countDown();
-                }
-            }
-
             TEST_F(ClientMapTest, testLockTtl2) {
                 imap->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
@@ -379,22 +460,6 @@ namespace hazelcast {
                 ASSERT_TRUE(latch.await(10));
                 imap->forceUnlock("key1");
 
-            }
-
-            void testMapTryLockThread1(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (!imap->tryLock("key1", 2)) {
-                    latch->countDown();
-                }
-            }
-
-            void testMapTryLockThread2(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (imap->tryLock("key1", 20 * 1000)) {
-                    latch->countDown();
-                }
             }
 
             TEST_F(ClientMapTest, testTryLock) {
@@ -416,13 +481,6 @@ namespace hazelcast {
                 ASSERT_TRUE(imap->isLocked("key1"));
                 imap->forceUnlock("key1");
 
-            }
-
-            void testMapForceUnlockThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->forceUnlock("key1");
-                latch->countDown();
             }
 
             TEST_F(ClientMapTest, testForceUnlock) {
@@ -652,13 +710,15 @@ namespace hazelcast {
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::string> strValues = imap->values(query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
+                std::vector<std::string> strValues = imap->values(
+                        query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
                 ASSERT_EQ(1, strValues.size());
                 ASSERT_EQ("value1", strValues[0]);
 
                 // ILikePredicate
                 // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
-                strValues = imap->values(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
+                strValues = imap->values(
+                        query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
                 ASSERT_EQ(4, strValues.size());
                 std::sort(strValues.begin(), strValues.end());
                 ASSERT_EQ("myvalue_111_test", strValues[0]);
@@ -686,11 +746,164 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
-                strValues = imap->values(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
+                strValues = imap->values(
+                        query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
                 ASSERT_EQ(2, strValues.size());
                 std::sort(strValues.begin(), strValues.end());
                 ASSERT_EQ("myvalue_22_test", strValues[0]);
                 ASSERT_EQ("value2", strValues[1]);
+            }
+
+            TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
+                IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
+
+                int predSize = 5;
+                const int totalEntries = 25;
+
+                for (int i = 0; i < totalEntries; ++i) {
+                    intMap.put(i, i);
+                }
+
+                query::PagingPredicate<int, int> predicate(predSize);
+
+                std::vector<int> values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.nextPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                const std::pair<int *, int *> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(9, *anchor->first);
+                ASSERT_EQ(9, *anchor->second);
+
+                ASSERT_EQ(1, predicate.getPage());
+
+                predicate.setPage(4);
+
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize * 4 + i, values[i]);
+                }
+
+                anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(24, *anchor->first);
+                ASSERT_EQ(24, *anchor->second);
+
+                const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
+                ASSERT_NE((int *) NULL, anchorEntry->second.first);
+                ASSERT_NE((int *) NULL, anchorEntry->second.second);
+                ASSERT_EQ(3, anchorEntry->first);
+                ASSERT_EQ(19, *anchorEntry->second.first);
+                ASSERT_EQ(19, *anchorEntry->second.second);
+
+                predicate.nextPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(0);
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.previousPage();
+                ASSERT_EQ(0, predicate.getPage());
+
+                predicate.setPage(5);
+                values = intMap.values(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(3);
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(3 * predSize + i, values[i]);
+                }
+
+                predicate.previousPage();
+                values = intMap.values(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(2 * predSize + i, values[i]);
+                }
+
+                // test PagingPredicate with inner predicate (value < 10)
+                std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false,
+                                                             true)));
+                query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+                values = intMap.values(predicate2);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate2.nextPage();
+                // match values 5,6, 7, 8
+                values = intMap.values(predicate2);
+                ASSERT_EQ(predSize - 1, (int) values.size());
+                for (int i = 0; i < predSize - 1; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                predicate2.nextPage();
+                values = intMap.values(predicate2);
+                ASSERT_EQ(0, (int) values.size());
+
+                // test paging predicate with comparator
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+                Employee empl4("ali", 33);
+                Employee empl5("veli", 44);
+                Employee empl6("aylin", 5);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+                employees.put(6, empl4);
+                employees.put(7, empl5);
+                employees.put(8, empl6);
+
+                predSize = 2;
+                query::PagingPredicate<int, Employee> predicate3(
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()), (size_t) predSize);
+                std::vector<Employee> result = employees.values(predicate3);
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(empl6, result[0]);
+                ASSERT_EQ(empl2, result[1]);
+
+                predicate3.nextPage();
+                result = employees.values(predicate3);
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(empl3, result[0]);
+                ASSERT_EQ(empl4, result[1]);
             }
 
             TEST_F(ClientMapTest, testKeySetWithPredicate) {
@@ -899,7 +1112,8 @@ namespace hazelcast {
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::string> strKeys = imap->keySet(query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
+                std::vector<std::string> strKeys = imap->keySet(
+                        query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
                 ASSERT_EQ(1, strKeys.size());
                 ASSERT_EQ("key1", strKeys[0]);
 
@@ -933,11 +1147,159 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {key_22_test, value2}
-                strKeys = imap->keySet(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
+                strKeys = imap->keySet(
+                        query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
                 ASSERT_EQ(2, strKeys.size());
                 std::sort(strKeys.begin(), strKeys.end());
                 ASSERT_EQ("key2", strKeys[0]);
                 ASSERT_EQ("key_22_test", strKeys[1]);
+            }
+
+            TEST_F(ClientMapTest, testKeySetWithPagingPredicate) {
+                IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
+
+                int predSize = 5;
+                const int totalEntries = 25;
+
+                for (int i = 0; i < totalEntries; ++i) {
+                    intMap.put(i, i);
+                }
+
+                query::PagingPredicate<int, int> predicate((size_t)predSize);
+
+                std::vector<int> values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.nextPage();
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                const std::pair<int *, int *> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_EQ(9, *anchor->first);
+
+                ASSERT_EQ(1, predicate.getPage());
+
+                predicate.setPage(4);
+
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(predSize * 4 + i, values[i]);
+                }
+
+                anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_EQ(24, *anchor->first);
+
+                const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
+                ASSERT_NE((int *) NULL, anchorEntry->second.first);
+                ASSERT_EQ(3, anchorEntry->first);
+                ASSERT_EQ(19, *anchorEntry->second.first);
+
+                predicate.nextPage();
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(0);
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate.previousPage();
+                ASSERT_EQ(0, predicate.getPage());
+
+                predicate.setPage(5);
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(3);
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(3 * predSize + i, values[i]);
+                }
+
+                predicate.previousPage();
+                values = intMap.keySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(2 * predSize + i, values[i]);
+                }
+
+                // test PagingPredicate with inner predicate (value < 10)
+                std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false,
+                                                             true)));
+                query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+                values = intMap.keySet(predicate2);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    ASSERT_EQ(i, values[i]);
+                }
+
+                predicate2.nextPage();
+                // match values 5,6, 7, 8
+                values = intMap.keySet(predicate2);
+                ASSERT_EQ(predSize - 1, (int) values.size());
+                for (int i = 0; i < predSize - 1; ++i) {
+                    ASSERT_EQ(predSize + i, values[i]);
+                }
+
+                predicate2.nextPage();
+                values = intMap.keySet(predicate2);
+                ASSERT_EQ(0, (int) values.size());
+
+                // test paging predicate with comparator
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+                Employee empl4("ali", 33);
+                Employee empl5("veli", 44);
+                Employee empl6("aylin", 5);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+                employees.put(6, empl4);
+                employees.put(7, empl5);
+                employees.put(8, empl6);
+
+                predSize = 2;
+                query::PagingPredicate<int, Employee> predicate3(
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()), (size_t) predSize);
+                std::vector<int> result = employees.keySet(predicate3);
+                // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(3, result[0]);
+                ASSERT_EQ(4, result[1]);
+
+                predicate3.nextPage();
+                result = employees.keySet(predicate3);
+                ASSERT_EQ(2, (int) result.size());
+                ASSERT_EQ(5, result[0]);
+                ASSERT_EQ(6, result[1]);
             }
 
             TEST_F(ClientMapTest, testEntrySetWithPredicate) {
@@ -968,7 +1330,8 @@ namespace hazelcast {
                 ASSERT_EQ(expected[4], entries[0]);
 
                 // key == numItems
-                entries = intMap.entrySet(query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems));
+                entries = intMap.entrySet(
+                        query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, numItems));
                 ASSERT_EQ(0, entries.size());
 
                 // NotEqual Predicate
@@ -1011,7 +1374,8 @@ namespace hazelcast {
 
                 // BetweenPredicate
                 // 5 <= key <= 10
-                entries = intMap.entrySet(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
+                entries = intMap.entrySet(
+                        query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(6, entries.size());
                 for (int i = 0; i < 6; ++i) {
@@ -1019,7 +1383,8 @@ namespace hazelcast {
                 }
 
                 // 20 <= key <=30
-                entries = intMap.entrySet(query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 20, 30));
+                entries = intMap.entrySet(
+                        query::BetweenPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 20, 30));
                 ASSERT_EQ(0, entries.size());
 
                 // GreaterLessPredicate
@@ -1152,13 +1517,15 @@ namespace hazelcast {
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::pair<std::string, std::string> > strEntries = imap->entrySet(query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
+                std::vector<std::pair<std::string, std::string> > strEntries = imap->entrySet(
+                        query::LikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "value1"));
                 ASSERT_EQ(1, strEntries.size());
                 ASSERT_EQ(expectedStrEntries[1], strEntries[0]);
 
                 // ILikePredicate
                 // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
-                strEntries = imap->entrySet(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
+                strEntries = imap->entrySet(
+                        query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VALue%1%"));
                 ASSERT_EQ(4, strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[1], strEntries[0]);
@@ -1167,7 +1534,8 @@ namespace hazelcast {
                 ASSERT_EQ(expectedStrEntries[12], strEntries[3]);
 
                 // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
-                strEntries = imap->entrySet(query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%"));
+                strEntries = imap->entrySet(
+                        query::ILikePredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, "%VAL%2%"));
                 ASSERT_EQ(2, strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[2], strEntries[0]);
@@ -1186,11 +1554,176 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {key_22_test, value2}
-                strEntries = imap->entrySet(query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
+                strEntries = imap->entrySet(
+                        query::RegexPredicate(query::QueryConstants::THIS_ATTRIBUTE_NAME, ".*value.*2.*"));
                 ASSERT_EQ(2, strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[2], strEntries[0]);
                 ASSERT_EQ(expectedStrEntries[13], strEntries[1]);
+            }
+
+            TEST_F(ClientMapTest, testEntrySetWithPagingPredicate) {
+                IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
+
+                int predSize = 5;
+                const int totalEntries = 25;
+
+                for (int i = 0; i < totalEntries; ++i) {
+                    intMap.put(i, i);
+                }
+
+                query::PagingPredicate<int, int> predicate((size_t) predSize);
+
+                std::vector<std::pair<int, int> > values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(i, i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(i, i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                predicate.nextPage();
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(predSize + i, predSize + i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                const std::pair<int *, int *> *anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(9, *anchor->first);
+                ASSERT_EQ(9, *anchor->second);
+
+                ASSERT_EQ(1, predicate.getPage());
+
+                predicate.setPage(4);
+
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(predSize * 4 + i, predSize * 4 + i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                anchor = predicate.getAnchor();
+                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                ASSERT_NE((int *) NULL, anchor->first);
+                ASSERT_NE((int *) NULL, anchor->second);
+                ASSERT_EQ(24, *anchor->first);
+                ASSERT_EQ(24, *anchor->second);
+
+                const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
+                ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
+                ASSERT_NE((int *) NULL, anchorEntry->second.first);
+                ASSERT_NE((int *) NULL, anchorEntry->second.second);
+                ASSERT_EQ(3, anchorEntry->first);
+                ASSERT_EQ(19, *anchorEntry->second.first);
+                ASSERT_EQ(19, *anchorEntry->second.second);
+
+                predicate.nextPage();
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(0);
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(i, i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                predicate.previousPage();
+                ASSERT_EQ(0, predicate.getPage());
+
+                predicate.setPage(5);
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(0, (int) values.size());
+
+                predicate.setPage(3);
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(3 * predSize + i, 3 * predSize + i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                predicate.previousPage();
+                values = intMap.entrySet(predicate);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(2 * predSize + i, 2 * predSize + i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                // test PagingPredicate with inner predicate (value < 10)
+                std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false,
+                                                             true)));
+                query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+                values = intMap.entrySet(predicate2);
+                ASSERT_EQ(predSize, (int) values.size());
+                for (int i = 0; i < predSize; ++i) {
+                    std::pair<int, int> value(i, i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                predicate2.nextPage();
+                // match values 5,6, 7, 8
+                values = intMap.entrySet(predicate2);
+                ASSERT_EQ(predSize - 1, (int) values.size());
+                for (int i = 0; i < predSize - 1; ++i) {
+                    std::pair<int, int> value(predSize + i, predSize + i);
+                    ASSERT_EQ(value, values[i]);
+                }
+
+                predicate2.nextPage();
+                values = intMap.entrySet(predicate2);
+                ASSERT_EQ(0, (int) values.size());
+
+                // test paging predicate with comparator
+                IMap<int, Employee> employees = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
+
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+                Employee empl4("ali", 33);
+                Employee empl5("veli", 44);
+                Employee empl6("aylin", 5);
+
+                employees.put(3, empl1);
+                employees.put(4, empl2);
+                employees.put(5, empl3);
+                employees.put(6, empl4);
+                employees.put(7, empl5);
+                employees.put(8, empl6);
+
+                predSize = 2;
+                query::PagingPredicate<int, Employee> predicate3(
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()), (size_t) predSize);
+                std::vector<std::pair<int, Employee> > result = employees.entrySet(predicate3);
+                ASSERT_EQ(2, (int) result.size());
+                std::pair<int, Employee> value(8, empl6);
+                ASSERT_EQ(value, result[0]);
+                value = std::pair<int, Employee>(4, empl2);
+                ASSERT_EQ(value, result[1]);
+
+                predicate3.nextPage();
+                result = employees.entrySet(predicate3);
+                ASSERT_EQ(2, (int) result.size());
+                value = std::pair<int, Employee>(5, empl3);
+                ASSERT_EQ(value, result[0]);
+                value = std::pair<int, Employee>(6, empl4);
+                ASSERT_EQ(value, result[1]);
             }
 
             TEST_F(ClientMapTest, testReplace) {
@@ -1211,25 +1744,7 @@ namespace hazelcast {
                 ASSERT_EQ("value3", *(imap->get("key1")));
             }
 
-            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
-            public:
-                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
-                        : latch(latch), atomicInteger(atomicInteger) {
-
-                }
-
-                void entryAdded(const EntryEvent<Employee, int> &event) {
-                    ++atomicInteger;
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &latch;
-                util::AtomicInt &atomicInteger;
-            };
-
-
-            TEST_F(ClientMapTest, testPredicateListenerWithPortableKey) {
+            TEST_F(ClientMapTest, testListenerWithPortableKey) {
                 IMap<Employee, int> tradeMap = client->getMap<Employee, int>("tradeMap");
                 util::CountDownLatch countDownLatch(1);
                 util::AtomicInt atomicInteger(0);
@@ -1299,52 +1814,6 @@ namespace hazelcast {
                 imap->removeEntryListener(listenerId);
             }
 
-            TEST_F(ClientMapTest, testBasicPredicate) {
-                fillMap();
-
-                query::SqlPredicate predicate("this = 'value1'");
-                std::vector<std::string> tempVector;
-                tempVector = imap->values(predicate);
-
-                ASSERT_EQ("value1", tempVector[0]);
-
-                std::vector<std::string> tempVector2;
-                tempVector2 = imap->keySet(predicate);
-
-                std::vector<std::string>::iterator it2 = tempVector2.begin();
-                ASSERT_EQ("key1", *it2);
-
-
-                std::vector<std::pair<std::string, std::string> > tempVector3;
-                tempVector3 = imap->entrySet(predicate);
-
-                std::vector<std::pair<std::string, std::string> >::iterator it3 = tempVector3.begin();
-                ASSERT_EQ("key1", (*it3).first);
-                ASSERT_EQ("value1", (*it3).second);
-            }
-
-            TEST_F(ClientMapTest, testKeySetAndValuesWithPredicates) {
-                std::string name = "testKeysetAndValuesWithPredicates";
-                IMap<Employee, Employee> map = client->getMap<Employee, Employee>(name);
-
-                Employee emp1("abc-123-xvz", 34);
-                Employee emp2("abc-123-xvz", 20);
-
-                map.put(emp1, emp1);
-                ASSERT_EQ(map.put(emp2, emp2).get(), (Employee *) NULL);
-                ASSERT_EQ(2, (int) map.size());
-                ASSERT_EQ(2, (int) map.keySet().size());
-                query::SqlPredicate predicate("a = 10");
-                ASSERT_EQ(0, (int) map.keySet(predicate).size());
-                query::SqlPredicate predicate2("a = 10");
-                ASSERT_EQ(0, (int) map.values(predicate2).size());
-                query::SqlPredicate predicate3("a >= 10");
-                ASSERT_EQ(2, (int) map.keySet(predicate3).size());
-                ASSERT_EQ(2, (int) map.values(predicate3).size());
-                ASSERT_EQ(2, (int) map.size());
-                ASSERT_EQ(2, (int) map.values().size());
-            }
-
             TEST_F(ClientMapTest, testMapWithPortable) {
                 IMap<int, Employee> employees = client->getMap<int, Employee>("employees");
                 boost::shared_ptr<Employee> n1 = employees.get(1);
@@ -1361,7 +1830,6 @@ namespace hazelcast {
                 employees.addIndex("n", false);
             }
 
-
             TEST_F(ClientMapTest, testMapStoreRelatedRequests) {
                 imap->putTransient("ali", "veli", 1100);
                 imap->flush();
@@ -1370,48 +1838,6 @@ namespace hazelcast {
                 ASSERT_TRUE(imap->evict("ali"));
                 ASSERT_EQ(imap->get("ali").get(), (std::string *) NULL);
             }
-
-            class EntryMultiplier : public serialization::IdentifiedDataSerializable {
-            public:
-                EntryMultiplier(int multiplier) : multiplier(multiplier) { }
-
-                /**
-                 * @return factory id
-                 */
-                int getFactoryId() const {
-                    return 666;
-                }
-
-                /**
-                 * @return class id
-                 */
-                int getClassId() const {
-                    return 3;
-                }
-
-                /**
-                 * Defines how this class will be written.
-                 * @param writer ObjectDataOutput
-                 */
-                void writeData(serialization::ObjectDataOutput &writer) const {
-                    writer.writeInt(multiplier);
-                }
-
-                /**
-                 *Defines how this class will be read.
-                 * @param reader ObjectDataInput
-                 */
-                void readData(serialization::ObjectDataInput &reader) {
-                    multiplier = reader.readInt();
-                }
-
-                int getMultiplier() const {
-                    return multiplier;
-                }
-
-            private:
-                int multiplier;
-            };
 
             TEST_F(ClientMapTest, testExecuteOnKey) {
                 IMap<int, Employee> employees = client->getMap<int, Employee>("executeOnKey");
@@ -1803,161 +2229,11 @@ namespace hazelcast {
                 EntryMultiplier processor(4);
 
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::RegexPredicate("n", "*met"));
+                        processor, query::RegexPredicate("n", ".*met"));
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
-            }
-
-            TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
-                IMap<int, int> intMap = client->getMap<int, int>("testIntMapValuesWithPagingPredicate");
-
-                int predSize = 5;
-                const int totalEntries = 25;
-
-                for (int i = 0; i < totalEntries; ++i) {
-                    intMap.put(i, i);
-                }
-
-                query::PagingPredicate<int, int> predicate(predSize);
-
-                std::vector<int> values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(i, values[i]);
-                }
-
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(i, values[i]);
-                }
-
-                predicate.nextPage();
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(predSize + i, values[i]);
-                }
-
-                const std::pair<int *, int *> *anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
-                ASSERT_NE((int *) NULL, anchor->first);
-                ASSERT_NE((int *) NULL, anchor->second);
-                ASSERT_EQ(9, *anchor->first);
-                ASSERT_EQ(9, *anchor->second);
-
-                ASSERT_EQ(1, predicate.getPage());
-
-                predicate.setPage(4);
-
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(predSize * 4 + i, values[i]);
-                }
-
-                anchor = predicate.getAnchor();
-                ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
-                ASSERT_NE((int *) NULL, anchor->first);
-                ASSERT_NE((int *) NULL, anchor->second);
-                ASSERT_EQ(24, *anchor->first);
-                ASSERT_EQ(24, *anchor->second);
-
-                const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
-                ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
-                ASSERT_NE((int *)NULL, anchorEntry->second.first);
-                ASSERT_NE((int *)NULL, anchorEntry->second.second);
-                ASSERT_EQ(3, anchorEntry->first);
-                ASSERT_EQ(19, *anchorEntry->second.first);
-                ASSERT_EQ(19, *anchorEntry->second.second);
-
-                predicate.nextPage();
-                values = intMap.values(predicate);
-                ASSERT_EQ(0, (int) values.size());
-
-                predicate.setPage(0);
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(i, values[i]);
-                }
-
-                predicate.previousPage();
-                ASSERT_EQ(0, predicate.getPage());
-
-                predicate.setPage(5);
-                values = intMap.values(predicate);
-                ASSERT_EQ(0, (int) values.size());
-
-                predicate.setPage(3);
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(3 * predSize + i, values[i]);
-                }
-
-                predicate.previousPage();
-                values = intMap.values(predicate);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(2 * predSize + i, values[i]);
-                }
-
-                // test PagingPredicate with inner predicate (value < 10)
-                std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
-                        new query::GreaterLessPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 9, false, true)));
-                query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
-                values = intMap.values(predicate2);
-                ASSERT_EQ(predSize, (int) values.size());
-                for (int i = 0; i < predSize; ++i) {
-                    ASSERT_EQ(i, values[i]);
-                }
-
-                predicate2.nextPage();
-                // match values 5,6, 7, 8
-                values = intMap.values(predicate2);
-                ASSERT_EQ(predSize - 1, (int) values.size());
-                for (int i = 0; i < predSize - 1; ++i) {
-                    ASSERT_EQ(predSize + i, values[i]);
-                }
-
-                predicate2.nextPage();
-                values = intMap.values(predicate2);
-                ASSERT_EQ(0, (int) values.size());
-
-                // test paging predicate with comparator
-                IMap<int, Employee> employees = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
-
-                Employee empl1("ahmet", 35);
-                Employee empl2("mehmet", 21);
-                Employee empl3("deniz", 25);
-                Employee empl4("ali", 33);
-                Employee empl5("veli", 44);
-                Employee empl6("aylin", 5);
-
-                employees.put(3, empl1);
-                employees.put(4, empl2);
-                employees.put(5, empl3);
-                employees.put(6, empl4);
-                employees.put(7, empl5);
-                employees.put(8, empl6);
-
-                predSize = 2;
-                query::PagingPredicate<int, Employee, EmployeeEntryComparator> predicate3(std::auto_ptr<EmployeeEntryComparator>(new EmployeeEntryComparator()), (size_t)predSize);
-                std::vector<Employee> result = employees.values(predicate3);
-                ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(empl6, result[0]);
-                ASSERT_EQ(empl2, result[1]);
-
-                predicate3.nextPage();
-                result = employees.values(predicate3);
-                ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(empl3, result[0]);
-                ASSERT_EQ(empl4, result[1]);
             }
         }
     }
