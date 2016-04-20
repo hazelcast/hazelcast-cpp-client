@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 6/17/13.
 
-
-
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"

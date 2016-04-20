@@ -86,7 +86,7 @@ namespace hazelcast {
             const char *const IterationNames[] = {"KEY", "VALUE", "ENTRY"};
 
             /**
-             * NOTE: PagingPredicate can only be used with values(), keySet() and entries() methods!
+             * NOTE: PagingPredicate can only be used with values(), keySet() and entries() methods!!!
              *
              * This class is a special Predicate which helps to get a page-by-page result of a query.
              * It can be constructed with a page-size, an inner predicate for filtering, and a comparator for sorting.
@@ -122,9 +122,6 @@ namespace hazelcast {
              * </pre>
              */
 
-            /**
-             * Type Compare should be a valid serializable type.
-             */
             template<typename K, typename V>
             class PagingPredicate : public Predicate {
             public:

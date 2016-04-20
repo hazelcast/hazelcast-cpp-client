@@ -23,7 +23,6 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/util/SortingUtil.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/adaptor/EntryArray.h"
@@ -230,14 +229,14 @@ namespace hazelcast {
                                     return result < 0;
                                 }
 
-                                return util::SortingUtil::less<K>(key, rhs.key);
+                                return *key < *rhs.key;
                             }
 
                             switch(type) {
                                 case query::VALUE:
-                                    return util::SortingUtil::less<V>(value, rhs.value);
+                                    return *value < *rhs.value;
                                 default:
-                                    return util::SortingUtil::less<K>(key, rhs.key);
+                                    return *key < *rhs.key;
                             }
                         }
                     };
