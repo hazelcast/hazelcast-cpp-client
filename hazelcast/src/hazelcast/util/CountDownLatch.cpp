@@ -33,26 +33,28 @@ namespace hazelcast {
         }
 
         bool CountDownLatch::await(int seconds) {
-            time_t endTime = time(NULL) + seconds;
-            while (endTime > time(NULL)) {
-                if (count <= 0) {
-                    return true;
-                }
-                util::sleep(1);
-            }
+            return awaitMillis(seconds * MILLISECONDS_IN_A_SECOND);
+        }
+
+        bool CountDownLatch::awaitMillis(size_t milliseconds) {
             if (count <= 0) {
                 return true;
             }
+
+            size_t elapsed = 0;
+            do {
+                util::sleepmillis(CHECK_INTERVAL);
+                if (count <= 0) {
+                    return true;
+                }
+                elapsed += CHECK_INTERVAL;
+            } while (elapsed < milliseconds);
+
             return false;
         }
 
         void CountDownLatch::await() {
-            while (true) {
-                if (count == 0) {
-                    break;
-                }
-                util::sleep(1);
-            }
+            awaitMillis(INFINITE);
         }
 
         int CountDownLatch::get() {
@@ -66,6 +68,34 @@ namespace hazelcast {
             }
             return count <= expectedCount;
         }
+
+        CountDownLatchWaiter &CountDownLatchWaiter::add(CountDownLatch &latch) {
+            latches.push_back(&latch);
+            return *this;
+        }
+
+        bool CountDownLatchWaiter::await(size_t milliseconds) {
+            if (latches.empty()) {
+                return true;
+            }
+
+            bool result = latches[0]->awaitMillis(milliseconds);
+            if (!result) {
+                return false;
+            }
+
+            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin();it != latches.end();++it) {
+                if (0 != (*it)->get()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        void CountDownLatchWaiter::reset() {
+            latches.clear();
+        }
+
     }
 }
 
