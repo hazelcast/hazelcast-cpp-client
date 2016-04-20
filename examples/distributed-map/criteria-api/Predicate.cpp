@@ -247,7 +247,8 @@ void queryMapUsingPagingPredicate() {
     employees.put(8, empl6);
 
     predSize = 2;
-    query::PagingPredicate<int, Employee, EmployeeEntryComparator> predicate3(std::auto_ptr<EmployeeEntryComparator>(new EmployeeEntryComparator()), (size_t)predSize);
+    std::auto_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
+    query::PagingPredicate<int, Employee> predicate3(comparator, (size_t)predSize);
     std::vector<Employee> result = employees.values(predicate3);
 
     predicate3.nextPage();
