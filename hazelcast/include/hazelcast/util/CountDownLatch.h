@@ -21,6 +21,7 @@
 #ifndef HAZELCAST_CountDownLatch
 #define HAZELCAST_CountDownLatch
 
+#include <vector>
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"
@@ -35,11 +36,15 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API CountDownLatch {
         public:
+            static const size_t CHECK_INTERVAL = 100; //msecs
+
             CountDownLatch(int count);
 
             void countDown();
 
             bool await(int seconds);
+
+            bool awaitMillis(size_t milliseconds);
 
             void await();
 
@@ -52,6 +57,19 @@ namespace hazelcast {
 
         private:
             util::AtomicInt count;
+            static const size_t MILLISECONDS_IN_A_SECOND = 1000;
+            static const size_t INFINITE = UINT_MAX;
+        };
+
+        class HAZELCAST_API CountDownLatchWaiter {
+        public:
+            CountDownLatchWaiter &add(CountDownLatch &latch);
+
+            bool await(size_t milliseconds);
+
+            void reset();
+        private:
+            std::vector<CountDownLatch *> latches;
         };
     }
 }

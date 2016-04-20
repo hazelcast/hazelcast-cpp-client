@@ -130,27 +130,28 @@ namespace hazelcast {
                 latch->countDown();
             }
 
-            class SampleEntryListener : public EntryAdapter<std::string, std::string> {
+            template <typename K, typename V>
+            class CountdownListener : public EntryAdapter<K, V> {
             public:
-                SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
+                CountdownListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
                                     util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
                         : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
                           evictLatch(evictLatch) {
                 }
 
-                void entryAdded(const EntryEvent<std::string, std::string> &event) {
+                void entryAdded(const EntryEvent<K, V> &event) {
                     addLatch.countDown();
                 }
 
-                void entryRemoved(const EntryEvent<std::string, std::string> &event) {
+                void entryRemoved(const EntryEvent<K, V> &event) {
                     removeLatch.countDown();
                 }
 
-                void entryUpdated(const EntryEvent<std::string, std::string> &event) {
+                void entryUpdated(const EntryEvent<K, V> &event) {
                     updateLatch.countDown();
                 }
 
-                void entryEvicted(const EntryEvent<std::string, std::string> &event) {
+                void entryEvicted(const EntryEvent<K, V> &event) {
                     evictLatch.countDown();
                 }
 
@@ -388,7 +389,7 @@ namespace hazelcast {
             TEST_F(ClientMapTest, testPutTtl) {
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
-                SampleEntryListener sampleEntryListener(dummy, dummy, dummy, evict);
+                CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                 std::string id = imap->addEntryListener(sampleEntryListener, false);
 
                 imap->put("key1", "value1", 2000);
@@ -1761,8 +1762,8 @@ namespace hazelcast {
                 util::CountDownLatch latch2Add(1);
                 util::CountDownLatch latch2Remove(1);
 
-                SampleEntryListener listener1(latch1Add, latch1Remove, dummy, dummy);
-                SampleEntryListener listener2(latch2Add, latch2Remove, dummy, dummy);
+                CountdownListener<std::string, std::string> listener1(latch1Add, latch1Remove, dummy, dummy);
+                CountdownListener<std::string, std::string> listener2(latch2Add, latch2Remove, dummy, dummy);
 
                 std::string listener1ID = imap->addEntryListener(listener1, false);
                 std::string listener2ID = imap->addEntryListener(listener2, "key3", true);
@@ -1786,6 +1787,470 @@ namespace hazelcast {
                 ASSERT_TRUE(imap->removeEntryListener(listener1ID));
                 ASSERT_TRUE(imap->removeEntryListener(listener2ID));
 
+            }
+
+            TEST_F(ClientMapTest, testListenerWithTruePredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+                
+                util::CountDownLatch latchAdd(3);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                std::string listenerId = map.addEntryListener(listener, *query::TruePredicate::INSTANCE, false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+                
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithFalsePredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(3);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                std::string listenerId = map.addEntryListener(listener, *query::FalsePredicate::INSTANCE, false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                ASSERT_FALSE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithEqualPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(1);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                std::string listenerId = map.addEntryListener(listener, query::EqualPredicate<int>(
+                        query::QueryConstants::KEY_ATTRIBUTE_NAME, 3), true);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchUpdate).add(latchRemove);
+                ASSERT_FALSE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithNotEqualPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                std::string listenerId = map.addEntryListener(listener, query::NotEqualPredicate<int>(
+                        query::QueryConstants::KEY_ATTRIBUTE_NAME, 3), true);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchEvict);
+                ASSERT_FALSE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithGreaterLessPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // key <= 2
+                std::string listenerId = map.addEntryListener(listener, query::GreaterLessPredicate<int>(
+                        query::QueryConstants::KEY_ATTRIBUTE_NAME, 2, true, true), false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                ASSERT_TRUE(latches.await(2000));
+
+                ASSERT_FALSE(latchEvict.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithBetweenPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // 1 <=key <= 2
+                std::string listenerId = map.addEntryListener(listener, query::BetweenPredicate<int>(
+                        query::QueryConstants::KEY_ATTRIBUTE_NAME, 1, 2), true);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                ASSERT_TRUE(latches.await(2000));
+
+                ASSERT_FALSE(latchEvict.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithSqlPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(1);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // 1 <=key <= 2
+                std::string listenerId = map.addEntryListener(listener, query::SqlPredicate("__key < 2"), true);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchRemove).add(latchUpdate);
+                ASSERT_FALSE(latchEvict.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithRegExPredicate) {
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>("StringMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<std::string, std::string> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // key matches any word containing ".*met.*"
+                std::string listenerId = map.addEntryListener(listener, query::RegexPredicate(query::QueryConstants::KEY_ATTRIBUTE_NAME, ".*met.*"), true);
+
+                map.put("ilkay", "yasar");
+                map.put("mehmet", "demir");
+                map.put("metin", "ozen", 1000); // evict after 1 second
+                map.put("hasan", "can");
+                map.remove("mehmet");
+
+                util::sleep(2);
+
+                ASSERT_EQ((std::string *)NULL, map.get("metin").get()); // trigger eviction
+
+                // update an entry
+                map.set("ahmet", "suphi");
+                boost::shared_ptr<std::string> value = map.get("ahmet");
+                ASSERT_NE((std::string *)NULL, value.get());
+                ASSERT_EQ("suphi", *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithInstanceOfPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(3);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // 1 <=key <= 2
+                std::string listenerId = map.addEntryListener(listener, query::InstanceOfPredicate("java.lang.Integer"), false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithNotPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // key >= 3
+                std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, true, false));
+                std::string listenerId = map.addEntryListener(listener, query::NotPredicate(greaterLessPred), false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchEvict);
+                ASSERT_FALSE(latches.await(1000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithAndPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(1);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // key < 3
+                std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, false, true));
+                // value == 1
+                std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                        new query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1));
+                query::AndPredicate predicate;
+                predicate.add(greaterLessPred).add(equalPred);
+                std::string listenerId = map.addEntryListener(listener, predicate, false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchUpdate);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchEvict).add(latchRemove);
+                ASSERT_FALSE(latches.await(1000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
+            }
+
+            TEST_F(ClientMapTest, testListenerWithOrPredicate) {
+                IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                util::CountDownLatch latchAdd(2);
+                util::CountDownLatch latchRemove(1);
+                util::CountDownLatch latchEvict(1);
+                util::CountDownLatch latchUpdate(1);
+
+                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                // key >= 3
+                std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, true, false));
+                // value == 1
+                std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                        new query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1));
+                query::OrPredicate predicate;
+                predicate.add(greaterLessPred).add(equalPred);
+                std::string listenerId = map.addEntryListener(listener, predicate, false);
+
+                map.put(1, 1);
+                map.put(2, 2);
+                map.put(3, 3, 1000); // evict after 1 second
+                map.remove(2);
+
+                util::sleep(2);
+
+                ASSERT_EQ(NULL, map.get(3).get()); // trigger eviction
+
+                // update an entry
+                map.set(1, 5);
+                boost::shared_ptr<int> value = map.get(1);
+                ASSERT_NE((int *)NULL, value.get());
+                ASSERT_EQ(5, *value);
+
+                util::CountDownLatchWaiter latches;
+                latches.add(latchAdd).add(latchUpdate).add(latchEvict);
+                ASSERT_TRUE(latches.await(2000));
+
+                latches.reset();
+                latches.add(latchRemove);
+                ASSERT_FALSE(latches.await(1000));
+
+                ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
 
             TEST_F(ClientMapTest, testClearEvent) {
