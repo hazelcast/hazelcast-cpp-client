@@ -726,8 +726,8 @@ namespace hazelcast {
                 */
                 template<typename ResultType, typename EntryProcessor>
                 std::auto_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                    std::auto_ptr<serialization::pimpl::Data> resultData = map.template executeOnKeyData<K, EntryProcessor>(
-                            key, entryProcessor);
+                    std::auto_ptr<serialization::pimpl::Data> resultData =
+                            map.template executeOnKeyData<K, EntryProcessor>(key, entryProcessor);
                     return serializationService.toObject<ResultType>(resultData.get());
                 }
 
@@ -748,6 +748,27 @@ namespace hazelcast {
                 template<typename ResultType, typename EntryProcessor>
                 std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
                     EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor);
+
+                    return std::auto_ptr<EntryArray<K, ResultType> >(new impl::EntryArrayImpl<K, ResultType>(results, serializationService));
+                }
+
+                /**
+                * Applies the user defined EntryProcessor to the all entries in the map.
+                * Returns the results mapped by each key in the map.
+                *
+                *
+                * EntryProcessor should extend either Portable or IdentifiedSerializable.
+                * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+                * with same classId and factoryId.
+                *
+                * @tparam ResultType that entry processor will return
+                * @tparam EntryProcessor type of entry processor class
+                * @tparam predicate The filter to apply for selecting the entries at the server side.
+                * @param entryProcessor that will be applied
+                */
+                template<typename ResultType, typename EntryProcessor>
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                    EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(new impl::EntryArrayImpl<K, ResultType>(results, serializationService));
                 }

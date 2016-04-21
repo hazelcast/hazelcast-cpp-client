@@ -20,8 +20,8 @@
 #ifndef HAZELCAST_ENTRY_EVENT
 #define HAZELCAST_ENTRY_EVENT
 
+#include <memory>
 #include "hazelcast/client/Member.h"
-#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -91,21 +91,20 @@ namespace hazelcast {
              * Constructor
              */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
-                        boost::shared_ptr<K> key, boost::shared_ptr<V> value)
+                        std::auto_ptr<K> key, std::auto_ptr<V> value)
             : name(name)
             , member(member)
             , eventType(eventType)
             , key(key)
             , value(value) {
-
-            };
+            }
 
             /**
              * Constructor
              */
             EntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
-                           boost::shared_ptr<K> key, boost::shared_ptr<V> value,
-                            boost::shared_ptr<V> oldValue, boost::shared_ptr<V> mergingValue)
+                           std::auto_ptr<K> key, std::auto_ptr<V> value,
+                            std::auto_ptr<V> oldValue, std::auto_ptr<V> mergingValue)
             : name(name)
             , member(member)
             , eventType(eventType)
@@ -113,51 +112,146 @@ namespace hazelcast {
             , value(value)
             , oldValue(oldValue)
             , mergingValue(mergingValue) {
-
-            };
+            }
 
             /**
+             *
+             * Returns the key of the entry event
+             *
+             * @return the key
+             */
+            const K *getKeyObject() const {
+                return key.get();
+            }
+
+            /**
+             *
+             * Releases the key of the entry event. It resets the key in the event, calling getKeyObject,
+             * releaseKeyObject after calling releaseKey shall return NULL pointer.
+             *
+             * @return the key
+             */
+            std::auto_ptr<K> releaseKey() {
+                return key;
+            }
+
+            /**
+             * @deprecated This API is deprecated in favor of @sa{getKeyObject} and @sa{releaseKey}. It may be
+             * removed in the next releases.
+             *
              * Returns the key of the entry event
              *
              * @return the key
              */
             const K &getKey() const {
                 return *key;
-            };
+            }
 
             /**
              * Returns the old value of the entry event
              *
-             * @return
+             * @return The older value for the entry
+             */
+            const V *getOldValueObject() const {
+                return oldValue.get();
+            }
+
+            /**
+             * Releases the old value of the entry event. It resets the oldValue in the event, calling getOldValueObject,
+             * releaseOldValue after calling releaseOldValue shall return NULL pointer.
+             *
+             * Returns the old value of the entry event
+             *
+             * @return The older value for the entry
+             */
+            std::auto_ptr<V> releaseOldValue() {
+                return oldValue;
+            }
+
+            /**
+             * @deprecated This API is deprecated in favor of @sa{getOldValueObject} and @sa{releaseOldValue}. It may be
+             * removed in the next releases.
+             *
+             * Returns the old value of the entry event
+             *
+             * @return The older value for the entry
              */
             const V &getOldValue() const {
                 return *oldValue;
-            };
+            }
 
             /**
              * Returns the value of the entry event
              *
-             * @return
+             * @return The value for the entry
+             */
+            const V *getValueObject() const {
+                return value.get();
+            }
+
+            /**
+             * Releases the value of the entry event. It resets the value in the event, calling getValueObject,
+             * releaseValue after calling releaseValue shall return NULL pointer.
+             *
+             * Returns the old value of the entry event
+             *
+             * @return The older value for the entry
+             */
+            std::auto_ptr<V> releaseValue() {
+                return value;
+            }
+
+            /**
+             * @deprecated This API is deprecated in favor of @sa{getValueObject} and @sa{releaseValue}. It may be
+             * removed in the next releases.
+             *
+             * Returns the value of the entry event
+             *
+             * @return The value of for the entry
              */
             const V &getValue() const {
                 return *value;
-            };
+            }
 
             /**
             * Returns the incoming merging value of the entry event.
             *
-            * @return
+            * @return The merging value
+            */
+            const V *getMergingValueObject() const {
+                return mergingValue.get();
+            }
+
+            /**
+            * Releases the mergingValue of the entry event. It resets the value in the event, calling getmergingValueObject,
+            * releasemergingValue after calling releasemergingValue shall return NULL pointer.
+            *
+            * Returns the incoming merging value of the entry event.
+            *
+            * @return merging value
+            */
+            std::auto_ptr<V> releaseMergingValue() const {
+                return mergingValue;
+            }
+
+            /**
+            * @deprecated This API is deprecated in favor of @sa{getMergingValueObject} and @sa{releaseMergingValue}. It may be
+            * removed in the next releases.
+            *
+            * Returns the incoming merging value of the entry event.
+            *
+            * @return merging value
             */
             const V &getMergingValue() const {
                 return *mergingValue;
-            };
+            }
 
             /**
              * Returns the member fired this event.
              *
              * @return the member fired this event.
              */
-            Member getMember() const {
+            const Member &getMember() const {
                 return member;
             };
 
@@ -175,7 +269,7 @@ namespace hazelcast {
              *
              * @return name of the map.
              */
-            std::string getName() const {
+            std::string &getName() const {
                 return name;
             };
 
@@ -197,14 +291,15 @@ namespace hazelcast {
             std::string name;
             Member member;
             EntryEventType eventType;
-            boost::shared_ptr<K> key;
-            boost::shared_ptr<V> value;
-            boost::shared_ptr<V> oldValue;
-            boost::shared_ptr<V> mergingValue;
+            std::auto_ptr<K> key;
+            std::auto_ptr<V> value;
+            std::auto_ptr<V> oldValue;
+            std::auto_ptr<V> mergingValue;
 
         };
     }
 }
+
 
 template <typename K, typename V>
 std::ostream &operator<<(std::ostream &out, const hazelcast::client::EntryEvent<K, V> &event) {
