@@ -16,13 +16,6 @@
 //
 // Created by sancar koyunlu on 5/6/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
-
-
 #ifndef __TestInvalidWritePortable_H_
 #define __TestInvalidWritePortable_H_
 

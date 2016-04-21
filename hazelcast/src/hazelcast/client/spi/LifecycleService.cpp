@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 6/17/13.
 
 
-
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -26,6 +26,14 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
+
+#ifndef HAZELCAST_GIT_COMMIT_DATE
+#define HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND"
+#endif
+
+#ifndef HAZELCAST_GIT_COMMIT_ID
+#define HAZELCAST_GIT_COMMIT_ID "NOT_FOUND"
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -89,8 +97,12 @@ namespace hazelcast {
                 util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :
-                        logger.info("LifecycleService::LifecycleEvent STARTING");
+                    {
+                        char msg[100];
+                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", HAZELCAST_GIT_COMMIT_DATE, HAZELCAST_GIT_COMMIT_ID);
+                        logger.info(msg);
                         break;
+                    }
                     case LifecycleEvent::STARTED :
                         logger.info("LifecycleService::LifecycleEvent STARTED");
                         break;
