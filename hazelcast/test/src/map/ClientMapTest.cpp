@@ -35,9 +35,10 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/EntryAdapter.h"
+#include "hazelcast/client/EntryEvent.h"
 
 #include "map/ClientMapTest.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "TestHelperFunctions.h"
@@ -140,18 +141,34 @@ namespace hazelcast {
                 }
 
                 void entryAdded(const EntryEvent<K, V> &event) {
+                    std::ostringstream out;
+                    out << "[entryAdded] " << event.getKey();
+                    util::ILogger::getLogger().info(out.str());
+
                     addLatch.countDown();
                 }
 
                 void entryRemoved(const EntryEvent<K, V> &event) {
+                    std::ostringstream out;
+                    out << "[entryRemoved] Key:" << event.getKey();
+                    util::ILogger::getLogger().info(out.str());
+
                     removeLatch.countDown();
                 }
 
                 void entryUpdated(const EntryEvent<K, V> &event) {
+                    std::ostringstream out;
+                    out << "[entryUpdated] Key:" << event.getKey();
+                    util::ILogger::getLogger().info(out.str());
+
                     updateLatch.countDown();
                 }
 
                 void entryEvicted(const EntryEvent<K, V> &event) {
+                    std::ostringstream out;
+                    out << "[entryEvicted] Key:" << event.getKey();
+                    util::ILogger::getLogger().info(out.str());
+
                     evictLatch.countDown();
                 }
 
@@ -1818,7 +1835,7 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -1852,7 +1869,7 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                ASSERT_FALSE(latches.await(2000));
+                ASSERT_FALSE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -1887,11 +1904,11 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 latches.reset();
                 latches.add(latchUpdate).add(latchRemove);
-                ASSERT_FALSE(latches.await(2000));
+                ASSERT_FALSE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -1926,11 +1943,11 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 latches.reset();
                 latches.add(latchEvict);
-                ASSERT_FALSE(latches.await(2000));
+                ASSERT_FALSE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -1966,9 +1983,9 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
-                ASSERT_FALSE(latchEvict.await(2000));
+                ASSERT_FALSE(latchEvict.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2004,9 +2021,9 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
-                ASSERT_FALSE(latchEvict.await(2000));
+                ASSERT_FALSE(latchEvict.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2040,12 +2057,12 @@ namespace hazelcast {
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
-                latches.add(latchAdd).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                latches.add(latchAdd).add(latchUpdate);
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 latches.reset();
-                latches.add(latchRemove).add(latchUpdate);
-                ASSERT_FALSE(latchEvict.await(2000));
+                latches.add(latchRemove).add(latchEvict);
+                ASSERT_FALSE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2074,14 +2091,16 @@ namespace hazelcast {
                 ASSERT_EQ((std::string *)NULL, map.get("metin").get()); // trigger eviction
 
                 // update an entry
-                map.set("ahmet", "suphi");
-                boost::shared_ptr<std::string> value = map.get("ahmet");
+                map.set("hasan", "suphi");
+                boost::shared_ptr<std::string> value = map.get("hasan");
                 ASSERT_NE((std::string *)NULL, value.get());
                 ASSERT_EQ("suphi", *value);
 
                 util::CountDownLatchWaiter latches;
-                latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                latches.add(latchAdd).add(latchRemove).add(latchEvict);
+                ASSERT_TRUE(latches.awaitMillis(2000));
+
+                ASSERT_FALSE(latchUpdate.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2116,7 +2135,7 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2152,11 +2171,11 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 latches.reset();
                 latches.add(latchEvict);
-                ASSERT_FALSE(latches.await(1000));
+                ASSERT_FALSE(latches.awaitMillis(1000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2176,8 +2195,9 @@ namespace hazelcast {
                         new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, false, true));
                 // value == 1
                 std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
-                        new query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1));
+                        new query::EqualPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 1));
                 query::AndPredicate predicate;
+                // key < 3 AND key == 1 --> (1, 1)
                 predicate.add(greaterLessPred).add(equalPred);
                 std::string listenerId = map.addEntryListener(listener, predicate, false);
 
@@ -2198,11 +2218,11 @@ namespace hazelcast {
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchUpdate);
-                ASSERT_TRUE(latches.await(2000));
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
                 latches.reset();
                 latches.add(latchEvict).add(latchRemove);
-                ASSERT_FALSE(latches.await(1000));
+                ASSERT_FALSE(latches.awaitMillis(1000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }
@@ -2222,10 +2242,11 @@ namespace hazelcast {
                         new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, true, false));
                 // value == 1
                 std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
-                        new query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 1));
+                        new query::EqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 2));
                 query::OrPredicate predicate;
+                // key >= 3 OR value == 2 --> (1, 1), (2, 2)
                 predicate.add(greaterLessPred).add(equalPred);
-                std::string listenerId = map.addEntryListener(listener, predicate, false);
+                std::string listenerId = map.addEntryListener(listener, predicate, true);
 
                 map.put(1, 1);
                 map.put(2, 2);
@@ -2243,12 +2264,10 @@ namespace hazelcast {
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
-                latches.add(latchAdd).add(latchUpdate).add(latchEvict);
-                ASSERT_TRUE(latches.await(2000));
+                latches.add(latchAdd).add(latchEvict).add(latchRemove);
+                ASSERT_TRUE(latches.awaitMillis(2000));
 
-                latches.reset();
-                latches.add(latchRemove);
-                ASSERT_FALSE(latches.await(1000));
+                ASSERT_FALSE(latchUpdate.awaitMillis(2000));
 
                 ASSERT_TRUE(map.removeEntryListener(listenerId));
             }

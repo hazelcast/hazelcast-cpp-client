@@ -86,9 +86,9 @@ namespace hazelcast {
                                     const int32_t &eventType, const std::string &uuid,
                                     const int32_t &numberOfAffectedEntries) {
                     EntryEventType type((EntryEventType::Type)eventType);
-                    boost::shared_ptr<V> val;
-                    boost::shared_ptr<V> oldVal;
-                    boost::shared_ptr<V> mergingVal;
+                    std::auto_ptr<V> val;
+                    std::auto_ptr<V> oldVal;
+                    std::auto_ptr<V> mergingVal;
                     if (includeValue) {
                         if (NULL != value.get()) {
                             val = serializationService.toObject<V>(*value);
@@ -100,7 +100,7 @@ namespace hazelcast {
                             mergingVal = serializationService.toObject<V>(*mergingValue);
                         }
                     }
-                    boost::shared_ptr<K> eventKey;
+                    std::auto_ptr<K> eventKey;
                     if (NULL != key.get()) {
                         eventKey = serializationService.toObject<K>(*key);
                     }
