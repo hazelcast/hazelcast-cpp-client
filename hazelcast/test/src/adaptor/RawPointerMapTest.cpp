@@ -955,15 +955,15 @@ namespace hazelcast {
                             processor, query::GreaterLessPredicate<int>("a", 25, true, true)); // <=25 matching
 
                     ASSERT_EQ(2, (int) result->size());
-                    if (3 == *result->getKey(0)) {
-                        ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(0));
+                    if (4 == *result->getKey(0)) {
+                        ASSERT_EQ(4 * processor.getMultiplier(), *result->getValue(0));
                         ASSERT_EQ(5, *result->getKey(1));
                         ASSERT_EQ(5 * processor.getMultiplier(), *result->getValue(1));
                     } else {
                         ASSERT_EQ(5, *result->getKey(0));
                         ASSERT_EQ(5 * processor.getMultiplier(), *result->getValue(0));
-                        ASSERT_EQ(3, *result->getKey(1));
-                        ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(1));
+                        ASSERT_EQ(4, *result->getKey(1));
+                        ASSERT_EQ(4 * processor.getMultiplier(), *result->getValue(1));
                     }
 
                     result = employees.executeOnEntries<int, EntryMultiplier>(
