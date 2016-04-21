@@ -115,11 +115,6 @@ namespace hazelcast {
                 void writeUTF(const std::string *value);
 
                 /**
-                * @param value the C string value to be written
-                */
-                void write(const char *value);
-
-                /**
                 * @param value the bytes to be written
                 */
                 void writeByteArray(const std::vector<byte> *value);
