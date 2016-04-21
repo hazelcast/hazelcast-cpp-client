@@ -99,16 +99,6 @@ namespace hazelcast {
                 }
             }
 
-            void ObjectDataOutput::write(const char *str) {
-                if (isEmpty) return;
-
-                if (NULL == str) {
-                    writeInt(util::Bits::NULL_ARRAY);
-                } else {
-                    dataOutput->write(str);
-                }
-            }
-
             void ObjectDataOutput::writeByteArray(const std::vector<byte> *value) {
                 if (isEmpty) return;
                 dataOutput->writeByteArray(value);

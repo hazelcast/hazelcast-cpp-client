@@ -22,6 +22,7 @@
 #define HAZELCAST_CountDownLatch
 
 #include <vector>
+#include <climits>
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"

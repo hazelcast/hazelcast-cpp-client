@@ -84,7 +84,7 @@ namespace hazelcast {
                 }
             };
 
-            const char *const IterationNames[] = {"KEY", "VALUE", "ENTRY"};
+            static const std::string IterationNames[] = {"KEY", "VALUE", "ENTRY"};
 
             /**
              * NOTE: PagingPredicate can only be used with values(), keySet() and entries() methods!!!
@@ -311,7 +311,7 @@ namespace hazelcast {
                     out.writeObject<serialization::IdentifiedDataSerializable>(comparator.get());
                     out.writeInt((int)page);
                     out.writeInt((int)pageSize);
-                    out.write(IterationNames[iterationType]);
+                    out.writeUTF(&IterationNames[iterationType]);
                     out.writeInt((int) anchorList.size());
                     for (typename std::vector<std::pair<size_t, std::pair<K *, V *> > >::const_iterator it = anchorList.begin();
                          it != anchorList.end(); ++it) {
@@ -332,7 +332,7 @@ namespace hazelcast {
                 }
 
                 void setAnchor(size_t page, const std::pair<K *, V *> &anchorEntry) {
-                    int anchorCount = (int) anchorList.size();
+                    size_t anchorCount = anchorList.size();
                     if (page < anchorCount) {
                         // release the previous anchoe entry
                         delete anchorList[page].second.first;

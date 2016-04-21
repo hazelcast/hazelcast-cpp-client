@@ -634,8 +634,8 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<std::string> > strArrRead = in.readUTFArray();
                 ASSERT_NE((std::vector<std::string> *)NULL, strArrRead.get());
                 ASSERT_EQ(stringVector.size(), strArrRead->size());
-                for (int i = 0; i < stringVector.size(); ++i) {
-                    ASSERT_EQ((*strArrRead)[i], *(stringVector[i]));
+                for (size_t j = 0; j < stringVector.size(); ++j) {
+                    ASSERT_EQ((*strArrRead)[j], *(stringVector[j]));
                 }
 
                 ASSERT_EQ(by, *in.readObject<byte>());
