@@ -62,6 +62,7 @@ namespace hazelcast {
             public:
                 int compare(const std::pair<const K *, const V *> &lhs, const std::pair<const K *, const V *> &rhs) const {
                     assert(0);
+                    return -1;
                 }
 
                 int getFactoryId() const {
