@@ -73,7 +73,7 @@ namespace hazelcast {
                         }
                     }
 
-                    ~EntryArrayImpl() {
+                    virtual ~EntryArrayImpl() {
                         for (typename std::vector<Item>::const_iterator it = deserializedEntries.begin();it != deserializedEntries.end(); ++it) {
                             if (it->isKeyDeserialized) {
                                 delete it->key;
