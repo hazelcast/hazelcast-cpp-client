@@ -59,7 +59,7 @@ namespace hazelcast {
         }
 
         void CountDownLatch::await() {
-            awaitMillis(INFINITE);
+            awaitMillis(HZ_INFINITE);
         }
 
         int CountDownLatch::get() {

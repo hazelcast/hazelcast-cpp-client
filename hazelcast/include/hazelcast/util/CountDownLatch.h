@@ -61,7 +61,7 @@ namespace hazelcast {
         private:
             util::AtomicInt count;
             static const size_t MILLISECONDS_IN_A_SECOND = 1000;
-            static const size_t INFINITE = UINT_MAX;
+            static const size_t HZ_INFINITE = UINT_MAX;
         };
 
         class HAZELCAST_API CountDownLatchWaiter {
