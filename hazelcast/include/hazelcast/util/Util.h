@@ -16,12 +16,6 @@
 //
 // Created by sancar koyunlu on 5/3/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
-
 #ifndef HAZELCAST_UTIL_FUNCTIONS
 #define HAZELCAST_UTIL_FUNCTIONS
 

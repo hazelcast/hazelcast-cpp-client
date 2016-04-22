@@ -16,12 +16,6 @@
 //
 // Created by sancar koyunlu on 5/2/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
-
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 

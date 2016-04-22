@@ -19,7 +19,10 @@
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/Version.h"
+
+#ifndef HAZELCAST_VERSION
+#define HAZELCAST_VERSION "NOT_FOUND"
+#endif
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

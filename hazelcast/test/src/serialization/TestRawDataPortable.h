@@ -16,12 +16,6 @@
 //
 // Created by sancar koyunlu on 5/6/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
-
 #ifndef __RawDataPortable_H_
 #define __RawDataPortable_H_
 

@@ -16,11 +16,6 @@
 //
 // Created by sancar koyunlu on 5/2/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
