@@ -22,7 +22,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            const TruePredicate *TruePredicate::INSTANCE = new TruePredicate;
+            const TruePredicate * HAZELCAST_API TruePredicate::INSTANCE = new TruePredicate;
 
             int TruePredicate::getFactoryId() const {
                 return impl::predicates::F_ID;
