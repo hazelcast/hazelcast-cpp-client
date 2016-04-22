@@ -31,7 +31,7 @@ namespace hazelcast {
         namespace query {
             class HAZELCAST_API SqlPredicate : public Predicate {
             public:
-                SqlPredicate(const char *sqlString);
+                SqlPredicate(const std::string &sqlString);
 
                 /**
                  * @return factory id
