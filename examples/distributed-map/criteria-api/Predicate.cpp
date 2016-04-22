@@ -286,10 +286,10 @@ void queryMapUsingDifferentPredicates() {
     values = intMap.values(query::NotEqualPredicate<int>(query::QueryConstants::THIS_ATTRIBUTE_NAME, 8));
 
     // TruePredicate
-    values = intMap.values(*query::TruePredicate::INSTANCE);
+    values = intMap.values(query::TruePredicate());
 
     // FalsePredicate
-    values = intMap.values(*query::FalsePredicate::INSTANCE);
+    values = intMap.values(query::FalsePredicate());
 
     // BetweenPredicate
     // 5 <= key <= 10
