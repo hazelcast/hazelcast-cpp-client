@@ -27,8 +27,9 @@ namespace hazelcast {
     namespace client {
         namespace query {
             struct HAZELCAST_API QueryConstants {
-                static const char *KEY_ATTRIBUTE_NAME;
-                static const char *THIS_ATTRIBUTE_NAME;
+                static const char *getKeyAttributeName();
+
+                static const char *getValueAttributeName();
             };
         }
     }
