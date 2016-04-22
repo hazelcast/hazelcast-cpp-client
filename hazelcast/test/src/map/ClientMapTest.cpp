@@ -675,7 +675,8 @@ namespace hazelcast {
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
-                values = intMap.values(query::NotPredicate(bp));
+                query::NotPredicate notPredicate(bp);
+                values = intMap.values(notPredicate);
                 ASSERT_EQ(14, (int)values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 14; ++i) {
@@ -1075,7 +1076,8 @@ namespace hazelcast {
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
-                keys = intMap.keySet(query::NotPredicate(bp));
+                query::NotPredicate notPredicate(bp);
+                keys = intMap.keySet(notPredicate);
                 ASSERT_EQ(14, (int)keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 14; ++i) {
@@ -1474,7 +1476,8 @@ namespace hazelcast {
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
-                entries = intMap.entrySet(query::NotPredicate(bp));
+                query::NotPredicate notPredicate(bp);
+                entries = intMap.entrySet(notPredicate);
                 ASSERT_EQ(14, (int)entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 14; ++i) {
@@ -2152,7 +2155,8 @@ namespace hazelcast {
 
                 // key >= 3
                 std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::KEY_ATTRIBUTE_NAME, 3, true, false));
-                std::string listenerId = map.addEntryListener(listener, query::NotPredicate(greaterLessPred), false);
+                query::NotPredicate notPredicate(greaterLessPred);
+                std::string listenerId = map.addEntryListener(listener, notPredicate, false);
 
                 map.put(1, 1);
                 map.put(2, 2);
@@ -2668,26 +2672,26 @@ namespace hazelcast {
                 employees.put(5, empl3);
 
                 EntryMultiplier processor(4);
+                std::auto_ptr<query::Predicate> eqPredicate(new query::EqualPredicate<int>("a", 25));
+                query::NotPredicate notPredicate(eqPredicate);
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor,
-                        query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25))));
+                        processor, notPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
 
+                query::NotPredicate notFalsePredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate()));
                 result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, query::NotPredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate())));
+                        processor, notFalsePredicate);
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
 
-                result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor,
-                        query::NotPredicate(
-                                std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))));
+                query::NotPredicate notBetweenPredicate(std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
+                result = employees.executeOnEntries<int, EntryMultiplier>(processor, notBetweenPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
