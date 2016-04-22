@@ -577,7 +577,7 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                values = intMap.values(*query::TruePredicate::INSTANCE);
+                values = intMap.values(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)values.size());
                 std::sort(values.begin(), values.end());
                 std::sort(values.begin(), values.end());
@@ -586,7 +586,7 @@ namespace hazelcast {
                 }
 
                 // FalsePredicate
-                values = intMap.values(*query::FalsePredicate::INSTANCE);
+                values = intMap.values(query::FalsePredicate());
                 ASSERT_EQ(0, (int)values.size());
 
                 // BetweenPredicate
@@ -978,7 +978,7 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                keys = intMap.keySet(*query::TruePredicate::INSTANCE);
+                keys = intMap.keySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)keys.size());
                 std::sort(keys.begin(), keys.end());
                 std::sort(keys.begin(), keys.end());
@@ -987,7 +987,7 @@ namespace hazelcast {
                 }
 
                 // FalsePredicate
-                keys = intMap.keySet(*query::FalsePredicate::INSTANCE);
+                keys = intMap.keySet(query::FalsePredicate());
                 ASSERT_EQ(0, (int)keys.size());
 
                 // BetweenPredicate
@@ -1376,7 +1376,7 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                entries = intMap.entrySet(*query::TruePredicate::INSTANCE);
+                entries = intMap.entrySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)entries.size());
                 std::sort(entries.begin(), entries.end());
                 std::sort(entries.begin(), entries.end());
@@ -1385,7 +1385,7 @@ namespace hazelcast {
                 }
 
                 // FalsePredicate
-                entries = intMap.entrySet(*query::FalsePredicate::INSTANCE);
+                entries = intMap.entrySet(query::FalsePredicate());
                 ASSERT_EQ(0, (int)entries.size());
 
                 // BetweenPredicate
@@ -1819,7 +1819,7 @@ namespace hazelcast {
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                std::string listenerId = map.addEntryListener(listener, *query::TruePredicate::INSTANCE, false);
+                std::string listenerId = map.addEntryListener(listener, query::TruePredicate(), false);
 
                 map.put(1, 1);
                 map.put(2, 2);
@@ -1853,7 +1853,7 @@ namespace hazelcast {
 
                 CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
-                std::string listenerId = map.addEntryListener(listener, *query::FalsePredicate::INSTANCE, false);
+                std::string listenerId = map.addEntryListener(listener, query::FalsePredicate(), false);
 
                 map.put(1, 1);
                 map.put(2, 2);
@@ -2377,7 +2377,7 @@ namespace hazelcast {
                 EntryMultiplier processor(4);
 
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, *query::TruePredicate::INSTANCE);
+                        processor, query::TruePredicate());
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
@@ -2402,7 +2402,7 @@ namespace hazelcast {
                 EntryMultiplier processor(4);
 
                 std::map<int, boost::shared_ptr<int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                        processor, *query::FalsePredicate::INSTANCE);
+                        processor, query::FalsePredicate());
 
                 ASSERT_EQ(0, (int) result.size());
             }
