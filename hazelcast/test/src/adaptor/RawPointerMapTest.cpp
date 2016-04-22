@@ -1116,8 +1116,8 @@ namespace hazelcast {
                         ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(1));
                     }
 
-                    result = employees.executeOnEntries<int, EntryMultiplier>(
-                            processor, query::NotPredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate())));
+                    query::NotPredicate notFalsePredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate()));
+                    result = employees.executeOnEntries<int, EntryMultiplier>(processor, notFalsePredicate);
 
                     ASSERT_EQ(3, (int) result->size());
 
