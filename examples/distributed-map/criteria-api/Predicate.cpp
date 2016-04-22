@@ -338,7 +338,8 @@ void queryMapUsingDifferentPredicates() {
     // !(5 <= key <= 10)
     std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
             query::QueryConstants::KEY_ATTRIBUTE_NAME, 5, 10));
-    values = intMap.values(query::NotPredicate(bp));
+    query::NotPredicate notPredicate(bp);
+    values = intMap.values(notPredicate);
 
     // AndPredicate
     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
