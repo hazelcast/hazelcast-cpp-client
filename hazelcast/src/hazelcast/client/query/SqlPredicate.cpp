@@ -22,7 +22,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            SqlPredicate::SqlPredicate(const char *sqlString) : sql(sqlString) {
+            SqlPredicate::SqlPredicate(const std::string &sqlString) : sql(sqlString) {
             }
 
             int SqlPredicate::getFactoryId() const {
