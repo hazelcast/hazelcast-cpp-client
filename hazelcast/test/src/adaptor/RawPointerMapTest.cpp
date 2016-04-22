@@ -1100,9 +1100,9 @@ namespace hazelcast {
                     employees.put(5, empl3);
 
                     EntryMultiplier processor(4);
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
-                            processor,
-                            query::NotPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25))));
+                    query::NotPredicate notEqualPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25)));
+                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
+                            employees.executeOnEntries<int, EntryMultiplier>(processor, notEqualPredicate);
 
                     ASSERT_EQ(2, (int) result->size());
                     if (3 == *result->getKey(0)) {
@@ -1121,10 +1121,9 @@ namespace hazelcast {
 
                     ASSERT_EQ(3, (int) result->size());
 
-                    result = employees.executeOnEntries<int, EntryMultiplier>(
-                            processor,
-                            query::NotPredicate(
-                                    std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))));
+                    query::NotPredicate notBetweenPredicate(
+                            std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
+                    result = employees.executeOnEntries<int, EntryMultiplier>(processor, notBetweenPredicate);
 
                     ASSERT_EQ(1, (int) result->size());
                     ASSERT_EQ(4, *result->getKey(0));
