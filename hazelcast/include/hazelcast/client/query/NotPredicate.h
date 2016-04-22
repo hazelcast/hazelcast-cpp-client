@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_QUERY_NOTPREDICATE_H_
 
 #include <string>
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -31,7 +32,7 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            class NotPredicate : public Predicate {
+            class HAZELCAST_API NotPredicate : public Predicate {
             public:
                 /**
                  * @tparam predicate The predicate to be negated
