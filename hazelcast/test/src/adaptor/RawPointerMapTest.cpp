@@ -751,7 +751,7 @@ namespace hazelcast {
                     EntryMultiplier processor(4);
 
                     std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
-                            employees.executeOnEntries<int, EntryMultiplier>(processor, *query::TruePredicate::INSTANCE);
+                            employees.executeOnEntries<int, EntryMultiplier>(processor, query::TruePredicate());
 
                     ASSERT_EQ(3, (int) result->size());
                     for (size_t i = 0;i < result->size();++i) {
@@ -777,7 +777,7 @@ namespace hazelcast {
                     EntryMultiplier processor(4);
 
                     std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
-                            employees.executeOnEntries<int, EntryMultiplier>(processor, *query::FalsePredicate::INSTANCE);
+                            employees.executeOnEntries<int, EntryMultiplier>(processor, query::FalsePredicate());
 
                     ASSERT_EQ(0, (int) result->size());
                 }

@@ -30,11 +30,6 @@ namespace hazelcast {
             class HAZELCAST_API TruePredicate : public Predicate {
             public:
                 /**
-                 * An instance of the TruePredicate.
-                 * */
-                static const TruePredicate *INSTANCE;
-
-                /**
                  * @return factory id
                  */
                 int getFactoryId() const;

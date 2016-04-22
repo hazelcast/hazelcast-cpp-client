@@ -19,8 +19,8 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            const char * HAZELCAST_API QueryConstants::KEY_ATTRIBUTE_NAME = "__key";
-            const char * HAZELCAST_API QueryConstants::THIS_ATTRIBUTE_NAME = "this";
+            const char * QueryConstants::KEY_ATTRIBUTE_NAME = "__key";
+            const char * QueryConstants::THIS_ATTRIBUTE_NAME = "this";
         }
     }
 }
