@@ -47,6 +47,9 @@ namespace hazelcast {
                         }
                     }
 
+                    virtual ~DataArrayImpl() {
+                    }
+
                     /**
                      * @return Returns the number of data items
                      */
