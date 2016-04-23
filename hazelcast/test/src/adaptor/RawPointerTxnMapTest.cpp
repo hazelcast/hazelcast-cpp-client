@@ -144,9 +144,9 @@ namespace hazelcast {
                 query::SqlPredicate predicate("a = 10");
                 ASSERT_EQ(0, (int)txMap.keySet(&predicate)->size());
                 ASSERT_EQ(0, (int)txMap.values(&predicate)->size());
-                predicate.setSql("a >= 10");
-                ASSERT_EQ(2, (int)txMap.keySet(&predicate)->size());
-                ASSERT_EQ(2, (int)txMap.values(&predicate)->size());
+                query::SqlPredicate predicate2("a >= 10");
+                ASSERT_EQ(2, (int)txMap.keySet(&predicate2)->size());
+                ASSERT_EQ(2, (int)txMap.values(&predicate2)->size());
 
                 context.commitTransaction();
 

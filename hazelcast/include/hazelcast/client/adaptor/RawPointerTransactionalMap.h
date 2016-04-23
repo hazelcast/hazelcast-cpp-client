@@ -19,7 +19,7 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERRawPointerTransactionalMap_H_
 
 #include "hazelcast/client/TransactionalMap.h"
-#include "hazelcast/client/adaptor/DataArray.h"
+#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -175,7 +175,7 @@ namespace hazelcast {
                 * @see IMap#keySet()
                 */
                 std::auto_ptr<DataArray<K> > keySet() {
-                    return std::auto_ptr<DataArray<K> >(new DataArray<K>(map.keySetData(), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.keySetData(), serializationService));
                 }
 
                 /**
@@ -185,7 +185,7 @@ namespace hazelcast {
                 * @see IMap#keySet(predicate)
                 */
                 std::auto_ptr<DataArray<K> > keySet(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<K> >(new DataArray<K>(map.keySetData(predicate), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.keySetData(predicate), serializationService));
                 }
 
                 /**
@@ -195,7 +195,7 @@ namespace hazelcast {
                 * @see IMap#values()
                 */
                 std::auto_ptr<DataArray<V> > values() {
-                    return std::auto_ptr<DataArray<V> >(new DataArray<V>(map.valuesData(), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.valuesData(), serializationService));
                 }
 
                 /**
@@ -204,7 +204,7 @@ namespace hazelcast {
                 * @see IMap#values(Predicate)
                 */
                 std::auto_ptr<DataArray<V> > values(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<V> >(new DataArray<V>(map.valuesData(predicate), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.valuesData(predicate), serializationService));
                 }
 
             private:

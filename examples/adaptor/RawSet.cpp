@@ -35,8 +35,8 @@ int main() {
     std::cout << "There are " << set.size() << " values in the set" << std::endl;
 
     for (size_t i = 0; i < vals->size(); ++i) {
-        std::auto_ptr<std::string> val = (*vals)[i];
-        if (NULL == val.get()) {
+        const std::string *val = (*vals)[i];
+        if (NULL == val) {
             std::cout << "Value " << i << " is NULL" << std::endl;
         } else {
             std::cout << "Value: " << *val << std::endl;

@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 11/11/13.
 
-
-
 #include "Employee.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
@@ -31,18 +29,13 @@ namespace hazelcast {
             }
 
             Employee::Employee(std::string name, int age)
-            :age(age)
-            , name(name) {
+                    :age(age)
+                    , name(name) {
 
             }
 
-            bool Employee::operator ==(const Employee &employee) const {
-                if (age != employee.age)
-                    return false;
-                else if (name.compare(employee.name))
-                    return false;
-                else
-                    return true;
+            bool Employee::operator==(const Employee &rhs) const {
+                return age == rhs.getAge() && name == rhs.getName();
             }
 
             bool Employee::operator !=(const Employee &employee) const {
@@ -50,11 +43,11 @@ namespace hazelcast {
             }
 
             int Employee::getFactoryId() const {
-                return TestSerializationConstants::EMPLOYEE_FACTORY;
+                return 666;
             }
 
             int Employee::getClassId() const {
-                return TestSerializationConstants::EMPLOYEE;
+                return 2;
             }
 
             void Employee::writePortable(serialization::PortableWriter &writer) const {
@@ -65,6 +58,88 @@ namespace hazelcast {
             void Employee::readPortable(serialization::PortableReader &reader) {
                 name = *reader.readUTF("n");
                 age = reader.readInt("a");
+            }
+
+            int Employee::getAge() const {
+                return age;
+            }
+
+            const std::string &Employee::getName() const {
+                return name;
+            }
+
+            bool Employee::operator<(const Employee &rhs) const {
+                return age < rhs.getAge();
+            }
+
+            int EmployeeEntryComparator::getFactoryId() const {
+                return 666;
+            }
+
+            int EmployeeEntryComparator::getClassId() const {
+                return 4;
+            }
+
+            void EmployeeEntryComparator::writeData(serialization::ObjectDataOutput &writer) const {
+            }
+
+            void EmployeeEntryComparator::readData(serialization::ObjectDataInput &reader) {
+            }
+
+            int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> &lhs,
+                        const std::pair<const int *, const Employee *> &rhs) const {
+                const Employee *lv = lhs.second;
+                const Employee *rv = rhs.second;
+
+                if (NULL == lv) {
+                    return -1;
+                }
+
+                if (NULL == rv) {
+                    return 1;
+                }
+
+                int la = lv->getAge();
+                int ra = rv->getAge();
+
+                if (la == ra) {
+                    return 0;
+                }
+
+                if (la < ra) {
+                    return -1;
+                }
+
+                return 1;
+            }
+
+
+            int EmployeeEntryKeyComparator::compare(const std::pair<const int *, const Employee *> &lhs,
+                                                    const std::pair<const int *, const Employee *> &rhs) const {
+                const int *key1 = lhs.first;
+                const int *key2 = rhs.first;
+
+                if (NULL == key1) {
+                    return -1;
+                }
+
+                if (NULL == key2) {
+                    return 1;
+                }
+
+                if (*key1 == *key2) {
+                    return 0;
+                }
+
+                if (*key1 < *key2) {
+                    return -1;
+                }
+
+                return 1;
+            }
+
+            int EmployeeEntryKeyComparator::getClassId() const {
+                return 5;
             }
 
         }

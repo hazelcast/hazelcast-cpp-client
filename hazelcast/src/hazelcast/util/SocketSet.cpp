@@ -20,8 +20,8 @@
 #include <assert.h>
 #include <iosfwd>
 #include <string.h>
-#include <hazelcast/util/Util.h>
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/LockGuard.h"

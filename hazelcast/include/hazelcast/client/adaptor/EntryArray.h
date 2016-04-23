@@ -22,38 +22,50 @@
 #include <vector>
 
 #include "hazelcast/util/Util.h"
-#include <hazelcast/client/exception/IllegalArgumentException.h>
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/Comparator.h"
+#include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/adaptor/DataArray.h"
 
 namespace hazelcast {
     namespace client {
         namespace adaptor {
-            template <typename K, typename V>
+            template<typename K, typename V>
             class EntryArray {
             public:
-                EntryArray(const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &entries,
-                        serialization::pimpl::SerializationService &service) : dataEntries(entries),
-                                                                               serializationService(service) {
-                }
-
                 /**
                  * @return Returns the number of data items
                  */
-                size_t size() const {
-                    return dataEntries.size();
-                }
+                virtual size_t size() const = 0;
 
                 /**
-                 * Please note that this operation is costly due to de-serialization. It will NOT cache the de-serialized data.
+                 * Please note that this operation is costly due to de-serialization. It caches deserialized data.
                  *
                  * @param index The index of the desired item in the array.
                  * @return Deserializes the data and returns the key object for the data at the provided index.
                  * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                  */
-                std::auto_ptr<K> getKey(size_t index) const {
-                    checkIndex(index);
-                    return serializationService.toObject<K>(dataEntries[index].first);
-                }
+                virtual const K *getKey(size_t index) = 0;
+
+                /**
+                 * Please note that this operation MAY(if not deserialized previously) be costly due to de-serialization.
+                 * It will NOT cache the de-serialized data.
+                 *
+                 * @param index The index of the desired item in the array.
+                 * @return Deserializes the data and returns the key object for the data at the provided index.
+                 * @throws IllegalArgumentException If provided index is greater than the maximum array index.
+                 */
+                virtual std::auto_ptr<K> releaseKey(size_t index) = 0;
+
+                /**
+                 * Please note that this operation is costly due to de-serialization. It will cache the de-serialized data.
+                 *
+                 * @param index The index of the desired item in the array.
+                 * @return Deserializes the data and returns the value object for the data at the provided index.
+                 * @throws IllegalArgumentException If provided index is greater than the maximum array index.
+                 */
+                virtual const V *getValue(size_t index) = 0;
 
                 /**
                  * Please note that this operation is costly due to de-serialization. It will NOT cache the de-serialized data.
@@ -62,39 +74,9 @@ namespace hazelcast {
                  * @return Deserializes the data and returns the value object for the data at the provided index.
                  * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                  */
-                std::auto_ptr<V> getValue(size_t index) const {
-                    checkIndex(index);
-                    return serializationService.toObject<V>(dataEntries[index].second);
-                }
-            private:
-                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataEntries;
-                serialization::pimpl::SerializationService &serializationService;
+                virtual std::auto_ptr<V> releaseValue(size_t index) = 0;
 
-                /**
-                 *  @throws IllegalArgumentException If provided index is greater than the maximum array index.
-                 */
-                void checkIndex(size_t index) const {
-                    size_t len = dataEntries.size();
-                    if (0 == len) {
-                        char msg[200];
-                        util::snprintf(msg, 200,
-                                       "The are no elements in the array, you should not try accessing any element of the "
-                                               "array. Provided index (%lu) id out of range.", index);
-                        throw client::exception::IllegalArgumentException("DataArray", msg);
-                    }
-
-                    if (index >= len) {
-                        char msg[200];
-                        util::snprintf(msg, 200, "Provided index (%lu) id out of range. Maximum allowed index is %lu",
-                                       index, (len - 1));
-                        throw client::exception::IllegalArgumentException("EntryArray", msg);
-                    }
-
-                }
-
-                // prevent copy operations
-                EntryArray(const EntryArray &rhs);
-                EntryArray &operator =(const EntryArray &rhs);
+                virtual std::pair<const K *, const V *> operator[](size_t index) = 0;
             };
         }
     }

@@ -16,11 +16,10 @@
 #ifndef HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
 #define HAZELCAST_CLIENT_QUERY_SQLPREDICATE_H_
 
-#include <memory>
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/query/Predicate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,15 +28,10 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            class ObjectDataOutput;
-        }
         namespace query {
-            class HAZELCAST_API SqlPredicate : public serialization::IdentifiedDataSerializable {
+            class HAZELCAST_API SqlPredicate : public Predicate {
             public:
-                SqlPredicate(const char * sqlString);
-
-                SqlPredicate(std::auto_ptr<std::string> sqlString);
+                SqlPredicate(const std::string &sqlString);
 
                 /**
                  * @return factory id
@@ -60,12 +54,8 @@ namespace hazelcast {
                  * @param reader ObjectDataInput
                  */
                 void readData(serialization::ObjectDataInput &in);
-
-                void setSql(const char *newSql);
-
-                void setSql(std::auto_ptr<std::string> newSql);
             private:
-                std::auto_ptr<std::string> sql;
+                std::string sql;
             };
         }
     }
