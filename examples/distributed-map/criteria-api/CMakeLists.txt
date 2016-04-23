@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(criteriaapi Predicate.cpp)
+add_executable(criteriaapi Predicate.cpp Employee.h Employee.cpp)
 

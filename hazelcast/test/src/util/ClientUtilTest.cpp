@@ -69,7 +69,7 @@ namespace hazelcast {
                     if (wokenUpByInterruption) {
                         end = time(NULL);
                     }
-                    ASSERT_NEAR(end-beg, wakeUpTime, 1);
+                    ASSERT_NEAR((double)(end-beg), (double)wakeUpTime, 1);
                 }
 
             }
@@ -84,7 +84,7 @@ namespace hazelcast {
                 } catch (exception::TimeoutException&) {
                     end = time(NULL);
                 }
-                ASSERT_NEAR(end-beg, waitSeconds, 1);
+                ASSERT_NEAR((double)(end-beg), (double)waitSeconds, 1);
             }
 
             TEST_F (ClientUtilTest, testFutureSetValue) {
@@ -155,7 +155,7 @@ namespace hazelcast {
                 thread.cancel();
                 thread.join();
                 time_t end = time(NULL);
-                ASSERT_NEAR((int)(end - beg), wakeUpTime , 1);
+                ASSERT_NEAR((double)(end - beg), (double)wakeUpTime , 1);
             }
         }
     }

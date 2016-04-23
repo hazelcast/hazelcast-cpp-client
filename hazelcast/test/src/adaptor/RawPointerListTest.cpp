@@ -120,10 +120,10 @@ namespace hazelcast {
                     std::auto_ptr<client::adaptor::DataArray<std::string> > ar = list.toArray();
 
                     ASSERT_EQ((size_t)4, ar->size());
-                    ASSERT_NE((std::string *)NULL, ar->get(0).get());
-                    ASSERT_NE((std::string *)NULL, ar->get(1).get());
-                    ASSERT_NE((std::string *)NULL, ar->get(2).get());
-                    ASSERT_NE((std::string *)NULL, ar->get(3).get());
+                    ASSERT_NE((std::string *)NULL, ar->get(0));
+                    ASSERT_NE((std::string *)NULL, ar->get(1));
+                    ASSERT_NE((std::string *)NULL, ar->get(2));
+                    ASSERT_NE((std::string *)NULL, ar->get(3));
                     ASSERT_EQ("item1", *((*ar)[0]));
                     ASSERT_EQ("item2", *ar->get(1));
                     ASSERT_EQ("item1", *((*ar)[2]));
@@ -132,8 +132,8 @@ namespace hazelcast {
                     ar = list.subList(1, 3);
 
                     ASSERT_EQ((size_t)2, ar->size());
-                    ASSERT_NE((std::string *)NULL, ar->get(0).get());
-                    ASSERT_NE((std::string *)NULL, ar->get(1).get());
+                    ASSERT_NE((std::string *)NULL, ar->get(0));
+                    ASSERT_NE((std::string *)NULL, ar->get(1));
                     ASSERT_EQ("item2", *ar->get(0));
                     ASSERT_EQ("item1", *ar->get(1));
                 }

@@ -107,7 +107,7 @@ namespace hazelcast {
                     ASSERT_TRUE(mm.remove("key1", "value1"));
                     ASSERT_EQ(1, mm.size());
                     coll = mm.get("key1");
-                    std::auto_ptr<std::string> val = coll->get(0);
+                    std::auto_ptr<std::string> val = coll->release(0);
                     ASSERT_NE((std::string *)NULL, val.get());
                     ASSERT_EQ("value3", *val);
                 }

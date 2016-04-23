@@ -33,26 +33,33 @@ namespace hazelcast {
         }
 
         bool CountDownLatch::await(int seconds) {
-            time_t endTime = time(NULL) + seconds;
-            while (endTime > time(NULL)) {
-                if (count <= 0) {
-                    return true;
-                }
-                util::sleep(1);
-            }
+            return awaitMillis(seconds * MILLISECONDS_IN_A_SECOND);
+        }
+
+        bool CountDownLatch::awaitMillis(size_t milliseconds) {
+            size_t elapsed;
+            return awaitMillis(milliseconds, elapsed);
+        }
+
+        bool CountDownLatch::awaitMillis(size_t milliseconds, size_t &elapsed) {
             if (count <= 0) {
                 return true;
             }
+
+            elapsed = 0;
+            do {
+                util::sleepmillis(CHECK_INTERVAL);
+                elapsed += CHECK_INTERVAL;
+                if (count <= 0) {
+                    return true;
+                }
+            } while (elapsed < milliseconds);
+
             return false;
         }
 
         void CountDownLatch::await() {
-            while (true) {
-                if (count == 0) {
-                    break;
-                }
-                util::sleep(1);
-            }
+            awaitMillis(HZ_INFINITE);
         }
 
         int CountDownLatch::get() {
@@ -66,6 +73,35 @@ namespace hazelcast {
             }
             return count <= expectedCount;
         }
+
+        CountDownLatchWaiter &CountDownLatchWaiter::add(CountDownLatch &latch) {
+            latches.push_back(&latch);
+            return *this;
+        }
+
+        bool CountDownLatchWaiter::awaitMillis(size_t milliseconds) {
+            if (latches.empty()) {
+                return true;
+            }
+
+            for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin();it != latches.end();++it) {
+                size_t elapsed;
+                bool result = (*it)->awaitMillis(milliseconds, elapsed);
+                if (!result) {
+                    return false;
+                }
+                milliseconds -= elapsed;
+                if (milliseconds <= 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        void CountDownLatchWaiter::reset() {
+            latches.clear();
+        }
+
     }
 }
 

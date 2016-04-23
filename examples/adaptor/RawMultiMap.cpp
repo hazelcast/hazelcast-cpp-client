@@ -38,13 +38,13 @@ int main() {
     std::cout << "There are " << size << " entries in the multimap" << std::endl;
     
     for (size_t i = 0; i < size; ++i) {
-        std::auto_ptr<std::string> key = entries->getKey(i);
-        if ((std::string *) NULL == key.get()) {
+        const std::string * key = entries->getKey(i);
+        if ((std::string *) NULL == key) {
             std::cout << "The key at index " << i << " is NULL" << std::endl;
         } else {
-            std::auto_ptr<std::string> val = entries->getValue(i);
+            const std::string *val = entries->getValue(i);
             std::cout << "(Key, Value) for index " << i << " is: (" << *key << ", " <<
-                (val.get() == NULL ? "NULL" : *val) << ")" << std::endl;
+                (val == NULL ? "NULL" : *val) << ")" << std::endl;
         }
     }
 
@@ -55,8 +55,8 @@ int main() {
     size = vals->size();
     std::cout << "There are " << vals->size() << " values for key '1' in the multimap. These are:" << std::endl;
     for (size_t j = 0; j < size; ++j) {
-        std::auto_ptr<std::string> val = vals->get(j);
-        if (NULL == val.get()) {
+        const std::string *val = vals->get(j);
+        if (NULL == val) {
             std::cout << "NULL" << std::endl;
         } else {
             std::cout << *val << std::endl;

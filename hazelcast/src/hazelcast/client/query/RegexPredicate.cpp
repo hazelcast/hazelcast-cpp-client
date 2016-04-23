@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/query/SqlPredicate.h"
+#include "hazelcast/client/query/RegexPredicate.h"
 #include "hazelcast/client/query/impl/predicates/PredicateDataSerializerHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -22,34 +22,27 @@
 namespace hazelcast {
     namespace client {
         namespace query {
-            SqlPredicate::SqlPredicate(const char *sqlString) : sql(new std::string(sqlString)) {
+            RegexPredicate::RegexPredicate(const char *attribute, const char *regex) : attributeName(attribute),
+                                                                                       regularExpression(regex) {
             }
 
-            SqlPredicate::SqlPredicate(std::auto_ptr<std::string> sqlString) : sql(sqlString) {
-            }
-
-            int SqlPredicate::getFactoryId() const {
+            int RegexPredicate::getFactoryId() const {
                 return impl::predicates::F_ID;
             }
 
-            int SqlPredicate::getClassId() const {
-                return impl::predicates::SQL_PREDICATE;
+            int RegexPredicate::getClassId() const {
+                return impl::predicates::REGEX_PREDICATE;
             }
 
-            void SqlPredicate::writeData(serialization::ObjectDataOutput &out) const {
-                out.writeUTF(sql.get());
+            void RegexPredicate::writeData(serialization::ObjectDataOutput &out) const {
+                out.writeUTF(&attributeName);
+                out.writeUTF(&regularExpression);
             }
 
-            void SqlPredicate::readData(serialization::ObjectDataInput &in) {
-                sql = in.readUTF();
-            }
-
-            void SqlPredicate::setSql(std::auto_ptr<std::string> newSql) {
-                sql = newSql;
-            }
-
-            void SqlPredicate::setSql(const char *newSql) {
-                sql = std::auto_ptr<std::string>(new std::string(newSql));
+            void RegexPredicate::readData(serialization::ObjectDataInput &in) {
+                // Not need to read at the client side
+                throw exception::IException("RegexPredicate::readData",
+                                            "Client should not need to use readData method!!!");
             }
         }
     }

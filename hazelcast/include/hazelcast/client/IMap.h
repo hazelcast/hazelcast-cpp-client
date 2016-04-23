@@ -16,16 +16,18 @@
 #ifndef HAZELCAST_IMAP
 #define HAZELCAST_IMAP
 
-#include "hazelcast/client/proxy/IMapImpl.h"
-#include "hazelcast/client/impl/EntryEventHandler.h"
-#include "hazelcast/client/EntryListener.h"
-#include "hazelcast/client/EntryView.h"
 #include <string>
 #include <map>
 #include <set>
 #include <vector>
 #include <stdexcept>
 #include <climits>
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
+#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
+#include "hazelcast/client/proxy/IMapImpl.h"
+#include "hazelcast/client/impl/EntryEventHandler.h"
+#include "hazelcast/client/EntryListener.h"
+#include "hazelcast/client/EntryView.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -425,6 +427,29 @@ namespace hazelcast {
             }
 
             /**
+            * Adds an entry listener for this map.
+            *
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * otherwise it will slow down the system.
+            *
+            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+            *
+            * @param listener     entry listener
+            * @param predicate The query filter to use when returning the events to the user.
+            * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
+            *                     contain the value.
+            *
+            * @return registrationId of added listener that can be used to remove the entry listener.
+            */
+            std::string addEntryListener(EntryListener<K, V> &listener, const query::Predicate &predicate, bool includeValue) {
+                impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
+                        new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                includeValue);
+                return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
+            }
+
+            /**
             * Removes the specified entry listener
             * Returns silently if there is no such listener added before.
             *
@@ -548,6 +573,8 @@ namespace hazelcast {
             }
 
             /**
+              * @deprecated This API is deprecated in favor of @sa{keySet(const query::Predicate &predicate)}
+              *
               * Queries the map based on the specified predicate and
               * returns the keys of matching entries.
               *
@@ -558,6 +585,22 @@ namespace hazelcast {
               * @return result key set of the query
               */
             std::vector<K> keySet(const serialization::IdentifiedDataSerializable &predicate) {
+                const query::Predicate *p = (const query::Predicate *)(&predicate);
+                return keySet(*p);
+            }
+
+            /**
+              *
+              * Queries the map based on the specified predicate and
+              * returns the keys of matching entries.
+              *
+              * Specified predicate runs on all members in parallel.
+              *
+              *
+              * @param predicate query criteria
+              * @return result key set of the query
+              */
+            std::vector<K> keySet(const query::Predicate &predicate) {
                 std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData(predicate);
                 size_t size = dataResult.size();
                 std::vector<K> keys(size);
@@ -566,6 +609,40 @@ namespace hazelcast {
                     keys[i] = *key;
                 }
                 return keys;
+            }
+
+            /**
+              *
+              * Queries the map based on the specified predicate and
+              * returns the keys of matching entries.
+              *
+              * Specified predicate runs on all members in parallel.
+              *
+              *
+              * @param predicate query criteria
+              * @return result key set of the query
+              */
+            std::vector<K> keySet(query::PagingPredicate<K, V> &predicate) {
+                predicate.setIterationType(query::KEY);
+
+                std::vector<serialization::pimpl::Data> dataResult = keySetForPagingPredicateData(predicate);
+
+                EntryVector entryResult;
+                for (std::vector<serialization::pimpl::Data>::iterator it = dataResult.begin();it != dataResult.end(); ++it) {
+                    entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it, serialization::pimpl::Data()));
+                }
+
+                adaptor::impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
+                entries.sort(predicate.getComparator(), query::KEY);
+
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
+
+                std::vector<K> result;
+                for (size_t i = range.first; i < range.second; ++i) {
+                    result.push_back(*entries.getKey(i));
+                }
+
+                return result;
             }
 
             /**
@@ -587,6 +664,8 @@ namespace hazelcast {
             }
 
             /**
+            * @deprecated This API is deprecated in favor of @sa{values(const query::Predicate &predicate)}
+            *
             * Returns a vector clone of the values contained in this map.
             * The vector is <b>NOT</b> backed by the map,
             * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
@@ -595,6 +674,19 @@ namespace hazelcast {
             * @return a vector clone of the values contained in this map
             */
             std::vector<V> values(const serialization::IdentifiedDataSerializable &predicate) {
+                const query::Predicate *p = (const query::Predicate *)(&predicate);
+                return values(*p);
+            }
+
+            /**
+            * Returns a vector clone of the values contained in this map.
+            * The vector is <b>NOT</b> backed by the map,
+            * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+            *
+            * @param predicate the criteria for values to match
+            * @return a vector clone of the values contained in this map
+            */
+            std::vector<V> values(const query::Predicate &predicate) {
                 std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
                 size_t size = dataResult.size();
                 std::vector<V> values(size);
@@ -603,6 +695,33 @@ namespace hazelcast {
                     values[i] = *value;
                 }
                 return values;
+            }
+
+            /**
+            * Returns a vector clone of the values contained in this map.
+            * The vector is <b>NOT</b> backed by the map,
+            * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+            *
+            *
+            * @param predicate the criteria for values to match
+            * @return a vector clone of the values contained in this map
+            */
+            std::vector<V> values(query::PagingPredicate<K, V> &predicate) {
+                predicate.setIterationType(query::VALUE);
+
+                EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
+
+                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+
+                entries.sort(predicate.getComparator(), query::VALUE);
+
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::VALUE);
+
+                std::vector<V> result;
+                for (size_t i = range.first; i < range.second; ++i) {
+                    result.push_back(*entries.getValue(i));
+                }
+                return result;
             }
 
             /**
@@ -625,6 +744,8 @@ namespace hazelcast {
             }
 
             /**
+            * @deprecated This API is deprecated in favor of @sa{entrySet(const query::Predicate &predicate)}
+            *
             * Queries the map based on the specified predicate and
             * returns the matching entries.
             *
@@ -645,6 +766,56 @@ namespace hazelcast {
                     entries[i] = std::make_pair(*key, *value);
                 }
                 return entries;
+            }
+
+            /**
+            * Queries the map based on the specified predicate and
+            * returns the matching entries.
+            *
+            * Specified predicate runs on all members in parallel.
+            *
+            *
+            * @param predicate query criteria
+            * @return result entry vector of the query
+            */
+            std::vector<std::pair<K, V> > entrySet(const query::Predicate &predicate) {
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
+                        predicate);
+                size_t size = dataResult.size();
+                std::vector<std::pair<K, V> > entries(size);
+                for (size_t i = 0; i < size; ++i) {
+                    std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                    std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                    entries[i] = std::make_pair(*key, *value);
+                }
+                return entries;
+            }
+
+            /**
+            * Queries the map based on the specified predicate and
+            * returns the matching entries.
+            *
+            * Specified predicate runs on all members in parallel.
+            *
+            *
+            * @param predicate query criteria
+            * @return result entry vector of the query
+            */
+            std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
+                std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
+                        predicate);
+
+                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                entries.sort(predicate.getComparator(), query::ENTRY);
+
+                std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);
+
+                std::vector<std::pair<K, V> > result;
+                for (size_t i = range.first; i < range.second; ++i) {
+                    std::pair<const K *, const V *> entry = entries[i];
+                    result.push_back(std::pair<K, V>(*entry.first, *entry.second));
+                }
+                return result;
             }
 
             /**
@@ -719,7 +890,56 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
-                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<K, EntryProcessor>(entryProcessor);
+                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
+                std::map<K, boost::shared_ptr<ResultType> > result;
+                for (size_t i = 0; i < entries.size(); ++i) {
+                    std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                    std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                    result[*keyObj] = resObj;
+                }
+                return result;
+            }
+
+            /**
+            * @deprecated This API is deprecated in favor of
+            * @sa{executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate)}
+            *
+            * Applies the user defined EntryProcessor to the all entries in the map.
+            * Returns the results mapped by each key in the map.
+            *
+            *
+            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+            * with same classId and factoryId.
+            *
+            * @tparam ResultType that entry processor will return
+            * @tparam EntryProcessor type of entry processor class
+            * @tparam predicate The filter to apply for selecting the entries at the server side.
+            * @param entryProcessor that will be applied
+            */
+            template<typename ResultType, typename EntryProcessor>
+            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const serialization::IdentifiedDataSerializable &predicate) {
+                const query::Predicate *p = (const query::Predicate *)(&predicate);
+                return executeOnEntries<ResultType, EntryProcessor>(entryProcessor, *p);
+            }
+
+            /**
+            * Applies the user defined EntryProcessor to the all entries in the map.
+            * Returns the results mapped by each key in the map.
+            *
+            *
+            * EntryProcessor should extend either Portable or IdentifiedSerializable.
+            * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+            * with same classId and factoryId.
+            *
+            * @tparam ResultType that entry processor will return
+            * @tparam EntryProcessor type of entry processor class
+            * @tparam predicate The filter to apply for selecting the entries at the server side.
+            * @param entryProcessor that will be applied
+            */
+            template<typename ResultType, typename EntryProcessor>
+            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
                 std::map<K, boost::shared_ptr<ResultType> > result;
                 for (size_t i = 0; i < entries.size(); ++i) {
                     std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
@@ -787,8 +1007,6 @@ namespace hazelcast {
             IMap(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::IMapImpl(instanceName, context) {
             }
-
-
         };
     }
 }
