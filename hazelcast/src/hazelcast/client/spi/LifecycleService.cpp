@@ -26,6 +26,14 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
 
+#ifndef HAZELCAST_GIT_COMMIT_DATE
+#define HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND"
+#endif
+
+#ifndef HAZELCAST_GIT_COMMIT_ID
+#define HAZELCAST_GIT_COMMIT_ID "NOT_FOUND"
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -89,10 +97,14 @@ namespace hazelcast {
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :
                     {
+                        // convert the date string from 2016-04-20 to 20160420
+                        std::string date(HAZELCAST_GIT_COMMIT_DATE);
+                        if (date != "NOT_FOUND") {
+                            date.erase(4, 1);
+                            date.erase(6, 1);
+                        }
                         char msg[100];
-                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING",
-                                       HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE),
-                                       HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
+                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(), HAZELCAST_GIT_COMMIT_ID);
                         logger.info(msg);
                         break;
                     }

@@ -22,9 +22,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
 
-#define HAZELCAST_STRINGIZE(X) HZ_STRINGIZE(X)
-#define HZ_STRINGIZE(X) #X
-
 namespace hazelcast {
     namespace util {
 
