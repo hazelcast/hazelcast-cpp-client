@@ -42,11 +42,13 @@ namespace hazelcast {
         }
 
         bool CountDownLatch::awaitMillis(size_t milliseconds, size_t &elapsed) {
+            // set elapsed to zero in case it returns before sleep
+            elapsed = 0;
+
             if (count <= 0) {
                 return true;
             }
 
-            elapsed = 0;
             do {
                 util::sleepmillis(CHECK_INTERVAL);
                 elapsed += CHECK_INTERVAL;
