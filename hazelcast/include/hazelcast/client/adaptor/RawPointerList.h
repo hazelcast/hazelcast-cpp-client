@@ -17,9 +17,9 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERLIST_H_
 
 #include "hazelcast/client/IList.h"
-#include "hazelcast/client/adaptor/EntryView.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
+#include "hazelcast/client/adaptor/MapEntryView.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/EntryArrayImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

@@ -23,7 +23,7 @@
 #include <stdexcept>
 #include <climits>
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
+#include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/EntryListener.h"
@@ -632,7 +632,7 @@ namespace hazelcast {
                     entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it, serialization::pimpl::Data()));
                 }
 
-                adaptor::impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
+                impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
                 entries.sort(predicate.getComparator(), query::KEY);
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
@@ -711,7 +711,7 @@ namespace hazelcast {
 
                 EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
 
-                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
 
                 entries.sort(predicate.getComparator(), query::VALUE);
 
@@ -805,7 +805,7 @@ namespace hazelcast {
                 std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
                         predicate);
 
-                adaptor::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
                 entries.sort(predicate.getComparator(), query::ENTRY);
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);

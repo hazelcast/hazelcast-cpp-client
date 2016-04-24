@@ -19,7 +19,7 @@
 #include <memory>
 
 #include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {
