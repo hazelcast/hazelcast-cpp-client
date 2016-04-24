@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERSET_H_
 
 #include "hazelcast/client/ISet.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {

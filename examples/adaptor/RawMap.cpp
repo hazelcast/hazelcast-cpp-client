@@ -30,8 +30,8 @@ int main() {
     map.put("3", "New York");
     std::cout << "Finished loading map" << std::endl;
 
-    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > vals = map.values();
-    std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > entries = map.entrySet();
+    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = map.values();
+    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > entries = map.entrySet();
 
     std::cout << "There are " << vals->size() << " values in the map" << std::endl;
     std::cout << "There are " << entries->size() << " entries in the map" << std::endl;

@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
-#include "hazelcast/client/adaptor/EntryArray.h"
+#include "hazelcast/client/EntryArray.h"
 #include "hazelcast/client/query/PagingPredicate.h"
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
@@ -170,7 +170,7 @@ namespace hazelcast {
                 }
 
                 template <typename K, typename V>
-                std::pair<size_t, size_t> updateAnchor(adaptor::EntryArray<K, V> &entries,
+                std::pair<size_t, size_t> updateAnchor(EntryArray<K, V> &entries,
                                                  query::PagingPredicate<K, V> &predicate,
                                                  query::IterationType iterationType) {
                     if (0 == entries.size()) {
@@ -197,7 +197,7 @@ namespace hazelcast {
                 }
 
                 template <typename K, typename V>
-                static void setAnchor(adaptor::EntryArray<K, V> &entries, query::PagingPredicate<K, V> &predicate, int nearestPage) {
+                static void setAnchor(EntryArray<K, V> &entries, query::PagingPredicate<K, V> &predicate, int nearestPage) {
                     if (0 == entries.size()) {
                         return;
                     }

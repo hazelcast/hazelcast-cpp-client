@@ -90,7 +90,7 @@ namespace hazelcast {
                     ASSERT_EQ(2, mm.valueCount("key2"));
                     ASSERT_EQ(5, mm.size());
 
-                    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > coll = mm.get("key1");
+                    std::auto_ptr<hazelcast::client::DataArray<std::string> > coll = mm.get("key1");
                     ASSERT_EQ(3, (int)coll->size());
 
                     coll = mm.remove("key2");

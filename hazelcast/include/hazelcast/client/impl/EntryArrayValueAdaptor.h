@@ -24,7 +24,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Comparator.h"
-#include "hazelcast/client/adaptor/DataArray.h"
+#include "hazelcast/client/DataArray.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {

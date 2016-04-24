@@ -39,7 +39,7 @@ int main() {
 
     std::cout << "There are " << list.size() << " values in the list" << std::endl;
 
-    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > vals = list.subList(0, 2);
+    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = list.subList(0, 2);
     std::cout << "Got sublist between indexes 0 and 2. Size is:" << vals->size() << std::endl;
     for (size_t i = 0; i < vals->size(); ++i) {
         const std::string *val = vals->get(i);

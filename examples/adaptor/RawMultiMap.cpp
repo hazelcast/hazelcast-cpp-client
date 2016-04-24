@@ -30,8 +30,8 @@ int main() {
     multimap.put("3", "New York");
     std::cout << "Finished loading multimap" << std::endl;
 
-    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > vals = multimap.values();
-    std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > entries = multimap.entrySet();
+    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = multimap.values();
+    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > entries = multimap.entrySet();
 
     std::cout << "There are " << vals->size() << " values in the multimap" << std::endl;
     size_t size = entries->size();
