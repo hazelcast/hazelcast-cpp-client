@@ -245,7 +245,7 @@ namespace hazelcast {
                     tempSet.insert(util::IOUtil::to_string(1));
                     tempSet.insert(util::IOUtil::to_string(3));
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
+                    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
 
                     ASSERT_EQ(2U, m2->size());
                     std::auto_ptr<std::string> key1 = m2->releaseKey(0);
@@ -460,7 +460,7 @@ namespace hazelcast {
 
                     fillMap();
                     query::SqlPredicate predicate("this == value1");
-                    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > tempVector = imap->values(predicate);
+                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempVector = imap->values(predicate);
                     ASSERT_EQ(1U, tempVector->size());
 
                     ASSERT_EQ("value1", *tempVector->get(0));
@@ -577,20 +577,20 @@ namespace hazelcast {
                     fillMap();
 
                     query::SqlPredicate predicate("this = 'value1'");
-                    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > tempArray = imap->values(predicate);
+                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempArray = imap->values(predicate);
 
                     std::auto_ptr<std::string> actualVal = tempArray->release(0);
                     ASSERT_NE((std::string *)NULL, actualVal.get());
                     ASSERT_EQ("value1", *actualVal);
 
-                    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > tempArray2 = imap->keySet(predicate);
+                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempArray2 = imap->keySet(predicate);
 
                     const std::string *actual = (*tempArray2)[0];
                     ASSERT_NE((std::string *)NULL, actual);
                     ASSERT_EQ("key1", *actual);
 
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<std::string, std::string> > tempArray3 = imap->entrySet(predicate);
+                    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > tempArray3 = imap->entrySet(predicate);
                     actual = tempArray3->getKey(0);
                     ASSERT_NE((std::string *)NULL, actual);
                     ASSERT_EQ("key1", *actual);
@@ -632,7 +632,7 @@ namespace hazelcast {
                     std::auto_ptr<Employee> ptr = employees.put(1, employee);
                     ASSERT_EQ(ptr.get(), (Employee *) NULL);
                     ASSERT_FALSE(employees.isEmpty());
-                    std::auto_ptr<hazelcast::client::adaptor::EntryView<int, Employee> > view = employees.getEntryView(1);
+                    std::auto_ptr<hazelcast::client::MapEntryView<int, Employee> > view = employees.getEntryView(1);
                     ASSERT_EQ(*(view->getValue()), employee);
                     ASSERT_EQ(*(view->getKey()), 1);
 
@@ -724,7 +724,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor);
 
                     ASSERT_EQ(3, (int) result->size());
@@ -750,7 +750,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees.executeOnEntries<int, EntryMultiplier>(processor, query::TruePredicate());
 
                     ASSERT_EQ(3, (int) result->size());
@@ -776,7 +776,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees.executeOnEntries<int, EntryMultiplier>(processor, query::FalsePredicate());
 
                     ASSERT_EQ(0, (int) result->size());
@@ -804,7 +804,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, andPredicate);
 
                     ASSERT_EQ(1, (int) result->size());
@@ -832,7 +832,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, orPredicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -862,7 +862,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::BetweenPredicate<int>("a", 25, 35));
 
                     ASSERT_EQ(2, (int) result->size());
@@ -892,7 +892,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::EqualPredicate<int>("a", 25));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -914,7 +914,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::NotEqualPredicate<int>("a", 25));
 
                     ASSERT_EQ(2, (int) result->size());
@@ -944,7 +944,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
 
                     ASSERT_EQ(1, (int) result->size());
@@ -1003,7 +1003,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::LikePredicate("n", "deniz"));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -1026,7 +1026,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::ILikePredicate("n", "deniz"));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -1052,7 +1052,7 @@ namespace hazelcast {
                     values.push_back("ahmet");
                     query::InPredicate<std::string> predicate("n", values);
                     predicate.add("mehmet");
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, predicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -1081,7 +1081,7 @@ namespace hazelcast {
                     employees.put(5, empl3);
 
                     EntryMultiplier processor(4);
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::InstanceOfPredicate("Employee"));
 
                     ASSERT_EQ(3, (int) result->size());
@@ -1101,7 +1101,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
                     query::NotPredicate notEqualPredicate(std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25)));
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result =
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees.executeOnEntries<int, EntryMultiplier>(processor, notEqualPredicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -1144,7 +1144,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::adaptor::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees.executeOnEntries<int, EntryMultiplier>(
                             processor, query::RegexPredicate("n", ".*met"));
 
                     ASSERT_EQ(2, (int) result->size());

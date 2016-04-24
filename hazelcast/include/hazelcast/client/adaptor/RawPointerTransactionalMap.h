@@ -19,7 +19,7 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERRawPointerTransactionalMap_H_
 
 #include "hazelcast/client/TransactionalMap.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
 
 namespace hazelcast {
     namespace client {

@@ -201,7 +201,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q.offer("item4"));
                     ASSERT_TRUE(q.offer("item5"));
 
-                    std::auto_ptr<client::adaptor::DataArray<std::string> > list = q.drainTo(2);
+                    std::auto_ptr<client::DataArray<std::string> > list = q.drainTo(2);
                     ASSERT_EQ((size_t)2U, list->size());
                     ASSERT_NE((std::string *)NULL, list->get(0));
                     ASSERT_NE((std::string *)NULL, list->get(1));
@@ -225,7 +225,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q.offer("item4"));
                     ASSERT_TRUE(q.offer("item5"));
 
-                    std::auto_ptr<client::adaptor::DataArray<std::string> > array = q.toArray();
+                    std::auto_ptr<client::DataArray<std::string> > array = q.toArray();
                     size_t size = array->size();
                     ASSERT_EQ(5U, size);
                     for (size_t i = 0; i < size; i++) {

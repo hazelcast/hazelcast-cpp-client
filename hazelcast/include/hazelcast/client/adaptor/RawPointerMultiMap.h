@@ -17,8 +17,8 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMULTIMAP_H_
 
 #include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/EntryArrayImpl.h"
 
 namespace hazelcast {
     namespace client {
