@@ -65,10 +65,18 @@ namespace hazelcast {
                         throw exception::IllegalArgumentException("EntryArrayImpl", "end should not be greater than array size!");
                     }
 
+                    // make sure that items are deserialized
+                    for (size_t i = 0; i < size; ++i) {
+                        array[i];
+                    }
+
                     for (size_t i = begin; i < end; ++i) {
                         Item &item = array.deserializedEntries[i];
                         dataEntries.push_back(*item.data);
                         deserializedEntries.push_back(item);
+                        // invalidate the entry at the original array
+                        item.isValueDeserialized = false;
+                        item.isKeyDeserialized = false;
                     }
                 }
 
