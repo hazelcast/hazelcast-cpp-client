@@ -16,8 +16,7 @@
 //
 // Created by sancar koyunlu on 6/17/13.
 
-
-
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -89,8 +88,14 @@ namespace hazelcast {
                 util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING :
-                        logger.info("LifecycleService::LifecycleEvent STARTING");
+                    {
+                        char msg[100];
+                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING",
+                                       HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE),
+                                       HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
+                        logger.info(msg);
                         break;
+                    }
                     case LifecycleEvent::STARTED :
                         logger.info("LifecycleService::LifecycleEvent STARTED");
                         break;

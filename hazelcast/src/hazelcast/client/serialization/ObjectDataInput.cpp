@@ -137,6 +137,51 @@ namespace hazelcast {
                 ObjectDataInput input(dataInput, portableContext);
                 serializerHolder.getDataSerializer().read(input, *object);
             }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, byte *object) {
+                *object = readByte();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, bool *object) {
+                *object = readBoolean();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, char *object) {
+                *object = readChar();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, short *object) {
+                *object = readShort();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, int *object) {
+                *object = readInt();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, long *object) {
+                *object = readLong();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, float *object) {
+                *object = readFloat();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, double *object) {
+                *object = readDouble();
+            }
+
+            template <>
+            void ObjectDataInput::readInternal(int typeId, std::string *object) {
+                *object = *readUTF();
+            }
         }
     }
 }

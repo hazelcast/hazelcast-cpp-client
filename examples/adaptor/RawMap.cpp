@@ -37,11 +37,11 @@ int main() {
     std::cout << "There are " << entries->size() << " entries in the map" << std::endl;
 
     for (size_t i = 0; i < entries->size(); ++i) {
-        std::auto_ptr<std::string> key = entries->getKey(i);
-        if ((std::string *) NULL == key.get()) {
+        const std::string * key = entries->getKey(i);
+        if ((std::string *) NULL == key) {
             std::cout << "The key at index " << i << " is NULL" << std::endl;
         } else {
-            std::auto_ptr<std::string> val = entries->getValue(i);
+            std::auto_ptr<std::string> val = entries->releaseValue(i);
             std::cout << "(Key, Value) for index " << i << " is: (" << *key << ", " <<
                 (val.get() == NULL ? "NULL" : *val) << ")" << std::endl;
         }

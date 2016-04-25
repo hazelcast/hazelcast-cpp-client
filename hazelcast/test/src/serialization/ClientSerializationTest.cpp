@@ -538,6 +538,117 @@ namespace hazelcast {
                 ASSERT_EQ(std::string("portable-v2"), t1->name);
                 ASSERT_EQ(123, t1->k);
             }
+
+            TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
+                serialization::pimpl::SerializationConstants constants;
+                serialization::pimpl::PortableContext context(1, constants);
+
+                serialization::pimpl::DataOutput dataOutput;
+                serialization::ObjectDataOutput out(dataOutput, context);
+
+                byte by = 2;
+                bool boolean = true;
+                char c = 'c';
+                short s = 4;
+                int i = 2000;
+                long l = 321324141;
+                float f = 3.14f;
+                double d = 3.14334;
+                std::string str = "Hello world";
+                std::string utfStr = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
+
+                byte byteArray[] = {50, 100, 150, 200};
+                std::vector<byte> byteVec(byteArray, byteArray + 4);
+                char charArray[] = {'c', 'h', 'a', 'r'};
+                std::vector<char> cc(charArray, charArray + 4);
+                bool boolArray[] = {true, false, false, true};
+                std::vector<bool> ba(boolArray, boolArray + 4);
+                short shortArray[] = {3, 4, 5};
+                std::vector<short> ss(shortArray, shortArray + 3);
+                int integerArray[] = {9, 8, 7, 6};
+                std::vector<int> ii(integerArray, integerArray + 4);
+                long longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<long> ll(longArray, longArray + 6);
+                float floatArray[] = {0.6543f, -3.56f, 45.67f};
+                std::vector<float> ff(floatArray, floatArray + 3);
+                double doubleArray[] = {456.456, 789.789, 321.321};
+                std::vector<double> dd(doubleArray, doubleArray + 3);
+                const std::string stringArray[] = {"ali", "veli", "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム"};
+                std::vector<std::string *> stringVector;
+                for (int i = 0; i < 3; ++i) {
+                    stringVector.push_back(new std::string(stringArray[i]));
+                }
+
+                out.writeByte(by);
+                out.writeChar(c);
+                out.writeBoolean(boolean);
+                out.writeShort(s);
+                out.writeInt(i);
+                out.writeLong(l);
+                out.writeFloat(f);
+                out.writeDouble(d);
+                out.writeUTF(&str);
+                out.writeUTF(&utfStr);
+
+                out.writeByteArray(&byteVec);
+                out.writeCharArray(&cc);
+                out.writeBooleanArray(&ba);
+                out.writeShortArray(&ss);
+                out.writeIntArray(&ii);
+                out.writeFloatArray(&ff);
+                out.writeDoubleArray(&dd);
+                out.writeUTFArray(&stringVector);
+
+                out.writeObject<byte>(&by);
+                out.writeObject<char>(&c);
+                out.writeObject<bool>(&boolean);
+                out.writeObject<short>(&s);
+                out.writeObject<int>(&i);
+                out.writeObject<float>(&f);
+                out.writeObject<double>(&d);
+                out.writeObject<std::string>(&str);
+                out.writeObject<std::string>(&utfStr);
+
+                std::auto_ptr<std::vector<byte> > buffer = dataOutput.toByteArray();
+                serialization::pimpl::DataInput dataInput(*buffer);
+                serialization::ObjectDataInput in(dataInput, context);
+
+                ASSERT_EQ(by, in.readByte());
+                ASSERT_EQ(c, in.readChar());
+                ASSERT_EQ(boolean, in.readBoolean());
+                ASSERT_EQ(s, in.readShort());
+                ASSERT_EQ(i, in.readInt());
+                ASSERT_EQ(l, in.readLong());
+                ASSERT_FLOAT_EQ(f, in.readFloat());
+                ASSERT_DOUBLE_EQ(d, in.readDouble());
+                ASSERT_EQ(str, *in.readUTF());
+                ASSERT_EQ(utfStr, *in.readUTF());
+
+                ASSERT_EQ(byteVec, *in.readByteArray());
+                ASSERT_EQ(cc, *in.readCharArray());
+                ASSERT_EQ(ba, *in.readBooleanArray());
+                ASSERT_EQ(ss, *in.readShortArray());
+                ASSERT_EQ(ii, *in.readIntArray());
+                ASSERT_EQ(ff, *in.readFloatArray());
+                ASSERT_EQ(dd, *in.readDoubleArray());
+                std::auto_ptr<std::vector<std::string> > strArrRead = in.readUTFArray();
+                ASSERT_NE((std::vector<std::string> *)NULL, strArrRead.get());
+                ASSERT_EQ(stringVector.size(), strArrRead->size());
+                for (size_t j = 0; j < stringVector.size(); ++j) {
+                    ASSERT_EQ((*strArrRead)[j], *(stringVector[j]));
+                }
+
+                ASSERT_EQ(by, *in.readObject<byte>());
+                ASSERT_EQ(c, *in.readObject<char>());
+                ASSERT_EQ(boolean, *in.readObject<bool>());
+                ASSERT_EQ(s, *in.readObject<short>());
+                ASSERT_EQ(i, *in.readObject<int>());
+                ASSERT_EQ(f, *in.readObject<float>());
+                ASSERT_EQ(d, *in.readObject<double>());
+                ASSERT_EQ(str, *in.readObject<std::string>());
+                ASSERT_EQ(utfStr, *in.readObject<std::string>());
+
+            }
         }
     }
 }

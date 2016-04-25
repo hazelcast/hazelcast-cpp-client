@@ -16,6 +16,10 @@
 #ifndef HAZELCAST_IMAP_IMPL
 #define HAZELCAST_IMAP_IMPL
 
+#include "hazelcast/client/adaptor/EntryArray.h"
+#include "hazelcast/client/query/PagingPredicate.h"
+#include "hazelcast/client/query/Predicate.h"
+#include "hazelcast/client/protocol/codec/MapExecuteWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeyCodec.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
@@ -84,6 +88,8 @@ namespace hazelcast {
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
 
+                std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const query::Predicate &predicate, bool includeValue);
+
                 bool removeEntryListener(const std::string& registrationId);
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const serialization::pimpl::Data& key, bool includeValue);
@@ -101,14 +107,20 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::Data> keySetData(
                         const serialization::IdentifiedDataSerializable &predicate);
 
+                std::vector<serialization::pimpl::Data> keySetForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
+
                 EntryVector entrySetData();
 
                 EntryVector entrySetData(const serialization::IdentifiedDataSerializable &predicate);
+
+                EntryVector entrySetForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
 
                 std::vector<serialization::pimpl::Data> valuesData();
 
                 std::vector<serialization::pimpl::Data> valuesData(
                         const serialization::IdentifiedDataSerializable &predicate);
+
+                EntryVector valuesForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
 
                 void addIndex(const std::string& attribute, bool ordered);
 
@@ -131,9 +143,9 @@ namespace hazelcast {
                     return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
                 }
 
-                template<typename KEY, typename ENTRYPROCESSOR>
+                template<typename ENTRYPROCESSOR>
                 EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor) {
-                    serialization::pimpl::Data processor = toData(entryProcessor);
+                    serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
 
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::RequestParameters::encode(getName(), processor);
 
@@ -143,9 +155,66 @@ namespace hazelcast {
 
                     return response;
                 }
+
+                template<typename ENTRYPROCESSOR>
+                EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const query::Predicate &predicate) {
+                    serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
+                    serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);
+
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
+                            invokeAndGetResult<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >,
+                                    protocol::codec::MapExecuteWithPredicateCodec::ResponseParameters>(request);
+
+                    return response;
+                }
+
+                template <typename K, typename V>
+                std::pair<size_t, size_t> updateAnchor(adaptor::EntryArray<K, V> &entries,
+                                                 query::PagingPredicate<K, V> &predicate,
+                                                 query::IterationType iterationType) {
+                    if (0 == entries.size()) {
+                        return std::pair<size_t, size_t>(0, 0);
+                    }
+
+                    const std::pair<size_t, std::pair<K *, V *> > *nearestAnchorEntry = predicate.getNearestAnchorEntry();
+                    int nearestPage = (NULL == nearestAnchorEntry ? -1 : (int)nearestAnchorEntry->first);
+                    size_t page = predicate.getPage();
+                    size_t pageSize = predicate.getPageSize();
+                    size_t begin = pageSize * (page - nearestPage - 1);
+                    size_t size = entries.size();
+                    if (begin > size) {
+                        return std::pair<size_t, size_t>(0, 0);
+                    }
+                    size_t end = begin + pageSize;
+                    if (end > size) {
+                        end = size;
+                    }
+
+                    setAnchor(entries, predicate, nearestPage);
+
+                    return std::pair<size_t, size_t>(begin, end);
+                }
+
+                template <typename K, typename V>
+                static void setAnchor(adaptor::EntryArray<K, V> &entries, query::PagingPredicate<K, V> &predicate, int nearestPage) {
+                    if (0 == entries.size()) {
+                        return;
+                    }
+
+                    size_t size = entries.size();
+                    size_t pageSize = (size_t)predicate.getPageSize();
+                    int page = (int)predicate.getPage();
+                    for (size_t i = pageSize; i <= size && nearestPage < page; i += pageSize) {
+                        std::auto_ptr<K> key = entries.releaseKey(i - 1);
+                        std::auto_ptr<V> value = entries.releaseValue(i - 1);
+                        std::pair<K *, V *> anchor(key.release(), value.release());
+                        nearestPage++;
+                        predicate.setAnchor((size_t)nearestPage, anchor);
+                    }
+                }
             };
         }
-
     }
 }
 

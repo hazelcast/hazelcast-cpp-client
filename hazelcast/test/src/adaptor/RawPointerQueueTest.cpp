@@ -203,16 +203,16 @@ namespace hazelcast {
 
                     std::auto_ptr<client::adaptor::DataArray<std::string> > list = q.drainTo(2);
                     ASSERT_EQ((size_t)2U, list->size());
-                    ASSERT_NE((std::string *)NULL, list->get(0).get());
-                    ASSERT_NE((std::string *)NULL, list->get(1).get());
+                    ASSERT_NE((std::string *)NULL, list->get(0));
+                    ASSERT_NE((std::string *)NULL, list->get(1));
                     ASSERT_EQ("item1", *list->get(0));
                     ASSERT_EQ("item2", *list->get(1));
 
                     list = q.drainTo();
                     ASSERT_EQ((size_t)3U, list->size());
-                    ASSERT_NE((std::string *)NULL, list->get(0).get());
-                    ASSERT_NE((std::string *)NULL, list->get(1).get());
-                    ASSERT_NE((std::string *)NULL, list->get(2).get());
+                    ASSERT_NE((std::string *)NULL, list->get(0));
+                    ASSERT_NE((std::string *)NULL, list->get(1));
+                    ASSERT_NE((std::string *)NULL, list->get(2));
                     ASSERT_EQ("item3", *list->get(0));
                     ASSERT_EQ("item4", *list->get(1));
                     ASSERT_EQ("item5", *list->get(2));
@@ -229,8 +229,8 @@ namespace hazelcast {
                     size_t size = array->size();
                     ASSERT_EQ(5U, size);
                     for (size_t i = 0; i < size; i++) {
-                        std::auto_ptr<std::string> item = (*array)[i];
-                        ASSERT_NE((std::string *)NULL, item.get());
+                        const std::string *item = (*array)[i];
+                        ASSERT_NE((std::string *)NULL, item);
                         ASSERT_EQ(std::string("item") + util::IOUtil::to_string(i + 1), *item);
                     }
                 }

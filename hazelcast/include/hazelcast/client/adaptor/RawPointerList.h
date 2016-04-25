@@ -18,8 +18,8 @@
 
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/adaptor/EntryView.h"
-#include "hazelcast/client/adaptor/DataArray.h"
-#include "hazelcast/client/adaptor/EntryArray.h"
+#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
+#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -99,7 +99,7 @@ namespace hazelcast {
                 * @returns all elements in the list
                 */
                 std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new DataArray<T>(list.toArrayData(), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(list.toArrayData(), serializationService));
                 }
 
                 /**
@@ -264,7 +264,7 @@ namespace hazelcast {
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
                 std::auto_ptr<DataArray<T> > subList(int fromIndex, int toIndex) {
-                    return std::auto_ptr<DataArray<T> >(new DataArray<T>(list.subListData(fromIndex, toIndex), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(list.subListData(fromIndex, toIndex), serializationService));
                 }
 
             private:

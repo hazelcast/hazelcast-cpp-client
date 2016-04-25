@@ -19,10 +19,10 @@
 #ifndef HAZELCAST_CLIENT_ADAPTOR_ENTRYVIEW_H_
 #define HAZELCAST_CLIENT_ADAPTOR_ENTRYVIEW_H_
 
-#include "hazelcast/client/map/DataEntryView.h"
-
 #include <memory>
-#include <hazelcast/client/serialization/pimpl/SerializationService.h>
+
+#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

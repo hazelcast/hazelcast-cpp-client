@@ -22,8 +22,10 @@
 #include <vector>
 
 #include "hazelcast/util/Util.h"
-#include <hazelcast/client/exception/IllegalArgumentException.h>
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/adaptor/EntryArray.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,70 +33,39 @@ namespace hazelcast {
             template<typename T>
             class DataArray {
             public:
-                DataArray(const std::vector<serialization::pimpl::Data> &data,
-                          serialization::pimpl::SerializationService &service) : values(data),
-                                                                                 serializationService(&service) {
-                }
-
                 /**
                  * @return Returns the number of data items
                  */
-                size_t size() const {
-                    return values.size();
-                }
+                virtual size_t size() const = 0;
 
                 /**
-                 * Please note that this operation is costly due to de-serialization. It will NOT cache the de-serialized data.
+                 * Please note that this operation MAY (if the de-serialization is not done before) be costly due to
+                 * de-serialization. It will cache the de-serialized data.
                  *
                  * @param index The index of the desired item in the array.
                  * @return Deserializes the data and returns the pointer for the newly created object for the data at the provided index.
                  * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                  */
-                std::auto_ptr<T> get(size_t index) const {
-                    checkIndex(index);
-                    return serializationService->toObject<T>(values[index]);
-                }
+                virtual const T *get(size_t index) = 0;
 
                 /**
-                 * Please note that this operation is costly due to de-serialization. It will NOT cache the de-serialized data.
+                 * Will release the de-serialized data.
                  *
                  * @param index The index of the desired item in the array.
                  * @return Deserializes the data and returns the pointer for the newly created object for the data at the provided index.
                  * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                  */
-                std::auto_ptr<T> operator[](size_t index) const {
-                    return get(index);
-                }
-            private:
-                std::vector<serialization::pimpl::Data> values;
-                // Made serializationService a pointer rather than a reference in order to allow DataArray be copiable.
-                // Otherwise, compilation fails telling that SerializationService is not copiable even though it is a reference.
-                serialization::pimpl::SerializationService *serializationService;
+                virtual std::auto_ptr<T> release(size_t index) = 0;
 
                 /**
-                 *  @throws IllegalArgumentException If provided index is greater than the maximum array index.
+                 * Please note that this operation MAY (if the de-serialization is not done before) be costly due to
+                 * de-serialization. It will cache the de-serialized data.
+                 *
+                 * @param index The index of the desired item in the array.
+                 * @return Deserializes the data and returns the pointer for the newly created object for the data at the provided index.
+                 * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                  */
-                void checkIndex(size_t index) const {
-                    size_t len = values.size();
-                    if (0 == len) {
-                        char msg[200];
-                        util::snprintf(msg, 200,
-                                       "The are no elements in the array, you should not try accessing any element of the "
-                                               "array. Provided index (%lu) id out of range.", index);
-                        throw client::exception::IllegalArgumentException("DataArray", msg);
-                    }
-
-                    if (index >= len) {
-                        char msg[200];
-                        util::snprintf(msg, 200, "Provided index (%lu) id out of range. Maximum allowed index is %lu",
-                                       index, (len - 1));
-                        throw client::exception::IllegalArgumentException("DataArray", msg);
-                    }
-                }
-
-                // prevent copy operations
-                DataArray(const DataArray &rhs);
-                DataArray &operator =(const DataArray &rhs);
+                virtual const T* operator[](size_t index) = 0;
             };
         }
     }
