@@ -17,11 +17,11 @@
 #define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_
 
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/adaptor/EntryView.h"
-#include "hazelcast/client/adaptor/impl/DataArrayImpl.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayImpl.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayKeyAdaptor.h"
-#include "hazelcast/client/adaptor/impl/EntryArrayValueAdaptor.h"
+#include "hazelcast/client/adaptor/MapEntryView.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
+#include "hazelcast/client/impl/EntryArrayImpl.h"
+#include "hazelcast/client/impl/EntryArrayKeyAdaptor.h"
+#include "hazelcast/client/impl/EntryArrayValueAdaptor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -456,16 +456,16 @@ namespace hazelcast {
                 }
 
                 /**
-                * Returns the <tt>EntryView</tt> for the specified key.
+                * Returns the <tt>MapEntryView</tt> for the specified key.
                 *
                 *
                 * @param key key of the entry
-                * @return <tt>EntryView</tt> of the specified key
-                * @see EntryView
+                * @return <tt>MapEntryView</tt> of the specified key
+                * @see MapEntryView
                 */
-                std::auto_ptr<adaptor::EntryView<K, V> > getEntryView(const K &key) {
+                std::auto_ptr<MapEntryView<K, V> > getEntryView(const K &key) {
                     std::auto_ptr<map::DataEntryView> dataView = map.getEntryViewData(serializationService.toData<K>(&key));
-                    return std::auto_ptr<adaptor::EntryView<K, V> >(new adaptor::EntryView<K, V>(dataView, serializationService));
+                    return std::auto_ptr<MapEntryView<K, V> >(new MapEntryView<K, V>(dataView, serializationService));
                 }
 
                 /**
@@ -512,7 +512,7 @@ namespace hazelcast {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = map.getAllData(
                             allKeys);
 
-                    return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(entrySet, serializationService));
+                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entrySet, serializationService));
                 }
 
                 /**
@@ -524,7 +524,7 @@ namespace hazelcast {
                 */
                 std::auto_ptr<DataArray<K> > keySet() {
                     std::vector<serialization::pimpl::Data> dataResult = map.keySetData();
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(dataResult, serializationService));
+                    return std::auto_ptr<DataArray<K> >(new client::impl::DataArrayImpl<K>(dataResult, serializationService));
                 }
 
                 /**
@@ -539,7 +539,7 @@ namespace hazelcast {
                   */
                 std::auto_ptr<DataArray<K> > keySet(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = map.keySetData(predicate);
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(dataResult, serializationService));
+                    return std::auto_ptr<DataArray<K> >(new client::impl::DataArrayImpl<K>(dataResult, serializationService));
                 }
 
                 /**
@@ -563,12 +563,12 @@ namespace hazelcast {
                         entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it, serialization::pimpl::Data()));
                     }
 
-                    impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
+                    client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
                     entries.sort(predicate.getComparator(), query::KEY);
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::KEY);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
+                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
 
                     std::auto_ptr<DataArray<K> > result = std::auto_ptr<DataArray<K> >(new impl::EntryArrayKeyAdaptor<K, V>(subList));
 
@@ -584,7 +584,7 @@ namespace hazelcast {
                 */
                 std::auto_ptr<DataArray<V> > values() {
                     std::vector<serialization::pimpl::Data> dataResult = map.valuesData();
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(dataResult, serializationService));
+                    return std::auto_ptr<DataArray<V> >(new client::impl::DataArrayImpl<V>(dataResult, serializationService));
                 }
 
                 /**
@@ -597,7 +597,7 @@ namespace hazelcast {
                 */
                 std::auto_ptr<DataArray<V> > values(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = map.valuesData(predicate);
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(dataResult, serializationService));
+                    return std::auto_ptr<DataArray<V> >(new client::impl::DataArrayImpl<V>(dataResult, serializationService));
                 }
 
                 /**
@@ -613,12 +613,12 @@ namespace hazelcast {
 
                     EntryVector entryResult = map.valuesForPagingPredicateData(predicate);
 
-                    impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
+                    client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
                     entries.sort(predicate.getComparator(), query::VALUE);
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::VALUE);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
+                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
 
                     std::auto_ptr<DataArray<V> > result = std::auto_ptr<DataArray<V> >(new impl::EntryArrayValueAdaptor<K, V>(subList));
 
@@ -634,7 +634,7 @@ namespace hazelcast {
                 */
                 std::auto_ptr<EntryArray<K, V> > entrySet() {
                     EntryVector entries = map.entrySetData();
-                    return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(entries, serializationService));
+                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, serializationService));
                 }
 
                 /**
@@ -649,7 +649,7 @@ namespace hazelcast {
                 */
                 std::auto_ptr<EntryArray<K, V> > entrySet(const query::Predicate &predicate) {
                     EntryVector entries = map.entrySetData(predicate);
-                    return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(entries, serializationService));
+                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, serializationService));
                 }
 
                 /**
@@ -666,12 +666,12 @@ namespace hazelcast {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult =
                             map.entrySetForPagingPredicateData(predicate);
 
-                    impl::EntryArrayImpl<K, V> entries(dataResult, map.context->getSerializationService());
+                    client::impl::EntryArrayImpl<K, V> entries(dataResult, map.context->getSerializationService());
                     entries.sort(predicate.getComparator(), query::ENTRY);
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
 
-                    return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
+                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
                 }
 
                 /**
@@ -749,7 +749,7 @@ namespace hazelcast {
                 std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
                     EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor);
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(new impl::EntryArrayImpl<K, ResultType>(results, serializationService));
+                    return std::auto_ptr<EntryArray<K, ResultType> >(new client::impl::EntryArrayImpl<K, ResultType>(results, serializationService));
                 }
 
                 /**
@@ -770,7 +770,7 @@ namespace hazelcast {
                 std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(new impl::EntryArrayImpl<K, ResultType>(results, serializationService));
+                    return std::auto_ptr<EntryArray<K, ResultType> >(new client::impl::EntryArrayImpl<K, ResultType>(results, serializationService));
                 }
 
                 /**

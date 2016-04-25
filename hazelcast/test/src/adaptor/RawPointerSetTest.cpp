@@ -125,7 +125,7 @@ namespace hazelcast {
                     ASSERT_TRUE(set.add("item4"));
                     ASSERT_FALSE(set.add("item4"));
 
-                    std::auto_ptr<client::adaptor::DataArray<std::string> > array = set.toArray();
+                    std::auto_ptr<client::DataArray<std::string> > array = set.toArray();
 
                     ASSERT_EQ((size_t)4, array->size());
                     std::vector<std::string> items;

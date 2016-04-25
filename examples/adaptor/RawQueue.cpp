@@ -30,7 +30,7 @@ int main() {
     queue.offer("New York");
     std::cout << "Finished loading queue" << std::endl;
 
-    std::auto_ptr<hazelcast::client::adaptor::DataArray<std::string> > vals = queue.toArray();
+    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = queue.toArray();
 
     std::cout << "There are " << queue.size() << " values in the queue" << std::endl;
 
