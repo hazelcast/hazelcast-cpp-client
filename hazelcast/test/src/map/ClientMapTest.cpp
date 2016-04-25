@@ -580,7 +580,6 @@ namespace hazelcast {
                 values = intMap.values(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)values.size());
                 std::sort(values.begin(), values.end());
-                std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
@@ -781,7 +780,7 @@ namespace hazelcast {
                     intMap.put(i, i);
                 }
 
-                query::PagingPredicate<int, int> predicate(predSize);
+                query::PagingPredicate<int, int> predicate((size_t)predSize);
 
                 std::vector<int> values = intMap.values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
@@ -980,7 +979,6 @@ namespace hazelcast {
                 // TruePredicate
                 keys = intMap.keySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)keys.size());
-                std::sort(keys.begin(), keys.end());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(i, keys[i]);
@@ -1378,7 +1376,6 @@ namespace hazelcast {
                 // TruePredicate
                 entries = intMap.entrySet(query::TruePredicate());
                 ASSERT_EQ(numItems, (int)entries.size());
-                std::sort(entries.begin(), entries.end());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);

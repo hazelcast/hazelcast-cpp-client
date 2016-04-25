@@ -28,6 +28,9 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
 
+#define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
+#define STRINGIZE(STR) #STR
+
 namespace hazelcast {
     namespace util {
 

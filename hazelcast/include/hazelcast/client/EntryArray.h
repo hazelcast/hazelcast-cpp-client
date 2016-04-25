@@ -75,6 +75,10 @@ namespace hazelcast {
              */
             virtual std::auto_ptr<V> releaseValue(size_t index) = 0;
 
+            /**
+             * @param index The index of the desired item in the array.
+             * @return The key value pointer pair is returned
+             */
             virtual std::pair<const K *, const V *> operator[](size_t index) = 0;
         };
     }
