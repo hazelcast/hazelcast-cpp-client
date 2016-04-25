@@ -26,14 +26,6 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
 
-#ifndef HAZELCAST_GIT_COMMIT_DATE
-#define HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND"
-#endif
-
-#ifndef HAZELCAST_GIT_COMMIT_ID
-#define HAZELCAST_GIT_COMMIT_ID "NOT_FOUND"
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace spi {
