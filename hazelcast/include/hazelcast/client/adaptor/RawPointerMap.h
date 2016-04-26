@@ -565,7 +565,7 @@ namespace hazelcast {
 
                     client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
 
-                    entries.sort(predicate.getComparator(), query::KEY);
+                    entries.sort(query::KEY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::KEY);
 
@@ -616,7 +616,7 @@ namespace hazelcast {
 
                     client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
 
-                    entries.sort(predicate.getComparator(), query::VALUE);
+                    entries.sort(query::VALUE, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::VALUE);
 
@@ -669,7 +669,7 @@ namespace hazelcast {
 
                     client::impl::EntryArrayImpl<K, V> entries(dataResult, map.context->getSerializationService());
 
-                    entries.sort(predicate.getComparator(), query::ENTRY);
+                    entries.sort(query::ENTRY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
 

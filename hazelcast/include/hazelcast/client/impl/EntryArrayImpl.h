@@ -158,7 +158,7 @@ namespace hazelcast {
                 /**
                  * Sorts the entries
                  */
-                void sort(const util::Comparator<std::pair<const K *, const V *> > *comparator, query::IterationType iterationType) {
+                void sort(query::IterationType iterationType, const util::Comparator<std::pair<const K *, const V *> > *comparator) {
                     // make sure that all entries are deserialized, we do this since the std::sort requires that we use
                     // const methods when writing the < operator
                     for (typename std::vector<Item>::iterator it = deserializedEntries.begin();it != deserializedEntries.end(); ++it) {
