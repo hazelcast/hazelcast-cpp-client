@@ -20,6 +20,7 @@
 #include "hazelcast/util/Thread.h"
 
 #include <string.h>
+#include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
 
