@@ -75,18 +75,13 @@ int main() {
 
     // Register listener with predicate
     // Only listen events for entries with key >= 7
-    listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate(
+    listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate<int>(
             hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
 
     // wait for modifymap executable to run
     hazelcast::util::sleep(10);
 
     map.removeEntryListener(listenerId);
-
-    map.addEntryListener(listener, hazelcast::client::query::IL(
-            hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
-
-
 
     std::cout << "Finished" << std::endl;
 
