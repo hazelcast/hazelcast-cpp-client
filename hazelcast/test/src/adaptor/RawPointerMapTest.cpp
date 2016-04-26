@@ -786,7 +786,7 @@ namespace hazelcast {
                                                 query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int)strValues->size());
                     ASSERT_NE((const std::string *)NULL, strValues->get(0));
-                    ASSERT_EQ("value1", *strValues->get(0));
+                    ASSERT_EQ("key1", *strValues->get(0));
 
                     // ILikePredicate
                     // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
@@ -1514,6 +1514,472 @@ namespace hazelcast {
                     ASSERT_NE((const int *)NULL, (*result)[1]);
                     ASSERT_EQ(5, *((*result)[0]));
                     ASSERT_EQ(6, *result->get(1));
+                }
+
+
+                TEST_F(RawPointerMapTest, testEntrySetWithPredicate) {
+                    IMap<int, int> basicIntMap = client->getMap<int, int>("testValuesWithPredicateIntMap");
+                    client::adaptor::RawPointerMap<int, int> intMap(basicIntMap);
+
+                    const int numItems = 20;
+                    std::vector<std::pair<int, int> > expected(numItems);
+                    for (int i = 0; i < numItems; ++i) {
+                        intMap.put(i, 2 * i);
+                        expected[i] = std::pair<int, int>(i, 2 * i);
+                    }
+
+                    std::auto_ptr<EntryArray<int, int> > entries = intMap.entrySet();
+                    ASSERT_EQ(numItems, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < numItems; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i], entry);
+                    }
+
+                    // EqualPredicate
+                    // key == 5
+                    entries = intMap.entrySet(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                    ASSERT_EQ(1, (int)entries->size());
+                    std::pair<int, int> entry1(*entries->getKey(0), *entries->getValue(0));
+                    ASSERT_EQ(expected[5], entry1);
+
+                    // value == 8
+                    entries = intMap.entrySet(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                    ASSERT_EQ(1, (int)entries->size());
+                    std::pair<int, int> entry2(*entries->getKey(0), *entries->getValue(0));
+                    ASSERT_EQ(expected[4], entry2);
+
+                    // key == numItems
+                    entries = intMap.entrySet(
+                            query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
+                    ASSERT_EQ(0, (int)entries->size());
+
+                    // NotEqual Predicate
+                    // key != 5
+                    entries = intMap.entrySet(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                    ASSERT_EQ(numItems - 1, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < numItems - 1; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        if (i >= 5) {
+                            ASSERT_EQ(expected[i + 1], entry);
+                        } else {
+                            ASSERT_EQ(expected[i], entry);
+                        }
+                    }
+
+                    // value != 8
+                    entries = intMap.entrySet(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                    ASSERT_EQ(numItems - 1, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < numItems - 1; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        if (i >= 4) {
+                            ASSERT_EQ(expected[i + 1], entry);
+                        } else {
+                            ASSERT_EQ(expected[i], entry);
+                        }
+                    }
+
+                    // TruePredicate
+                    entries = intMap.entrySet(query::TruePredicate());
+                    ASSERT_EQ(numItems, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < numItems; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i], entry);
+                    }
+
+                    // FalsePredicate
+                    entries = intMap.entrySet(query::FalsePredicate());
+                    ASSERT_EQ(0, (int)entries->size());
+
+                    // BetweenPredicate
+                    // 5 <= key <= 10
+                    entries = intMap.entrySet(
+                            query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+                    entries->sort(query::ENTRY);
+                    ASSERT_EQ(6, (int)entries->size());
+                    for (int i = 0; i < 6; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i + 5], entry);
+                    }
+
+                    // 20 <= key <=30
+                    entries = intMap.entrySet(
+                            query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
+                    ASSERT_EQ(0, (int)entries->size());
+
+                    // GreaterLessPredicate
+                    // value <= 10
+                    entries = intMap.entrySet(
+                            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
+                    ASSERT_EQ(6, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 6; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i], entry);
+                    }
+
+                    // key < 7
+                    entries = intMap.entrySet(
+                            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
+                    ASSERT_EQ(7, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 7; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i], entry);
+                    }
+
+                    // value >= 15
+                    entries = intMap.entrySet(
+                            query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
+                    ASSERT_EQ(12, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 12; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i + 8], entry);
+                    }
+
+                    // key > 5
+                    entries = intMap.entrySet(
+                            query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
+                    ASSERT_EQ(14, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 14; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i + 6], entry);
+                    }
+
+                    // InPredicate
+                    // key in {4, 10, 19}
+                    std::vector<int> inVals(3);
+                    inVals[0] = 4;
+                    inVals[1] = 10;
+                    inVals[2] = 19;
+                    entries = intMap.entrySet(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
+                    ASSERT_EQ(3, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    {
+                        std::pair<int, int> entry(*entries->getKey(0), *entries->getValue(0));
+                        ASSERT_EQ(expected[4], entry);
+                    }
+                    {
+                        std::pair<int, int> entry(*entries->getKey(1), *entries->getValue(1));
+                        ASSERT_EQ(expected[10], entry);
+                    }
+                    {
+                        std::pair<int, int> entry(*entries->getKey(2), *entries->getValue(2));
+                        ASSERT_EQ(expected[19], entry);
+                    }
+
+                    // value in {4, 10, 19}
+                    entries = intMap.entrySet(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                    ASSERT_EQ(2, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    std::pair<int, int> entry(*entries->getKey(0), *entries->getValue(0));
+                    ASSERT_EQ(expected[2], entry);
+                    entry = std::pair<int, int>(*entries->getKey(1), *entries->getValue(1));
+                    ASSERT_EQ(expected[5], entry);
+
+                    // InstanceOfPredicate
+                    // value instanceof Integer
+                    entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.Integer"));
+                    ASSERT_EQ(20, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < numItems; ++i) {
+                        std::pair<int, int> item(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i], item);
+                    }
+
+                    entries = intMap.entrySet(query::InstanceOfPredicate("java.lang.String"));
+                    ASSERT_EQ(0, (int)entries->size());
+
+                    // NotPredicate
+                    // !(5 <= key <= 10)
+                    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
+                            query::QueryConstants::getKeyAttributeName(), 5, 10));
+                    query::NotPredicate notPredicate(bp);
+                    entries = intMap.entrySet(notPredicate);
+                    ASSERT_EQ(14, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 14; ++i) {
+                        std::pair<int, int> item(*entries->getKey(i), *entries->getValue(i));
+                        if (i >= 5) {
+                            ASSERT_EQ(expected[i + 6], item);
+                        } else {
+                            ASSERT_EQ(expected[i], item);
+                        }
+                    }
+
+                    // AndPredicate
+                    // 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
+                    bp = std::auto_ptr<query::Predicate>(
+                            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+                    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+                            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                    entries = intMap.entrySet(query::AndPredicate().add(bp).add(inPred));
+                    ASSERT_EQ(1, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    entry = std::pair<int, int>(*entries->getKey(0), *entries->getValue(0));
+                    ASSERT_EQ(expected[5], entry);
+
+                    // OrPredicate
+                    // 5 <= key <= 10 OR Values in {4, 10, 19} = entries keys {2, 5, 6, 7, 8, 9, 10}
+                    bp = std::auto_ptr<query::Predicate>(
+                            new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+                    inPred = std::auto_ptr<query::Predicate>(
+                            new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                    entries = intMap.entrySet(query::OrPredicate().add(bp).add(inPred));
+                    ASSERT_EQ(7, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 7; ++i) {
+                        entry = std::pair<int, int>(*entries->getKey(i), *entries->getValue(i));
+                        if (i == 0) {
+                            ASSERT_EQ(expected[2], entry);
+                        } else {
+                            ASSERT_EQ(expected[i + 4], entry);
+                        }
+                    }
+
+                    std::vector<std::pair<std::string, std::string> > expectedStrEntries(14);
+                    for (int i = 0; i < 12; i++) {
+                        std::string key = "key";
+                        key += util::IOUtil::to_string(i);
+                        std::string value = "value";
+                        value += util::IOUtil::to_string(i);
+                        imap->put(key, value);
+                        expectedStrEntries[i] = std::pair<std::string, std::string>(key, value);
+                    }
+                    imap->put("key_111_test", "myvalue_111_test");
+                    expectedStrEntries[12] = std::pair<std::string, std::string>("key_111_test", "myvalue_111_test");
+                    imap->put("key_22_test", "myvalue_22_test");
+                    expectedStrEntries[13] = std::pair<std::string, std::string>("key_22_test", "myvalue_22_test");
+
+                    // LikePredicate
+                    // value LIKE "value1" : {"value1"}
+                    std::auto_ptr<EntryArray<std::string, std::string> > strEntries = imap->entrySet(
+                            query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
+                    ASSERT_EQ(1, (int)strEntries->size());
+                    std::pair<std::string, std::string> strEntry(*strEntries->getKey(0), *strEntries->getValue(0));
+                    ASSERT_EQ(expectedStrEntries[1], strEntry);
+
+                    // ILikePredicate
+                    // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
+                    strEntries = imap->entrySet(
+                            query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
+                    ASSERT_EQ(4, (int)strEntries->size());
+                    strEntries->sort(query::ENTRY);
+                    for (int i = 0; i < 4; ++i) {
+                        strEntry = std::pair<std::string, std::string>(*strEntries->getKey(i), *strEntries->getValue(i));
+                        if (i == 0) {
+                            ASSERT_EQ(expectedStrEntries[1], strEntry);
+                        } else {
+                            ASSERT_EQ(expectedStrEntries[i + 9], strEntry);
+                        }
+                    }
+
+                    // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
+                    strEntries = imap->entrySet(
+                            query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
+                    ASSERT_EQ(2, (int)strEntries->size());
+                    strEntries->sort(query::ENTRY);
+                    strEntry = std::pair<std::string, std::string>(*strEntries->getKey(0), *strEntries->getValue(0));
+                    ASSERT_EQ(expectedStrEntries[2], strEntry);
+                    strEntry = std::pair<std::string, std::string>(*strEntries->getKey(1), *strEntries->getValue(1));
+                    ASSERT_EQ(expectedStrEntries[13], strEntry);
+
+                    // SqlPredicate
+                    // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
+                    char sql[100];
+                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    entries = intMap.entrySet(query::SqlPredicate(sql));
+                    ASSERT_EQ(4, (int)entries->size());
+                    entries->sort(query::ENTRY);
+                    for (int i = 0; i < 4; ++i) {
+                        std::pair<int, int> entry(*entries->getKey(i), *entries->getValue(i));
+                        ASSERT_EQ(expected[i + 4], entry);
+                    }
+
+                    // RegexPredicate
+                    // value matches the regex ".*value.*2.*" : {key_22_test, value2}
+                    strEntries = imap->entrySet(
+                            query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
+                    ASSERT_EQ(2, (int)strEntries->size());
+                    strEntries->sort(query::ENTRY);
+                    strEntry = std::pair<std::string, std::string>(*strEntries->getKey(0), *strEntries->getValue(0));
+                    ASSERT_EQ(expectedStrEntries[2], strEntry);
+                    strEntry = std::pair<std::string, std::string>(*strEntries->getKey(1), *strEntries->getValue(1));
+                    ASSERT_EQ(expectedStrEntries[13], strEntry);
+                }
+
+                TEST_F(RawPointerMapTest, testEntrySetWithPagingPredicate) {
+                    IMap<int, int> basicIntMap = client->getMap<int, int>("testValuesWithPredicateIntMap");
+                    client::adaptor::RawPointerMap<int, int> intMap(basicIntMap);
+
+                    int predSize = 5;
+                    const int totalEntries = 25;
+
+                    for (int i = 0; i < totalEntries; ++i) {
+                        intMap.put(i, i);
+                    }
+
+                    query::PagingPredicate<int, int> predicate((size_t) predSize);
+
+                    std::auto_ptr<EntryArray<int, int> > values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(i, i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(i, i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    predicate.nextPage();
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(predSize + i, predSize + i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    const std::pair<int *, int *> *anchor = predicate.getAnchor();
+                    ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                    ASSERT_NE((int *) NULL, anchor->first);
+                    ASSERT_NE((int *) NULL, anchor->second);
+                    ASSERT_EQ(9, *anchor->first);
+                    ASSERT_EQ(9, *anchor->second);
+
+                    ASSERT_EQ(1, (int)predicate.getPage());
+
+                    predicate.setPage(4);
+
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(predSize * 4 + i, predSize * 4 + i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    anchor = predicate.getAnchor();
+                    ASSERT_NE((const std::pair<int *, int *> *) NULL, anchor);
+                    ASSERT_NE((int *) NULL, anchor->first);
+                    ASSERT_NE((int *) NULL, anchor->second);
+                    ASSERT_EQ(24, *anchor->first);
+                    ASSERT_EQ(24, *anchor->second);
+
+                    const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
+                    ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
+                    ASSERT_NE((int *) NULL, anchorEntry->second.first);
+                    ASSERT_NE((int *) NULL, anchorEntry->second.second);
+                    ASSERT_EQ(3, (int)anchorEntry->first);
+                    ASSERT_EQ(19, *anchorEntry->second.first);
+                    ASSERT_EQ(19, *anchorEntry->second.second);
+
+                    predicate.nextPage();
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(0, (int) values->size());
+
+                    predicate.setPage(0);
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(i, i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    predicate.previousPage();
+                    ASSERT_EQ(0, (int)predicate.getPage());
+
+                    predicate.setPage(5);
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(0, (int) values->size());
+
+                    predicate.setPage(3);
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(3 * predSize + i, 3 * predSize + i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    predicate.previousPage();
+                    values = intMap.entrySet(predicate);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(2 * predSize + i, 2 * predSize + i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    // test PagingPredicate with inner predicate (value < 10)
+                    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                            new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
+                                                                 true)));
+                    query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
+                    values = intMap.entrySet(predicate2);
+                    ASSERT_EQ(predSize, (int) values->size());
+                    for (int i = 0; i < predSize; ++i) {
+                        std::pair<int, int> expected(i, i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    predicate2.nextPage();
+                    // match values 5,6, 7, 8
+                    values = intMap.entrySet(predicate2);
+                    ASSERT_EQ(predSize - 1, (int) values->size());
+                    for (int i = 0; i < predSize - 1; ++i) {
+                        std::pair<int, int> expected(predSize + i, predSize + i);
+                        std::pair<int, int> actual(*values->getKey(i), *values->getValue(i));
+                        ASSERT_EQ(expected, actual);
+                    }
+
+                    predicate2.nextPage();
+                    values = intMap.entrySet(predicate2);
+                    ASSERT_EQ(0, (int) values->size());
+
+                    // test paging predicate with comparator
+                    IMap<int, Employee> employeesOrig = client->getMap<int, Employee>("testComplexObjectWithPagingPredicate");
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesOrig);
+
+                    Employee empl1("ahmet", 35);
+                    Employee empl2("mehmet", 21);
+                    Employee empl3("deniz", 25);
+                    Employee empl4("ali", 33);
+                    Employee empl5("veli", 44);
+                    Employee empl6("aylin", 5);
+
+                    employees.put(3, empl1);
+                    employees.put(4, empl2);
+                    employees.put(5, empl3);
+                    employees.put(6, empl4);
+                    employees.put(7, empl5);
+                    employees.put(8, empl6);
+
+                    predSize = 2;
+                    query::PagingPredicate<int, Employee> predicate3(
+                            std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()), (size_t) predSize);
+                    std::auto_ptr<EntryArray<int, Employee> > result = employees.entrySet(predicate3);
+                    ASSERT_EQ(2, (int) result->size());
+                    std::pair<int, Employee> expected(8, empl6);
+                    std::pair<int, Employee> actual(*result->getKey(0), *result->getValue(0));
+                    ASSERT_EQ(expected, actual);
+                    expected = std::pair<int, Employee>(4, empl2);
+                    actual = std::pair<int, Employee>(*result->getKey(1), *result->getValue(1));
+                    ASSERT_EQ(expected, actual);
                 }
 
                 TEST_F(RawPointerMapTest, testReplace) {
