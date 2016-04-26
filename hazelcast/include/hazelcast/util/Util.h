@@ -56,8 +56,8 @@ namespace hazelcast {
         HAZELCAST_API int snprintf(char *str, size_t len, const char *format, ...);
 
         /**
-         * // converts the date string from "2016-04-20" to 20160420
-         * @param date The date to be modified, It should be in this format: "2016-04-20"
+         * // converts the date string to 20160420. Removes '-' and '"' characters if exist
+         * @param date The date to be modified
          */
         HAZELCAST_API void gitDateToHazelcastLogDate(std::string &date);
     }
