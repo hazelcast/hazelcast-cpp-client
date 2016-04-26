@@ -21,6 +21,8 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
+#include <string>
+#include <assert.h>
 
 #define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
 #define STRINGIZE(STR) #STR
@@ -46,6 +48,12 @@ namespace hazelcast {
          * Portable snprintf implementation
          */
         HAZELCAST_API int snprintf(char *str, size_t len, const char *format, ...);
+
+        /**
+         * // converts the date string from "2016-04-20" to 20160420
+         * @param date The date to be modified, It should be in this format: "2016-04-20"
+         */
+        HAZELCAST_API void gitDateToHazelcastLogDate(std::string &date);
     }
 }
 
