@@ -90,6 +90,7 @@ namespace hazelcast {
                 };
 
                 void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {
+                    config.getProperties()[ClientProperties::PROP_REQUEST_RETRY_COUNT] = "1000";
                     HazelcastServer instance1(*g_srvFactory);
                     HazelcastServer instance2(*g_srvFactory);
                     HazelcastServer instance3(*g_srvFactory);
