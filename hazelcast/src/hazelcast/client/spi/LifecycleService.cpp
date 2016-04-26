@@ -92,9 +92,11 @@ namespace hazelcast {
                         // convert the date string from "2016-04-20" to 20160420
                         std::string date(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE));
                         util::gitDateToHazelcastLogDate(date);
+                        std::string commitId(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
+                        commitId.erase(std::remove(commitId.begin(), commitId.end(), '"'), commitId.end());
                         char msg[100];
                         util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
-                                       HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
+                                       commitId.c_str());
                         logger.info(msg);
                         break;
                     }
