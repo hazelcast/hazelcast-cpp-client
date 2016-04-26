@@ -85,9 +85,7 @@ namespace hazelcast {
         void gitDateToHazelcastLogDate(std::string &date) {
             // convert the date string from "2016-04-20" to 20160420
             if (date != "NOT_FOUND") {
-                assert(date.length() == 10);
-                date.erase(4, 1);
-                date.erase(6, 1);
+                date.erase(std::remove(date.begin(), date.end(), '-'), date.end());
             }
         }
     }
