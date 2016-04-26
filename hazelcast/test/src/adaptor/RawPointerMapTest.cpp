@@ -799,10 +799,10 @@ namespace hazelcast {
                         actualStrs.push_back(*strValues->get(i));
                     }
                     std::sort(actualStrs.begin(), actualStrs.end());
-                    ASSERT_EQ("myvalue_111_test", actualStrs[0]);
-                    ASSERT_EQ("value1", actualStrs[1]);
-                    ASSERT_EQ("value10", actualStrs[2]);
-                    ASSERT_EQ("value11", actualStrs[3]);
+                    ASSERT_EQ("key1", actualStrs[0]);
+                    ASSERT_EQ("key10", actualStrs[1]);
+                    ASSERT_EQ("key11", actualStrs[2]);
+                    ASSERT_EQ("key_111_test", actualStrs[3]);
 
                     // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
                     strValues = imap->keySet(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
@@ -813,8 +813,8 @@ namespace hazelcast {
                         actualStrs.push_back(*strValues->get(i));
                     }
                     std::sort(actualStrs.begin(), actualStrs.end());
-                    ASSERT_EQ("myvalue_22_test", actualStrs[0]);
-                    ASSERT_EQ("value2", actualStrs[1]);
+                    ASSERT_EQ("key2", actualStrs[0]);
+                    ASSERT_EQ("key_22_test", actualStrs[1]);
 
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
@@ -843,8 +843,8 @@ namespace hazelcast {
                         actualStrs.push_back(*strValues->get(i));
                     }
                     std::sort(actualStrs.begin(), actualStrs.end());
-                    ASSERT_EQ("myvalue_22_test", actualStrs[0]);
-                    ASSERT_EQ("value2", actualStrs[1]);
+                    ASSERT_EQ("key2", actualStrs[0]);
+                    ASSERT_EQ("key_22_test", actualStrs[1]);
                 }
 
                 TEST_F(RawPointerMapTest, testValuesWithPagingPredicate) {
