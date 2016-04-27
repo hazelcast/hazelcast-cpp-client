@@ -18,22 +18,60 @@
 //
 
 #include "hazelcast/util/Util.h"
-#include "map/ClientExpirationListenerTest.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/HazelcastClient.h"
+
+#include "ClientTestSupport.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
+#include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            ClientExpirationListenerTest::ClientExpirationListenerTest()
-            : instance(*g_srvFactory)
-            , instance2(*g_srvFactory)
-            , client(getNewClient())
-            , imap(new IMap<int, int>(client->getMap<int, int>("clientExpirationListenerTest"))) {
-            }
+            class ClientExpirationListenerTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    // clear maps
+                    imap->clear();
+                }
 
-            ClientExpirationListenerTest::~ClientExpirationListenerTest() {
-            }
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    instance2 = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    imap = new IMap<int, int>(client->getMap<int, int>("IntMap"));
+                }
+
+                static void TearDownTestCase() {
+                    delete imap;
+                    delete client;
+                    delete clientConfig;
+                    delete instance2;
+                    delete instance;
+
+                    imap = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance2 = NULL;
+                    instance = NULL;
+                }
+                
+                static HazelcastServer *instance;
+                static HazelcastServer *instance2;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static IMap<int, int> *imap;
+            };
+
+            HazelcastServer *ClientExpirationListenerTest::instance = NULL;
+            HazelcastServer *ClientExpirationListenerTest::instance2 = NULL;
+            ClientConfig *ClientExpirationListenerTest::clientConfig = NULL;
+            HazelcastClient *ClientExpirationListenerTest::client = NULL;
+            IMap<int, int> *ClientExpirationListenerTest::imap = NULL;
 
             class ExpirationListener : public EntryAdapter<int, int> {
             public:
@@ -65,7 +103,7 @@ namespace hazelcast {
                 hazelcast::util::sleep(1);
 
                 // trigger immediate fire of expiration events by touching them.
-                for (int i = 0; i < numberOfPutOperations; i++) {
+                for (int i = 0; i < numberOfPutOperations; ++i) {
                     imap->get(i);
                 }
 

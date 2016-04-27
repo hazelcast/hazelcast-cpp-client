@@ -14,24 +14,54 @@
  * limitations under the License.
  */
 #include "hazelcast/util/Util.h"
-#include "lock/ClientLockTest.h"
-#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ILock.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
-            ClientLockTest::ClientLockTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , l(new ILock(client->getILock("ClientLockTest"))) {
-            }
+            class ClientLockTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    // clear
+                    l->forceUnlock();
+                }
 
-            ClientLockTest::~ClientLockTest() {
-            }
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    l = new ILock(client->getILock("MyLock"));
+                }
+
+                static void TearDownTestCase() {
+                    delete l;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    l = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static ILock *l;
+            };
+
+            HazelcastServer *ClientLockTest::instance = NULL;
+            ClientConfig *ClientLockTest::clientConfig = NULL;
+            HazelcastClient *ClientLockTest::client = NULL;
+            ILock *ClientLockTest::l = NULL;
 
             void testLockLockThread(util::ThreadArgs &args) {
                 ILock *l = (ILock *) args.arg0;
@@ -43,7 +73,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testLock) {
                 l->lock();
                 util::CountDownLatch latch(1);
-                util::Thread t(testLockLockThread, l.get(), &latch);
+                util::Thread t(testLockLockThread, l, &latch);
 
                 ASSERT_TRUE(latch.await(5));
                 l->forceUnlock();
@@ -63,7 +93,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testLockTtl) {
                 l->lock(3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t(testLockTtlThread, l.get(), &latch);
+                util::Thread t(testLockTtlThread, l, &latch);
                 ASSERT_TRUE(latch.await(10));
                 l->forceUnlock();
             }
@@ -88,13 +118,13 @@ namespace hazelcast {
 
                 ASSERT_TRUE(l->tryLock(2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t1(testLockTryLockThread1, l.get(), &latch);
+                util::Thread t1(testLockTryLockThread1, l, &latch);
                 ASSERT_TRUE(latch.await(100));
 
                 ASSERT_TRUE(l->isLocked());
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(testLockTryLockThread2, l.get(), &latch2);
+                util::Thread t2(testLockTryLockThread2, l, &latch2);
                 util::sleep(1);
                 l->unlock();
                 ASSERT_TRUE(latch2.await(100));
@@ -112,7 +142,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testForceUnlock) {
                 l->lock();
                 util::CountDownLatch latch(1);
-                util::Thread t(testLockForceUnlockThread, l.get(), &latch);
+                util::Thread t(testLockForceUnlockThread, l, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_FALSE(l->isLocked());
             }
@@ -145,7 +175,7 @@ namespace hazelcast {
                 ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
 
                 util::CountDownLatch latch(1);
-                util::Thread t(testStatsThread, l.get(), &latch);
+                util::Thread t(testStatsThread, l, &latch);
                 ASSERT_TRUE(latch.await(60));
             }
         }

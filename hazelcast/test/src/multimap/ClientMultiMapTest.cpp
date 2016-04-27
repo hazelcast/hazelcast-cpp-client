@@ -19,19 +19,53 @@
 #include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/MultiMap.h"
+
 #include "HazelcastServerFactory.h"
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            ClientMultiMapTest::ClientMultiMapTest()
-                    : instance(*g_srvFactory)
-                    , client(getNewClient())
-                    , mm(new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("ClientMultiMapTest"))) {
-            }
+            class ClientMultiMapTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    // clear mm
+                    mm->clear();
+                }
 
-            ClientMultiMapTest::~ClientMultiMapTest() {
-            }
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    mm = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
+                }
+
+                static void TearDownTestCase() {
+                    delete mm;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    mm = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static MultiMap<std::string, std::string> *mm;
+            };
+
+            HazelcastServer *ClientMultiMapTest::instance = NULL;
+            ClientConfig *ClientMultiMapTest::clientConfig = NULL;
+            HazelcastClient *ClientMultiMapTest::client = NULL;
+            MultiMap<std::string, std::string> *ClientMultiMapTest::mm = NULL;
 
             TEST_F(ClientMultiMapTest, testPutGetRemove) {
                 ASSERT_TRUE(mm->put("key1", "value1"));
@@ -168,7 +202,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testLock) {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(lockThread, mm.get(), &latch);
+                util::Thread t(lockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(5));
                 mm->forceUnlock("key1");
             }
@@ -189,7 +223,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testLockTtl) {
                 mm->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t(lockTtlThread, mm.get(), &latch);
+                util::Thread t(lockTtlThread, mm, &latch);
                 ASSERT_TRUE(latch.await(10));
                 mm->forceUnlock("key1");
             }
@@ -222,12 +256,12 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testTryLock) {
                 ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t(tryLockThread, mm.get(), &latch);
+                util::Thread t(tryLockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_TRUE(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(tryLockThread2, mm.get(), &latch2);
+                util::Thread t2(tryLockThread2, mm, &latch2);
 
                 util::sleep(1);
                 mm->unlock("key1");
@@ -246,7 +280,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testForceUnlock) {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(forceUnlockThread, mm.get(), &latch);
+                util::Thread t(forceUnlockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_FALSE(mm->isLocked("key1"));
             }

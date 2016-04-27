@@ -17,26 +17,60 @@
 // Created by sancar koyunlu on 9/5/13.
 
 #include "hazelcast/util/Util.h"
-#include "ClientSemaphoreTest.h"
-#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/Thread.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ISemaphore.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServerFactory.h"
+#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            ClientSemaphoreTest::ClientSemaphoreTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , s(new ISemaphore(client->getISemaphore("ClientSemaphoreTest"))) {
-                s->reducePermits(100);
-                s->release(10);
-            }
+            class ClientSemaphoreTest : public ClientTestSupport {
+            protected:
+                virtual void SetUp() {
+                    s->reducePermits(100);
+                    s->release(10);
+                }
 
-            ClientSemaphoreTest::~ClientSemaphoreTest() {
-                s->reducePermits(100);
-                s->release(10);                
-            }
+                virtual void TearDown() {
+                    s->reducePermits(100);
+                    s->release(10);
+                }
+
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    s = new ISemaphore(client->getISemaphore("MySemaphore"));
+                }
+
+                static void TearDownTestCase() {
+                    delete s;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    s = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static ISemaphore *s;
+            };
+
+            HazelcastServer *ClientSemaphoreTest::instance = NULL;
+            ClientConfig *ClientSemaphoreTest::clientConfig = NULL;
+            HazelcastClient *ClientSemaphoreTest::client = NULL;
+            ISemaphore *ClientSemaphoreTest::s = NULL;
 
             void testAcquireThread(util::ThreadArgs& args) {
                 ISemaphore *s = (ISemaphore *)args.arg0;
@@ -49,7 +83,7 @@ namespace hazelcast {
                 ASSERT_EQ(10, s->drainPermits());
 
                 util::CountDownLatch latch(1);
-                util::Thread t(testAcquireThread, s.get(), &latch);
+                util::Thread t(testAcquireThread, s, &latch);
 
                 util::sleep(1);
 
@@ -76,7 +110,7 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(1);
 
-                util::Thread t(testTryAcquireThread, s.get(), &latch);
+                util::Thread t(testTryAcquireThread, s, &latch);
 
                 s->release(2);
                 ASSERT_TRUE(latch.await(10));

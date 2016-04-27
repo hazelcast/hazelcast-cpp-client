@@ -29,17 +29,32 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class RawPointerClientTxnMapTest : public ClientTestSupport {
-            public:
-                RawPointerClientTxnMapTest()
-                        : instance(*g_srvFactory)
-                        , client(getNewClient()) {
+            protected:
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
                 }
 
-            protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                static void TearDownTestCase() {
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
             };
+
+            HazelcastServer *RawPointerClientTxnMapTest::instance = NULL;
+            ClientConfig *RawPointerClientTxnMapTest::clientConfig = NULL;
+            HazelcastClient *RawPointerClientTxnMapTest::client = NULL;
 
             TEST_F(RawPointerClientTxnMapTest, testPutGet) {
                 std::string name = "defMap";
