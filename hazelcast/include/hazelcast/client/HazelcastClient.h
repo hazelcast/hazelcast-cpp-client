@@ -56,15 +56,9 @@ namespace hazelcast {
  * Note that you can turn this feature off ( ClientConfig#setSmart), if you don't want your clients to connect every
  * node.
  *
- *
- * Features that are planned to implement are:
- * * Distributed Executor Service
- * * NearCache to store some of the data in client side to reduce latencies.
- * * Access to replicated Map
- * * SSL Socket support
- * * Access to AtomicReference
- * * Condition related methods to ILock.
- *
+ * Our C++ client is completely open source and the source code is freely available at https://github.com/hazelcast/hazelcast-cpp-client .
+ * Please feel free to contribute. You can join our community at https://groups.google.com/forum/#!forum/hazelcast where
+ * you can find answers to your questions.
  *
  * \section how_to_setup How to Setup
  *
@@ -80,9 +74,10 @@ namespace hazelcast {
  *  * Windows_64/
  *  * Linux_32/
  *  * Linux_64/
+ *  * Mac_64/
  *  * docs/            => html doxygen documentations are here.
  *
- *  And each of the folders above contains following
+ *  And each of the folders above (except docs folder) contains the following
  *  * examples/        => Contains code samples for the C++ API usage.
  *
  *  *  hazelcast/
@@ -129,7 +124,7 @@ namespace hazelcast {
  * \subsection Windows
  *
  * For Windows, there are two distributions one is 32bit the other is 64bit.
- * Currently release have only Visual Studio 2012 compatible libraries in the distributed zip. For others please contact with support@hazelcast.com
+ * Currently, the release is built with Visual Studio 2012 . For other builds, please contact with support@hazelcast.com
  *
  * When compiling for Windows environment the user should specify one of the following flags:
  *  * HAZELCAST_USE_STATIC: You want the application to use the static Hazelcast library.
@@ -139,6 +134,15 @@ namespace hazelcast {
  * \section code_samples Code Samples
  *
  * Note that these codes to work, there should be a Hazelcast node is running.
+ *
+ * The binaries for the examples are located at examples folder. The sources for the binaries are located at examples/src folder.
+ *
+ * You can also browse all the examples at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples.
+ *
+ * Furthermore, you can access a large set of tests that we use for testing the API, these will also give you a better idea about
+ * how we are using the API. You can find these tests at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/hazelcast/test/src
+ *
+ * The CommandLineTool example gives you a way to play with the data in the cluster from the command line terminal.
  *
  * \subsection map Map example
  *
@@ -160,6 +164,42 @@ namespace hazelcast {
  *              if(v.get() != NULL){
  *                  //process the item
  *              }
+ *
+ *              // You can work with raw pointer maps if you want to get memory ownership of returned objects
+ *              hazelcast::client::adaptor::RawPointerMap<int, int> rawMap(myMap);
+ *              myMap.put(2, 6);
+ *              std::auto_ptr<int> value = myMap.get(1);
+ *              if (NULL != value.get()) {
+ *                  // do something with the value
+ *              }
+ *
+ *              // query values with predicate
+ *              // EqualPredicate
+ *              // key == 5
+ *              std::vector<int> values = myMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+ *              // Same query with raw Map
+ *              std::auto_ptr<DataArray<int> > valuesArray = rawMap.values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+ *              size_t numberOfValues = valuesArray->size();
+ *              if (numberOfValues > 0) {
+ *                  const int *firstValue = valuesArray->get(0);
+ *                  firstValue = (*valuesArray)[0];
+ *                  std::auto_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
+ *              }
+ *
+ *              // add listener with predicate
+ *              // Only listen events for entries with key >= 7
+ *              MyEntryListener listener;
+ *              std::string listenerId = map.addEntryListener(listener,
+ *                                   hazelcast::client::query::GreaterLessPredicate<int>(
+ *                                   hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+ *
+ *              // same listener using the raw map
+ *              std::string secondListener = rawMap.addEntryListener(listener,
+ *                                   hazelcast::client::query::GreaterLessPredicate<int>(
+ *                                   hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+ *
+ *              // listen for entries
+ *              sleep(10);
  *
  *              return 0;
  *          }

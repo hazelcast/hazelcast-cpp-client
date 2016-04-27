@@ -157,6 +157,16 @@ namespace hazelcast {
                 time_t end = time(NULL);
                 ASSERT_NEAR((double)(end - beg), (double)wakeUpTime , 1);
             }
+
+            TEST_F (ClientUtilTest, testDateConversion) {
+                std::string date("2016-04-20");
+                util::gitDateToHazelcastLogDate(date);
+                ASSERT_EQ("20160420", date);
+
+                date = "NOT_FOUND";
+                util::gitDateToHazelcastLogDate(date);
+                ASSERT_EQ("NOT_FOUND", date);
+            }
         }
     }
 }

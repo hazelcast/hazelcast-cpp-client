@@ -65,10 +65,18 @@ namespace hazelcast {
                         throw exception::IllegalArgumentException("EntryArrayImpl", "end should not be greater than array size!");
                     }
 
+                    // make sure that items are deserialized
+                    for (size_t i = 0; i < size; ++i) {
+                        array[i];
+                    }
+
                     for (size_t i = begin; i < end; ++i) {
                         Item &item = array.deserializedEntries[i];
                         dataEntries.push_back(*item.data);
                         deserializedEntries.push_back(item);
+                        // invalidate the entry at the original array
+                        item.isValueDeserialized = false;
+                        item.isKeyDeserialized = false;
                     }
                 }
 
@@ -150,7 +158,7 @@ namespace hazelcast {
                 /**
                  * Sorts the entries
                  */
-                void sort(const util::Comparator<std::pair<const K *, const V *> > *comparator, query::IterationType iterationType) {
+                void sort(query::IterationType iterationType, const util::Comparator<std::pair<const K *, const V *> > *comparator) {
                     // make sure that all entries are deserialized, we do this since the std::sort requires that we use
                     // const methods when writing the < operator
                     for (typename std::vector<Item>::iterator it = deserializedEntries.begin();it != deserializedEntries.end(); ++it) {

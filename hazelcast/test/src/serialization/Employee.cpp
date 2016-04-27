@@ -91,6 +91,22 @@ namespace hazelcast {
                 const Employee *lv = lhs.second;
                 const Employee *rv = rhs.second;
 
+                if (NULL == lv && NULL == rv) {
+                    // order by key
+                    const int leftKey = *lhs.first;
+                    const int rightKey = *rhs.first;
+
+                    if (leftKey == rightKey) {
+                        return 0;
+                    }
+
+                    if (leftKey < rightKey) {
+                        return -1;
+                    }
+
+                    return 1;
+                }
+
                 if (NULL == lv) {
                     return -1;
                 }

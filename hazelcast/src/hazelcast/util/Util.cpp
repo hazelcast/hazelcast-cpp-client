@@ -16,16 +16,12 @@
 //
 // Created by sancar koyunlu on 5/3/13.
 
-//
-// To change the template use AppCode | Preferences | File Templates.
-//
-
-
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Thread.h"
 
 #include <string.h>
- #include <stdio.h>
+#include <algorithm>
+#include <stdio.h>
 #include <stdarg.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -85,6 +81,14 @@ namespace hazelcast {
             #else
             return vsnprintf(str, len, format, args);
             #endif
+        }
+
+        void gitDateToHazelcastLogDate(std::string &date) {
+            // convert the date string from "2016-04-20" to 20160420
+            date.erase(std::remove(date.begin(), date.end(), '"'), date.end());
+            if (date != "NOT_FOUND") {
+                date.erase(std::remove(date.begin(), date.end(), '-'), date.end());
+            }
         }
     }
 }
