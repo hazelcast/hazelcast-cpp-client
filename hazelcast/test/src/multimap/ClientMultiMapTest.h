@@ -24,28 +24,12 @@
 #ifndef hazelcast_ClientMultiMapTest_h
 #define hazelcast_ClientMultiMapTest_h
 
-#include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/MultiMap.h"
-#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
         class HazelcastClient;
 
         namespace test {
-            class ClientMultiMapTest : public ClientTestSupport {
-            public:
-                ClientMultiMapTest();
-
-                ~ClientMultiMapTest();
-
-            protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<MultiMap<std::string, std::string> > mm;
-            };
         }
     }
 }

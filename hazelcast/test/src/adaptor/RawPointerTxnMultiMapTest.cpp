@@ -18,6 +18,7 @@
 #include <ClientTestSupport.h>
 #include <HazelcastServer.h>
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
@@ -27,17 +28,32 @@ namespace hazelcast {
         namespace test {
             namespace adaptor {
                 class RawPointerTxnMultiMapTest : public ClientTestSupport {
-                public:
-                    RawPointerTxnMultiMapTest()
-                            : instance(*g_srvFactory)
-                            , client(getNewClient()) {
+                protected:
+                    static void SetUpTestCase() {
+                        instance = new HazelcastServer(*g_srvFactory);
+                        clientConfig = new ClientConfig();
+                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        client = new HazelcastClient(*clientConfig);
                     }
 
-                protected:
-                    HazelcastServer instance;
-                    ClientConfig clientConfig;
-                    std::auto_ptr<HazelcastClient> client;
+                    static void TearDownTestCase() {
+                        delete client;
+                        delete clientConfig;
+                        delete instance;
+
+                        client = NULL;
+                        clientConfig = NULL;
+                        instance = NULL;
+                    }
+
+                    static HazelcastServer *instance;
+                    static ClientConfig *clientConfig;
+                    static HazelcastClient *client;
                 };
+
+                HazelcastServer *RawPointerTxnMultiMapTest::instance = NULL;
+                ClientConfig *RawPointerTxnMultiMapTest::clientConfig = NULL;
+                HazelcastClient *RawPointerTxnMultiMapTest::client = NULL;
 
                 void putGetRemoveTestThread(util::ThreadArgs& args) {
                     MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
@@ -66,7 +82,7 @@ namespace hazelcast {
                     util::CountDownLatch latch(n);
                     std::vector<util::Thread*> threads(n);
                     for (int i = 0; i < n; i++) {
-                        threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch);
+                        threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client, &latch);
                     }
                     ASSERT_TRUE(latch.await(1));
                     for (int i = 0; i < n; i++) {

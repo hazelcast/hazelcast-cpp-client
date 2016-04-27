@@ -52,10 +52,40 @@ namespace hazelcast {
         namespace test {
             namespace adaptor {
                 class RawPointerMapTest : public ClientTestSupport {
-                public:
-                    RawPointerMapTest() : instance(*g_srvFactory), instance2(*g_srvFactory), client(getNewClient()),
-                                          originalMap(client->getMap<std::string, std::string>("RawPointerMapTest")),
-                                          imap(new hazelcast::client::adaptor::RawPointerMap<std::string, std::string>(originalMap)) {
+                protected:
+                    virtual void TearDown() {
+                        // clear maps
+                        employeesMap->clear();
+                        imap->clear();
+                    }
+
+                    static void SetUpTestCase() {
+                        instance = new HazelcastServer(*g_srvFactory);
+                        instance2 = new HazelcastServer(*g_srvFactory);
+                        clientConfig = new ClientConfig();
+                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        client = new HazelcastClient(*clientConfig);
+                        legacyMap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("clientMapTest"));
+                        imap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyMap);
+                        employeesMap = new IMap<int, Employee>(client->getMap<int, Employee>("EmployeesMap"));
+                    }
+
+                    static void TearDownTestCase() {
+                        delete employeesMap;
+                        delete imap;
+                        delete legacyMap;
+                        delete client;
+                        delete clientConfig;
+                        delete instance2;
+                        delete instance;
+
+                        employeesMap = NULL;
+                        imap = NULL;
+                        legacyMap = NULL;
+                        client = NULL;
+                        clientConfig = NULL;
+                        instance2 = NULL;
+                        instance = NULL;
                     }
 
                     void fillMap() {
@@ -67,14 +97,24 @@ namespace hazelcast {
                             imap->put(key, value);
                         }
                     }
-                protected:
-                    HazelcastServer instance;
-                    HazelcastServer instance2;
-                    ClientConfig clientConfig;
-                    std::auto_ptr<HazelcastClient> client;
-                    IMap<std::string, std::string> originalMap;
-                    std::auto_ptr<hazelcast::client::adaptor::RawPointerMap<std::string, std::string> > imap;
+
+                    static HazelcastServer *instance;
+                    static HazelcastServer *instance2;
+                    static ClientConfig *clientConfig;
+                    static HazelcastClient *client;
+                    static client::adaptor::RawPointerMap<std::string, std::string> *imap;
+                    static IMap<std::string, std::string> *legacyMap;
+                    static IMap<int, Employee> *employeesMap;
                 };
+
+                HazelcastServer *RawPointerMapTest::instance = NULL;
+                HazelcastServer *RawPointerMapTest::instance2 = NULL;
+                ClientConfig *RawPointerMapTest::clientConfig = NULL;
+                HazelcastClient *RawPointerMapTest::client = NULL;
+                client::adaptor::RawPointerMap<std::string, std::string> *RawPointerMapTest::imap = NULL;
+                IMap<std::string, std::string> *RawPointerMapTest::legacyMap = NULL;
+                IMap<int, Employee> *RawPointerMapTest::employeesMap = NULL;
+
 
                 class SampleEntryListener : public EntryAdapter<std::string, std::string> {
                 public:
@@ -290,8 +330,8 @@ namespace hazelcast {
 
                     util::CountDownLatch latch(2);
 
-                    util::Thread t1(tryPutThread, &latch, imap.get());
-                    util::Thread t2(tryRemoveThread, &latch, imap.get());
+                    util::Thread t1(tryPutThread, &latch, imap);
+                    util::Thread t2(tryRemoveThread, &latch, imap);
 
                     ASSERT_TRUE(latch.await(20));
                     ASSERT_EQ("value1", *(imap->get("key1")));
@@ -355,7 +395,7 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testLockThread, &latch, imap.get());
+                    util::Thread t1(testLockThread, &latch, imap);
                     ASSERT_TRUE(latch.await(5));
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->forceUnlock("key1");
@@ -374,7 +414,7 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->lock("key1", 2 * 1000);
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testLockTTLThread, &latch, imap.get());
+                    util::Thread t1(testLockTTLThread, &latch, imap);
                     ASSERT_TRUE(latch.await(10));
                     ASSERT_FALSE(imap->isLocked("key1"));
                     ASSERT_EQ("value2", *(imap->get("key1")));
@@ -396,7 +436,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testLockTtl2) {
                     imap->lock("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
-                    util::Thread t1(testLockTTL2Thread, &latch, imap.get());
+                    util::Thread t1(testLockTTL2Thread, &latch, imap);
                     ASSERT_TRUE(latch.await(10));
                     imap->forceUnlock("key1");
 
@@ -422,14 +462,14 @@ namespace hazelcast {
 
                     ASSERT_TRUE(imap->tryLock("key1", 2 * 1000));
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testMapTryLockThread1, &latch, imap.get());
+                    util::Thread t1(testMapTryLockThread1, &latch, imap);
 
                     ASSERT_TRUE(latch.await(100));
 
                     ASSERT_TRUE(imap->isLocked("key1"));
 
                     util::CountDownLatch latch2(1);
-                    util::Thread t2(testMapTryLockThread2, &latch2, imap.get());
+                    util::Thread t2(testMapTryLockThread2, &latch2, imap);
 
                     util::sleep(1);
                     imap->unlock("key1");
@@ -449,7 +489,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testForceUnlock) {
                     imap->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t2(testMapForceUnlockThread, &latch, imap.get());
+                    util::Thread t2(testMapForceUnlockThread, &latch, imap);
                     ASSERT_TRUE(latch.await(100));
                     t2.join();
                     ASSERT_FALSE(imap->isLocked("key1"));
@@ -624,8 +664,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testMapWithPortable) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("employees");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
                     std::auto_ptr<Employee> n1 = employees.get(1);
                     ASSERT_EQ(n1.get(), (Employee *) NULL);
                     Employee employee("sancar", 24);
@@ -693,8 +732,7 @@ namespace hazelcast {
                 };
 
                 TEST_F(RawPointerMapTest, testExecuteOnKey) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("executeOnKey");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -711,8 +749,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntries) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -737,8 +774,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithTruePredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("executeOnKey");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -763,8 +799,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithFalsePredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -783,8 +818,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithAndPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -813,8 +847,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithOrPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -849,8 +882,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithBetweenPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -879,8 +911,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithEqualPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -901,8 +932,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithNotEqualPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -931,8 +961,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -990,8 +1019,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithLikePredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -1012,8 +1040,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithILikePredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
 
                     Employee empl1("ahmet", 35);
@@ -1035,8 +1062,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithInPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -1069,8 +1095,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -1088,8 +1113,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithNotPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -1131,8 +1155,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithRegexPredicate) {
-                    IMap<int, Employee> employeesMap = client->getMap<int, Employee>("testExecuteOnEntries");
-                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(employeesMap);
+                    hazelcast::client::adaptor::RawPointerMap<int, Employee> employees(*employeesMap);
 
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);

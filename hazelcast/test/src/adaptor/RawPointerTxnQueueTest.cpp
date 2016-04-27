@@ -18,6 +18,7 @@
 
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
@@ -29,17 +30,32 @@ namespace hazelcast {
         namespace test {
             namespace adaptor {
                 class RawPointerTxnQueueTest : public ClientTestSupport {
-                public:
-                    RawPointerTxnQueueTest()
-                            : instance(*g_srvFactory)
-                            , client(getNewClient()) {
+                protected:
+                    static void SetUpTestCase() {
+                        instance = new HazelcastServer(*g_srvFactory);
+                        clientConfig = new ClientConfig();
+                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        client = new HazelcastClient(*clientConfig);
                     }
 
-                protected:
-                    HazelcastServer instance;
-                    ClientConfig clientConfig;
-                    std::auto_ptr<HazelcastClient> client;
+                    static void TearDownTestCase() {
+                        delete client;
+                        delete clientConfig;
+                        delete instance;
+
+                        client = NULL;
+                        clientConfig = NULL;
+                        instance = NULL;
+                    }
+
+                    static HazelcastServer *instance;
+                    static ClientConfig *clientConfig;
+                    static HazelcastClient *client;
                 };
+
+                HazelcastServer *RawPointerTxnQueueTest::instance = NULL;
+                ClientConfig *RawPointerTxnQueueTest::clientConfig = NULL;
+                HazelcastClient *RawPointerTxnQueueTest::client = NULL;
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll1) {
                     std::string name = "defQueue";
@@ -65,7 +81,7 @@ namespace hazelcast {
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll2) {
                     util::CountDownLatch latch(1);
-                    util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
+                    util::Thread t(testTransactionalOfferPoll2Thread, &latch, client);
                     TransactionContext context = client->newTransactionContext();
                     context.beginTransaction();
                     TransactionalQueue<std::string> queue0 = context.getQueue<std::string>("defQueue0");

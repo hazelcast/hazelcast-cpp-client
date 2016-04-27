@@ -16,8 +16,12 @@
 //
 // Created by sancar koyunlu on 9/13/13.
 
-#include "ClientSetTest.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ISet.h"
 #include "hazelcast/client/HazelcastClient.h"
+
+#include "HazelcastServer.h"
+#include "ClientTestSupport.h"
 #include "HazelcastServerFactory.h"
 
 namespace hazelcast {
@@ -41,26 +45,53 @@ namespace hazelcast {
                 util::CountDownLatch &latch;
             };
 
-            ClientSetTest::ClientSetTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , set(new ISet<std::string >(client->getSet< std::string >("ClientSetTest"))) {
-            }
-
-
-            ClientSetTest::~ClientSetTest() {
-            }
-
-            bool ClientSetTest::itemExists(const std::vector<std::string> &items, const std::string &item) const {
-                bool found = false;
-                for (std::vector<std::string>::const_iterator it = items.begin();it != items.end();++it) {
-                    if (item == *it) {
-                        found = true;
-                        break;
-                    }
+            class ClientSetTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    set->clear();
                 }
-                return found;
-            }
+
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    set = new ISet<std::string>(client->getSet<std::string>("MySet"));
+                }
+
+                static void TearDownTestCase() {
+                    delete set;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    set = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                bool itemExists(const std::vector<std::string> &items, const std::string &item) const {
+                    bool found = false;
+                    for (std::vector<std::string>::const_iterator it = items.begin();it != items.end();++it) {
+                        if (item == *it) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    return found;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static ISet<std::string> *set;
+            };
+
+            HazelcastServer *ClientSetTest::instance = NULL;
+            ClientConfig *ClientSetTest::clientConfig = NULL;
+            HazelcastClient *ClientSetTest::client = NULL;
+            ISet<std::string> *ClientSetTest::set = NULL;
 
             TEST_F(ClientSetTest, testAddAll) {
                 std::vector<std::string> l;
@@ -72,7 +103,6 @@ namespace hazelcast {
 
                 ASSERT_FALSE(set->addAll(l));
                 ASSERT_EQ(2, set->size());
-
             }
 
             TEST_F(ClientSetTest, testAddRemove) {
@@ -87,7 +117,6 @@ namespace hazelcast {
 
                 ASSERT_FALSE(set->remove("item4"));
                 ASSERT_TRUE(set->remove("item3"));
-
             }
 
             TEST_F(ClientSetTest, testContains) {

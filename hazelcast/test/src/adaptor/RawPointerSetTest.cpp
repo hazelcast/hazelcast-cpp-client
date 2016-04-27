@@ -28,14 +28,6 @@ namespace hazelcast {
         namespace test {
             namespace adaptor {
                 class RawPointerSetTest : public ClientTestSupport {
-                public:
-                    RawPointerSetTest()
-                            : instance(*g_srvFactory)
-                            , client(getNewClient())
-                            , originalSet(client->getSet<std::string>("RawPointerSetTest"))
-                            , set(originalSet) {
-                    }
-
                 protected:
                     class MySetItemListener : public ItemListener<std::string> {
                     public:
@@ -54,13 +46,7 @@ namespace hazelcast {
                     private:
                         util::CountDownLatch &latch;
                     };
-
-                    HazelcastServer instance;
-                    ClientConfig clientConfig;
-                    std::auto_ptr<HazelcastClient> client;
-                    ISet<std::string> originalSet;
-                    client::adaptor::RawPointerSet<std::string> set;
-
+                    
                     bool itemExists(const std::vector<std::string> &items, const std::string &item) const {
                         bool found = false;
                         for (std::vector<std::string>::const_iterator it = items.begin();it != items.end();++it) {
@@ -71,61 +57,100 @@ namespace hazelcast {
                         }
                         return found;
                     }
+
+                    virtual void TearDown() {
+                        set->clear();
+                    }
+
+                    static void SetUpTestCase() {
+                        instance = new HazelcastServer(*g_srvFactory);
+                        clientConfig = new ClientConfig();
+                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        client = new HazelcastClient(*clientConfig);
+                        legacy = new ISet<std::string>(client->getSet<std::string>("MySet"));
+                        set = new client::adaptor::RawPointerSet<std::string>(*legacy);
+                    }
+
+                    static void TearDownTestCase() {
+                        delete set;
+                        delete legacy;
+                        delete client;
+                        delete clientConfig;
+                        delete instance;
+
+                        set = NULL;
+                        legacy = NULL;
+                        client = NULL;
+                        clientConfig = NULL;
+                        instance = NULL;
+                    }
+
+                    static HazelcastServer *instance;
+                    static ClientConfig *clientConfig;
+                    static HazelcastClient *client;
+                    static ISet<std::string> *legacy;
+                    static client::adaptor::RawPointerSet<std::string> *set;
                 };
+
+                HazelcastServer *RawPointerSetTest::instance = NULL;
+                ClientConfig *RawPointerSetTest::clientConfig = NULL;
+                HazelcastClient *RawPointerSetTest::client = NULL;
+                ISet<std::string> *RawPointerSetTest::legacy = NULL;
+                client::adaptor::RawPointerSet<std::string> *RawPointerSetTest::set = NULL;
 
                 TEST_F(RawPointerSetTest, testAddAll) {
                     std::vector<std::string> l;
                     l.push_back("item1");
                     l.push_back("item2");
 
-                    ASSERT_TRUE(set.addAll(l));
-                    ASSERT_EQ(2, set.size());
+                    ASSERT_TRUE(set->addAll(l));
+                    ASSERT_EQ(2, set->size());
 
-                    ASSERT_FALSE(set.addAll(l));
-                    ASSERT_EQ(2, set.size());
+                    ASSERT_FALSE(set->addAll(l));
+                    ASSERT_EQ(2, set->size());
                 }
 
                 TEST_F(RawPointerSetTest, testAddRemove) {
-                    ASSERT_TRUE(set.add("item1"));
-                    ASSERT_TRUE(set.add("item2"));
-                    ASSERT_TRUE(set.add("item3"));
-                    ASSERT_EQ(3, set.size());
+                    ASSERT_TRUE(set->add("item1"));
+                    ASSERT_TRUE(set->add("item2"));
+                    ASSERT_TRUE(set->add("item3"));
+                    ASSERT_EQ(3, set->size());
 
-                    ASSERT_FALSE(set.add("item3"));
-                    ASSERT_EQ(3, set.size());
+                    ASSERT_FALSE(set->add("item3"));
+                    ASSERT_EQ(3, set->size());
 
 
-                    ASSERT_FALSE(set.remove("item4"));
-                    ASSERT_TRUE(set.remove("item3"));
+                    ASSERT_FALSE(set->remove("item4"));
+                    ASSERT_TRUE(set->remove("item3"));
 
                 }
 
                 TEST_F(RawPointerSetTest, testContains) {
-                    ASSERT_TRUE(set.add("item1"));
-                    ASSERT_TRUE(set.add("item2"));
-                    ASSERT_TRUE(set.add("item3"));
-                    ASSERT_TRUE(set.add("item4"));
+                    ASSERT_TRUE(set->add("item1"));
+                    ASSERT_TRUE(set->add("item2"));
+                    ASSERT_TRUE(set->add("item3"));
+                    ASSERT_TRUE(set->add("item4"));
 
-                    ASSERT_FALSE(set.contains("item5"));
-                    ASSERT_TRUE(set.contains("item2"));
+                    ASSERT_FALSE(set->contains("item5"));
+                    ASSERT_TRUE(set->contains("item2"));
 
                     std::vector<std::string> l;
                     l.push_back("item6");
                     l.push_back("item3");
 
-                    ASSERT_FALSE(set.containsAll(l));
-                    ASSERT_TRUE(set.add("item6"));
-                    ASSERT_TRUE(set.containsAll(l));
+                    ASSERT_FALSE(set->containsAll(l));
+                    ASSERT_TRUE(set->add("item6"));
+                    ASSERT_TRUE(set->containsAll(l));
                 }
 
                 TEST_F(RawPointerSetTest, testToArray) {
-                    ASSERT_TRUE(set.add("item1"));
-                    ASSERT_TRUE(set.add("item2"));
-                    ASSERT_TRUE(set.add("item3"));
-                    ASSERT_TRUE(set.add("item4"));
-                    ASSERT_FALSE(set.add("item4"));
+                    ASSERT_TRUE(set->add("item1"));
+                    ASSERT_TRUE(set->add("item2"));
+                    ASSERT_TRUE(set->add("item3"));
+                    ASSERT_TRUE(set->add("item4"));
+                    ASSERT_FALSE(set->add("item4"));
 
-                    std::auto_ptr<client::DataArray<std::string> > array = set.toArray();
+                    std::auto_ptr<client::DataArray<std::string> > array = set->toArray();
 
                     ASSERT_EQ((size_t)4, array->size());
                     std::vector<std::string> items;
@@ -143,45 +168,45 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerSetTest, testRemoveRetainAll) {
-                    ASSERT_TRUE(set.add("item1"));
-                    ASSERT_TRUE(set.add("item2"));
-                    ASSERT_TRUE(set.add("item3"));
-                    ASSERT_TRUE(set.add("item4"));
+                    ASSERT_TRUE(set->add("item1"));
+                    ASSERT_TRUE(set->add("item2"));
+                    ASSERT_TRUE(set->add("item3"));
+                    ASSERT_TRUE(set->add("item4"));
 
                     std::vector<std::string> l;
                     l.push_back("item4");
                     l.push_back("item3");
 
-                    ASSERT_TRUE(set.removeAll(l));
-                    ASSERT_EQ(2, set.size());
-                    ASSERT_FALSE(set.removeAll(l));
-                    ASSERT_EQ(2, set.size());
+                    ASSERT_TRUE(set->removeAll(l));
+                    ASSERT_EQ(2, set->size());
+                    ASSERT_FALSE(set->removeAll(l));
+                    ASSERT_EQ(2, set->size());
 
                     l.clear();
                     l.push_back("item1");
                     l.push_back("item2");
-                    ASSERT_FALSE(set.retainAll(l));
-                    ASSERT_EQ(2, set.size());
+                    ASSERT_FALSE(set->retainAll(l));
+                    ASSERT_EQ(2, set->size());
 
                     l.clear();
-                    ASSERT_TRUE(set.retainAll(l));
-                    ASSERT_EQ(0, set.size());
+                    ASSERT_TRUE(set->retainAll(l));
+                    ASSERT_EQ(0, set->size());
                 }
 
                 TEST_F(RawPointerSetTest, testListener) {
                     util::CountDownLatch latch(6);
 
                     MySetItemListener listener(latch);
-                    std::string registrationId = set.addItemListener(listener, true);
+                    std::string registrationId = set->addItemListener(listener, true);
 
                     for (int i = 0; i < 5; i++) {
-                        set.add(std::string("item") + util::IOUtil::to_string(i));
+                        set->add(std::string("item") + util::IOUtil::to_string(i));
                     }
-                    set.add("done");
+                    set->add("done");
 
                     ASSERT_TRUE(latch.await(20 ));
 
-                    ASSERT_TRUE(set.removeItemListener(registrationId));
+                    ASSERT_TRUE(set->removeItemListener(registrationId));
                 }
             }
         }
