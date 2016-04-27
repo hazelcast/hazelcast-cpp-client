@@ -17,22 +17,54 @@
 // Created by sancar koyunlu on 9/4/13.
 
 #include "hazelcast/util/Util.h"
-#include "queue/ClientQueueTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ItemListener.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IQueue.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            ClientQueueTest::ClientQueueTest()
-                    : instance(*g_srvFactory), client(getNewClient()),
-                      q(new IQueue<std::string>(client->getQueue<std::string>("clientQueueTest"))) {
+            class ClientQueueTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    q->clear();
+                }
 
-            }
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    q = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
+                }
 
-            ClientQueueTest::~ClientQueueTest() {
-            }
+                static void TearDownTestCase() {
+                    delete q;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    q = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static IQueue<std::string> *q;
+            };
+            
+            HazelcastServer *ClientQueueTest::instance = NULL;
+            ClientConfig *ClientQueueTest::clientConfig = NULL;
+            HazelcastClient *ClientQueueTest::client = NULL;
+            IQueue<std::string> *ClientQueueTest::q = NULL;
 
             class QueueTestItemListener : public ItemListener<std::string> {
             public:
@@ -92,7 +124,7 @@ namespace hazelcast {
                 }
                 ASSERT_EQ(0, q->size());
 
-                util::Thread t2(testOfferPollThread2, q.get());
+                util::Thread t2(testOfferPollThread2, q);
 
                 boost::shared_ptr<std::string> item = q->poll(30 * 1000);
                 ASSERT_NE(item.get(), (std::string *) NULL);
@@ -130,7 +162,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->isEmpty());
 
                 // start a thread to insert an item
-                util::Thread t2(testOfferPollThread2, q.get());
+                util::Thread t2(testOfferPollThread2, q);
 
                 item = q->take();  //  should block till it gets an item
                 ASSERT_NE((std::string *)NULL, item.get());

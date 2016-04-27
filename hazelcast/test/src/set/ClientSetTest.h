@@ -18,29 +18,12 @@
 #ifndef HAZELCAST_ClientSetTest
 #define HAZELCAST_ClientSetTest
 
-#include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "HazelcastServer.h"
-#include "hazelcast/client/ISet.h"
 
 namespace hazelcast {
     namespace client {
         class HazelcastClient;
 
         namespace test {
-            class ClientSetTest : public ClientTestSupport {
-            public:
-                ClientSetTest();
-
-                ~ClientSetTest();
-            protected:
-                HazelcastServer instance;
-                ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<ISet<std::string> > set;
-
-                bool itemExists(const std::vector<std::string> &items, const std::string &item) const;
-            };
         }
     }
 }

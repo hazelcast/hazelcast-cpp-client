@@ -16,24 +16,56 @@
 //
 // Created by sancar koyunlu on 9/13/13.
 
-#include "list/ClientListTest.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ClientConfig.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+#include "hazelcast/client/IList.h"
 #include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            ClientListTest::ClientListTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , list(new IList<std::string>(client->getList<std::string>("ClientListTest"))) {
-            }
-            
-            ClientListTest::~ClientListTest() {
-            }
+            class ClientListTest : public ClientTestSupport {
+            protected:
+                virtual void TearDown() {
+                    // clear list
+                    list->clear();
+                }
+
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    clientConfig = new ClientConfig();
+                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    client = new HazelcastClient(*clientConfig);
+                    list = new IList<std::string>(client->getList<std::string>("MyList"));
+                }
+
+                static void TearDownTestCase() {
+                    delete list;
+                    delete client;
+                    delete clientConfig;
+                    delete instance;
+
+                    list = NULL;
+                    client = NULL;
+                    clientConfig = NULL;
+                    instance = NULL;
+                }
+
+                static HazelcastServer *instance;
+                static ClientConfig *clientConfig;
+                static HazelcastClient *client;
+                static IList<std::string> *list;
+            };
+
+            HazelcastServer *ClientListTest::instance = NULL;
+            ClientConfig *ClientListTest::clientConfig = NULL;
+            HazelcastClient *ClientListTest::client = NULL;
+            IList<std::string> *ClientListTest::list = NULL;
 
             TEST_F(ClientListTest, testAddAll) {
-
                 std::vector<std::string> l;
                 l.push_back("item1");
                 l.push_back("item2");

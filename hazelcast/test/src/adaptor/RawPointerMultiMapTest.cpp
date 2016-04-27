@@ -30,21 +30,7 @@ namespace hazelcast {
         namespace test {
             namespace adaptor {
                 class RawPointerMultiMapTest : public ClientTestSupport {
-                public:
-                    RawPointerMultiMapTest()
-                        : instance(*g_srvFactory)
-                        , client(getNewClient())
-                        , originalMultimap(client->getMultiMap<std::string, std::string>("RawPointerMultiMapTest"))
-                        , mm(originalMultimap) {
-                        }
-
                 protected:
-                    HazelcastServer instance;
-                    ClientConfig clientConfig;
-                    std::auto_ptr<HazelcastClient> client;
-                    MultiMap<std::string, std::string> originalMultimap;
-                    client::adaptor::RawPointerMultiMap<std::string, std::string> mm;
-
                     class MyMultiMapListener : public EntryAdapter<std::string, std::string>{
                     public:
                         MyMultiMapListener(util::CountDownLatch& addedLatch, util::CountDownLatch& removedLatch)
@@ -76,74 +62,114 @@ namespace hazelcast {
                             latch->countDown();
                         }
                     }
+
+                    virtual void TearDown() {
+                        // clear mm
+                        mm->clear();
+                    }
+
+                    static void SetUpTestCase() {
+                        instance = new HazelcastServer(*g_srvFactory);
+                        clientConfig = new ClientConfig();
+                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        client = new HazelcastClient(*clientConfig);
+                        legacy = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
+                        mm = new client::adaptor::RawPointerMultiMap<std::string, std::string>(*legacy);
+                    }
+
+                    static void TearDownTestCase() {
+                        delete mm;
+                        delete legacy;
+                        delete client;
+                        delete clientConfig;
+                        delete instance;
+
+                        mm = NULL;
+                        legacy = NULL;
+                        client = NULL;
+                        clientConfig = NULL;
+                        instance = NULL;
+                    }
+
+                    static HazelcastServer *instance;
+                    static ClientConfig *clientConfig;
+                    static HazelcastClient *client;
+                    static MultiMap<std::string, std::string> *legacy;
+                    static client::adaptor::RawPointerMultiMap<std::string, std::string> *mm;
                 };
 
+                HazelcastServer *RawPointerMultiMapTest::instance = NULL;
+                ClientConfig *RawPointerMultiMapTest::clientConfig = NULL;
+                HazelcastClient *RawPointerMultiMapTest::client = NULL;
+                MultiMap<std::string, std::string> *RawPointerMultiMapTest::legacy = NULL;
+                client::adaptor::RawPointerMultiMap<std::string, std::string> *RawPointerMultiMapTest::mm = NULL;
+                
                 TEST_F(RawPointerMultiMapTest, testPutGetRemove) {
-                    ASSERT_TRUE(mm.put("key1", "value1"));
-                    ASSERT_TRUE(mm.put("key1", "value2"));
-                    ASSERT_TRUE(mm.put("key1", "value3"));
+                    ASSERT_TRUE(mm->put("key1", "value1"));
+                    ASSERT_TRUE(mm->put("key1", "value2"));
+                    ASSERT_TRUE(mm->put("key1", "value3"));
 
-                    ASSERT_TRUE(mm.put("key2", "value4"));
-                    ASSERT_TRUE(mm.put("key2", "value5"));
+                    ASSERT_TRUE(mm->put("key2", "value4"));
+                    ASSERT_TRUE(mm->put("key2", "value5"));
 
-                    ASSERT_EQ(3, mm.valueCount("key1"));
-                    ASSERT_EQ(2, mm.valueCount("key2"));
-                    ASSERT_EQ(5, mm.size());
+                    ASSERT_EQ(3, mm->valueCount("key1"));
+                    ASSERT_EQ(2, mm->valueCount("key2"));
+                    ASSERT_EQ(5, mm->size());
 
-                    std::auto_ptr<hazelcast::client::DataArray<std::string> > coll = mm.get("key1");
+                    std::auto_ptr<hazelcast::client::DataArray<std::string> > coll = mm->get("key1");
                     ASSERT_EQ(3, (int)coll->size());
 
-                    coll = mm.remove("key2");
+                    coll = mm->remove("key2");
                     ASSERT_EQ(2, (int)coll->size());
-                    ASSERT_EQ(0, mm.valueCount("key2"));
-                    ASSERT_EQ(0, (int)mm.get("key2")->size());
+                    ASSERT_EQ(0, mm->valueCount("key2"));
+                    ASSERT_EQ(0, (int)mm->get("key2")->size());
 
-                    ASSERT_FALSE(mm.remove("key1", "value4"));
-                    ASSERT_EQ(3, mm.size());
+                    ASSERT_FALSE(mm->remove("key1", "value4"));
+                    ASSERT_EQ(3, mm->size());
 
-                    ASSERT_TRUE(mm.remove("key1", "value2"));
-                    ASSERT_EQ(2, mm.size());
+                    ASSERT_TRUE(mm->remove("key1", "value2"));
+                    ASSERT_EQ(2, mm->size());
 
-                    ASSERT_TRUE(mm.remove("key1", "value1"));
-                    ASSERT_EQ(1, mm.size());
-                    coll = mm.get("key1");
+                    ASSERT_TRUE(mm->remove("key1", "value1"));
+                    ASSERT_EQ(1, mm->size());
+                    coll = mm->get("key1");
                     std::auto_ptr<std::string> val = coll->release(0);
                     ASSERT_NE((std::string *)NULL, val.get());
                     ASSERT_EQ("value3", *val);
                 }
 
                 TEST_F(RawPointerMultiMapTest, testKeySetEntrySetAndValues) {
-                    ASSERT_TRUE(mm.put("key1", "value1"));
-                    ASSERT_TRUE(mm.put("key1", "value2"));
-                    ASSERT_TRUE(mm.put("key1", "value3"));
+                    ASSERT_TRUE(mm->put("key1", "value1"));
+                    ASSERT_TRUE(mm->put("key1", "value2"));
+                    ASSERT_TRUE(mm->put("key1", "value3"));
 
-                    ASSERT_TRUE(mm.put("key2", "value4"));
-                    ASSERT_TRUE(mm.put("key2", "value5"));
+                    ASSERT_TRUE(mm->put("key2", "value4"));
+                    ASSERT_TRUE(mm->put("key2", "value5"));
 
 
-                    ASSERT_EQ(2, (int)mm.keySet()->size());
-                    ASSERT_EQ(5, (int)mm.values()->size());
-                    ASSERT_EQ(5, (int)mm.entrySet()->size());
+                    ASSERT_EQ(2, (int)mm->keySet()->size());
+                    ASSERT_EQ(5, (int)mm->values()->size());
+                    ASSERT_EQ(5, (int)mm->entrySet()->size());
                 }
 
                 TEST_F(RawPointerMultiMapTest, testContains) {
-                    ASSERT_TRUE(mm.put("key1", "value1"));
-                    ASSERT_TRUE(mm.put("key1", "value2"));
-                    ASSERT_TRUE(mm.put("key1", "value3"));
+                    ASSERT_TRUE(mm->put("key1", "value1"));
+                    ASSERT_TRUE(mm->put("key1", "value2"));
+                    ASSERT_TRUE(mm->put("key1", "value3"));
 
-                    ASSERT_TRUE(mm.put("key2", "value4"));
-                    ASSERT_TRUE(mm.put("key2", "value5"));
+                    ASSERT_TRUE(mm->put("key2", "value4"));
+                    ASSERT_TRUE(mm->put("key2", "value5"));
 
-                    ASSERT_FALSE(mm.containsKey("key3"));
-                    ASSERT_TRUE(mm.containsKey("key1"));
+                    ASSERT_FALSE(mm->containsKey("key3"));
+                    ASSERT_TRUE(mm->containsKey("key1"));
 
-                    ASSERT_FALSE(mm.containsValue("value6"));
-                    ASSERT_TRUE(mm.containsValue("value4"));
+                    ASSERT_FALSE(mm->containsValue("value6"));
+                    ASSERT_TRUE(mm->containsValue("value4"));
 
-                    ASSERT_FALSE(mm.containsEntry("key1", "value4"));
-                    ASSERT_FALSE(mm.containsEntry("key2", "value3"));
-                    ASSERT_TRUE(mm.containsEntry("key1", "value1"));
-                    ASSERT_TRUE(mm.containsEntry("key2", "value5"));
+                    ASSERT_FALSE(mm->containsEntry("key1", "value4"));
+                    ASSERT_FALSE(mm->containsEntry("key2", "value3"));
+                    ASSERT_TRUE(mm->containsEntry("key1", "value1"));
+                    ASSERT_TRUE(mm->containsEntry("key2", "value5"));
                 }
 
                 TEST_F(RawPointerMultiMapTest, testListener) {
@@ -153,25 +179,25 @@ namespace hazelcast {
                     util::CountDownLatch latch2Add(3);
                     util::CountDownLatch latch2Remove(3);
 
-                    MyMultiMapListener listener1(latch1Add, latch1Remove);
-                    MyMultiMapListener listener2(latch2Add, latch2Remove);
+                    MyMultiMapListener mmener1(latch1Add, latch1Remove);
+                    MyMultiMapListener mmener2(latch2Add, latch2Remove);
 
-                    std::string id1 = mm.addEntryListener(listener1, true);
-                    std::string id2 = mm.addEntryListener(listener2, "key3", true);
+                    std::string id1 = mm->addEntryListener(mmener1, true);
+                    std::string id2 = mm->addEntryListener(mmener2, "key3", true);
 
-                    mm.put("key1", "value1");
-                    mm.put("key1", "value2");
-                    mm.put("key1", "value3");
-                    mm.put("key2", "value4");
-                    mm.put("key2", "value5");
+                    mm->put("key1", "value1");
+                    mm->put("key1", "value2");
+                    mm->put("key1", "value3");
+                    mm->put("key2", "value4");
+                    mm->put("key2", "value5");
 
-                    mm.remove("key1", "value2");
+                    mm->remove("key1", "value2");
 
-                    mm.put("key3", "value6");
-                    mm.put("key3", "value7");
-                    mm.put("key3", "value8");
+                    mm->put("key3", "value6");
+                    mm->put("key3", "value7");
+                    mm->put("key3", "value8");
 
-                    mm.remove("key3");
+                    mm->remove("key3");
 
                     ASSERT_TRUE(latch1Add.await(20));
                     ASSERT_TRUE(latch1Remove.await(20));
@@ -179,8 +205,8 @@ namespace hazelcast {
                     ASSERT_TRUE(latch2Add.await(20));
                     ASSERT_TRUE(latch2Remove.await(20));
 
-                    ASSERT_TRUE(mm.removeEntryListener(id1));
-                    ASSERT_TRUE(mm.removeEntryListener(id2));
+                    ASSERT_TRUE(mm->removeEntryListener(id1));
+                    ASSERT_TRUE(mm->removeEntryListener(id2));
 
                 }
 
@@ -193,19 +219,21 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMultiMapTest, testLock) {
-                    mm.lock("key1");
+                    mm->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t(lockThread, &mm, &latch);
+                    util::Thread t(lockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(5));
-                    mm.forceUnlock("key1");
+                    mm->forceUnlock("key1");
+                    t.join();
                 }
 
                 TEST_F(RawPointerMultiMapTest, testLockTtl) {
-                    mm.lock("key1", 3 * 1000);
+                    mm->lock("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
-                    util::Thread t(lockTtlThread, &mm, &latch);
+                    util::Thread t(lockTtlThread, mm, &latch);
                     ASSERT_TRUE(latch.await(10));
-                    mm.forceUnlock("key1");
+                    mm->forceUnlock("key1");
+                    t.join();
                 }
 
 
@@ -234,20 +262,20 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMultiMapTest, testTryLock) {
-                    ASSERT_TRUE(mm.tryLock("key1", 2 * 1000));
+                    ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
                     util::CountDownLatch latch(1);
-                    util::Thread t(tryLockThread, &mm, &latch);
+                    util::Thread t(tryLockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(100));
-                    ASSERT_TRUE(mm.isLocked("key1"));
+                    ASSERT_TRUE(mm->isLocked("key1"));
 
                     util::CountDownLatch latch2(1);
-                    util::Thread t2(tryLockThread2, &mm, &latch2);
+                    util::Thread t2(tryLockThread2, mm, &latch2);
 
                     util::sleep(1);
-                    mm.unlock("key1");
+                    mm->unlock("key1");
                     ASSERT_TRUE(latch2.await(100));
-                    ASSERT_TRUE(mm.isLocked("key1"));
-                    mm.forceUnlock("key1");
+                    ASSERT_TRUE(mm->isLocked("key1"));
+                    mm->forceUnlock("key1");
                 }
 
                 void forceUnlockThread(util::ThreadArgs& args) {
@@ -258,11 +286,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMultiMapTest, testForceUnlock) {
-                    mm.lock("key1");
+                    mm->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t(forceUnlockThread, &mm, &latch);
+                    util::Thread t(forceUnlockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(100));
-                    ASSERT_FALSE(mm.isLocked("key1"));
+                    ASSERT_FALSE(mm->isLocked("key1"));
                 }
             }
         }
