@@ -564,7 +564,8 @@ namespace hazelcast {
                     }
 
                     client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
-                    entries.sort(predicate.getComparator(), query::KEY);
+
+                    entries.sort(query::KEY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::KEY);
 
@@ -614,12 +615,12 @@ namespace hazelcast {
                     EntryVector entryResult = map.valuesForPagingPredicateData(predicate);
 
                     client::impl::EntryArrayImpl<K, V> entries(entryResult, serializationService);
-                    entries.sort(predicate.getComparator(), query::VALUE);
+
+                    entries.sort(query::VALUE, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::VALUE);
 
                     std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
-
                     std::auto_ptr<DataArray<V> > result = std::auto_ptr<DataArray<V> >(new impl::EntryArrayValueAdaptor<K, V>(subList));
 
                     return result;
@@ -667,7 +668,8 @@ namespace hazelcast {
                             map.entrySetForPagingPredicateData(predicate);
 
                     client::impl::EntryArrayImpl<K, V> entries(dataResult, map.context->getSerializationService());
-                    entries.sort(predicate.getComparator(), query::ENTRY);
+
+                    entries.sort(query::ENTRY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = map.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
 

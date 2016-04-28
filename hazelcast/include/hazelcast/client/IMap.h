@@ -633,7 +633,7 @@ namespace hazelcast {
                 }
 
                 impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
-                entries.sort(predicate.getComparator(), query::KEY);
+                entries.sort(query::KEY, predicate.getComparator());
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
 
@@ -713,7 +713,7 @@ namespace hazelcast {
 
                 impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
 
-                entries.sort(predicate.getComparator(), query::VALUE);
+                entries.sort(query::VALUE, predicate.getComparator());
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::VALUE);
 
@@ -806,7 +806,7 @@ namespace hazelcast {
                         predicate);
 
                 impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
-                entries.sort(predicate.getComparator(), query::ENTRY);
+                entries.sort(query::ENTRY, predicate.getComparator());
 
                 std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);
 

@@ -75,7 +75,19 @@ namespace hazelcast {
              */
             virtual std::auto_ptr<V> releaseValue(size_t index) = 0;
 
+            /**
+             * @param index The index of the desired item in the array.
+             * @return The key value pointer pair is returned
+             */
             virtual std::pair<const K *, const V *> operator[](size_t index) = 0;
+
+            /**
+             * Sorts the entries using the comparator if comparator is not null. Otherwise, sorts based on the provided
+             * iterationType value.
+             * @param iterationType if null comparator is provided then iteration type is query::VALUE, the entry value
+             * should not be null and the entries shall be sorted by value, otherwise the entries shall be sorted by key.
+             */
+            virtual void sort(query::IterationType iterationType, const util::Comparator<std::pair<const K *, const V *> > *comparator = 0) = 0;
         };
     }
 }

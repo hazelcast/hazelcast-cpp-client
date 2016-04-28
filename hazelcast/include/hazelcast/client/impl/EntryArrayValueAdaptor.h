@@ -37,6 +37,10 @@ namespace hazelcast {
                     EntryArrayValueAdaptor(std::auto_ptr<EntryArray<K, V> > array) : entryArray(array) {
                     }
 
+
+                    virtual ~EntryArrayValueAdaptor() {
+                    }
+
                     /**
                      * @return Returns the number of data items
                      */

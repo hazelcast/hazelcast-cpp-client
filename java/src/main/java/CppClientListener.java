@@ -241,6 +241,22 @@ class EmployeeEntryComparator implements IdentifiedDataSerializable, Comparator<
         Employee lv = lhs.getValue();
         Employee rv = rhs.getValue();
 
+        if (null == lv && null == rv) {
+            // order by key
+            int leftKey = lhs.getKey();
+            int rightKey = rhs.getKey();
+
+            if (leftKey == rightKey) {
+                return 0;
+            }
+
+            if (leftKey < rightKey) {
+                return -1;
+            }
+
+            return 1;
+        }
+
         if (null == lv) {
             return -1;
         }
