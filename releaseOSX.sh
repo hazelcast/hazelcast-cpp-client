@@ -45,14 +45,14 @@ export HAZELCAST_SHARED_LIB_NAME=$(echo *dylib)
 install_name_tool -id ${HAZELCAST_SHARED_LIB_NAME} ${HAZELCAST_SHARED_LIB_NAME}
 cd ../../../../
 
-#ONLY IN DEVELOPMENT MACHINE
-mkdir -p ./cpp/docs/
+# Uncomment below if you want to generate doxygen docs
+##mkdir -p ./cpp/docs/
 
-echo "Generating docs "
-doxygen docsConfig
+#echo "Generating docs "
+#doxygen docsConfig
 
-echo "Moving docs to target"
-mv  docs/ cpp
+#echo "Moving docs to target"
+#mv  docs/ cpp
 
 echo "Removing temporary files"
 rm -rf ./ReleaseShared
