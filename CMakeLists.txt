@@ -24,7 +24,7 @@ project (HazelcastClient)
 
 INCLUDE(TestBigEndian)
 
-SET(HZ_VERSION 3.6.2-SNAPSHOT)
+SET(HZ_VERSION 3.6.2)
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
 execute_process(COMMAND git show -s --format="%cd" --date=short OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_DATE RESULT_VARIABLE GIT_DATE_RESULT)
