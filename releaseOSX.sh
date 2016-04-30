@@ -57,3 +57,6 @@ cd ../../../../
 echo "Removing temporary files"
 rm -rf ./ReleaseShared
 rm -rf ./ReleaseStatic
+
+# Verify release
+scripts/verifyReleaseMac.sh
