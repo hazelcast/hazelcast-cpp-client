@@ -59,4 +59,4 @@ rm -rf ./ReleaseShared
 rm -rf ./ReleaseStatic
 
 # Verify release
-scripts/verifyReleaseMac.sh
+scripts/verifyReleaseOSX.sh
