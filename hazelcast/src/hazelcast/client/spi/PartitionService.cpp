@@ -55,7 +55,7 @@ namespace hazelcast {
                 // Do not take the lock here since it may be needed by the partition listener thread to cancel and
                 // the join to succeed and if the lock is already taken it causes a deadlock.
                 if (partitionListenerThread.get() != NULL) {
-                    partitionListenerThread->cancel();
+                    partitionListenerThread->wakeup();
                     partitionListenerThread->join();
                 }
             }
