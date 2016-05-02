@@ -357,7 +357,8 @@ namespace hazelcast {
 
             void InvocationService::tryResend(boost::shared_ptr<connection::CallPromise> promise,
                                               const std::string &lastTriedAddress) {
-                if (promise->getRequest()->isRetryable() || isRedoOperation()) {
+                bool serviceOpen = isOpen;
+                if (serviceOpen && (promise->getRequest()->isRetryable() || isRedoOperation())) {
                     resend(promise, lastTriedAddress);
                     return;
                 }
