@@ -56,6 +56,7 @@ namespace hazelcast {
                 // std::cout here. outstream flush() function in stdlib 3.4.4 does not handle pthread_cancel call
                 // appropriately.
                 printf("%s SEVERE: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
+                fflush(stdout);
             }
         }
 
@@ -64,6 +65,7 @@ namespace hazelcast {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
                 printf("%s WARNING: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
+                fflush(stdout);
             }
         }
 
@@ -72,6 +74,7 @@ namespace hazelcast {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
                 printf("%s INFO: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
+                fflush(stdout);
             }
         }
 
@@ -81,6 +84,7 @@ namespace hazelcast {
                 char buffer [TIME_STRING_LENGTH];
                 util::LockGuard l(lockMutex);
                 printf("%s FINEST: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
+                fflush(stdout);
             }
         }
 
