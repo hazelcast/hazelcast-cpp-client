@@ -169,23 +169,17 @@ namespace hazelcast {
             }
 
             void Connection::heartBeatingFailed() {
-                std::stringstream errorMessage;
                 if (!heartBeating) {
                     return;
                 }
+                // set the flag first to avoid the usage of this connection
+                heartBeating = false;
+
+                std::stringstream errorMessage;
                 errorMessage << "Heartbeat to connection  " << getRemoteEndpoint() << " is failed. ";
                 util::ILogger::getLogger().warning(errorMessage.str());
 
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientRemoveAllListenersCodec::RequestParameters::encode();
-
-                spi::InvocationService& invocationService = clientContext.getInvocationService();
-                invocationService.invokeOnTarget(request, getRemoteEndpoint()).get();
-                heartBeating = false;
-                ConnectionManager& connectionManager = clientContext.getConnectionManager();
-                connectionManager.onDetectingUnresponsiveConnection(*this);
-
-                //Other resources(request promises) will be handled by CallFuture.get()
-                invocationService.cleanEventHandlers(*this);
+                clientContext.getConnectionManager().onDetectingUnresponsiveConnection(*this);
             }
 
             void Connection::heartBeatingSucceed() {

@@ -22,7 +22,7 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/AtomicInt.h"
+#include <hazelcast/util/Atomic.h>
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
@@ -89,7 +89,7 @@ namespace hazelcast {
 
                 void setConnectionId(int connectionId);
 
-                util::AtomicInt lastRead;
+                util::Atomic<time_t> lastRead;
                 util::AtomicBoolean live;
             private:
                 spi::ClientContext& clientContext;
