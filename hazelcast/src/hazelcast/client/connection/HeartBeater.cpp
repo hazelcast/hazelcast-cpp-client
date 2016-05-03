@@ -65,11 +65,14 @@ namespace hazelcast {
                     time_t now = time(NULL);
                     for (it = connections.begin(); it != connections.end(); ++it) {
                         boost::shared_ptr<Connection> connection = *it;
-                        if (now - connection->lastRead > heartBeatTimeoutSeconds) {
+
+                        time_t lastReadTime = connection->lastRead;
+
+                        if (now - lastReadTime > heartBeatTimeoutSeconds) {
                             connection->heartBeatingFailed();
                         }
 
-                        if (now - connection->lastRead > heartBeatIntervalSeconds) {
+                        if (now - lastReadTime > heartBeatIntervalSeconds) {
                             std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::RequestParameters::encode();
 
                             clientContext.getInvocationService().invokeOnConnection(request, connection);

@@ -34,7 +34,13 @@ namespace hazelcast {
             protected:
                 virtual void TearDown() {
                     // clear maps
-                    imap->clear();
+                    try {
+                        imap->clear();
+                    } catch (exception::IException &e) {
+                        std::ostringstream out;
+                        out << "[TearDown] An exception occured in tear down:" << e.what();
+                        util::ILogger::getLogger().warning(out.str());
+                    }
                 }
 
                 static void SetUpTestCase() {
@@ -42,6 +48,7 @@ namespace hazelcast {
                     instance2 = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    clientConfig->getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
                     client = new HazelcastClient(*clientConfig);
                     imap = new IMap<int, int>(client->getMap<int, int>("IntMap"));
                 }
@@ -89,14 +96,21 @@ namespace hazelcast {
             };
 
             TEST_F(ClientExpirationListenerTest, notified_afterExpirationOfEntries) {
-                int numberOfPutOperations = 1000;
+                int numberOfPutOperations = 10000;
                 util::CountDownLatch expirationEventArrivalCount(numberOfPutOperations);
 
                 ExpirationListener expirationListener(expirationEventArrivalCount);
                 std::string registrationId = imap->addEntryListener(expirationListener, true);
 
                 for (int i = 0; i < numberOfPutOperations; i++) {
+                    time_t start = time(NULL);
                     imap->put(i, i, 100);
+                    time_t diff = time(NULL) - start;
+                    if (diff > 1) { // more than 1 sec
+                        char msg[200];
+                        util::snprintf(msg, 200, "[notified_afterExpirationOfEntries] put for %d took %lld secs", i, diff);
+                        util::ILogger::getLogger().warning(msg);
+                    }
                 }
 
                 // wait expiration of entries.
