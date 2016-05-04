@@ -1,7 +1,7 @@
 # Hazelcast C++ Client
 
 
-C++ client implementation for [Hazelcast](https://github.com/hazelcast/hazelcast), the open source in-memory data grid. A comparison of features supported by the C++ Client vs the Java client can be found [here](http://docs.hazelcast.org/docs/3.5/manual/html/javaclient.html).
+C++ client implementation for [Hazelcast](https://github.com/hazelcast/hazelcast), the open source in-memory data grid. A comparison of features supported by the C++ Client vs the Java client can be found [here](http://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#hazelcast-clients-feature-comparison).
 
 
 ---
