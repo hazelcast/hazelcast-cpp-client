@@ -37,7 +37,7 @@ namespace hazelcast {
             , buffer(new char[bufferSize])
             , byteBuffer(buffer, bufferSize)
             , builder(clientContext.getInvocationService(), connection) {
-		        connection.lastRead = (int)time(NULL);
+		        connection.lastRead = time(NULL);
             }
 
             ReadHandler::~ReadHandler() {
@@ -49,7 +49,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                connection.lastRead = (int)time(NULL);
+                connection.lastRead = time(NULL);
                 try {
                     byteBuffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {
@@ -61,8 +61,9 @@ namespace hazelcast {
                     return;
                 byteBuffer.flip();
 
-                while (byteBuffer.hasRemaining()) {
-                    builder.onData(byteBuffer);
+                // it is important to check the onData return value since there may be left data less than a message
+                // header size, and this may cause an infinite loop.
+                while (byteBuffer.hasRemaining() && builder.onData(byteBuffer)) {
                 }
 
                 if (byteBuffer.hasRemaining()) {
