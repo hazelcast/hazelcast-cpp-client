@@ -66,7 +66,7 @@ namespace hazelcast {
                         clientConfig = new ClientConfig();
                         clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                         client = new HazelcastClient(*clientConfig);
-                        legacyMap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("clientMapTest"));
+                        legacyMap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("RawPointerMapTest"));
                         imap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyMap);
                         legacyEmployees = new IMap<int, Employee>(client->getMap<int, Employee>("EmployeesMap"));
                         employees = new client::adaptor::RawPointerMap<int, Employee>(*legacyEmployees);
@@ -131,27 +131,110 @@ namespace hazelcast {
                 IMap<int, int> *RawPointerMapTest::legacyIntMap = NULL;
                 client::adaptor::RawPointerMap<int, int> *RawPointerMapTest::intMap = NULL;
 
-                class SampleEntryListener : public EntryAdapter<std::string, std::string> {
+                void tryPutThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    bool result = imap->tryPut("key1", "value3", 1 * 1000);
+                    if (!result) {
+                        latch->countDown();
+                    }
+                }
+
+                void tryRemoveThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    bool result = imap->tryRemove("key2", 1 * 1000);
+                    if (!result) {
+                        latch->countDown();
+                    }
+                }
+
+                void testLockThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    imap->tryPut("key1", "value2", 1);
+                    latch->countDown();
+                }
+
+                void testLockTTLThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    imap->tryPut("key1", "value2", 5 * 1000);
+                    latch->countDown();
+                }
+
+                void testLockTTL2Thread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    if (!imap->tryLock("key1")) {
+                        latch->countDown();
+                    }
+                    if (imap->tryLock("key1", 5 * 1000)) {
+                        latch->countDown();
+                    }
+                }
+
+                void testMapTryLockThread1(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    if (!imap->tryLock("key1", 2)) {
+                        latch->countDown();
+                    }
+                }
+
+                void testMapTryLockThread2(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    if (imap->tryLock("key1", 20 * 1000)) {
+                        latch->countDown();
+                    }
+                }
+
+                void testMapForceUnlockThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    client::adaptor::RawPointerMap<std::string, std::string> *imap = (client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
+                    imap->forceUnlock("key1");
+                    latch->countDown();
+                }
+
+                template <typename K, typename V>
+                class CountdownListener : public EntryAdapter<K, V> {
                 public:
-                    SampleEntryListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
-                                        util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
+                    CountdownListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
+                                      util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
                             : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
                               evictLatch(evictLatch) {
                     }
 
-                    void entryAdded(const EntryEvent<std::string, std::string> &event) {
+                    void entryAdded(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryAdded] " << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
                         addLatch.countDown();
                     }
 
-                    void entryRemoved(const EntryEvent<std::string, std::string> &event) {
+                    void entryRemoved(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryRemoved] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
                         removeLatch.countDown();
                     }
 
-                    void entryUpdated(const EntryEvent<std::string, std::string> &event) {
+                    void entryUpdated(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryUpdated] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
                         updateLatch.countDown();
                     }
 
-                    void entryEvicted(const EntryEvent<std::string, std::string> &event) {
+                    void entryEvicted(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryEvicted] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
                         evictLatch.countDown();
                     }
 
@@ -209,6 +292,65 @@ namespace hazelcast {
 
                 private:
                     util::CountDownLatch &latch;
+                };
+
+                class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
+                public:
+                    SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
+                            : latch(latch), atomicInteger(atomicInteger) {
+
+                    }
+
+                    void entryAdded(const EntryEvent<Employee, int> &event) {
+                        ++atomicInteger;
+                        latch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                    util::AtomicInt &atomicInteger;
+                };
+
+                class EntryMultiplier : public serialization::IdentifiedDataSerializable {
+                public:
+                    EntryMultiplier(int multiplier) : multiplier(multiplier) { }
+
+                    /**
+                     * @return factory id
+                     */
+                    int getFactoryId() const {
+                        return 666;
+                    }
+
+                    /**
+                     * @return class id
+                     */
+                    int getClassId() const {
+                        return 3;
+                    }
+
+                    /**
+                     * Defines how this class will be written.
+                     * @param writer ObjectDataOutput
+                     */
+                    void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeInt(multiplier);
+                    }
+
+                    /**
+                     *Defines how this class will be read.
+                     * @param reader ObjectDataInput
+                     */
+                    void readData(serialization::ObjectDataInput &reader) {
+                        multiplier = reader.readInt();
+                    }
+
+                    int getMultiplier() const {
+                        return multiplier;
+                    }
+
+                private:
+                    int multiplier;
                 };
 
                 TEST_F(RawPointerMapTest, testIssue537) {
@@ -317,26 +459,7 @@ namespace hazelcast {
                     ASSERT_NE(*key1, *entry.first);
                 }
 
-                void tryPutThread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    bool result = imap->tryPut("key1", "value3", 1 * 1000);
-                    if (!result) {
-                        latch->countDown();
-                    }
-                }
-
-                void tryRemoveThread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    bool result = imap->tryRemove("key2", 1 * 1000);
-                    if (!result) {
-                        latch->countDown();
-                    }
-                }
-
                 TEST_F(RawPointerMapTest, testTryPutRemove) {
-
                     ASSERT_TRUE(imap->tryPut("key1", "value1", 1 * 1000));
                     ASSERT_TRUE(imap->tryPut("key2", "value2", 1 * 1000));
                     imap->lock("key1");
@@ -357,7 +480,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testPutTtl) {
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
-                    SampleEntryListener sampleEntryListener(dummy, dummy, dummy, evict);
+                    CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = imap->addEntryListener(sampleEntryListener, false);
 
                     imap->put("key1", "value1", 2000);
@@ -397,13 +520,6 @@ namespace hazelcast {
                     ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
                 }
 
-                void testLockThread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    imap->tryPut("key1", "value2", 1);
-                    latch->countDown();
-                }
-
                 TEST_F(RawPointerMapTest, testLock) {
                     imap->put("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get("key1")));
@@ -414,13 +530,6 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->get("key1")));
                     imap->forceUnlock("key1");
 
-                }
-
-                void testLockTTLThread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    imap->tryPut("key1", "value2", 5 * 1000);
-                    latch->countDown();
                 }
 
                 TEST_F(RawPointerMapTest, testLockTtl) {
@@ -436,17 +545,6 @@ namespace hazelcast {
 
                 }
 
-                void testLockTTL2Thread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    if (!imap->tryLock("key1")) {
-                        latch->countDown();
-                    }
-                    if (imap->tryLock("key1", 5 * 1000)) {
-                        latch->countDown();
-                    }
-                }
-
                 TEST_F(RawPointerMapTest, testLockTtl2) {
                     imap->lock("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
@@ -454,22 +552,6 @@ namespace hazelcast {
                     ASSERT_TRUE(latch.await(10));
                     imap->forceUnlock("key1");
 
-                }
-
-                void testMapTryLockThread1(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    if (!imap->tryLock("key1", 2)) {
-                        latch->countDown();
-                    }
-                }
-
-                void testMapTryLockThread2(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    if (imap->tryLock("key1", 20 * 1000)) {
-                        latch->countDown();
-                    }
                 }
 
                 TEST_F(RawPointerMapTest, testTryLock) {
@@ -491,13 +573,6 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->isLocked("key1"));
                     imap->forceUnlock("key1");
 
-                }
-
-                void testMapForceUnlockThread(util::ThreadArgs &args) {
-                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *imap = (hazelcast::client::adaptor::RawPointerMap<std::string, std::string> *) args.arg1;
-                    imap->forceUnlock("key1");
-                    latch->countDown();
                 }
 
                 TEST_F(RawPointerMapTest, testForceUnlock) {
@@ -1989,24 +2064,6 @@ namespace hazelcast {
                     ASSERT_EQ("value3", *(imap->get("key1")));
                 }
 
-                class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
-                public:
-                    SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
-                            : latch(latch), atomicInteger(atomicInteger) {
-
-                    }
-
-                    void entryAdded(const EntryEvent<Employee, int> &event) {
-                        ++atomicInteger;
-                        latch.countDown();
-                    }
-
-                private:
-                    util::CountDownLatch &latch;
-                    util::AtomicInt &atomicInteger;
-                };
-
-
                 TEST_F(RawPointerMapTest, testPredicateListenerWithPortableKey) {
                     IMap<Employee, int> map = client->getMap<Employee, int>("tradeMap");
                     hazelcast::client::adaptor::RawPointerMap<Employee, int> tradeMap(map);
@@ -2031,8 +2088,8 @@ namespace hazelcast {
                     util::CountDownLatch latch2Add(1);
                     util::CountDownLatch latch2Remove(1);
 
-                    SampleEntryListener listener1(latch1Add, latch1Remove, dummy, dummy);
-                    SampleEntryListener listener2(latch2Add, latch2Remove, dummy, dummy);
+                    CountdownListener<std::string, std::string> listener1(latch1Add, latch1Remove, dummy, dummy);
+                    CountdownListener<std::string, std::string> listener2(latch2Add, latch2Remove, dummy, dummy);
 
                     std::string listener1ID = imap->addEntryListener(listener1, false);
                     std::string listener2ID = imap->addEntryListener(listener2, "key3", true);
@@ -2056,6 +2113,455 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listener1ID));
                     ASSERT_TRUE(imap->removeEntryListener(listener2ID));
 
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithTruePredicate) {
+                    util::CountDownLatch latchAdd(3);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    std::string listenerId = intMap->addEntryListener(listener, query::TruePredicate(), false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithFalsePredicate) {
+                    util::CountDownLatch latchAdd(3);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    std::string listenerId = intMap->addEntryListener(listener, query::FalsePredicate(), false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                    ASSERT_FALSE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithEqualPredicate) {
+                    util::CountDownLatch latchAdd(1);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    std::string listenerId = intMap->addEntryListener(listener, query::EqualPredicate<int>(
+                            query::QueryConstants::getKeyAttributeName(), 3), true);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchEvict);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    latches.reset();
+                    latches.add(latchUpdate).add(latchRemove);
+                    ASSERT_FALSE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithNotEqualPredicate) {
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    std::string listenerId = intMap->addEntryListener(listener, query::NotEqualPredicate<int>(
+                            query::QueryConstants::getKeyAttributeName(), 3), true);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    latches.reset();
+                    latches.add(latchEvict);
+                    ASSERT_FALSE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithGreaterLessPredicate) {
+                    IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // key <= 2
+                    std::string listenerId = intMap->addEntryListener(listener, query::GreaterLessPredicate<int>(
+                            query::QueryConstants::getKeyAttributeName(), 2, true, true), false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_FALSE(latchEvict.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithBetweenPredicate) {
+                    IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // 1 <=key <= 2
+                    std::string listenerId = intMap->addEntryListener(listener, query::BetweenPredicate<int>(
+                            query::QueryConstants::getKeyAttributeName(), 1, 2), true);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_FALSE(latchEvict.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithSqlPredicate) {
+                    IMap<int, int> map = client->getMap<int, int>("IntMap");
+
+                    util::CountDownLatch latchAdd(1);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // 1 <=key <= 2
+                    std::string listenerId = intMap->addEntryListener(listener, query::SqlPredicate("__key < 2"), true);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    latches.reset();
+                    latches.add(latchRemove).add(latchEvict);
+                    ASSERT_FALSE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithRegExPredicate) {
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<std::string, std::string> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // key matches any word containing ".*met.*"
+                    std::string listenerId = imap->addEntryListener(listener, query::RegexPredicate(query::QueryConstants::getKeyAttributeName(), ".*met.*"), true);
+
+                    imap->put("ilkay", "yasar");
+                    imap->put("mehmet", "demir");
+                    imap->put("metin", "ozen", 1000); // evict after 1 second
+                    imap->put("hasan", "can");
+                    imap->remove("mehmet");
+
+                    util::sleep(2);
+
+                    ASSERT_EQ((std::string *)NULL, imap->get("metin").get()); // trigger eviction
+
+                    // update an entry
+                    imap->set("hasan", "suphi");
+                    std::auto_ptr<std::string> value = imap->get("hasan");
+                    ASSERT_NE((std::string *)NULL, value.get());
+                    ASSERT_EQ("suphi", *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchEvict);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_FALSE(latchUpdate.awaitMillis(2000));
+
+                    ASSERT_TRUE(imap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithInstanceOfPredicate) {
+                    util::CountDownLatch latchAdd(3);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // 1 <=key <= 2
+                    std::string listenerId = intMap->addEntryListener(listener, query::InstanceOfPredicate("java.lang.Integer"), false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithNotPredicate) {
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // key >= 3
+                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true, false));
+                    query::NotPredicate notPredicate(greaterLessPred);
+                    std::string listenerId = intMap->addEntryListener(listener, notPredicate, false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchRemove).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    latches.reset();
+                    latches.add(latchEvict);
+                    ASSERT_FALSE(latches.awaitMillis(1000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithAndPredicate) {
+                    util::CountDownLatch latchAdd(1);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // key < 3
+                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                            new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false, true));
+                    // value == 1
+                    std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                            new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
+                    query::AndPredicate predicate;
+                    // key < 3 AND key == 1 --> (1, 1)
+                    predicate.add(greaterLessPred).add(equalPred);
+                    std::string listenerId = intMap->addEntryListener(listener, predicate, false);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchUpdate);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    latches.reset();
+                    latches.add(latchEvict).add(latchRemove);
+                    ASSERT_FALSE(latches.awaitMillis(1000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                }
+
+                TEST_F(RawPointerMapTest, testListenerWithOrPredicate) {
+                    util::CountDownLatch latchAdd(2);
+                    util::CountDownLatch latchRemove(1);
+                    util::CountDownLatch latchEvict(1);
+                    util::CountDownLatch latchUpdate(1);
+
+                    CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+
+                    // key >= 3
+                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                            new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true, false));
+                    // value == 1
+                    std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                            new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
+                    query::OrPredicate predicate;
+                    // key >= 3 OR value == 2 --> (1, 1), (2, 2)
+                    predicate.add(greaterLessPred).add(equalPred);
+                    std::string listenerId = intMap->addEntryListener(listener, predicate, true);
+
+                    intMap->put(1, 1);
+                    intMap->put(2, 2);
+                    intMap->put(3, 3, 1000); // evict after 1 second
+                    intMap->remove(2);
+
+                    util::sleep(2);
+
+                    ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                    // update an entry
+                    intMap->set(1, 5);
+                    std::auto_ptr<int> value = intMap->get(1);
+                    ASSERT_NE((int *)NULL, value.get());
+                    ASSERT_EQ(5, *value);
+
+                    util::CountDownLatchWaiter latches;
+                    latches.add(latchAdd).add(latchEvict).add(latchRemove);
+                    ASSERT_TRUE(latches.awaitMillis(2000));
+
+                    ASSERT_FALSE(latchUpdate.awaitMillis(2000));
+
+                    ASSERT_TRUE(intMap->removeEntryListener(listenerId));
                 }
 
                 TEST_F(RawPointerMapTest, testClearEvent) {
@@ -2152,48 +2658,6 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->evict("ali"));
                     ASSERT_EQ(imap->get("ali").get(), (std::string *) NULL);
                 }
-
-                class EntryMultiplier : public serialization::IdentifiedDataSerializable {
-                public:
-                    EntryMultiplier(int multiplier) : multiplier(multiplier) { }
-
-                    /**
-                     * @return factory id
-                     */
-                    int getFactoryId() const {
-                        return 666;
-                    }
-
-                    /**
-                     * @return class id
-                     */
-                    int getClassId() const {
-                        return 3;
-                    }
-
-                    /**
-                     * Defines how this class will be written.
-                     * @param writer ObjectDataOutput
-                     */
-                    void writeData(serialization::ObjectDataOutput &writer) const {
-                        writer.writeInt(multiplier);
-                    }
-
-                    /**
-                     *Defines how this class will be read.
-                     * @param reader ObjectDataInput
-                     */
-                    void readData(serialization::ObjectDataInput &reader) {
-                        multiplier = reader.readInt();
-                    }
-
-                    int getMultiplier() const {
-                        return multiplier;
-                    }
-
-                private:
-                    int multiplier;
-                };
 
                 TEST_F(RawPointerMapTest, testExecuteOnKey) {
                     Employee empl1("ahmet", 35);
