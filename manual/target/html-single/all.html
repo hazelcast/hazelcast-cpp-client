@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Hazelcast, IMDG, In-Memory Data Grid, Scalable, Clustering, Partitioning, Distributed, Open Source, distributed map, queue, topic, ringbuffer, executor service, transactions, high-density memory, jcache, mapreduce, aggregators, Java client, serialization">
+    <meta name="description" content="Hazelcast Reference Manual explains all in-memory data grid features provided by Hazelcast in detail with code samples and configuration options.">
+    <title>Hazelcast C++ Client 3.6.2 Reference Manual</title>
+
+    <link type="text/css" rel="stylesheet" href="assets/css/reset.css">
+    <link type="text/css" rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/github.min.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/docs.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/print.css" media="print">
+    
+
+    <script type="text/javascript" src="assets/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.sticky-kit.js"></script>
+    <script type="text/javascript" src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+    <script type="text/javascript" src="assets/js/lunr.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.scrollUp.min.js"></script>
+
+    <script type="text/javascript"> 
+	$(function () {
+		$.scrollUp({
+			scrollName: 'scrollUp',
+			topDistance: '300',
+			topSpeed: 100,
+			animation: 'fade',
+			animationInSpeed: 100,
+			animationOutSpeed: 100,
+			scrollText: 'Back to Top',
+			activeOverlay: false,
+		});
+	});
+    </script>
+
+    
+
+    <script type="text/javascript">var BASE_URL = "";</script>
+    <script type="text/javascript" src="assets/js/viewer.js"></script>
+    <script type="text/javascript" src="assets/js/toc.scroll.js"></script>
+
+    <script type="text/javascript"> 
+  	$(function(){
+		$("#sidebar").stick_in_parent()
+	});
+    </script>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-3921306-1']);
+        _gaq.push(['_setDomainName', 'hazelcast.com']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <script type="text/javascript">
+        setTimeout(function(){var a=document.createElement("script");
+            var b=document.getElementsByTagName("script")[0];
+            a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0020/7413.js?"+Math.floor(new Date().getTime()/3600000);
+            a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+    </script>
+
+</head>
+<body>
+	<div id="page">
+		<a name="top" />
+			<div id="sitebar">
+				<div class="content">
+					<p><a href="http://hazelcast.org/documentation">Go to <span style="font-weight:bold">hazelcast.org/documentation</span></a></p>
+				</div>
+			</div>
+		<header id="header">
+			<div class="content">
+				<div style="overflow:hidden">
+					<div style="float:left">
+						<a href="http://www.hazelcast.org"><img src="assets/img/logo.png" style="width: 199px;padding-top: 18px"/></a>
+					</div>
+					<div style="float:left;padding-top: 30px;padding-left: 30px;">
+					<a href=""></a> <span style="font-size:36px;color:white"> C++ Client Reference Manual </span> <span style="font-size:12px;color:white"> Version: 3.6.2 - Publication Date : May 05, 2016 </span>
+					</div>
+				</div>
+			</div>
+		</header>
+		<div class="content">
+			
+	<div id="sidebar" style="overflow-y:auto">
+	    <form action="search.html"><input id="search" type="text" placeholder="Search" name="q" /></form>
+	    <nav id="toc">
+	        
+    <ol>
+    
+        <li>
+            <a href="index.html#document-revision-history">Document Revision History</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client">C++ Client</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#setting-up-c-client">Setting Up C++ Client</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#installing-c-client">Installing C++ Client</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#compiling-c-client">Compiling C++ Client</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#linux-c-client">Linux C++ Client</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#mac-c-client">Mac C++ Client</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#windows-c-client">Windows C++ Client</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#serialization-support">Serialization Support</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#custom-serialization">Custom Serialization</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#raw-pointer-api">Raw Pointer API</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#query-api">Query API</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-code-examples">C++ Client Code Examples</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#c-client-map-example">C++ Client Map Example</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-queue-example">C++ Client Queue Example</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-serialization-example">C++ Client Serialization Example</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#glossary">Glossary</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+</ol>
+
+	    </nav>
+	    
+	    <nav id="links">
+	        <ul>
+	            
+	        </ul>
+	    </nav>
+	    
+	</div>
+
+				<div id="content">
+					<a name="document-revision-history"></a><h1 id="document-revision-history">Document Revision History</h1>
+<p>This chapter lists the changes made to this document from the previous release.</p>
+<p><br></br>
+<img src="images/NoteSmall.jpg" alt="image"><strong><em>NOTE:</em></strong> <em>Please refer to the <a href="https://github.com/hazelcast/hazelcast-cpp-client/releases" target="_blank">Release Notes</a> for the new features, enhancements and fixes performed for each Hazelcast C++ Client release.</em></p>
+<p><br></br></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Chapter</th>
+<th style="text-align:left">Section</th>
+<th style="text-align:left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#c-client">Chapter 2 - C++ Client</a></td>
+<td style="text-align:left"></td>
+<td style="text-align:left">Added new sections <a href="#custom-serialization">Custom Serialization</a> and <a href="#raw-pointer-api">Raw Pointer API</a>.</td>
+</tr>
+</tbody>
+</table>
+<p><br> </br></p>
+<a name="c-client"></a><h1 id="c-client">C++ Client</h1>
+<p>You can use Native C++ Client to connect to Hazelcast cluster members and perform almost all operations that a member can perform. Clients differ from members in that clients do not hold data. The C++ Client is by default a smart client, i.e., it knows where the data is and asks directly for the correct member. You can disable this feature (using the <code>ClientConfig::setSmart</code> method) if you do not want the clients to connect to every member.</p>
+<p>The features of C++ Clients are listed below:</p>
+<ul>
+<li>Access to distributed data structures (IMap, IQueue, MultiMap, ITopic, etc.).</li>
+<li>Access to transactional distributed data structures (TransactionalMap, TransactionalQueue, etc.).</li>
+<li>Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.</li>
+<li>Distributed synchronization mechanisms with ILock, ISemaphore and ICountDownLatch.</li>
+</ul>
+<a name="setting-up-c-client"></a><h2 id="setting-up-c-client">Setting Up C++ Client</h2>
+<p>Hazelcast C++ Client is shipped with 32/64 bit, shared and static libraries. You only need to include the boost <em>shared_ptr.hpp</em> header in your compilation since the API makes use of the boost <code>shared_ptr</code>.</p>
+<p>The downloaded release folder consists of:</p>
+<ul>
+<li>Mac_64/</li>
+<li>Windows_32/</li>
+<li>Windows_64/</li>
+<li>Linux_32/</li>
+<li>Linux_64/</li>
+<li>docs/ <em>(HTML Doxygen documents are here)</em></li>
+</ul>
+<p>Each of the folders above contains the following:</p>
+<ul>
+<li><p>examples/
+  There are a number of examples in this folder for each feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.</p>
+</li>
+<li><p>hazelcast/</p>
+<ul>
+<li>lib/ =&gt; Contains both shared and static library of hazelcast.</li>
+<li>include/ =&gt; Contains headers of client.</li>
+</ul>
+</li>
+<li><p>external/</p>
+<ul>
+<li>include/ =&gt; Contains headers of dependencies. (boost::shared_ptr)</li>
+</ul>
+</li>
+</ul>
+<a name="installing-c-client"></a><h2 id="installing-c-client">Installing C++ Client</h2>
+<p>The C++ Client is tested on Linux 32/64-bit, Mac 64-bit and Windows 32/64-bit machines. For each of the headers above, it is assumed that you are in the correct folder for your platform. Folders are Mac_64, Windows_32, Windows_64, Linux_32 or Linux_64.</p>
+<a name="compiling-c-client"></a><h2 id="compiling-c-client">Compiling C++ Client</h2>
+<p>For compilation, you need to include the <code>hazelcast/include</code> and <code>external/include</code> folders in your distribution. You also need to link your application to the appropriate static or shared library.</p>
+<a name="linux-c-client"></a><h3 id="linux-c-client">Linux C++ Client</h3>
+<p>For Linux, there are two distributions: 32 bit and 64 bit.</p>
+<p>Here is an example script to build with static library:</p>
+<p><code>g++ main.cpp -pthread -I./external/include -I./hazelcast/include
+      ./hazelcast/lib/libHazelcastClientStatic_64.a</code></p>
+<p>Here is an example script to build with shared library:</p>
+<p><code>g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64</code></p>
+<a name="mac-c-client"></a><h3 id="mac-c-client">Mac C++ Client</h3>
+<p>For Mac, there is one distribution: 64 bit.</p>
+<p>Here is an example script to build with static library:</p>
+<p><code>g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a</code></p>
+<p>Here is an example script to build with shared library:</p>
+<p><code>g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64</code></p>
+<a name="windows-c-client"></a><h3 id="windows-c-client">Windows C++ Client</h3>
+<p>For Windows, there are two distributions; 32 bit and 64 bit. The static library is located in a folder named &quot;static&quot; while the dynamic library(dll) is in the folder named as &quot;shared&quot;.</p>
+<p>When compiling for Windows environment the user should specify one of the following flags:
+    HAZELCAST_USE_STATIC: You want the application to use the static Hazelcast library.
+    HAZELCAST_USE_SHARED: You want the application to use the shared Hazelcast library.</p>
+<a name="serialization-support"></a><h2 id="serialization-support">Serialization Support</h2>
+<p>C++ client supports the following types of object serializations:</p>
+<ul>
+<li><strong>Built-in primitive types</strong>: Some primitive types have built-in support for serialization. These are <code>char</code>, <code>unsigned char</code> (<code>byte</code>), <code>bool</code>, <code>short</code>, <code>int</code>, <code>long</code>, <code>float</code>, <code>double</code>, <code>stl string</code>and vector of these primitive types. </li>
+<li><strong>IdentifiedDataSerializable</strong>: This interface enables a fast serialization by providing a unique factory and class IDs. It requires the server side class as well.</li>
+<li><strong>Portable Serialization</strong>: This serialization carries the meta data for the object structure. If server side deserialization is not needed, you do not need to prepare the server side implementation.</li>
+<li><strong>Custom Serialization</strong>: This serialization allows you to use an external custom serialization, e.g., Google&#39;s Protocol Buffers. It provides serialization support without modifying your existing libraries where object classes exist. </li>
+</ul>
+<a name="custom-serialization"></a><h3 id="custom-serialization">Custom Serialization</h3>
+<p>If all of your classes that need to be serialized are inherited from the same class, you can use an implementation as shown in the example snippet below:</p>
+<pre><code>class  MyCustomSerializer : public serialization::Serializer&lt;ExampleBaseClass&gt; {
+   public:
+      void write(serialization::ObjectDataOutput &amp; out, const ExampleBaseClass&amp; object);
+      void read(serialization::ObjectDataInput &amp; in, ExampleBaseClass&amp; object);
+      int getHazelcastTypeId() const;
+    };
+</code></pre><p>If your classes are not inherited from the same base class, you can use a serializer class with templates as shown in the example snippet below:</p>
+<pre><code>template&lt;typename T&gt;
+class MyCustomSerializer : public serialization::Serializer&lt;T&gt; {
+       public:
+         void write(serialization::ObjectDataOutput &amp; out, const T&amp; object) {
+                            //.....
+         }
+         void read(serialization::ObjectDataInput &amp; in, T&amp; object) {
+                           //.....
+         }
+         int getHazelcastTypeId() const {
+                           //..
+         }
+    };
+</code></pre><p>Along with your serializer, you should provide the function <code>getHazelcastTypeId()</code> with the same namespace to which <code>ExampleBaseClass</code> belongs as shown below:</p>
+<pre><code>int getHazelcastTypeId(const MyClass*);
+</code></pre><p>This function should return the same ID with its serializer. This ID is used to determine which serializer needs to be used for your classes. </p>
+<p>After you implement your serializer, you can register it using <code>SerializationConfig</code> as shown below:</p>
+<pre><code>clientConfig.getSerializationConfig().
+registerSerializer(boost::shared_ptr&lt;hazelcast::client::
+serialization::SerializerBase&gt;(new MyCustomSerializer());
+</code></pre><a name="raw-pointer-api"></a><h2 id="raw-pointer-api">Raw Pointer API</h2>
+<p>When using C++ client you can have the ownership of raw pointers for the objects you create and return. This allows you to keep the objects in your library/application without any need for copy.</p>
+<p>For each container you can use the adapter classes, whose names start with <code>RawPointer</code>, to access the raw pointers of the created objects. These adapter classes are found in <code>hazelcast::client::adaptor</code> namespace and listed below:</p>
+<ul>
+<li><code>RawPointerList</code></li>
+<li><code>RawPointerQueue</code></li>
+<li><code>RawPointerTransactionalMultiMap</code></li>
+<li><code>RawPointerMap</code></li>
+<li><code>RawPointerSet</code></li>
+<li><code>RawPointerTransactionalQueue</code></li>
+<li><code>RawPointerMultiMap</code></li>
+<li><code>RawPointerTransactionalMap</code></li>
+</ul>
+<p>These are adapter classes and they do not create new structures. You just provide the legacy containers as parameters and then you can work with these raw capability containers freely. An example usage of <code>RawPointerMap</code> is shown below:</p>
+<pre><code>hazelcast::client::IMap&lt;std::string, std::string&gt; m = hz.getMap&lt;std::string, std::string&gt;(&quot;map&quot;);
+hazelcast::client::adaptor::RawPointerMap&lt;std::string, std::string&gt; map(m);
+map.put(&quot;1&quot;, &quot;Tokyo&quot;);
+map.put(&quot;2&quot;, &quot;Paris&quot;);
+map.put(&quot;3&quot;, &quot;New York&quot;);
+std::cout &lt;&lt; &quot;Finished loading map&quot; &lt;&lt; std::endl;
+
+std::auto_ptr&lt;hazelcast::client::DataArray&lt;std::string&gt; &gt; vals = map.values();
+std::auto_ptr&lt;hazelcast::client::EntryArray&lt;std::string, std::string&gt; &gt; entries = map.entrySet();
+
+std::cout &lt;&lt; &quot;There are &quot; &lt;&lt; vals-&gt;size() &lt;&lt; &quot; values in the map&quot; &lt;&lt; std::endl;
+std::cout &lt;&lt; &quot;There are &quot; &lt;&lt; entries-&gt;size() &lt;&lt; &quot; entries in the map&quot; &lt;&lt; std::endl;
+
+for (size_t i = 0; i &lt; entries-&gt;size(); ++i) {
+   const std::string * key = entries-&gt;getKey(i);
+      if ((std::string *) NULL == key) {
+            std::cout &lt;&lt; &quot;The key at index &quot; &lt;&lt; i &lt;&lt; &quot; is NULL&quot; &lt;&lt; std::endl;
+        } else {
+            std::auto_ptr&lt;std::string&gt; val = entries-&gt;releaseValue(i);
+            std::cout &lt;&lt; &quot;(Key, Value) for index &quot; &lt;&lt; i &lt;&lt; &quot; is: (&quot; &lt;&lt; *key &lt;&lt; &quot;, &quot; &lt;&lt;
+                (val.get() == NULL ? &quot;NULL&quot; : *val) &lt;&lt; &quot;)&quot; &lt;&lt; std::endl;
+        }
+    }
+    std::cout &lt;&lt; &quot;Finished&quot; &lt;&lt; std::endl;
+</code></pre><p>Raw pointer API uses the DataArray and EntryArray interfaces which allow late deserialization of objects. The entry in the returned array is deserialized only when it is accessed. Please see the example code below:</p>
+<pre><code>// No deserialization here
+std::auto_ptr&lt;hazelcast::client::DataArray&lt;std::string&gt; &gt; vals = map.values(); 
+
+// deserializes the item at index 0 assuming that there are at least 1 items in the array
+const std::string *value = vals-&gt;get(0);
+
+// no deserialization here since it was already de-serialized
+value = vals-&gt;get(0);
+
+// no deserialization here since it was already de-serialized
+value = (*vals)[0];
+
+// releases the value so that you can keep this object pointer in your application at some other place
+std::auto_ptr&lt;std::string&gt; releasedValue = vals-&gt;release(0);
+
+// deserialization occurs again since the value was released already
+value = vals-&gt;get(0);
+</code></pre><p>Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.</p>
+<a name="query-api"></a><h2 id="query-api">Query API</h2>
+<p>C++ client API allows you to query map values, keys and entries using predicates. It also allows you to use Hazelcast Map&#39;s <code>executeOnKey</code> and <code>executeOnEntries</code> methods with predicates. You can run a processor on a subset of entries with these methods. </p>
+<p>You can add entry listeners with predicates using C++ client API. By this way, only the events for the selected subset of entries matching the query criteria are received by your listener.</p>
+<p>C++ client API provides a rich set of built-in predicates as supported by the Java client. You can create your own predicates by implementing <code>Predicate</code> interfaces both at the C++ client side and server side. Built-in predicates are listed below:</p>
+<ul>
+<li><code>AndPredicate</code></li>
+<li><code>EqualPredicate</code> </li>
+<li><code>ILikePredicate</code></li>
+<li><code>LikePredicate</code></li>
+<li><code>OrPredicate</code></li>
+<li><code>TruePredicate</code></li>
+<li><code>BetweenPredicate</code> </li>
+<li><code>FalsePredicate</code></li>
+<li><code>InPredicate</code></li>
+<li><code>NotEqualPredicate</code></li>
+<li><code>PagingPredicate</code></li>
+<li><code>RegexPredicate</code></li>
+<li><code>GreaterLessPredicate</code></li>
+<li><code>InstanceOfPredicate</code></li>
+<li><code>NotPredicate</code></li>
+<li><code>SqlPredicate</code></li>
+</ul>
+<p>An example query is shown in the following snippet:</p>
+<pre><code>IMap&lt;int, int&gt; intMap = client.getMap&lt;int, int&gt;(&quot;testValuesWithPredicateIntMap&quot;);
+adaptor::RawPointerMap&lt;int, int&gt; rawMap(intMap);
+// ...
+// BetweenPredicate
+// 5 &lt;= key &lt;= 10
+valuesArray = rawMap.values(query::BetweenPredicate&lt;int&gt;(query::QueryConstants::getKeyAttributeName(), 5, 10));
+</code></pre><p>This example query returns the values between 5 and 10, inclusive. You can find the examples of each built-in predicate in <code>distributed-map/query</code> folder of <code>examples</code>.</p>
+<p><img src="images/NoteSmall.jpg" alt="image"> <strong><em>NOTE:</em></strong> <em>API that returns pointers may return null pointers for null values. You need to check for null values.</em></p>
+<a name="c-client-code-examples"></a><h2 id="c-client-code-examples">C++ Client Code Examples</h2>
+<p>You can try the following C++ client code examples. You need to have a Hazelcast client member running for the code examples to work. </p>
+<a name="c-client-map-example"></a><h3 id="c-client-map-example">C++ Client Map Example</h3>
+<pre><code class="lang-cpp">#include &lt;hazelcast/client/HazelcastAll.h&gt;
+#include &lt;iostream&gt;
+
+using namespace hazelcast::client;
+
+int main() {
+  ClientConfig clientConfig;
+  Address address( &quot;localhost&quot;, 5701 );
+  clientConfig.addAddress( address );
+
+  HazelcastClient hazelcastClient( clientConfig );
+
+  IMap&lt;int,int&gt; myMap = hazelcastClient.getMap&lt;int ,int&gt;( &quot;myIntMap&quot; );
+  myMap.put( 1,3 );
+  boost::shared_ptr&lt;int&gt; value = myMap.get( 1 );
+  if( value.get() != NULL ) {
+    //process the item
+  }
+
+  return 0;
+}
+</code></pre>
+<a name="c-client-queue-example"></a><h3 id="c-client-queue-example">C++ Client Queue Example</h3>
+<pre><code class="lang-cpp">#include &lt;hazelcast/client/HazelcastAll.h&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace hazelcast::client;
+
+int main() {
+  ClientConfig clientConfig;
+  Address address( &quot;localhost&quot;, 5701 );
+  clientConfig.addAddress( address );
+
+  HazelcastClient hazelcastClient( clientConfig );
+
+  IQueue&lt;std::string&gt; queue = hazelcastClient.getQueue&lt;std::string&gt;( &quot;q&quot; );
+  queue.offer( &quot;sample&quot; );
+  boost::shared_ptr&lt;std::string&gt; value = queue.poll();
+  if( value.get() != NULL ) {
+    //process the item
+  }
+  return 0;
+}
+</code></pre>
+<a name="c-client-entry-listener-example"></a><h4 id="c-client-entry-listener-example">C++ Client Entry Listener Example</h4>
+<pre><code class="lang-cpp">#include &quot;hazelcast/client/ClientConfig.h&quot;
+#include &quot;hazelcast/client/EntryEvent.h&quot;
+#include &quot;hazelcast/client/IMap.h&quot;
+#include &quot;hazelcast/client/Address.h&quot;
+#include &quot;hazelcast/client/HazelcastClient.h&quot;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace hazelcast::client;
+
+class SampleEntryListener {
+  public:
+
+  void entryAdded( EntryEvent&lt;std::string, std::string&gt; &amp;event ) {
+    std::cout &lt;&lt; &quot;entry added &quot; &lt;&lt;  event.getKey() &lt;&lt; &quot; &quot;
+        &lt;&lt; event.getValue() &lt;&lt; std::endl;
+  };
+
+  void entryRemoved( EntryEvent&lt;std::string, std::string&gt; &amp;event ) {
+    std::cout &lt;&lt; &quot;entry added &quot; &lt;&lt;  event.getKey() &lt;&lt; &quot; &quot; 
+        &lt;&lt; event.getValue() &lt;&lt; std::endl;
+  }
+
+  void entryUpdated( EntryEvent&lt;std::string, std::string&gt; &amp;event ) {
+    std::cout &lt;&lt; &quot;entry added &quot; &lt;&lt;  event.getKey() &lt;&lt; &quot; &quot; 
+        &lt;&lt; event.getValue() &lt;&lt; std::endl;
+  }
+
+  void entryEvicted( EntryEvent&lt;std::string, std::string&gt; &amp;event ) {
+    std::cout &lt;&lt; &quot;entry added &quot; &lt;&lt;  event.getKey() &lt;&lt; &quot; &quot; 
+        &lt;&lt; event.getValue() &lt;&lt; std::endl;
+  }
+};
+
+
+int main( int argc, char **argv ) {
+  ClientConfig clientConfig;
+  Address address( &quot;localhost&quot;, 5701 );
+  clientConfig.addAddress( address );
+
+  HazelcastClient hazelcastClient( clientConfig );
+
+  IMap&lt;std::string,std::string&gt; myMap = hazelcastClient
+      .getMap&lt;std::string ,std::string&gt;( &quot;myIntMap&quot; );
+  SampleEntryListener *  listener = new SampleEntryListener();
+
+  std::string id = myMap.addEntryListener( *listener, true );
+  // Prints entryAdded
+  myMap.put( &quot;key1&quot;, &quot;value1&quot; );
+  // Prints updated
+  myMap.put( &quot;key1&quot;, &quot;value2&quot; );
+  // Prints entryRemoved
+  myMap.remove( &quot;key1&quot; );
+  // Prints entryEvicted after 1 second
+  myMap.put( &quot;key2&quot;, &quot;value2&quot;, 1000 );
+
+  // WARNING: deleting listener before removing it from Hazelcast leads to crashes.
+  myMap.removeEntryListener( id );
+
+  // listen using predicates
+  // only listen the events for entries which has the value that matches the 
+  // string &quot;%VALue%1%&quot;, i.e. any string containing the text value1 case insensitive
+  id = myMap.addEntryListener(*listener, query::ILikePredicate(
+        query::QueryConstants::getValueAttributeName(), &quot;%VALue%1%&quot;), true);
+
+  // this will generate an event
+  myMap.put(&quot;key1&quot;, &quot;my__value1_new&quot; );
+
+  sleep(1);
+
+  myMap.removeEntryListener( id );
+
+  // Delete listener after removing it from Hazelcast.
+  delete listener;
+  return 0;
+};
+</code></pre>
+<a name="c-client-serialization-example"></a><h3 id="c-client-serialization-example">C++ Client Serialization Example</h3>
+<p>Assume that you have the following two classes in Java and you want to use them with a C++ client. </p>
+<pre><code class="lang-java">class Foo implements Serializable {
+  private int age;
+  private String name;
+}
+
+class Bar implements Serializable {
+  private float x;
+  private float y;
+}
+</code></pre>
+<p><strong>First</strong>, let them implement <code>Portable</code> or <code>IdentifiedDataSerializable</code> as shown below.</p>
+<pre><code class="lang-java">class Foo implements Portable {
+  private int age;
+  private String name;
+
+  public int getFactoryId() {
+    // a positive id that you choose
+    return 123;
+  }
+
+  public int getClassId() {
+    // a positive id that you choose
+    return 2;     
+  }
+
+  public void writePortable( PortableWriter writer ) throws IOException {
+    writer.writeUTF( &quot;n&quot;, name );
+    writer.writeInt( &quot;a&quot;, age );
+  }
+
+  public void readPortable( PortableReader reader ) throws IOException {
+    name = reader.readUTF( &quot;n&quot; );
+    age = reader.readInt( &quot;a&quot; );
+  }
+}
+
+class Bar implements IdentifiedDataSerializable {
+  private float x;
+  private float y;
+
+  public int getFactoryId() {
+    // a positive id that you choose
+    return 4;     
+  }
+
+  public int getId() {
+    // a positive id that you choose
+    return 5;    
+  }
+
+  public void writeData( ObjectDataOutput out ) throws IOException {
+    out.writeFloat( x );
+    out.writeFloat( y );
+  }
+
+  public void readData( ObjectDataInput in ) throws IOException {
+    x = in.readFloat();
+    y = in.readFloat();
+  }
+}
+</code></pre>
+<p><strong>Then</strong>, implement the corresponding classes in C++ with same factory and class ID as shown below.</p>
+<pre><code class="lang-cpp">class Foo : public Portable {
+  public:
+  int getFactoryId() const {
+    return 123;
+  };
+
+  int getClassId() const {
+    return 2;
+  };
+
+  void writePortable( serialization::PortableWriter &amp;writer ) const {
+    writer.writeUTF( &quot;n&quot;, name );
+    writer.writeInt( &quot;a&quot;, age );
+  };
+
+  void readPortable( serialization::PortableReader &amp;reader ) {
+    name = reader.readUTF( &quot;n&quot; );
+    age = reader.readInt( &quot;a&quot; );
+  };
+
+  private:
+  int age;
+  std::string name;
+};
+
+class Bar : public IdentifiedDataSerializable {
+  public:
+  int getFactoryId() const {
+    return 4;
+  };
+
+  int getClassId() const {
+    return 2;
+  };
+
+  void writeData( serialization::ObjectDataOutput&amp; out ) const {
+    out.writeFloat(x);
+    out.writeFloat(y);
+  };
+
+  void readData( serialization::ObjectDataInput&amp; in ) {
+    x = in.readFloat();
+    y = in.readFloat();
+  };
+
+  private:
+  float x;
+  float y;
+};
+</code></pre>
+<p>Now, you can use the classes <code>Foo</code> and <code>Bar</code> in distributed structures. For example, you can use as Key or Value of <code>IMap</code> or as an Item in <code>IQueue</code>.</p>
+<a name="glossary"></a><h1 id="glossary">Glossary</h1>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Term</th>
+<th style="text-align:left">Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>2-phase Commit</strong></td>
+<td style="text-align:left">2-phase commit protocol is an atomic commitment protocol for distributed systems. It consists of two phases: commit-request and commit. In commit-request phase, transaction manager coordinates all of the transaction resources to commit or abort. In commit-phase, transaction manager decides to finalize operation by committing or aborting according to the votes of the each transaction resource.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>ACID</strong></td>
+<td style="text-align:left">A set of properties (Atomicity, Consistency, Isolation, Durability) guaranteeing that transactions are processed reliably. Atomicity requires that each transaction be all or nothing (i.e. if one part of the transaction fails, the entire transaction will fail). Consistency ensures that only valid data following all rules and constraints is written. Isolation ensures that transactions are securely and independently processed at the same time without interference (and without transaction ordering). Durability means that once a transaction has been committed, it will remain so, no matter if there is a power loss, crash, or error.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Cache</strong></td>
+<td style="text-align:left">A high-speed access area that can be either a reserved section of main memory or storage device. </td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Garbage Collection</strong></td>
+<td style="text-align:left">Garbage collection is the recovery of storage that is being used by an application when that application no longer needs the storage. This frees the storage for use by other applications (or processes within an application). It also ensures that an application using increasing amounts of storage does not reach its quota. Programming languages that use garbage collection are often interpreted within virtual machines like the JVM. The environment that runs the code is also responsible for garbage collection.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Hazelcast Cluster</strong></td>
+<td style="text-align:left">A virtual environment formed by Hazelcast members communicating with each other in the cluster.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Hazelcast Partitions</strong></td>
+<td style="text-align:left">Memory segments containing the data. Hazelcast is built-on the partition concept, it uses partitions to store and process data. Each partition can have hundreds or thousands of data entries depending on your memory capacity. You can think of a partition as a block of data. In general and optimally, a partition should have a maximum size of 50-100 Megabytes.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>IMDG</strong></td>
+<td style="text-align:left">An in-memory data grid (IMDG) is a data structure that resides entirely in memory, and is distributed among many members in a single location or across multiple locations. IMDGs can support thousands of in-memory data updates per second, and they can be clustered and scaled in ways that support large quantities of data.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Invalidation</strong></td>
+<td style="text-align:left">The process of marking an object as being invalid across the distributed cache.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Java heap</strong></td>
+<td style="text-align:left">Java heap is the space that Java can reserve and use in memory for dynamic memory allocation. All runtime objects created by a Java application are stored in heap. By default, the heap size is 128 MB, but this limit is reached easily for business applications. Once the heap is full, new objects cannot be created and the Java application shows errors.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LRU, LFU</strong></td>
+<td style="text-align:left">LRU and LFU are two of eviction algorithms. LRU is the abbreviation for Least Recently Used. It refers to entries eligible for eviction due to lack of interest by applications. LFU is the abbreviation for Least Frequently Used. It refers to the entries eligible for eviction due to having the lowest usage frequency.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Member</strong></td>
+<td style="text-align:left">A Hazelcast instance. Depending on your Hazelcast usage, it can refer to a server or a Java virtual machine (JVM). Members belong to a Hazelcast cluster. Members are also referred as member nodes, cluster members, or Hazelcast members.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Multicast</strong></td>
+<td style="text-align:left">A type of communication where data is addressed to a group of destination members simultaneously.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Near Cache</strong></td>
+<td style="text-align:left">A caching model. When near cache is enabled, an object retrieved from a remote member is put into the local cache and the future requests made to this object will be handled by this local member. For example, if you have a map with data that is mostly read, then using near cache is a good idea.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>NoSQL</strong></td>
+<td style="text-align:left">&quot;Not Only SQL&quot;. A database model that provides a mechanism for storage and retrieval of data that is tailored in means other than the tabular relations used in relational databases. It is a type of database which does not adhering to the traditional relational database management system (RDMS) structure. It is not built on tables and does not employ SQL to manipulate data. It also may not provide full ACID guarantees, but still has a distributed and fault tolerant architecture.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>OSGI</strong></td>
+<td style="text-align:left">Formerly known as the Open Services Gateway initiative, it describes a modular system and a service platform for the Java programming language that implements a complete and dynamic component model.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Race Condition</strong></td>
+<td style="text-align:left">This condition occurs when two or more threads can access shared data and they try to change it at the same time.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RSA</strong></td>
+<td style="text-align:left">An algorithm developed by Rivest, Shamir and Adleman to generate, encrypt and decrypt keys for secure data transmissions. </td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Serialization</strong></td>
+<td style="text-align:left">Process of converting an object into a stream of bytes in order to store the object or transmit it to memory, a database, or a file. Its main purpose is to save the state of an object in order to be able to recreate it when needed. The reverse process is called deserialization.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Split Brain</strong></td>
+<td style="text-align:left">Split brain syndrome, in a clustering context, is a state in which a cluster of members gets divided (or partitioned) into smaller clusters of members, each of which believes it is the only active cluster.</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Transaction</strong></td>
+<td style="text-align:left">Means a sequence of information exchange and related work (such as data store updating) that is treated as a unit for the purposes of satisfying a request and for ensuring data store integrity.</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+				</div>
+		</div>
+	</div>
+</body>
+</html>

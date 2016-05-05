@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="Hazelcast, IMDG, In-Memory Data Grid, Scalable, Clustering, Partitioning, Distributed, Open Source, distributed map, queue, topic, ringbuffer, executor service, transactions, high-density memory, jcache, mapreduce, aggregators, Java client, serialization">
+    <meta name="description" content="Hazelcast Reference Manual explains all in-memory data grid features provided by Hazelcast in detail with code samples and configuration options.">
+    <title>Hazelcast C++ Client 3.6.2 Reference Manual</title>
+
+    <link type="text/css" rel="stylesheet" href="assets/css/reset.css">
+    <link type="text/css" rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/github.min.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/docs.css">
+    <link type="text/css" rel="stylesheet" href="assets/css/print.css" media="print">
+    
+
+    <script type="text/javascript" src="assets/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.sticky-kit.js"></script>
+    <script type="text/javascript" src="http://yandex.st/highlightjs/6.1/highlight.min.js"></script>
+    <script type="text/javascript" src="assets/js/lunr.min.js"></script>
+    <script type="text/javascript" src="assets/js/jquery.scrollUp.min.js"></script>
+
+    <script type="text/javascript"> 
+	$(function () {
+		$.scrollUp({
+			scrollName: 'scrollUp',
+			topDistance: '300',
+			topSpeed: 100,
+			animation: 'fade',
+			animationInSpeed: 100,
+			animationOutSpeed: 100,
+			scrollText: 'Back to Top',
+			activeOverlay: false,
+		});
+	});
+    </script>
+
+    
+
+    <script type="text/javascript">var BASE_URL = "";</script>
+    <script type="text/javascript" src="assets/js/viewer.js"></script>
+    <script type="text/javascript" src="assets/js/toc.scroll.js"></script>
+
+    <script type="text/javascript"> 
+  	$(function(){
+		$("#sidebar").stick_in_parent()
+	});
+    </script>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-3921306-1']);
+        _gaq.push(['_setDomainName', 'hazelcast.com']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+            var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+            ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+    </script>
+    <script type="text/javascript">
+        setTimeout(function(){var a=document.createElement("script");
+            var b=document.getElementsByTagName("script")[0];
+            a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0020/7413.js?"+Math.floor(new Date().getTime()/3600000);
+            a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+    </script>
+
+</head>
+<body>
+	<div id="page">
+		<a name="top" />
+			<div id="sitebar">
+				<div class="content">
+					<p><a href="http://hazelcast.org/documentation">Go to <span style="font-weight:bold">hazelcast.org/documentation</span></a></p>
+				</div>
+			</div>
+		<header id="header">
+			<div class="content">
+				<div style="overflow:hidden">
+					<div style="float:left">
+						<a href="http://www.hazelcast.org"><img src="assets/img/logo.png" style="width: 199px;padding-top: 18px"/></a>
+					</div>
+					<div style="float:left;padding-top: 30px;padding-left: 30px;">
+					<a href=""></a> <span style="font-size:36px;color:white"> C++ Client Reference Manual </span> <span style="font-size:12px;color:white"> Version: 3.6.2 - Publication Date : May 05, 2016 </span>
+					</div>
+				</div>
+			</div>
+		</header>
+		<div class="content">
+			
+	<div id="sidebar" style="overflow-y:auto">
+	    <form action="search.html"><input id="search" type="text" placeholder="Search" name="q" /></form>
+	    <nav id="toc">
+	        
+    <ol>
+    
+        <li>
+            <a href="index.html#document-revision-history">Document Revision History</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client">C++ Client</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#setting-up-c-client">Setting Up C++ Client</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#installing-c-client">Installing C++ Client</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#compiling-c-client">Compiling C++ Client</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#linux-c-client">Linux C++ Client</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#mac-c-client">Mac C++ Client</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#windows-c-client">Windows C++ Client</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#serialization-support">Serialization Support</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#custom-serialization">Custom Serialization</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#raw-pointer-api">Raw Pointer API</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#query-api">Query API</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-code-examples">C++ Client Code Examples</a>
+            
+                
+    <ol>
+    
+        <li>
+            <a href="index.html#c-client-map-example">C++ Client Map Example</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-queue-example">C++ Client Queue Example</a>
+            
+        </li>
+    
+        <li>
+            <a href="index.html#c-client-serialization-example">C++ Client Serialization Example</a>
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+</ol>
+
+            
+        </li>
+    
+        <li>
+            <a href="index.html#glossary">Glossary</a>
+            
+                
+    <ol>
+    
+</ol>
+
+            
+        </li>
+    
+</ol>
+
+	    </nav>
+	    
+	    <nav id="links">
+	        <ul>
+	            
+	        </ul>
+	    </nav>
+	    
+	</div>
+
+				<div id="content">
+					<h2>Search results for "<span id="search-q"></span>"</h2>
+<ul id="search-results"></ul>
+<script type="text/javascript" src="lunr-index.js"></script>
+<script type="text/javascript">
+    function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+
+    $(function() {
+        var q = getParameterByName('q'), 
+            ul = $('#search-results').empty(),
+            results = index.search(q);
+
+        $('#search-q').text(q);
+        if (results.length > 0) {
+            for (var i = 0; i < results.length; i++) {
+                ul.append($('<li><a href="' + results[i].ref + '">' + documentTitles[results[i].ref] + '</a></li>'));
+            }
+        } else {
+            ul.append($('<li class="no-results">No results found</li>'));
+        }
+    })
+</script>
+
+				</div>
+		</div>
+	</div>
+</body>
+</html>

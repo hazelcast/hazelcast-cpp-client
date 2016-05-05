@@ -1,0 +1,33 @@
+.tocify ul,
+.tocify li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  line-height: 30px;
+}
+.tocify-header {
+  text-indent: 10px;
+  font-size: 15px;
+}
+.tocify-subheader {
+  text-indent: 30px;
+  display: none;
+}
+.tocify-subheader li {
+  font-size: 12px;
+}
+.tocify-subheader .tocify-subheader {
+  text-indent: 50px;
+  font-size: 10px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader {
+  text-indent: 55px;
+}
+.nav-list  > li  > a,
+.nav-list .nav-header {
+  margin: 0px;
+}
+.nav-list > li > a {
+  padding: 5px;
+}
