@@ -425,6 +425,25 @@ namespace hazelcast {
                 }
 
                 /**
+                * Adds an entry listener for this map.
+                *
+                * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+                * otherwise it will slow down the system.
+                *
+                * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+                *
+                * @param listener     entry listener
+                * @param predicate The query filter to use when returning the events to the user.
+                * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
+                *                     contain the value.
+                *
+                * @return registrationId of added listener that can be used to remove the entry listener.
+                */
+                std::string addEntryListener(EntryListener<K, V> &listener, const query::Predicate &predicate, bool includeValue) {
+                    return map.addEntryListener(listener, predicate, includeValue);
+                }
+
+                /**
                 * Removes the specified entry listener
                 * Returns silently if there is no such listener added before.
                 *

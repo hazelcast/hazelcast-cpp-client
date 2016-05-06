@@ -1979,8 +1979,6 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMapTest, testListenerWithGreaterLessPredicate) {
-                IMap<int, int> map = client->getMap<int, int>("IntMap");
-
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
@@ -2017,8 +2015,6 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMapTest, testListenerWithBetweenPredicate) {
-                IMap<int, int> map = client->getMap<int, int>("IntMap");
-
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
@@ -2055,8 +2051,6 @@ namespace hazelcast {
             }
 
             TEST_F(ClientMapTest, testListenerWithSqlPredicate) {
-                IMap<int, int> map = client->getMap<int, int>("IntMap");
-
                 util::CountDownLatch latchAdd(1);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
