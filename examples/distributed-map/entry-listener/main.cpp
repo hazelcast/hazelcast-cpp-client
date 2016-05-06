@@ -73,6 +73,7 @@ int main() {
 
     map.removeEntryListener(listenerId);
 
+    // Continuous Query example
     // Register listener with predicate
     // Only listen events for entries with key >= 7
     listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate<int>(
