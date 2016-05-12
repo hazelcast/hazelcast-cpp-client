@@ -9,9 +9,12 @@ This chapter lists the changes made to this document from the previous release.
 
 <br></br>
 
-|Chapter|Section|Description|
+|Section|Description|
 |:-------|:-------|:-----------|
-|[Chapter 2 - C++ Client](#c-client)||Added new sections [Custom Serialization](#custom-serialization) and [Raw Pointer API](#raw-pointer-api).|
+|[Custom Serialization](#custom-serialization)|Added as a new section.|
+|[Raw Pointer API](#raw-pointer-api)|Added as a new section.|
+
+
 
 
 
