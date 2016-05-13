@@ -28,7 +28,7 @@ if %HZ_BIT_VERSION% == 32 (
     set SOLUTIONTYPE="Visual Studio 12 Win64"
 )
 
-echo "Generating the solution files for ompilation"
+echo "Generating the solution files for compilation"
 cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 
 echo "Building for platform %BUILDFORPLATFORM%"
@@ -39,9 +39,9 @@ cd ..
 cd java
 
 echo "Compiling the java test server"
-call mvn -U -q clean install
+call mvn -U clean install
 
-taskkill /F /FI "WINDOWTITLE eq cpp-java"
+call taskkill /F /FI "WINDOWTITLE eq cpp-java"
 
 echo "Starting the java test server"
 start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener"
@@ -72,8 +72,8 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
     )
 
 :server_failed_to_start
-echo "The test server did not start in %DEFAULT_TIMEOUT% seconds. Test fAILED."
-taskkill /F /FI "WINDOWTITLE eq cpp-java"
+echo "The test server did not start in %DEFAULT_TIMEOUT% seconds. Test FAILED."
+call taskkill /F /FI "WINDOWTITLE eq cpp-java"
 exit /b 1
 
 :server_started
@@ -86,4 +86,4 @@ SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
 
 %BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml" || exit /b 1
 
-taskkill /F /FI "WINDOWTITLE eq cpp-java"
+call taskkill /F /FI "WINDOWTITLE eq cpp-java"
