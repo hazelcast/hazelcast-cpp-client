@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
+#include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/IQueue.h"
@@ -32,6 +33,7 @@
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/Ringbuffer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -602,6 +604,17 @@ namespace hazelcast {
             * @return distributed lock instance for the specified name.
             */
             ILock getILock(const std::string& name);
+
+            /**
+             * Returns the distributed Ringbuffer instance with the specified name.
+             *
+             * @param name name of the distributed Ringbuffer
+             * @return distributed RingBuffer instance with the specified name
+             */
+            template <typename E>
+            std::auto_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
+                return std::auto_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+            }
 
             /**
             * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed

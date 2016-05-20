@@ -68,6 +68,8 @@ namespace hazelcast {
                  */
                 virtual char const *what() const throw();
 
+                virtual void raise();
+
             private:
                 std::string report;
             };

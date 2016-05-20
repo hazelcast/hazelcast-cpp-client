@@ -39,11 +39,11 @@ namespace hazelcast {
             namespace codec {
                 class ErrorCodec {
                 public:
-                    int errorCode;
+                    int32_t errorCode;
                     std::string className;
                     std::auto_ptr<std::string> message;
                     std::vector<StackTraceElement> stackTrace;
-                    int causeErrorCode;
+                    int32_t causeErrorCode;
                     std::auto_ptr<std::string> causeClassName;
 
                     static const enum ResponseMessageConst TYPE = EXCEPTION;

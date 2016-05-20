@@ -22,7 +22,7 @@
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include <hazelcast/util/Atomic.h>
+#include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"

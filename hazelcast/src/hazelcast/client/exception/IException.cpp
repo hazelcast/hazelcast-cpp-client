@@ -41,6 +41,9 @@ namespace hazelcast {
                 return report.c_str();
             }
 
+            void IException::raise() {
+                throw *this;
+            }
         }
     }
 }
