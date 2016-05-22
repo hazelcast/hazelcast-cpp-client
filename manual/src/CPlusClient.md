@@ -512,7 +512,8 @@ class Bar : public IdentifiedDataSerializable {
 Now, you can use the classes `Foo` and `Bar` in distributed structures. For example, you can use as Key or Value of `IMap` or as an Item in `IQueue`.
 
 ### Continuous Query Example
-You can register an entry listener for a Map that will be triggered only when the specific Map entries that you choose are affected. This allows you to do more optimal queries.
+
+You can register an `EntryListener` for a map that will be triggered only when the specific map entries you choose are affected. This allows you to do more optimal queries.
 
 Let’s start with an example.
 
@@ -535,27 +536,27 @@ Let’s start with an example.
 16. intMap.get(5); // trigger eviction
 ```
 
-In this example, we register an EntryListener to only retrieve Map events for entries with keys between 5 and 8 (inclusive). So, if an entry within this key range is added/updated/removed/evicted, you will be notified through the registered listener.
+In this example, we register an `EntryListener` that only retrieves map events for entries with keys between 5 and 8 (inclusive). If an entry within this key range is added/updated/removed/evicted, you will be notified through the registered listener.
 
-**Line 6:** Creates a built-in BetweenPredicate (see <http://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#query-api> and <https://github.com/hazelcast/hazelcast-cpp-client/blob/master/examples/distributed-map/query/queryExample.cpp> for all built-in predicates) and an EntryListener is added to listen to entry events with keys 5 through 8. “`query::QueryConstants::getKeyAttributeName()`” is used to tell that the query is being performed on the key of the entry. Similarly, you can use “`query::QueryConstants::getValueAttributeName()`” if you want to query on the value of the entry.
+**Line 6:** Creates a built-in `BetweenPredicate` (see [Query API](http://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#query-api) and [Query Example](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/examples/distributed-map/query/queryExample.cpp) for all built-in predicates) and an `EntryListener` is added for listening to entry events with keys 5 through 8. The method “`query::QueryConstants::getKeyAttributeName()`” is used to tell that the query is being performed on the key of the entry. Similarly, you can use the method “`query::QueryConstants::getValueAttributeName()`” if you want to query on the value of the entry.
 
 **Line 9:** Puts an entry for key = 1. This does not match your listener predicate, hence no event is received for this line.
 
-**Line 10:** Puts an entry for key = 8. This key matches our interested key range, so you receive an event for the entry addition, and the entryAdded method of our listener will be called.
+**Line 10:** Puts an entry for key = 8. This key matches our interested key range, so you receive an event for the entry addition, and the `entryAdded` method of our listener will be called.
 
-**Line 11:** Adds an entry for key=5 with an expiry timeout of 1,000 milliseconds. This operation triggers an entryAdded event for our listener since the key is in our interested range.
+**Line 11:** Adds an entry for key = 5 with an expiry timeout of 1,000 milliseconds. This operation triggers an `entryAdded` event for our listener since the key is in our interested range.
 
-**Line 12:** Removal of entry with key=1 does not trigger any event and thus you will not receive any callback to your listener.
+**Line 12:** Removal of entry with key = 1 does not trigger any event and thus you will not receive any callback to your listener.
 
-**Line 14:** Sets sleep for enough time that the entry with key=5 will be evicted.
+**Line 14:** Sets sleep for enough time that the entry with key = 5 will be evicted.
 
-**Line 16:** Triggers an eviction for entry with key=5. This line will cause an entryEvicted event to be received by your listener.
+**Line 16:** Triggers an eviction for entry with key = 5. This line will cause an `entryEvicted` event to be received by your listener.
 
-As shown by the above example, by using an EntryListener with predicates you can minimize the events to only ones in which you are interested. This is also known as the “Continuous Query” feature. You will keep receiving all events that match your query (which is the predicate that you provide on registration of your listener) while entries are being modified in the map in real time. The filtering is performed at the server side, so this method is a lot faster than receiving all the events and filtering at the client side.
+As shown in the above example, by using an `EntryListener` with predicates you can minimize the events to only ones in which you are interested. This is also known as the “Continuous Query” feature. You will keep receiving all events that match your query (which is the predicate that you provide on registration of your listener) while entries are being modified in the map in real time. The filtering is performed at the server side, so this method is a lot faster than receiving all the events and filtering at the client side.
 
-Please examine all different kinds of built in Predicates that we provide in the code examples. You can just grab a predicate or combine multiples of them using the AndPredicate or OrPredicate, which provides you the capability to write complex queries. You can not only query on keys or values, as explained above, but you can also use properties of an object for querying. The object can be the key as well as the value. Please see the query sections of the Hazelcast reference manual (<http://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#query-api>) for details on queries.
+Please examine all different kinds of built in predicates that we provide in the code examples. You can just grab a predicate or combine them using `AndPredicate` or `OrPredicate`. This provides you the capability to write complex queries. You cannot only query on keys or values, as explained above, but you can also use properties of an object for querying. The object can be the key as well as the value. Please refer to the [Query API section](http://docs.hazelcast.org/docs/latest-dev/manual/html-single/index.html#query-api) of the Hazelcast Reference Manual for details on queries.
 
 Please be careful with the runtime behavior of your listener implementations to ensure that the listener callback methods return very quickly. If you need to perform long running tasks when an entry is changed, please off-load those operations to another thread.
 
-In addition to this rich set of built-in predicates, you can also write your own custom queries simply by implementing your own Predicate (you also have to implement the Java server-side Predicate as well to make this work).
+In addition to this rich set of built-in predicates, you can also write your own custom queries simply by implementing your own predicate (you also have to implement the Java server-side predicate as well to make this work).
 
