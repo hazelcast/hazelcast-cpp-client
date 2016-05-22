@@ -13,6 +13,7 @@ This chapter lists the changes made to this document from the previous release.
 |:-------|:-------|:-----------|
 |[Custom Serialization](#custom-serialization)|Added as a new section.|
 |[Raw Pointer API](#raw-pointer-api)|Added as a new section.|
+|[Continuous Query Example](#continuous-query-example)|Added as a new section.|
 
 
 
