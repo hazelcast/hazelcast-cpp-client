@@ -67,7 +67,7 @@ namespace hazelcast {
             HazelcastClient *RingbufferTest::client = NULL;
             Ringbuffer<Employee> *RingbufferTest::rb = NULL;
 
-            TEST_F(RingbufferTest, testCapacity) {
+            TEST_F(RingbufferTest, testAPI) {
                 ASSERT_EQ(CAPACITY, rb->capacity());
                 ASSERT_EQ(0, rb->headSequence());
                 ASSERT_EQ(-1, rb->tailSequence());
