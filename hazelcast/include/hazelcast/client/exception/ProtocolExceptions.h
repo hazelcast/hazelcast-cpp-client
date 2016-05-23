@@ -19,6 +19,8 @@
 #ifndef HAZELCAST_CLIENT_EXCEPTION_PROTOCOLEXCEPTIONS_H_
 #define HAZELCAST_CLIENT_EXCEPTION_PROTOCOLEXCEPTIONS_H_
 
+#include <stdint.h>
+
 #include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
