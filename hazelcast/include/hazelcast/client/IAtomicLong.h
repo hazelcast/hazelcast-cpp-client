@@ -21,7 +21,7 @@
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <string>
-
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
@@ -48,7 +48,7 @@ namespace hazelcast {
             * @param delta the value to add
             * @return the updated value
             */
-            long addAndGet(long delta);
+            int64_t addAndGet(int64_t delta);
 
             /**
             * sets the value to the given updated value
@@ -59,21 +59,21 @@ namespace hazelcast {
             * @return true if successful; or false if the actual value
             *         was not equal to the expected value.
             */
-            bool compareAndSet(long expect, long update);
+            bool compareAndSet(int64_t expect, int64_t update);
 
             /**
             * decrements the current value by one.
             *
             * @return the updated value
             */
-            long decrementAndGet();
+            int64_t decrementAndGet();
 
             /**
             * Gets the current value.
             *
             * @return the current value
             */
-            long get();
+            int64_t get();
 
             /**
             * adds the given value to the current value.
@@ -81,7 +81,7 @@ namespace hazelcast {
             * @param delta the value to add
             * @return the old value before the add
             */
-            long getAndAdd(long delta);
+            int64_t getAndAdd(int64_t delta);
 
             /**
             * sets the given value and returns the old value.
@@ -89,28 +89,28 @@ namespace hazelcast {
             * @param newValue the new value
             * @return the old value
             */
-            long getAndSet(long newValue);
+            int64_t getAndSet(int64_t newValue);
 
             /**
             * increments the current value by one.
             *
             * @return the updated value
             */
-            long incrementAndGet();
+            int64_t incrementAndGet();
 
             /**
             * increments the current value by one.
             *
             * @return the old value
             */
-            long getAndIncrement();
+            int64_t getAndIncrement();
 
             /**
             * sets the given value.
             *
             * @param newValue the new value
             */
-            void set(long newValue);
+            void set(int64_t newValue);
 
         private:
 

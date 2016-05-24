@@ -100,6 +100,9 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_TRUE(q->removeItemListener(id));
+
+                // added for test coverage
+                ASSERT_NO_THROW(q->destroy());
             }
 
             void testOfferPollThread2(util::ThreadArgs &args) {

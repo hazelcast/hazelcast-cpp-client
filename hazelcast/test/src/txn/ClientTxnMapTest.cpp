@@ -39,7 +39,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientTxnMapTest, testPutGet) {
-                std::string name = "defMap";
+                std::string name = "testPutGet";
 
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
@@ -56,6 +56,201 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(client->getMap<std::string, std::string>(name).get("key1")));
             }
 
+            TEST_F(ClientTxnMapTest, testRemove) {
+                std::string name = "testRemove";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ("value1", *(map.get("key1")));
+                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
+                val = map.remove("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+
+                context.commitTransaction();
+
+                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                ASSERT_TRUE(regularMap.isEmpty());
+            }
+
+            /**
+             * TODO: Enable this test when https://github.com/hazelcast/hazelcast/issues/8238 is solved
+             */
+            TEST_F(ClientTxnMapTest, DISABLED_testRemoveIfSame) {
+                std::string name = "testRemoveIfSame";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ("value1", *(map.get("key1")));
+                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
+                ASSERT_TRUE(map.remove("key1", "value1"));
+
+                context.commitTransaction();
+
+                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                ASSERT_TRUE(regularMap.isEmpty());
+            }
+
+            TEST_F(ClientTxnMapTest, testDeleteEntry) {
+                std::string name = "testDeleteEntry";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_NO_THROW(map.deleteEntry("key1"));
+
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ("value1", *(map.get("key1")));
+                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_NO_THROW(map.deleteEntry("key1"));
+                val = map.get("key1");
+                ASSERT_EQ((std::string *)NULL, val.get());
+
+                context.commitTransaction();
+
+                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                ASSERT_TRUE(regularMap.isEmpty());
+            }
+
+            TEST_F(ClientTxnMapTest, testReplace) {
+                std::string name = "testReplace";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ("value1", *(map.get("key1")));
+                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_EQ("value1", *map.replace("key1", "myNewValue"));
+
+                context.commitTransaction();
+
+                ASSERT_EQ("myNewValue", *(client->getMap<std::string, std::string>(name).get("key1")));
+            }
+
+            TEST_F(ClientTxnMapTest, testSet) {
+                std::string name = "testSet";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_NO_THROW(map.set("key1", "value1"));
+
+                boost::shared_ptr<std::string> val = map.get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+
+                val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_NO_THROW(map.set("key1", "myNewValue"));
+
+                val = map.get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("myNewValue", *val);
+
+                context.commitTransaction();
+
+                val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("myNewValue", *val);
+            }
+
+            TEST_F(ClientTxnMapTest, testContains) {
+                std::string name = "testContains";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_FALSE(map.containsKey("key1"));
+
+                ASSERT_NO_THROW(map.set("key1", "value1"));
+
+                boost::shared_ptr<std::string> val = map.get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+
+                ASSERT_TRUE(map.containsKey("key1"));
+
+                context.commitTransaction();
+
+                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                ASSERT_TRUE(regularMap.containsKey("key1"));
+            }
+
+            TEST_F(ClientTxnMapTest, testReplaceIfSame) {
+                std::string name = "testReplaceIfSame";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
+                ASSERT_EQ("value1", *(map.get("key1")));
+                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                ASSERT_EQ(false, map.replace("key1", "valueNonExistent", "myNewValue"));
+                ASSERT_EQ(true, map.replace("key1", "value1", "myNewValue"));
+
+                context.commitTransaction();
+
+                ASSERT_EQ("myNewValue", *(client->getMap<std::string, std::string>(name).get("key1")));
+            }
+
+            TEST_F(ClientTxnMapTest, testPutIfSame) {
+                std::string name = "testPutIfSame";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                boost::shared_ptr<std::string> val = map.putIfAbsent("key1", "value1");
+                ASSERT_EQ((std::string *)NULL, val.get());
+                val = map.get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+                val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_EQ(val.get(), (std::string *)NULL);
+
+                val = map.putIfAbsent("key1", "value1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+
+                context.commitTransaction();
+
+                val = client->getMap<std::string, std::string>(name).get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ("value1", *val);
+            }
 
 //            @Test MTODO
 //            public void testGetForUpdate() throws TransactionException {

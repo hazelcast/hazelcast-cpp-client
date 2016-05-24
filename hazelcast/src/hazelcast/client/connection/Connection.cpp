@@ -27,7 +27,6 @@
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/client/protocol/codec/ClientRemoveAllListenersCodec.h"
 
 #include <stdint.h>
 

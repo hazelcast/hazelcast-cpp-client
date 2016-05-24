@@ -40,7 +40,9 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalQueue<std::string> q = context.getQueue<std::string>(name);
                 ASSERT_TRUE(q.offer("ali"));
+                ASSERT_EQ(1, q.size());
                 ASSERT_EQ("ali", *(q.poll()));
+                ASSERT_EQ(0, q.size());
                 context.commitTransaction();
                 ASSERT_EQ(0, client->getQueue<std::string>(name).size());
             }

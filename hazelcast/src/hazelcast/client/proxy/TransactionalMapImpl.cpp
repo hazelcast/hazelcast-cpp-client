@@ -24,7 +24,6 @@
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/TransactionalMapContainsKeyCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalMapGetCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalMapGetForUpdateCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalMapSizeCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalMapIsEmptyCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalMapPutCodec.h"
