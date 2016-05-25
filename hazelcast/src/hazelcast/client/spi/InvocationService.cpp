@@ -36,6 +36,7 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 
 #include <assert.h>
+#include <string>
 
 namespace hazelcast {
     namespace client {
