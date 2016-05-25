@@ -56,7 +56,7 @@ namespace hazelcast {
             if (socketId >= 0) {
                 LockGuard lockGuard(accessLock);
 
-                for (std::set<int>::const_iterator it = sockets.begin(); it != sockets.end(); it++) {
+                for (std::set<int>::iterator it = sockets.begin(); it != sockets.end(); it++) {
                     if (socketId == *it) { // found
                         sockets.erase(it);
                         found = true;
