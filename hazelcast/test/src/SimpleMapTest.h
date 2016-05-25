@@ -126,8 +126,8 @@ public:
                 updateStats(updateIntervalCount, getCount, putCount, removeCount);
             } catch(hazelcast::client::exception::IOException &e) {
                 hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IOException] ") + e.what());
-            } catch(hazelcast::client::exception::InstanceNotActiveException &e) {
-                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest InstanceNotActiveException] ") + e.what());
+            } catch(hazelcast::client::exception::HazelcastInstanceNotActiveException &e) {
+                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest HazelcastInstanceNotActiveException] ") + e.what());
             } catch(hazelcast::client::exception::IException &e) {
                 hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IException] ") + e.what());
             } catch(...) {

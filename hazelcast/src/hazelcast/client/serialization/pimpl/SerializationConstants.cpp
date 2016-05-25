@@ -20,7 +20,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/client/exception/IClassCastException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
     namespace client {
@@ -67,7 +67,7 @@ namespace hazelcast {
                         typeIdToName(expectedType).c_str(), expectedType);
 
                         util::ILogger::getLogger().severe(message);
-                        throw exception::IClassCastException("SerializationConstants::checkClassType",message);
+                        throw exception::ClassCastException("SerializationConstants::checkClassType", message);
                     }
                 }
 

@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 void setResponse(std::auto_ptr<protocol::ClientMessage> message);
 
-                void setException(const std::string& exceptionName, const std::string& exceptionDetails);
+                void setException(std::auto_ptr<exception::IException> exception);
 
                 void setRequest(std::auto_ptr<protocol::ClientMessage> request);
 

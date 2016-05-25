@@ -20,25 +20,7 @@
 #ifndef HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
 #define HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
 
-#include "hazelcast/client/exception/IException.h"
-#include <string>
-
-namespace hazelcast {
-    namespace client {
-        namespace exception {
-            class HAZELCAST_API AuthenticationException : public hazelcast::client::exception::IException {
-            public:
-                AuthenticationException(const std::string &source, const std::string &msg);
-
-                /**
-                 * Destructor
-                 */
-                virtual ~AuthenticationException() throw();
-            };
-        }
-    }
-}
-
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #endif //HAZELCAST_CLIENT_EXECEPTION_AUTHENTICATIONEXCEPTION_H_
 

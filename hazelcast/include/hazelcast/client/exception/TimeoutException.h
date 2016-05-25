@@ -20,35 +20,6 @@
 #ifndef HAZELCAST_ITimeoutException
 #define HAZELCAST_ITimeoutException
 
-#include "hazelcast/client/exception/IException.h"
-
-namespace hazelcast {
-    namespace client {
-        namespace exception {
-            /**
-            * Raised when an operation is timed out
-            */
-            class HAZELCAST_API TimeoutException : public IException {
-
-            public:
-                /**
-                * Constructor
-                */
-                TimeoutException(const std::string& source, const std::string& message);
-
-                /**
-                * Destructor
-                */
-                ~TimeoutException() throw();
-
-                /**
-                * return exception explanation string.
-                */
-                char const *what() const throw();
-            };
-        }
-    }
-}
-
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 #endif //HAZELCAST_ITimeoutException
