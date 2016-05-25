@@ -19,8 +19,8 @@
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include <stdexcept>
 #include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
+#include <stdexcept>
 
 namespace hazelcast {
     namespace client {
@@ -90,8 +90,8 @@ namespace hazelcast {
             * Puts the element into queue.
             * If queue is  full waits for space to became available.
             */
-            void put(const E& e) {
-                offer(e, -1);
+            void put(const E& element) {
+                proxy::IQueueImpl::put(toData(element));
             }
 
             /**

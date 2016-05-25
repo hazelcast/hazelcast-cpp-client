@@ -16,8 +16,6 @@
 #include "hazelcast/client/IAtomicLong.h"
 
 // Includes for parameters classes
-#include "hazelcast/client/protocol/codec/AtomicLongAlterCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongAlterAndGetCodec.h"
 #include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
 #include "hazelcast/client/protocol/codec/AtomicLongCompareAndSetCodec.h"
 #include "hazelcast/client/protocol/codec/AtomicLongDecrementAndGetCodec.h"

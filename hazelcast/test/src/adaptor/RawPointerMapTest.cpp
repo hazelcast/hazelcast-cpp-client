@@ -53,6 +53,29 @@ namespace hazelcast {
             namespace adaptor {
                 class RawPointerMapTest : public ClientTestSupport {
                 protected:
+                    class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
+                    public:
+                        MapGetInterceptor(const std::string &prefix) : prefix(std::auto_ptr<std::string>(new std::string(prefix))) { }
+
+                        virtual int getFactoryId() const {
+                            return 666;
+                        }
+
+                        virtual int getClassId() const {
+                            return 6;
+                        }
+
+                        virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                            writer.writeUTF(prefix.get());
+                        }
+
+                        virtual void readData(serialization::ObjectDataInput &reader) {
+                            prefix = reader.readUTF();
+                        }
+                    private:
+                        std::auto_ptr<std::string> prefix;
+                    };
+
                     virtual void TearDown() {
                         // clear maps
                         intMap->clear();
@@ -3070,6 +3093,23 @@ namespace hazelcast {
                         ASSERT_EQ(3, *result->getKey(1));
                         ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(1));
                     }
+                }
+
+                TEST_F(RawPointerMapTest, testAddInterceptor) {
+                    std::string prefix("My Prefix");
+                    MapGetInterceptor interceptor(prefix);
+                    imap->addInterceptor<MapGetInterceptor>(interceptor);
+
+                    std::auto_ptr<std::string> val = imap->get("nonexistent");
+                    ASSERT_NE((std::string *)NULL, val.get());
+                    ASSERT_EQ(prefix, *val);
+
+                    val = imap->put("key1", "value1");
+                    ASSERT_EQ((std::string *)NULL, val.get());
+
+                    val = imap->get("key1");
+                    ASSERT_NE((std::string *)NULL, val.get());
+                    ASSERT_EQ(prefix + "value1", *val);
                 }
             }
         }

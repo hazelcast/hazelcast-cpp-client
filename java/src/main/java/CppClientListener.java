@@ -23,6 +23,7 @@ import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
 import com.hazelcast.map.EntryBackupProcessor;
 import com.hazelcast.map.EntryProcessor;
+import com.hazelcast.map.MapInterceptor;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
@@ -32,6 +33,7 @@ import com.hazelcast.nio.serialization.PortableFactory;
 import com.hazelcast.nio.serialization.PortableReader;
 import com.hazelcast.nio.serialization.PortableWriter;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import org.omg.PortableInterceptor.Interceptor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -303,6 +305,64 @@ class EmployeeEntryKeyComparator extends EmployeeEntryComparator {
     }
 }
 
+class MapGetInterceptor implements MapInterceptor, IdentifiedDataSerializable {
+    private String prefix;
+
+    @Override
+    public Object interceptGet(Object value) {
+        if (null == value) {
+            return prefix;
+        }
+
+        String val = (String)value;
+        return prefix + val;
+    }
+
+    @Override
+    public void afterGet(Object value) {
+    }
+
+    @Override
+    public Object interceptPut(Object oldValue, Object newValue) {
+        return null;
+    }
+
+    @Override
+    public void afterPut(Object value) {
+    }
+
+    @Override
+    public Object interceptRemove(Object removedValue) {
+        return null;
+    }
+
+    @Override
+    public void afterRemove(Object value) {
+    }
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 6;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out)
+            throws IOException {
+            out.writeUTF(prefix);
+    }
+
+    @Override
+    public void readData(ObjectDataInput in)
+            throws IOException {
+        prefix = in.readUTF();
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -403,6 +463,8 @@ public class CppClientListener {
                         return new EmployeeEntryComparator();
                     case 5:
                         return new EmployeeEntryKeyComparator();
+                    case 6:
+                        return new MapGetInterceptor();
                     default:
                         return null;
                 }

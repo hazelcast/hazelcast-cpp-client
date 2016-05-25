@@ -239,6 +239,15 @@ namespace hazelcast {
                 ASSERT_EQ("item3", list2[0]);
                 ASSERT_EQ("item4", list2[1]);
                 ASSERT_EQ("item5", list2[2]);
+
+                ASSERT_TRUE(q->offer("item1"));
+                ASSERT_TRUE(q->offer("item2"));
+                ASSERT_TRUE(q->offer("item3"));
+                result = q->drainTo(list2, 5);
+                ASSERT_EQ(3U, result);
+                ASSERT_EQ("item1", list2[0]);
+                ASSERT_EQ("item2", list2[1]);
+                ASSERT_EQ("item3", list2[2]);
             }
 
             TEST_F(ClientQueueTest, testToArray) {

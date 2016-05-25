@@ -25,7 +25,6 @@
 #include "hazelcast/client/protocol/codec/QueueSizeCodec.h"
 #include "hazelcast/client/protocol/codec/QueueRemoveCodec.h"
 #include "hazelcast/client/protocol/codec/QueuePollCodec.h"
-#include "hazelcast/client/protocol/codec/QueueTakeCodec.h"
 #include "hazelcast/client/protocol/codec/QueuePeekCodec.h"
 #include "hazelcast/client/protocol/codec/QueueIteratorCodec.h"
 #include "hazelcast/client/protocol/codec/QueueDrainToCodec.h"
@@ -72,6 +71,13 @@ namespace hazelcast {
 
                 return invokeAndGetResult<bool, protocol::codec::QueueOfferCodec::ResponseParameters>(request,
                                                                                                       partitionId);
+            }
+
+            void IQueueImpl::put(const serialization::pimpl::Data &element) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::QueuePutCodec::RequestParameters::encode(getName(), element);
+
+                invoke(request, partitionId);
             }
 
             std::auto_ptr<serialization::pimpl::Data> IQueueImpl::pollData(long timeoutInMillis) {

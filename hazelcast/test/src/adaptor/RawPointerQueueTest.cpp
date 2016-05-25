@@ -243,6 +243,18 @@ namespace hazelcast {
                     ASSERT_EQ("item3", *list->get(0));
                     ASSERT_EQ("item4", *list->get(1));
                     ASSERT_EQ("item5", *list->get(2));
+
+                    ASSERT_TRUE(q->offer("item1"));
+                    ASSERT_TRUE(q->offer("item2"));
+                    ASSERT_TRUE(q->offer("item3"));
+                    list = q->drainTo(5);
+                    ASSERT_EQ((size_t)3U, list->size());
+                    ASSERT_NE((std::string *)NULL, list->get(0));
+                    ASSERT_NE((std::string *)NULL, list->get(1));
+                    ASSERT_NE((std::string *)NULL, list->get(2));
+                    ASSERT_EQ("item1", *list->get(0));
+                    ASSERT_EQ("item2", *list->get(1));
+                    ASSERT_EQ("item3", *list->get(2));
                 }
 
                 TEST_F(RawPointerQueueTest, testToArray) {
