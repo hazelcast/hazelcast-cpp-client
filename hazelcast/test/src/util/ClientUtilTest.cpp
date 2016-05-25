@@ -51,7 +51,8 @@ namespace hazelcast {
                     util::Future<int> *future = (util::Future<int> *)args.arg0;
                     int wakeUpTime = *(int *)args.arg1;
                     util::sleep(wakeUpTime);
-                    future->set_exception("exceptionName", "details");
+                    std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
+                    future->set_exception(exception);
                 }
             };
 
@@ -100,7 +101,8 @@ namespace hazelcast {
                 util::Future<int> future;
                 int waitSeconds = 3;
 
-                future.set_exception("exceptionName", "details");
+                std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
+                future.set_exception(exception);
 
                 ASSERT_THROW(future.get(waitSeconds), exception::IException);
             }

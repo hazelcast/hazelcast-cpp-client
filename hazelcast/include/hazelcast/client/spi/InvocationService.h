@@ -23,6 +23,7 @@
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
 
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
@@ -124,7 +125,8 @@ namespace hazelcast {
                 /**
                 *  Retries the given promise on an available connection if request is retryable.
                 */
-                void tryResend(boost::shared_ptr<connection::CallPromise> promise, const std::string& lastTriedAddress);
+                void tryResend(std::auto_ptr<exception::IException> exception,
+                               boost::shared_ptr<connection::CallPromise> promise, const std::string& lastTriedAddress);
 
                 /**
                 *  Retries the given promise on an available connection.
@@ -140,8 +142,8 @@ namespace hazelcast {
                 // Is not using the Connection* for the key due to a possible ABA problem.
                 util::SynchronizedMap<int , util::SynchronizedMap<int64_t, connection::CallPromise > > callPromises;
                 util::SynchronizedMap<int, util::SynchronizedMap<int64_t, connection::CallPromise > > eventHandlerPromises;
-
                 util::AtomicBoolean isOpen;
+                protocol::ClientExceptionFactory exceptionFactory;
 
                 bool isAllowedToSentRequest(connection::Connection& connection, protocol::ClientMessage const&);
 
@@ -168,12 +170,6 @@ namespace hazelcast {
 
                 boost::shared_ptr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection,
                                                                                   int64_t callId);
-
-                /***** HANDLE PACKET PART ****/
-
-                /* returns shouldSetResponse */
-                bool handleException(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise,
-                                     const Address& address);
 
                 /* returns shouldSetResponse */
                 bool handleEventUuid(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise);

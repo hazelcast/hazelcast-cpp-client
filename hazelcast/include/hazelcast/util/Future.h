@@ -20,10 +20,10 @@
 #ifndef HAZELCAST_Future
 #define HAZELCAST_Future
 
-#include "hazelcast/client/exception/TimeoutException.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
-#include "hazelcast/client/exception/pimpl/ExceptionHandler.h"
 #include "hazelcast/util/ILogger.h"
 #include <memory>
 #include <cassert>
@@ -54,13 +54,14 @@ namespace hazelcast {
                 conditionVariable.notify_all();
             };
 
-            void set_exception(const std::string& exceptionName, const std::string& exceptionDetails) {
+            void set_exception(std::auto_ptr<client::exception::IException> exception) {
                 LockGuard guard(mutex);
+
                 if (exceptionReady || resultReady) {
-                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exceptionDetails);
+                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exception->what());
                 }
-                this->exceptionName = exceptionName;
-                this->exceptionDetails = exceptionDetails;
+
+                this->exception = exception;
                 exceptionReady = true;
                 conditionVariable.notify_all();
             };
@@ -71,14 +72,14 @@ namespace hazelcast {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    exception->raise();
                 }
                 conditionVariable.wait(mutex);
                 if (resultReady) {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    exception->raise();
                 }
                 assert(false && "InvalidState");
                 return sharedObject;
@@ -90,7 +91,7 @@ namespace hazelcast {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    exception->raise();
                 }
                 time_t endTime = time(NULL) + timeInSeconds;
                 while (!(resultReady || exceptionReady) && endTime > time(NULL)) {
@@ -101,7 +102,7 @@ namespace hazelcast {
                     return sharedObject;
                 }
                 if (exceptionReady) {
-                    client::exception::pimpl::ExceptionHandler::rethrow(exceptionName, exceptionDetails);
+                    exception->raise();
                 }
                 throw client::exception::TimeoutException("Future::get(timeInSeconds)", "Wait is timed out");
             };
@@ -118,8 +119,7 @@ namespace hazelcast {
             ConditionVariable conditionVariable;
             Mutex mutex;
             T sharedObject;
-            std::string exceptionName;
-            std::string exceptionDetails;
+            std::auto_ptr<client::exception::IException> exception;
 
             Future(const Future& rhs);
 

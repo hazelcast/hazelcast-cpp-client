@@ -13,8 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(blockingqueue)
-add_subdirectory(itemlisteners)
-add_subdirectory(list)
-add_subdirectory(set)
-add_subdirectory(ringbuffer)
+add_executable(ringbufferexample ./RingbufferExample.cpp)
+
