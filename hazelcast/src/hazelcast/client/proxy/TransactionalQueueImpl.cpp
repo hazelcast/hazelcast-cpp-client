@@ -22,9 +22,7 @@
 
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/TransactionalQueueOfferCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalQueueTakeCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalQueuePollCodec.h"
-#include "hazelcast/client/protocol/codec/TransactionalQueuePeekCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionalQueueSizeCodec.h"
 
 namespace hazelcast {

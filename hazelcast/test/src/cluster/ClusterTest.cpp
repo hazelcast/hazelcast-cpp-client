@@ -199,6 +199,9 @@ namespace hazelcast {
 
                 std::auto_ptr<ClientConfig> clientConfig(getConfig());
                 clientConfig->setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
+                // set the heartbeat interval to 1 seconds so that the heartbeater ClientPingCodec related code is
+                // executed for code coverage.
+                clientConfig->getProperties()[ClientProperties::PROP_HEARTBEAT_INTERVAL] = "1";
                 HazelcastClient hazelcastClient(*clientConfig);
 
                 util::CountDownLatch countDownLatch(1);

@@ -81,7 +81,7 @@ namespace hazelcast {
             * @returns true if empty
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::ISetImpl::isEmpty();
             }
 
             /**

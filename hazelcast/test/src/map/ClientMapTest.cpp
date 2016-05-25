@@ -51,6 +51,29 @@ namespace hazelcast {
         namespace test {
             class ClientMapTest : public ClientTestSupport {
             protected:
+                class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
+                public:
+                    MapGetInterceptor(const std::string &prefix) : prefix(std::auto_ptr<std::string>(new std::string(prefix))) { }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 6;
+                    }
+
+                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeUTF(prefix.get());
+                    }
+
+                    virtual void readData(serialization::ObjectDataInput &reader) {
+                        prefix = reader.readUTF();
+                    }
+                private:
+                    std::auto_ptr<std::string> prefix;
+                };
+
                 virtual void TearDown() {
                     // clear maps
                     employees->clear();
@@ -2690,6 +2713,23 @@ namespace hazelcast {
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
                 ASSERT_EQ(true, (result.end() != result.find(4)));
+            }
+
+            TEST_F(ClientMapTest, testAddInterceptor) {
+                std::string prefix("My Prefix");
+                MapGetInterceptor interceptor(prefix);
+                imap->addInterceptor<MapGetInterceptor>(interceptor);
+
+                boost::shared_ptr<std::string> val = imap->get("nonexistent");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ(prefix, *val);
+
+                val = imap->put("key1", "value1");
+                ASSERT_EQ((std::string *)NULL, val.get());
+
+                val = imap->get("key1");
+                ASSERT_NE((std::string *)NULL, val.get());
+                ASSERT_EQ(prefix + "value1", *val);
             }
         }
     }

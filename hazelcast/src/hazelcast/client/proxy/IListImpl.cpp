@@ -48,7 +48,6 @@
 #include "hazelcast/client/protocol/codec/ListLastIndexOfCodec.h"
 #include "hazelcast/client/protocol/codec/ListIndexOfCodec.h"
 #include "hazelcast/client/protocol/codec/ListSubCodec.h"
-#include "hazelcast/client/protocol/codec/ListIteratorCodec.h"
 
 namespace hazelcast {
     namespace client {

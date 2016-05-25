@@ -38,18 +38,19 @@ namespace hazelcast {
             }
 
             void putGetRemoveTestThread(util::ThreadArgs& args) {
-                MultiMap<std::string, std::string > *mm = (MultiMap<std::string, std::string > *)args.arg0;
+                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
                 std::string key = util::IOUtil::to_string(util::Thread::getThreadID());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
-                TransactionalMultiMap<std::string, std::string > multiMap = context.getMultiMap<std::string, std::string >("testPutGetRemove");
+                TransactionalMultiMap<std::string, std::string> multiMap = context.getMultiMap<std::string, std::string >("testPutGetRemove");
                 ASSERT_FALSE(multiMap.put(key, "value"));
                 ASSERT_TRUE(multiMap.put(key, "value1"));
                 ASSERT_TRUE(multiMap.put(key, "value2"));
                 ASSERT_EQ(3, (int)multiMap.get(key).size());
+                ASSERT_EQ(3, (int)multiMap.valueCount(key));
                 context.commitTransaction();
 
                 ASSERT_EQ(3, (int)mm->get(key).size());
@@ -57,8 +58,30 @@ namespace hazelcast {
                 latch->countDown();
             }
 
+            TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+                TransactionalMultiMap<std::string, std::string> multiMap = context.getMultiMap<std::string, std::string >("testRemoveIfExists");
+                std::string key("MyKey");
+                ASSERT_TRUE(multiMap.put(key, "value"));
+                ASSERT_TRUE(multiMap.put(key, "value1"));
+                ASSERT_TRUE(multiMap.put(key, "value2"));
+                ASSERT_EQ(3, (int)multiMap.get(key).size());
+
+                ASSERT_FALSE(multiMap.remove(key, "NonExistentValue"));
+                ASSERT_TRUE(multiMap.remove(key, "value1"));
+
+                ASSERT_EQ(2, multiMap.size());
+                ASSERT_EQ(2, (int)multiMap.valueCount(key));
+
+                context.commitTransaction();
+
+                MultiMap<std::string, std::string> mm = client->getMultiMap<std::string, std::string >("testRemoveIfExists");
+                ASSERT_EQ(2, (int)mm.get(key).size());
+            }
+
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
-                MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
+                MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string>("testPutGetRemove");
                 int n = 10;
                 util::CountDownLatch latch(n);
                 std::vector<util::Thread*> threads(n);

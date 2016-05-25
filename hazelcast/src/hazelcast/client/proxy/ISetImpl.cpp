@@ -65,6 +65,11 @@ namespace hazelcast {
                 return invokeAndGetResult<int, protocol::codec::SetSizeCodec::ResponseParameters>(request, partitionId);
             }
 
+            bool ISetImpl::isEmpty() {
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::SetIsEmptyCodec::RequestParameters::encode(getName());
+
+                return invokeAndGetResult<bool, protocol::codec::SetIsEmptyCodec::ResponseParameters>(request, partitionId);
+            }
 
             bool ISetImpl::contains(const serialization::pimpl::Data& element) {
                 std::auto_ptr<protocol::ClientMessage> request =

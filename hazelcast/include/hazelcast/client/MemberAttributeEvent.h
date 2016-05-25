@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 28/01/14.
 //
 
-
 #ifndef HAZELCAST_MemberAttributeEvent
 #define HAZELCAST_MemberAttributeEvent
 

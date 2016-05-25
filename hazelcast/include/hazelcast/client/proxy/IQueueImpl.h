@@ -38,6 +38,8 @@ namespace hazelcast {
 
                 bool offer(const serialization::pimpl::Data& element, long timeoutInMillis);
 
+                void put(const serialization::pimpl::Data& element);
+
                 std::auto_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
 
                 int remainingCapacity();
@@ -63,12 +65,8 @@ namespace hazelcast {
                 bool retainAll(const std::vector<serialization::pimpl::Data>& elements);
 
                 void clear();
-
             private:
-
                 int partitionId;
-
-
             };
         }
     }
