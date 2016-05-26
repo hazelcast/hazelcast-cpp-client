@@ -18,13 +18,11 @@
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
 
-#include "serialization/Employee.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "hazelcast/client/Ringbuffer.h"
-#include "HazelcastServerFactory.h"
+#include "../HazelcastServerFactory.h"
+#include "../ClientTestSupport.h"
+#include "../HazelcastServer.h"
+#include "../serialization/Employee.h"
 
 namespace hazelcast {
     namespace client {
@@ -59,8 +57,10 @@ namespace hazelcast {
                 static HazelcastClient *client;
                 static Ringbuffer<Employee> *rb;
 
-                static const int64_t CAPACITY = 10;
+                static const int64_t CAPACITY;
             };
+
+            const int64_t RingbufferTest::CAPACITY = 10;
 
             HazelcastServer *RingbufferTest::instance = NULL;
             ClientConfig *RingbufferTest::clientConfig = NULL;
