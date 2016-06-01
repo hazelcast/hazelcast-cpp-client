@@ -103,15 +103,23 @@ fi
 cd ..
 
 echo "Starting the client test now."
-${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_output="xml:CPP_Client_Test_Report.xml"
+${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_output="xml:CPP_Client_Test_Report.xml" &
+testPid=$!
+wait ${testPid}
 result=$?
-
 
 if [ ${result} -eq 0 ]
 then
     echo "Test PASSED."
 else
     echo "Test FAILED. Result:${result}"
+fi
+
+#get stack trace of core if exists
+if [ -f core.${testPid} ]
+then
+    echo "Found core file for the test process: core.${testPid}"
+    gdb --batch --quiet -ex "thread apply all bt full" -ex "quit" ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} core.${testPid}
 fi
 
 exit ${result}
