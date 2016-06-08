@@ -34,4 +34,3 @@
 # define BOOST_PP_COMPL_1 0
 #
 # endif
-

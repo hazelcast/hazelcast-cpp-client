@@ -14,9 +14,10 @@
 # ifndef BOOST_PREPROCESSOR_FACILITIES_EMPTY_HPP
 # define BOOST_PREPROCESSOR_FACILITIES_EMPTY_HPP
 #
+# include <boost/preprocessor/config/config.hpp>
+#
 # /* BOOST_PP_EMPTY */
 #
 # define BOOST_PP_EMPTY()
 #
 # endif
-

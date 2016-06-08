@@ -33,7 +33,7 @@ cp ReleaseStatic/libHazelcastClient*.a cpp/Mac_64/hazelcast/lib/
 cp ReleaseShared/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/
 
 echo "Moving dependencies to target"
-cp -R external/include/ cpp/Mac_64/external/include/
+cp -R external/release_include/ cpp/Mac_64/external/include/
 
 echo "Moving examples to target"
 cp -r examples cpp/Mac_64/examples/src

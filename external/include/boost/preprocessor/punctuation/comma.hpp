@@ -19,4 +19,3 @@
 # define BOOST_PP_COMMA() ,
 #
 # endif
-

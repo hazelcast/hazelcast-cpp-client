@@ -31,7 +31,7 @@ cp ReleaseShared32/libHazelcastClient* cpp/Linux_32/hazelcast/lib/
 cp ReleaseStatic32/libHazelcastClient* cpp/Linux_32/hazelcast/lib/
 
 echo "Moving 32bit external libraries to target"
-cp -R external/include/* cpp/Linux_32/external/include/
+cp -R external/release_include/* cpp/Linux_32/external/include/
 
 echo "Moving 32bit examples to target"
 cp -r examples cpp/Linux_32/examples/src
@@ -68,7 +68,7 @@ cp ReleaseShared64/libHazelcastClient* cpp/Linux_64/hazelcast/lib/
 cp ReleaseStatic64/libHazelcastClient* cpp/Linux_64/hazelcast/lib/
 
 echo "Moving 64bit external libraries to target"
-cp -R external/include/* cpp/Linux_64/external/include/
+cp -R external/release_include/* cpp/Linux_64/external/include/
 
 echo "Moving 64bit examples to target"
 cp -r examples cpp/Linux_64/examples/src

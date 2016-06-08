@@ -18,6 +18,7 @@
 # include <boost/preprocessor/cat.hpp>
 # include <boost/preprocessor/config/config.hpp>
 # include <boost/preprocessor/facilities/overload.hpp>
+# include <boost/preprocessor/tuple/size.hpp>
 # include <boost/preprocessor/variadic/size.hpp>
 #
 # /* BOOST_PP_TUPLE_TO_LIST */
@@ -27,10 +28,11 @@
 #        define BOOST_PP_TUPLE_TO_LIST(...) BOOST_PP_TUPLE_TO_LIST_I(BOOST_PP_OVERLOAD(BOOST_PP_TUPLE_TO_LIST_O_, __VA_ARGS__), (__VA_ARGS__))
 #        define BOOST_PP_TUPLE_TO_LIST_I(m, args) BOOST_PP_TUPLE_TO_LIST_II(m, args)
 #        define BOOST_PP_TUPLE_TO_LIST_II(m, args) BOOST_PP_CAT(m ## args,)
+#    	 define BOOST_PP_TUPLE_TO_LIST_O_1(tuple) BOOST_PP_CAT(BOOST_PP_TUPLE_TO_LIST_, BOOST_PP_TUPLE_SIZE(tuple)) tuple
 #    else
 #        define BOOST_PP_TUPLE_TO_LIST(...) BOOST_PP_OVERLOAD(BOOST_PP_TUPLE_TO_LIST_O_, __VA_ARGS__)(__VA_ARGS__)
+#    	 define BOOST_PP_TUPLE_TO_LIST_O_1(tuple) BOOST_PP_CAT(BOOST_PP_TUPLE_TO_LIST_, BOOST_PP_VARIADIC_SIZE tuple) tuple
 #    endif
-#    define BOOST_PP_TUPLE_TO_LIST_O_1(tuple) BOOST_PP_CAT(BOOST_PP_TUPLE_TO_LIST_, BOOST_PP_VARIADIC_SIZE tuple) tuple
 #    define BOOST_PP_TUPLE_TO_LIST_O_2(size, tuple) BOOST_PP_TUPLE_TO_LIST_O_1(tuple)
 # else
 #    if ~BOOST_PP_CONFIG_FLAGS() & BOOST_PP_CONFIG_MWCC()
@@ -114,4 +116,3 @@
 # define BOOST_PP_TUPLE_TO_LIST_64(e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27, e28, e29, e30, e31, e32, e33, e34, e35, e36, e37, e38, e39, e40, e41, e42, e43, e44, e45, e46, e47, e48, e49, e50, e51, e52, e53, e54, e55, e56, e57, e58, e59, e60, e61, e62, e63) (e0, (e1, (e2, (e3, (e4, (e5, (e6, (e7, (e8, (e9, (e10, (e11, (e12, (e13, (e14, (e15, (e16, (e17, (e18, (e19, (e20, (e21, (e22, (e23, (e24, (e25, (e26, (e27, (e28, (e29, (e30, (e31, (e32, (e33, (e34, (e35, (e36, (e37, (e38, (e39, (e40, (e41, (e42, (e43, (e44, (e45, (e46, (e47, (e48, (e49, (e50, (e51, (e52, (e53, (e54, (e55, (e56, (e57, (e58, (e59, (e60, (e61, (e62, (e63, BOOST_PP_NIL))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 #
 # endif
-
