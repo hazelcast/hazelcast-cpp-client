@@ -23,6 +23,7 @@
 #include <time.h>
 #include <string>
 #include <assert.h>
+#include <stdint.h>
 
 #define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
 #define STRINGIZE(STR) #STR

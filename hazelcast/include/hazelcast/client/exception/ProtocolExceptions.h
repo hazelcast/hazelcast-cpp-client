@@ -31,7 +31,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class ProtocolException : public IException {
+            class HAZELCAST_API ProtocolException : public IException {
             public:
                 ProtocolException(const std::string& source, const std::string& message, int32_t errorNo, int32_t causeCode)
                         : IException(source, message), errorCode(errorNo), causeErrorCode(causeCode) {
