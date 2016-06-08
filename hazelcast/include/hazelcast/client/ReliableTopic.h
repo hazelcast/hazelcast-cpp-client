@@ -121,7 +121,7 @@ namespace hazelcast {
             }
 
             template <typename T>
-            class HAZELCAST_API MessageRunner : impl::ExecutionCallback<topic::impl::reliable::ReliableTopicMessage> {
+            class MessageRunner : impl::ExecutionCallback<topic::impl::reliable::ReliableTopicMessage> {
             public:
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
@@ -187,7 +187,7 @@ namespace hazelcast {
                     if (protocol::EXECUTION == err &&
                         protocol::STALE_SEQUENCE == t->getCauseErrorCode()) {
                         // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
-                        long remoteHeadSeq = ringbuffer->headSequence();
+                        int64_t remoteHeadSeq = ringbuffer->headSequence();
 
                         if (listener->isLossTolerant()) {
                             if (logger.isFinestEnabled()) {
@@ -274,7 +274,7 @@ namespace hazelcast {
                         std::ostringstream out;
                         out << "Terminating MessageListener " << id << " on topic: " << name << ". "
                             << " Reason: Unhandled exception while calling ReliableMessageListener::isTerminal() method. "
-                            << failure.what();
+                            << t.what();
                         logger.warning(out.str());
 
                         return true;
