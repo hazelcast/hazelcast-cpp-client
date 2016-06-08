@@ -16,6 +16,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt
 
 #include <boost/config.hpp>
+#include <cstddef>
 
 #if !defined( BOOST_SP_NO_SP_CONVERTIBLE ) && defined( BOOST_NO_SFINAE )
 # define BOOST_SP_NO_SP_CONVERTIBLE
@@ -89,4 +90,3 @@ template< class Y, class T > struct sp_enable_if_convertible: public sp_enable_i
 #endif // !defined( BOOST_SP_NO_SP_CONVERTIBLE )
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_SP_CONVERTIBLE_HPP_INCLUDED
-

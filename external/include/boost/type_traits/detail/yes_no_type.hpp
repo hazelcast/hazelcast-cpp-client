@@ -24,4 +24,3 @@ struct no_type
 } // namespace boost
 
 #endif // BOOST_TT_DETAIL_YES_NO_TYPE_HPP_INCLUDED
-

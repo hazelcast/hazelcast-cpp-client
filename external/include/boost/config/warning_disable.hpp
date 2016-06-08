@@ -45,4 +45,3 @@
 #endif
 
 #endif // BOOST_CONFIG_WARNING_DISABLE_HPP
-

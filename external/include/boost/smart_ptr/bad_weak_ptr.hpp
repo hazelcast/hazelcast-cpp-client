@@ -57,4 +57,3 @@ public:
 #endif
 
 #endif  // #ifndef BOOST_SMART_PTR_BAD_WEAK_PTR_HPP_INCLUDED
-

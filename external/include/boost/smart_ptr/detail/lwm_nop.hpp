@@ -35,4 +35,3 @@ public:
 } // namespace boost
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_LWM_NOP_HPP_INCLUDED
-

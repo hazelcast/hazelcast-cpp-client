@@ -17,4 +17,3 @@
 # define BOOST_PP_INCLUDE_SELF() <boost/preprocessor/iteration/detail/self.hpp>
 #
 # endif
-

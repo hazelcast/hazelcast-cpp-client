@@ -15,7 +15,7 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <boost/detail/interlocked.hpp>
+#include <boost/smart_ptr/detail/sp_interlocked.hpp>
 #include <boost/smart_ptr/detail/yield_k.hpp>
 
 // BOOST_COMPILER_FENCE
@@ -59,7 +59,7 @@ public:
 
     bool try_lock()
     {
-        long r = BOOST_INTERLOCKED_EXCHANGE( &v_, 1 );
+        long r = BOOST_SP_INTERLOCKED_EXCHANGE( &v_, 1 );
 
         BOOST_COMPILER_FENCE
 
@@ -111,4 +111,3 @@ public:
 #define BOOST_DETAIL_SPINLOCK_INIT {0}
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_W32_HPP_INCLUDED
-

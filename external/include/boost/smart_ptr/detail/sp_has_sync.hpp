@@ -67,4 +67,3 @@
 #endif // #ifndef BOOST_SP_NO_SYNC
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SP_HAS_SYNC_HPP_INCLUDED
-

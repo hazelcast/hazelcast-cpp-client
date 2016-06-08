@@ -31,7 +31,7 @@ namespace boost
 namespace detail
 {
 
-template< int I > class spinlock_pool
+template< int M > class spinlock_pool
 {
 private:
 
@@ -72,7 +72,7 @@ public:
     };
 };
 
-template< int I > spinlock spinlock_pool< I >::pool_[ 41 ] =
+template< int M > spinlock spinlock_pool< M >::pool_[ 41 ] =
 {
     BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, 
     BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, BOOST_DETAIL_SPINLOCK_INIT, 
@@ -89,4 +89,3 @@ template< int I > spinlock spinlock_pool< I >::pool_[ 41 ] =
 } // namespace boost
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_POOL_HPP_INCLUDED
-

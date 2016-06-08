@@ -82,6 +82,7 @@ public:
     {
         __asm__ __volatile__( BOOST_SP_ARM_BARRIER ::: "memory" );
         *const_cast< int volatile* >( &v_ ) = 0;
+        __asm__ __volatile__( BOOST_SP_ARM_BARRIER ::: "memory" );
     }
 
 public:
@@ -118,4 +119,3 @@ public:
 #undef BOOST_SP_ARM_HAS_LDREX
 
 #endif // #ifndef BOOST_SMART_PTR_DETAIL_SPINLOCK_GCC_ARM_HPP_INCLUDED
-

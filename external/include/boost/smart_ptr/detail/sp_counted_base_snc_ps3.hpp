@@ -160,4 +160,3 @@ public:
 } // namespace boost
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_SP_COUNTED_BASE_SNC_PS3_HPP_INCLUDED
-

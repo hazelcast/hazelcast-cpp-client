@@ -267,4 +267,3 @@
 # else
 #    define BOOST_PP_COUNTER BOOST_PP_COUNTER_DIGIT_1
 # endif
-

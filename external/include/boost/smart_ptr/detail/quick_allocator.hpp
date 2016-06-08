@@ -197,4 +197,3 @@ struct quick_allocator: public allocator_impl< sizeof(T), boost::alignment_of<T>
 } // namespace boost
 
 #endif  // #ifndef BOOST_SMART_PTR_DETAIL_QUICK_ALLOCATOR_HPP_INCLUDED
-

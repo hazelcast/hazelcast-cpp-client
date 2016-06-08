@@ -19,4 +19,3 @@
 #
 # undef BOOST_PP_IS_SELFISH
 # undef BOOST_PP_INDIRECT_SELF
-
