@@ -22,10 +22,10 @@
 namespace hazelcast {
     namespace client {
         namespace map{
-            DataEntryView::DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long cost,
-                          long creationTime, long expirationTime, long hits, long lastAccessTime,
-                          long lastStoredTime, long lastUpdateTime, long version, long evictionCriteriaNumber,
-                          long ttl) : key(key), value(value), cost(cost), creationTime(creationTime),
+            DataEntryView::DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t cost,
+                          int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
+                          int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t evictionCriteriaNumber,
+                          int64_t ttl) : key(key), value(value), cost(cost), creationTime(creationTime),
                                       expirationTime(expirationTime), hits(hits), lastAccessTime(lastAccessTime),
                                       lastStoredTime(lastStoredTime), lastUpdateTime(lastUpdateTime),
                                       version(version), evictionCriteriaNumber(evictionCriteriaNumber), ttl(ttl) { }
@@ -39,43 +39,43 @@ namespace hazelcast {
                 return value;
             }
 
-            long DataEntryView::getCost() const {
+            int64_t DataEntryView::getCost() const {
                 return cost;
             }
 
-            long DataEntryView::getCreationTime() const {
+            int64_t DataEntryView::getCreationTime() const {
                 return creationTime;
             }
 
-            long DataEntryView::getExpirationTime() const {
+            int64_t DataEntryView::getExpirationTime() const {
                 return expirationTime;
             }
 
-            long DataEntryView::getHits() const {
+            int64_t DataEntryView::getHits() const {
                 return hits;
             }
 
-            long DataEntryView::getLastAccessTime() const {
+            int64_t DataEntryView::getLastAccessTime() const {
                 return lastAccessTime;
             }
 
-            long DataEntryView::getLastStoredTime() const {
+            int64_t DataEntryView::getLastStoredTime() const {
                 return lastStoredTime;
             }
 
-            long DataEntryView::getLastUpdateTime() const {
+            int64_t DataEntryView::getLastUpdateTime() const {
                 return lastUpdateTime;
             }
 
-            long DataEntryView::getVersion() const {
+            int64_t DataEntryView::getVersion() const {
                 return version;
             }
 
-            long DataEntryView::getEvictionCriteriaNumber() const {
+            int64_t DataEntryView::getEvictionCriteriaNumber() const {
                 return evictionCriteriaNumber;
             }
 
-            long DataEntryView::getTtl() const {
+            int64_t DataEntryView::getTtl() const {
                 return ttl;
             }
 
