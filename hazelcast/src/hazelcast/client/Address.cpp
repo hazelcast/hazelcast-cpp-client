@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
+#include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
+        const int Address::ID = cluster::impl::ADDRESS;
 
-        Address::Address():host("localhost") {
+        const byte Address::IPV4 = 4;
+        const byte Address::IPV6 = 6;
+
+        Address::Address():host("localhost"), type(IPV4) {
         }
 
         Address::Address(const std::string &url, int port)
-        : host(url), port(port) {
-
+        : host(url), port(port), type(IPV4) {
         }
 
         bool Address::operator ==(const Address &rhs) const {
-            if (rhs.host.compare(host) != 0) {
-                return false;
-            } else {
-                return rhs.port == port;
-            }
+            return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
         }
 
         int Address::getPort() const {
@@ -40,6 +42,34 @@ namespace hazelcast {
 
         const std::string& Address::getHost() const {
             return host;
+        }
+
+        int Address::getFactoryId() const {
+            return cluster::impl::F_ID;
+        }
+
+        int Address::getClassId() const {
+            return ID;
+        }
+
+        void Address::writeData(serialization::ObjectDataOutput &out) const {
+            out.writeInt(port);
+            out.writeByte(type);
+            int len = (int)host.size();
+            out.writeInt(len);
+            out.writeBytes((const byte *)host.c_str(), len);
+        }
+
+        void Address::readData(serialization::ObjectDataInput &in) {
+            port = in.readInt();
+            type = in.readByte();
+            int len = in.readInt();
+            if (len > 0) {
+                std::vector<byte> bytes;
+                in.readFully(bytes);
+                host.clear();
+                host.append(bytes.begin(), bytes.end());
+            }
         }
 
         bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {

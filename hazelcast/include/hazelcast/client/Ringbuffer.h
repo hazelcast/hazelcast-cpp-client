@@ -21,6 +21,8 @@
 #include <memory>
 #include <stdint.h>
 
+#include "hazelcast/client/IDistributedObject.h"
+
 namespace hazelcast {
     namespace client {
         /**
@@ -57,7 +59,7 @@ namespace hazelcast {
          * @param <E>
          */
         template<typename E>
-        class Ringbuffer {
+        class Ringbuffer : public IDistributedObject {
         public:
             virtual ~Ringbuffer() {
             }

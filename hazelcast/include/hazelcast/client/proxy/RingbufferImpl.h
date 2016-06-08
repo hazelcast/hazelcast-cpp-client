@@ -36,7 +36,7 @@ namespace hazelcast {
 
         namespace proxy {
             template<typename E>
-            class RingbufferImpl : public Ringbuffer<E>, public proxy::ProxyImpl {
+            class RingbufferImpl : public Ringbuffer<E>, public ProxyImpl {
             public:
                 RingbufferImpl(const std::string &objectName, spi::ClientContext *context) : ProxyImpl(
                         "hz:impl:ringbufferService", objectName, context), bufferCapacity(-1) {
@@ -100,6 +100,18 @@ namespace hazelcast {
                             msg, partitionId);
 
                     return toObject<E>(itemData);
+                }
+
+                const std::string& getServiceName() const {
+                    return ProxyImpl::getServiceName();
+                }
+
+                const std::string& getName() const {
+                    return ProxyImpl::getName();
+                }
+
+                void destroy() {
+                    ProxyImpl::destroy();
                 }
                 /***************** RingBuffer<E> interface implementation ends here ***********************************/
             private:

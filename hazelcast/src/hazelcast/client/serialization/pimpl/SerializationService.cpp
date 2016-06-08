@@ -67,6 +67,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<byte>(const byte  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -84,6 +88,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<bool>(const bool  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -101,6 +109,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<char>(const char  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -118,6 +130,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<short>(const short  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -135,6 +151,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<int>(const int  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -152,6 +172,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<long>(const long *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -169,6 +193,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<float>(const float  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -186,6 +214,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<double>(const double  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -202,6 +234,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<char> >(const std::vector<char> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -218,6 +254,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -235,6 +275,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<short> >(const std::vector<short> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -252,6 +296,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<int> >(const std::vector<int> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -269,6 +317,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<long> >(const std::vector<long> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -286,6 +338,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -303,6 +359,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<double> >(const std::vector<double> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -320,6 +380,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::string>(const std::string  *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash
@@ -336,6 +400,10 @@ namespace hazelcast {
 
                 template<>
                 Data SerializationService::toData<std::vector<std::string> >(const std::vector<std::string> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
                     DataOutput output;
 
                     // write partition hash

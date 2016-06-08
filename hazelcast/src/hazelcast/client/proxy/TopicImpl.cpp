@@ -19,7 +19,7 @@
 
 #include "hazelcast/client/proxy/ITopicImpl.h"
 
-#include "hazelcast/client/topic/TopicEventHandler.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 
 // Includes for parameters classes

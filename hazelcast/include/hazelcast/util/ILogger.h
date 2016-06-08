@@ -54,8 +54,9 @@ namespace hazelcast {
 
             void setPrefix(const std::string& prefix);
 
-            bool isEnabled(int logLevel);
+            bool isEnabled(int logLevel) const;
 
+            bool isFinestEnabled() const;
         private:
             int HazelcastLogLevel;
             std::string prefix;

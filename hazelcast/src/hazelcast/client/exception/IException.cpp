@@ -22,14 +22,12 @@ namespace hazelcast {
     namespace client {
         namespace exception {
             IException::IException()
-            : std::exception()
-            , report("") {
-
+            : std::exception(), src(""), msg(""), report("") {
             }
 
 
             IException::IException(const std::string& source, const std::string& message)
-            : std::exception() {
+            : std::exception(), src(source), msg(message) {
                 report = "ExceptionMessage {" + message + "} at " + source;
             }
 
@@ -39,6 +37,14 @@ namespace hazelcast {
 
             char const *IException::what() const throw() {
                 return report.c_str();
+            }
+
+            const std::string &IException::getSource() const {
+                return src;
+            }
+
+            const std::string &IException::getMessage() const {
+                return msg;
             }
 
             void IException::raise() {

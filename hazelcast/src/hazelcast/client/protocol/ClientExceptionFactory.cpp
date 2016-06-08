@@ -36,8 +36,10 @@ namespace hazelcast {
             template <typename EXCEPTION>
             class ExceptionFactoryImpl : public ExceptionFactory {
                 std::auto_ptr<exception::IException> createException(const std::string &message,
-                                                                             const std::string &details) {
-                    return std::auto_ptr<exception::IException>(new EXCEPTION(message, details));
+                                                                    const std::string &details,
+                                                                    int32_t errorCode,
+                                                                    int32_t causeErrorCode) {
+                    return std::auto_ptr<exception::IException>(new EXCEPTION(message, details, errorCode, causeErrorCode));
                 }
             };
 
@@ -134,7 +136,7 @@ namespace hazelcast {
                     return std::auto_ptr<exception::IException>(new exception::UndefinedErrorCodeException(error.errorCode, message.getCorrelationId(), error.toString()));
                 }
 
-                return it->second->createException(*error.message, error.toString());
+                return it->second->createException(*error.message, error.toString(), error.errorCode, error.causeErrorCode);
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
@@ -142,12 +144,11 @@ namespace hazelcast {
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
                     util::snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
-                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg);
+                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg, ILLEGAL_STATE, -1);
                 }
 
                 errorCodeToFactory[errorCode] = factory;
             }
-            
         }
     }
 }

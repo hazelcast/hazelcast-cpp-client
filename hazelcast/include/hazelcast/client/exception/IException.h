@@ -68,9 +68,14 @@ namespace hazelcast {
                  */
                 virtual char const *what() const throw();
 
-                virtual void raise();
+                const std::string &getSource() const;
 
+                const std::string &getMessage() const;
+
+                virtual void raise();
             private:
+                std::string src;
+                std::string msg;
                 std::string report;
             };
         }
