@@ -32,7 +32,7 @@ copy ReleaseShared32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\shar
 copy ReleaseStatic32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\static\
 
 echo "Moving 32bit external libraries to target"
-xcopy /S /Q external\include\* cpp\Windows_32\external\include\
+xcopy /S /Q external\release_include\* cpp\Windows_32\external\include\
 
 echo "Moving 32bit examples to target"
 xcopy /S /Q examples  cpp\Windows_32\examples\src\
@@ -72,7 +72,7 @@ copy ReleaseShared64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\shar
 copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\static\
 
 echo "Moving 64bit external libraries to target"
-xcopy /S /Q external\include\* cpp\Windows_64\external\include\
+xcopy /S /Q external\release_include\* cpp\Windows_64\external\include\
 
 echo "Moving 64bit examples to target"
 xcopy /S /Q examples  cpp\Windows_64\examples\src\

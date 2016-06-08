@@ -780,4 +780,3 @@
 # if BOOST_PP_LOCAL_R(0)
     BOOST_PP_LOCAL_MACRO(0)
 # endif
-

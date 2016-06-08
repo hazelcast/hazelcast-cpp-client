@@ -265,4 +265,3 @@
 # else
 #    define BOOST_PP_SLOT_4() BOOST_PP_SLOT_4_DIGIT_1
 # endif
-

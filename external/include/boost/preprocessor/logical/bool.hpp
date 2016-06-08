@@ -286,4 +286,3 @@
 # define BOOST_PP_BOOL_256 1
 #
 # endif
-
