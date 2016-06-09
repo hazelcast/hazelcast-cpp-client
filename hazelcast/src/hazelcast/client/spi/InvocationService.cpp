@@ -36,6 +36,7 @@
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 #include <assert.h>
+#include <string>
 
 namespace hazelcast {
     namespace client {
