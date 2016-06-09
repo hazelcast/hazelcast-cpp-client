@@ -34,6 +34,7 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/Ringbuffer.h"
+#include "hazelcast/client/ReliableTopic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -475,7 +476,7 @@ namespace hazelcast {
             T getDistributedObject(const std::string& name) {
                 T t(name, &(clientContext));
                 return t;
-            };
+            }
 
             /**
             * @deprecated "Please use api::IMap<K, V> getMap(const char *name)."
@@ -490,7 +491,7 @@ namespace hazelcast {
             template<typename K, typename V>
             IMap<K, V> getMap(const std::string& name) {
                 return getDistributedObject<IMap<K, V> >(name);
-            };
+            }
 
             /**
             * Returns the distributed multimap instance with the specified name.
@@ -501,7 +502,7 @@ namespace hazelcast {
             template<typename K, typename V>
             MultiMap<K, V> getMultiMap(const std::string& name) {
                 return getDistributedObject<MultiMap<K, V> >(name);
-            };
+            }
 
             /**
             * Returns the distributed queue instance with the specified name and entry type E.
@@ -512,7 +513,7 @@ namespace hazelcast {
             template<typename E>
             IQueue<E> getQueue(const std::string& name) {
                 return getDistributedObject<IQueue<E> >(name);
-            };
+            }
 
             /**
             * Returns the distributed set instance with the specified name and entry type E.
@@ -525,7 +526,7 @@ namespace hazelcast {
             template<typename E>
             ISet<E> getSet(const std::string& name) {
                 return getDistributedObject<ISet<E> >(name);
-            };
+            }
 
             /**
             * Returns the distributed list instance with the specified name.
@@ -537,7 +538,7 @@ namespace hazelcast {
             template<typename E>
             IList<E> getList(const std::string& name) {
                 return getDistributedObject<IList<E> >(name);
-            };
+            }
 
             /**
             * Returns the distributed topic instance with the specified name and entry type E.
@@ -548,6 +549,19 @@ namespace hazelcast {
             template<typename E>
             ITopic<E> getTopic(const std::string& name) {
                 return getDistributedObject<ITopic<E> >(name);
+            };
+
+            /**
+            * Returns the distributed topic instance with the specified name and entry type E.
+            *
+            * @param name name of the distributed topic
+            * @return distributed topic instance with the specified name
+            */
+            template<typename E>
+            std::auto_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
+                std::auto_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
+                        getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
+                return std::auto_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
             };
 
             /**
@@ -696,6 +710,7 @@ namespace hazelcast {
 
             void operator=(const HazelcastClient& rhs);
 
+            static const std::string TOPIC_RB_PREFIX;
         };
 
     }

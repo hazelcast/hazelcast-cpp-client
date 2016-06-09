@@ -39,7 +39,10 @@ namespace hazelcast {
             public:
                 virtual ~ExceptionFactory();
 
-                virtual std::auto_ptr<exception::IException> createException(const std::string &message, const std::string &details) = 0;
+                virtual std::auto_ptr<exception::IException> createException(const std::string &message,
+                                                                             const std::string &details,
+                                                                             int32_t errorCode,
+                                                                             int32_t causeErrorCode) = 0;
             };
 
             class HAZELCAST_API ClientExceptionFactory {

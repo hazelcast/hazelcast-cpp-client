@@ -31,12 +31,38 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
+            class HAZELCAST_API ProtocolException : public IException {
+            public:
+                ProtocolException(const std::string& source, const std::string& message, int32_t errorNo, int32_t causeCode)
+                        : IException(source, message), errorCode(errorNo), causeErrorCode(causeCode) {
+                }
+
+                ProtocolException(const std::string& source, const std::string& message)
+                        : IException(source, message), errorCode(-1), causeErrorCode(-1) {
+                }
+
+                int32_t getErrorCode() const {
+                    return errorCode;
+                }
+
+                int32_t getCauseErrorCode() const {
+                    return causeErrorCode;
+                }
+            private:
+                int32_t errorCode;
+                int32_t causeErrorCode;
+            };
+
 #define DEFINE_PROTOCOL_EXCEPTION(ClassName) \
-            class HAZELCAST_API ClassName : public IException {\
+            class HAZELCAST_API ClassName : public ProtocolException {\
             public:\
-                ClassName(const std::string& source, const std::string& message) : IException(source, message) {\
+                ClassName(const std::string& source, const std::string& message, int32_t errorCode, int32_t causeCode) \
+                    : ProtocolException(source, message, errorCode, causeCode) {\
                 }\
-                ClassName(const std::string& source) : IException(source, "") {\
+                ClassName(const std::string& source, const std::string& message) \
+                    : ProtocolException(source, message) {\
+                }\
+                ClassName(const std::string& source) : ProtocolException(source, "") {\
                 }\
                 virtual void raise() {\
                     throw *this;\

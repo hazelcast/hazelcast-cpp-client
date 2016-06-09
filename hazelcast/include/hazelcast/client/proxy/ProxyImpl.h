@@ -226,7 +226,7 @@ namespace hazelcast {
                 * Destroys this object cluster-wide.
                 * Clears and releases all resources for this object.
                 */
-                void destroy();
+                virtual void destroy();
             };
         }
     }

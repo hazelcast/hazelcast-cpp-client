@@ -80,6 +80,12 @@ namespace hazelcast {
                 void writeByte(int value);
 
                 /**
+                 * @param bytes The data bytes to be written
+                 * @param len Number of bytes to write
+                 */
+                void writeBytes(const byte *bytes, unsigned int len);
+
+                /**
                 * @param value the short value to be written
                 */
                 void writeShort(int value);

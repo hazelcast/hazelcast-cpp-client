@@ -29,6 +29,9 @@ namespace hazelcast {
                 address(address), uuid(uuid), liteMember(lite), attributes(attr) {
         }
 
+        Member::Member(const Address &memberAddress) : address(memberAddress) {
+        }
+
         bool Member::operator==(const Member &rhs) const {
             return address == rhs.address;
         }
