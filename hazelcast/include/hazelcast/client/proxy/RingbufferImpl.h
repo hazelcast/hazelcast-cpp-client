@@ -19,6 +19,9 @@
 #ifndef HAZELCAST_CLIENT_PROXY_RINGBUFFERIMPL_H_
 #define HAZELCAST_CLIENT_PROXY_RINGBUFFERIMPL_H_
 
+#include "hazelcast/client/protocol/codec/RingbufferReadManyCodec.h"
+#include "hazelcast/client/DataArray.h"
+#include "hazelcast/client/impl/DataArrayImpl.h"
 #include "hazelcast/client/protocol/codec/RingbufferReadOneCodec.h"
 #include "hazelcast/client/protocol/codec/RingbufferCapacityCodec.h"
 #include "hazelcast/client/protocol/codec/RingbufferSizeCodec.h"
@@ -102,16 +105,18 @@ namespace hazelcast {
                     return toObject<E>(itemData);
                 }
 
-                connection::CallFuture readOneAsync(int64_t sequence, time_t timeoutSeconds) {
-                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::RequestParameters::encode(
-                            getName(), sequence);
+                connection::CallFuture readManyAsync(int64_t sequence, int32_t maxCount, time_t timeoutSeconds) {
+                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadManyCodec::RequestParameters::encode(
+                            getName(), sequence, 1, maxCount, (const serialization::pimpl::Data *)NULL);
 
                     return invokeAndGetFuture(msg, partitionId);
                 }
 
-                std::auto_ptr<E> getReadOneAsyncResponseObject(std::auto_ptr<protocol::ClientMessage> responseMsg) {
-                    protocol::codec::RingbufferReadOneCodec::ResponseParameters responseParameters = protocol::codec::RingbufferReadOneCodec::ResponseParameters::decode(*responseMsg);
-                    return toObject<E>(responseParameters.response);
+                std::auto_ptr<DataArray<E> > getReadManyAsyncResponseObject(std::auto_ptr<protocol::ClientMessage> responseMsg) {
+                    protocol::codec::RingbufferReadManyCodec::ResponseParameters responseParameters =
+                            protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(*responseMsg);
+                    return std::auto_ptr<DataArray<E> >(new impl::DataArrayImpl<E>(responseParameters.items,
+                                                                            context->getSerializationService()));
                 }
 
                 const std::string& getServiceName() const {
