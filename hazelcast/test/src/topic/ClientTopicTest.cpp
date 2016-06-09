@@ -26,20 +26,18 @@ namespace hazelcast {
             ClientTopicTest::ClientTopicTest()
             : instance(*g_srvFactory)
             , client(getNewClient())
-            , topic(new ITopic<std::string>(client->getTopic<std::string>("ClientTopicTest"))) {
+            , topic(client->getTopic<std::string>("ClientTopicTest")) {
             }
 
-            class MyMessageListener {
+            class MyMessageListener : public topic::MessageListener<std::string> {
             public:
                 MyMessageListener(util::CountDownLatch &latch)
                 :latch(latch) {
-
                 }
 
-                void onMessage(topic::Message<std::string> message) {
+                void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
                     latch.countDown();
                 }
-
             private:
                 util::CountDownLatch &latch;
             };
@@ -48,13 +46,13 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
-                std::string id = topic->addMessageListener<MyMessageListener>(listener);
+                std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
-                    topic->publish(std::string("naber") + util::IOUtil::to_string(i));
+                    topic.publish(std::string("naber") + util::IOUtil::to_string(i));
                 }
                 ASSERT_TRUE(latch.await(20 ));
-                topic->removeMessageListener(id);
+                topic.removeMessageListener(id);
             }
         }
     }

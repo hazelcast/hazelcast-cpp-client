@@ -37,9 +37,9 @@ int main() {
 
         try {
             if (k % 2 == 0) {
-                long n1 = number1.get();
+                int64_t n1 = number1.get();
                 hazelcast::util::sleepmillis(10);
-                long n2 = number2.get();
+                int64_t n2 = number2.get();
                 if (n1 - n2 != 0) {
                     std::cout << "Datarace detected at" << k << " !" << std::endl;
                 }
@@ -53,9 +53,9 @@ int main() {
         }
 
         if (k % 2 == 0) {
-            long n1 = number1.get();
+            int64_t n1 = number1.get();
             hazelcast::util::sleepmillis(100);
-            long n2 = number2.get();
+            int64_t n2 = number2.get();
             if (n1 - n2 != 0) {
                 std::cout << "Difference detected at" << k << " !" << std::endl;
             }

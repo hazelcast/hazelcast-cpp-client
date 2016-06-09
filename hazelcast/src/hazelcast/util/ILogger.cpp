@@ -92,7 +92,7 @@ namespace hazelcast {
             this->prefix = prefix;
         }
 
-        bool ILogger::isEnabled(int logLevel) {
+        bool ILogger::isEnabled(int logLevel) const {
             return logLevel >= HazelcastLogLevel;
         }
 
@@ -112,6 +112,10 @@ namespace hazelcast {
 
             // TODO: Change to thread specific stored buffer
             return buffer;
+        }
+
+        bool ILogger::isFinestEnabled() const {
+            return isEnabled(client::FINEST);
         }
     }
 }

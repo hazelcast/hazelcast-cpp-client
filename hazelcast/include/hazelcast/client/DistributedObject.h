@@ -16,14 +16,13 @@
 //
 // Created by sancar koyunlu on 12/11/13.
 
-
-
-
 #ifndef HAZELCAST_DistributedObject
 #define HAZELCAST_DistributedObject
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/impl/DistributedObjectInfo.h"
+#include "hazelcast/client/IDistributedObject.h"
+
 #include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -67,7 +66,7 @@ namespace hazelcast {
         * @see TransactionalSet
         * @see TransactionalList
         */
-        class HAZELCAST_API DistributedObject {
+        class HAZELCAST_API DistributedObject : public IDistributedObject {
             friend class HazelcastClient;
 
         public:

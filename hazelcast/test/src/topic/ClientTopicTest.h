@@ -42,7 +42,7 @@ namespace hazelcast {
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr< ITopic<std::string> > topic;
+                ITopic<std::string> topic;
             };
 
         }

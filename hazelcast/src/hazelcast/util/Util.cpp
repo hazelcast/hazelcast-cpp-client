@@ -19,6 +19,10 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Thread.h"
 
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/microsec_time_clock.hpp>
+#include <boost/date_time.hpp>
+
 #include <string.h>
 #include <algorithm>
 #include <stdio.h>
@@ -30,6 +34,7 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
+
 #endif
 
 namespace hazelcast {
@@ -89,6 +94,13 @@ namespace hazelcast {
             if (date != "NOT_FOUND") {
                 date.erase(std::remove(date.begin(), date.end(), '-'), date.end());
             }
+        }
+
+        int64_t currentTimeMillis() {
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
+            boost::posix_time::time_duration diff = now - epoch;
+            return diff.total_milliseconds();
         }
     }
 }

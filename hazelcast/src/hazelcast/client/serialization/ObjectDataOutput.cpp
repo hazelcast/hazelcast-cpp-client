@@ -59,6 +59,11 @@ namespace hazelcast {
                 dataOutput->writeByte(i);
             }
 
+            void ObjectDataOutput::writeBytes(const byte *bytes, unsigned int len) {
+                if (isEmpty) return;
+                dataOutput->writeBytes(bytes, len);
+            }
+
             void ObjectDataOutput::writeShort(int v) {
                 if (isEmpty) return;
                 dataOutput->writeShort(v);
@@ -154,7 +159,7 @@ namespace hazelcast {
             }
 
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
-                if (NULL == data) {
+                if (NULL == data || 0 == data->dataSize()) {
                     writeInt(util::Bits::NULL_ARRAY);
                 } else {
                     writeByteArray(&data->toByteArray());

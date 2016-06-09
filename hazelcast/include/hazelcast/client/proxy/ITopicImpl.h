@@ -16,11 +16,8 @@
 //
 // Created by sancar koyunlu on 01/10/14.
 //
-
-
 #ifndef HAZELCAST_ITopicImpl
 #define HAZELCAST_ITopicImpl
-
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <string>
