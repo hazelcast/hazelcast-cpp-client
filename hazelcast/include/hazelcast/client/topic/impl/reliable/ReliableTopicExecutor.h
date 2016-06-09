@@ -26,9 +26,8 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/impl/ExecutionCallback.h"
-
 #include "hazelcast/util/Thread.h"
-#include "ReliableTopicMessage.h"
+#include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

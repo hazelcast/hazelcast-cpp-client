@@ -102,6 +102,18 @@ namespace hazelcast {
                     return toObject<E>(itemData);
                 }
 
+                connection::CallFuture readOneAsync(int64_t sequence, time_t timeoutSeconds) {
+                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::RequestParameters::encode(
+                            getName(), sequence);
+
+                    return invokeAndGetFuture(msg, partitionId);
+                }
+
+                std::auto_ptr<E> getReadOneAsyncResponseObject(std::auto_ptr<protocol::ClientMessage> responseMsg) {
+                    protocol::codec::RingbufferReadOneCodec::ResponseParameters responseParameters = protocol::codec::RingbufferReadOneCodec::ResponseParameters::decode(*responseMsg);
+                    return toObject<E>(responseParameters.response);
+                }
+
                 const std::string& getServiceName() const {
                     return ProxyImpl::getServiceName();
                 }

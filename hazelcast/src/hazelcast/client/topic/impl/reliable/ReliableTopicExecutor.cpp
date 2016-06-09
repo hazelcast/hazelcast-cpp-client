@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+#include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
     namespace client {
@@ -68,8 +68,19 @@ namespace hazelcast {
                                 return;
                             }
                             try {
-                                std::auto_ptr<ReliableTopicMessage> rbMessage = rb->readOne(m.sequence);
-                                m.callback->onResponse(rbMessage.get());
+                                proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *ringbuffer =
+                                        (proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *)rb;
+
+                                connection::CallFuture future = ringbuffer->readOneAsync(m.sequence, 1);
+                                std::auto_ptr<protocol::ClientMessage> responseMsg;
+                                do {
+                                    responseMsg = future.get(1); // every one second
+                                } while (!(*shutdownFlag) && (protocol::ClientMessage *)NULL == responseMsg.get());
+
+                                if (!(*shutdownFlag)) {
+                                    std::auto_ptr<ReliableTopicMessage> rbMessage = ringbuffer->getReadOneAsyncResponseObject(responseMsg);
+                                    m.callback->onResponse(rbMessage.get());
+                                }
                             } catch (exception::ProtocolException &e) {
                                 m.callback->onFailure(&e);
                             }
