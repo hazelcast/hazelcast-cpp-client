@@ -186,5 +186,17 @@ namespace hazelcast {
             return *this;
         }
 
+        ClientConfig &ClientConfig::addReliableTopicConfig(const config::ReliableTopicConfig &reliableTopicConfig) {
+            reliableTopicConfigMap[reliableTopicConfig.getName()] = reliableTopicConfig;
+            return *this;
+        }
+
+        const config::ReliableTopicConfig *ClientConfig::getReliableTopicConfig(const std::string &name) {
+            std::map<std::string, config::ReliableTopicConfig>::const_iterator it = reliableTopicConfigMap.find(name);
+            if (reliableTopicConfigMap.end() == it) {
+                reliableTopicConfigMap[name] = config::ReliableTopicConfig(name.c_str());
+            }
+            return &reliableTopicConfigMap[name];
+        }
     }
 }
