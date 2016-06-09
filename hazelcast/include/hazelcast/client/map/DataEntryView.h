@@ -22,6 +22,8 @@
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
+#include <stdint.h>
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -34,48 +36,48 @@ namespace hazelcast {
 
 
             public:
-                DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long cost,
-                              long creationTime, long expirationTime, long hits, long lastAccessTime,
-                              long lastStoredTime, long lastUpdateTime, long version, long evictionCriteriaNumber,
-                              long ttl);
+                DataEntryView(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t cost,
+                              int64_t creationTime, int64_t expirationTime, int64_t hits, int64_t lastAccessTime,
+                              int64_t lastStoredTime, int64_t lastUpdateTime, int64_t version, int64_t evictionCriteriaNumber,
+                              int64_t ttl);
 
                 const serialization::pimpl::Data &getKey() const;
 
                 const serialization::pimpl::Data &getValue() const;
 
-                long getCost() const;
+                int64_t getCost() const;
 
-                long getCreationTime() const;
+                int64_t getCreationTime() const;
 
-                long getExpirationTime() const;
+                int64_t getExpirationTime() const;
 
-                long getHits() const;
+                int64_t getHits() const;
 
-                long getLastAccessTime() const;
+                int64_t getLastAccessTime() const;
 
-                long getLastStoredTime() const;
+                int64_t getLastStoredTime() const;
 
-                long getLastUpdateTime() const;
+                int64_t getLastUpdateTime() const;
 
-                long getVersion() const;
+                int64_t getVersion() const;
 
-                long getEvictionCriteriaNumber() const;
+                int64_t getEvictionCriteriaNumber() const;
 
-                long getTtl() const;
+                int64_t getTtl() const;
 
             private:
                 serialization::pimpl::Data key;
                 serialization::pimpl::Data value;
-                long cost;
-                long creationTime;
-                long expirationTime;
-                long hits;
-                long lastAccessTime;
-                long lastStoredTime;
-                long lastUpdateTime;
-                long version;
-                long evictionCriteriaNumber;
-                long ttl;
+                int64_t cost;
+                int64_t creationTime;
+                int64_t expirationTime;
+                int64_t hits;
+                int64_t lastAccessTime;
+                int64_t lastStoredTime;
+                int64_t lastUpdateTime;
+                int64_t version;
+                int64_t evictionCriteriaNumber;
+                int64_t ttl;
             };
         }
     }
