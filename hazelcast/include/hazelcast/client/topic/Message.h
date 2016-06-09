@@ -16,13 +16,10 @@
 //
 // Created by sancar koyunlu on 6/27/13.
 
+#ifndef HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
+#define HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
 
-
-
-#ifndef HAZELCAST_Topic_Message
-#define HAZELCAST_Topic_Message
-
-#include "hazelcast/client/Member.h"
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,40 +28,61 @@
 
 namespace hazelcast {
     namespace client {
+        class Member;
+
         namespace topic {
             template <typename E>
             class Message {
             public:
-                Message(std::string topicName, const E &messageObject, long publishTime, const Member &publishingMember)
-                : messageObject(messageObject)
-                , publishTime(publishTime)
-                , publishingMember(publishingMember)
-                , name(topicName) {
-                };
+                /**
+                 * Returns the published message
+                 *
+                 * @return the published message object
+                 */
+                virtual const E *getMessageObject() const = 0;
 
-                E &getMessageObject() {
-                    return messageObject;
-                };
+                /**
+                 * Returns the published message with the memory ownership
+                 *
+                 * @return the published message object with the memory ownership
+                 *
+                 * Warning: This method can be called only one time, since the message kept internally will no longer
+                 * exist after this call, hence the method will only return a null auto_ptr in the second call.
+                 */
+                virtual std::auto_ptr<E> releaseMessageObject() = 0;
 
-                long getPublishTime() {
-                    return publishTime;
-                };
+                /**
+                 * Return the time when the message is published
+                 *
+                 * @return the time when the message is published
+                 */
+                virtual int64_t getPublishTime() const = 0;
 
-                Member &getPublishingMember() {
-                    return publishingMember;
-                };
+                /**
+                 * Returns the member that published the message.
+                 *
+                 * It can be that the member is null if:
+                 * <ol>
+                 *     <li>the message was send by a client and not a member</li>
+                 *     <li>the member that send the message, left the cluster before the message was processed.</li>
+                 * </ol>
+                 *
+                 * @return the member that published the message
+                 */
+                virtual const Member *getPublishingMember() const = 0;
 
-                std::string getName() {
-                    return name;
-                }
+                /**
+                 * @return the name of the topic for which this message is produced
+                 */
+                virtual const std::string &getSource() const = 0;
 
-            private:
-                E messageObject;
-                long publishTime;
-                Member publishingMember;
-                std::string name;
+                /**
+                 * @deprecated Please use getSource instead.
+                 *
+                 * @return the name of the topic for which this message is produced
+                 */
+                virtual std::string getName() = 0;
             };
-
         }
     }
 }
@@ -73,5 +91,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_Message
+#endif //HAZELCAST_CLIENT_TOPIC_MESSAGE_H_
 

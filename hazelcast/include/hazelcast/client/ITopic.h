@@ -19,7 +19,7 @@
 #define HAZELCAST_TOPIC
 
 #include "hazelcast/client/proxy/ITopicImpl.h"
-#include "hazelcast/client/topic/TopicEventHandler.h"
+#include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 #include <string>
 
 namespace hazelcast {
@@ -78,7 +78,10 @@ namespace hazelcast {
             */
             template<typename L>
             std::string addMessageListener(L& listener) {
-                topic::TopicEventHandler<E, L> *topicEventHandler = new topic::TopicEventHandler<E, L>(getName(), context->getClusterService(), context->getSerializationService(), listener);
+                impl::BaseEventHandler *topicEventHandler = new topic::impl::TopicEventHandlerImpl<E>(getName(),
+                                                                                                      context->getClusterService(),
+                                                                                                      context->getSerializationService(),
+                                                                                                      listener);
                 return proxy::ITopicImpl::addMessageListener(topicEventHandler);
             }
 

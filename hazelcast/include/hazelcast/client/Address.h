@@ -17,6 +17,8 @@
 #define HAZELCAST_ADDRESS
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+
 #include <string>
 #include <sstream>
 
@@ -31,8 +33,10 @@ namespace hazelcast {
         /**
          * IP Address
          */
-        class HAZELCAST_API Address {
+        class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
         public:
+            static const int ID;
+
             /**
              * Constructor
              */
@@ -59,9 +63,23 @@ namespace hazelcast {
              */
             const std::string& getHost() const;
 
+            /***** serialization::IdentifiedDataSerializable interface implementation starts here *********************/
+            virtual int getFactoryId() const;
+
+            virtual int getClassId() const;
+
+            virtual void writeData(serialization::ObjectDataOutput &writer) const;
+
+            virtual void readData(serialization::ObjectDataInput &reader);
+
+            /***** serialization::IdentifiedDataSerializable interface implementation end here ************************/
         private:
             std::string host;
             int port;
+            byte type;
+
+            static const byte IPV4;
+            static const byte IPV6;
         };
 
         /**

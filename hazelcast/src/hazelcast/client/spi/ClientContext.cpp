@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-
-
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
 
@@ -26,7 +24,6 @@ namespace hazelcast {
         namespace spi {
             ClientContext::ClientContext(HazelcastClient &hazelcastClient)
             : hazelcastClient(hazelcastClient) {
-
             }
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {

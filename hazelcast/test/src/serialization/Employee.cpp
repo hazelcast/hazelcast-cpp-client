@@ -158,6 +158,10 @@ namespace hazelcast {
                 return 5;
             }
 
+            std::ostream &operator<<(std::ostream &out, const Employee &employee) {
+                out << "Employee:[" << employee.getName() << ", " << employee.getAge() << "]";
+                return out;
+            }
         }
     }
 }

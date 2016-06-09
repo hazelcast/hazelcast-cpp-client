@@ -18,10 +18,10 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyTopicListener {
+class MyTopicListener : public hazelcast::client::topic::MessageListener<std::string> {
 public:
-    void onMessage(hazelcast::client::topic::Message<std::string> msg) {
-        std::cout << "[MyTopicListener::onMessage] Message received:" << msg.getMessageObject() << std::endl;
+    void onMessage(std::auto_ptr<hazelcast::client::topic::Message<std::string> > msg) {
+        std::cout << "[MyTopicListener::onMessage] Message received:" << msg->getMessageObject() << std::endl;
     }
 };
 

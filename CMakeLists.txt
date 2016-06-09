@@ -55,6 +55,9 @@ endif ()
 message(STATUS "HAZELCAST_GIT_COMMIT_ID = ${HAZELCAST_GIT_COMMIT_ID}" )
 add_definitions(-DHAZELCAST_GIT_COMMIT_ID=${HAZELCAST_GIT_COMMIT_ID})
 
+# Disable any boost lib linking
+add_definitions("-DBOOST_ALL_NO_LIB")
+
 message(STATUS "Preparing hazelcast client ..... ")
 
 include_directories(${CMAKE_SOURCE_DIR}/external/include/)

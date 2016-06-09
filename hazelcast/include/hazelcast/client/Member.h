@@ -59,6 +59,8 @@ namespace hazelcast {
             Member(const Address &address, const std::string &uuid, bool lite,
                    const std::map<std::string, std::string> &attr);
 
+            Member(const Address &memberAddress);
+
             /**
              * comparison operation
              */

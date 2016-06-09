@@ -301,4 +301,3 @@
 # define BOOST_PP_LIST_FOLD_LEFT_CHECK_BOOST_PP_LIST_FOLD_LEFT_256(o, s, l) 0
 #
 # endif
-

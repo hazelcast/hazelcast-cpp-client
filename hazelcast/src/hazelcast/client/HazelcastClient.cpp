@@ -27,6 +27,7 @@
 
 namespace hazelcast {
     namespace client {
+        const std::string HazelcastClient::TOPIC_RB_PREFIX = "_hz_rb_";;
 
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)

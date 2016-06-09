@@ -332,7 +332,7 @@ namespace hazelcast {
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw exception::InstanceNotActiveException("client");
+                    throw exception::HazelcastInstanceNotActiveException("client");
                 }
             }
 

@@ -97,4 +97,3 @@
 # else
 #    define BOOST_PP_LOCAL_SE() BOOST_PP_LOCAL_SE_DIGIT_1
 # endif
-

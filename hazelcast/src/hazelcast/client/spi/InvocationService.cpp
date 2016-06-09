@@ -23,7 +23,6 @@
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/PartitionService.h"
-
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -34,8 +33,10 @@
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 #include <assert.h>
+#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -195,11 +196,13 @@ namespace hazelcast {
                 promise->resetFuture();
 
                 if (promise->getRequest()->isBindToSingleConnection()) {
-                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, lastTriedAddress);
+                    std::auto_ptr<exception::IException> exception(new exception::HazelcastInstanceNotActiveException(lastTriedAddress));
+                    promise->setException(exception);
                     return boost::shared_ptr<connection::Connection>();
                 }
                 if (promise->incrementAndGetResendCount() > getRetryCount()) {
-                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, lastTriedAddress);
+                    std::auto_ptr<exception::IException> exception(new exception::HazelcastInstanceNotActiveException(lastTriedAddress));
+                    promise->setException(exception);
                     return boost::shared_ptr<connection::Connection>();
                 }
 
@@ -208,7 +211,8 @@ namespace hazelcast {
                     connection::ConnectionManager &cm = clientContext.getConnectionManager();
                     connection = cm.getRandomConnection(getRetryCount(), lastTriedAddress, getRetryWaitTime());
                 } catch (exception::IException &) {
-                    promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, lastTriedAddress);
+                    std::auto_ptr<exception::IException> exception(new exception::HazelcastInstanceNotActiveException(lastTriedAddress));
+                    promise->setException(exception);
                     return boost::shared_ptr<connection::Connection>();
                 }
 
@@ -238,8 +242,9 @@ namespace hazelcast {
                                    promise->getRequest()->getCorrelationId());
                     hazelcast::util::ILogger::getLogger().info(msg);
 
-                    promise->setException(exception::pimpl::ExceptionHandler::ILLEGAL_STATE,
-                                                  "Invocation service is not open. Can not process the request.");
+                    std::auto_ptr<exception::IException> exception(new exception::IllegalStateException(
+                            "InvocationService::registerAndEnqueue", "Invocation service is not open. Can not process the request."));
+                    promise->setException(exception);
 
                     return boost::shared_ptr<connection::Connection>();
                 }
@@ -319,37 +324,18 @@ namespace hazelcast {
                     return;
                 }
 
-                if (!handleException(message.get(), promise, serverAddr))
-                    return;//if response is exception,then return
+                if (protocol::codec::ErrorCodec::TYPE == message->getMessageType()) {
+                    std::auto_ptr<exception::IException> exception = exceptionFactory.createException(*message);
+
+                    std::string addrString = util::IOUtil::to_string(serverAddr);
+                    tryResend(exception, promise, addrString);
+                    return;
+                }
 
                 if (!handleEventUuid(message.get(), promise))
                     return; //if response is event uuid,then return.
 
                 promise->setResponse(message);
-            }
-
-            /* returns shouldSetResponse */
-            bool InvocationService::handleException(protocol::ClientMessage *response,
-                                                    boost::shared_ptr<connection::CallPromise> promise,
-                                                    const Address &address) {
-                if (protocol::EXCEPTION == response->getMessageType()) {
-                    protocol::codec::ErrorCodec error = protocol::codec::ErrorCodec::decode(*response);
-
-                    if (error.className == "com.hazelcast.core.HazelcastInstanceNotActiveException") {
-                        std::string addrString = util::IOUtil::to_string(address);
-                        char msg[300];
-                        util::snprintf(msg, 300, "[InvocationService::handleException] HazelcastInstanceNotActiveException "
-                                "received. Shall retry the request. Response call id: %lld, request call id: %lld, server address:%s.",
-                                       response->getCorrelationId(), promise->getRequest()->getCorrelationId(), addrString.c_str());
-                        util::ILogger::getLogger().finest(msg);
-                        tryResend(promise, addrString);
-                    } else {
-                        promise->setException(error.className, error.toString());
-                    }
-                    return false;
-                }
-
-                return true;
             }
 
             /* returns shouldSetResponse */
@@ -370,14 +356,15 @@ namespace hazelcast {
                 return true;
             }
 
-            void InvocationService::tryResend(boost::shared_ptr<connection::CallPromise> promise,
+            void InvocationService::tryResend(std::auto_ptr<exception::IException> exception,
+                                              boost::shared_ptr<connection::CallPromise> promise,
                                               const std::string &lastTriedAddress) {
                 bool serviceOpen = isOpen;
                 if (serviceOpen && (promise->getRequest()->isRetryable() || isRedoOperation())) {
                     resend(promise, lastTriedAddress);
                     return;
                 }
-                promise->setException(exception::pimpl::ExceptionHandler::INSTANCE_NOT_ACTIVE, lastTriedAddress);
+                promise->setException(exception);
 
             }
 
@@ -398,15 +385,20 @@ namespace hazelcast {
                 std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
 
                 char msg[200];
-                util::snprintf(msg, 200, "[cleanResources] There are %u waiting promises on connection with id:%d (%s) ", promises.size(), connection.getConnectionId(), address.c_str());
+                util::snprintf(msg, 200, "[cleanResources] There are %u waiting promises on connection with id:%d (%s) ",
+                               promises.size(), connection.getConnectionId(), address.c_str());
                 util::ILogger::getLogger().info(msg);
 
                 for (std::vector<std::pair<int64_t, boost::shared_ptr<connection::CallPromise> > >::iterator it = promises.begin();
                      it != promises.end(); ++it) {
                     if (!isOpen) {
-                        it->second->setException(exception::pimpl::ExceptionHandler::ILLEGAL_STATE, "Invocation service is not open.");
+                        std::auto_ptr<exception::IException> exception(new exception::IllegalStateException(
+                                "InvocationService::cleanResources", "Invocation service is not open."));
+                        it->second->setException(exception);
                     } else {
-                        tryResend(it->second, address);
+                        std::auto_ptr<exception::IException> exception(new exception::IOException(
+                                "InvocationService::cleanResources", "Connection closed."));
+                        tryResend(exception, it->second, address);
                     }
                 }
 

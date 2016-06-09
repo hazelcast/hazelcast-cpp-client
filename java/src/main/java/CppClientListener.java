@@ -15,6 +15,7 @@
 */
 
 import com.hazelcast.config.Config;
+import com.hazelcast.config.RingbufferConfig;
 import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
@@ -312,6 +313,8 @@ public class CppClientListener {
     static final int SHUTDOWN = 3;
     static final int SHUTDOWN_ALL = 4;
 
+    public static int CAPACITY = 10;
+
     public static void main(String args[]) throws IOException {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
@@ -442,6 +445,9 @@ public class CppClientListener {
         });
         serializerConfig.setTypeClass(Person.class);
         config.getSerializationConfig().addSerializerConfig(serializerConfig);
+
+        config.addRingBufferConfig(new RingbufferConfig("rb*").setCapacity(CAPACITY));
+
         return config;
     }
 

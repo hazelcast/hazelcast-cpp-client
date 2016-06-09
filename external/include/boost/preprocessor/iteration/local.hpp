@@ -24,4 +24,3 @@
 # define BOOST_PP_LOCAL_R(n) (BOOST_PP_LOCAL_F) <= n && (BOOST_PP_LOCAL_S) >= n
 #
 # endif
-

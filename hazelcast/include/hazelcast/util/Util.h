@@ -29,6 +29,7 @@
 #include <time.h>
 #include <string>
 #include <assert.h>
+#include <stdint.h>
 
 #define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
 #define STRINGIZE(STR) #STR
@@ -60,6 +61,11 @@ namespace hazelcast {
          * @param date The date to be modified
          */
         HAZELCAST_API void gitDateToHazelcastLogDate(std::string &date);
+
+        /**
+         * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+         */
+        HAZELCAST_API int64_t currentTimeMillis();
     }
 }
 

@@ -36,4 +36,3 @@
 # define BOOST_PP_BITAND_11 1
 #
 # endif
-

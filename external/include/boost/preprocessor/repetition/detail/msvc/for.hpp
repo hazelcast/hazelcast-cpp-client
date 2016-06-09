@@ -275,4 +275,3 @@
 # define BOOST_PP_FOR_256(s, p, o, m) BOOST_PP_IF(p(257, s), m, BOOST_PP_TUPLE_EAT_2)(257, s) BOOST_PP_IF(p(257, s), BOOST_PP_FOR_257, BOOST_PP_TUPLE_EAT_4)(o(257, s), p, o, m)
 #
 # endif
-

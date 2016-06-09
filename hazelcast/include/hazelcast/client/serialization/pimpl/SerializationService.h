@@ -67,6 +67,10 @@ namespace hazelcast {
 
                     template<typename T>
                     inline Data toData(const T *object) {
+                        if (NULL == object) {
+                            return Data();
+                        }
+
                         DataOutput output;
 
                         ObjectDataOutput dataOutput(output, portableContext);
