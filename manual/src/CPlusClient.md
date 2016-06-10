@@ -248,6 +248,27 @@ This example query returns the values between 5 and 10, inclusive. You can find 
 
 ![image](images/NoteSmall.jpg) ***NOTE:*** *API that returns pointers may return null pointers for null values. You need to check for null values.*
 
+## Ringbuffer
+You can use the Hazelcast ringbuffer using the C++ client library. You start by obtaining the ringbuffer using the HazelcastClient as usual:
+
+```
+    std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
+
+```
+
+The ringbuffer interface allows you to add a new item to the ringbuffer or read an entry at a sequence number.
+
+You can query the ringbuffer capacity which is configured at the server side.
+
+## ReliableTopic
+You can use Reliabletopic if you do not want miss any messages during failures.
+
+The reliable topic provides a very similar interface to Topic structure but it has several configuration options.
+
+ReliableTopic implementation depends on the Ringbuffer implementation. The data is kept in the Hazelcast cluster Ringbuffer structure. These Ringbuffer structures' names start with "_hz_rb_".
+ 
+ReliableTopic also supports batch reads from the Ringbuffer, hence you can optimize internal working of the listener using the ReliableTopicConfig::setReadBatchSize method.
+
 ## C++ Client Code Examples
 
 You can try the following C++ client code examples. You need to have a Hazelcast client member running for the code examples to work. 
@@ -559,4 +580,164 @@ Please examine all different kinds of built in predicates that we provide in the
 Please be careful with the runtime behavior of your listener implementations to ensure that the listener callback methods return very quickly. If you need to perform long running tasks when an entry is changed, please off-load those operations to another thread.
 
 In addition to this rich set of built-in predicates, you can also write your own custom queries simply by implementing your own predicate (you also have to implement the Java server-side predicate as well to make this work).
+
+### Ringbuffer Example
+
+```
+    std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
+
+    std::cout << "Capacity of the ringbuffer is:" << rb->capacity() << std::endl;
+
+    int64_t sequenceNumber = rb->add("First Item");
+
+    std::cout << "Added the first item at sequence " << sequenceNumber << std::endl;
+
+    rb->add("Second item");
+
+    std::cout << "There are " << rb->size() << " items in the ring buffer " << std::endl;
+
+    std::auto_ptr<std::string> val = rb->readOne(sequenceNumber);
+
+    if ((std::string *)NULL != val.get()) {
+        std::cout << "The item at read at sequence " << sequenceNumber << " is " << *val << std::endl;
+    }
+
+    std::cout << "Finished" << std::endl;
+
+```
+
+### ReliableTopic Example
+#### ReliableTopic Publisher
+
+```
+void publishWithDefaultConfig() {
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient client(config);
+
+    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
+    std::string message("My first message");
+    topic->publish(&message);
+}
+
+void publishWithNonDefaultConfig() {
+    hazelcast::client::ClientConfig clientConfig;
+    std::string topicName("MyReliableTopic");
+    hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
+    reliableTopicConfig.setReadBatchSize(5);
+    clientConfig.addReliableTopicConfig(reliableTopicConfig);
+    hazelcast::client::HazelcastClient client(clientConfig);
+
+    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+
+    std::string message("My first message");
+
+    topic->publish(&message);
+}
+```
+#### ReliableTopic Subscriber
+For writing a subscriber, you need to implement the hazelcast::client::topic::ReliableMessageListener interface.
+
+```
+class MyListener : public hazelcast::client::topic::ReliableMessageListener<std::string> {
+public:
+    MyListener() : startSequence(-1), numberOfMessagesReceived(0), lastReceivedSequence(-1) {
+    }
+
+    MyListener(int64_t sequence) : startSequence(sequence), numberOfMessagesReceived(0), lastReceivedSequence(-1) {
+    }
+
+    virtual ~MyListener() {
+    }
+
+    virtual void onMessage(std::auto_ptr<hazelcast::client::topic::Message<std::string> > message) {
+        ++numberOfMessagesReceived;
+
+        const std::string *object = message->getMessageObject();
+        if (NULL != object) {
+            std::cout << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
+            " for topic:" << message->getName();
+        } else {
+            std::cout << "[GenericListener::onMessage] Received message with NULL object for topic:" <<
+            message->getName();
+        }
+    }
+
+    virtual int64_t retrieveInitialSequence() const {
+        return startSequence;
+    }
+
+    virtual void storeSequence(int64_t sequence) {
+        lastReceivedSequence = sequence;
+    }
+
+    virtual bool isLossTolerant() const {
+        return false;
+    }
+
+    virtual bool isTerminal(const hazelcast::client::exception::IException &failure) const {
+        return false;
+    }
+
+    int getNumberOfMessagesReceived() {
+        int value = numberOfMessagesReceived;
+        return value;
+    }
+
+private:
+    int64_t startSequence;
+    hazelcast::util::AtomicInt numberOfMessagesReceived;
+    int64_t lastReceivedSequence;
+};    
+```
+
+Using this listener, you can subscribe for the topic:
+```
+void listenWithDefaultConfig() {
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient client(config);
+
+    std::string topicName("MyReliableTopic");
+    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+
+    MyListener listener;
+    const std::string &listenerId = topic->addMessageListener(listener);
+
+    std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+
+    while (listener.getNumberOfMessagesReceived() < 1) {
+        hazelcast::util::sleep(1);
+    }
+
+    if (topic->removeMessageListener(listenerId)) {
+        std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+    } else {
+        std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+    }
+}
+
+void listenWithConfig() {
+    hazelcast::client::ClientConfig clientConfig;
+    std::string topicName("MyReliableTopic");
+    hazelcast::client::config::ReliableTopicConfig reliableTopicConfig(topicName.c_str());
+    reliableTopicConfig.setReadBatchSize(5);
+    clientConfig.addReliableTopicConfig(reliableTopicConfig);
+    hazelcast::client::HazelcastClient client(clientConfig);
+
+    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+
+    MyListener listener;
+    const std::string &listenerId = topic->addMessageListener(listener);
+
+    std::cout << "Registered the listener with listener id:" << listenerId << std::endl;
+
+    while (listener.getNumberOfMessagesReceived() < 1) {
+        hazelcast::util::sleep(1);
+    }
+    if (topic->removeMessageListener(listenerId)) {
+        std::cout << "Successfully removed the listener " << listenerId << " for topic " << topicName << std::endl;
+    } else {
+        std::cerr << "Failed to remove the listener " << listenerId << " for topic " << topicName << std::endl;
+    }
+}    
+```
 
