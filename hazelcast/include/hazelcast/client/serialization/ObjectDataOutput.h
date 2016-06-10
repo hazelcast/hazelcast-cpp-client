@@ -27,6 +27,8 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
 
+#include<stdint.h>
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -103,7 +105,7 @@ namespace hazelcast {
                 /**
                 * @param value the long value to be written
                 */
-                void writeLong(long value);
+                void writeLong(int64_t value);
 
                 /**
                 * @param value the float value to be written
