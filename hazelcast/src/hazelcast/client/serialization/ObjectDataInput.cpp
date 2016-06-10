@@ -63,8 +63,8 @@ namespace hazelcast {
                 return dataInput.readInt();
             }
 
-            long ObjectDataInput::readLong() {
-                return (long)dataInput.readLong();
+            int64_t ObjectDataInput::readLong() {
+                return dataInput.readLong();
             }
 
             float ObjectDataInput::readFloat() {

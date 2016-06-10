@@ -88,7 +88,7 @@ namespace hazelcast {
                     writeByte((byte)v);
                 }
 
-                void DataOutput::writeLong(long long l) {
+                void DataOutput::writeLong(int64_t l) {
                     writeByte((byte)(l >> 56));
                     writeByte((byte)(l >> 48));
                     writeByte((byte)(l >> 40));

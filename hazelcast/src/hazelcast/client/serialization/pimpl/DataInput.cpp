@@ -93,7 +93,7 @@ namespace hazelcast {
                             (0x000000ff & d);
                 }
 
-                long long DataInput::readLong() {
+                int64_t DataInput::readLong() {
                     byte a = readByte();
                     byte b = readByte();
                     byte c = readByte();
@@ -102,10 +102,10 @@ namespace hazelcast {
                     byte f = readByte();
                     byte g = readByte();
                     byte h = readByte();
-                    return (0xff00000000000000LL & ((long long) (a) << 56)) |
-                            (0x00ff000000000000LL & ((long long) (b) << 48)) |
-                            (0x0000ff0000000000LL & ((long long) (c) << 40)) |
-                            (0x000000ff00000000LL & ((long long) (d) << 32)) |
+                    return (0xff00000000000000LL & ((int64_t) (a) << 56)) |
+                            (0x00ff000000000000LL & ((int64_t) (b) << 48)) |
+                            (0x0000ff0000000000LL & ((int64_t) (c) << 40)) |
+                            (0x000000ff00000000LL & ((int64_t) (d) << 32)) |
                             (0x00000000ff000000LL & (e << 24)) |
                             (0x0000000000ff0000LL & (f << 16)) |
                             (0x000000000000ff00LL & (g << 8)) |

@@ -74,7 +74,11 @@ namespace hazelcast {
                                 connection::CallFuture future = ringbuffer->readManyAsync(m.sequence, 1, m.maxCount);
                                 std::auto_ptr<protocol::ClientMessage> responseMsg;
                                 do {
-                                    responseMsg = future.get(1); // every one second
+                                    try {
+                                        responseMsg = future.get(1); // every one second
+                                    } catch (exception::TimeoutException &e) { // suppress timeout exception
+                                        // do nothing
+                                    }
                                 } while (!(*shutdownFlag) && (protocol::ClientMessage *)NULL == responseMsg.get());
 
                                 if (!(*shutdownFlag)) {
