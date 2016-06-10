@@ -82,6 +82,8 @@ namespace hazelcast {
                  * @return the name of the topic for which this message is produced
                  */
                 virtual std::string getName() = 0;
+
+                virtual ~Message() { }
             };
         }
     }

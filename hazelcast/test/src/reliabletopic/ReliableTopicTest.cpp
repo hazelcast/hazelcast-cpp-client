@@ -28,6 +28,17 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ReliableTopicTest : public ClientTestSupport {
+            public:
+                static void publishTopics(util::ThreadArgs &args) {
+                    ReliableTopic<int> *topic = (ReliableTopic<int> *)args.arg0;
+                    std::vector<int> *publishValues = (std::vector<int> *)args.arg1;
+
+                    util::sleep(5);
+
+                    for (std::vector<int>::const_iterator it = publishValues->begin();it != publishValues->end(); ++it) {
+                        topic->publish(&(*it));
+                    }
+                }
             protected:
                 template <typename T>
                 class GenericListener : public topic::ReliableMessageListener<T> {
@@ -46,6 +57,10 @@ namespace hazelcast {
                         while ((e = objects.poll()) != NULL) {
                             delete(e);
                         }
+                        topic::Message<T> *m = NULL;
+                        while ((m = messages.poll()) != NULL) {
+                            delete(m);
+                        }
                     }
 
                     virtual void onMessage(std::auto_ptr<topic::Message<T> > message) {
@@ -63,6 +78,8 @@ namespace hazelcast {
 
                         objects.offer(message->releaseMessageObject().release());
                         latch.countDown();
+
+                        messages.offer(message.release());
                     }
 
                     virtual int64_t retrieveInitialSequence() const {
@@ -70,7 +87,6 @@ namespace hazelcast {
                     }
 
                     virtual void storeSequence(int64_t sequence) {
-
                     }
 
                     virtual bool isLossTolerant() const {
@@ -89,11 +105,16 @@ namespace hazelcast {
                     util::ConcurrentQueue<T> &getObjects() {
                         return objects;
                     }
+
+                    util::ConcurrentQueue<topic::Message<T> > &getMessages() {
+                        return messages;
+                    }
                 private:
                     util::CountDownLatch &latch;
                     int64_t startSequence;
                     util::AtomicInt numberOfMessagesReceived;
                     util::ConcurrentQueue<T> objects;
+                    util::ConcurrentQueue<topic::Message<T> > messages;
                 };
 
                 class IntListener : public GenericListener<int> {
@@ -240,6 +261,132 @@ namespace hazelcast {
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
                 int *val = listener.getObjects().poll();
                 ASSERT_EQ((int *)NULL, val);
+            }
+
+            TEST_F(ReliableTopicTest, publishMultiple) {
+                std::auto_ptr<ReliableTopic<std::string> > topic;
+                ASSERT_NO_THROW(topic = client->getReliableTopic<std::string>("publishMultiple"));
+
+                util::CountDownLatch latch(5);
+                GenericListener<std::string> listener(latch);
+
+                std::string listenerId;
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
+
+                std::vector<std::string> items;
+                for (int k = 0; k < 5; k++) {
+                    std::string item = util::IOUtil::to_string<int>(k);
+                    topic->publish(&item);
+                    items.push_back(item);
+                }
+
+                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
+                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                for (int k = 0; k < 5; k++) {
+                    std::string *val = queue.poll();
+                    ASSERT_NE((std::string *)NULL, val);
+                    ASSERT_EQ(items[k], *val);
+                }
+            }
+
+            TEST_F(ReliableTopicTest, testConfig) {
+                ClientConfig clientConfig;
+                clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                config::ReliableTopicConfig relConfig("testConfig");
+                relConfig.setReadBatchSize(2);
+                clientConfig.addReliableTopicConfig(relConfig);
+                HazelcastClient configClient(clientConfig);
+
+                std::auto_ptr<ReliableTopic<std::string> > topic;
+                ASSERT_NO_THROW(topic = configClient.getReliableTopic<std::string>("testConfig"));
+
+                util::CountDownLatch latch(5);
+                GenericListener<std::string> listener(latch);
+
+                std::string listenerId;
+                ASSERT_NO_THROW(listenerId = topic->addMessageListener(listener));
+
+                std::vector<std::string> items;
+                for (int k = 0; k < 5; k++) {
+                    std::string item = util::IOUtil::to_string<int>(k);
+                    topic->publish(&item);
+                    items.push_back(item);
+                }
+
+                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
+                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                for (int k = 0; k < 5; k++) {
+                    std::string *val = queue.poll();
+                    ASSERT_NE((std::string *)NULL, val);
+                    ASSERT_EQ(items[k], *val);
+                }
+            }
+
+            TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly) {
+                std::auto_ptr<ReliableTopic<int> > intTopic;
+                ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testMessageFieldSetCorrectly"));
+
+                util::CountDownLatch latch(1);
+                IntListener listener(latch);
+
+                std::string listenerId;
+                ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
+
+                int64_t timeBeforePublish = util::currentTimeMillis();
+                int publishedValue = 3;
+                intTopic->publish(&publishedValue);
+                int64_t timeAfterPublish = util::currentTimeMillis();
+
+                ASSERT_TRUE(latch.await(5));
+                ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
+                int *val = listener.getObjects().poll();
+                ASSERT_EQ(publishedValue, *val);
+
+                topic::Message<int> *message = listener.getMessages().poll();
+                ASSERT_TRUE(timeBeforePublish <= message->getPublishTime());
+                ASSERT_TRUE(timeAfterPublish >= message->getPublishTime());
+                ASSERT_EQ(intTopic->getName(), message->getSource());
+                ASSERT_EQ((Member *)NULL, message->getPublishingMember());
+            }
+
+            // makes sure that when a listener is register, we don't see any messages being published before
+            // it got registered. We'll only see the messages after it got registered.
+            TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
+                std::auto_ptr<ReliableTopic<int> > intTopic;
+                ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testAlwaysStartAfterTail"));
+
+                int publishedValue = 1;
+                ASSERT_NO_THROW(intTopic->publish(&publishedValue));
+                publishedValue = 2;
+                ASSERT_NO_THROW(intTopic->publish(&publishedValue));
+                publishedValue = 3;
+                ASSERT_NO_THROW(intTopic->publish(&publishedValue));
+
+                std::vector<int> expectedValues;
+                expectedValues.push_back(4);
+                expectedValues.push_back(5);
+                expectedValues.push_back(6);
+
+                // spawn a thread for publishing new data
+                util::Thread t(publishTopics, intTopic.get(), &expectedValues);
+
+                util::CountDownLatch latch(3);
+                IntListener listener(latch);
+
+                std::string listenerId;
+                ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
+
+                ASSERT_TRUE(latch.await(10));
+                ASSERT_EQ(expectedValues.size(), listener.getNumberOfMessagesReceived());
+                util::ConcurrentQueue<int> &objects = listener.getObjects();
+
+                for (std::vector<int>::const_iterator it = expectedValues.begin();it != expectedValues.end(); ++it) {
+                    int *val = objects.poll();
+                    ASSERT_NE((int *)NULL, val);
+                    ASSERT_EQ(*it, *val);
+                }
             }
         }
     }
