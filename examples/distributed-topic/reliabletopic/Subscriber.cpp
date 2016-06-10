@@ -26,6 +26,9 @@ public:
     MyListener(int64_t sequence) : startSequence(sequence), numberOfMessagesReceived(0), lastReceivedSequence(-1) {
     }
 
+    virtual ~MyListener() {
+    }
+
     virtual void onMessage(std::auto_ptr<hazelcast::client::topic::Message<std::string> > message) {
         ++numberOfMessagesReceived;
 
