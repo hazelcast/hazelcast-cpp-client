@@ -49,6 +49,7 @@ namespace hazelcast {
                         struct Message {
                             MessageType type;
                             int64_t sequence;
+                            int32_t maxCount;
                             client::impl::ExecutionCallback<topic::impl::reliable::ReliableTopicMessage> *callback;
                         };
 

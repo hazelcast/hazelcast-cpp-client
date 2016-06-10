@@ -24,6 +24,8 @@
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/config/ReliableTopicConfig.h"
+
 #include <vector>
 #include <set>
 #include <memory>
@@ -326,6 +328,21 @@ namespace hazelcast {
             */
             ClientConfig& setProperty(const std::string& name, const std::string& value);
 
+            /**
+             * Adds a ClientReliableTopicConfig.
+             *
+             * @param reliableTopicConfig the ReliableTopicConfig to add
+             * @return configured {@link ClientConfig} for chaining
+             */
+            ClientConfig &addReliableTopicConfig(const config::ReliableTopicConfig &reliableTopicConfig);
+
+            /**
+             * Gets the ClientReliableTopicConfig for a given reliable topic name.
+             *
+             * @param name the name of the reliable topic
+             * @return the found config. If none is found, a default configured one is returned.
+             */
+            const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
         private:
 
             GroupConfig groupConfig;
@@ -362,6 +379,7 @@ namespace hazelcast {
 
             std::auto_ptr<Credentials> defaultCredentials;
 
+            std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
         };
 
     }

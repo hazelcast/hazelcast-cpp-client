@@ -79,7 +79,7 @@ namespace hazelcast {
             std::string addMessageListener(topic::ReliableMessageListener<E> &listener) {
                 int id = ++runnerCounter;
                 boost::shared_ptr<MessageRunner<E> > runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
-                                                                          &context->getSerializationService()));
+                                                                          &context->getSerializationService(), config));
                 runnersMap.put(id, runner);
                 runner->next();
                 return util::IOUtil::to_string<int>(id);
@@ -125,8 +125,10 @@ namespace hazelcast {
             public:
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
-                              const std::string &topicName, serialization::pimpl::SerializationService *service)
-                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(rb), serializationService(service) {
+                              const std::string &topicName, serialization::pimpl::SerializationService *service,
+                              const config::ReliableTopicConfig *reliableTopicConfig)
+                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(rb),
+                          serializationService(service), config(reliableTopicConfig) {
                     this->id = id;
                     this->listener = listener;
                     this->ringbuffer = rb;
@@ -153,6 +155,7 @@ namespace hazelcast {
                     m.type = topic::impl::reliable::ReliableTopicExecutor::GET_ONE_MESSAGE;
                     m.callback = this;
                     m.sequence = sequence;
+                    m.maxCount = config->getReadBatchSize();
                     executor.execute(m);
                 }
 
@@ -291,6 +294,7 @@ namespace hazelcast {
                 const std::string &name;
                 topic::impl::reliable::ReliableTopicExecutor executor;
                 serialization::pimpl::SerializationService *serializationService;
+                const config::ReliableTopicConfig *config;
             };
 
             util::SynchronizedMap<int, MessageRunner<E> > runnersMap;
