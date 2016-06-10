@@ -69,7 +69,7 @@ namespace hazelcast {
                         const T *object = message->getMessageObject();
                         std::ostringstream out;
                         if (NULL != object) {
-                            out << "[GenericListener::onMessage] Received message: " << message->getMessageObject() <<
+                            out << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
                             " for topic:" << message->getName();
                         } else {
                             out << "[GenericListener::onMessage] Received message with NULL object for topic:" << message->getName();
@@ -345,8 +345,8 @@ namespace hazelcast {
                 ASSERT_EQ(publishedValue, *val);
 
                 topic::Message<int> *message = listener.getMessages().poll();
-                ASSERT_TRUE(timeBeforePublish <= message->getPublishTime());
-                ASSERT_TRUE(timeAfterPublish >= message->getPublishTime());
+                ASSERT_LE(timeBeforePublish, message->getPublishTime());
+                ASSERT_GE(timeAfterPublish, message->getPublishTime());
                 ASSERT_EQ(intTopic->getName(), message->getSource());
                 ASSERT_EQ((Member *)NULL, message->getPublishingMember());
             }
