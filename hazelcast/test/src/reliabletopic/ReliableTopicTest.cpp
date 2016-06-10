@@ -379,7 +379,7 @@ namespace hazelcast {
                 ASSERT_NO_THROW(listenerId = intTopic->addMessageListener(listener));
 
                 ASSERT_TRUE(latch.await(10));
-                ASSERT_EQ(expectedValues.size(), listener.getNumberOfMessagesReceived());
+                ASSERT_EQ((int)expectedValues.size(), listener.getNumberOfMessagesReceived());
                 util::ConcurrentQueue<int> &objects = listener.getObjects();
 
                 for (std::vector<int>::const_iterator it = expectedValues.begin();it != expectedValues.end(); ++it) {
