@@ -710,7 +710,7 @@ namespace hazelcast {
 
             void operator=(const HazelcastClient& rhs);
 
-            static const std::string TOPIC_RB_PREFIX;
+            const std::string TOPIC_RB_PREFIX;
         };
 
     }

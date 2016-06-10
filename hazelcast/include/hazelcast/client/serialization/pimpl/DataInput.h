@@ -15,10 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 8/7/13.
-
-
-
-
 #ifndef HAZELCAST_DataInput
 #define HAZELCAST_DataInput
 
@@ -26,10 +22,13 @@
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
+
+#include <boost/smart_ptr/shared_ptr.hpp>
+
 #include <vector>
 #include <string>
 #include <memory>
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -66,7 +65,7 @@ namespace hazelcast {
 
                     int readInt();
 
-                    long long readLong();
+                    int64_t readLong();
 
                     float readFloat();
 

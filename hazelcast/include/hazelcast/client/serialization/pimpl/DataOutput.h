@@ -16,18 +16,15 @@
 //
 // Created by sancar koyunlu on 8/7/13.
 
-
-
-
 #ifndef HAZELCAST_DataOutput
 #define HAZELCAST_DataOutput
-
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include <memory>
 #include <vector>
 #include <string>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -59,7 +56,7 @@ namespace hazelcast {
 
                     void writeInt(int i);
 
-                    void writeLong(long long l);
+                    void writeLong(int64_t l);
 
                     void writeFloat(float v);
 
