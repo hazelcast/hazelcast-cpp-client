@@ -33,9 +33,11 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
-#include <vector>
+
 #include <boost/shared_ptr.hpp>
+#include <vector>
 #include <string>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -114,7 +116,7 @@ namespace hazelcast {
                 * @return the long read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                long readLong();
+                int64_t readLong();
 
                 /**
                 * @return the boolean read

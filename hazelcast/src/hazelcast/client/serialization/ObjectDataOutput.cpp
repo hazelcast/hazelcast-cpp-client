@@ -79,7 +79,7 @@ namespace hazelcast {
                 dataOutput->writeInt(v);
             }
 
-            void ObjectDataOutput::writeLong(long l) {
+            void ObjectDataOutput::writeLong(int64_t l) {
                 if (isEmpty) return;
                 dataOutput->writeLong(l);
             }
