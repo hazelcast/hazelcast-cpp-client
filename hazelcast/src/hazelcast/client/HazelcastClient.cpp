@@ -31,8 +31,6 @@
 
 namespace hazelcast {
     namespace client {
-        const std::string HazelcastClient::TOPIC_RB_PREFIX = "_hz_rb_";;
-
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)
         , clientProperties(config)
@@ -44,7 +42,8 @@ namespace hazelcast {
         , partitionService(clientContext)
         , invocationService(clientContext)
         , serverListenerService(clientContext)
-        , cluster(clusterService) {
+        , cluster(clusterService)
+        , TOPIC_RB_PREFIX("_hz_rb_") {
             std::stringstream prefix;
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());

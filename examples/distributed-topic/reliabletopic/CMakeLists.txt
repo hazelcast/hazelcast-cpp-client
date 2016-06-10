@@ -13,5 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(basic-pub-sub)
-add_subdirectory(reliabletopic)
+add_executable(rtPublisher ./Publisher.cpp)
+add_executable(rtSubscriber ./Subscriber.cpp)
+
