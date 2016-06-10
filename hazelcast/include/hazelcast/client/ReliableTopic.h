@@ -20,6 +20,7 @@
 
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/Ringbuffer.h"
+#include "hazelcast/client/DataArray.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
 
 #include <string>
@@ -121,7 +122,7 @@ namespace hazelcast {
             }
 
             template <typename T>
-            class MessageRunner : impl::ExecutionCallback<topic::impl::reliable::ReliableTopicMessage> {
+            class MessageRunner : impl::ExecutionCallback<DataArray<topic::impl::reliable::ReliableTopicMessage> > {
             public:
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
@@ -160,22 +161,28 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onResponse(const topic::impl::reliable::ReliableTopicMessage *message) {
+                void onResponse(DataArray<topic::impl::reliable::ReliableTopicMessage> *allMessages) {
                     if (cancelled) {
                         return;
                     }
 
-                    try {
-                        listener->storeSequence(sequence);
-                        process(message);
-                    } catch (exception::IException &e) {
-                        if (terminate(e)) {
-                            cancel();
-                            return;
-                        }
-                    }
+                    size_t numMessages = allMessages->size();
 
-                    sequence++;
+                    // we process all messages in batch. So we don't release the thread and reschedule ourselves;
+                    // but we'll process whatever was received in 1 go.
+                    for (size_t i = 0; i < numMessages; ++i) {
+                        try {
+                            listener->storeSequence(sequence);
+                            process(allMessages->get(i));
+                        } catch (exception::IException &e) {
+                            if (terminate(e)) {
+                                cancel();
+                                return;
+                            }
+                        }
+
+                        sequence++;
+                    }
 
                     next();
                 }

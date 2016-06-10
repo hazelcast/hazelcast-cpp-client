@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "hazelcast/client/Ringbuffer.h"
+#include "hazelcast/client/DataArray.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/impl/ExecutionCallback.h"
@@ -50,7 +51,7 @@ namespace hazelcast {
                             MessageType type;
                             int64_t sequence;
                             int32_t maxCount;
-                            client::impl::ExecutionCallback<topic::impl::reliable::ReliableTopicMessage> *callback;
+                            client::impl::ExecutionCallback<DataArray<ReliableTopicMessage> > *callback;
                         };
 
                         ReliableTopicExecutor(Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb);
