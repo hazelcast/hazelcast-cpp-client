@@ -81,13 +81,7 @@ namespace hazelcast {
                                     std::auto_ptr<DataArray<ReliableTopicMessage> > allMessages = ringbuffer->getReadManyAsyncResponseObject(
                                             responseMsg);
 
-                                    size_t numMessages = allMessages->size();
-
-                                    // we process all messages in batch. So we don't release the thread and reschedule ourselves;
-                                    // but we'll process whatever was received in 1 go.
-                                    for (size_t i = 0; i < numMessages; ++i) {
-                                        m.callback->onResponse(allMessages->get(i));
-                                    }
+                                    m.callback->onResponse(allMessages.get());
                                 }
                             } catch (exception::ProtocolException &e) {
                                 m.callback->onFailure(&e);

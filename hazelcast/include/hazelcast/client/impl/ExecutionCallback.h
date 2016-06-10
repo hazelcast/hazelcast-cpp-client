@@ -47,7 +47,7 @@ namespace hazelcast {
                  *
                  * @param response the result of the successful execution
                  */
-                virtual void onResponse(const V *response) = 0;
+                virtual void onResponse(V *response) = 0;
 
                 /**
                  * Called when an execution is completed with an error.
