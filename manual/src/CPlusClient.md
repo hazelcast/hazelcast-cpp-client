@@ -249,25 +249,24 @@ This example query returns the values between 5 and 10, inclusive. You can find 
 ![image](images/NoteSmall.jpg) ***NOTE:*** *API that returns pointers may return null pointers for null values. You need to check for null values.*
 
 ## Ringbuffer
-You can use the Hazelcast ringbuffer using the C++ client library. You start by obtaining the ringbuffer using the HazelcastClient as usual:
+
+You can benefit from Hazelcast Ringbuffer using the C++ client library. You can start by obtaining the Ringbuffer using the `HazelcastClient` as usual, as shown below:
 
 ```
-    std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
-
+std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
 ```
 
-The ringbuffer interface allows you to add a new item to the ringbuffer or read an entry at a sequence number.
+Ringbuffer interface allows you to add a new item to the Ringbuffer or read an entry at a sequence number.
 
-You can query the ringbuffer capacity which is configured at the server side.
+You can query the Ringbuffer capacity which is configured at the server side.
 
-## ReliableTopic
-You can use Reliabletopic if you do not want miss any messages during failures.
+## Reliable Topic
 
-The reliable topic provides a very similar interface to Topic structure but it has several configuration options.
+You can use Reliable Topic if you do not want to miss any messages during failures. Hazelcast Reliable Topic provides a very similar interface to Topic structure but it has several configuration options.
 
-ReliableTopic implementation depends on the Ringbuffer implementation. The data is kept in the Hazelcast cluster Ringbuffer structure. These Ringbuffer structures' names start with "_hz_rb_".
+Reliable Topic implementation depends on the Ringbuffer data structure. The data is kept in the Hazelcast cluster's Ringbuffer structure. These Ringbuffer structures' names start with "\_hz\_rb\_".
  
-ReliableTopic also supports batch reads from the Ringbuffer, hence you can optimize internal working of the listener using the ReliableTopicConfig::setReadBatchSize method.
+Reliable Topic also supports batch reads from the Ringbuffer. You can optimize the internal working of listener using the method `ReliableTopicConfig::setReadBatchSize`.
 
 ## C++ Client Code Examples
 
@@ -603,11 +602,11 @@ In addition to this rich set of built-in predicates, you can also write your own
     }
 
     std::cout << "Finished" << std::endl;
-
 ```
 
-### ReliableTopic Example
-#### ReliableTopic Publisher
+### Reliable Topic Example
+
+#### Reliable Topic Publisher
 
 ```
 void publishWithDefaultConfig() {
@@ -634,8 +633,9 @@ void publishWithNonDefaultConfig() {
     topic->publish(&message);
 }
 ```
-#### ReliableTopic Subscriber
-For writing a subscriber, you need to implement the hazelcast::client::topic::ReliableMessageListener interface.
+#### Reliable Topic Subscriber
+
+To write a subscriber, you need to implement the interface `hazelcast::client::topic::ReliableMessageListener`.
 
 ```
 class MyListener : public hazelcast::client::topic::ReliableMessageListener<std::string> {
@@ -690,7 +690,8 @@ private:
 };    
 ```
 
-Using this listener, you can subscribe for the topic:
+Using this listener, you can subscribe for the topic as shown below:
+
 ```
 void listenWithDefaultConfig() {
     hazelcast::client::ClientConfig config;
