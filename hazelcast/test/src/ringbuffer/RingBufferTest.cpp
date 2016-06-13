@@ -37,16 +37,14 @@ namespace hazelcast {
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
-                    rb = client->getRingbuffer<Employee>("rb-1").release();
+                    rb = client->getRingbuffer<Employee>("rb-1");
                 }
 
                 static void TearDownTestCase() {
-                    delete rb;
                     delete client;
                     delete clientConfig;
                     delete instance;
 
-                    rb = NULL;
                     client = NULL;
                     clientConfig = NULL;
                     instance = NULL;
@@ -55,7 +53,7 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static Ringbuffer<Employee> *rb;
+                static boost::shared_ptr<Ringbuffer<Employee> > rb;
 
                 static const int64_t CAPACITY;
             };
@@ -65,7 +63,7 @@ namespace hazelcast {
             HazelcastServer *RingbufferTest::instance = NULL;
             ClientConfig *RingbufferTest::clientConfig = NULL;
             HazelcastClient *RingbufferTest::client = NULL;
-            Ringbuffer<Employee> *RingbufferTest::rb = NULL;
+            boost::shared_ptr<Ringbuffer<Employee> > RingbufferTest::rb = boost::shared_ptr<Ringbuffer<Employee> >();
 
             TEST_F(RingbufferTest, testAPI) {
                 ASSERT_EQ(CAPACITY, rb->capacity());

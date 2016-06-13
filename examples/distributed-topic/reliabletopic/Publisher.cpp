@@ -22,7 +22,7 @@ void publishWithDefaultConfig() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient client(config);
 
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
     std::string message("My first message");
     topic->publish(&message);
 }
@@ -35,7 +35,7 @@ void publishWithNonDefaultConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
 
     std::string message("My first message");
 

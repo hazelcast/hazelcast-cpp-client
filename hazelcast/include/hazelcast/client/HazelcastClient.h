@@ -558,11 +558,11 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             template<typename E>
-            std::auto_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                std::auto_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
+            boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
+                boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
                         getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
-                return std::auto_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
-            };
+                return boost::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
+            }
 
             /**
             * Creates cluster-wide unique IDs. Generated IDs are long type primitive values
@@ -626,8 +626,8 @@ namespace hazelcast {
              * @return distributed RingBuffer instance with the specified name
              */
             template <typename E>
-            std::auto_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                return std::auto_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+            boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
+                return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
             }
 
             /**
