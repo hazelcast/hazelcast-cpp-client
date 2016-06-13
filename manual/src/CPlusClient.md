@@ -253,7 +253,7 @@ This example query returns the values between 5 and 10, inclusive. You can find 
 You can benefit from Hazelcast Ringbuffer using the C++ client library. You can start by obtaining the Ringbuffer using the `HazelcastClient` as usual, as shown below:
 
 ```
-std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
+boost::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
 ```
 
 Ringbuffer interface allows you to add a new item to the Ringbuffer or read an entry at a sequence number.
@@ -583,7 +583,7 @@ In addition to this rich set of built-in predicates, you can also write your own
 ### Ringbuffer Example
 
 ```
-    std::auto_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
+    boost::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
 
     std::cout << "Capacity of the ringbuffer is:" << rb->capacity() << std::endl;
 
@@ -613,7 +613,7 @@ void publishWithDefaultConfig() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient client(config);
 
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
     std::string message("My first message");
     topic->publish(&message);
 }
@@ -626,7 +626,7 @@ void publishWithNonDefaultConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
 
     std::string message("My first message");
 
@@ -698,7 +698,7 @@ void listenWithDefaultConfig() {
     hazelcast::client::HazelcastClient client(config);
 
     std::string topicName("MyReliableTopic");
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
 
     MyListener listener;
     const std::string &listenerId = topic->addMessageListener(listener);
@@ -724,7 +724,7 @@ void listenWithConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    std::auto_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
 
     MyListener listener;
     const std::string &listenerId = topic->addMessageListener(listener);

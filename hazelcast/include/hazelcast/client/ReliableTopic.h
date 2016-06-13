@@ -117,7 +117,7 @@ namespace hazelcast {
                 ringbuffer->destroy();
             }
         private:
-            ReliableTopic(const std::string &instanceName, spi::ClientContext *context, std::auto_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+            ReliableTopic(const std::string &instanceName, spi::ClientContext *context, boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ReliableTopicImpl(instanceName, context, rb) {
             }
 
