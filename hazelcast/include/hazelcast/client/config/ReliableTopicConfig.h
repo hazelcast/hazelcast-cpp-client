@@ -56,14 +56,9 @@ namespace hazelcast {
                  * if there are more available, then it will try to get more to increase throughput. The minimal read
                  * batch size can be influenced using the read batch size.
                  *
-                 * Apart from influencing the number of messages to download, the readBatchSize also determines how many
-                 * messages will be processed by the thread running the MessageListener before it returns back to the pool
-                 * to look for other MessageListeners that need to be processed. The problem with returning to the pool and
-                 * looking for new work is that interacting with an Executor is quite expensive due to contention on the
-                 * work-queue. The more work that can be done without retuning to the pool, the smaller the overhead.
                  *
                  * If the readBatchSize is 10 and there are 50 messages available, 10 items are retrieved and processed
-                 * consecutively before the thread goes back to the pool and helps out with the processing of other messages.
+                 * consecutively.
                  *
                  * If the readBatchSize is 10 and there are 2 items available, 2 items are retrieved and processed consecutively.
                  *
