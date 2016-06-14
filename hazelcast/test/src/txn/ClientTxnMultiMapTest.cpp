@@ -38,6 +38,9 @@ namespace hazelcast {
             }
 
             void putGetRemoveTestThread(util::ThreadArgs& args) {
+                util::ILogger &logger = util::ILogger::getLogger();
+                logger.info("[ClientTxnMultiMapTest::putGetRemoveTestThread] Thread started.");
+                
                 MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
@@ -56,6 +59,8 @@ namespace hazelcast {
                 ASSERT_EQ(3, (int)mm->get(key).size());
 
                 latch->countDown();
+
+                logger.info("[ClientTxnMultiMapTest::putGetRemoveTestThread] Thread finished");
             }
 
             TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
