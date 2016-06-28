@@ -101,7 +101,22 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             */
             boost::shared_ptr<V> put(const K &key, const V &value) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value))));
+                return put(key, value, -1);
+            }
+
+            /**
+            * Puts an entry into this map with a given ttl (time to live) value.
+            * Entry will expire and get evicted after the ttl. If ttl is 0, then
+            * the entry lives forever.
+            *
+            * @param key              key of the entry
+            * @param value            value of the entry
+            * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
+            * @return the previous value in shared_ptr, if there is no mapping for key
+            * then returns NULL in shared_ptr.
+            */
+            boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value), ttlInMillis)));
             }
 
             /**
@@ -175,21 +190,6 @@ namespace hazelcast {
             }
 
             /**
-            * Puts an entry into this map with a given ttl (time to live) value.
-            * Entry will expire and get evicted after the ttl. If ttl is 0, then
-            * the entry lives forever.
-            *
-            * @param key              key of the entry
-            * @param value            value of the entry
-            * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
-            * @return the previous value in shared_ptr, if there is no mapping for key
-            * then returns NULL in shared_ptr.
-            */
-            boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value), ttlInMillis)));
-            }
-
-            /**
             * Same as put(K, V, long, TimeUnit) but MapStore, if defined,
             * will not be called to store/persist the entry.  If ttl is 0, then
             * the entry lives forever.
@@ -249,19 +249,6 @@ namespace hazelcast {
             */
             boost::shared_ptr<V> replace(const K &key, const V &value) {
                 return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::replaceData(toData(key), toData(value))));
-            }
-
-            /**
-            * Puts an entry into this map.
-            * Similar to put operation except that set
-            * doesn't return the old value which is more efficient.
-            * @param key key with which the specified value is associated
-            * @param value
-            * @param ttl maximum time in milliseconds for this entry to stay in the map
-            0 means infinite.
-            */
-            void set(const K &key, const V &value, long ttl) {
-                proxy::IMapImpl::set(toData(key), toData(value), ttl);
             }
 
             /**
@@ -958,6 +945,19 @@ namespace hazelcast {
             */
             void set(const K &key, const V &value) {
                 set(key, value, -1);
+            }
+
+            /**
+            * Puts an entry into this map.
+            * Similar to put operation except that set
+            * doesn't return the old value which is more efficient.
+            * @param key key with which the specified value is associated
+            * @param value
+            * @param ttl maximum time in milliseconds for this entry to stay in the map
+            0 means infinite.
+            */
+            void set(const K &key, const V &value, long ttl) {
+                proxy::IMapImpl::set(toData(key), toData(value), ttl);
             }
 
             /**
