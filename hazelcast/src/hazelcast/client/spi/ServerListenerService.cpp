@@ -99,7 +99,7 @@ namespace hazelcast {
                     } else {
                         char msg[200];
                         util::snprintf(msg, 200, "[ServerListenerService::deRegisterListener] Listener with id %s is "
-                                "already removed from the registration map.", *uuid);
+                                "already removed from the registration map.", uuid->c_str());
                         util::ILogger::getLogger().info(msg);
                     }
                 }
