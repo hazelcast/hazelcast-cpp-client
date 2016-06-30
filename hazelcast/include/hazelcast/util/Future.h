@@ -66,6 +66,14 @@ namespace hazelcast {
                 conditionVariable.notify_all();
             };
 
+            void reset_exception(std::auto_ptr<client::exception::IException> exception) {
+                LockGuard guard(mutex);
+
+                this->exception = exception;
+                exceptionReady = true;
+                conditionVariable.notify_all();
+            };
+
             T get() {
                 LockGuard guard(mutex);
                 if (resultReady) {

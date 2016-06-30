@@ -16,6 +16,7 @@
 //
 // Created by sancar koyunlu on 6/24/13.
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -60,12 +61,12 @@ namespace hazelcast {
 
                 boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.get(
                         registrationId);
-                if (NULL != registration.get()) {
+                if ((impl::listener::EventRegistration *)NULL != registration.get()) {
                     // registration exists, just change the alias
                     boost::shared_ptr<std::string> alias(
                             new std::string(registration->getAddCodec()->decodeResponse(*response)));
                     boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
-                    if (oldAlias.get() != NULL) {
+                    if (oldAlias.get() != (const std::string *)NULL) {
                         registrationIdMap.remove(*oldAlias);
                         registration->setCorrelationId(response->getCorrelationId());
                         registrationIdMap.put(*alias, registration);
@@ -75,25 +76,32 @@ namespace hazelcast {
 
             bool ServerListenerService::deRegisterListener(protocol::codec::IRemoveListenerCodec &removeListenerCodec) {
                 boost::shared_ptr<const std::string> uuid = registrationAliasMap.remove(removeListenerCodec.getRegistrationId());
-                if (uuid != NULL) {
+                if ((const std::string *)NULL != uuid.get()) {
                     boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.remove(*uuid);
 
-                    clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId());
+                    if ((impl::listener::EventRegistration *)NULL != registration.get()) {
+                        clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId());
 
-                    // send a remove listener request
-                    removeListenerCodec.setRegistrationId(*uuid);
-                    std::auto_ptr<protocol::ClientMessage> request = removeListenerCodec.encodeRequest();
-                    try {
-                        connection::CallFuture future = clientContext.getInvocationService().invokeOnTarget(
-                                request, registration->getMemberAddress());
+                        // send a remove listener request
+                        removeListenerCodec.setRegistrationId(*uuid);
+                        std::auto_ptr<protocol::ClientMessage> request = removeListenerCodec.encodeRequest();
+                        try {
+                            connection::CallFuture future = clientContext.getInvocationService().invokeOnTarget(
+                                    request, registration->getMemberAddress());
 
-                        std::auto_ptr<protocol::ClientMessage> response = future.get();
-                    } catch (exception::IException &e) {
-                        //if invocation cannot be done that means connection is broken and listener is already removed
-						(void)e; // suppress the unused variable warning
+                            std::auto_ptr<protocol::ClientMessage> response = future.get();
+                        } catch (exception::IException &e) {
+                            //if invocation cannot be done that means connection is broken and listener is already removed
+                            (void)e; // suppress the unused variable warning
+                        }
+
+                        return true;
+                    } else {
+                        char msg[200];
+                        util::snprintf(msg, 200, "[ServerListenerService::deRegisterListener] Listener with id %s is "
+                                "already removed from the registration map.", uuid->c_str());
+                        util::ILogger::getLogger().info(msg);
                     }
-
-                    return true;
                 }
                 return false;
             }
@@ -104,7 +112,7 @@ namespace hazelcast {
                     InvocationService &invocationService = clientContext.getInvocationService();
                     boost::shared_ptr<connection::Connection> result =
                             invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
-                    if (NULL == result.get()) {
+                    if ((connection::Connection *)NULL == result.get()) {
                         util::LockGuard lockGuard(failedListenerLock);
                         failedListeners.push_back(listenerPromise);
                     }
@@ -124,8 +132,8 @@ namespace hazelcast {
                     try {
                         boost::shared_ptr<connection::Connection> result =
                                 invocationService.resend(*it, "internalRetryOfUnkownAddress");
-
-                        if (NULL == result.get()) { // resend failed
+                        // resend failed
+                        if ((connection::Connection *)NULL == result.get()) {
                             newFailedListeners.push_back(*it);
                         }
                     } catch (exception::IOException &) {
@@ -156,7 +164,6 @@ namespace hazelcast {
 
                 return registrationId;
             }
-
         }
     }
 }

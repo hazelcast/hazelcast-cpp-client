@@ -42,6 +42,8 @@ namespace hazelcast {
 
                 void setException(std::auto_ptr<exception::IException> exception);
 
+                void resetException(std::auto_ptr<exception::IException> exception);
+
                 void setRequest(std::auto_ptr<protocol::ClientMessage> request);
 
                 protocol::ClientMessage *getRequest() const;

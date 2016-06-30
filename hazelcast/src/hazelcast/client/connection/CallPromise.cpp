@@ -37,6 +37,10 @@ namespace hazelcast {
                 future.set_exception(exception);
             }
 
+            void CallPromise::resetException(std::auto_ptr<exception::IException> exception) {
+                future.reset_exception(exception);
+            }
+
             void CallPromise::setRequest(std::auto_ptr<protocol::ClientMessage> request) {
                 this->request = request;
             }

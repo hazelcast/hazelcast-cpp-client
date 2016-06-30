@@ -364,8 +364,9 @@ namespace hazelcast {
                     resend(promise, lastTriedAddress);
                     return;
                 }
-                promise->setException(exception);
-
+                // At this point the exception may have been already set at the promise, hence we need to reset it
+                // and set the exception
+                promise->resetException(exception);
             }
 
             boost::shared_ptr<connection::CallPromise> InvocationService::getEventHandlerPromise(
