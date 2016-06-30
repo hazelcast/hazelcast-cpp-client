@@ -200,6 +200,10 @@
         <merge-policy>com.hazelcast.map.merge.PutIfAbsentMapMergePolicy</merge-policy>
     </map>
 
+    <map name="OneSecondTtlMap">
+        <time-to-live-seconds>1</time-to-live-seconds>
+    </map>
+
     <multimap name="default">
         <backup-count>1</backup-count>
         <value-collection-type>SET</value-collection-type>

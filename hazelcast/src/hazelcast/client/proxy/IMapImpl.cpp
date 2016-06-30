@@ -111,18 +111,6 @@ namespace hazelcast {
                         request, partitionId);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> IMapImpl::putData(const serialization::pimpl::Data &key,
-                                                                    const serialization::pimpl::Data &value) {
-                int partitionId = getPartitionId(key);
-
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapPutCodec::RequestParameters::encode(getName(), key, value,
-                                                                                util::getThreadId(), 0);
-
-                return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapPutCodec::ResponseParameters>(
-                        request, partitionId);
-            }
-
             std::auto_ptr<serialization::pimpl::Data> IMapImpl::removeData(const serialization::pimpl::Data &key) {
                 int partitionId = getPartitionId(key);
                 std::auto_ptr<protocol::ClientMessage> request =

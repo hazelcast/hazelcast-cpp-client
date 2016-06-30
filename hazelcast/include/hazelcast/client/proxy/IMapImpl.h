@@ -42,8 +42,6 @@ namespace hazelcast {
 
                 std::auto_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data& key);
 
-                std::auto_ptr<serialization::pimpl::Data> putData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
-
                 std::auto_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data& key);
 
                 bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);

@@ -509,11 +509,33 @@ namespace hazelcast {
                     imap->put("key1", "value1", 2000);
                     std::auto_ptr<std::string> temp = imap->get("key1");
                     ASSERT_EQ(*temp, "value1");
-                    ASSERT_TRUE(evict.await(20 * 1000));
+                    util::sleep(2);
+                    // trigger eviction
                     std::auto_ptr<std::string> temp2 = imap->get("key1");
                     ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_TRUE(evict.await(20));
 
                     ASSERT_TRUE(imap->removeEntryListener(id));
+                }
+
+                TEST_F(RawPointerMapTest, testPutConfigTtl) {
+                    IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>("OneSecondTtlMap");
+                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
+                    util::CountDownLatch dummy(10);
+                    util::CountDownLatch evict(1);
+                    CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                    std::string id = map.addEntryListener(sampleEntryListener, false);
+
+                    map.put("key1", "value1");
+                    std::auto_ptr<std::string> temp = map.get("key1");
+                    ASSERT_EQ(*temp, "value1");
+                    util::sleep(2);
+                    // trigger eviction
+                    std::auto_ptr<std::string> temp2 = map.get("key1");
+                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_TRUE(evict.await(5));
+
+                    ASSERT_TRUE(map.removeEntryListener(id));
                 }
 
                 TEST_F(RawPointerMapTest, testPutIfAbsent) {
@@ -541,6 +563,46 @@ namespace hazelcast {
                     ASSERT_EQ("value3", *(imap->get("key1")));
 
                     ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
+                }
+
+                TEST_F(RawPointerMapTest, testSetTtl) {
+                    IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>("OneSecondTtlMap");
+                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
+                    util::CountDownLatch dummy(10);
+                    util::CountDownLatch evict(1);
+                    CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                    std::string id = map.addEntryListener(sampleEntryListener, false);
+
+                    map.set("key1", "value1", 1000);
+                    std::auto_ptr<std::string> temp = map.get("key1");
+                    ASSERT_EQ(*temp, "value1");
+                    util::sleep(2);
+                    // trigger eviction
+                    std::auto_ptr<std::string> temp2 = map.get("key1");
+                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_TRUE(evict.await(5));
+
+                    ASSERT_TRUE(map.removeEntryListener(id));
+                }
+
+                TEST_F(RawPointerMapTest, testSetConfigTtl) {
+                    IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>("OneSecondTtlMap");
+                    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
+                    util::CountDownLatch dummy(10);
+                    util::CountDownLatch evict(1);
+                    CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                    std::string id = map.addEntryListener(sampleEntryListener, false);
+
+                    map.set("key1", "value1");
+                    std::auto_ptr<std::string> temp = map.get("key1");
+                    ASSERT_EQ(*temp, "value1");
+                    util::sleep(2);
+                    // trigger eviction
+                    std::auto_ptr<std::string> temp2 = map.get("key1");
+                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_TRUE(evict.await(5));
+
+                    ASSERT_TRUE(map.removeEntryListener(id));
                 }
 
                 TEST_F(RawPointerMapTest, testLock) {

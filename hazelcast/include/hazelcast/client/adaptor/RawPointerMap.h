@@ -93,9 +93,24 @@ namespace hazelcast {
                 * then returns NULL in auto_ptr.
                 */
                 std::auto_ptr<V> put(const K &key, const V &value) {
+                    return put(key, value, -1);
+                }
+
+                /**
+                * Puts an entry into this map with a given ttl (time to live) value.
+                * Entry will expire and get evicted after the ttl. If ttl is 0, then
+                * the entry lives forever.
+                *
+                * @param key              key of the entry
+                * @param value            value of the entry
+                * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
+                * @return the previous value in auto_ptr, if there is no mapping for key
+                * then returns NULL in auto_ptr.
+                */
+                std::auto_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
                     return serializationService.toObject<V>(
-                            map.putData(serializationService.toData<K>(&key),
-                                        serializationService.toData<V>(&value)).get());
+                            map.putData(serializationService.toData<K>(&key), serializationService.toData<V>(&value),
+                                        ttlInMillis).get());
                 }
 
                 /**
@@ -169,23 +184,6 @@ namespace hazelcast {
                 }
 
                 /**
-                * Puts an entry into this map with a given ttl (time to live) value.
-                * Entry will expire and get evicted after the ttl. If ttl is 0, then
-                * the entry lives forever.
-                *
-                * @param key              key of the entry
-                * @param value            value of the entry
-                * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
-                */
-                std::auto_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                    return serializationService.toObject<V>(
-                            map.putData(serializationService.toData<K>(&key), serializationService.toData<V>(&value),
-                                        ttlInMillis).get());
-                }
-
-                /**
                 * Same as put(K, V, long, TimeUnit) but MapStore, if defined,
                 * will not be called to store/persist the entry.  If ttl is 0, then
                 * the entry lives forever.
@@ -251,6 +249,17 @@ namespace hazelcast {
                 std::auto_ptr<V> replace(const K &key, const V &value) {
                     return serializationService.toObject<V>(
                             map.replaceData(serializationService.toData<K>(&key), serializationService.toData<V>(&value)).get());
+                }
+
+                /**
+                * Puts an entry into this map.
+                * Similar to put operation except that set
+                * doesn't return the old value which is more efficient.
+                * @param key
+                * @param value
+                */
+                void set(const K &key, const V &value) {
+                    set(key, value, -1);
                 }
 
                 /**
@@ -792,17 +801,6 @@ namespace hazelcast {
                     EntryVector results = map.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(new client::impl::EntryArrayImpl<K, ResultType>(results, serializationService));
-                }
-
-                /**
-                * Puts an entry into this map.
-                * Similar to put operation except that set
-                * doesn't return the old value which is more efficient.
-                * @param key
-                * @param value
-                */
-                void set(const K &key, const V &value) {
-                    set(key, value, -1);
                 }
 
                 /**
