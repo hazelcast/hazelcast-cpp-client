@@ -56,7 +56,7 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 :loop
     netstat -an  | findstr /C::%SERVER_PORT%
     if %errorlevel% == 0 (
-        set /a remainingTime = %DEFAULT_TIMEOUT% - %timeout%
+        set /a remainingTime = DEFAULT_TIMEOUT - timeout
         echo "Server started in %remainingTime% seconds"
         goto server_started
     ) else (
@@ -64,7 +64,7 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 
         if %timeout% gtr 0 (
             echo "Sleeping 1 second. Remaining %timeout% seconds"
-            ping 1.1.1.1 -n 1 -w 1000 >NUL
+            CHOICE /c x /D x /T 1 > NUL
             goto loop
         ) else (
             goto server_failed_to_start
