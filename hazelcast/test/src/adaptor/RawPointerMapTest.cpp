@@ -2753,6 +2753,15 @@ namespace hazelcast {
                     ASSERT_EQ(4 * processor.getMultiplier(), *result);
                 }
 
+                TEST_F(RawPointerMapTest, testExecuteOnNonExistentKey) {
+                    EntryMultiplier processor(4);
+
+                    std::auto_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(17, processor);
+
+                    ASSERT_NE((int *) NULL, result.get());
+                    ASSERT_EQ(-1, *result);
+                }
+
                 TEST_F(RawPointerMapTest, testExecuteOnEntries) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
