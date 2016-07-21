@@ -204,6 +204,9 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
 
     @Override
     public Object process(Map.Entry<Integer, Employee> entry) {
+        if (null == entry.getValue()) {
+            return -1;
+        }
         return multiplier * entry.getKey();
     }
 
