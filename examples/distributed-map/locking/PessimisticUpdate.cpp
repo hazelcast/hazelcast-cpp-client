@@ -54,6 +54,10 @@ public:
     }
 };
 
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * LockingServer in /java/src/main/java/distributedMapLocking.
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);

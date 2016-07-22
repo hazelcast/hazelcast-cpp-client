@@ -37,7 +37,10 @@ public:
     }
 };
 
-
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * EntryProcessorEmployeeServer in /java/src/main/java/distributedMapEntryProcessor.
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);

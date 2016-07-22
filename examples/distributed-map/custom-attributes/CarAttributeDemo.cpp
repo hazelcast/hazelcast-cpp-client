@@ -16,6 +16,10 @@
 //
 // Created by İhsan Demir on 21/12/15.
 //
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * CarAttributeServer in /java/src/main/java/distributedMapCustomAttribute.
+ */
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/IdentifiedDataSerializable.h>
 #include <memory>

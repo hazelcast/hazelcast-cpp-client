@@ -22,14 +22,11 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
+    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("somemap");
 
-    std::ostringstream out;
-    out << time(NULL);
-
-    map.put(out.str(), "1");
-    map.put(out.str(), "2");
-    map.deleteEntry(out.str());
+    map.put(1,100);
+    map.put(2,200);
+    map.deleteEntry(1);
 
     std::cout << "Finished" << std::endl;
 

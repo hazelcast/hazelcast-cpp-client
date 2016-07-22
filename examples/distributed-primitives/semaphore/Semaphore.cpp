@@ -20,6 +20,10 @@
 #include <hazelcast/client/ISemaphore.h>
 #include <hazelcast/client/IAtomicLong.h>
 
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * SemaphoreServer in /java/src/main/java/distributedPrimitivesSemaphore.
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
@@ -33,6 +37,7 @@ int main() {
             resource.incrementAndGet();
             hazelcast::util::sleep(1);
             resource.decrementAndGet();
+            semaphore.release();
         } catch (hazelcast::client::exception::IException &e) {
             semaphore.release();
             throw e;

@@ -37,6 +37,10 @@ public:
     }
 };
 
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * MapInterceptorServer in /java/src/main/java/distributedMapInterceptor.
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);

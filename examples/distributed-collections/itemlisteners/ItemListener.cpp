@@ -60,7 +60,8 @@ int main() {
     std::cout << "Registered the listener with registration id:" << registrationId <<
     "Waiting for the listener events!" << std::endl;
 
-    hazelcast::util::sleep(5);
+    //Sleep until the execution of CollectionChanger is finished.
+    hazelcast::util::sleep(15);
 
     std::cout << "Received " << listener.getNumAdded() << " items addition and " << listener.getNumRemoved() <<
     " items removal events." << std::endl;

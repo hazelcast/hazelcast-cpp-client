@@ -1,3 +1,5 @@
+package cppClientListener;
+
 /*
 * Copyright (c) 2008-2013, Hazelcast, Inc. All Rights Reserved.
 *
@@ -357,7 +359,7 @@ class MapGetInterceptor implements MapInterceptor, IdentifiedDataSerializable {
     @Override
     public void writeData(ObjectDataOutput out)
             throws IOException {
-            out.writeUTF(prefix);
+        out.writeUTF(prefix);
     }
 
     @Override
