@@ -359,8 +359,7 @@ namespace hazelcast {
                 if (smartRouting) {
                     //closing the owner connection if unresponsive so that it can be switched to a healthy one.
                     ownerConnectionFuture.closeIfAddressMatches(connection.getRemoteEndpoint());
-                    // we do not close connection itself since we will continue to send heartbeat ping to this connection.
-                    // IOUtil.closeResource(connection);
+                    util::IOUtil::closeResource(&connection);
                     return;
                 }
 
