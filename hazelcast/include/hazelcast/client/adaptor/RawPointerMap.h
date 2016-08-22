@@ -493,6 +493,9 @@ namespace hazelcast {
                 */
                 std::auto_ptr<MapEntryView<K, V> > getEntryView(const K &key) {
                     std::auto_ptr<map::DataEntryView> dataView = map.getEntryViewData(serializationService.toData<K>(&key));
+                    if ((map::DataEntryView *)NULL == dataView.get()) {
+                        return std::auto_ptr<MapEntryView<K, V> >();
+                    }
                     return std::auto_ptr<MapEntryView<K, V> >(new MapEntryView<K, V>(dataView, serializationService));
                 }
 

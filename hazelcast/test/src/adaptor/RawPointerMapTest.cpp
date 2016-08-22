@@ -500,6 +500,21 @@ namespace hazelcast {
                     imap->forceUnlock("key2");
                 }
 
+                TEST_F(RawPointerMapTest, testGetEntryViewForNonExistentData) {
+                    std::auto_ptr<MapEntryView<std::string, std::string> > view = imap->getEntryView("non-existent");
+
+                    ASSERT_EQ((MapEntryView<std::string, std::string> *)NULL, view.get());
+
+                    // put an entry that will expire in 1 milliseconds
+                    imap->put("short_entry", "short living value", 1);
+
+                    util::sleepmillis(500);
+
+                    view = imap->getEntryView("short_entry");
+
+                    ASSERT_EQ((MapEntryView<std::string, std::string> *)NULL, view.get());
+                }
+
                 TEST_F(RawPointerMapTest, testPutTtl) {
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
