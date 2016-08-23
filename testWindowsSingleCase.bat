@@ -54,7 +54,7 @@ SET timeout=%DEFAULT_TIMEOUT%
 echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 
 :loop
-    netstat -an  | findstr /C::%SERVER_PORT%
+    netstat -an  | findstr /C:":%SERVER_PORT% "
     if %errorlevel% == 0 (
         set /a remainingTime = DEFAULT_TIMEOUT - timeout
         echo "Server started in %remainingTime% seconds"
