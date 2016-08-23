@@ -82,7 +82,7 @@ echo "Waiting for the test server to start"
 
 while [ ${timeout} -gt 0 ]
 do
-    netstat -an  | grep ${SERVER_PORT}
+    netstat -an  | grep ":${SERVER_PORT} "
     if [ $? -eq 0 ]; then
         break
     fi
