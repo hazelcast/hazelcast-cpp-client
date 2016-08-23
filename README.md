@@ -370,7 +370,7 @@ valuesArray = rawMap.values(query::BetweenPredicate<int>(query::QueryConstants::
 This example query returns the values between 5 and 10, inclusive. You can find the examples of each built-in predicate in `distributed-map/query` folder of `examples`.
 
 
-![image](images/NoteSmall.jpg) ***NOTE:*** *API that returns pointers may return null pointers for null values. You need to check for null values.*
+*NOTE: API that returns pointers may return null pointers for null values. You need to check for null values.*
 
 # Ringbuffer
 
