@@ -39,7 +39,7 @@ namespace hazelcast {
             public:
                 OutputSocketStream(Socket& socket);
 
-                void write(const std::vector<byte>& bytes);
+                void write(std::vector<byte> bytes, int64_t timeoutInMillis);
 
                 void writeInt(int i);
             private:

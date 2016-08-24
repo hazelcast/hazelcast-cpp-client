@@ -81,21 +81,40 @@ namespace hazelcast {
             int connect(int timeoutInMillis);
 
             /**
-             * @param buffer
+             * @param buffer The data to be sent
              * @param len length of the buffer
-             * @return number of bytes send
+             * @return number of bytes sent
              * @throw IOException in failure.
              */
             virtual int send(const void *buffer, int len) const;
 
             /**
-             * @param buffer
+             * @param buffer The data to be sent
+             * @param len length of the buffer
+             * @param timeoutInMillis The maximum timeout for the send operation
+             * @return number of bytes sent
+             * @throw IOException in failure.
+             */
+            virtual int send(const void *buffer, int len, size_t timeoutInMillis) const;
+
+            /**
+             * @param buffer The data buffer to receive data
              * @param len  length of the buffer to be received.
              * @param flag bsd sockets options flag.
              * @return number of bytes received.
              * @throw IOException in failure.
              */
             int receive(void *buffer, int len, int flag = 0) const;
+
+            /**
+             * @param buffer The data buffer to receive data
+             * @param len  length of the buffer to be received.
+             * @param timeoutInMillis The maximum timeout for the receive operation
+             * @param flag bsd sockets options flag.
+             * @return number of bytes received.
+             * @throw IOException in failure.
+             */
+            int receive(void *buffer, int len, size_t timeoutInMillis, int flag = 0) const;
 
             /**
              * return socketId
@@ -127,6 +146,22 @@ namespace hazelcast {
 
             Socket& operator=(const Socket &rhs);
 
+            /**
+             * Works only for blocking sockets!
+             * @param timeoutInMillis The timeout for the send operations
+             */
+            void setSendTimeout(size_t timeoutInMillis) const;
+
+            struct timeval getSendTimeout() const;
+
+            /**
+             * Works only for blocking sockets!
+             * @param timeoutInMillis The timeout for the receive operations
+             */
+            void setReceiveTimeout(size_t timeoutInMillis) const;
+
+            struct timeval getReceiveTimeout() const;
+
             client::Address remoteEndpoint;
 
             struct addrinfo *serverInfo;
@@ -137,6 +172,9 @@ namespace hazelcast {
 			WSADATA wsa_data;
 			#endif
 
+            void setSendTimeout(timeval &timeout) const;
+
+            void setReceiveTimeout(timeval &timeout) const;
         };
 
         /**

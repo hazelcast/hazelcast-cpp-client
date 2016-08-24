@@ -177,7 +177,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
-                void authenticate(Connection *connection);
+                void authenticate(Connection *connection, int64_t timeoutInMillis);
 
                 void checkLive();
 

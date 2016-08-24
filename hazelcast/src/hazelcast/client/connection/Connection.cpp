@@ -76,9 +76,9 @@ namespace hazelcast {
                 }
             }
 
-            void Connection::init(const std::vector<byte>& PROTOCOL) {
+            void Connection::init(std::vector<byte> PROTOCOL, int64_t timeoutInMillis) {
                 connection::OutputSocketStream outputSocketStream(socket);
-                outputSocketStream.write(PROTOCOL);
+                outputSocketStream.write(PROTOCOL, timeoutInMillis);
             }
 
             void Connection::close() {
@@ -123,8 +123,12 @@ namespace hazelcast {
                 socket.setRemoteEndpoint(remoteEndpoint);
             }
 
-            std::auto_ptr<protocol::ClientMessage> Connection::sendAndReceive(protocol::ClientMessage &clientMessage) {
-                writeBlocking(clientMessage);
+            std::auto_ptr<protocol::ClientMessage>
+            Connection::sendAndReceive(protocol::ClientMessage &clientMessage, int64_t timeoutInMillis) {
+                //int64_t start = util::currentTimeMillis();
+                writeBlocking(clientMessage, timeoutInMillis);
+                //int64_t remainingTime = timeoutInMillis - (util::currentTimeMillis() - start);
+                // TODO read with timeout
                 return readBlocking();
             }
 
@@ -212,6 +216,13 @@ namespace hazelcast {
 
             bool Connection::isOwnerConnection() const {
                 return _isOwnerConnection;
+            }
+
+            void Connection::writeBlocking(protocol::ClientMessage &message, int64_t timeoutInMillis) {
+                message.setFlags(protocol::ClientMessage::BEGIN_AND_END_FLAGS);
+                int32_t numWritten = 0;
+                int32_t frameLen = message.getFrameLength();
+                message.writeTo(socket, numWritten, frameLen, timeoutInMillis);
             }
         }
     }
