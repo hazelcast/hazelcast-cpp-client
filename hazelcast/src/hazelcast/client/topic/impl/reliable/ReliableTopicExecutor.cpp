@@ -15,6 +15,7 @@
  */
 
 #include "hazelcast/client/proxy/RingbufferImpl.h"
+#include "hazelcast/client/exception/FutureWaitTimeout.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 
 namespace hazelcast {

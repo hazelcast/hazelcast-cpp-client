@@ -70,7 +70,7 @@ namespace hazelcast {
                                                          const int32_t &operationType,
                                                          std::auto_ptr<std::string> value);
 
-                std::set<Address, addressComparator> getSocketAddresses();
+                std::set<Address, addressComparator> getSocketAddresses() const;
 
                 util::CountDownLatch startLatch;
 

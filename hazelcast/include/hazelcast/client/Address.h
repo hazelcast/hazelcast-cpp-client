@@ -54,6 +54,12 @@ namespace hazelcast {
             bool operator == (const Address &address) const;
 
             /**
+             * comparison operator
+             * @param address to be compared.
+             */
+            bool operator != (const Address &address) const;
+
+            /**
              * @return port number.
              */
             int getPort() const;

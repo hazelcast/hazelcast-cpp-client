@@ -103,7 +103,7 @@ namespace hazelcast {
                 clusterListenerThread->join();
             }
 
-            std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() {
+            std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() const {
                 std::set<Address, addressComparator> addresses;
                 if (!members.empty()) {
                     std::vector<Address> clusterAddresses = getClusterAddresses();

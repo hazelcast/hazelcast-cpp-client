@@ -14,33 +14,25 @@
  * limitations under the License.
  */
 //
-// Created by İhsan Demir on 26/05/15.
+// Created by sancar koyunlu on 21/08/14.
 //
 
-#ifndef HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
-#define HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
+#ifndef HAZELCAST_CLIENT_EXCEPTION_FUTUREWAITTIMEOUT_H_
+#define HAZELCAST_CLIENT_EXCEPTION_FUTUREWAITTIMEOUT_H_
 
-#include <memory>
-#include <gtest/gtest.h>
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
-        class ClientConfig;
-        class HazelcastClient;
-
-        namespace test {
-            class HazelcastServerFactory;
-
-            extern HazelcastServerFactory *g_srvFactory;
-
-            class ClientTestSupport : public ::testing::Test {
-            protected:
-                virtual std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
-
-                std::auto_ptr<HazelcastClient> getNewClient();
+        namespace exception {
+            class HAZELCAST_API FutureWaitTimeout : public exception::IException {
+            public:
+                FutureWaitTimeout(const std::string &source, const std::string &message) : IException(source,
+                                                                                                      message) {}
             };
         }
     }
 }
 
-#endif //HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
+#endif //HAZELCAST_CLIENT_EXCEPTION_FUTUREWAITTIMEOUT_H_

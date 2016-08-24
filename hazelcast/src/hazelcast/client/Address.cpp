@@ -36,6 +36,10 @@ namespace hazelcast {
             return rhs.port == port && rhs.type == type && 0 == rhs.host.compare(host);
         }
 
+        bool Address::operator !=(const Address &rhs) const {
+            return !(*this == rhs);
+        }
+
         int Address::getPort() const {
             return port;
         }

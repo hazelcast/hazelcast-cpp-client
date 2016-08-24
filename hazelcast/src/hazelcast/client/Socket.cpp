@@ -16,6 +16,8 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/Util.h"
+
 #include <iostream>
 #include <cassert>
 #include <cstdlib>
@@ -43,21 +45,37 @@ namespace hazelcast {
 			serverInfo = NULL;
             if ((status = getaddrinfo(address.getHost().c_str(), hazelcast::util::IOUtil::to_string(address.getPort()).c_str(), &hints, &serverInfo)) != 0) {
                 std::string message = util::IOUtil::to_string(address) + " getaddrinfo error: " + std::string(gai_strerror(status));
-                throw client::exception::IOException("Socket::getInfo", message);
+                throw client::exception::IOException("Socket::Socket", message);
             }
 
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
+            if (-1 == socketId) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "[Socket::Socket] Failed to obtain socket.");
+                throw client::exception::IOException("Socket::Socket", errorMsg);
+            }
             isOpen = true;
             int size = 32 * 1024;
-            ::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size));
-            ::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size));
+            if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size))) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed set socket receive buffer size.");
+                throw client::exception::IOException("Socket::Socket", errorMsg);
+            }
+            if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size))) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed set socket send buffer size.");
+                throw client::exception::IOException("Socket::Socket", errorMsg);
+            }
 			#if defined(SO_NOSIGPIPE)
             int on = 1;
-            setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int));
+            if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int))) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed set socket option SO_NOSIGPIPE.");
+                throw client::exception::IOException("Socket::Socket", errorMsg);
+            }
 			#endif
 
         }
-
 
         Socket::Socket(int socketId)
         : serverInfo(NULL)
@@ -76,11 +94,25 @@ namespace hazelcast {
         int Socket::connect(int timeoutInMillis) {
             assert(serverInfo != NULL && "Socket is already connected");
             setBlocking(false);
-            ::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen);
+
+            if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen)) {
+                int error = 0;
+                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                error = WSAGetLastError();
+			    if (WSAEWOULDBLOCK != error && WSAEINPROGRESS != error && WSAEALREADY != error) {
+                #else
+                error = errno;
+                if (EINPROGRESS != error && EALREADY != error) {
+                #endif
+                    char errorMsg[200];
+                    util::strerror_s(error, errorMsg, 200, "Failed to connect the socket.");
+                    throw client::exception::IOException("Socket::connect", errorMsg);
+                }
+            }
 
             struct timeval tv;
             tv.tv_sec = timeoutInMillis / 1000;
-            tv.tv_usec = (timeoutInMillis - tv.tv_sec * 1000) * 1000;
+            tv.tv_usec = (timeoutInMillis - (int)tv.tv_sec * 1000) * 1000;
             fd_set mySet, err;
             FD_ZERO(&mySet);
             FD_ZERO(&err);
@@ -93,13 +125,7 @@ namespace hazelcast {
             }
             setBlocking(true);
 
-            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            int error =   WSAGetLastError();
-            #else
-            int error = errno;
-            #endif
-            return error;
-
+            return 0;
         }
 
         void Socket::setBlocking(bool blocking) {
@@ -110,17 +136,29 @@ namespace hazelcast {
             } else {
                 iMode = 1l;
             }
-            ioctlsocket(socketId, FIONBIO, &iMode);
+            if (ioctlsocket(socketId, FIONBIO, &iMode)) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed to set the blocking mode.");
+                throw client::exception::IOException("Socket::setBlocking", errorMsg);
+            }
             #else
-            long arg = fcntl(socketId, F_GETFL, NULL);
+            int arg = fcntl(socketId, F_GETFL, NULL);
+            if (-1 == arg) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Could not get the value of socket flags.");
+                throw client::exception::IOException("Socket::setBlocking", errorMsg);
+            }
             if (blocking) {
                 arg &= (~O_NONBLOCK);
             } else {
                 arg |= O_NONBLOCK;
             }
-            fcntl(socketId, F_SETFL, arg);
+            if (-1 == fcntl(socketId, F_SETFL, arg)) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Could not set the blocking value of socket flags.");
+                throw client::exception::IOException("Socket::setBlocking", errorMsg);
+            }
             #endif
-
         }
 
         int Socket::send(const void *buffer, int len) const {
@@ -138,7 +176,6 @@ namespace hazelcast {
                     return 0;
                 }
                 throw client::exception::IOException("Socket::send ", "Error socket send " + std::string(strerror(errno)));
-
             }
             return bytesSend;
         }
@@ -200,7 +237,6 @@ namespace hazelcast {
                 socketId = -1; // set it to invalid descriptor to avoid misuse of the socket for this connection
             }
         }
-
 
         bool socketPtrComp::operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
             return lhs->getSocketId() > rhs->getSocketId();

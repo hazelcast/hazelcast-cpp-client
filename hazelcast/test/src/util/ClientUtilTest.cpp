@@ -22,6 +22,7 @@
 #include "hazelcast/util/Thread.h"
 
 #include <ctime>
+#include <errno.h>
 #include <gtest/gtest.h>
 
 namespace hazelcast {
@@ -82,7 +83,7 @@ namespace hazelcast {
                 time_t end = 0;
                 try {
                     future.get(waitSeconds);
-                } catch (exception::TimeoutException&) {
+                } catch (exception::FutureWaitTimeout&) {
                     end = time(NULL);
                 }
                 ASSERT_NEAR((double)(end-beg), (double)waitSeconds, 1);
@@ -168,6 +169,27 @@ namespace hazelcast {
                 date = "NOT_FOUND";
                 util::gitDateToHazelcastLogDate(date);
                 ASSERT_EQ("NOT_FOUND", date);
+            }
+
+            TEST_F (ClientUtilTest, testStrError) {
+                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                int error = WSAEINPROGRESS;
+                std::string expectedErrorString("A blocking operation is currently executing.\r\n");
+                #else
+                int error = EINPROGRESS;
+                std::string expectedErrorString("Operation now in progress");
+                #endif
+
+                char msg[100];
+                const std::string prefix = "testStrError prefix message";
+                ASSERT_EQ(0, util::strerror_s(error, msg, 100, prefix.c_str()));
+                ASSERT_STREQ((prefix + " " + expectedErrorString).c_str(), msg);
+
+                ASSERT_EQ(0, util::strerror_s(error, msg, prefix.length() + 1, prefix.c_str()));
+                ASSERT_STREQ(prefix.c_str(), msg);
+
+                ASSERT_EQ(0, util::strerror_s(error, msg, 100));
+                ASSERT_STREQ(expectedErrorString.c_str(), msg);
             }
         }
     }
