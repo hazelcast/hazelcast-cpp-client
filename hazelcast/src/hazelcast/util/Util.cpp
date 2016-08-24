@@ -82,7 +82,11 @@ namespace hazelcast {
             va_start(args, format);
 
             #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            return vsnprintf_s(str, len, _TRUNCATE, format, args);
+            int result = vsnprintf_s(str, len, _TRUNCATE, format, args);
+            if (result < 0) {
+                return len > 0 ? len - 1 : 0;
+            }
+            return result;
             #else
             return vsnprintf(str, len, format, args);
             #endif
@@ -101,6 +105,42 @@ namespace hazelcast {
             boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
             boost::posix_time::time_duration diff = now - epoch;
             return diff.total_milliseconds();
+        }
+
+        int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
+            int numChars = 0;
+            if ((const char *)NULL != msgPrefix) {
+                numChars = util::snprintf(strerrbuf, buflen, "%s ", msgPrefix);
+                if (numChars < 0) {
+                    return numChars;
+                }
+
+                if (numChars >= (int)buflen - 1) {
+                    return 0;
+                }
+            }
+
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+                  NULL,
+                  errnum,
+                  0,
+                  (LPTSTR)(strerrbuf + numChars),
+                  buflen - numChars,
+                  NULL)) {
+                return -1;
+            }
+            return 0;
+            #elif defined(__llvm__)
+                return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
+            #elif defined(__GNUC__)
+                char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
+                int result = util::snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
+                if (result < 0) {
+                    return result;
+                }
+                return 0;
+            #endif
         }
     }
 }

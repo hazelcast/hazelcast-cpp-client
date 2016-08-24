@@ -98,16 +98,16 @@ namespace hazelcast {
 
                 void initMembershipListeners();
 
+                std::vector<Address> findServerAddressesToConnect(const Address *previousConnectionAddr) const;
+
                 //--------- Used by CLUSTER LISTENER THREAD ------------
                 void fireMembershipEvent(const MembershipEvent &membershipEvent);
 
                 void fireMemberAttributeEvent(const MemberAttributeEvent &membershipEvent);
 
                 void setMembers(std::auto_ptr<std::map<Address, Member, addressComparator> > map);
-
                 boost::shared_ptr<connection::Connection> connectToOne(const Address *previousConnectionAddr);
                 // ------------------------------------------------------
-
             };
 
         }

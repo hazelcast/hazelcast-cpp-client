@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 5/21/13.
 
 
-#include <string.h>
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/InvocationService.h"
@@ -27,8 +26,10 @@
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/util/Util.h"
 
 #include <stdint.h>
+#include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -61,9 +62,17 @@ namespace hazelcast {
             }
 
             void Connection::connect(int timeoutInMillis) {
+                if (!live) {
+                    std::ostringstream out;
+                    out << "Connection " << connectionId << " is already closed!";
+                    throw exception::IOException("Connection::connect", out.str());
+                }
+
                 int error = socket.connect(timeoutInMillis);
                 if (error) {
-                    throw exception::IOException("Socket::connect", strerror(error));
+                    char errorMsg[200];
+                    util::strerror_s(error, errorMsg, 200);
+                    throw exception::IOException("Connection::connect", errorMsg);
                 }
             }
 

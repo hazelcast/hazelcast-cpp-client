@@ -147,6 +147,24 @@ namespace hazelcast {
                 }
                 return v;
             }
+
+            std::vector<Address> ClusterService::findServerAddressesToConnect(const Address *previousConnectionAddr) const {
+                std::set<Address, addressComparator> socketAddresses = this->clusterThread.getSocketAddresses();
+                std::vector<Address> addresses;
+                for (std::set<Address, addressComparator>::const_iterator it = socketAddresses.begin();
+                     it != socketAddresses.end(); it++) {
+                    if ((Address *) NULL != previousConnectionAddr) {
+                        if (*previousConnectionAddr != *it) {
+                            addresses.push_back(*it);
+                        }
+                    }
+                    addresses.push_back(*it);
+                }
+                if ((Address *) NULL != previousConnectionAddr) {
+                    addresses.push_back(*previousConnectionAddr);
+                }
+                return addresses;
+            }
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
             boost::shared_ptr<connection::Connection> ClusterService::connectToOne(const Address *previousConnectionAddr) {
@@ -162,16 +180,11 @@ namespace hazelcast {
                     }
 
                     time_t tryStartTime = std::time(NULL);
-                    std::set<Address, addressComparator> socketAddresses = clusterThread.getSocketAddresses();
-                    if ((Address *)NULL != previousConnectionAddr && !socketAddresses.empty()) {
-                        socketAddresses.erase(*previousConnectionAddr);
-                        socketAddresses.insert(*previousConnectionAddr);
-                    }
-                    for (std::set<Address, addressComparator>::const_iterator it = socketAddresses.begin();
-                         it != socketAddresses.end(); it++) {
+                    std::vector<Address> addresses = findServerAddressesToConnect(previousConnectionAddr);
+                    for (std::vector<Address>::const_iterator it = addresses.begin(); it != addresses.end(); ++it) {
                         try {
-                            boost::shared_ptr<connection::Connection> pConnection = clientContext.getConnectionManager().createOwnerConnection(
-                                    *it);
+                            boost::shared_ptr<connection::Connection> pConnection =
+                                    clientContext.getConnectionManager().createOwnerConnection(*it);
                             active = true;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;
@@ -202,7 +215,6 @@ namespace hazelcast {
                                                        "Unable to connect to any address in the config! =>" +
                                                        std::string(lastError.what()));
             }
-
 
             void ClusterService::fireMembershipEvent(const MembershipEvent &event) {
                 util::LockGuard guard(listenerLock);

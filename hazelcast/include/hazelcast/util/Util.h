@@ -60,6 +60,12 @@ namespace hazelcast {
          * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
          */
         HAZELCAST_API int64_t currentTimeMillis();
+
+        /**
+         * @return 0 if error string could be obtained, non-zero otherwise
+         */
+        HAZELCAST_API int
+        strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix = (const char *) NULL);
     }
 }
 

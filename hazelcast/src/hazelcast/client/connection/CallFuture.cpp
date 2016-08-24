@@ -23,6 +23,7 @@
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/InvocationService.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include <climits>
 #include <ctime>
 #include <algorithm>
@@ -31,8 +32,6 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-
-
             CallFuture::CallFuture()
             : invocationService(NULL)
             , heartBeatTimeout(0) {
@@ -71,12 +70,8 @@ namespace hazelcast {
 						using namespace std;
                         time_t waitSeconds = (time_t)min(timeoutInSeconds, (time_t)heartBeatTimeout);
                         return promise->getFuture().get(waitSeconds);
-                    } catch (exception::TimeoutException &exception) {
-                        if (!connection->isHeartBeating()) {
-                            std::string address = util::IOUtil::to_string(connection->getRemoteEndpoint());
-                            invocationService->tryResend(std::auto_ptr<exception::IException>(
-                                    new exception::TimeoutException(exception)), promise, address);
-                        }
+                    } catch (exception::FutureWaitTimeout &exception) {
+                        // do nothing
                     }
                     time_t elapsed = time(NULL) - beg;
                     timeoutInSeconds -= elapsed;

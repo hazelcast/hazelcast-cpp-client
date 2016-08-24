@@ -20,8 +20,7 @@
 #ifndef HAZELCAST_Future
 #define HAZELCAST_Future
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/exception/FutureWaitTimeout.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/ILogger.h"
@@ -112,7 +111,7 @@ namespace hazelcast {
                 if (exceptionReady) {
                     exception->raise();
                 }
-                throw client::exception::TimeoutException("Future::get(timeInSeconds)", "Wait is timed out");
+                throw client::exception::FutureWaitTimeout("Future::get(timeInSeconds)", "Wait is timed out");
             };
 
             void reset() {
