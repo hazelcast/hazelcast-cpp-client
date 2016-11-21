@@ -58,6 +58,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class IMap {
             friend class HazelcastClient;
+            friend class adaptor::RawPointerMap<K, V>;
 
         public:
 

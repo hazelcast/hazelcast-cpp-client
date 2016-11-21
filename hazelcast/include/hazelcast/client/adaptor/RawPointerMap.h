@@ -51,7 +51,7 @@ namespace hazelcast {
             class RawPointerMap {
             public:
                 RawPointerMap(IMap<K, V> &mapToBeAdopted) : map(mapToBeAdopted),
-                                                            mapProxy(*((map::ClientMapProxy<K, V> *) &map)) {
+                                                            mapProxy(*map.mapImpl) {
                     serializationService = &mapProxy.getSerializationService();
                 }
 
