@@ -13,16 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_
-#define HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_
+#ifndef HAZELCAST_CLIENT_MAP_CLIENTMAPPROXY_H_
+#define HAZELCAST_CLIENT_MAP_CLIENTMAPPROXY_H_
 
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/adaptor/MapEntryView.h"
-#include "hazelcast/client/impl/DataArrayImpl.h"
+#include <string>
+#include <map>
+#include <set>
+#include <vector>
+#include <stdexcept>
+#include <climits>
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
-#include "hazelcast/client/impl/EntryArrayKeyAdaptor.h"
-#include "hazelcast/client/impl/EntryArrayValueAdaptor.h"
-#include "hazelcast/client/map/ClientMapProxy.h"
+#include "hazelcast/client/proxy/IMapImpl.h"
+#include "hazelcast/client/impl/EntryEventHandler.h"
+#include "hazelcast/client/EntryListener.h"
+#include "hazelcast/client/EntryView.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,10 +38,13 @@
 namespace hazelcast {
     namespace client {
         namespace adaptor {
+            template<typename K, typename V>
+            class RawPointerMap;
+        }
+
+        namespace map {
             /**
-            *
-            *
-            * Adaptor class to IMap which provides releasable raw pointers for returned objects.
+            * Concurrent, distributed, observable and queryable map client.
             *
             * Notice that this class have a private constructor.
             * You can access get an IMap in the following way
@@ -48,11 +57,12 @@ namespace hazelcast {
             * @param <V> value
             */
             template<typename K, typename V>
-            class RawPointerMap {
+            class ClientMapProxy : public proxy::IMapImpl {
+                friend class adaptor::RawPointerMap<K, V>;
+
             public:
-                RawPointerMap(IMap<K, V> &mapToBeAdopted) : map(mapToBeAdopted),
-                                                            mapProxy(*map.mapImpl) {
-                    serializationService = &mapProxy.getSerializationService();
+                ClientMapProxy(const std::string &instanceName, spi::ClientContext *context)
+                        : proxy::IMapImpl(instanceName, context) {
                 }
 
                 /**
@@ -62,7 +72,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 bool containsKey(const K &key) {
-                    return map.containsKey(key);
+                    return proxy::IMapImpl::containsKey(toData(key));
                 }
 
                 /**
@@ -72,29 +82,29 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 bool containsValue(const V &value) {
-                    return map.containsValue(value);
+                    return proxy::IMapImpl::containsValue(toData(value));
                 }
 
                 /**
                 * get the value.
                 * @param key
-                * @return value value in auto_ptr, if there is no mapping for key
-                * then return NULL in auto_ptr.
+                * @return value value in shared_ptr, if there is no mapping for key
+                * then return NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                std::auto_ptr<V> get(const K &key) {
-                    return serializationService->toObject<V>(mapProxy.getData(serializationService->toData<K>(&key)).get());
+                boost::shared_ptr<V> get(const K &key) {
+                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(toData(key))));
                 }
 
                 /**
                 * put new entry into map.
                 * @param key
                 * @param value
-                * @return the previous value in auto_ptr, if there is no mapping for key
+                * @return the previous value in shared_ptr, if there is no mapping for key
                 * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
-                * then returns NULL in auto_ptr.
+                * then returns NULL in shared_ptr.
                 */
-                std::auto_ptr<V> put(const K &key, const V &value) {
+                boost::shared_ptr<V> put(const K &key, const V &value) {
                     return put(key, value, -1);
                 }
 
@@ -106,24 +116,23 @@ namespace hazelcast {
                 * @param key              key of the entry
                 * @param value            value of the entry
                 * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in shared_ptr, if there is no mapping for key
+                * then returns NULL in shared_ptr.
                 */
-                std::auto_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                    return serializationService->toObject<V>(
-                            mapProxy.putData(serializationService->toData<K>(&key), serializationService->toData<V>(&value),
-                                        ttlInMillis).get());
+                boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+                    return boost::shared_ptr<V>(
+                            toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value), ttlInMillis)));
                 }
 
                 /**
                 * remove entry form map
                 * @param key
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in shared_ptr, if there is no mapping for key
+                * then returns NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                std::auto_ptr<V> remove(const K &key) {
-                    return serializationService->toObject<V>(mapProxy.removeData(serializationService->toData<K>(&key)).get());
+                boost::shared_ptr<V> remove(const K &key) {
+                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::removeData(toData(key))));
                 }
 
                 /**
@@ -134,7 +143,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 bool remove(const K &key, const V &value) {
-                    return map.remove(key, value);
+                    return proxy::IMapImpl::remove(toData(key), toData(value));
                 }
 
                 /**
@@ -144,7 +153,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 void deleteEntry(const K &key) {
-                    map.deleteEntry(key);
+                    proxy::IMapImpl::deleteEntry(toData(key));
                 }
 
                 /**
@@ -152,7 +161,7 @@ namespace hazelcast {
                 * all the local dirty entries by calling MapStore.storeAll() and/or MapStore.deleteAll()
                 */
                 void flush() {
-                    map.flush();
+                    proxy::IMapImpl::flush();
                 }
 
                 /**
@@ -166,7 +175,7 @@ namespace hazelcast {
                 *                 for the key
                 */
                 bool tryRemove(const K &key, long timeoutInMillis) {
-                    return map.tryRemove(key, timeoutInMillis);
+                    return proxy::IMapImpl::tryRemove(toData(key), timeoutInMillis);
                 }
 
                 /**
@@ -182,7 +191,7 @@ namespace hazelcast {
                 *         otherwise.
                 */
                 bool tryPut(const K &key, const V &value, long timeoutInMillis) {
-                    return map.tryPut(key, value, timeoutInMillis);
+                    return proxy::IMapImpl::tryPut(toData(key), toData(value), timeoutInMillis);
                 }
 
                 /**
@@ -195,7 +204,7 @@ namespace hazelcast {
                 * @param ttlInMillis  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
                 */
                 void putTransient(const K &key, const V &value, long ttlInMillis) {
-                    map.putTransient(key, value, ttlInMillis);
+                    proxy::IMapImpl::putTransient(toData(key), toData(value), ttlInMillis);
                 }
 
                 /**
@@ -203,13 +212,11 @@ namespace hazelcast {
                 *
                 * @param key key with which the specified value is to be associated
                 * @param value
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in shared_ptr, if there is no mapping for key
+                * then returns NULL in shared_ptr.
                 */
-                std::auto_ptr<V> putIfAbsent(const K &key, const V &value) {
-                    return serializationService->toObject<V>(mapProxy.putIfAbsentData(serializationService->toData<K>(&key),
-                                                                                serializationService->toData<V>(&value),
-                                                                                -1).get());
+                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
+                    return putIfAbsent(key, value, -1);
                 }
 
                 /**
@@ -221,13 +228,11 @@ namespace hazelcast {
                 * @param value          value of the entry
                 * @param ttlInMillis    maximum time in milliseconds for this entry to stay in the map
                 * @return the previous value of the entry, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * then returns NULL in shared_ptr.
                 */
-                std::auto_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
-                    return serializationService->toObject<V>(
-                            mapProxy.putIfAbsentData(serializationService->toData<K>(&key),
-                                            serializationService->toData<V>(&value),
-                                            ttlInMillis).get());
+                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+                    return boost::shared_ptr<V>(
+                            toObject<V>(proxy::IMapImpl::putIfAbsentData(toData(key), toData(value), ttlInMillis)));
                 }
 
                 /**
@@ -238,7 +243,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the value was replaced
                 */
                 bool replace(const K &key, const V &oldValue, const V &newValue) {
-                    return map.replace(key, oldValue, newValue);
+                    return proxy::IMapImpl::replace(toData(key), toData(oldValue), toData(newValue));
                 }
 
                 /**
@@ -246,35 +251,10 @@ namespace hazelcast {
                 * @param key key with which the specified value is associated
                 * @param value
                 * @return the previous value of the entry, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * then returns NULL in shared_ptr.
                 */
-                std::auto_ptr<V> replace(const K &key, const V &value) {
-                    return serializationService->toObject<V>(
-                            mapProxy.replaceData(serializationService->toData<K>(&key), serializationService->toData<V>(&value)).get());
-                }
-
-                /**
-                * Puts an entry into this map.
-                * Similar to put operation except that set
-                * doesn't return the old value which is more efficient.
-                * @param key
-                * @param value
-                */
-                void set(const K &key, const V &value) {
-                    set(key, value, -1);
-                }
-
-                /**
-                * Puts an entry into this map.
-                * Similar to put operation except that set
-                * doesn't return the old value which is more efficient.
-                * @param key key with which the specified value is associated
-                * @param value
-                * @param ttl maximum time in milliseconds for this entry to stay in the map
-                0 means infinite.
-                */
-                void set(const K &key, const V &value, long ttl) {
-                    map.set(key, value, ttl);
+                boost::shared_ptr<V> replace(const K &key, const V &value) {
+                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::replaceData(toData(key), toData(value))));
                 }
 
                 /**
@@ -292,7 +272,7 @@ namespace hazelcast {
                 * @param key key to lock.
                 */
                 void lock(const K &key) {
-                    map.lock(key);
+                    proxy::IMapImpl::lock(toData(key));
                 }
 
                 /**
@@ -314,7 +294,7 @@ namespace hazelcast {
                 * @param leaseTime time in milliseconds to wait before releasing the lock.
                 */
                 void lock(const K &key, long leaseTime) {
-                    map.lock(key, leaseTime);
+                    proxy::IMapImpl::lock(toData(key), leaseTime);
                 }
 
                 /**
@@ -326,7 +306,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
                 */
                 bool isLocked(const K &key) {
-                    return map.isLocked(key);
+                    return proxy::IMapImpl::isLocked(toData(key));
                 }
 
                 /**
@@ -339,7 +319,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if lock is acquired, <tt>false</tt> otherwise.
                 */
                 bool tryLock(const K &key) {
-                    return map.tryLock(key, 0);
+                    return tryLock(key, 0);
                 }
 
                 /**
@@ -359,7 +339,7 @@ namespace hazelcast {
                 *         if the waiting time elapsed before the lock was acquired.
                 */
                 bool tryLock(const K &key, long timeInMillis) {
-                    return map.tryLock(key, timeInMillis);
+                    return proxy::IMapImpl::tryLock(toData(key), timeInMillis);
                 }
 
                 /**
@@ -376,7 +356,7 @@ namespace hazelcast {
                 * @throws IllegalMonitorStateException if the current thread does not hold this lock MTODO
                 */
                 void unlock(const K &key) {
-                    map.unlock(key);
+                    proxy::IMapImpl::unlock(toData(key));
                 }
 
                 /**
@@ -388,7 +368,7 @@ namespace hazelcast {
                 * @param key key to lock.
                 */
                 void forceUnlock(const K &key) {
-                    map.forceUnlock(key);
+                    proxy::IMapImpl::forceUnlock(toData(key));
                 }
 
                 /**
@@ -404,7 +384,7 @@ namespace hazelcast {
                 */
                 template<typename MapInterceptor>
                 std::string addInterceptor(MapInterceptor &interceptor) {
-                    return map.template addInterceptor<MapInterceptor>(interceptor);
+                    return proxy::IMapImpl::addInterceptor(interceptor);
                 }
 
                 /**
@@ -414,7 +394,7 @@ namespace hazelcast {
                 * @param id registration id of map interceptor
                 */
                 void removeInterceptor(const std::string &id) {
-                    map.removeInterceptor(id);
+                    proxy::IMapImpl::removeInterceptor(id);
                 }
 
                 /**
@@ -431,8 +411,13 @@ namespace hazelcast {
                 *
                 * @return registrationId of added listener that can be used to remove the entry listener.
                 */
-                std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
-                    return map.addEntryListener(listener, includeValue);
+                std::string addEntryListener(EntryListener <K, V> &listener, bool includeValue) {
+                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
+                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    listener,
+                                    includeValue);
+                    return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
                 }
 
                 /**
@@ -450,8 +435,14 @@ namespace hazelcast {
                 *
                 * @return registrationId of added listener that can be used to remove the entry listener.
                 */
-                std::string addEntryListener(EntryListener<K, V> &listener, const query::Predicate &predicate, bool includeValue) {
-                    return map.addEntryListener(listener, predicate, includeValue);
+                std::string
+                addEntryListener(EntryListener <K, V> &listener, const query::Predicate &predicate, bool includeValue) {
+                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
+                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    listener,
+                                    includeValue);
+                    return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
                 }
 
                 /**
@@ -464,7 +455,7 @@ namespace hazelcast {
                 * @return true if registration is removed, false otherwise
                 */
                 bool removeEntryListener(const std::string &registrationId) {
-                    return map.removeEntryListener(registrationId);
+                    return proxy::IMapImpl::removeEntryListener(registrationId);
                 }
 
 
@@ -481,24 +472,30 @@ namespace hazelcast {
                 * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
                 *                     contain the value.
                 */
-                std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
-                    return map.addEntryListener(listener, key, includeValue);
+                std::string addEntryListener(EntryListener <K, V> &listener, const K &key, bool includeValue) {
+                    serialization::pimpl::Data keyData = toData(key);
+                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
+                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    listener,
+                                    includeValue);
+                    return proxy::IMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
                 }
 
                 /**
-                * Returns the <tt>MapEntryView</tt> for the specified key.
+                * Returns the <tt>EntryView</tt> for the specified key.
                 *
                 *
                 * @param key key of the entry
-                * @return <tt>MapEntryView</tt> of the specified key
-                * @see MapEntryView
+                * @return <tt>EntryView</tt> of the specified key
+                * @see EntryView
                 */
-                std::auto_ptr<MapEntryView<K, V> > getEntryView(const K &key) {
-                    std::auto_ptr<map::DataEntryView> dataView = mapProxy.getEntryViewData(serializationService->toData<K>(&key));
-                    if ((map::DataEntryView *)NULL == dataView.get()) {
-                        return std::auto_ptr<MapEntryView<K, V> >();
-                    }
-                    return std::auto_ptr<MapEntryView<K, V> >(new MapEntryView<K, V>(dataView, *serializationService));
+                EntryView <K, V> getEntryView(const K &key) {
+                    serialization::pimpl::Data keyData = toData(key);
+                    std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(keyData);
+                    std::auto_ptr<V> v = toObject<V>(dataEntryView->getValue());
+                    EntryView<K, V> view(key, *v, *dataEntryView);
+                    return view;
                 }
 
                 /**
@@ -512,7 +509,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the key is evicted, <tt>false</tt> otherwise.
                 */
                 bool evict(const K &key) {
-                    return map.evict(key);
+                    return proxy::IMapImpl::evict(toData(key));
                 }
 
                 /**
@@ -527,40 +524,54 @@ namespace hazelcast {
                 * @see #clear()
                 */
                 void evictAll() {
-                    map.evictAll();
+                    proxy::IMapImpl::evictAll();
                 }
 
                 /**
                 * Returns the entries for the given keys.
                 *
-                * @param keys keys for which the entries shall be retrieved from the map.
-                * @return Array of entries for the provided keys
+                * @param keys keys to get
+                * @return map of entries
                 */
-                std::auto_ptr<EntryArray<K, V> > getAll(const std::set<K> &keys) {
-                    std::vector<serialization::pimpl::Data> allKeys(keys.size());
-                    int i = 0;
+                std::map<K, V> getAll(const std::set<K> &keys) {
+                    std::vector<serialization::pimpl::Data> keySet(keys.size());
+                    size_t i = 0;
                     for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
-                        allKeys[i++] = serializationService->toData<K>(&(*it));
+                        keySet[i++] = toData(*it);
                     }
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = mapProxy.getAllData(
-                            allKeys);
-
-                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entrySet, *serializationService));
+                    std::map<K, V> result;
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = proxy::IMapImpl::getAllData(
+                            keySet);
+                    for (std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin();
+                         it != entrySet.end(); ++it) {
+                        std::auto_ptr<K> key = toObject<K>(it->first);
+                        std::auto_ptr<V> value = toObject<V>(it->second);
+                        result[*key] = *value;
+                    }
+                    return result;
                 }
 
                 /**
-                * Returns a snaphot of the deys data in the map.
+                * Returns a vector clone of the keys contained in this map.
                 * The vector is <b>NOT</b> backed by the map,
                 * so changes to the map are <b>NOT</b> reflected in the vector, and vice-versa.
                 *
-                * @return DataArray from which the key for each index can be retrieved.
+                * @return a vector clone of the keys contained in this map
                 */
-                std::auto_ptr<DataArray<K> > keySet() {
-                    std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetData();
-                    return std::auto_ptr<DataArray<K> >(new client::impl::DataArrayImpl<K>(dataResult, *serializationService));
+                std::vector<K> keySet() {
+                    std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData();
+                    size_t size = dataResult.size();
+                    std::vector<K> keys(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<K> key = toObject<K>(dataResult[i]);
+                        keys[i] = *key;
+                    }
+                    return keys;
                 }
 
                 /**
+                  * @deprecated This API is deprecated in favor of @sa{keySet(const query::Predicate &predicate)}
+                  *
                   * Queries the map based on the specified predicate and
                   * returns the keys of matching entries.
                   *
@@ -570,9 +581,9 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::auto_ptr<DataArray<K> > keySet(const query::Predicate &predicate) {
-                    std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetData(predicate);
-                    return std::auto_ptr<DataArray<K> >(new client::impl::DataArrayImpl<K>(dataResult, *serializationService));
+                std::vector<K> keySet(const serialization::IdentifiedDataSerializable &predicate) {
+                    const query::Predicate *p = (const query::Predicate *) (&predicate);
+                    return keySet(*p);
                 }
 
                 /**
@@ -586,25 +597,49 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::auto_ptr<DataArray<K> > keySet(query::PagingPredicate<K, V> &predicate) {
+                std::vector<K> keySet(const query::Predicate &predicate) {
+                    std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::keySetData(predicate);
+                    size_t size = dataResult.size();
+                    std::vector<K> keys(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<K> key = toObject<K>(dataResult[i]);
+                        keys[i] = *key;
+                    }
+                    return keys;
+                }
+
+                /**
+                  *
+                  * Queries the map based on the specified predicate and
+                  * returns the keys of matching entries.
+                  *
+                  * Specified predicate runs on all members in parallel.
+                  *
+                  *
+                  * @param predicate query criteria
+                  * @return result key set of the query
+                  */
+                std::vector<K> keySet(query::PagingPredicate <K, V> &predicate) {
                     predicate.setIterationType(query::KEY);
 
-                    std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetForPagingPredicateData(predicate);
+                    std::vector<serialization::pimpl::Data> dataResult = keySetForPagingPredicateData(predicate);
 
                     EntryVector entryResult;
-                    for (std::vector<serialization::pimpl::Data>::iterator it = dataResult.begin();it != dataResult.end(); ++it) {
-                        entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it, serialization::pimpl::Data()));
+                    for (std::vector<serialization::pimpl::Data>::iterator it = dataResult.begin();
+                         it != dataResult.end(); ++it) {
+                        entryResult.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(*it,
+                                                                                                                serialization::pimpl::Data()));
                     }
 
-                    client::impl::EntryArrayImpl<K, V> entries(entryResult, *serializationService);
-
+                    impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
                     entries.sort(query::KEY, predicate.getComparator());
 
-                    std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::KEY);
+                    std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
-
-                    std::auto_ptr<DataArray<K> > result = std::auto_ptr<DataArray<K> >(new impl::EntryArrayKeyAdaptor<K, V>(subList));
+                    std::vector<K> result;
+                    for (size_t i = range.first; i < range.second; ++i) {
+                        result.push_back(*entries.getKey(i));
+                    }
 
                     return result;
                 }
@@ -614,11 +649,32 @@ namespace hazelcast {
                 * The vector is <b>NOT</b> backed by the map,
                 * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
                 *
-                * @return clone of the values contained in this map
+                * @return a vector clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values() {
-                    std::vector<serialization::pimpl::Data> dataResult = mapProxy.valuesData();
-                    return std::auto_ptr<DataArray<V> >(new client::impl::DataArrayImpl<V>(dataResult, *serializationService));
+                std::vector<V> values() {
+                    std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData();
+                    size_t size = dataResult.size();
+                    std::vector<V> values(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<V> value = toObject<V>(dataResult[i]);
+                        values[i] = *value;
+                    }
+                    return values;
+                }
+
+                /**
+                * @deprecated This API is deprecated in favor of @sa{values(const query::Predicate &predicate)}
+                *
+                * Returns a vector clone of the values contained in this map.
+                * The vector is <b>NOT</b> backed by the map,
+                * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
+                *
+                * @param predicate the criteria for values to match
+                * @return a vector clone of the values contained in this map
+                */
+                std::vector<V> values(const serialization::IdentifiedDataSerializable &predicate) {
+                    const query::Predicate *p = (const query::Predicate *) (&predicate);
+                    return values(*p);
                 }
 
                 /**
@@ -627,11 +683,17 @@ namespace hazelcast {
                 * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
                 *
                 * @param predicate the criteria for values to match
-                * @return clone of the values contained in this map
+                * @return a vector clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values(const query::Predicate &predicate) {
-                    std::vector<serialization::pimpl::Data> dataResult = mapProxy.valuesData(predicate);
-                    return std::auto_ptr<DataArray<V> >(new client::impl::DataArrayImpl<V>(dataResult, *serializationService));
+                std::vector<V> values(const query::Predicate &predicate) {
+                    std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
+                    size_t size = dataResult.size();
+                    std::vector<V> values(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<V> value = toObject<V>(dataResult[i]);
+                        values[i] = *value;
+                    }
+                    return values;
                 }
 
                 /**
@@ -639,23 +701,25 @@ namespace hazelcast {
                 * The vector is <b>NOT</b> backed by the map,
                 * so changes to the map are <b>NOT</b> reflected in the collection, and vice-versa.
                 *
+                *
                 * @param predicate the criteria for values to match
-                * @return clone of the values contained in this map
+                * @return a vector clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values(query::PagingPredicate<K, V> &predicate) {
+                std::vector<V> values(query::PagingPredicate <K, V> &predicate) {
                     predicate.setIterationType(query::VALUE);
 
-                    EntryVector entryResult = mapProxy.valuesForPagingPredicateData(predicate);
+                    EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
 
-                    client::impl::EntryArrayImpl<K, V> entries(entryResult, *serializationService);
+                    impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
 
                     entries.sort(query::VALUE, predicate.getComparator());
 
-                    std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::VALUE);
+                    std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::VALUE);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
-                    std::auto_ptr<DataArray<V> > result = std::auto_ptr<DataArray<V> >(new impl::EntryArrayValueAdaptor<K, V>(subList));
-
+                    std::vector<V> result;
+                    for (size_t i = range.first; i < range.second; ++i) {
+                        result.push_back(*entries.getValue(i));
+                    }
                     return result;
                 }
 
@@ -664,14 +728,23 @@ namespace hazelcast {
                 * The vector is <b>NOT</b> backed by the map,
                 * so changes to the map are <b>NOT</b> reflected in the set, and vice-versa.
                 *
-                * @return clone of the keys mappings in this map
+                * @return a vector clone of the keys mappings in this map
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet() {
-                    EntryVector entries = mapProxy.entrySetData();
-                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, *serializationService));
+                std::vector<std::pair<K, V> > entrySet() {
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData();
+                    size_t size = dataResult.size();
+                    std::vector<std::pair<K, V> > entries(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        entries[i] = std::make_pair(*key, *value);
+                    }
+                    return entries;
                 }
 
                 /**
+                * @deprecated This API is deprecated in favor of @sa{entrySet(const query::Predicate &predicate)}
+                *
                 * Queries the map based on the specified predicate and
                 * returns the matching entries.
                 *
@@ -679,11 +752,19 @@ namespace hazelcast {
                 *
                 *
                 * @param predicate query criteria
-                * @return result entry array of the query
+                * @return result entry vector of the query
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet(const query::Predicate &predicate) {
-                    EntryVector entries = mapProxy.entrySetData(predicate);
-                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, *serializationService));
+                std::vector<std::pair<K, V> > entrySet(const serialization::IdentifiedDataSerializable &predicate) {
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
+                            predicate);
+                    size_t size = dataResult.size();
+                    std::vector<std::pair<K, V> > entries(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        entries[i] = std::make_pair(*key, *value);
+                    }
+                    return entries;
                 }
 
                 /**
@@ -696,17 +777,44 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry vector of the query
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult =
-                            mapProxy.entrySetForPagingPredicateData(predicate);
+                std::vector<std::pair<K, V> > entrySet(const query::Predicate &predicate) {
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetData(
+                            predicate);
+                    size_t size = dataResult.size();
+                    std::vector<std::pair<K, V> > entries(size);
+                    for (size_t i = 0; i < size; ++i) {
+                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        entries[i] = std::make_pair(*key, *value);
+                    }
+                    return entries;
+                }
 
-                    client::impl::EntryArrayImpl<K, V> entries(dataResult, *serializationService);
+                /**
+                * Queries the map based on the specified predicate and
+                * returns the matching entries.
+                *
+                * Specified predicate runs on all members in parallel.
+                *
+                *
+                * @param predicate query criteria
+                * @return result entry vector of the query
+                */
+                std::vector<std::pair<K, V> > entrySet(query::PagingPredicate <K, V> &predicate) {
+                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
+                            predicate);
 
+                    impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
                     entries.sort(query::ENTRY, predicate.getComparator());
 
-                    std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
+                    std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);
 
-                    return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
+                    std::vector<std::pair<K, V> > result;
+                    for (size_t i = range.first; i < range.second; ++i) {
+                        std::pair<const K *, const V *> entry = entries[i];
+                        result.push_back(std::pair<K, V>(*entry.first, *entry.second));
+                    }
+                    return result;
                 }
 
                 /**
@@ -742,7 +850,7 @@ namespace hazelcast {
                 *                  <tt>false</tt> otherwise.
                 */
                 void addIndex(const std::string &attribute, bool ordered) {
-                    map.addIndex(attribute, ordered);
+                    proxy::IMapImpl::addIndex(attribute, ordered);
                 }
 
                 /**
@@ -760,10 +868,11 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                    std::auto_ptr<serialization::pimpl::Data> resultData =
-                            mapProxy.template executeOnKeyData<K, EntryProcessor>(key, entryProcessor);
-                    return serializationService->toObject<ResultType>(resultData.get());
+                boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                    std::auto_ptr<serialization::pimpl::Data> resultData = proxy::IMapImpl::executeOnKeyData<K, EntryProcessor>(
+                            key, entryProcessor);
+
+                    return boost::shared_ptr<ResultType>(toObject<ResultType>(resultData));
                 }
 
                 /**
@@ -778,13 +887,41 @@ namespace hazelcast {
                 * @tparam ResultType that entry processor will return
                 * @tparam EntryProcessor type of entry processor class
                 * @param entryProcessor that will be applied
-                * @return Returns an array of (Key, Result) pairs.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
-                    EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor);
+                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+                    EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
+                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    for (size_t i = 0; i < entries.size(); ++i) {
+                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = resObj;
+                    }
+                    return result;
+                }
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
+                /**
+                * @deprecated This API is deprecated in favor of
+                * @sa{executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate)}
+                *
+                * Applies the user defined EntryProcessor to the all entries in the map.
+                * Returns the results mapped by each key in the map.
+                *
+                *
+                * EntryProcessor should extend either Portable or IdentifiedSerializable.
+                * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+                * with same classId and factoryId.
+                *
+                * @tparam ResultType that entry processor will return
+                * @tparam EntryProcessor type of entry processor class
+                * @tparam predicate The filter to apply for selecting the entries at the server side.
+                * @param entryProcessor that will be applied
+                */
+                template<typename ResultType, typename EntryProcessor>
+                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
+                                                                             const serialization::IdentifiedDataSerializable &predicate) {
+                    const query::Predicate *p = (const query::Predicate *) (&predicate);
+                    return executeOnEntries<ResultType, EntryProcessor>(entryProcessor, *p);
                 }
 
                 /**
@@ -802,10 +939,41 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
-                    EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
+                std::map<K, boost::shared_ptr<ResultType> >
+                executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                    EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor,
+                                                                                                predicate);
+                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    for (size_t i = 0; i < entries.size(); ++i) {
+                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = resObj;
+                    }
+                    return result;
+                }
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
+                /**
+                * Puts an entry into this map.
+                * Similar to put operation except that set
+                * doesn't return the old value which is more efficient.
+                * @param key
+                * @param value
+                */
+                void set(const K &key, const V &value) {
+                    set(key, value, -1);
+                }
+
+                /**
+                * Puts an entry into this map.
+                * Similar to put operation except that set
+                * doesn't return the old value which is more efficient.
+                * @param key key with which the specified value is associated
+                * @param value
+                * @param ttl maximum time in milliseconds for this entry to stay in the map
+                0 means infinite.
+                */
+                void set(const K &key, const V &value, long ttl) {
+                    proxy::IMapImpl::set(toData(key), toData(value), ttl);
                 }
 
                 /**
@@ -816,7 +984,7 @@ namespace hazelcast {
                 * @return the number of key-value mappings in this map
                 */
                 int size() {
-                    return map.size();
+                    return proxy::IMapImpl::size();
                 }
 
                 /**
@@ -825,7 +993,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if this map contains no key-value mappings
                 */
                 bool isEmpty() {
-                    return map.isEmpty();
+                    return proxy::IMapImpl::isEmpty();
                 }
 
 
@@ -840,7 +1008,7 @@ namespace hazelcast {
                 * @param m mappings to be stored in this map
                 */
                 void putAll(const std::map<K, V> &entries) {
-                    map.putAll(entries);
+                    return proxy::IMapImpl::putAll(toDataEntries(entries));
                 }
 
                 /**
@@ -848,14 +1016,12 @@ namespace hazelcast {
                 * The map will be empty after this call returns.
                 */
                 void clear() {
-                    map.clear();
+                    proxy::IMapImpl::clear();
                 }
 
-
-            private:
-                IMap<K, V> &map;
-                map::ClientMapProxy<K, V> &mapProxy;
-                serialization::pimpl::SerializationService *serializationService;
+                serialization::pimpl::SerializationService &getSerializationService() const {
+                    return context->getSerializationService();
+                }
             };
         }
     }
@@ -865,5 +1031,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_ADAPTOR_RAWPOINTERMAP_H_ */
+#endif /* HAZELCAST_CLIENT_MAP_CLIENTMAPPROXY_H_ */
 
