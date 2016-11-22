@@ -25,6 +25,7 @@
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
+#include "hazelcast/client/config/NearCacheConfig.h"
 
 #include <vector>
 #include <set>
