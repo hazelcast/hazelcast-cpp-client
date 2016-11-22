@@ -37,6 +37,10 @@
 
 namespace hazelcast {
     namespace client {
+        namespace config {
+            class NearCacheConfig;
+        }
+
         class MembershipListener;
 
         class InitialMembershipListener;
@@ -343,6 +347,15 @@ namespace hazelcast {
              * @return the found config. If none is found, a default configured one is returned.
              */
             const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
+
+            /**
+             * Gets the {@link NearCacheConfig} configured for the map / cache with name
+             *
+             * @param name name of the map / cache
+             * @return Configured {@link NearCacheConfig}
+             * @see com.hazelcast.config.NearCacheConfig
+             */
+            const config::NearCacheConfig *getNearCacheConfig(const std::string &name);
         private:
 
             GroupConfig groupConfig;
@@ -380,6 +393,12 @@ namespace hazelcast {
             std::auto_ptr<Credentials> defaultCredentials;
 
             std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
+
+            std::map<std::string, config::NearCacheConfig> nearCacheConfigMap;
+
+            const config::NearCacheConfig *
+            lookupByPattern(const std::map<std::string, config::NearCacheConfig> &nearCacheConfigMap,
+                            const std::string &name) const;
         };
 
     }

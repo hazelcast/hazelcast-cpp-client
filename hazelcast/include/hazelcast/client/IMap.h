@@ -865,8 +865,7 @@ namespace hazelcast {
                 mapImpl->destroy();
             }
         private:
-            IMap(const std::string &instanceName, spi::ClientContext *context) : mapImpl(
-                    new map::ClientMapProxy<K, V>(instanceName, context)) {
+            IMap(std::auto_ptr<map::ClientMapProxy<K, V> > proxy) : mapImpl(proxy) {
             }
 
             boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
