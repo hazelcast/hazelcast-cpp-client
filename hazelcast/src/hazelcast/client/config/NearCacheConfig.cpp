@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 //
-// Created by İhsan Demir on 21/12/15.
-//
-#include <hazelcast/client/HazelcastClient.h>
+// Created by ihsan demir on 22 Nov 2016.
 
-int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+#include "hazelcast/client/config/NearCacheConfig.h"
 
-    hazelcast::client::IQueue<std::string> map = hz.getDistributedObject<hazelcast::client::IQueue<std::string> >(
-            "queue distributed object");
+namespace hazelcast {
+    namespace client {
+        namespace config {
+            NearCacheConfig::NearCacheConfig() {
+            }
 
-    std::cout << "Finished" << std::endl;
-
-    return 0;
+            NearCacheConfig::NearCacheConfig(const char *name) {
+            }
+        }
+    }
 }
-

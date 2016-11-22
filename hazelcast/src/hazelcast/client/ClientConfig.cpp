@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/config/NearCacheConfig.h>
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
@@ -198,5 +199,22 @@ namespace hazelcast {
             }
             return &reliableTopicConfigMap[name];
         }
+
+        const config::NearCacheConfig *ClientConfig::getNearCacheConfig(const std::string &name) {
+            const config::NearCacheConfig *nearCacheConfig = lookupByPattern(nearCacheConfigMap, name);
+            if (nearCacheConfig != NULL) {
+                return nearCacheConfig;
+            }
+
+            return &nearCacheConfigMap["default"];
+        }
+
+        const config::NearCacheConfig *ClientConfig::lookupByPattern(
+                const std::map<std::string, config::NearCacheConfig> &nearCacheConfigMap,
+                const std::string &basic_string) const {
+            // TODO: implement the lookup
+            return NULL;
+        }
+
     }
 }

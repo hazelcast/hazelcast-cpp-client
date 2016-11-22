@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
+#include "hazelcast/client/map/NearCachedClientMapProxy.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MultiMap.h"
@@ -489,8 +490,18 @@ namespace hazelcast {
             * @return distributed map instance with the specified name
             */
             template<typename K, typename V>
-            IMap<K, V> getMap(const std::string& name) {
-                return getDistributedObject<IMap<K, V> >(name);
+            IMap<K, V> getMap(const std::string &name) {
+                const config::NearCacheConfig *nearCacheConfig = getClientConfig().getNearCacheConfig(name);
+                std::auto_ptr<map::ClientMapProxy<K, V> > proxy;
+                if (nearCacheConfig != NULL) {
+                    proxy = std::auto_ptr<map::ClientMapProxy<K, V> >(
+                            new map::NearCachedClientMapProxy<K, V>(name, &clientContext, nearCacheConfig));
+                } else {
+                    proxy = std::auto_ptr<map::ClientMapProxy<K, V> >(
+                            new map::ClientMapProxy<K, V>(name, &clientContext));
+                }
+
+                return IMap<K, V>(proxy);
             }
 
             /**
