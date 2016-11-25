@@ -21,6 +21,8 @@
 #ifndef HAZELCAST_WriteHandler
 #define HAZELCAST_WriteHandler
 
+#include <stdint.h>
+
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
