@@ -118,7 +118,7 @@ namespace hazelcast {
             std::map<std::string, std::string> attributes;
         };
 
-        std::ostream HAZELCAST_API &operator<<(std::ostream &stream, const Member &member);
+        std::ostream HAZELCAST_API &operator<<(std::ostream &out, const Member &member);
     }
 }
 

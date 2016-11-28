@@ -198,7 +198,7 @@ namespace hazelcast {
                 std::auto_ptr<util::Thread> outSelectorThread;
                 util::AtomicBoolean live;
                 util::Mutex lockMutex;
-                std::auto_ptr<protocol::Principal> principal;
+                boost::shared_ptr<protocol::Principal> principal;
 
                 connection::HeartBeater heartBeater;
                 std::auto_ptr<util::Thread> heartBeatThread;
