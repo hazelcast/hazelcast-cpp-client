@@ -388,14 +388,34 @@ namespace hazelcast {
                 connection->setConnectionId(++connectionIdCounter);
 
                 std::stringstream message;
-                (message << "Connected and authenticated by " << *addr << ". Connection id:" << connection->getConnectionId()
-                 << " , socket id:" << connection->getSocket().getSocketId() << (connection->isOwnerConnection() ? " as owner connection." : "."));
-                util::ILogger::getLogger().info(message.str());
+                message << "Connected and authenticated by " << *addr << ". Connection id:"
+                        << connection->getConnectionId() << " , socket id:" << connection->getSocket().getSocketId();
+
                 if (connection->isOwnerConnection()) {
                     principal = std::auto_ptr<protocol::Principal>(new protocol::Principal(uuid, ownerUuid));
+                    message << " as owner connection";
                 } else {
                     connection->getSocket().setBlocking(false);
                 }
+                
+                if ((protocol::Principal *) NULL != principal.get()) {
+                    const std::string *clientUuid = principal->getUuid();
+                    if (NULL != clientUuid) {
+                        message << ". Client uuid: " << *clientUuid;
+                    } else {
+                        message << ". Client uuid is NULL";
+                    }
+                    const std::string *ownerMemberUuid = principal->getOwnerUuid();
+                    if (NULL != ownerMemberUuid) {
+                        message << ". Owner member uuid: " << *ownerMemberUuid;
+                    } else {
+                        message << ". Owner member uuid is NULL";
+                    }
+                } else {
+                    message << ". No principal exist!!!";
+                }
+
+                util::ILogger::getLogger().info(message.str());
             }
 
 
