@@ -221,21 +221,25 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> authenticationMessage;
                 byte serializationVersion = clientContext.getSerializationService().getVersion();
+
+                // get principal as a shared_ptr first since it may be changed concurrently
+                boost::shared_ptr<protocol::Principal> latestPrincipal = principal;
                 if (NULL == credentials) {
                     GroupConfig &groupConfig = clientContext.getClientConfig().getGroupConfig();
                     const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
                     authenticationMessage = protocol::codec::ClientAuthenticationCodec::RequestParameters::encode(
-                            cr.getPrincipal(), cr.getPassword(), principal.get() ? principal->getUuid() : NULL,
-                            principal.get() ? principal->getOwnerUuid() : NULL, connection->isOwnerConnection(),
-                            protocol::ClientTypes::CPP, serializationVersion);
+                            cr.getPrincipal(), cr.getPassword(),
+                            latestPrincipal.get() ? latestPrincipal->getUuid() : NULL,
+                            latestPrincipal.get() ? latestPrincipal->getOwnerUuid() : NULL,
+                            connection->isOwnerConnection(), protocol::ClientTypes::CPP, serializationVersion);
                 } else {
                     serialization::pimpl::Data data =
                             clientContext.getSerializationService().toData<Credentials>(credentials);
 
                     authenticationMessage = protocol::codec::ClientAuthenticationCustomCodec::RequestParameters::encode(
-                            data, principal.get() ? principal->getUuid() : NULL,
-                            principal.get() ? principal->getOwnerUuid() : NULL, connection->isOwnerConnection(),
-                            protocol::ClientTypes::CPP, serializationVersion);
+                            data, latestPrincipal.get() ? latestPrincipal->getUuid() : NULL,
+                            latestPrincipal.get() ? latestPrincipal->getOwnerUuid() : NULL,
+                            connection->isOwnerConnection(), protocol::ClientTypes::CPP, serializationVersion);
                 }
 
                 connection->init(PROTOCOL);
