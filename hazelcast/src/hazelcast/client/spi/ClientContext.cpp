@@ -58,6 +58,9 @@ namespace hazelcast {
                 return hazelcastClient.connectionManager;
             }
 
+            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
+                return *hazelcastClient.nearCacheManager;
+            }
 
             ClientProperties& ClientContext::getClientProperties() {
                 return hazelcastClient.clientProperties;
@@ -66,6 +69,8 @@ namespace hazelcast {
             Cluster &ClientContext::getCluster() {
                 return hazelcastClient.cluster;
             }
+
+
         }
 
     }

@@ -851,7 +851,6 @@ namespace hazelcast {
                     map.clear();
                 }
 
-
             private:
                 IMap<K, V> &map;
                 map::ClientMapProxy<K, V> &mapProxy;

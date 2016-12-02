@@ -37,9 +37,15 @@
 
 namespace hazelcast {
     namespace client {
+        class HazelcastClient;
+
         namespace adaptor {
             template<typename K, typename V>
             class RawPointerMap;
+        }
+
+        namespace spi {
+            class ProxyManager;
         }
 
         /**
@@ -57,10 +63,12 @@ namespace hazelcast {
         */
         template<typename K, typename V>
         class IMap {
+            friend class spi::ProxyManager;
             friend class HazelcastClient;
             friend class adaptor::RawPointerMap<K, V>;
 
         public:
+            static const std::string SERVICE_NAME;
 
             /**
             * check if this map contains key.
@@ -865,11 +873,16 @@ namespace hazelcast {
                 mapImpl->destroy();
             }
         private:
-            IMap(std::auto_ptr<map::ClientMapProxy<K, V> > proxy) : mapImpl(proxy) {
+            IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) : proxy(clientProxy) {
+                mapImpl = (map::ClientMapProxy<K, V> *) proxy.get();
             }
 
-            boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
+            map::ClientMapProxy<K, V> *mapImpl;
+            boost::shared_ptr<spi::ClientProxy> proxy;
         };
+
+        template <typename K, typename V>
+        const std::string IMap<K, V>::SERVICE_NAME = "hz:impl:mapService";
     }
 }
 

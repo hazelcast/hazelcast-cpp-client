@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
+#ifndef HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_
+#define HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,11 +26,23 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class HAZELCAST_API NearCacheConfig {
+            class HAZELCAST_API InMemoryFormat {
             public:
-                NearCacheConfig();
+                enum {
+                    /**
+                     * As Binary
+                     */
+                            BINARY,
+                    /**
+                     * As Object
+                     */
+                            OBJECT,
 
-                NearCacheConfig(const char *name);
+                    /**
+                     * As native storage
+                     */
+                            NATIVE
+                };
             };
         }
     }
@@ -41,4 +52,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_ */
+#endif /* HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_ */

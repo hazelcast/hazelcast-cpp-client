@@ -13,32 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
+//
+// Created by ihsan demir on 01 Dec 2016
 
-#include "hazelcast/util/HazelcastDll.h"
-#include <string>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#include "hazelcast/client/spi/DefaultObjectNamespace.h"
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class HAZELCAST_API NearCacheConfig {
-            public:
-                NearCacheConfig();
+        namespace spi {
+            DefaultObjectNamespace::DefaultObjectNamespace(const std::string &service, const std::string &object)
+                : serviceName(service), objectName(object) {
 
-                NearCacheConfig(const char *name);
-            };
+            }
+
+            const std::string &DefaultObjectNamespace::getServiceName() const {
+                return serviceName;
+            }
+
+            const std::string &DefaultObjectNamespace::getObjectName() const {
+                return objectName;
+            }
         }
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif 
 
-#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_ */

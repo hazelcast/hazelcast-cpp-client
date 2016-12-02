@@ -93,7 +93,8 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 boost::shared_ptr<V> get(const K &key) {
-                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(toData(key))));
+                    serialization::pimpl::Data keyData = toData(key);
+                    return getInternal(keyData);
                 }
 
                 /**
@@ -1021,6 +1022,10 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService &getSerializationService() const {
                     return context->getSerializationService();
+                }
+            protected:
+                virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
+                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
                 }
             };
         }

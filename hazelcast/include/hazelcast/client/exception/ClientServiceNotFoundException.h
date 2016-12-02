@@ -13,32 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
+//
+// Created by ihsan demir on 01 Dec 2016.
+//
 
+#ifndef HAZELCAST_CLIENT_EXCEPTION_CLIENTSERVICENOTFOUNDEXCEPTION_H_
+#define HAZELCAST_CLIENT_EXCEPTION_CLIENTSERVICENOTFOUNDEXCEPTION_H_
+
+#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/HazelcastDll.h"
-#include <string>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class HAZELCAST_API NearCacheConfig {
+        namespace exception {
+            class HAZELCAST_API ClientServiceNotFoundException : public exception::IException {
             public:
-                NearCacheConfig();
-
-                NearCacheConfig(const char *name);
+                ClientServiceNotFoundException(const std::string &source, const std::string &message) : IException(source, message) {}
             };
         }
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif 
-
-#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_ */
+#endif //HAZELCAST_CLIENT_EXCEPTION_CLIENTSERVICENOTFOUNDEXCEPTION_H_

@@ -16,7 +16,8 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include "hazelcast/client/map/NearCachedClientMapProxy.h"
+#include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MultiMap.h"
@@ -33,6 +34,7 @@
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
@@ -491,15 +493,10 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             IMap<K, V> getMap(const std::string &name) {
-                const config::NearCacheConfig *nearCacheConfig = getClientConfig().getNearCacheConfig(name);
-                std::auto_ptr<map::ClientMapProxy<K, V> > proxy;
-                if (nearCacheConfig != NULL) {
-                    proxy = std::auto_ptr<map::ClientMapProxy<K, V> >(
-                            new map::NearCachedClientMapProxy<K, V>(name, &clientContext, nearCacheConfig));
-                } else {
-                    proxy = std::auto_ptr<map::ClientMapProxy<K, V> >(
-                            new map::ClientMapProxy<K, V>(name, &clientContext));
-                }
+                map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService<map::impl::ClientMapProxyFactory<K, V> >(
+                                IMap<K, V>::SERVICE_NAME, name, factory);
 
                 return IMap<K, V>(proxy);
             }
@@ -705,17 +702,27 @@ namespace hazelcast {
             void shutdown();
 
         private:
+            std::auto_ptr<internal::nearcache::NearCacheManager> createNearCacheManager();
+
+            template <typename FACTORY>
+            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(
+                    const std::string &serviceName, const std::string &name, FACTORY &factory) {
+                return proxyManager.getOrCreateProxy<FACTORY>(serviceName, name, factory);
+            }
+
             ClientConfig clientConfig;
             ClientProperties clientProperties;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
             connection::ConnectionManager connectionManager;
+            std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
             Cluster cluster;
+            spi::ProxyManager proxyManager;
 
             HazelcastClient(const HazelcastClient& rhs);
 

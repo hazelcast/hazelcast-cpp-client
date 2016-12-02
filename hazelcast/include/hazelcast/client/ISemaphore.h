@@ -21,7 +21,6 @@
 #include <string>
 #include <stdexcept>
 
-
 namespace hazelcast {
     namespace client {
         /**
