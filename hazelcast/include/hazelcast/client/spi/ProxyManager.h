@@ -22,7 +22,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ObjectNamespace.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
-#include "hazelcast/client/exception/ClientServiceNotFoundException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

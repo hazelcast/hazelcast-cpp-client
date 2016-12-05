@@ -19,12 +19,12 @@
 #include <stdexcept>
 #include <climits>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <vector>
+
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarker.h"
-
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/InitializingObject.h"
 
