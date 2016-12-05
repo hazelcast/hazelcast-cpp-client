@@ -22,6 +22,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarker.h"
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -149,6 +150,7 @@ namespace hazelcast {
                      */
                     const config::InMemoryFormat &getInMemoryFormat() const {
                         //TODO
+                        return inMemoryFormat;
                     }
 
                     /**
@@ -158,6 +160,7 @@ namespace hazelcast {
                      */
                     const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
                         //TODO
+                        return preloaderConfig;
                     }
 
                     /**
@@ -186,6 +189,7 @@ namespace hazelcast {
                      */
                     int size() const {
                         //TODO
+                        return -1;
                     }
 
                     /**
@@ -209,6 +213,7 @@ namespace hazelcast {
                      */
                     bool isPreloadDone() {
                         //TODO
+                        return false;
                     }
 
                     impl::KeyStateMarker<K> &getKeyStateMarker() {
@@ -217,6 +222,8 @@ namespace hazelcast {
                 private:
                     impl::KeyStateMarker<K> keyStateMarker;
                     std::string name;
+                    boost::shared_ptr<config::NearCachePreloaderConfig> preloaderConfig;
+                    config::InMemoryFormat inMemoryFormat;
                 };
 
                 template <typename K, typename V, typename ADAPTER>

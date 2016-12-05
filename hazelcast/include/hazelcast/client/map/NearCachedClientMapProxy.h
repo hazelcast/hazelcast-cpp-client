@@ -83,10 +83,10 @@ namespace hazelcast {
 
             private:
                 void initNearCache() {
-                    internal::nearcache::NearCacheManager &nearCacheManager = proxy::ProxyImpl::context->getNearCacheManager();
+                    internal::nearcache::NearCacheManager &nearCacheManager = this->context->getNearCacheManager();
                     boost::shared_ptr<internal::adapter::IMapDataStructureAdapter<K, V> > adapter(
                             new internal::adapter::IMapDataStructureAdapter<K, V>(*this));
-                    int partitionCount = proxy::ProxyImpl::context->getPartitionService().getPartitionCount();
+                    int partitionCount = this->context->getPartitionService().getPartitionCount();
                     nearCache = nearCacheManager.getOrCreateNearCache<serialization::pimpl::Data, K, V, internal::adapter::IMapDataStructureAdapter<K, V> >(
                             proxy::ProxyImpl::getName(), *nearCacheConfig, adapter, partitionCount);
 
