@@ -50,8 +50,13 @@ namespace hazelcast {
                  * @param <V> the type of the value
                  */
                 template <typename K, typename V, typename ADAPTER>
-                class HAZELCAST_API NearCache : public spi::InitializingObject {
+                class NearCache : public spi::InitializingObject {
                 public:
+                    /**
+                     * NULL Object
+                     */
+                    static boost::shared_ptr<V> NULL_OBJECT;
+
                     NearCache(int partitionCount) : keyStateMarker(partitionCount) {
                     }
 
@@ -71,11 +76,6 @@ namespace hazelcast {
                      * Default expiration task delay time as seconds
                      */
                     static const int DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS = 5;
-
-                    /**
-                     * NULL Object
-                     */
-                    static const boost::shared_ptr<V> NULL_OBJECT;
 
                     /**
                      * Gets the name of the <code>this</code> {@link com.hazelcast.cache.impl.nearcache.NearCache} instance.
@@ -227,7 +227,7 @@ namespace hazelcast {
                 };
 
                 template <typename K, typename V, typename ADAPTER>
-                const boost::shared_ptr<V> NearCache<K, V, ADAPTER>::NULL_OBJECT = boost::shared_ptr<V>(new V());
+                boost::shared_ptr<V> NearCache<K, V, ADAPTER>::NULL_OBJECT = boost::shared_ptr<V>(new V());
             }
         }
     }

@@ -55,7 +55,7 @@ namespace hazelcast {
                         initializeWithRetry(clientProxy);
                     } catch (exception::IException &e) {
                         proxies.remove(ns);
-                        throw;
+                        throw e;
                     }
                     return clientProxy;
                 }

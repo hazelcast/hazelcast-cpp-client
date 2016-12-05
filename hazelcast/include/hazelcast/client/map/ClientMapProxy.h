@@ -413,8 +413,8 @@ namespace hazelcast {
                 * @return registrationId of added listener that can be used to remove the entry listener.
                 */
                 std::string addEntryListener(EntryListener <K, V> &listener, bool includeValue) {
-                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
+                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
                                     getName(), context->getClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
@@ -438,8 +438,8 @@ namespace hazelcast {
                 */
                 std::string
                 addEntryListener(EntryListener <K, V> &listener, const query::Predicate &predicate, bool includeValue) {
-                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
-                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
+                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
+                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
                                     getName(), context->getClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
@@ -475,8 +475,8 @@ namespace hazelcast {
                 */
                 std::string addEntryListener(EntryListener <K, V> &listener, const K &key, bool includeValue) {
                     serialization::pimpl::Data keyData = toData(key);
-                    impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                            new impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
+                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
                                     getName(), context->getClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
@@ -632,7 +632,7 @@ namespace hazelcast {
                                                                                                                 serialization::pimpl::Data()));
                     }
 
-                    impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
+                    client::impl::EntryArrayImpl<K, V> entries(entryResult, context->getSerializationService());
                     entries.sort(query::KEY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::KEY);
@@ -711,7 +711,7 @@ namespace hazelcast {
 
                     EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
 
-                    impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                    client::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
 
                     entries.sort(query::VALUE, predicate.getComparator());
 
@@ -805,7 +805,7 @@ namespace hazelcast {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
                             predicate);
 
-                    impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
+                    client::impl::EntryArrayImpl<K, V> entries(dataResult, context->getSerializationService());
                     entries.sort(query::ENTRY, predicate.getComparator());
 
                     std::pair<size_t, size_t> range = updateAnchor<K, V>(entries, predicate, query::ENTRY);

@@ -64,7 +64,8 @@ namespace hazelcast {
                 boost::shared_ptr<V> getInternal(serialization::pimpl::Data &key) {
                     boost::shared_ptr<V> cached = nearCache->get(key);
                     if (cached.get() != NULL) {
-                        if (internal::nearcache::NearCache<K, V, internal::adapter::IMapDataStructureAdapter<K, V> >::NULL_OBJECT == cached) {
+                        if (internal::nearcache::NearCache<
+                                K, V, internal::adapter::IMapDataStructureAdapter<K, V> >::NULL_OBJECT == cached) {
                             return boost::shared_ptr<V>();
                         }
                         return cached;

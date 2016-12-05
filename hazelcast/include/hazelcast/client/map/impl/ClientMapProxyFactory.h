@@ -32,7 +32,7 @@ namespace hazelcast {
         namespace map {
             namespace impl {
                 template <typename K, typename V>
-                class HAZELCAST_API ClientMapProxyFactory : public spi::ClientProxyFactory {
+                class ClientMapProxyFactory : public spi::ClientProxyFactory {
                 public:
                     ClientMapProxyFactory(spi::ClientContext *context) : clientContext(context) {
                     }

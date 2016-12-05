@@ -31,7 +31,7 @@ namespace hazelcast {
                  * Abstracts the Hazelcast data structures with Near Cache support for the Near Cache usage.
                  */
                 template <typename K, typename V>
-                class HAZELCAST_API IMapDataStructureAdapter {
+                class IMapDataStructureAdapter {
                 public:
                     IMapDataStructureAdapter(map::ClientMapProxy<K, V> &imap) : map(imap) {
                     }

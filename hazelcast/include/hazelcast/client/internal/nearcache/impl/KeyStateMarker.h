@@ -29,7 +29,7 @@ namespace hazelcast {
             namespace nearcache {
                 namespace impl {
                     template <typename K>
-                    class HAZELCAST_API KeyStateMarker {
+                    class KeyStateMarker {
                     public:
                         KeyStateMarker(int count) : markerCount(count) {
                         }
