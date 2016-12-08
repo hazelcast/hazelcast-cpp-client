@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 01/10/14.
 //
-
-
 #ifndef HAZELCAST_ProxyImpl
 #define HAZELCAST_ProxyImpl
 
@@ -28,6 +26,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ClientProxy.h"
 
 namespace hazelcast {
     namespace client {
@@ -54,7 +53,7 @@ namespace hazelcast {
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
-            class HAZELCAST_API ProxyImpl : public DistributedObject {
+            class HAZELCAST_API ProxyImpl : public DistributedObject, public spi::ClientProxy {
             protected:
                 /**
                 * Constructor
@@ -65,6 +64,14 @@ namespace hazelcast {
                 * Destructor
                 */
                 virtual ~ProxyImpl();
+
+                /**
+                 * Called when proxy is created.
+                 * Overriding implementations can add initialization specific logic into this method
+                 * like registering a listener, creating a cleanup task etc.
+                 */
+                virtual void onInitialize() {
+                }
 
                 /**
                 * Internal API.

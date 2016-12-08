@@ -397,7 +397,7 @@ namespace hazelcast {
                 } else {
                     connection->getSocket().setBlocking(false);
                 }
-                
+
                 if ((protocol::Principal *) NULL != principal.get()) {
                     const std::string *clientUuid = principal->getUuid();
                     if (NULL != clientUuid) {
@@ -417,8 +417,6 @@ namespace hazelcast {
 
                 util::ILogger::getLogger().info(message.str());
             }
-
-
         }
     }
 }

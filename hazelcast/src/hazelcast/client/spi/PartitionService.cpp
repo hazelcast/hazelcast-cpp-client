@@ -209,6 +209,14 @@ namespace hazelcast {
                     partitionListenerThread->wakeup();
                 }
             }
+
+            int PartitionService::getPartitionCount() {
+                if (partitionCount == 0) {
+                    getInitialPartitions();
+                }
+
+                return partitionCount;
+            }
         }
     }
 }

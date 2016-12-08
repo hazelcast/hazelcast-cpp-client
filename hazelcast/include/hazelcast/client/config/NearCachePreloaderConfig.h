@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
+#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHEPRELOADERCONFIG_H_
+#define HAZELCAST_CLIENT_CONFIG_NEARCACHEPRELOADERCONFIG_H_
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
@@ -27,11 +27,14 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            class HAZELCAST_API NearCacheConfig {
+            /**
+             * @Beta
+             * @BinaryInterface
+             * Configuration for eviction.
+             * You can set a limit for number of entries or total memory cost of entries.
+             */
+            class HAZELCAST_API NearCachePreloaderConfig {
             public:
-                NearCacheConfig();
-
-                NearCacheConfig(const char *name);
             };
         }
     }
@@ -41,4 +44,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_ */
+#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHEPRELOADERCONFIG_H_ */

@@ -13,25 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
-#define HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_
+//
+// Created by ihsan demir on 30 Nov 2016.
+
+#ifndef HAZELCAST_CLIENT_SPI_INITILIZINGOBJECT_H_
+#define HAZELCAST_CLIENT_SPI_INITILIZINGOBJECT_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif 
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class HAZELCAST_API NearCacheConfig {
+        namespace spi {
+            /**
+             * Can be implemented by DistributedObject (proxies) to indicate that they want to be initialized.
+             */
+            class HAZELCAST_API InitializingObject {
             public:
-                NearCacheConfig();
-
-                NearCacheConfig(const char *name);
+                virtual void initialize() = 0;
             };
         }
     }
@@ -39,6 +42,7 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
-#endif /* HAZELCAST_CLIENT_CONFIG_NEARCACHECONFIG_H_ */
+#endif //HAZELCAST_CLIENT_SPI_INITILIZINGOBJECT_H_
+

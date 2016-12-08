@@ -25,6 +25,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 
 namespace hazelcast {
     namespace client {
@@ -70,6 +71,7 @@ namespace hazelcast {
                 clientContext.getPartitionService().shutdown();
                 clientContext.getClusterService().shutdown();
                 clientContext.getConnectionManager().shutdown();
+                clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             }
 

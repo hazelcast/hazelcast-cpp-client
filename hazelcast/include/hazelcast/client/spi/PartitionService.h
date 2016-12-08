@@ -78,6 +78,8 @@ namespace hazelcast {
                 // Wakes up the partition thread and triggers a partition refresh
                 void wakeup();
 
+                int getPartitionCount();
+
             private:
 
                 spi::ClientContext &clientContext;

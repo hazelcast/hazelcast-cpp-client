@@ -41,6 +41,11 @@ namespace hazelcast {
             class ConnectionManager;
         }
 
+        namespace internal {
+            namespace nearcache {
+                class NearCacheManager;
+            }
+        }
         namespace spi {
             class InvocationService;
 
@@ -72,6 +77,8 @@ namespace hazelcast {
                 ServerListenerService &getServerListenerService();
 
                 connection::ConnectionManager &getConnectionManager();
+
+                internal::nearcache::NearCacheManager &getNearCacheManager() const;
 
                 ClientProperties &getClientProperties();
 

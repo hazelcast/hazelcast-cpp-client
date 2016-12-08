@@ -27,6 +27,7 @@
 #include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 #include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
 #include "hazelcast/client/spi/impl/listener/EventRegistration.h"
+#include "hazelcast/client/impl/BaseEventHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,10 +51,13 @@ namespace hazelcast {
             std::string ServerListenerService::registerListener(
                     std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
                     client::impl::BaseEventHandler *handler) {
+                handler->beforeListenerRegister();
                 connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(
                         addListenerCodec->encodeRequest(), handler);
 
-                return registerInternal(addListenerCodec, future);
+                std::string registrationId = registerInternal(addListenerCodec, future);
+                handler->onListenerRegister();
+                return registrationId;
             }
 
             void ServerListenerService::reRegisterListener(std::string registrationId,

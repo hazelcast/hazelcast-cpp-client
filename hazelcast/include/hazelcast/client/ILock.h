@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 6/27/13.
 
-
-
-
 #ifndef HAZELCAST_ILock
 #define HAZELCAST_ILock
 

@@ -43,6 +43,7 @@ namespace hazelcast {
         , invocationService(clientContext)
         , serverListenerService(clientContext)
         , cluster(clusterService)
+        , proxyManager(clientContext)
         , TOPIC_RB_PREFIX("_hz_rb_") {
             std::stringstream prefix;
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
@@ -54,6 +55,8 @@ namespace hazelcast {
                 throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
             }
             loadBalancer->init(cluster);
+
+            nearCacheManager = createNearCacheManager();
         }
 
         HazelcastClient::~HazelcastClient() {
@@ -110,6 +113,10 @@ namespace hazelcast {
             return TransactionContext(clientContext, options);
         }
 
+        std::auto_ptr<internal::nearcache::NearCacheManager> HazelcastClient::createNearCacheManager() {
+            return std::auto_ptr<internal::nearcache::NearCacheManager>(
+                    new internal::nearcache::NearCacheManager(serializationService));
+        }
     }
 }
 

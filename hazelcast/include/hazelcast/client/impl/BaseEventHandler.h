@@ -42,6 +42,24 @@ namespace hazelcast {
                 virtual void handle(std::auto_ptr<protocol::ClientMessage> message) = 0;
 
                 std::string registrationId;
+
+                /**
+                 *  This method is called before registration request is sent to node.
+                 *
+                 *  Note that this method will also be called while first registered node is dead
+                 *  and re-registering to a second node.
+                 */
+                virtual void beforeListenerRegister() {
+                }
+
+                /**
+                 *  This method is called when registration request response is successfully returned from node.
+                 *
+                 *  Note that this method will also be called while first registered node is dead
+                 *  and re-registering to a second node.
+                 */
+                virtual void onListenerRegister() {
+                }
             };
         }
     }
