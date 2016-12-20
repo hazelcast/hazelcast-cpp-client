@@ -30,6 +30,7 @@
 #include <vector>
 #include <set>
 #include <memory>
+#include <hazelcast/util/SynchronizedMap.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -350,13 +351,22 @@ namespace hazelcast {
             const config::ReliableTopicConfig *getReliableTopicConfig(const std::string &name);
 
             /**
+             * Helper method to add a new NearCacheConfig
+             *
+             * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * @see com.hazelcast.config.NearCacheConfig
+             */
+            ClientConfig &addNearCacheConfig(const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig);
+
+            /**
              * Gets the {@link NearCacheConfig} configured for the map / cache with name
              *
              * @param name name of the map / cache
              * @return Configured {@link NearCacheConfig}
              * @see com.hazelcast.config.NearCacheConfig
              */
-            const config::NearCacheConfig *getNearCacheConfig(const std::string &name);
+            boost::shared_ptr<config::NearCacheConfig> getNearCacheConfig(const std::string &name);
         private:
 
             GroupConfig groupConfig;
@@ -395,10 +405,10 @@ namespace hazelcast {
 
             std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
-            std::map<std::string, config::NearCacheConfig> nearCacheConfigMap;
+            util::SynchronizedMap<std::string, config::NearCacheConfig> nearCacheConfigMap;
 
-            const config::NearCacheConfig *
-            lookupByPattern(const std::map<std::string, config::NearCacheConfig> &nearCacheConfigMap,
+            const boost::shared_ptr<config::NearCacheConfig>
+            lookupByPattern(util::SynchronizedMap<std::string, config::NearCacheConfig> &nearCacheConfigMap,
                             const std::string &name) const;
         };
 

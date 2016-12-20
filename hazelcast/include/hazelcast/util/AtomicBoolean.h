@@ -44,7 +44,6 @@ namespace hazelcast {
             operator bool();
 
             bool compareAndSet(bool compareValue, bool setValue);
-
         private:
             Mutex mutex;
             bool v;

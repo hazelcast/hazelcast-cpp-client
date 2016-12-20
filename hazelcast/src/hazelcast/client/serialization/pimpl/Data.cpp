@@ -46,10 +46,11 @@ namespace hazelcast {
                 unsigned int Data::DATA_OVERHEAD = Data::DATA_OFFSET;
 
                 Data::Data()
-                : data(NULL){
+                : data(NULL), calculatedHash(0), calculatedHashExist(false) {
                 }
 
-                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer) {
+                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), calculatedHash(-1),
+                                                                       calculatedHashExist(false) {
                     if (data.get() != 0 && data->size() > 0 && data->size() < Data::DATA_OVERHEAD) {
                         char msg[100];
                         util::snprintf(msg, 100, "Provided buffer should be either empty or "
@@ -60,14 +61,20 @@ namespace hazelcast {
 
                 Data::Data(const Data& rhs)
                 : data(rhs.data) {
-
+                    int hash = rhs.calculatedHash;
+                    calculatedHash = hash;
+                    bool isCalculated = rhs.calculatedHashExist;
+                    calculatedHashExist = isCalculated;
                 }
 
                 Data& Data::operator=(const Data& rhs) {
                     data = rhs.data;
+                    int hash = rhs.calculatedHash;
+                    calculatedHash = hash;
+                    bool isCalculated = rhs.calculatedHashExist;
+                    calculatedHashExist = isCalculated;
                     return (*this);
                 }
-
 
                 size_t Data::dataSize() const {
                     return (size_t)std::max<int>((int)totalSize() - (int)Data::DATA_OVERHEAD, 0);
@@ -102,11 +109,38 @@ namespace hazelcast {
                 }
 
                 int Data::hashCode() const {
-                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
+                    if (!calculatedHashExist) {
+                        calculatedHash = MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
+                        calculatedHashExist = true;
+                    }
+                    return calculatedHash;
                 }
-
             }
         }
+    }
+}
+
+namespace boost {
+    /**
+     * Template specialization for the less operator comparing two shared_ptr Data.
+     */
+    template<>
+    bool operator <(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs, const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) {
+        const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
+        const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
+        if (leftPtr == rightPtr) {
+            return false;
+        }
+
+        if (leftPtr == NULL) {
+            return true;
+        }
+
+        if (rightPtr == NULL) {
+            return false;
+        }
+
+        return lhs->getPartitionHash() < rhs->getPartitionHash();
     }
 }
 

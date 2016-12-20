@@ -59,7 +59,7 @@ namespace hazelcast {
             }
 
             internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
-                return *hazelcastClient.nearCacheManager;
+                return hazelcastClient.nearCacheManager;
             }
 
             ClientProperties& ClientContext::getClientProperties() {

@@ -28,6 +28,14 @@ public:
     Person(const char *n) : name(new std::string(n)) {
     }
 
+    Person(const Person &rhs) {
+        if (rhs.name.get() == NULL) {
+            name.reset();
+        } else {
+            name = std::auto_ptr<std::string>(new std::string(*rhs.name));
+        }
+    }
+
     const std::string *getName() const {
         return name.get();
     }

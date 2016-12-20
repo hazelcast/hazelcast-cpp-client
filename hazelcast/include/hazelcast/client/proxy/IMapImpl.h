@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 void deleteEntry(const serialization::pimpl::Data& key);
 
-                void flush();
+                virtual void flush();
 
                 bool tryRemove(const serialization::pimpl::Data& key, long timeoutInMillis);
 
@@ -82,13 +82,13 @@ namespace hazelcast {
 
                 std::string addInterceptor(serialization::IdentifiedDataSerializable &interceptor);
 
-                void removeInterceptor(const std::string& id);
+                virtual void removeInterceptor(const std::string& id);
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const query::Predicate &predicate, bool includeValue);
 
-                bool removeEntryListener(const std::string& registrationId);
+                virtual bool removeEntryListener(const std::string& registrationId);
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const serialization::pimpl::Data& key, bool includeValue);
 
@@ -96,9 +96,9 @@ namespace hazelcast {
 
                 bool evict(const serialization::pimpl::Data& key);
 
-                void evictAll();
+                virtual void evictAll();
 
-                EntryVector getAllData(const std::vector<serialization::pimpl::Data>& keys);
+                EntryVector getAllData(const std::map<int, std::vector<serialization::pimpl::Data> > &partitionToKeyData);
 
                 std::vector<serialization::pimpl::Data> keySetData();
 
@@ -120,25 +120,28 @@ namespace hazelcast {
 
                 EntryVector valuesForPagingPredicateData(const serialization::IdentifiedDataSerializable &predicate);
 
-                void addIndex(const std::string& attribute, bool ordered);
+                virtual void addIndex(const std::string& attribute, bool ordered);
 
-                int size();
+                virtual int size();
 
-                bool isEmpty();
+                virtual bool isEmpty();
 
-                void putAll(const EntryVector& entries);
+                virtual void putAllData(const std::map<int, EntryVector> &entries);
 
-                void clear();
+                virtual void clear();
 
-                template<typename KEY, typename ENTRYPROCESSOR>
-                std::auto_ptr<serialization::pimpl::Data> executeOnKeyData(const KEY& key, ENTRYPROCESSOR &entryProcessor) {
-                    serialization::pimpl::Data keyData = toData(key);
-                    serialization::pimpl::Data processor = toData(entryProcessor); 
-                    int partitionId = getPartitionId(keyData);
+                std::auto_ptr<serialization::pimpl::Data> executeOnKeyData(const serialization::pimpl::Data& key,
+                                                                           const serialization::pimpl::Data &processor) {
+                    int partitionId = getPartitionId(key);
 
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnKeyCodec::RequestParameters::encode(getName(), processor, keyData, util::getThreadId());
+                    std::auto_ptr<protocol::ClientMessage> request =
+                            protocol::codec::MapExecuteOnKeyCodec::RequestParameters::encode(getName(),
+                                                                                             processor,
+                                                                                             key,
+                                                                                             util::getThreadId());
 
-                    return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
+                    return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>,
+                            protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
                 }
 
                 template<typename ENTRYPROCESSOR>

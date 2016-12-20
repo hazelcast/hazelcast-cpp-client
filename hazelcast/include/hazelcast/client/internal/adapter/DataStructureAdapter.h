@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_ADAPTER_IMAPDATASTRUCTUREADAPTER_H_
-#define HAZELCAST_CLIENT_INTERNAL_ADAPTER_IMAPDATASTRUCTUREADAPTER_H_
+#ifndef HAZELCAST_CLIENT_INTERNAL_ADAPTER_DATASTRUCTUREADAPTER_H_
+#define HAZELCAST_CLIENT_INTERNAL_ADAPTER_DATASTRUCTUREADAPTER_H_
 
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
+#include <assert.h>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -30,58 +31,58 @@ namespace hazelcast {
             namespace adapter {
                 /**
                  * Abstracts the Hazelcast data structures with Near Cache support for the Near Cache usage.
+                 * Note that this is an interface class. See IMapDataStructureAdapter for an implementation.
                  */
                 template <typename K, typename V>
-                class IMapDataStructureAdapter : public DataStructureAdapter<K, V> {
+                class DataStructureAdapter {
                 public:
-                    IMapDataStructureAdapter(map::ClientMapProxy<K, V> &imap) : map(imap) {
+                    virtual ~DataStructureAdapter() {
                     }
 
-                    virtual ~IMapDataStructureAdapter() {
+                    virtual void clear() {
+                        assert(0);
                     }
 
-                    void clear() {
-                        map.clear();
+                    virtual void set(const K &key, const V &value) {
+                        assert(0);
                     }
 
-                    void set(const K &key, const V &value) {
-                        map.set(key, value);
+                    virtual boost::shared_ptr<V> put(const K &key, const V &value) {
+                        assert(0);
+                        return boost::shared_ptr<V>();
                     }
 
-                    boost::shared_ptr<V> put(const K &key, const V &value) {
-                        return map.putIfAbsent(key, value);
-                    }
-
-                    boost::shared_ptr<V> get(const K &key) {
-                        return map.get(key);
+                    virtual boost::shared_ptr<V> get(const K &key) {
+                        assert(0);
+                        return boost::shared_ptr<V>();
                     }
 
 /*
-                    connection::CallFuture getAsync(const K &key) {
+                    virtual connection::CallFuture getAsync(const K &key) {
                     }
 */
 
-                    void putAll(const std::map<K, V> entries) {
-                        map.putAll(entries);
+                    virtual void putAll(const std::map<K, V> entries) {
+                        assert(0);
                     }
 
-                    std::map<K, V> getAll(const std::set<K> &keys) {
-                        return map.getAll(keys);
+                    virtual std::map<K, V> getAll(const std::set<K> &keys) {
+                        assert(0);
+                        return std::map<K, V>();
                     }
 
-                    void remove(const K &key) {
-                        map.remove(key);
+                    virtual void remove(const K &key) {
+                        assert(0);
                     }
 
                     /* TODO
-                    LocalMapStats getLocalMapStats() = 0;
+                    virtual LocalMapStats getLocalMapStats() = 0;
                     */
 
-                    bool containsKey(const K &key) const {
-                        return map.containsKey(key);
+                    virtual bool containsKey(const K &key) const {
+                        assert(0);
+                        return false;
                     }
-                private:
-                    map::ClientMapProxy<K, V> &map;
                 };
             }
         }
@@ -92,5 +93,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_ADAPTER_IMAPDATASTRUCTUREADAPTER_H_ */
+#endif /* HAZELCAST_CLIENT_INTERNAL_ADAPTER_DATASTRUCTUREADAPTER_H_ */
 

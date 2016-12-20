@@ -702,8 +702,6 @@ namespace hazelcast {
             void shutdown();
 
         private:
-            std::auto_ptr<internal::nearcache::NearCacheManager> createNearCacheManager();
-
             template <typename FACTORY>
             boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(
                     const std::string &serviceName, const std::string &name, FACTORY &factory) {
@@ -716,7 +714,7 @@ namespace hazelcast {
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
             connection::ConnectionManager connectionManager;
-            std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
+            internal::nearcache::NearCacheManager nearCacheManager;
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;
             spi::InvocationService invocationService;

@@ -24,11 +24,13 @@
 #ifndef HAZELCAST_DATA
 #define HAZELCAST_DATA
 
+#include <vector>
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/util/HazelcastDll.h"
-#include <vector>
+#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,7 +41,6 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-
                 class HAZELCAST_API Data {
                 public:
                     // type and partition_hash are always written with BIG_ENDIAN byte-order
@@ -55,9 +56,9 @@ namespace hazelcast {
 
                     Data(std::auto_ptr<std::vector<byte> > buffer);
 
-                    Data(const Data&);
+                    Data(const Data &rhs);
 
-                    Data& operator=(const Data&);
+                    Data &operator=(const Data &rhs);
 
                     size_t dataSize() const;
 
@@ -73,9 +74,10 @@ namespace hazelcast {
 
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;
+                    mutable util::AtomicInt calculatedHash;
+                    mutable util::AtomicBoolean calculatedHashExist;
 
                     int hashCode() const;
-
                 };
             }
         }

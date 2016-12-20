@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 31/03/14.
 //
-
-
 #ifndef HAZELCAST_Mutex
 #define HAZELCAST_Mutex
 

@@ -873,12 +873,11 @@ namespace hazelcast {
                 mapImpl->destroy();
             }
         private:
-            IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) : proxy(clientProxy) {
-                mapImpl = (map::ClientMapProxy<K, V> *) proxy.get();
+            IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) {
+                mapImpl = boost::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
             }
 
-            map::ClientMapProxy<K, V> *mapImpl;
-            boost::shared_ptr<spi::ClientProxy> proxy;
+            boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
         };
 
         template <typename K, typename V>
