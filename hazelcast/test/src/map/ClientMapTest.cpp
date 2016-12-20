@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,47 +49,54 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapTest : public ClientTestSupport {
-            protected:
-                class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
-                public:
-                    MapGetInterceptor(const std::string &prefix) : prefix(std::auto_ptr<std::string>(new std::string(prefix))) { }
+            class MapClientConfig : public ClientConfig {
+            public:
+                static const char *intMapName;
+                static const char *employeesMapName;
+                static const char *imapName;
 
-                    virtual int getFactoryId() const {
-                        return 666;
-                    }
-
-                    virtual int getClassId() const {
-                        return 6;
-                    }
-
-                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
-                        writer.writeUTF(prefix.get());
-                    }
-
-                    virtual void readData(serialization::ObjectDataInput &reader) {
-                        prefix = reader.readUTF();
-                    }
-                private:
-                    std::auto_ptr<std::string> prefix;
-                };
-
-                virtual void TearDown() {
-                    // clear maps
-                    employees->clear();
-                    intMap->clear();
-                    imap->clear();
+                MapClientConfig() {
+                    addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 }
+            };
 
+            const char *MapClientConfig::intMapName = "IntMap";
+            const char *MapClientConfig::employeesMapName = "EmployeesMap";
+            const char *MapClientConfig::imapName = "clientMapTest";
+
+            class NearCachedMapClientConfig : public MapClientConfig {
+            public:
+                NearCachedMapClientConfig() {
+                    boost::shared_ptr<config::NearCacheConfig> intMapNearCacheConfig(
+                            new config::NearCacheConfig(intMapName));
+                    addNearCacheConfig(intMapNearCacheConfig);
+
+                    boost::shared_ptr<config::NearCacheConfig> employeesCacheConfig(
+                            new config::NearCacheConfig(employeesMapName));
+                    addNearCacheConfig(employeesCacheConfig);
+
+                    boost::shared_ptr<config::NearCacheConfig> imapNearCacheConfig(
+                            new config::NearCacheConfig(imapName));
+                    addNearCacheConfig(imapNearCacheConfig);
+                }
+            };
+
+            template<typename CONFIGTYPE>
+            class ClientMapTest : public ClientTestSupport {
+            public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+
+                    clientConfig = new CONFIGTYPE();
+
                     client = new HazelcastClient(*clientConfig);
-                    imap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("clientMapTest"));
-                    intMap = new IMap<int, int>(client->getMap<int, int>("IntMap"));
-                    employees = new IMap<int, Employee>(client->getMap<int, Employee>("EmployeesMap"));
+
+                    imap = new IMap<std::string, std::string>(
+                            client->getMap<std::string, std::string>(MapClientConfig::imapName));
+                    intMap = new IMap<int, int>(client->getMap<int, int>(MapClientConfig::intMapName));
+                    employees = new IMap<int, Employee>(
+                            client->getMap<int, Employee>(MapClientConfig::employeesMapName));
                 }
 
                 static void TearDownTestCase() {
@@ -110,6 +117,40 @@ namespace hazelcast {
                     instance = NULL;
                 }
 
+            protected:
+                class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
+                public:
+                    MapGetInterceptor(const std::string &prefix) : prefix(
+                            std::auto_ptr<std::string>(new std::string(prefix))) { }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 6;
+                    }
+
+                    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeUTF(prefix.get());
+                    }
+
+                    virtual void readData(serialization::ObjectDataInput &reader) {
+                        prefix = reader.readUTF();
+                    }
+
+                private:
+                    std::auto_ptr<std::string> prefix;
+                };
+
+                virtual void TearDown() {
+                    // clear maps
+                    employees->clear();
+                    intMap->clear();
+                    imap->clear();
+                }
+
+
                 void fillMap() {
                     for (int i = 0; i < 10; i++) {
                         std::string key = "key";
@@ -120,279 +161,288 @@ namespace hazelcast {
                     }
                 }
 
+                static void tryPutThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    bool result = imap->tryPut("key1", "value3", 1 * 1000);
+                    if (!result) {
+                        latch->countDown();
+                    }
+                }
+
+                static void tryRemoveThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    bool result = imap->tryRemove("key2", 1 * 1000);
+                    if (!result) {
+                        latch->countDown();
+                    }
+                }
+
+                static void testLockThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    imap->tryPut("key1", "value2", 1);
+                    latch->countDown();
+                }
+
+                static void testLockTTLThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    imap->tryPut("key1", "value2", 5 * 1000);
+                    latch->countDown();
+                }
+
+                static void testLockTTL2Thread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    if (!imap->tryLock("key1")) {
+                        latch->countDown();
+                    }
+                    if (imap->tryLock("key1", 5 * 1000)) {
+                        latch->countDown();
+                    }
+                }
+
+                static void testMapTryLockThread1(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    if (!imap->tryLock("key1", 2)) {
+                        latch->countDown();
+                    }
+                }
+
+                static void testMapTryLockThread2(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    if (imap->tryLock("key1", 20 * 1000)) {
+                        latch->countDown();
+                    }
+                }
+
+                static void testMapForceUnlockThread(util::ThreadArgs &args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
+                    imap->forceUnlock("key1");
+                    latch->countDown();
+                }
+
+                template<typename K, typename V>
+                class CountdownListener : public EntryAdapter<K, V> {
+                public:
+                    CountdownListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
+                                      util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
+                            : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
+                              evictLatch(evictLatch) {
+                    }
+
+                    void entryAdded(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryAdded] " << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
+                        addLatch.countDown();
+                    }
+
+                    void entryRemoved(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryRemoved] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
+                        removeLatch.countDown();
+                    }
+
+                    void entryUpdated(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryUpdated] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
+                        updateLatch.countDown();
+                    }
+
+                    void entryEvicted(const EntryEvent<K, V> &event) {
+                        std::ostringstream out;
+                        out << "[entryEvicted] Key:" << event.getKey();
+                        util::ILogger::getLogger().info(out.str());
+
+                        evictLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &addLatch;
+                    util::CountDownLatch &removeLatch;
+                    util::CountDownLatch &updateLatch;
+                    util::CountDownLatch &evictLatch;
+                };
+
+                class MyListener : public EntryAdapter<std::string, std::string> {
+                public:
+                    MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
+                            : latch(latch), nullLatch(nullLatch) {
+                    }
+
+                    void entryAdded(const EntryEvent<std::string, std::string> &event) {
+                        latch.countDown();
+                    }
+
+                    void entryEvicted(const EntryEvent<std::string, std::string> &event) {
+                        const std::string &oldValue = event.getOldValue();
+                        if (oldValue.compare("")) {
+                            nullLatch.countDown();
+                        }
+                        latch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                    util::CountDownLatch &nullLatch;
+                };
+
+                class ClearListener : public EntryAdapter<std::string, std::string> {
+                public:
+                    ClearListener(util::CountDownLatch &latch) : latch(latch) {
+                    }
+
+                    void mapCleared(const MapEvent &event) {
+                        latch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                };
+
+                class EvictListener : public EntryAdapter<std::string, std::string> {
+                public:
+                    EvictListener(util::CountDownLatch &latch) : latch(latch) {
+                    }
+
+                    void mapEvicted(const MapEvent &event) {
+                        latch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                };
+
+                class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
+                public:
+                    SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
+                            : latch(latch), atomicInteger(atomicInteger) {
+
+                    }
+
+                    void entryAdded(const EntryEvent<Employee, int> &event) {
+                        ++atomicInteger;
+                        latch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                    util::AtomicInt &atomicInteger;
+                };
+
+                class EntryMultiplier : public serialization::IdentifiedDataSerializable {
+                public:
+                    EntryMultiplier(int multiplier) : multiplier(multiplier) { }
+
+                    /**
+                     * @return factory id
+                     */
+                    int getFactoryId() const {
+                        return 666;
+                    }
+
+                    /**
+                     * @return class id
+                     */
+                    int getClassId() const {
+                        return 3;
+                    }
+
+                    /**
+                     * Defines how this class will be written.
+                     * @param writer ObjectDataOutput
+                     */
+                    void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeInt(multiplier);
+                    }
+
+                    /**
+                     *Defines how this class will be read.
+                     * @param reader ObjectDataInput
+                     */
+                    void readData(serialization::ObjectDataInput &reader) {
+                        multiplier = reader.readInt();
+                    }
+
+                    int getMultiplier() const {
+                        return multiplier;
+                    }
+
+                private:
+                    int multiplier;
+                };
+
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
-                static ClientConfig *clientConfig;
+                static CONFIGTYPE *clientConfig;
                 static HazelcastClient *client;
                 static IMap<std::string, std::string> *imap;
                 static IMap<int, int> *intMap;
                 static IMap<int, Employee> *employees;
             };
 
-            HazelcastServer *ClientMapTest::instance = NULL;
-            HazelcastServer *ClientMapTest::instance2 = NULL;
-            ClientConfig *ClientMapTest::clientConfig = NULL;
-            HazelcastClient *ClientMapTest::client = NULL;
-            IMap<std::string, std::string> *ClientMapTest::imap = NULL;
-            IMap<int, int> *ClientMapTest::intMap = NULL;
-            IMap<int, Employee> *ClientMapTest::employees = NULL;
+            template<typename CONFIGTYPE>
+            HazelcastServer *ClientMapTest<CONFIGTYPE>::instance = NULL;
+            template<typename CONFIGTYPE>
+            HazelcastServer *ClientMapTest<CONFIGTYPE>::instance2 = NULL;
+            template<typename CONFIGTYPE>
+            CONFIGTYPE *ClientMapTest<CONFIGTYPE>::clientConfig = NULL;
+            template<typename CONFIGTYPE>
+            HazelcastClient *ClientMapTest<CONFIGTYPE>::client = NULL;
+            template<typename CONFIGTYPE>
+            IMap<std::string, std::string> *ClientMapTest<CONFIGTYPE>::imap = NULL;
+            template<typename CONFIGTYPE>
+            IMap<int, int> *ClientMapTest<CONFIGTYPE>::intMap = NULL;
+            template<typename CONFIGTYPE>
+            IMap<int, Employee> *ClientMapTest<CONFIGTYPE>::employees = NULL;
 
-            void tryPutThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                bool result = imap->tryPut("key1", "value3", 1 * 1000);
-                if (!result) {
-                    latch->countDown();
-                }
-            }
+            typedef ::testing::Types<MapClientConfig, NearCachedMapClientConfig> ConfigTypes;
+            TYPED_TEST_CASE(ClientMapTest, ConfigTypes);
 
-            void tryRemoveThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                bool result = imap->tryRemove("key2", 1 * 1000);
-                if (!result) {
-                    latch->countDown();
-                }
-            }
-
-            void testLockThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->tryPut("key1", "value2", 1);
-                latch->countDown();
-            }
-
-            void testLockTTLThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->tryPut("key1", "value2", 5 * 1000);
-                latch->countDown();
-            }
-
-            void testLockTTL2Thread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (!imap->tryLock("key1")) {
-                    latch->countDown();
-                }
-                if (imap->tryLock("key1", 5 * 1000)) {
-                    latch->countDown();
-                }
-            }
-
-            void testMapTryLockThread1(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (!imap->tryLock("key1", 2)) {
-                    latch->countDown();
-                }
-            }
-
-            void testMapTryLockThread2(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                if (imap->tryLock("key1", 20 * 1000)) {
-                    latch->countDown();
-                }
-            }
-
-            void testMapForceUnlockThread(util::ThreadArgs &args) {
-                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                IMap<std::string, std::string> *imap = (IMap<std::string, std::string> *) args.arg1;
-                imap->forceUnlock("key1");
-                latch->countDown();
-            }
-
-            template <typename K, typename V>
-            class CountdownListener : public EntryAdapter<K, V> {
-            public:
-                CountdownListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
-                                    util::CountDownLatch &updateLatch, util::CountDownLatch &evictLatch)
-                        : addLatch(addLatch), removeLatch(removeLatch), updateLatch(updateLatch),
-                          evictLatch(evictLatch) {
-                }
-
-                void entryAdded(const EntryEvent<K, V> &event) {
-                    std::ostringstream out;
-                    out << "[entryAdded] " << event.getKey();
-                    util::ILogger::getLogger().info(out.str());
-
-                    addLatch.countDown();
-                }
-
-                void entryRemoved(const EntryEvent<K, V> &event) {
-                    std::ostringstream out;
-                    out << "[entryRemoved] Key:" << event.getKey();
-                    util::ILogger::getLogger().info(out.str());
-
-                    removeLatch.countDown();
-                }
-
-                void entryUpdated(const EntryEvent<K, V> &event) {
-                    std::ostringstream out;
-                    out << "[entryUpdated] Key:" << event.getKey();
-                    util::ILogger::getLogger().info(out.str());
-
-                    updateLatch.countDown();
-                }
-
-                void entryEvicted(const EntryEvent<K, V> &event) {
-                    std::ostringstream out;
-                    out << "[entryEvicted] Key:" << event.getKey();
-                    util::ILogger::getLogger().info(out.str());
-
-                    evictLatch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &addLatch;
-                util::CountDownLatch &removeLatch;
-                util::CountDownLatch &updateLatch;
-                util::CountDownLatch &evictLatch;
-            };
-
-            class MyListener : public EntryAdapter<std::string, std::string> {
-            public:
-                MyListener(util::CountDownLatch &latch, util::CountDownLatch &nullLatch)
-                        : latch(latch), nullLatch(nullLatch) {
-                }
-
-                void entryAdded(const EntryEvent<std::string, std::string> &event) {
-                    latch.countDown();
-                }
-
-                void entryEvicted(const EntryEvent<std::string, std::string> &event) {
-                    const std::string &oldValue = event.getOldValue();
-                    if (oldValue.compare("")) {
-                        nullLatch.countDown();
-                    }
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &latch;
-                util::CountDownLatch &nullLatch;
-            };
-
-            class ClearListener : public EntryAdapter<std::string, std::string> {
-            public:
-                ClearListener(util::CountDownLatch &latch) : latch(latch) {
-                }
-
-                void mapCleared(const MapEvent &event) {
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &latch;
-            };
-
-            class EvictListener : public EntryAdapter<std::string, std::string> {
-            public:
-                EvictListener(util::CountDownLatch &latch) : latch(latch) {
-                }
-
-                void mapEvicted(const MapEvent &event) {
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &latch;
-            };
-
-            class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
-            public:
-                SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
-                        : latch(latch), atomicInteger(atomicInteger) {
-
-                }
-
-                void entryAdded(const EntryEvent<Employee, int> &event) {
-                    ++atomicInteger;
-                    latch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &latch;
-                util::AtomicInt &atomicInteger;
-            };
-
-            class EntryMultiplier : public serialization::IdentifiedDataSerializable {
-            public:
-                EntryMultiplier(int multiplier) : multiplier(multiplier) { }
-
-                /**
-                 * @return factory id
-                 */
-                int getFactoryId() const {
-                    return 666;
-                }
-
-                /**
-                 * @return class id
-                 */
-                int getClassId() const {
-                    return 3;
-                }
-
-                /**
-                 * Defines how this class will be written.
-                 * @param writer ObjectDataOutput
-                 */
-                void writeData(serialization::ObjectDataOutput &writer) const {
-                    writer.writeInt(multiplier);
-                }
-
-                /**
-                 *Defines how this class will be read.
-                 * @param reader ObjectDataInput
-                 */
-                void readData(serialization::ObjectDataInput &reader) {
-                    multiplier = reader.readInt();
-                }
-
-                int getMultiplier() const {
-                    return multiplier;
-                }
-
-            private:
-                int multiplier;
-            };
-
-            TEST_F(ClientMapTest, testIssue537) {
+            TYPED_TEST(ClientMapTest, testIssue537) {
                 util::CountDownLatch latch(2);
                 util::CountDownLatch nullLatch(1);
-                MyListener myListener(latch, nullLatch);
-                std::string id = imap->addEntryListener(myListener, true);
+                typename ClientMapTest<TypeParam>::MyListener myListener(latch, nullLatch);
+                std::string id = ClientMapTest<TypeParam>::imap->addEntryListener(myListener, true);
 
-                imap->put("key1", "value1", 2 * 1000);
+                ClientMapTest<TypeParam>::imap->put("key1", "value1", 2 * 1000);
 
                 ASSERT_TRUE(latch.await(10));
                 ASSERT_TRUE(nullLatch.await(1));
 
-                ASSERT_TRUE(imap->removeEntryListener(id));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
 
-                imap->put("key2", "value2");
-                ASSERT_EQ(1, imap->size());
+                ClientMapTest<TypeParam>::imap->put("key2", "value2");
+                ASSERT_EQ(1, ClientMapTest<TypeParam>::imap->size());
             }
 
-            TEST_F(ClientMapTest, testContains) {
-                fillMap();
+            TYPED_TEST(ClientMapTest, testContains) {
+                ClientMapTest<TypeParam>::fillMap();
 
-                ASSERT_FALSE(imap->containsKey("key10"));
-                ASSERT_TRUE(imap->containsKey("key1"));
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->containsKey("key10"));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->containsKey("key1"));
 
-                ASSERT_FALSE(imap->containsValue("value10"));
-                ASSERT_TRUE(imap->containsValue("value1"));
-
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->containsValue("value10"));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->containsValue("value1"));
             }
 
-            TEST_F(ClientMapTest, testGet) {
-                fillMap();
+            TYPED_TEST(ClientMapTest, testGet) {
+                ClientMapTest<TypeParam>::fillMap();
                 for (int i = 0; i < 10; i++) {
                     std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> temp = imap->get(key);
+                    boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get(key);
 
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
@@ -400,47 +450,48 @@ namespace hazelcast {
                 }
             }
 
-            TEST_F(ClientMapTest, testRemoveAndDelete) {
-                fillMap();
-                boost::shared_ptr<std::string> temp = imap->remove("key10");
+            TYPED_TEST(ClientMapTest, testRemoveAndDelete) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->remove("key10");
                 ASSERT_EQ(temp.get(), (std::string *) NULL);
-                imap->deleteEntry("key9");
-                ASSERT_EQ(imap->size(), 9);
+                ClientMapTest<TypeParam>::imap->deleteEntry("key9");
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
                     std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> temp2 = imap->remove(key);
+                    boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->remove(key);
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp2, value);
                 }
-                ASSERT_EQ(imap->size(), 0);
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 0);
             }
 
-            TEST_F(ClientMapTest, testRemoveIfSame) {
-                fillMap();
+            TYPED_TEST(ClientMapTest, testRemoveIfSame) {
+                ClientMapTest<TypeParam>::fillMap();
 
-                ASSERT_FALSE(imap->remove("key2", "value"));
-                ASSERT_EQ(10, imap->size());
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->remove("key2", "value"));
+                ASSERT_EQ(10, ClientMapTest<TypeParam>::imap->size());
 
-                ASSERT_TRUE((imap->remove("key2", "value2")));
-                ASSERT_EQ(9, imap->size());
+                ASSERT_TRUE((ClientMapTest<TypeParam>::imap->remove("key2", "value2")));
+                ASSERT_EQ(9, ClientMapTest<TypeParam>::imap->size());
 
             }
 
-            TEST_F(ClientMapTest, testGetAllPutAll) {
+            TYPED_TEST(ClientMapTest, testGetAllPutAll) {
 
                 std::map<std::string, std::string> mapTemp;
 
                 for (int i = 0; i < 100; i++) {
                     mapTemp[util::IOUtil::to_string(i)] = util::IOUtil::to_string(i);
                 }
-                imap->putAll(mapTemp);
-                ASSERT_EQ(imap->size(), 100);
+                ClientMapTest<TypeParam>::imap->putAll(mapTemp);
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 100);
 
                 for (int i = 0; i < 100; i++) {
                     std::string expected = util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> actual = imap->get(util::IOUtil::to_string(i));
+                    boost::shared_ptr<std::string> actual = ClientMapTest<TypeParam>::imap->get(
+                            util::IOUtil::to_string(i));
                     ASSERT_EQ(expected, *actual);
                 }
 
@@ -448,7 +499,7 @@ namespace hazelcast {
                 tempSet.insert(util::IOUtil::to_string(1));
                 tempSet.insert(util::IOUtil::to_string(3));
 
-                std::map<std::string, std::string> m2 = imap->getAll(tempSet);
+                std::map<std::string, std::string> m2 = ClientMapTest<TypeParam>::imap->getAll(tempSet);
 
                 ASSERT_EQ(2U, m2.size());
                 ASSERT_EQ(m2[util::IOUtil::to_string(1)], "1");
@@ -456,48 +507,50 @@ namespace hazelcast {
 
             }
 
-            TEST_F(ClientMapTest, testTryPutRemove) {
-
-                ASSERT_TRUE(imap->tryPut("key1", "value1", 1 * 1000));
-                ASSERT_TRUE(imap->tryPut("key2", "value2", 1 * 1000));
-                imap->lock("key1");
-                imap->lock("key2");
+            TYPED_TEST(ClientMapTest, testTryPutRemove) {
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryPut("key1", "value1", 1 * 1000));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryPut("key2", "value2", 1 * 1000));
+                ClientMapTest<TypeParam>::imap->lock("key1");
+                ClientMapTest<TypeParam>::imap->lock("key2");
 
                 util::CountDownLatch latch(2);
 
-                util::Thread t1(tryPutThread, &latch, imap);
-                util::Thread t2(tryRemoveThread, &latch, imap);
+                util::Thread t1(ClientMapTest<TypeParam>::tryPutThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::Thread t2(ClientMapTest<TypeParam>::tryRemoveThread, &latch, ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(20));
-                ASSERT_EQ("value1", *(imap->get("key1")));
-                ASSERT_EQ("value2", *(imap->get("key2")));
-                imap->forceUnlock("key1");
-                imap->forceUnlock("key2");
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key2")));
+                ClientMapTest<TypeParam>::imap->forceUnlock("key1");
+                ClientMapTest<TypeParam>::imap->forceUnlock("key2");
             }
 
-            TEST_F(ClientMapTest, testPutTtl) {
+            TYPED_TEST(ClientMapTest, testPutTtl) {
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
-                CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
-                std::string id = imap->addEntryListener(sampleEntryListener, false);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
+                        dummy, dummy, dummy, evict);
+                std::string id = ClientMapTest<TypeParam>::imap->addEntryListener(sampleEntryListener, false);
 
-                imap->put("key1", "value1", 2000);
-                boost::shared_ptr<std::string> temp = imap->get("key1");
+                ClientMapTest<TypeParam>::imap->put("key1", "value1", 2000);
+                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_EQ(*temp, "value1");
                 util::sleep(2);
                 // trigger eviction
-                boost::shared_ptr<std::string> temp2 = imap->get("key1");
+                boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_EQ(temp2.get(), (std::string *) NULL);
                 ASSERT_TRUE(evict.await(10));
 
-                ASSERT_TRUE(imap->removeEntryListener(id));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
             }
 
-            TEST_F(ClientMapTest, testPutConfigTtl) {
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>("OneSecondTtlMap");
+            TYPED_TEST(ClientMapTest, testPutConfigTtl) {
+                IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
+                        "OneSecondTtlMap");
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
-                CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
+                        dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.put("key1", "value1");
@@ -512,38 +565,41 @@ namespace hazelcast {
                 ASSERT_TRUE(map.removeEntryListener(id));
             }
 
-            TEST_F(ClientMapTest, testPutIfAbsent) {
-                boost::shared_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
+            TYPED_TEST(ClientMapTest, testPutIfAbsent) {
+                boost::shared_ptr<std::string> o = ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value1");
                 ASSERT_EQ(o.get(), (std::string *) NULL);
-                ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3")));
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3")));
             }
 
-            TEST_F(ClientMapTest, testPutIfAbsentTtl) {
-                ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *) NULL);
-                ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
+            TYPED_TEST(ClientMapTest, testPutIfAbsentTtl) {
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value1", 1000).get(),
+                          (std::string *) NULL);
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3", 1000)));
 
-                ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get());
-                ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
+                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3", 1000).get());
+                ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value4", 1000)));
             }
 
-            TEST_F(ClientMapTest, testSet) {
-                imap->set("key1", "value1");
-                ASSERT_EQ("value1", *(imap->get("key1")));
+            TYPED_TEST(ClientMapTest, testSet) {
+                ClientMapTest<TypeParam>::imap->set("key1", "value1");
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                imap->set("key1", "value2");
-                ASSERT_EQ("value2", *(imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->set("key1", "value2");
+                ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                imap->set("key1", "value3", 1000);
-                ASSERT_EQ("value3", *(imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->set("key1", "value3", 1000);
+                ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
+                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get());
             }
 
-            TEST_F(ClientMapTest, testSetTtl) {
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>("OneSecondTtlMap");
+            TYPED_TEST(ClientMapTest, testSetTtl) {
+                IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
+                        "OneSecondTtlMap");
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
-                CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
+                        dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.set("key1", "value1", 1000);
@@ -558,11 +614,13 @@ namespace hazelcast {
                 ASSERT_TRUE(map.removeEntryListener(id));
             }
 
-            TEST_F(ClientMapTest, testSetConfigTtl) {
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>("OneSecondTtlMap");
+            TYPED_TEST(ClientMapTest, testSetConfigTtl) {
+                IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
+                        "OneSecondTtlMap");
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
-                CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
+                        dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.set("key1", "value1");
@@ -577,90 +635,93 @@ namespace hazelcast {
                 ASSERT_TRUE(map.removeEntryListener(id));
             }
 
-            TEST_F(ClientMapTest, testLock) {
-                imap->put("key1", "value1");
-                ASSERT_EQ("value1", *(imap->get("key1")));
-                imap->lock("key1");
+            TYPED_TEST(ClientMapTest, testLock) {
+                ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t1(testLockThread, &latch, imap);
+                util::Thread t1(ClientMapTest<TypeParam>::testLockThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(5));
-                ASSERT_EQ("value1", *(imap->get("key1")));
-                imap->forceUnlock("key1");
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->forceUnlock("key1");
 
             }
 
-            TEST_F(ClientMapTest, testLockTtl) {
-                imap->put("key1", "value1");
-                ASSERT_EQ("value1", *(imap->get("key1")));
-                imap->lock("key1", 2 * 1000);
+            TYPED_TEST(ClientMapTest, testLockTtl) {
+                ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->lock("key1", 2 * 1000);
                 util::CountDownLatch latch(1);
-                util::Thread t1(testLockTTLThread, &latch, imap);
+                util::Thread t1(ClientMapTest<TypeParam>::testLockTTLThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
-                ASSERT_FALSE(imap->isLocked("key1"));
-                ASSERT_EQ("value2", *(imap->get("key1")));
-                imap->forceUnlock("key1");
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
+                ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                ClientMapTest<TypeParam>::imap->forceUnlock("key1");
 
             }
 
-            TEST_F(ClientMapTest, testLockTtl2) {
-                imap->lock("key1", 3 * 1000);
+            TYPED_TEST(ClientMapTest, testLockTtl2) {
+                ClientMapTest<TypeParam>::imap->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t1(testLockTTL2Thread, &latch, imap);
+                util::Thread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
-                imap->forceUnlock("key1");
+                ClientMapTest<TypeParam>::imap->forceUnlock("key1");
 
             }
 
-            TEST_F(ClientMapTest, testTryLock) {
+            TYPED_TEST(ClientMapTest, testTryLock) {
 
-                ASSERT_TRUE(imap->tryLock("key1", 2 * 1000));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t1(testMapTryLockThread1, &latch, imap);
+                util::Thread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
+                                ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(100));
 
-                ASSERT_TRUE(imap->isLocked("key1"));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(testMapTryLockThread2, &latch2, imap);
+                util::Thread t2(ClientMapTest<TypeParam>::testMapTryLockThread2, &latch2,
+                                ClientMapTest<TypeParam>::imap);
 
                 util::sleep(1);
-                imap->unlock("key1");
+                ClientMapTest<TypeParam>::imap->unlock("key1");
                 ASSERT_TRUE(latch2.await(100));
-                ASSERT_TRUE(imap->isLocked("key1"));
-                imap->forceUnlock("key1");
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
+                ClientMapTest<TypeParam>::imap->forceUnlock("key1");
 
             }
 
-            TEST_F(ClientMapTest, testForceUnlock) {
-                imap->lock("key1");
+            TYPED_TEST(ClientMapTest, testForceUnlock) {
+                ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t2(testMapForceUnlockThread, &latch, imap);
+                util::Thread t2(ClientMapTest<TypeParam>::testMapForceUnlockThread, &latch,
+                                ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(100));
                 t2.join();
-                ASSERT_FALSE(imap->isLocked("key1"));
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
 
             }
 
-            TEST_F(ClientMapTest, testValues) {
-                fillMap();
+            TYPED_TEST(ClientMapTest, testValues) {
+                ClientMapTest<TypeParam>::fillMap();
                 std::vector<std::string> tempVector;
                 query::SqlPredicate predicate("this == value1");
-                tempVector = imap->values(predicate);
+                tempVector = ClientMapTest<TypeParam>::imap->values(predicate);
                 ASSERT_EQ(1U, tempVector.size());
 
                 std::vector<std::string>::iterator it = tempVector.begin();
                 ASSERT_EQ("value1", *it);
             }
 
-            TEST_F(ClientMapTest, testValuesWithPredicate) {
+            TYPED_TEST(ClientMapTest, testValuesWithPredicate) {
                 const int numItems = 20;
                 for (int i = 0; i < numItems; ++i) {
-                    intMap->put(i, 2 * i);
+                    ClientMapTest<TypeParam>::intMap->put(i, 2 * i);
                 }
 
-                std::vector<int> values = intMap->values();
-                ASSERT_EQ(numItems, (int)values.size());
+                std::vector<int> values = ClientMapTest<TypeParam>::intMap->values();
+                ASSERT_EQ(numItems, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
@@ -668,23 +729,27 @@ namespace hazelcast {
 
                 // EqualPredicate
                 // key == 5
-                values = intMap->values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(1, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(1, (int) values.size());
                 ASSERT_EQ(2 * 5, values[0]);
 
                 // value == 8
-                values = intMap->values(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(1, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(1, (int) values.size());
                 ASSERT_EQ(8, values[0]);
 
                 // key == numItems
-                values = intMap->values(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
-                ASSERT_EQ(0, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
+                ASSERT_EQ(0, (int) values.size());
 
                 // NotEqual Predicate
                 // key != 5
-                values = intMap->values(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(numItems - 1, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(numItems - 1, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 5) {
@@ -695,8 +760,9 @@ namespace hazelcast {
                 }
 
                 // this(value) != 8
-                values = intMap->values(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(numItems - 1, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(numItems - 1, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 4) {
@@ -707,62 +773,67 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                values = intMap->values(query::TruePredicate());
-                ASSERT_EQ(numItems, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::TruePredicate());
+                ASSERT_EQ(numItems, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
                 // FalsePredicate
-                values = intMap->values(query::FalsePredicate());
-                ASSERT_EQ(0, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::FalsePredicate());
+                ASSERT_EQ(0, (int) values.size());
 
                 // BetweenPredicate
                 // 5 <= key <= 10
-                values = intMap->values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(values.begin(), values.end());
-                ASSERT_EQ(6, (int)values.size());
+                ASSERT_EQ(6, (int) values.size());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ(2 * (i + 5), values[i]);
                 }
 
                 // 20 <= key <=30
-                values = intMap->values(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
-                ASSERT_EQ(0, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
+                ASSERT_EQ(0, (int) values.size());
 
                 // GreaterLessPredicate
                 // value <= 10
-                values = intMap->values(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
-                ASSERT_EQ(6, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
+                                                         true));
+                ASSERT_EQ(6, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
                 // key < 7
-                values = intMap->values(
+                values = ClientMapTest<TypeParam>::intMap->values(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
-                ASSERT_EQ(7, (int)values.size());
+                ASSERT_EQ(7, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 7; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
                 // value >= 15
-                values = intMap->values(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
-                ASSERT_EQ(12, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
+                                                         false));
+                ASSERT_EQ(12, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 12; ++i) {
                     ASSERT_EQ(2 * (i + 8), values[i]);
                 }
 
                 // key > 5
-                values = intMap->values(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
-                ASSERT_EQ(14, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
+                                                         false));
+                ASSERT_EQ(14, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 14; ++i) {
                     ASSERT_EQ(2 * (i + 6), values[i]);
@@ -774,39 +845,41 @@ namespace hazelcast {
                 inVals[0] = 4;
                 inVals[1] = 10;
                 inVals[2] = 19;
-                values = intMap->values(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
-                ASSERT_EQ(3, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
+                ASSERT_EQ(3, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(2 * 4, values[0]);
                 ASSERT_EQ(2 * 10, values[1]);
                 ASSERT_EQ(2 * 19, values[2]);
 
                 // value in {4, 10, 19}
-                values = intMap->values(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                ASSERT_EQ(2, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(
+                        query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                ASSERT_EQ(2, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(4, values[0]);
                 ASSERT_EQ(10, values[1]);
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                values = intMap->values(query::InstanceOfPredicate("java.lang.Integer"));
-                ASSERT_EQ(20, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::InstanceOfPredicate("java.lang.Integer"));
+                ASSERT_EQ(20, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(2 * i, values[i]);
                 }
 
-                values = intMap->values(query::InstanceOfPredicate("java.lang.String"));
-                ASSERT_EQ(0, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::InstanceOfPredicate("java.lang.String"));
+                ASSERT_EQ(0, (int) values.size());
 
                 // NotPredicate
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::getKeyAttributeName(), 5, 10));
                 query::NotPredicate notPredicate(bp);
-                values = intMap->values(notPredicate);
-                ASSERT_EQ(14, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(notPredicate);
+                ASSERT_EQ(14, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 14; ++i) {
                     if (i >= 5) {
@@ -822,8 +895,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                values = intMap->values(query::AndPredicate().add(bp).add(inPred));
-                ASSERT_EQ(1, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::AndPredicate().add(bp).add(inPred));
+                ASSERT_EQ(1, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(10, values[0]);
 
@@ -833,8 +906,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                values = intMap->values(query::OrPredicate().add(bp).add(inPred));
-                ASSERT_EQ(7, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::OrPredicate().add(bp).add(inPred));
+                ASSERT_EQ(7, (int) values.size());
                 std::sort(values.begin(), values.end());
                 ASSERT_EQ(4, values[0]);
                 ASSERT_EQ(10, values[1]);
@@ -849,23 +922,23 @@ namespace hazelcast {
                     key += util::IOUtil::to_string(i);
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
-                    imap->put(key, value);
+                    ClientMapTest<TypeParam>::imap->put(key, value);
                 }
-                imap->put("key_111_test", "myvalue_111_test");
-                imap->put("key_22_test", "myvalue_22_test");
+                ClientMapTest<TypeParam>::imap->put("key_111_test", "myvalue_111_test");
+                ClientMapTest<TypeParam>::imap->put("key_22_test", "myvalue_22_test");
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::string> strValues = imap->values(
+                std::vector<std::string> strValues = ClientMapTest<TypeParam>::imap->values(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
-                ASSERT_EQ(1, (int)strValues.size());
+                ASSERT_EQ(1, (int) strValues.size());
                 ASSERT_EQ("value1", strValues[0]);
 
                 // ILikePredicate
                 // value ILIKE "%VALue%1%" : {"myvalue_111_test", "value1", "value10", "value11"}
-                strValues = imap->values(
+                strValues = ClientMapTest<TypeParam>::imap->values(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
-                ASSERT_EQ(4, (int)strValues.size());
+                ASSERT_EQ(4, (int) strValues.size());
                 std::sort(strValues.begin(), strValues.end());
                 ASSERT_EQ("myvalue_111_test", strValues[0]);
                 ASSERT_EQ("value1", strValues[1]);
@@ -873,8 +946,9 @@ namespace hazelcast {
                 ASSERT_EQ("value11", strValues[3]);
 
                 // value ILIKE "%VAL%2%" : {"myvalue_22_test", "value2"}
-                strValues = imap->values(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
-                ASSERT_EQ(2, (int)strValues.size());
+                strValues = ClientMapTest<TypeParam>::imap->values(
+                        query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
+                ASSERT_EQ(2, (int) strValues.size());
                 std::sort(strValues.begin(), strValues.end());
                 ASSERT_EQ("myvalue_22_test", strValues[0]);
                 ASSERT_EQ("value2", strValues[1]);
@@ -883,8 +957,8 @@ namespace hazelcast {
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
                 util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
-                values = intMap->values(query::SqlPredicate(sql));
-                ASSERT_EQ(4, (int)values.size());
+                values = ClientMapTest<TypeParam>::intMap->values(query::SqlPredicate(sql));
+                ASSERT_EQ(4, (int) values.size());
                 std::sort(values.begin(), values.end());
                 for (int i = 0; i < 4; ++i) {
                     ASSERT_EQ(2 * (i + 4), values[i]);
@@ -892,38 +966,38 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {myvalue_22_test, value2}
-                strValues = imap->values(
+                strValues = ClientMapTest<TypeParam>::imap->values(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
-                ASSERT_EQ(2, (int)strValues.size());
+                ASSERT_EQ(2, (int) strValues.size());
                 std::sort(strValues.begin(), strValues.end());
                 ASSERT_EQ("myvalue_22_test", strValues[0]);
                 ASSERT_EQ("value2", strValues[1]);
             }
 
-            TEST_F(ClientMapTest, testValuesWithPagingPredicate) {
+            TYPED_TEST(ClientMapTest, testValuesWithPagingPredicate) {
                 int predSize = 5;
                 const int totalEntries = 25;
 
                 for (int i = 0; i < totalEntries; ++i) {
-                    intMap->put(i, i);
+                    ClientMapTest<TypeParam>::intMap->put(i, i);
                 }
 
-                query::PagingPredicate<int, int> predicate((size_t)predSize);
+                query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                std::vector<int> values = intMap->values(predicate);
+                std::vector<int> values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 predicate.nextPage();
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
@@ -937,11 +1011,11 @@ namespace hazelcast {
                 ASSERT_EQ(9, *anchor->first);
                 ASSERT_EQ(9, *anchor->second);
 
-                ASSERT_EQ(1, (int)predicate.getPage());
+                ASSERT_EQ(1, (int) predicate.getPage());
 
                 predicate.setPage(4);
 
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
@@ -959,37 +1033,37 @@ namespace hazelcast {
                 ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
                 ASSERT_NE((int *) NULL, anchorEntry->second.first);
                 ASSERT_NE((int *) NULL, anchorEntry->second.second);
-                ASSERT_EQ(3, (int)anchorEntry->first);
+                ASSERT_EQ(3, (int) anchorEntry->first);
                 ASSERT_EQ(19, *anchorEntry->second.first);
                 ASSERT_EQ(19, *anchorEntry->second.second);
 
                 predicate.nextPage();
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(0);
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 predicate.previousPage();
-                ASSERT_EQ(0, (int)predicate.getPage());
+                ASSERT_EQ(0, (int) predicate.getPage());
 
                 predicate.setPage(5);
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(3);
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(3 * predSize + i, values[i]);
                 }
 
                 predicate.previousPage();
-                values = intMap->values(predicate);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(2 * predSize + i, values[i]);
@@ -1000,7 +1074,7 @@ namespace hazelcast {
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
                 query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
-                values = intMap->values(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate2);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
@@ -1008,14 +1082,14 @@ namespace hazelcast {
 
                 predicate2.nextPage();
                 // match values 5,6, 7, 8
-                values = intMap->values(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
                     ASSERT_EQ(predSize + i, values[i]);
                 }
 
                 predicate2.nextPage();
-                values = intMap->values(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->values(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
                 // test paging predicate with comparator
@@ -1026,36 +1100,37 @@ namespace hazelcast {
                 Employee empl5("veli", 44);
                 Employee empl6("aylin", 5);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
-                employees->put(6, empl4);
-                employees->put(7, empl5);
-                employees->put(8, empl6);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(6, empl4);
+                ClientMapTest<TypeParam>::employees->put(7, empl5);
+                ClientMapTest<TypeParam>::employees->put(8, empl6);
 
                 predSize = 2;
                 query::PagingPredicate<int, Employee> predicate3(
-                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()), (size_t) predSize);
-                std::vector<Employee> result = employees->values(predicate3);
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
+                        (size_t) predSize);
+                std::vector<Employee> result = ClientMapTest<TypeParam>::employees->values(predicate3);
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl6, result[0]);
                 ASSERT_EQ(empl2, result[1]);
 
                 predicate3.nextPage();
-                result = employees->values(predicate3);
+                result = ClientMapTest<TypeParam>::employees->values(predicate3);
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(empl3, result[0]);
                 ASSERT_EQ(empl4, result[1]);
             }
 
-            TEST_F(ClientMapTest, testKeySetWithPredicate) {
+            TYPED_TEST(ClientMapTest, testKeySetWithPredicate) {
                 const int numItems = 20;
                 for (int i = 0; i < numItems; ++i) {
-                    intMap->put(i, 2 * i);
+                    ClientMapTest<TypeParam>::intMap->put(i, 2 * i);
                 }
 
-                std::vector<int> keys = intMap->keySet();
-                ASSERT_EQ(numItems, (int)keys.size());
+                std::vector<int> keys = ClientMapTest<TypeParam>::intMap->keySet();
+                ASSERT_EQ(numItems, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(i, keys[i]);
@@ -1063,23 +1138,27 @@ namespace hazelcast {
 
                 // EqualPredicate
                 // key == 5
-                keys = intMap->keySet(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(1, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(1, (int) keys.size());
                 ASSERT_EQ(5, keys[0]);
 
                 // value == 8
-                keys = intMap->keySet(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(1, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(1, (int) keys.size());
                 ASSERT_EQ(4, keys[0]);
 
                 // key == numItems
-                keys = intMap->keySet(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
-                ASSERT_EQ(0, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
+                ASSERT_EQ(0, (int) keys.size());
 
                 // NotEqual Predicate
                 // key != 5
-                keys = intMap->keySet(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(numItems - 1, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(numItems - 1, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 5) {
@@ -1090,8 +1169,9 @@ namespace hazelcast {
                 }
 
                 // value != 8
-                keys = intMap->keySet(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(numItems - 1, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(numItems - 1, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 4) {
@@ -1102,62 +1182,67 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                keys = intMap->keySet(query::TruePredicate());
-                ASSERT_EQ(numItems, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::TruePredicate());
+                ASSERT_EQ(numItems, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(i, keys[i]);
                 }
 
                 // FalsePredicate
-                keys = intMap->keySet(query::FalsePredicate());
-                ASSERT_EQ(0, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::FalsePredicate());
+                ASSERT_EQ(0, (int) keys.size());
 
                 // BetweenPredicate
                 // 5 <= key <= 10
-                keys = intMap->keySet(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(keys.begin(), keys.end());
-                ASSERT_EQ(6, (int)keys.size());
+                ASSERT_EQ(6, (int) keys.size());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ((i + 5), keys[i]);
                 }
 
                 // 20 <= key <=30
-                keys = intMap->keySet(query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
-                ASSERT_EQ(0, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
+                ASSERT_EQ(0, (int) keys.size());
 
                 // GreaterLessPredicate
                 // value <= 10
-                keys = intMap->keySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
-                ASSERT_EQ(6, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
+                                                         true));
+                ASSERT_EQ(6, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ(i, keys[i]);
                 }
 
                 // key < 7
-                keys = intMap->keySet(
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
-                ASSERT_EQ(7, (int)keys.size());
+                ASSERT_EQ(7, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 7; ++i) {
                     ASSERT_EQ(i, keys[i]);
                 }
 
                 // value >= 15
-                keys = intMap->keySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
-                ASSERT_EQ(12, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
+                                                         false));
+                ASSERT_EQ(12, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 12; ++i) {
                     ASSERT_EQ(i + 8, keys[i]);
                 }
 
                 // key > 5
-                keys = intMap->keySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
-                ASSERT_EQ(14, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
+                                                         false));
+                ASSERT_EQ(14, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 14; ++i) {
                     ASSERT_EQ(i + 6, keys[i]);
@@ -1169,39 +1254,41 @@ namespace hazelcast {
                 inVals[0] = 4;
                 inVals[1] = 10;
                 inVals[2] = 19;
-                keys = intMap->keySet(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
-                ASSERT_EQ(3, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
+                ASSERT_EQ(3, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(4, keys[0]);
                 ASSERT_EQ(10, keys[1]);
                 ASSERT_EQ(19, keys[2]);
 
                 // value in {4, 10, 19}
-                keys = intMap->keySet(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                ASSERT_EQ(2, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(
+                        query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                ASSERT_EQ(2, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(2, keys[0]);
                 ASSERT_EQ(5, keys[1]);
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                keys = intMap->keySet(query::InstanceOfPredicate("java.lang.Integer"));
-                ASSERT_EQ(20, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::InstanceOfPredicate("java.lang.Integer"));
+                ASSERT_EQ(20, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(i, keys[i]);
                 }
 
-                keys = intMap->keySet(query::InstanceOfPredicate("java.lang.String"));
-                ASSERT_EQ(0, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::InstanceOfPredicate("java.lang.String"));
+                ASSERT_EQ(0, (int) keys.size());
 
                 // NotPredicate
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::getKeyAttributeName(), 5, 10));
                 query::NotPredicate notPredicate(bp);
-                keys = intMap->keySet(notPredicate);
-                ASSERT_EQ(14, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(notPredicate);
+                ASSERT_EQ(14, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 14; ++i) {
                     if (i >= 5) {
@@ -1217,8 +1304,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                keys = intMap->keySet(query::AndPredicate().add(bp).add(inPred));
-                ASSERT_EQ(1, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::AndPredicate().add(bp).add(inPred));
+                ASSERT_EQ(1, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(5, keys[0]);
 
@@ -1228,8 +1315,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                keys = intMap->keySet(query::OrPredicate().add(bp).add(inPred));
-                ASSERT_EQ(7, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::OrPredicate().add(bp).add(inPred));
+                ASSERT_EQ(7, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 ASSERT_EQ(2, keys[0]);
                 ASSERT_EQ(5, keys[1]);
@@ -1244,22 +1331,23 @@ namespace hazelcast {
                     key += util::IOUtil::to_string(i);
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
-                    imap->put(key, value);
+                    ClientMapTest<TypeParam>::imap->put(key, value);
                 }
-                imap->put("key_111_test", "myvalue_111_test");
-                imap->put("key_22_test", "myvalue_22_test");
+                ClientMapTest<TypeParam>::imap->put("key_111_test", "myvalue_111_test");
+                ClientMapTest<TypeParam>::imap->put("key_22_test", "myvalue_22_test");
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::string> strKeys = imap->keySet(
+                std::vector<std::string> strKeys = ClientMapTest<TypeParam>::imap->keySet(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
-                ASSERT_EQ(1, (int)strKeys.size());
+                ASSERT_EQ(1, (int) strKeys.size());
                 ASSERT_EQ("key1", strKeys[0]);
 
                 // ILikePredicate
                 // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
-                strKeys = imap->keySet(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
-                ASSERT_EQ(4, (int)strKeys.size());
+                strKeys = ClientMapTest<TypeParam>::imap->keySet(
+                        query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
+                ASSERT_EQ(4, (int) strKeys.size());
                 std::sort(strKeys.begin(), strKeys.end());
                 ASSERT_EQ("key1", strKeys[0]);
                 ASSERT_EQ("key10", strKeys[1]);
@@ -1267,8 +1355,9 @@ namespace hazelcast {
                 ASSERT_EQ("key_111_test", strKeys[3]);
 
                 // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
-                strKeys = imap->keySet(query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
-                ASSERT_EQ(2, (int)strKeys.size());
+                strKeys = ClientMapTest<TypeParam>::imap->keySet(
+                        query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
+                ASSERT_EQ(2, (int) strKeys.size());
                 std::sort(strKeys.begin(), strKeys.end());
                 ASSERT_EQ("key2", strKeys[0]);
                 ASSERT_EQ("key_22_test", strKeys[1]);
@@ -1277,8 +1366,8 @@ namespace hazelcast {
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
                 util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
-                keys = intMap->keySet(query::SqlPredicate(sql));
-                ASSERT_EQ(4, (int)keys.size());
+                keys = ClientMapTest<TypeParam>::intMap->keySet(query::SqlPredicate(sql));
+                ASSERT_EQ(4, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
                 for (int i = 0; i < 4; ++i) {
                     ASSERT_EQ(i + 4, keys[i]);
@@ -1286,38 +1375,38 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {key_22_test, value2}
-                strKeys = imap->keySet(
+                strKeys = ClientMapTest<TypeParam>::imap->keySet(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
-                ASSERT_EQ(2, (int)strKeys.size());
+                ASSERT_EQ(2, (int) strKeys.size());
                 std::sort(strKeys.begin(), strKeys.end());
                 ASSERT_EQ("key2", strKeys[0]);
                 ASSERT_EQ("key_22_test", strKeys[1]);
             }
 
-            TEST_F(ClientMapTest, testKeySetWithPagingPredicate) {
+            TYPED_TEST(ClientMapTest, testKeySetWithPagingPredicate) {
                 int predSize = 5;
                 const int totalEntries = 25;
 
                 for (int i = 0; i < totalEntries; ++i) {
-                    intMap->put(i, i);
+                    ClientMapTest<TypeParam>::intMap->put(i, i);
                 }
 
-                query::PagingPredicate<int, int> predicate((size_t)predSize);
+                query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                std::vector<int> values = intMap->keySet(predicate);
+                std::vector<int> values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 predicate.nextPage();
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
@@ -1329,11 +1418,11 @@ namespace hazelcast {
                 ASSERT_NE((int *) NULL, anchor->first);
                 ASSERT_EQ(9, *anchor->first);
 
-                ASSERT_EQ(1, (int)predicate.getPage());
+                ASSERT_EQ(1, (int) predicate.getPage());
 
                 predicate.setPage(4);
 
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
@@ -1348,36 +1437,36 @@ namespace hazelcast {
                 const std::pair<size_t, std::pair<int *, int *> > *anchorEntry = predicate.getNearestAnchorEntry();
                 ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
                 ASSERT_NE((int *) NULL, anchorEntry->second.first);
-                ASSERT_EQ(3, (int)anchorEntry->first);
+                ASSERT_EQ(3, (int) anchorEntry->first);
                 ASSERT_EQ(19, *anchorEntry->second.first);
 
                 predicate.nextPage();
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(0);
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
                 }
 
                 predicate.previousPage();
-                ASSERT_EQ(0, (int)predicate.getPage());
+                ASSERT_EQ(0, (int) predicate.getPage());
 
                 predicate.setPage(5);
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(3);
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(3 * predSize + i, values[i]);
                 }
 
                 predicate.previousPage();
-                values = intMap->keySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(2 * predSize + i, values[i]);
@@ -1388,7 +1477,7 @@ namespace hazelcast {
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
                 query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
-                values = intMap->keySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate2);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     ASSERT_EQ(i, values[i]);
@@ -1396,14 +1485,14 @@ namespace hazelcast {
 
                 predicate2.nextPage();
                 // match values 5,6, 7, 8
-                values = intMap->keySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
                     ASSERT_EQ(predSize + i, values[i]);
                 }
 
                 predicate2.nextPage();
-                values = intMap->keySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->keySet(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
                 // test paging predicate with comparator
@@ -1414,39 +1503,40 @@ namespace hazelcast {
                 Employee empl5("veli", 44);
                 Employee empl6("aylin", 5);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
-                employees->put(6, empl4);
-                employees->put(7, empl5);
-                employees->put(8, empl6);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(6, empl4);
+                ClientMapTest<TypeParam>::employees->put(7, empl5);
+                ClientMapTest<TypeParam>::employees->put(8, empl6);
 
                 predSize = 2;
                 query::PagingPredicate<int, Employee> predicate3(
-                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()), (size_t) predSize);
-                std::vector<int> result = employees->keySet(predicate3);
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()),
+                        (size_t) predSize);
+                std::vector<int> result = ClientMapTest<TypeParam>::employees->keySet(predicate3);
                 // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(3, result[0]);
                 ASSERT_EQ(4, result[1]);
 
                 predicate3.nextPage();
-                result = employees->keySet(predicate3);
+                result = ClientMapTest<TypeParam>::employees->keySet(predicate3);
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(5, result[0]);
                 ASSERT_EQ(6, result[1]);
             }
 
-            TEST_F(ClientMapTest, testEntrySetWithPredicate) {
+            TYPED_TEST(ClientMapTest, testEntrySetWithPredicate) {
                 const int numItems = 20;
                 std::vector<std::pair<int, int> > expected(numItems);
                 for (int i = 0; i < numItems; ++i) {
-                    intMap->put(i, 2 * i);
+                    ClientMapTest<TypeParam>::intMap->put(i, 2 * i);
                     expected[i] = std::pair<int, int>(i, 2 * i);
                 }
 
-                std::vector<std::pair<int, int> > entries = intMap->entrySet();
-                ASSERT_EQ(numItems, (int)entries.size());
+                std::vector<std::pair<int, int> > entries = ClientMapTest<TypeParam>::intMap->entrySet();
+                ASSERT_EQ(numItems, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
@@ -1454,24 +1544,27 @@ namespace hazelcast {
 
                 // EqualPredicate
                 // key == 5
-                entries = intMap->entrySet(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(1, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(1, (int) entries.size());
                 ASSERT_EQ(expected[5], entries[0]);
 
                 // value == 8
-                entries = intMap->entrySet(query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(1, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(1, (int) entries.size());
                 ASSERT_EQ(expected[4], entries[0]);
 
                 // key == numItems
-                entries = intMap->entrySet(
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
                         query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), numItems));
-                ASSERT_EQ(0, (int)entries.size());
+                ASSERT_EQ(0, (int) entries.size());
 
                 // NotEqual Predicate
                 // key != 5
-                entries = intMap->entrySet(query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
-                ASSERT_EQ(numItems - 1, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5));
+                ASSERT_EQ(numItems - 1, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 5) {
@@ -1482,8 +1575,9 @@ namespace hazelcast {
                 }
 
                 // value != 8
-                entries = intMap->entrySet(query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
-                ASSERT_EQ(numItems - 1, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::NotEqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 8));
+                ASSERT_EQ(numItems - 1, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems - 1; ++i) {
                     if (i >= 4) {
@@ -1494,64 +1588,67 @@ namespace hazelcast {
                 }
 
                 // TruePredicate
-                entries = intMap->entrySet(query::TruePredicate());
-                ASSERT_EQ(numItems, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::TruePredicate());
+                ASSERT_EQ(numItems, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
                 // FalsePredicate
-                entries = intMap->entrySet(query::FalsePredicate());
-                ASSERT_EQ(0, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::FalsePredicate());
+                ASSERT_EQ(0, (int) entries.size());
 
                 // BetweenPredicate
                 // 5 <= key <= 10
-                entries = intMap->entrySet(
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::sort(entries.begin(), entries.end());
-                ASSERT_EQ(6, (int)entries.size());
+                ASSERT_EQ(6, (int) entries.size());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ(expected[i + 5], entries[i]);
                 }
 
                 // 20 <= key <=30
-                entries = intMap->entrySet(
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
                         query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20, 30));
-                ASSERT_EQ(0, (int)entries.size());
+                ASSERT_EQ(0, (int) entries.size());
 
                 // GreaterLessPredicate
                 // value <= 10
-                entries = intMap->entrySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true, true));
-                ASSERT_EQ(6, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 10, true,
+                                                         true));
+                ASSERT_EQ(6, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 6; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
                 // key < 7
-                entries = intMap->entrySet(
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
                         query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 7, false, true));
-                ASSERT_EQ(7, (int)entries.size());
+                ASSERT_EQ(7, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 7; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
                 // value >= 15
-                entries = intMap->entrySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true, false));
-                ASSERT_EQ(12, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 15, true,
+                                                         false));
+                ASSERT_EQ(12, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 12; ++i) {
                     ASSERT_EQ(expected[i + 8], entries[i]);
                 }
 
                 // key > 5
-                entries = intMap->entrySet(
-                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false, false));
-                ASSERT_EQ(14, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, false,
+                                                         false));
+                ASSERT_EQ(14, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 14; ++i) {
                     ASSERT_EQ(expected[i + 6], entries[i]);
@@ -1563,39 +1660,41 @@ namespace hazelcast {
                 inVals[0] = 4;
                 inVals[1] = 10;
                 inVals[2] = 19;
-                entries = intMap->entrySet(query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
-                ASSERT_EQ(3, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::InPredicate<int>(query::QueryConstants::getKeyAttributeName(), inVals));
+                ASSERT_EQ(3, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[4], entries[0]);
                 ASSERT_EQ(expected[10], entries[1]);
                 ASSERT_EQ(expected[19], entries[2]);
 
                 // value in {4, 10, 19}
-                entries = intMap->entrySet(query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                ASSERT_EQ(2, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(
+                        query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
+                ASSERT_EQ(2, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[2], entries[0]);
                 ASSERT_EQ(expected[5], entries[1]);
 
                 // InstanceOfPredicate
                 // value instanceof Integer
-                entries = intMap->entrySet(query::InstanceOfPredicate("java.lang.Integer"));
-                ASSERT_EQ(20, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::InstanceOfPredicate("java.lang.Integer"));
+                ASSERT_EQ(20, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < numItems; ++i) {
                     ASSERT_EQ(expected[i], entries[i]);
                 }
 
-                entries = intMap->entrySet(query::InstanceOfPredicate("java.lang.String"));
-                ASSERT_EQ(0, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::InstanceOfPredicate("java.lang.String"));
+                ASSERT_EQ(0, (int) entries.size());
 
                 // NotPredicate
                 // !(5 <= key <= 10)
                 std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
                         query::QueryConstants::getKeyAttributeName(), 5, 10));
                 query::NotPredicate notPredicate(bp);
-                entries = intMap->entrySet(notPredicate);
-                ASSERT_EQ(14, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(notPredicate);
+                ASSERT_EQ(14, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 14; ++i) {
                     if (i >= 5) {
@@ -1611,8 +1710,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                entries = intMap->entrySet(query::AndPredicate().add(bp).add(inPred));
-                ASSERT_EQ(1, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::AndPredicate().add(bp).add(inPred));
+                ASSERT_EQ(1, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[5], entries[0]);
 
@@ -1622,8 +1721,8 @@ namespace hazelcast {
                         new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
                 inPred = std::auto_ptr<query::Predicate>(
                         new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
-                entries = intMap->entrySet(query::OrPredicate().add(bp).add(inPred));
-                ASSERT_EQ(7, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::OrPredicate().add(bp).add(inPred));
+                ASSERT_EQ(7, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 ASSERT_EQ(expected[2], entries[0]);
                 ASSERT_EQ(expected[5], entries[1]);
@@ -1639,26 +1738,26 @@ namespace hazelcast {
                     key += util::IOUtil::to_string(i);
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
-                    imap->put(key, value);
+                    ClientMapTest<TypeParam>::imap->put(key, value);
                     expectedStrEntries[i] = std::pair<std::string, std::string>(key, value);
                 }
-                imap->put("key_111_test", "myvalue_111_test");
+                ClientMapTest<TypeParam>::imap->put("key_111_test", "myvalue_111_test");
                 expectedStrEntries[12] = std::pair<std::string, std::string>("key_111_test", "myvalue_111_test");
-                imap->put("key_22_test", "myvalue_22_test");
+                ClientMapTest<TypeParam>::imap->put("key_22_test", "myvalue_22_test");
                 expectedStrEntries[13] = std::pair<std::string, std::string>("key_22_test", "myvalue_22_test");
 
                 // LikePredicate
                 // value LIKE "value1" : {"value1"}
-                std::vector<std::pair<std::string, std::string> > strEntries = imap->entrySet(
+                std::vector<std::pair<std::string, std::string> > strEntries = ClientMapTest<TypeParam>::imap->entrySet(
                         query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
-                ASSERT_EQ(1, (int)strEntries.size());
+                ASSERT_EQ(1, (int) strEntries.size());
                 ASSERT_EQ(expectedStrEntries[1], strEntries[0]);
 
                 // ILikePredicate
                 // value ILIKE "%VALue%1%" : {"key_111_test", "key1", "key10", "key11"}
-                strEntries = imap->entrySet(
+                strEntries = ClientMapTest<TypeParam>::imap->entrySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VALue%1%"));
-                ASSERT_EQ(4, (int)strEntries.size());
+                ASSERT_EQ(4, (int) strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[1], strEntries[0]);
                 ASSERT_EQ(expectedStrEntries[10], strEntries[1]);
@@ -1666,9 +1765,9 @@ namespace hazelcast {
                 ASSERT_EQ(expectedStrEntries[12], strEntries[3]);
 
                 // key ILIKE "%VAL%2%" : {"key_22_test", "key2"}
-                strEntries = imap->entrySet(
+                strEntries = ClientMapTest<TypeParam>::imap->entrySet(
                         query::ILikePredicate(query::QueryConstants::getValueAttributeName(), "%VAL%2%"));
-                ASSERT_EQ(2, (int)strEntries.size());
+                ASSERT_EQ(2, (int) strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[2], strEntries[0]);
                 ASSERT_EQ(expectedStrEntries[13], strEntries[1]);
@@ -1677,8 +1776,8 @@ namespace hazelcast {
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
                 util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
-                entries = intMap->entrySet(query::SqlPredicate(sql));
-                ASSERT_EQ(4, (int)entries.size());
+                entries = ClientMapTest<TypeParam>::intMap->entrySet(query::SqlPredicate(sql));
+                ASSERT_EQ(4, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
                 for (int i = 0; i < 4; ++i) {
                     ASSERT_EQ(expected[i + 4], entries[i]);
@@ -1686,32 +1785,32 @@ namespace hazelcast {
 
                 // RegexPredicate
                 // value matches the regex ".*value.*2.*" : {key_22_test, value2}
-                strEntries = imap->entrySet(
+                strEntries = ClientMapTest<TypeParam>::imap->entrySet(
                         query::RegexPredicate(query::QueryConstants::getValueAttributeName(), ".*value.*2.*"));
-                ASSERT_EQ(2, (int)strEntries.size());
+                ASSERT_EQ(2, (int) strEntries.size());
                 std::sort(strEntries.begin(), strEntries.end());
                 ASSERT_EQ(expectedStrEntries[2], strEntries[0]);
                 ASSERT_EQ(expectedStrEntries[13], strEntries[1]);
             }
 
-            TEST_F(ClientMapTest, testEntrySetWithPagingPredicate) {
+            TYPED_TEST(ClientMapTest, testEntrySetWithPagingPredicate) {
                 int predSize = 5;
                 const int totalEntries = 25;
 
                 for (int i = 0; i < totalEntries; ++i) {
-                    intMap->put(i, i);
+                    ClientMapTest<TypeParam>::intMap->put(i, i);
                 }
 
                 query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                std::vector<std::pair<int, int> > values = intMap->entrySet(predicate);
+                std::vector<std::pair<int, int> > values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(i, i);
                     ASSERT_EQ(value, values[i]);
                 }
 
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(i, i);
@@ -1719,7 +1818,7 @@ namespace hazelcast {
                 }
 
                 predicate.nextPage();
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
 
                 for (int i = 0; i < predSize; ++i) {
@@ -1734,11 +1833,11 @@ namespace hazelcast {
                 ASSERT_EQ(9, *anchor->first);
                 ASSERT_EQ(9, *anchor->second);
 
-                ASSERT_EQ(1, (int)predicate.getPage());
+                ASSERT_EQ(1, (int) predicate.getPage());
 
                 predicate.setPage(4);
 
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(predSize * 4 + i, predSize * 4 + i);
@@ -1756,16 +1855,16 @@ namespace hazelcast {
                 ASSERT_NE((const std::pair<size_t, std::pair<int *, int *> > *) NULL, anchorEntry);
                 ASSERT_NE((int *) NULL, anchorEntry->second.first);
                 ASSERT_NE((int *) NULL, anchorEntry->second.second);
-                ASSERT_EQ(3, (int)anchorEntry->first);
+                ASSERT_EQ(3, (int) anchorEntry->first);
                 ASSERT_EQ(19, *anchorEntry->second.first);
                 ASSERT_EQ(19, *anchorEntry->second.second);
 
                 predicate.nextPage();
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(0);
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(i, i);
@@ -1773,14 +1872,14 @@ namespace hazelcast {
                 }
 
                 predicate.previousPage();
-                ASSERT_EQ(0, (int)predicate.getPage());
+                ASSERT_EQ(0, (int) predicate.getPage());
 
                 predicate.setPage(5);
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(0, (int) values.size());
 
                 predicate.setPage(3);
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(3 * predSize + i, 3 * predSize + i);
@@ -1788,7 +1887,7 @@ namespace hazelcast {
                 }
 
                 predicate.previousPage();
-                values = intMap->entrySet(predicate);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(2 * predSize + i, 2 * predSize + i);
@@ -1800,7 +1899,7 @@ namespace hazelcast {
                         new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false,
                                                              true)));
                 query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
-                values = intMap->entrySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate2);
                 ASSERT_EQ(predSize, (int) values.size());
                 for (int i = 0; i < predSize; ++i) {
                     std::pair<int, int> value(i, i);
@@ -1809,7 +1908,7 @@ namespace hazelcast {
 
                 predicate2.nextPage();
                 // match values 5,6, 7, 8
-                values = intMap->entrySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate2);
                 ASSERT_EQ(predSize - 1, (int) values.size());
                 for (int i = 0; i < predSize - 1; ++i) {
                     std::pair<int, int> value(predSize + i, predSize + i);
@@ -1817,7 +1916,7 @@ namespace hazelcast {
                 }
 
                 predicate2.nextPage();
-                values = intMap->entrySet(predicate2);
+                values = ClientMapTest<TypeParam>::intMap->entrySet(predicate2);
                 ASSERT_EQ(0, (int) values.size());
 
                 // test paging predicate with comparator
@@ -1828,17 +1927,19 @@ namespace hazelcast {
                 Employee empl5("veli", 44);
                 Employee empl6("aylin", 5);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
-                employees->put(6, empl4);
-                employees->put(7, empl5);
-                employees->put(8, empl6);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(6, empl4);
+                ClientMapTest<TypeParam>::employees->put(7, empl5);
+                ClientMapTest<TypeParam>::employees->put(8, empl6);
 
                 predSize = 2;
                 query::PagingPredicate<int, Employee> predicate3(
-                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()), (size_t) predSize);
-                std::vector<std::pair<int, Employee> > result = employees->entrySet(predicate3);
+                        std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
+                        (size_t) predSize);
+                std::vector<std::pair<int, Employee> > result = ClientMapTest<TypeParam>::employees->entrySet(
+                        predicate3);
                 ASSERT_EQ(2, (int) result.size());
                 std::pair<int, Employee> value(8, empl6);
                 ASSERT_EQ(value, result[0]);
@@ -1846,7 +1947,7 @@ namespace hazelcast {
                 ASSERT_EQ(value, result[1]);
 
                 predicate3.nextPage();
-                result = employees->entrySet(predicate3);
+                result = ClientMapTest<TypeParam>::employees->entrySet(predicate3);
                 ASSERT_EQ(2, (int) result.size());
                 value = std::pair<int, Employee>(5, empl3);
                 ASSERT_EQ(value, result[0]);
@@ -1854,29 +1955,31 @@ namespace hazelcast {
                 ASSERT_EQ(value, result[1]);
             }
 
-            TEST_F(ClientMapTest, testReplace) {
-                boost::shared_ptr<std::string> temp = imap->replace("key1", "value");
+            TYPED_TEST(ClientMapTest, testReplace) {
+                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->replace("key1", "value");
                 ASSERT_EQ(temp.get(), (std::string *) NULL);
 
                 std::string tempKey = "key1";
                 std::string tempValue = "value1";
-                imap->put(tempKey, tempValue);
+                ClientMapTest<TypeParam>::imap->put(tempKey, tempValue);
 
-                ASSERT_EQ("value1", *(imap->replace("key1", "value2")));
-                ASSERT_EQ("value2", *(imap->get("key1")));
+                ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->replace("key1", "value2")));
+                ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_EQ(false, imap->replace("key1", "value1", "value3"));
-                ASSERT_EQ("value2", *(imap->get("key1")));
+                ASSERT_EQ(false, ClientMapTest<TypeParam>::imap->replace("key1", "value1", "value3"));
+                ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_EQ(true, imap->replace("key1", "value2", "value3"));
-                ASSERT_EQ("value3", *(imap->get("key1")));
+                ASSERT_EQ(true, ClientMapTest<TypeParam>::imap->replace("key1", "value2", "value3"));
+                ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
             }
 
-            TEST_F(ClientMapTest, testListenerWithPortableKey) {
-                IMap<Employee, int> tradeMap = client->getMap<Employee, int>("tradeMap");
+            TYPED_TEST(ClientMapTest, testListenerWithPortableKey) {
+                IMap<Employee, int> tradeMap = ClientMapTest<TypeParam>::client->template getMap<Employee, int>(
+                        "tradeMap");
                 util::CountDownLatch countDownLatch(1);
                 util::AtomicInt atomicInteger(0);
-                SampleEntryListenerForPortableKey listener(countDownLatch, atomicInteger);
+                typename ClientMapTest<TypeParam>::SampleEntryListenerForPortableKey listener(countDownLatch,
+                                                                                              atomicInteger);
                 Employee key("a", 1);
                 std::string id = tradeMap.addEntryListener(listener, key, true);
                 Employee key2("a", 2);
@@ -1888,128 +1991,142 @@ namespace hazelcast {
                 ASSERT_TRUE(tradeMap.removeEntryListener(id));
             }
 
-            TEST_F(ClientMapTest, testListener) {
+            TYPED_TEST(ClientMapTest, testListener) {
                 util::CountDownLatch latch1Add(5);
                 util::CountDownLatch latch1Remove(2);
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch latch2Add(1);
                 util::CountDownLatch latch2Remove(1);
 
-                CountdownListener<std::string, std::string> listener1(latch1Add, latch1Remove, dummy, dummy);
-                CountdownListener<std::string, std::string> listener2(latch2Add, latch2Remove, dummy, dummy);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> listener1(
+                        latch1Add, latch1Remove, dummy, dummy);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> listener2(
+                        latch2Add, latch2Remove, dummy, dummy);
 
-                std::string listener1ID = imap->addEntryListener(listener1, false);
-                std::string listener2ID = imap->addEntryListener(listener2, "key3", true);
+                std::string listener1ID = ClientMapTest<TypeParam>::imap->addEntryListener(listener1, false);
+                std::string listener2ID = ClientMapTest<TypeParam>::imap->addEntryListener(listener2, "key3", true);
 
                 util::sleep(2);
 
-                imap->put("key1", "value1");
-                imap->put("key2", "value2");
-                imap->put("key3", "value3");
-                imap->put("key4", "value4");
-                imap->put("key5", "value5");
+                ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ClientMapTest<TypeParam>::imap->put("key2", "value2");
+                ClientMapTest<TypeParam>::imap->put("key3", "value3");
+                ClientMapTest<TypeParam>::imap->put("key4", "value4");
+                ClientMapTest<TypeParam>::imap->put("key5", "value5");
 
-                imap->remove("key1");
-                imap->remove("key3");
+                ClientMapTest<TypeParam>::imap->remove("key1");
+                ClientMapTest<TypeParam>::imap->remove("key3");
 
                 ASSERT_TRUE(latch1Add.await(10));
                 ASSERT_TRUE(latch1Remove.await(10));
                 ASSERT_TRUE(latch2Add.await(5));
                 ASSERT_TRUE(latch2Remove.await(5));
 
-                ASSERT_TRUE(imap->removeEntryListener(listener1ID));
-                ASSERT_TRUE(imap->removeEntryListener(listener2ID));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listener1ID));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listener2ID));
 
             }
 
-            TEST_F(ClientMapTest, testListenerWithTruePredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithTruePredicate) {
                 util::CountDownLatch latchAdd(3);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
-                std::string listenerId = intMap->addEntryListener(listener, query::TruePredicate(), false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::TruePredicate(),
+                                                                                            false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
-                
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
                 ASSERT_TRUE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithFalsePredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithFalsePredicate) {
                 util::CountDownLatch latchAdd(3);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
-                std::string listenerId = intMap->addEntryListener(listener, query::FalsePredicate(), false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::FalsePredicate(),
+                                                                                            false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
                 ASSERT_FALSE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithEqualPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithEqualPredicate) {
                 util::CountDownLatch latchAdd(1);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
-                std::string listenerId = intMap->addEntryListener(listener, query::EqualPredicate<int>(
-                        query::QueryConstants::getKeyAttributeName(), 3), true);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::EqualPredicate<int>(
+                                                                                                    query::QueryConstants::getKeyAttributeName(),
+                                                                                                    3), true);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2020,33 +2137,37 @@ namespace hazelcast {
                 latches.add(latchUpdate).add(latchRemove);
                 ASSERT_FALSE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithNotEqualPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithNotEqualPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
-                std::string listenerId = intMap->addEntryListener(listener, query::NotEqualPredicate<int>(
-                        query::QueryConstants::getKeyAttributeName(), 3), true);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::NotEqualPredicate<int>(
+                                                                                                    query::QueryConstants::getKeyAttributeName(),
+                                                                                                    3), true);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2057,34 +2178,39 @@ namespace hazelcast {
                 latches.add(latchEvict);
                 ASSERT_FALSE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithGreaterLessPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithGreaterLessPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // key <= 2
-                std::string listenerId = intMap->addEntryListener(listener, query::GreaterLessPredicate<int>(
-                        query::QueryConstants::getKeyAttributeName(), 2, true, true), false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::GreaterLessPredicate<int>(
+                                                                                                    query::QueryConstants::getKeyAttributeName(),
+                                                                                                    2, true, true),
+                                                                                            false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2093,34 +2219,38 @@ namespace hazelcast {
 
                 ASSERT_FALSE(latchEvict.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithBetweenPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithBetweenPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // 1 <=key <= 2
-                std::string listenerId = intMap->addEntryListener(listener, query::BetweenPredicate<int>(
-                        query::QueryConstants::getKeyAttributeName(), 1, 2), true);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::BetweenPredicate<int>(
+                                                                                                    query::QueryConstants::getKeyAttributeName(),
+                                                                                                    1, 2), true);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2129,33 +2259,37 @@ namespace hazelcast {
 
                 ASSERT_FALSE(latchEvict.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithSqlPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithSqlPredicate) {
                 util::CountDownLatch latchAdd(1);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // 1 <=key <= 2
-                std::string listenerId = intMap->addEntryListener(listener, query::SqlPredicate("__key < 2"), true);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::SqlPredicate(
+                                                                                                    "__key < 2"), true);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2166,34 +2300,38 @@ namespace hazelcast {
                 latches.add(latchRemove).add(latchEvict);
                 ASSERT_FALSE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithRegExPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithRegExPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<std::string, std::string> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> listener(
+                        latchAdd, latchRemove, latchUpdate, latchEvict);
 
                 // key matches any word containing ".*met.*"
-                std::string listenerId = imap->addEntryListener(listener, query::RegexPredicate(query::QueryConstants::getKeyAttributeName(), ".*met.*"), true);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(listener,
+                                                                                          query::RegexPredicate(
+                                                                                                  query::QueryConstants::getKeyAttributeName(),
+                                                                                                  ".*met.*"), true);
 
-                imap->put("ilkay", "yasar");
-                imap->put("mehmet", "demir");
-                imap->put("metin", "ozen", 1000); // evict after 1 second
-                imap->put("hasan", "can");
-                imap->remove("mehmet");
+                ClientMapTest<TypeParam>::imap->put("ilkay", "yasar");
+                ClientMapTest<TypeParam>::imap->put("mehmet", "demir");
+                ClientMapTest<TypeParam>::imap->put("metin", "ozen", 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::imap->put("hasan", "can");
+                ClientMapTest<TypeParam>::imap->remove("mehmet");
 
                 util::sleep(2);
 
-                ASSERT_EQ((std::string *)NULL, imap->get("metin").get()); // trigger eviction
+                ASSERT_EQ((std::string *) NULL, ClientMapTest<TypeParam>::imap->get("metin").get()); // trigger eviction
 
                 // update an entry
-                imap->set("hasan", "suphi");
-                boost::shared_ptr<std::string> value = imap->get("hasan");
-                ASSERT_NE((std::string *)NULL, value.get());
+                ClientMapTest<TypeParam>::imap->set("hasan", "suphi");
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("hasan");
+                ASSERT_NE((std::string *) NULL, value.get());
                 ASSERT_EQ("suphi", *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2202,68 +2340,78 @@ namespace hazelcast {
 
                 ASSERT_FALSE(latchUpdate.awaitMillis(2000));
 
-                ASSERT_TRUE(imap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithInstanceOfPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithInstanceOfPredicate) {
                 util::CountDownLatch latchAdd(3);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // 1 <=key <= 2
-                std::string listenerId = intMap->addEntryListener(listener, query::InstanceOfPredicate("java.lang.Integer"), false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener,
+                                                                                            query::InstanceOfPredicate(
+                                                                                                    "java.lang.Integer"),
+                                                                                            false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
                 latches.add(latchAdd).add(latchRemove).add(latchUpdate).add(latchEvict);
                 ASSERT_TRUE(latches.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithNotPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithNotPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // key >= 3
-                std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true, false));
+                std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
+                                                             false));
                 query::NotPredicate notPredicate(greaterLessPred);
-                std::string listenerId = intMap->addEntryListener(listener, notPredicate, false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener, notPredicate,
+                                                                                            false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2274,41 +2422,44 @@ namespace hazelcast {
                 latches.add(latchEvict);
                 ASSERT_FALSE(latches.awaitMillis(1000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithAndPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithAndPredicate) {
                 util::CountDownLatch latchAdd(1);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // key < 3
                 std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
-                        new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false, true));
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false,
+                                                             true));
                 // value == 1
                 std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
                         new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
                 query::AndPredicate predicate;
                 // key < 3 AND key == 1 --> (1, 1)
                 predicate.add(greaterLessPred).add(equalPred);
-                std::string listenerId = intMap->addEntryListener(listener, predicate, false);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener, predicate, false);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2319,41 +2470,44 @@ namespace hazelcast {
                 latches.add(latchEvict).add(latchRemove);
                 ASSERT_FALSE(latches.awaitMillis(1000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testListenerWithOrPredicate) {
+            TYPED_TEST(ClientMapTest, testListenerWithOrPredicate) {
                 util::CountDownLatch latchAdd(2);
                 util::CountDownLatch latchRemove(1);
                 util::CountDownLatch latchEvict(1);
                 util::CountDownLatch latchUpdate(1);
 
-                CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
+                typename ClientMapTest<TypeParam>::template CountdownListener<int, int> listener(latchAdd, latchRemove,
+                                                                                                 latchUpdate,
+                                                                                                 latchEvict);
 
                 // key >= 3
                 std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
-                        new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true, false));
+                        new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
+                                                             false));
                 // value == 1
                 std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
                         new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
                 query::OrPredicate predicate;
                 // key >= 3 OR value == 2 --> (1, 1), (2, 2)
                 predicate.add(greaterLessPred).add(equalPred);
-                std::string listenerId = intMap->addEntryListener(listener, predicate, true);
+                std::string listenerId = ClientMapTest<TypeParam>::intMap->addEntryListener(listener, predicate, true);
 
-                intMap->put(1, 1);
-                intMap->put(2, 2);
-                intMap->put(3, 3, 1000); // evict after 1 second
-                intMap->remove(2);
+                ClientMapTest<TypeParam>::intMap->put(1, 1);
+                ClientMapTest<TypeParam>::intMap->put(2, 2);
+                ClientMapTest<TypeParam>::intMap->put(3, 3, 1000); // evict after 1 second
+                ClientMapTest<TypeParam>::intMap->remove(2);
 
                 util::sleep(2);
 
-                ASSERT_EQ(NULL, intMap->get(3).get()); // trigger eviction
+                ASSERT_EQ(NULL, ClientMapTest<TypeParam>::intMap->get(3).get()); // trigger eviction
 
                 // update an entry
-                intMap->set(1, 5);
-                boost::shared_ptr<int> value = intMap->get(1);
-                ASSERT_NE((int *)NULL, value.get());
+                ClientMapTest<TypeParam>::intMap->set(1, 5);
+                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 util::CountDownLatchWaiter latches;
@@ -2362,89 +2516,91 @@ namespace hazelcast {
 
                 ASSERT_FALSE(latchUpdate.awaitMillis(2000));
 
-                ASSERT_TRUE(intMap->removeEntryListener(listenerId));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::intMap->removeEntryListener(listenerId));
             }
 
-            TEST_F(ClientMapTest, testClearEvent) {
+            TYPED_TEST(ClientMapTest, testClearEvent) {
                 util::CountDownLatch latch(1);
-                ClearListener clearListener(latch);
-                std::string listenerId = imap->addEntryListener(clearListener, false);
-                imap->put("key1", "value1");
-                imap->clear();
+                typename ClientMapTest<TypeParam>::ClearListener clearListener(latch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(clearListener, false);
+                ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ClientMapTest<TypeParam>::imap->clear();
                 ASSERT_TRUE(latch.await(120));
-                imap->removeEntryListener(listenerId);
+                ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId);
             }
 
-            TEST_F(ClientMapTest, testEvictAllEvent) {
+            TYPED_TEST(ClientMapTest, testEvictAllEvent) {
                 util::CountDownLatch latch(1);
-                EvictListener evictListener(latch);
-                std::string listenerId = imap->addEntryListener(evictListener, false);
-                imap->put("key1", "value1");
-                imap->evictAll();
+                typename ClientMapTest<TypeParam>::EvictListener evictListener(latch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(evictListener, false);
+                ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ClientMapTest<TypeParam>::imap->evictAll();
                 ASSERT_TRUE(latch.await(120));
-                imap->removeEntryListener(listenerId);
+                ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId);
             }
 
-            TEST_F(ClientMapTest, testMapWithPortable) {
-                boost::shared_ptr<Employee> n1 = employees->get(1);
+            TYPED_TEST(ClientMapTest, testMapWithPortable) {
+                boost::shared_ptr<Employee> n1 = ClientMapTest<TypeParam>::employees->get(1);
                 ASSERT_EQ(n1.get(), (Employee *) NULL);
                 Employee employee("sancar", 24);
-                boost::shared_ptr<Employee> ptr = employees->put(1, employee);
+                boost::shared_ptr<Employee> ptr = ClientMapTest<TypeParam>::employees->put(1, employee);
                 ASSERT_EQ(ptr.get(), (Employee *) NULL);
-                ASSERT_FALSE(employees->isEmpty());
-                EntryView<int, Employee> view = employees->getEntryView(1);
+                ASSERT_FALSE(ClientMapTest<TypeParam>::employees->isEmpty());
+                EntryView<int, Employee> view = ClientMapTest<TypeParam>::employees->getEntryView(1);
                 ASSERT_EQ(view.value, employee);
                 ASSERT_EQ(view.key, 1);
 
-                employees->addIndex("a", true);
-                employees->addIndex("n", false);
+                ClientMapTest<TypeParam>::employees->addIndex("a", true);
+                ClientMapTest<TypeParam>::employees->addIndex("n", false);
             }
 
-            TEST_F(ClientMapTest, testMapStoreRelatedRequests) {
-                imap->putTransient("ali", "veli", 1100);
-                imap->flush();
-                ASSERT_EQ(1, imap->size());
-                ASSERT_FALSE(imap->evict("deli"));
-                ASSERT_TRUE(imap->evict("ali"));
-                ASSERT_EQ(imap->get("ali").get(), (std::string *) NULL);
+            TYPED_TEST(ClientMapTest, testMapStoreRelatedRequests) {
+                ClientMapTest<TypeParam>::imap->putTransient("ali", "veli", 1100);
+                ClientMapTest<TypeParam>::imap->flush();
+                ASSERT_EQ(1, ClientMapTest<TypeParam>::imap->size());
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->evict("deli"));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->evict("ali"));
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->get("ali").get(), (std::string *) NULL);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnKey) {
+            TYPED_TEST(ClientMapTest, testExecuteOnKey) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(4, processor);
+                boost::shared_ptr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        4, processor);
 
                 ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnNonExistentKey) {
-                EntryMultiplier processor(4);
+            TYPED_TEST(ClientMapTest, testExecuteOnNonExistentKey) {
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(17, processor);
+                boost::shared_ptr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        17, processor);
 
                 ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(-1, *result);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntries) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntries) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor);
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2456,18 +2612,18 @@ namespace hazelcast {
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithTruePredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithTruePredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::TruePredicate());
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2479,31 +2635,31 @@ namespace hazelcast {
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithFalsePredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithFalsePredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::FalsePredicate());
 
                 ASSERT_EQ(0, (int) result.size());
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithAndPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithAndPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
                 query::AndPredicate andPredicate;
                 /* 25 <= age <= 35 AND age = 35 */
@@ -2513,9 +2669,9 @@ namespace hazelcast {
                                 new query::NotPredicate(
                                         std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, andPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2523,14 +2679,14 @@ namespace hazelcast {
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithOrPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithOrPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
                 query::OrPredicate orPredicate;
                 /* age == 21 OR age > 25 */
@@ -2538,9 +2694,9 @@ namespace hazelcast {
                         std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
                         std::auto_ptr<query::Predicate>(new query::GreaterLessPredicate<int>("a", 25, false, false)));
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, orPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2550,18 +2706,18 @@ namespace hazelcast {
                 ASSERT_EQ(4 * processor.getMultiplier(), *result[4]);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithBetweenPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithBetweenPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::BetweenPredicate<int>("a", 25, 35));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2571,41 +2727,41 @@ namespace hazelcast {
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithEqualPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithEqualPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::EqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(5)));
 
-                result = employees->executeOnEntries<int, EntryMultiplier>(
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::EqualPredicate<int>("a", 10));
 
                 ASSERT_EQ(0, (int) result.size());
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithNotEqualPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithNotEqualPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::NotEqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2613,37 +2769,37 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
 
-                result = employees->executeOnEntries<int, EntryMultiplier>(
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, true, true)); // <=25 matching
 
                 ASSERT_EQ(2, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
 
-                result = employees->executeOnEntries<int, EntryMultiplier>(
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, false, false)); // >25 matching
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(3)));
 
-                result = employees->executeOnEntries<int, EntryMultiplier>(
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, true, false)); // >=25 matching
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2651,58 +2807,58 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithLikePredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithLikePredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::LikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithILikePredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithILikePredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::ILikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithInPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithInPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
                 std::vector<std::string> values;
                 values.push_back("ahmet");
                 query::InPredicate<std::string> predicate("n", values);
                 predicate.add("mehmet");
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, predicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2710,17 +2866,17 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::InstanceOfPredicate("Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2729,19 +2885,19 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(5)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithNotPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithNotPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
                 std::auto_ptr<query::Predicate> eqPredicate(new query::EqualPredicate<int>("a", 25));
                 query::NotPredicate notPredicate(eqPredicate);
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, notPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2749,7 +2905,7 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
 
                 query::NotPredicate notFalsePredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate()));
-                result = employees->executeOnEntries<int, EntryMultiplier>(
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, notFalsePredicate);
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2757,25 +2913,27 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
                 ASSERT_EQ(true, (result.end() != result.find(5)));
 
-                query::NotPredicate notBetweenPredicate(std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
-                result = employees->executeOnEntries<int, EntryMultiplier>(processor, notBetweenPredicate);
+                query::NotPredicate notBetweenPredicate(
+                        std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
+                result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        processor, notBetweenPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
                 ASSERT_EQ(true, (result.end() != result.find(4)));
             }
 
-            TEST_F(ClientMapTest, testExecuteOnEntriesWithRegexPredicate) {
+            TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithRegexPredicate) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);
                 Employee empl3("deniz", 25);
 
-                employees->put(3, empl1);
-                employees->put(4, empl2);
-                employees->put(5, empl3);
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
 
-                EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::RegexPredicate("n", ".*met"));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2783,23 +2941,23 @@ namespace hazelcast {
                 ASSERT_EQ(true, (result.end() != result.find(4)));
             }
 
-            TEST_F(ClientMapTest, testAddInterceptor) {
+            TYPED_TEST(ClientMapTest, testAddInterceptor) {
                 std::string prefix("My Prefix");
-                MapGetInterceptor interceptor(prefix);
-                imap->addInterceptor<MapGetInterceptor>(interceptor);
+                typename ClientMapTest<TypeParam>::MapGetInterceptor interceptor(prefix);
+                ClientMapTest<TypeParam>::imap->template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(
+                        interceptor);
 
-                boost::shared_ptr<std::string> val = imap->get("nonexistent");
-                ASSERT_NE((std::string *)NULL, val.get());
+                boost::shared_ptr<std::string> val = ClientMapTest<TypeParam>::imap->get("nonexistent");
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ(prefix, *val);
 
-                val = imap->put("key1", "value1");
-                ASSERT_EQ((std::string *)NULL, val.get());
+                val = ClientMapTest<TypeParam>::imap->put("key1", "value1");
+                ASSERT_EQ((std::string *) NULL, val.get());
 
-                val = imap->get("key1");
-                ASSERT_NE((std::string *)NULL, val.get());
+                val = ClientMapTest<TypeParam>::imap->get("key1");
+                ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ(prefix + "value1", *val);
             }
         }
     }
 }
-
