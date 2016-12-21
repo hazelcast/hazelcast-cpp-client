@@ -16,8 +16,6 @@
 //
 // Created by ihsan demir on Nov 12, 2015.
 //
-
-
 #ifndef HAZELCAST_CLIENT_ATOMIC_H_
 #define HAZELCAST_CLIENT_ATOMIC_H_
 
@@ -38,6 +36,16 @@ namespace hazelcast {
             }
 
             Atomic(T v) : v(v) {
+            }
+
+            Atomic(const Atomic<T> &rhs) {
+                LockGuard lockGuardRhs(rhs.mutex);
+                v = rhs.v;
+            }
+
+            void operator=(const Atomic<T> &rhs) {
+                LockGuard lockGuardRhs(rhs.mutex);
+                v = rhs.v;
             }
 
             T operator--(int) {
@@ -85,13 +93,17 @@ namespace hazelcast {
                 return i != v;
             }
 
+            bool compareAndSet(bool compareValue, bool setValue) {
+                LockGuard lockGuard(mutex);
+                if(compareValue == v){
+                    v = setValue;
+                    return true;
+                }
+                return false;
+            }
         private:
-            Mutex mutex;
+            mutable Mutex mutex;
             T v;
-
-            Atomic(const Atomic &rhs);
-
-            void operator=(const Atomic &rhs);
         };
     }
 }

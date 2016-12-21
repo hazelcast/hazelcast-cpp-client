@@ -537,13 +537,21 @@ namespace hazelcast {
                 * @return Array of entries for the provided keys
                 */
                 std::auto_ptr<EntryArray<K, V> > getAll(const std::set<K> &keys) {
-                    std::vector<serialization::pimpl::Data> allKeys(keys.size());
-                    int i = 0;
-                    for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
-                        allKeys[i++] = serializationService->toData<K>(&(*it));
+                    if (keys.empty()) {
+                        return std::auto_ptr<EntryArray<K, V> >();
                     }
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = mapProxy.getAllData(
-                            allKeys);
+
+                    std::map<int, std::vector<serialization::pimpl::Data> > partitionToKeyData;
+                    // group the request per parition id
+                    for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end(); ++it) {
+                        serialization::pimpl::Data keyData = mapProxy.template toData<K>(*it);
+
+                        int partitionId = mapProxy.getPartitionId(keyData);
+
+                        partitionToKeyData[partitionId].push_back(keyData);
+                    }
+
+                    EntryVector entrySet = mapProxy.getAllData(partitionToKeyData);
 
                     return std::auto_ptr<EntryArray<K, V> >(new client::impl::EntryArrayImpl<K, V>(entrySet, *serializationService));
                 }
@@ -761,8 +769,11 @@ namespace hazelcast {
                 */
                 template<typename ResultType, typename EntryProcessor>
                 std::auto_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                    std::auto_ptr<serialization::pimpl::Data> resultData =
-                            mapProxy.template executeOnKeyData<K, EntryProcessor>(key, entryProcessor);
+                    serialization::pimpl::Data keyData = serializationService->toData<K>(&key);
+                    serialization::pimpl::Data processorData = serializationService->toData<EntryProcessor>(&entryProcessor);
+
+                    std::auto_ptr<serialization::pimpl::Data> resultData = mapProxy.executeOnKeyInternal(keyData, processorData);
+
                     return serializationService->toObject<ResultType>(resultData.get());
                 }
 

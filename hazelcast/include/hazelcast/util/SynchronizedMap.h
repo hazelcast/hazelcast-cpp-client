@@ -16,11 +16,8 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 
-
-
-
-#ifndef HAZELCAST_SYNCHRONIZED_MAP
-#define HAZELCAST_SYNCHRONIZED_MAP
+#ifndef HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
+#define HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
@@ -40,8 +37,13 @@ namespace hazelcast {
         class SynchronizedMap {
         public:
             SynchronizedMap() {
-
             };
+
+            SynchronizedMap(const SynchronizedMap<K, V, Comparator> &rhs) {
+                util::LockGuard lg(mapLock);
+                util::LockGuard lgRhs(rhs.mapLock);
+                internalMap = rhs.internalMap;
+            }
 
             ~SynchronizedMap() {
                 util::LockGuard lg(mapLock);
@@ -183,5 +185,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif //HAZELCAST_SYNCHRONIZED_MAP
+#endif //HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 

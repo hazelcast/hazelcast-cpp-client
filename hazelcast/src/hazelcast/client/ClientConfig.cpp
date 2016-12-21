@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <hazelcast/client/config/NearCacheConfig.h>
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
@@ -200,21 +200,32 @@ namespace hazelcast {
             return &reliableTopicConfigMap[name];
         }
 
-        const config::NearCacheConfig *ClientConfig::getNearCacheConfig(const std::string &name) {
-            const config::NearCacheConfig *nearCacheConfig = lookupByPattern(nearCacheConfigMap, name);
-            if (nearCacheConfig != NULL) {
-                return nearCacheConfig;
+        ClientConfig &ClientConfig::addNearCacheConfig(const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig) {
+            nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+            return *this;
+        }
+
+        boost::shared_ptr<config::NearCacheConfig> ClientConfig::getNearCacheConfig(const std::string &name) {
+            boost::shared_ptr<config::NearCacheConfig> nearCacheConfig = lookupByPattern(nearCacheConfigMap, name);
+            if (nearCacheConfig.get() == NULL) {
+                nearCacheConfig = nearCacheConfigMap.get("default");
+                if (nearCacheConfig.get() != NULL) {
+                    // if there is a default config we have to clone it,
+                    // otherwise you will modify the same instances via different Near Cache names
+                    nearCacheConfig = boost::shared_ptr<config::NearCacheConfig>(
+                            new config::NearCacheConfig(*nearCacheConfig));
+                }
             }
-
-            return &nearCacheConfigMap["default"];
+            // not needed for c++ client since it is always native memory
+            //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
+            return nearCacheConfig;
         }
 
-        const config::NearCacheConfig *ClientConfig::lookupByPattern(
-                const std::map<std::string, config::NearCacheConfig> &nearCacheConfigMap,
-                const std::string &basic_string) const {
+        const boost::shared_ptr<config::NearCacheConfig> ClientConfig::lookupByPattern(
+                util::SynchronizedMap<std::string, config::NearCacheConfig> &nearCacheConfigMap,
+                const std::string &name) const {
             // TODO: implement the lookup
-            return NULL;
+            return nearCacheConfigMap.get(name);
         }
-
     }
 }

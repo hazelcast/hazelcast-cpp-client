@@ -18,9 +18,12 @@
 
 #include <stdexcept>
 #include <climits>
+#include <boost/shared_ptr.hpp>
+
+#include <hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h>
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/map/ClientMapProxy.h"
-#include "hazelcast/client/internal/nearcache/impl/KeyStateMarker.h"
+#include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/adapter/IMapDataStructureAdapter.h"
@@ -48,33 +51,64 @@ namespace hazelcast {
             class NearCachedClientMapProxy : public ClientMapProxy<K, V> {
             public:
                 NearCachedClientMapProxy(const std::string &instanceName, spi::ClientContext *context,
-                                         const config::NearCacheConfig *nearcacheConfig)
-                        : ClientMapProxy<K, V>(instanceName, context) {
-                    // TODO: implement it
+                                         boost::shared_ptr<config::NearCacheConfig> config)
+                        : ClientMapProxy<K, V>(instanceName, context), nearCacheConfig(config) {
                 }
             protected:
                 //@override
                 void onInitialize() {
                     ClientMapProxy<K, V>::onInitialize();
 
-                    initNearCache();
+                    internal::nearcache::NearCacheManager &nearCacheManager = this->context->getNearCacheManager();
+                    boost::shared_ptr<internal::adapter::DataStructureAdapter<K, V> > adapter(
+                            new internal::adapter::IMapDataStructureAdapter<K, V>(*this));
+                    int partitionCount = this->context->getPartitionService().getPartitionCount();
+                    nearCache = nearCacheManager.getOrCreateNearCache<serialization::pimpl::Data, K, V>(
+                                    proxy::ProxyImpl::getName(), nearCacheConfig, adapter);
+
+                    nearCache = impl::nearcache::InvalidationAwareWrapper<
+                            serialization::pimpl::Data, V>::asInvalidationAware(nearCache, partitionCount);
+
+                    keyStateMarker = getKeyStateMarker();
+
+                    invalidateOnChange = nearCache->isInvalidatedOnChange();
+                    if (invalidateOnChange) {
+
+/*TODO
+                        repairingHandler = context.getRepairingTask(SERVICE_NAME).registerAndGetHandler(name, nearCache);
+*/
+
+                        std::auto_ptr<client::impl::BaseEventHandler> invalidationHandler(
+                                new ClientMapAddNearCacheEventHandler(nearCache));
+                        addNearCacheInvalidateListener(invalidationHandler);
+                    }
                 }
 
-                //@override
-                boost::shared_ptr<V> getInternal(serialization::pimpl::Data &key) {
+                //@Override
+                bool containsKeyInternal(const serialization::pimpl::Data &keyData) {
+                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
                     boost::shared_ptr<V> cached = nearCache->get(key);
                     if (cached.get() != NULL) {
-                        if (internal::nearcache::NearCache<
-                                K, V, internal::adapter::IMapDataStructureAdapter<K, V> >::NULL_OBJECT == cached) {
+                        return internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached;
+                    }
+
+                    return ClientMapProxy<K, V>::containsKeyInternal(*key);
+                }
+                
+
+                //@override
+                boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
+                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
+                    boost::shared_ptr<V> cached = nearCache->get(key);
+                    if (cached.get() != NULL) {
+                        if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
                             return boost::shared_ptr<V>();
                         }
                         return cached;
                     }
 
-                    bool marked = keyStateMarker->tryMark(key);
-
-                    boost::shared_ptr<V> value = ClientMapProxy<K, V>::getInternal(key);
-
+                    bool marked = keyStateMarker->tryMark(*key);
+                    boost::shared_ptr<V> value = ClientMapProxy<K, V>::getInternal(*key);
                     if (marked) {
                         tryToPutNearCache(key, value);
                     }
@@ -82,39 +116,173 @@ namespace hazelcast {
                     return value;
                 }
 
-            private:
-                void initNearCache() {
-                    internal::nearcache::NearCacheManager &nearCacheManager = this->context->getNearCacheManager();
-                    boost::shared_ptr<internal::adapter::IMapDataStructureAdapter<K, V> > adapter(
-                            new internal::adapter::IMapDataStructureAdapter<K, V>(*this));
-                    int partitionCount = this->context->getPartitionService().getPartitionCount();
-                    nearCache = nearCacheManager.getOrCreateNearCache<serialization::pimpl::Data, K, V, internal::adapter::IMapDataStructureAdapter<K, V> >(
-                            proxy::ProxyImpl::getName(), *nearCacheConfig, adapter, partitionCount);
 
-                    keyStateMarker = &(getKeyStateMarker());
+                //@Override
+                std::auto_ptr<serialization::pimpl::Data> removeInternal(
+                        const serialization::pimpl::Data &key) {
+                    std::auto_ptr<serialization::pimpl::Data> responseData = ClientMapProxy<K, V>::removeInternal(key);
+                    invalidateNearCache(key);
+                    return responseData;
+                }
 
-                    invalidateOnChange = nearCache->isInvalidatedOnChange();
-                    if (invalidateOnChange) {
-                        addNearCacheInvalidateListener();
+                //@Override
+                bool removeInternal(
+                        const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
+                    bool response = ClientMapProxy<K, V>::removeInternal(key, value);
+                    invalidateNearCache(key);
+                    return response;
+                }
+
+                //@Override
+                void deleteInternal(const serialization::pimpl::Data &key) {
+                    ClientMapProxy<K, V>::deleteInternal(key);
+                    invalidateNearCache(key);
+                }
+
+                //@Override
+                bool tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis)  {
+                    bool response = ClientMapProxy<K, V>::tryRemoveInternal(key, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return response;
+                }
+
+                //@Override
+                bool tryPutInternal(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
+                                    long timeoutInMillis) {
+                    bool response = ClientMapProxy<K, V>::tryPutInternal(key, value, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return response;
+                }
+
+                //@Override
+                std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &key, 
+                                                                      const serialization::pimpl::Data &value, 
+                                                                      long timeoutInMillis) {
+                    std::auto_ptr<serialization::pimpl::Data> previousValue =
+                            ClientMapProxy<K, V>::putInternal(key, value, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return previousValue;
+                }
+
+                //@Override
+                void tryPutTransientInternal(const serialization::pimpl::Data &key,
+                                             const serialization::pimpl::Data &value, int ttlInMillis) {
+                    ClientMapProxy<K, V>::tryPutTransientInternal(key, value, ttlInMillis);
+                    invalidateNearCache(key);
+                }
+
+                //@Override
+                std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+                                                                              const serialization::pimpl::Data &valueData,
+                                                                              int ttlInMillis) {
+                    std::auto_ptr<serialization::pimpl::Data> previousValue =
+                            ClientMapProxy<K, V>::putIfAbsentData(keyData, valueData, ttlInMillis);
+                    invalidateNearCache(keyData);
+                    return previousValue;
+                }
+
+                //@Override
+                bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
+                                           const serialization::pimpl::Data &valueData,
+                                           const serialization::pimpl::Data &newValueData) {
+                    bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
+                    invalidateNearCache(keyData);
+                    return result;
+                }
+
+                //@Override
+                std::auto_ptr<serialization::pimpl::Data> replaceInternal(const serialization::pimpl::Data &keyData,
+                                                                          const serialization::pimpl::Data &valueData) {
+                    std::auto_ptr<serialization::pimpl::Data> value =
+                            proxy::IMapImpl::replaceData(keyData, valueData);
+                    invalidateNearCache(keyData);
+                    return value;
+                }
+
+                //@Override
+                void setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
+                                 int ttlInMillis) {
+                    proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
+                    invalidateNearCache(keyData);
+                }
+
+                //@Override
+                bool evictInternal(const serialization::pimpl::Data &keyData) {
+                    bool evicted = proxy::IMapImpl::evict(keyData);
+                    invalidateNearCache(keyData);
+                    return evicted;
+                }
+
+                //@Override
+                EntryVector getAllInternal(
+                        const std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > &pIdToKeyData,
+                        std::map<K, V> &result) {
+                    std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> markers;
+
+                    for (std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator 
+                                 it = pIdToKeyData.begin();it != pIdToKeyData.end();++it) {
+                        for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator 
+                                     valueIterator = it->second.begin();valueIterator != it->second.end();++valueIterator) {
+                            const boost::shared_ptr<serialization::pimpl::Data> &keyData = *valueIterator;
+                            boost::shared_ptr<V> cached = nearCache->get(keyData);
+                            if (cached.get() != NULL && internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached) {
+                                result[*proxy::ProxyImpl::toObject<K>(*keyData)] = *cached;
+                            } else if (invalidateOnChange) {
+                                markers[keyData] = keyStateMarker->tryMark(*keyData);
+                            }
+                        }
                     }
 
+                    EntryVector responses = ClientMapProxy<K, V>::getAllInternal(pIdToKeyData, result);
+                    for (EntryVector::const_iterator it = responses.begin();it != responses.end();++it) {
+                        boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(it->first);
+                        boost::shared_ptr<serialization::pimpl::Data> value = ClientMapProxy<K, V>::toShared(it->second);
+                        bool marked = false;
+                        if (markers.count(key)) {
+                            marked = markers[key];
+                        }
+
+                        if (marked) {
+                            tryToPutNearCache(key, value);
+                        } else {
+                            nearCache->put(key, value);
+                        }
+                    }
+                    return responses;
                 }
 
-                internal::nearcache::impl::KeyStateMarker<serialization::pimpl::Data> &getKeyStateMarker() {
-                    return nearCache->getKeyStateMarker();
+                std::auto_ptr<serialization::pimpl::Data>
+                executeOnKeyInternal(const serialization::pimpl::Data &keyData,
+                                     const serialization::pimpl::Data &processor) {
+                    std::auto_ptr<serialization::pimpl::Data> response =
+                            ClientMapProxy<K, V>::executeOnKeyData(keyData, processor);
+                    invalidateNearCache(keyData);
+                    return response;
                 }
 
-                void addNearCacheInvalidateListener() {
-                    invalidationHandler = boost::shared_ptr<client::impl::BaseEventHandler>(
-                            new ClientMapAddNearCacheEventHandler(nearCache));
-                    addNearCacheInvalidateListener(invalidationHandler);
+                void
+                putAllInternal(const std::map<int, EntryVector> &entries) {
+                    ClientMapProxy<K, V>::putAllInternal(entries);
+
+                    for (std::map<int, EntryVector>::const_iterator it = entries.begin();it != entries.end();++it) {
+                        for (EntryVector::const_iterator entryIt = it->second.begin();
+                             entryIt != it->second.end();++entryIt) {
+                            invalidateNearCache(ClientMapProxy<K, V>::toShared(entryIt->first));
+                        }
+                    }
+                }
+            private:
+                impl::nearcache::KeyStateMarker *getKeyStateMarker() {
+                    return boost::static_pointer_cast<
+                            impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, V> >(nearCache)->
+                            getKeyStateMarker();
                 }
 
-                void addNearCacheInvalidateListener(boost::shared_ptr<client::impl::BaseEventHandler> handler) {
+                void addNearCacheInvalidateListener(std::auto_ptr<client::impl::BaseEventHandler> handler) {
                     try {
                         invalidationListenerId = boost::shared_ptr<std::string>(
                                 new std::string(proxy::ProxyImpl::registerListener(
-                                        createNearCacheEntryListenerCodec(), handler.get())));
+                                        createNearCacheEntryListenerCodec(), handler.release())));
 
                     } catch (exception::IException &e) {
                         std::ostringstream out;
@@ -126,7 +294,7 @@ namespace hazelcast {
 
                 class ClientMapAddNearCacheEventHandler : public protocol::codec::MapAddNearCacheEntryListenerCodec::AbstractEventHandler {
                 public:
-                    ClientMapAddNearCacheEventHandler(boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V, internal::adapter::IMapDataStructureAdapter<K, V> > > cache)
+                    ClientMapAddNearCacheEventHandler(const boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > &cache)
                             : nearCache(cache) {
                     }
 
@@ -146,21 +314,21 @@ namespace hazelcast {
                         if (key.get() == NULL) {
                             nearCache->clear();
                         } else {
-                            nearCache->remove(*key);
+                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(key));
                         }
-
                     }
 
                     //@Override
                     void handleIMapBatchInvalidation(const std::vector<serialization::pimpl::Data> &keys) {
                         for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
                              it != keys.end(); ++it) {
-                            nearCache->remove(*it);
+                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(
+                                    new serialization::pimpl::Data(*it)));
                         }
                     }
 
                 private:
-                    boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V, internal::adapter::IMapDataStructureAdapter<K, V> > > nearCache;
+                    boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
                 };
 
                 std::auto_ptr<protocol::codec::IAddListenerCodec> createNearCacheEntryListenerCodec() {
@@ -169,32 +337,53 @@ namespace hazelcast {
                                     nearCache->getName(), EntryEventType::INVALIDATION, true));
                 }
 
-                void tryToPutNearCache(const serialization::pimpl::Data &key, boost::shared_ptr<V> response) {
+                void tryToPutNearCache(boost::shared_ptr<serialization::pimpl::Data> keyData, boost::shared_ptr<V> response) {
                     try {
-                        nearCache->put(key, response);
+                        nearCache->put(keyData, response);
                     } catch (...) {
-                            if (!keyStateMarker->tryUnmark(key)) {
-                                invalidateNearCache(key);
-                                keyStateMarker->forceUnmark(key);
+                            if (!keyStateMarker->tryUnmark(*keyData)) {
+                                invalidateNearCache(keyData);
+                                keyStateMarker->forceUnmark(*keyData);
                             }
                         throw;
                     }
                 }
 
+                void tryToPutNearCache(boost::shared_ptr<serialization::pimpl::Data> &keyData, boost::shared_ptr<serialization::pimpl::Data> &response) {
+                    try {
+                        nearCache->put(keyData, response);
+                    } catch (...) {
+                            if (!keyStateMarker->tryUnmark(*keyData)) {
+                                invalidateNearCache(keyData);
+                                keyStateMarker->forceUnmark(*keyData);
+                            }
+                        throw;
+                    }
+                }
+
+                /**
+                 * This method modifies the key Data internal pointer although it is marked as const
+                 * @param key The key for which to invalidate the near cache
+                 */
                 void invalidateNearCache(const serialization::pimpl::Data &key) {
+                    nearCache->remove(ClientMapProxy<K, V>::toShared(key));
+                }
+                
+                void invalidateNearCache(boost::shared_ptr<serialization::pimpl::Data> key) {
                     nearCache->remove(key);
                 }
 
-                const config::NearCacheConfig *nearCacheConfig;
-                boost::shared_ptr<internal::nearcache::NearCache<
-                        serialization::pimpl::Data, V, internal::adapter::IMapDataStructureAdapter<K, V> > > nearCache;
-                internal::nearcache::impl::KeyStateMarker<serialization::pimpl::Data> *keyStateMarker;
+                const boost::shared_ptr<config::NearCacheConfig> nearCacheConfig;
+                boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
+                impl::nearcache::KeyStateMarker *keyStateMarker;
                 bool invalidateOnChange;
 
                 // since we don't have atomic support in the project yet, using shared_ptr
                 boost::shared_ptr<std::string> invalidationListenerId;
 
+/*
                 boost::shared_ptr<client::impl::BaseEventHandler> invalidationHandler;
+*/
             };
         }
     }

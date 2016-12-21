@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_
-#define HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_
+#ifndef HAZELCAST_CLIENT_CONFIG_EVICTIONPOLICY_H_
+#define HAZELCAST_CLIENT_CONFIG_EVICTIONPOLICY_H_
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -26,21 +26,24 @@
 namespace hazelcast {
     namespace client {
         namespace config {
-            enum HAZELCAST_API InMemoryFormat {
-                    /**
-                     * As Binary
-                     */
-                            BINARY,
-                    /**
-                     * As Object
-                     */
-                            OBJECT,
-
-                    /**
-                     * As native storage
-                     */
-                            NATIVE
-            };
+           enum HAZELCAST_API EvictionPolicy {
+               /**
+                * Least Recently Used
+                */
+                       LRU,
+               /**
+                * Least Frequently Used
+                */
+                       LFU,
+               /**
+                * None
+                */
+                       NONE,
+               /**
+                * Randomly
+                */
+                       RANDOM
+           };
         }
     }
 }
@@ -49,4 +52,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_CLIENT_CONFIG_INMEMORYFORMAT_H_ */
+#endif /* HAZELCAST_CLIENT_CONFIG_EVICTIONPOLICY_H_ */

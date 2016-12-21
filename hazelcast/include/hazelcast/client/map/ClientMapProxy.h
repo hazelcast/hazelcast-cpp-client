@@ -72,7 +72,8 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 bool containsKey(const K &key) {
-                    return proxy::IMapImpl::containsKey(toData(key));
+                    serialization::pimpl::Data keyData = toData(key);
+                    return containsKeyInternal(keyData);
                 }
 
                 /**
@@ -121,8 +122,10 @@ namespace hazelcast {
                 * then returns NULL in shared_ptr.
                 */
                 boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
-                    return boost::shared_ptr<V>(
-                            toObject<V>(proxy::IMapImpl::putData(toData(key), toData(value), ttlInMillis)));
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    return boost::shared_ptr<V>(toObject<V>(putInternal(keyData, valueData, ttlInMillis)));
                 }
 
                 /**
@@ -133,7 +136,10 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 boost::shared_ptr<V> remove(const K &key) {
-                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::removeData(toData(key))));
+                    serialization::pimpl::Data keyData = toData(key);
+
+                    std::auto_ptr<serialization::pimpl::Data> response = removeInternal(keyData);
+                    return boost::shared_ptr<V>(toObject<V>(response));
                 }
 
                 /**
@@ -144,7 +150,10 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 bool remove(const K &key, const V &value) {
-                    return proxy::IMapImpl::remove(toData(key), toData(value));
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    return removeInternal(keyData, valueData);
                 }
 
                 /**
@@ -154,7 +163,9 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
                 void deleteEntry(const K &key) {
-                    proxy::IMapImpl::deleteEntry(toData(key));
+                    serialization::pimpl::Data keyData = toData(key);
+
+                    deleteInternal(keyData);
                 }
 
                 /**
@@ -176,7 +187,9 @@ namespace hazelcast {
                 *                 for the key
                 */
                 bool tryRemove(const K &key, long timeoutInMillis) {
-                    return proxy::IMapImpl::tryRemove(toData(key), timeoutInMillis);
+                    serialization::pimpl::Data keyData = toData(key);
+
+                    return tryRemoveInternal(keyData, timeoutInMillis);
                 }
 
                 /**
@@ -192,7 +205,10 @@ namespace hazelcast {
                 *         otherwise.
                 */
                 bool tryPut(const K &key, const V &value, long timeoutInMillis) {
-                    return proxy::IMapImpl::tryPut(toData(key), toData(value), timeoutInMillis);
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    return tryPutInternal(keyData, valueData, timeoutInMillis);
                 }
 
                 /**
@@ -205,7 +221,10 @@ namespace hazelcast {
                 * @param ttlInMillis  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
                 */
                 void putTransient(const K &key, const V &value, long ttlInMillis) {
-                    proxy::IMapImpl::putTransient(toData(key), toData(value), ttlInMillis);
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    tryPutTransientInternal(keyData, valueData, ttlInMillis);
                 }
 
                 /**
@@ -232,8 +251,11 @@ namespace hazelcast {
                 * then returns NULL in shared_ptr.
                 */
                 boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
-                    return boost::shared_ptr<V>(
-                            toObject<V>(proxy::IMapImpl::putIfAbsentData(toData(key), toData(value), ttlInMillis)));
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    std::auto_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData, ttlInMillis);
+                    return boost::shared_ptr<V>(toObject<V>(response));
                 }
 
                 /**
@@ -244,7 +266,11 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the value was replaced
                 */
                 bool replace(const K &key, const V &oldValue, const V &newValue) {
-                    return proxy::IMapImpl::replace(toData(key), toData(oldValue), toData(newValue));
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data oldValueData = toData(oldValue);
+                    serialization::pimpl::Data newValueData = toData(newValue);
+
+                    return replaceIfSameInternal(keyData, oldValueData, newValueData);
                 }
 
                 /**
@@ -255,7 +281,37 @@ namespace hazelcast {
                 * then returns NULL in shared_ptr.
                 */
                 boost::shared_ptr<V> replace(const K &key, const V &value) {
-                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::replaceData(toData(key), toData(value))));
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    return boost::shared_ptr<V>(toObject<V>(replaceInternal(keyData, valueData)));
+                }
+
+                /**
+                * Puts an entry into this map.
+                * Similar to put operation except that set
+                * doesn't return the old value which is more efficient.
+                * @param key
+                * @param value
+                */
+                void set(const K &key, const V &value) {
+                    set(key, value, -1);
+                }
+
+                /**
+                * Puts an entry into this map.
+                * Similar to put operation except that set
+                * doesn't return the old value which is more efficient.
+                * @param key key with which the specified value is associated
+                * @param value
+                * @param ttl maximum time in milliseconds for this entry to stay in the map
+                0 means infinite.
+                */
+                void set(const K &key, const V &value, long ttl) {
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data valueData = toData(value);
+
+                    setInternal(keyData, valueData, ttl);
                 }
 
                 /**
@@ -273,7 +329,7 @@ namespace hazelcast {
                 * @param key key to lock.
                 */
                 void lock(const K &key) {
-                    proxy::IMapImpl::lock(toData(key));
+                    lock(key, -1);
                 }
 
                 /**
@@ -295,6 +351,8 @@ namespace hazelcast {
                 * @param leaseTime time in milliseconds to wait before releasing the lock.
                 */
                 void lock(const K &key, long leaseTime) {
+                    serialization::pimpl::Data keyData = toData(key);
+
                     proxy::IMapImpl::lock(toData(key), leaseTime);
                 }
 
@@ -459,7 +517,6 @@ namespace hazelcast {
                     return proxy::IMapImpl::removeEntryListener(registrationId);
                 }
 
-
                 /**
                 * Adds the specified entry listener for the specified key.
                 *
@@ -510,7 +567,9 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the key is evicted, <tt>false</tt> otherwise.
                 */
                 bool evict(const K &key) {
-                    return proxy::IMapImpl::evict(toData(key));
+                    serialization::pimpl::Data keyData = toData(key);
+
+                    return evictInternal(keyData);
                 }
 
                 /**
@@ -535,20 +594,22 @@ namespace hazelcast {
                 * @return map of entries
                 */
                 std::map<K, V> getAll(const std::set<K> &keys) {
-                    std::vector<serialization::pimpl::Data> keySet(keys.size());
-                    size_t i = 0;
-                    for (typename std::set<K>::iterator it = keys.begin(); it != keys.end(); ++it) {
-                        keySet[i++] = toData(*it);
+                    if (keys.empty()) {
+                        return std::map<K, V>();
                     }
+
+                    std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > partitionToKeyData;
+                    // group the request per parition id
+                    for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end(); ++it) {
+                        serialization::pimpl::Data keyData = toData<K>(*it);
+                        
+                        int partitionId = getPartitionId(keyData);
+
+                        partitionToKeyData[partitionId].push_back(toShared(keyData));
+                    }
+
                     std::map<K, V> result;
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entrySet = proxy::IMapImpl::getAllData(
-                            keySet);
-                    for (std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >::const_iterator it = entrySet.begin();
-                         it != entrySet.end(); ++it) {
-                        std::auto_ptr<K> key = toObject<K>(it->first);
-                        std::auto_ptr<V> value = toObject<V>(it->second);
-                        result[*key] = *value;
-                    }
+                    getAllInternal(partitionToKeyData, result);
                     return result;
                 }
 
@@ -870,10 +931,12 @@ namespace hazelcast {
                 */
                 template<typename ResultType, typename EntryProcessor>
                 boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
-                    std::auto_ptr<serialization::pimpl::Data> resultData = proxy::IMapImpl::executeOnKeyData<K, EntryProcessor>(
-                            key, entryProcessor);
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data processorData = toData(entryProcessor);
 
-                    return boost::shared_ptr<ResultType>(toObject<ResultType>(resultData));
+                    std::auto_ptr<serialization::pimpl::Data> response = executeOnKeyInternal(keyData, processorData);
+
+                    return boost::shared_ptr<ResultType>(toObject<ResultType>(response));
                 }
 
                 /**
@@ -954,30 +1017,6 @@ namespace hazelcast {
                 }
 
                 /**
-                * Puts an entry into this map.
-                * Similar to put operation except that set
-                * doesn't return the old value which is more efficient.
-                * @param key
-                * @param value
-                */
-                void set(const K &key, const V &value) {
-                    set(key, value, -1);
-                }
-
-                /**
-                * Puts an entry into this map.
-                * Similar to put operation except that set
-                * doesn't return the old value which is more efficient.
-                * @param key key with which the specified value is associated
-                * @param value
-                * @param ttl maximum time in milliseconds for this entry to stay in the map
-                0 means infinite.
-                */
-                void set(const K &key, const V &value, long ttl) {
-                    proxy::IMapImpl::set(toData(key), toData(value), ttl);
-                }
-
-                /**
                 * Returns the number of key-value mappings in this map.  If the
                 * map contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
                 * <tt>Integer.MAX_VALUE</tt>.
@@ -1009,7 +1048,18 @@ namespace hazelcast {
                 * @param m mappings to be stored in this map
                 */
                 void putAll(const std::map<K, V> &entries) {
-                    return proxy::IMapImpl::putAll(toDataEntries(entries));
+                    std::map<int, EntryVector> entryMap;
+
+                    for (typename std::map<K, V>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+                        serialization::pimpl::Data keyData = toData(it->first);
+                        serialization::pimpl::Data valueData = toData(it->second);
+
+                        int partitionId = getPartitionId(keyData);
+
+                        entryMap[partitionId].push_back(std::make_pair(keyData, valueData));
+                    }
+
+                    putAllInternal(entryMap);
                 }
 
                 /**
@@ -1026,6 +1076,115 @@ namespace hazelcast {
             protected:
                 virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
                     return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
+                }
+
+                virtual bool containsKeyInternal(const serialization::pimpl::Data &keyData) {
+                    return proxy::IMapImpl::containsKey(keyData);
+                }
+
+                virtual std::auto_ptr<serialization::pimpl::Data> removeInternal(
+                        const serialization::pimpl::Data &keyData) {
+                    return proxy::IMapImpl::removeData(keyData);
+                }
+
+                virtual bool removeInternal(
+                        const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
+                    return proxy::IMapImpl::remove(keyData, valueData);
+                }
+
+                virtual void deleteInternal(const serialization::pimpl::Data &keyData) {
+                    proxy::IMapImpl::deleteEntry(keyData);
+                }
+
+                virtual bool tryRemoveInternal(const serialization::pimpl::Data &keyData, long timeoutInMillis) {
+                    return proxy::IMapImpl::tryRemove(keyData, timeoutInMillis);
+                }
+
+                virtual bool tryPutInternal(const serialization::pimpl::Data &keyData,
+                                            const serialization::pimpl::Data &valueData, long timeoutInMillis) {
+                    return proxy::IMapImpl::tryPut(keyData, valueData, timeoutInMillis);
+                }
+
+                virtual std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &keyData,
+                                            const serialization::pimpl::Data &valueData, long timeoutInMillis) {
+                    return proxy::IMapImpl::putData(keyData, valueData, timeoutInMillis);
+                }
+
+                virtual void tryPutTransientInternal(const serialization::pimpl::Data &keyData,
+                                             const serialization::pimpl::Data &valueData, int ttlInMillis) {
+                    proxy::IMapImpl::tryPut(keyData, valueData, ttlInMillis);
+                }
+
+                virtual std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+                                                                              const serialization::pimpl::Data &valueData,
+                                                                              int ttlInMillis) {
+                    return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttlInMillis);
+                }
+
+                virtual bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
+                                           const serialization::pimpl::Data &valueData,
+                                           const serialization::pimpl::Data &newValueData) {
+                    return proxy::IMapImpl::replace(keyData, valueData, newValueData);
+                }
+
+                virtual std::auto_ptr<serialization::pimpl::Data> replaceInternal(const serialization::pimpl::Data &keyData,
+                                                                          const serialization::pimpl::Data &valueData) {
+                    return proxy::IMapImpl::replaceData(keyData, valueData);
+
+                }
+
+                virtual void setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
+                                 int ttlInMillis) {
+                    proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
+                }
+
+                virtual bool evictInternal(const serialization::pimpl::Data &keyData) {
+                    return proxy::IMapImpl::evict(keyData);
+                }
+
+                virtual EntryVector getAllInternal(
+                        const std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > &partitionToKeyData,
+                        std::map<K, V> &result) {
+                    std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
+                    for (std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator
+                                 it = partitionToKeyData.begin();it != partitionToKeyData.end();++it) {
+                        for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator
+                                     keyIt = it->second.begin();keyIt != it->second.end();++keyIt) {
+                            // Deep copiy the data bytes. This is needed since IMapImpl::getAllData
+                            // implicitely changes the internal pointer of Data object which is needed later by the
+                            // caller of this method.
+                            //TODO: When Data object is made as non-copiable and the map codecs are generated to use
+                            //TODO  shared pointers rather than the Data object, then this duplication can be eliminated
+                            //TODO  using shared pointers of data.
+                            std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>((*keyIt)->toByteArray()));
+                            partitionKeys[it->first].push_back(serialization::pimpl::Data(bytes));
+                        }
+                    }
+                    EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
+
+                    for (EntryVector::const_iterator it = allData.begin();it != allData.end(); ++it) {
+                        std::auto_ptr<K> key = toObject<K>(it->first);
+                        std::auto_ptr<V> value = toObject<V>(it->second);
+
+                        result[*key] = *value;
+                    }
+
+                    return allData;
+                }
+
+                virtual std::auto_ptr<serialization::pimpl::Data>
+                executeOnKeyInternal(const serialization::pimpl::Data &keyData,
+                                     const serialization::pimpl::Data &processor) {
+                    return proxy::IMapImpl::executeOnKeyData(keyData, processor);
+                }
+
+                virtual void
+                putAllInternal(const std::map<int, EntryVector> &entries) {
+                    proxy::IMapImpl::putAllData(entries);
+                }
+
+                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
+                    return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
             };
         }

@@ -48,7 +48,7 @@ namespace hazelcast {
             sleepmillis((unsigned long)(1000 * seconds));
 		}
 
-		void sleepmillis(unsigned long milliseconds){
+		void sleepmillis(uint64_t milliseconds){
         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 			Sleep(milliseconds);
         #else

@@ -373,22 +373,11 @@ namespace hazelcast {
                 invoke(request);
             }
 
-            EntryVector IMapImpl::getAllData(
-                    const std::vector<serialization::pimpl::Data> &keys) {
-                std::map<int, std::vector<serialization::pimpl::Data> > partitionedKeys;
-
-                // group the request per parition id
-                for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
-                     it != keys.end(); ++it) {
-                    int partitionId = getPartitionId(*it);
-
-                    partitionedKeys[partitionId].push_back(*it);
-                }
-
+            EntryVector IMapImpl::getAllData(const std::map<int, std::vector<serialization::pimpl::Data> > &partitionToKeyData) {
                 std::vector<connection::CallFuture> futures;
 
-                for (std::map<int, std::vector<serialization::pimpl::Data> >::const_iterator it = partitionedKeys.begin();
-                     it != partitionedKeys.end(); ++it) {
+                for (std::map<int, std::vector<serialization::pimpl::Data> >::const_iterator it = partitionToKeyData.begin();
+                     it != partitionToKeyData.end(); ++it) {
                     std::auto_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapGetAllCodec::RequestParameters::encode(getName(), it->second);
 
@@ -516,17 +505,7 @@ namespace hazelcast {
                 return invokeAndGetResult<bool, protocol::codec::MapIsEmptyCodec::ResponseParameters>(request);
             }
 
-            void IMapImpl::putAll(const EntryVector &entries) {
-                std::map<int, EntryVector> partitionedEntries;
-
-                // group the request per parition id
-                for (EntryVector::const_iterator it = entries.begin();
-                     it != entries.end(); ++it) {
-                    int partitionId = getPartitionId(it->first);
-
-                    partitionedEntries[partitionId].push_back(*it);
-                }
-
+            void IMapImpl::putAllData(const std::map<int, EntryVector> &partitionedEntries) {
                 std::vector<connection::CallFuture> futures;
 
                 for (std::map<int, EntryVector>::const_iterator it = partitionedEntries.begin();

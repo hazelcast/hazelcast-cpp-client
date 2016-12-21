@@ -16,17 +16,17 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHE_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHE_H_
 
-#include <stdexcept>
 #include <climits>
 #include <string>
-#include <vector>
+#include <assert.h>
 
 #include <boost/shared_ptr.hpp>
 
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/config/InMemoryFormat.h"
-#include "hazelcast/client/internal/nearcache/impl/KeyStateMarker.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/InitializingObject.h"
+#include "hazelcast/client/config/NearCachePreloaderConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,12 +35,12 @@
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class NearCachePreloaderConfig;
-            class InMemoryFormat;
-        }
-
         namespace internal {
+            namespace adapter {
+                template <typename K, typename V>
+                class DataStructureAdapter;
+            }
+
             namespace nearcache {
                 /**
                  * {@link NearCache} is the contract point to store keys and values in underlying
@@ -48,8 +48,10 @@ namespace hazelcast {
                  *
                  * @param <K> the type of the key
                  * @param <V> the type of the value
+                 *
+                 * This is a no-op interface class. See InvalidationAwareNearCache for the actual implementation
                  */
-                template <typename K, typename V, typename ADAPTER>
+                template <typename K, typename V>
                 class NearCache : public spi::InitializingObject {
                 public:
                     /**
@@ -57,14 +59,11 @@ namespace hazelcast {
                      */
                     static boost::shared_ptr<V> NULL_OBJECT;
 
-                    NearCache(int partitionCount) : keyStateMarker(partitionCount) {
-                    }
-
                     virtual ~NearCache() {
                     }
 
                     void initialize() {
-                        //TODO
+                        assert(0);
                     }
 
                     /**
@@ -82,9 +81,9 @@ namespace hazelcast {
                      *
                      * @return the name of the <code>this</code> {@link com.hazelcast.cache.impl.nearcache.NearCache} instance
                      */
-                    const std::string &getName() const {
-                        //TODO
-                        return name;
+                    virtual const std::string &getName() const {
+                        assert(0);
+                        return *(new std::string(""));
                     }
 
                     /**
@@ -93,8 +92,8 @@ namespace hazelcast {
                      * @param key the key of the requested value
                      * @return the value associated with the given <code>key</code>
                      */
-                    boost::shared_ptr<V> get(const K &key) {
-                        //TODO
+                    virtual boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
+                        assert(0);
                         return boost::shared_ptr<V>();
                     }
 
@@ -104,8 +103,19 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value will be stored
                      */
-                    void put(const K &key, const boost::shared_ptr<V> &value) {
-                        //TODO
+                    virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
+                        assert(0);
+                    }
+
+                    /**
+                     * Puts (associates) a value with the given <code>key</code>.
+                     *
+                     * @param key   the key of the value will be stored
+                     * @param value the value as Data which will be stored
+                     */
+                    virtual void put(const boost::shared_ptr<K> &key,
+                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        assert(0);
                     }
 
                     /**
@@ -113,34 +123,31 @@ namespace hazelcast {
                      *
                      * @param key the key of the value will be removed
                      */
-                    bool remove(const K &key) {
-                        //TODO
-                        keyStateMarker.tryRemove(key);
+                    virtual bool remove(const boost::shared_ptr<K> &key) {
+                        assert(0);
                         return false;
                     }
 
                     /**
                      * @return
                      */
-                    bool isInvalidatedOnChange() const {
-                        //TODO
+                    virtual bool isInvalidatedOnChange() const {
+                        assert(0);
                         return false;
                     }
 
                     /**
                      * Removes all stored values.
                      */
-                    void clear() {
-                    //TODO
-                        keyStateMarker.init();
+                    virtual void clear() {
+                        assert(0);
                     }
 
                     /**
                      * Clears the record store and destroys it.
                      */
-                    void destroy() {
-                        //TODO
-                        keyStateMarker.init();
+                    virtual void destroy() {
+                        assert(0);
                     }
 
                     /**
@@ -148,9 +155,9 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records
                      */
-                    const config::InMemoryFormat &getInMemoryFormat() const {
-                        //TODO
-                        return inMemoryFormat;
+                    virtual const config::InMemoryFormat getInMemoryFormat() const {
+                        assert(0);
+                        return config::BINARY;
                     }
 
                     /**
@@ -158,9 +165,9 @@ namespace hazelcast {
                      *
                      * @return the {@link NearCachePreloaderConfig} of this Near Cache
                      */
-                    const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
-                        //TODO
-                        return preloaderConfig;
+                    virtual const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
+                        assert(0);
+                        return boost::shared_ptr<config::NearCachePreloaderConfig>();
                     }
 
                     /**
@@ -179,7 +186,7 @@ namespace hazelcast {
                      * @return the best candidate object to store, selected from the given <code>candidates</code>.
                      */
 /*
-                    boost::shared_ptr<V> selectToSave(std::vector<boost::shared_ptr<V> > candidates) const;
+                    virtual boost::shared_ptr<V> selectToSave(std::vector<boost::shared_ptr<V> > candidates) const;
 */
 
                     /**
@@ -187,23 +194,23 @@ namespace hazelcast {
                      *
                      * @return the count of stored records
                      */
-                    int size() const {
-                        //TODO
+                    virtual int size() const {
+                        assert(0);
                         return -1;
                     }
 
                     /**
                      * Executes the Near Cache pre-loader on the given {@link DataStructureAdapter}.
                      */
-                    void preload(const ADAPTER &adapter) {
-                        //TODO
+                    virtual void preload(const adapter::DataStructureAdapter<K, V> &adapter) {
+                        assert(0);
                     }
 
                     /**
                      * Stores the keys of the Near Cache.
                      */
-                    void storeKeys() {
-                        //TODO
+                    virtual void storeKeys() {
+                        assert(0);
                     }
 
                     /**
@@ -211,23 +218,14 @@ namespace hazelcast {
                      *
                      * @return {@code true} if the pre-loading is done, {@code false} otherwise.
                      */
-                    bool isPreloadDone() {
-                        //TODO
+                    virtual bool isPreloadDone() {
+                        assert(0);
                         return false;
                     }
-
-                    impl::KeyStateMarker<K> &getKeyStateMarker() {
-                        return keyStateMarker;
-                    }
-                private:
-                    impl::KeyStateMarker<K> keyStateMarker;
-                    std::string name;
-                    boost::shared_ptr<config::NearCachePreloaderConfig> preloaderConfig;
-                    config::InMemoryFormat inMemoryFormat;
                 };
 
-                template <typename K, typename V, typename ADAPTER>
-                boost::shared_ptr<V> NearCache<K, V, ADAPTER>::NULL_OBJECT = boost::shared_ptr<V>(new V());
+                template <typename K, typename V>
+                boost::shared_ptr<V> NearCache<K, V>::NULL_OBJECT = boost::shared_ptr<V>(new V());
             }
         }
     }

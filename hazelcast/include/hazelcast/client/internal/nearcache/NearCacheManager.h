@@ -18,6 +18,8 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
+#include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
+#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #include <string>
@@ -41,7 +43,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API NearCacheManager {
                 public:
-                    NearCacheManager(const serialization::pimpl::SerializationService &ss)
+                    NearCacheManager(serialization::pimpl::SerializationService &ss)
                             : serializationService(ss) {
                         // TODO
                         (void) serializationService;
@@ -56,10 +58,10 @@ namespace hazelcast {
                      * @return the {@link NearCache} instance
                      * associated with given {@code name}
                      */
-                    template <typename K, typename V, typename DATAADAPTER>
-                    boost::shared_ptr<NearCache<K, V, DATAADAPTER> > getNearCache(const std::string &name) {
+                    template <typename K, typename V>
+                    boost::shared_ptr<NearCache<K, V> > getNearCache(const std::string &name) {
                         // TODO
-                        return boost::shared_ptr<NearCache<K, V, DATAADAPTER> >();
+                        return boost::shared_ptr<NearCache<K, V> >();
                     };
 
                     /**
@@ -71,18 +73,41 @@ namespace hazelcast {
                      *                             to be created or existing one
                      * @param nearCacheConfig      the {@link NearCacheConfig} of the {@link NearCache} to be created
                      * @param dataStructureAdapter the {@link DataStructureAdapter} of the {@link NearCache} to be created
-                     * @param partitionCount       number of partitions in the cluster
-                     * @param <K>                  the key type of the {@link NearCache}
+                     * @param <CACHEKEY>           the key type of the {@link NearCache}
+                     * @param <K>                  the key type of the {@link IMap}
                      * @param <V>                  the value type of the {@link NearCache}
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
-                    template <typename KEYDATA, typename K, typename V, typename DATAADAPTER>
-                    boost::shared_ptr<NearCache<KEYDATA, V, DATAADAPTER> > getOrCreateNearCache(
-                            const std::string & name, const config::NearCacheConfig &nearCacheConfig,
-                            boost::shared_ptr<DATAADAPTER> dataStructureAdapter,
-                            int partitionCount) {
-                        //TODO
-                        return boost::shared_ptr<NearCache<KEYDATA, V, DATAADAPTER> >(new NearCache<KEYDATA, V, DATAADAPTER>(partitionCount));
+                    template <typename CACHEKEY, typename K, typename V>
+                    boost::shared_ptr<NearCache<CACHEKEY, V> > getOrCreateNearCache(
+                            const std::string &name, const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig,
+                            boost::shared_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
+                        boost::shared_ptr<spi::InitializingObject> nearCache = nearCacheMap.get(name);
+                        if (NULL == nearCache.get()) {
+                            {
+                                util::LockGuard guard(mutex);
+                                nearCache = nearCacheMap.get(name);
+                                if (NULL == nearCache.get()) {
+                                    nearCache = createNearCache<CACHEKEY, V>(name, nearCacheConfig);
+                                    nearCache->initialize();
+
+                                    nearCacheMap.put(name, nearCache);
+
+/*TODO
+                                    NearCache<CACHEKEY, V> *nearCachePtr =
+                                            (NearCache<CACHEKEY, V> *) nearCache.get();
+
+
+                                    if (nearCachePtr->getPreloaderConfig()->isEnabled()) {
+                                        createAndSchedulePreloadTask(nearCache, dataStructureAdapter);
+                                        createAndScheduleStorageTask();
+                                    }
+*/
+                                }
+
+                            }
+                        }
+                        return boost::static_pointer_cast<NearCache<CACHEKEY, V> >(nearCache);
                     }
 
                     /**
@@ -130,8 +155,18 @@ namespace hazelcast {
                         // TODO
                     }
 
+                protected:
+                    template <typename K, typename V>
+                    std::auto_ptr<NearCache<K, V> > createNearCache(
+                            const std::string &name, const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig) {
+                        return std::auto_ptr<NearCache<K, V> >(
+                                new impl::DefaultNearCache<K, V>(
+                                        name, nearCacheConfig, serializationService));
+                    }
                 private:
-                    const serialization::pimpl::SerializationService &serializationService;
+                    serialization::pimpl::SerializationService &serializationService;
+                    util::SynchronizedMap<std::string, spi::InitializingObject> nearCacheMap;
+                    util::Mutex mutex;
                 };
             }
         }
