@@ -221,21 +221,25 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> authenticationMessage;
                 byte serializationVersion = clientContext.getSerializationService().getVersion();
+
+                // get principal as a shared_ptr first since it may be changed concurrently
+                boost::shared_ptr<protocol::Principal> latestPrincipal = principal;
                 if (NULL == credentials) {
                     GroupConfig &groupConfig = clientContext.getClientConfig().getGroupConfig();
                     const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
                     authenticationMessage = protocol::codec::ClientAuthenticationCodec::RequestParameters::encode(
-                            cr.getPrincipal(), cr.getPassword(), principal.get() ? principal->getUuid() : NULL,
-                            principal.get() ? principal->getOwnerUuid() : NULL, connection->isOwnerConnection(),
-                            protocol::ClientTypes::CPP, serializationVersion);
+                            cr.getPrincipal(), cr.getPassword(),
+                            latestPrincipal.get() ? latestPrincipal->getUuid() : NULL,
+                            latestPrincipal.get() ? latestPrincipal->getOwnerUuid() : NULL,
+                            connection->isOwnerConnection(), protocol::ClientTypes::CPP, serializationVersion);
                 } else {
                     serialization::pimpl::Data data =
                             clientContext.getSerializationService().toData<Credentials>(credentials);
 
                     authenticationMessage = protocol::codec::ClientAuthenticationCustomCodec::RequestParameters::encode(
-                            data, principal.get() ? principal->getUuid() : NULL,
-                            principal.get() ? principal->getOwnerUuid() : NULL, connection->isOwnerConnection(),
-                            protocol::ClientTypes::CPP, serializationVersion);
+                            data, latestPrincipal.get() ? latestPrincipal->getUuid() : NULL,
+                            latestPrincipal.get() ? latestPrincipal->getOwnerUuid() : NULL,
+                            connection->isOwnerConnection(), protocol::ClientTypes::CPP, serializationVersion);
                 }
 
                 connection->init(PROTOCOL);
@@ -388,14 +392,34 @@ namespace hazelcast {
                 connection->setConnectionId(++connectionIdCounter);
 
                 std::stringstream message;
-                (message << "Connected and authenticated by " << *addr << ". Connection id:" << connection->getConnectionId()
-                 << " , socket id:" << connection->getSocket().getSocketId() << (connection->isOwnerConnection() ? " as owner connection." : "."));
-                util::ILogger::getLogger().info(message.str());
+                message << "Connected and authenticated by " << *addr << ". Connection id:"
+                        << connection->getConnectionId() << " , socket id:" << connection->getSocket().getSocketId();
+
                 if (connection->isOwnerConnection()) {
                     principal = std::auto_ptr<protocol::Principal>(new protocol::Principal(uuid, ownerUuid));
+                    message << " as owner connection";
                 } else {
                     connection->getSocket().setBlocking(false);
                 }
+                
+                if ((protocol::Principal *) NULL != principal.get()) {
+                    const std::string *clientUuid = principal->getUuid();
+                    if (NULL != clientUuid) {
+                        message << ". Client uuid: " << *clientUuid;
+                    } else {
+                        message << ". Client uuid is NULL";
+                    }
+                    const std::string *ownerMemberUuid = principal->getOwnerUuid();
+                    if (NULL != ownerMemberUuid) {
+                        message << ". Owner member uuid: " << *ownerMemberUuid;
+                    } else {
+                        message << ". Owner member uuid is NULL";
+                    }
+                } else {
+                    message << ". No principal exist!!!";
+                }
+
+                util::ILogger::getLogger().info(message.str());
             }
 
 

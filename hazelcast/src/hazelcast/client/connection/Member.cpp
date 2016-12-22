@@ -52,8 +52,15 @@ namespace hazelcast {
             return attributes;
         }
 
-        std::ostream &operator<<(std::ostream &stream, const Member &member) {
-            return stream << "Member[" << member.getAddress() << "]";
+        std::ostream &operator<<(std::ostream &out, const Member &member) {
+            const Address &address = member.getAddress();
+            out << "Member[";
+            out << address.getHost();
+            out << "]";
+            out << ":";
+            out << address.getPort();
+            out << " - " << member.getUuid();
+            return out;
         }
 
         const std::string *Member::getAttribute(const std::string &key) const {
