@@ -99,9 +99,6 @@ namespace hazelcast {
 /*
            const EvictionPolicyComparator comparator;
 */
-
-                std::auto_ptr<EvictionConfig> readOnly;
-
             private:
                 /**
                  * Used by the {@link NearCacheConfigAccessor} to initialize the proper default value for on-heap maps.
