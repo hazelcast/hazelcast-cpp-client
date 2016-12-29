@@ -39,7 +39,7 @@ namespace hazelcast {
                      * @param <K> the type of the key
                      * @param <V> the type of the value
                      */
-                    template <typename K, typename V>
+                    template<typename K, typename V>
                     class NearCacheRecordStore : public spi::InitializingObject {
                     public:
                         virtual ~NearCacheRecordStore() {
@@ -73,7 +73,8 @@ namespace hazelcast {
                          * @param key   the key to which the given value will be associated.
                          * @param value the value that will be associated with the key.
                          */
-                        virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        virtual void put(const boost::shared_ptr<K> &key,
+                                         const boost::shared_ptr<serialization::pimpl::Data> &value) {
                             assert(0);
                         }
 
@@ -117,16 +118,18 @@ namespace hazelcast {
                          * @param candidates the candidates from which the best candidate object will be selected.
                          * @return the best candidate object to store, selected from the given {@code candidates}.
                          */
-/*
-                        virtual Object selectToSave(Object... candidates);
-*/
+                        virtual const boost::shared_ptr<V> selectToSave(const boost::shared_ptr<V> &value,
+                                                                 const boost::shared_ptr<serialization::pimpl::Data> &valueData) const {
+                            assert(0);
+                            return boost::shared_ptr<V>();
+                        }
 
                         /**
                          * Gets the number of stored records.
                          *
                          * @return the number of stored records.
                          */
-                        virtual int size() {
+                        virtual int size() const {
                             assert(0);
                             return -1;
                         }

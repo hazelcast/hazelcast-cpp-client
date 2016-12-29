@@ -72,16 +72,16 @@ namespace hazelcast {
 
                 void readData(serialization::ObjectDataInput &reader);
 
-                virtual int compare(const std::pair<const int *, const Employee *> &lhs,
-                            const std::pair<const int *, const Employee *> &rhs) const;
+                virtual int compare(const std::pair<const int *, const Employee *> *lhs,
+                            const std::pair<const int *, const Employee *> *rhs) const;
             };
 
             // Compares based on the employee age
             class EmployeeEntryKeyComparator
                     : public EmployeeEntryComparator {
             public:
-                int compare(const std::pair<const int *, const Employee *> &lhs,
-                            const std::pair<const int *, const Employee *> &rhs) const;
+                int compare(const std::pair<const int *, const Employee *> *lhs,
+                            const std::pair<const int *, const Employee *> *rhs) const;
 
                 int getClassId() const;
             };

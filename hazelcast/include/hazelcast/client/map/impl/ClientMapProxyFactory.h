@@ -16,7 +16,6 @@
 #ifndef HAZELCAST_CLIENT_MAP_IMPL_CLIENTMAPPROXYFACTORY_H_
 #define HAZELCAST_CLIENT_MAP_IMPL_CLIENTMAPPROXYFACTORY_H_
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -39,11 +38,11 @@ namespace hazelcast {
 
                     //@Override
                     boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-                        const boost::shared_ptr<config::NearCacheConfig> nearCacheConfig = clientContext->getClientConfig().getNearCacheConfig(name);
+                        const config::NearCacheConfig<K, V> *nearCacheConfig = clientContext->getClientConfig().template getNearCacheConfig<K, V>(name);
                         spi::ClientProxy *proxy;
-                        if (nearCacheConfig.get() != NULL) {
+                        if (nearCacheConfig != NULL) {
                             //TODO checkNearCacheConfig(nearCacheConfig, true);
-                            proxy = new map::NearCachedClientMapProxy<K, V>(name, clientContext, nearCacheConfig);
+                            proxy = new map::NearCachedClientMapProxy<K, V>(name, clientContext, *nearCacheConfig);
                         } else {
                             proxy = new map::ClientMapProxy<K, V>(name, clientContext);
                         }

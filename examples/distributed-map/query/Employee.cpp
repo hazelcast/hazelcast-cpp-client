@@ -86,10 +86,10 @@ namespace hazelcast {
                 void EmployeeEntryComparator::readData(serialization::ObjectDataInput &reader) {
                 }
 
-                int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> &lhs,
-                                                     const std::pair<const int *, const Employee *> &rhs) const {
-                    const Employee *lv = lhs.second;
-                    const Employee *rv = rhs.second;
+                int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> *lhs,
+                                                     const std::pair<const int *, const Employee *> *rhs) const {
+                    const Employee *lv = lhs->second;
+                    const Employee *rv = rhs->second;
 
                     if (NULL == lv) {
                         return -1;

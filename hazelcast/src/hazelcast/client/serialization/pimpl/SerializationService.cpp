@@ -671,6 +671,11 @@ namespace hazelcast {
                     return std::auto_ptr<std::vector<std::string> > (dataInput.readUTFArray());
                 }
 
+                template<>
+                std::auto_ptr<Data> SerializationService::toObject(const Data *data) {
+                    return std::auto_ptr<Data>((Data *) data);
+                }
+
                 const byte SerializationService::getVersion() const {
                     return 1;
                 }

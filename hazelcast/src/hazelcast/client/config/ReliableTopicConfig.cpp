@@ -16,8 +16,8 @@
 //
 // Created by ihsan demir on 9 June 2016.
 
-#include <hazelcast/client/exception/IllegalArgumentException.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 
 namespace hazelcast {

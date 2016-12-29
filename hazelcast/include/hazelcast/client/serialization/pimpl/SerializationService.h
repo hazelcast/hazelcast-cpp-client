@@ -105,6 +105,16 @@ namespace hazelcast {
                         return objectDataInput.readObject<T>();
                     }
 
+                    template<typename T>
+                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<Data> &data) {
+                        return boost::shared_ptr<T>(toObject<T>(data.get()));
+                    }
+
+                    template<typename T>
+                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<T> &obj) {
+                        return obj;
+                    }
+
                     const byte getVersion() const;
 
                 private:
@@ -223,6 +233,9 @@ namespace hazelcast {
 
                 template<>
                 HAZELCAST_API std::auto_ptr<std::vector<std::string> > SerializationService::toObject(const Data &data);
+
+                template<>
+                HAZELCAST_API std::auto_ptr<Data> SerializationService::toObject(const Data *data);
             }
         }
     }

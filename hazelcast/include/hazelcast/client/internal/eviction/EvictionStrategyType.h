@@ -30,19 +30,19 @@ namespace hazelcast {
                 /**
                  * Interface for configuration information about eviction.
                  */
-                enum HAZELCAST_API EvictionStrategyType {
+                class HAZELCAST_API EvictionStrategyType {
+                public:
+                    enum Type {
+                        /**
+                         * Sampling based eviction strategy type
+                         */
+                                SAMPLING_BASED_EVICTION
+                    };
                     /**
-                     * Sampling based eviction strategy type
+                     * Default value of {@link com.hazelcast.internal.eviction.EvictionStrategyType}
                      */
-                            SAMPLING_BASED_EVICTION,
-
+                    static const Type DEFAULT_EVICTION_STRATEGY;
                 };
-                /**
-                 * Default value of {@link com.hazelcast.internal.eviction.EvictionStrategyType}
-                 */
-/*
-                static const EvictionStrategyType DEFAULT_EVICTION_STRATEGY = EvictionStrategyType::SAMPLING_BASED_EVICTION;
-*/
             }
         }
     }
@@ -50,6 +50,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_ */
