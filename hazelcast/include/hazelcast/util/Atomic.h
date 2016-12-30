@@ -93,7 +93,7 @@ namespace hazelcast {
                 return i != v;
             }
 
-            bool compareAndSet(bool compareValue, bool setValue) {
+            bool compareAndSet(const T &compareValue, const T &setValue) {
                 LockGuard lockGuard(mutex);
                 if(compareValue == v){
                     v = setValue;
