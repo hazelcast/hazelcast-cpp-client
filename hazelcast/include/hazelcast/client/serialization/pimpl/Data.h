@@ -84,6 +84,12 @@ namespace hazelcast {
     }
 }
 
+namespace boost {
+    template<>
+    bool HAZELCAST_API operator<(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+                   const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs);
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
