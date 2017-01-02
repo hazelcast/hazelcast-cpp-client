@@ -32,10 +32,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace config {
-            class NearCacheConfig;
-        }
-
         namespace internal {
             namespace nearcache {
                 /**
@@ -73,22 +69,22 @@ namespace hazelcast {
                      *                             to be created or existing one
                      * @param nearCacheConfig      the {@link NearCacheConfig} of the {@link NearCache} to be created
                      * @param dataStructureAdapter the {@link DataStructureAdapter} of the {@link NearCache} to be created
-                     * @param <CACHEKEY>           the key type of the {@link NearCache}
-                     * @param <K>                  the key type of the {@link IMap}
+                     * @param <K>           the key type of the {@link NearCache}
+                     * @param <KS>          the key type of the underlying cache store (this is usually Data)
                      * @param <V>                  the value type of the {@link NearCache}
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
-                    template <typename CACHEKEY, typename K, typename V>
-                    boost::shared_ptr<NearCache<CACHEKEY, V> > getOrCreateNearCache(
-                            const std::string &name, const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig,
-                            boost::shared_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
+                    template <typename K, typename V, typename KS>
+                    boost::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
+                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig,
+                            std::auto_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
                         boost::shared_ptr<spi::InitializingObject> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
                                 util::LockGuard guard(mutex);
                                 nearCache = nearCacheMap.get(name);
                                 if (NULL == nearCache.get()) {
-                                    nearCache = createNearCache<CACHEKEY, V>(name, nearCacheConfig);
+                                    nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
                                     nearCache->initialize();
 
                                     nearCacheMap.put(name, nearCache);
@@ -107,7 +103,7 @@ namespace hazelcast {
 
                             }
                         }
-                        return boost::static_pointer_cast<NearCache<CACHEKEY, V> >(nearCache);
+                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCache);
                     }
 
                     /**
@@ -154,13 +150,12 @@ namespace hazelcast {
                     void destroyAllNearCaches() {
                         // TODO
                     }
-
                 protected:
-                    template <typename K, typename V>
-                    std::auto_ptr<NearCache<K, V> > createNearCache(
-                            const std::string &name, const boost::shared_ptr<config::NearCacheConfig> &nearCacheConfig) {
-                        return std::auto_ptr<NearCache<K, V> >(
-                                new impl::DefaultNearCache<K, V>(
+                    template <typename K, typename V, typename KS>
+                    std::auto_ptr<NearCache<KS, V> > createNearCache(
+                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                        return std::auto_ptr<NearCache<KS, V> >(
+                                new impl::DefaultNearCache<K, V, KS>(
                                         name, nearCacheConfig, serializationService));
                     }
                 private:

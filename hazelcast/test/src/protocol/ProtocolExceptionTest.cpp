@@ -21,10 +21,10 @@
 #define HAZELCAST_CLIENT_TEST_PROTOCOL_PROTOCOLEXCEPTIONTEST_H
 
 #include <stdint.h>
-
 #include <gtest/gtest.h>
-#include <hazelcast/client/exception/ProtocolExceptions.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
+
+#include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 namespace hazelcast {
     namespace client {

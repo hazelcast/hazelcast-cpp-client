@@ -16,7 +16,8 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_STORE_NEARCACHEOBJECTRESCORDSTORE_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_STORE_NEARCACHEOBJECTRESCORDSTORE_H_
 
-#include "hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h"
+#include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
+#include "hazelcast/client/internal/nearcache/impl/record/NearCacheObjectRecord.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,61 +30,82 @@ namespace hazelcast {
             namespace nearcache {
                 namespace impl {
                     namespace store {
-                        template <typename K, typename V>
-                        class NearCacheObjectRecordStore : public NearCacheRecordStore<K, V> {
-                            // TODO
+                        template<typename K, typename V, typename KS>
+                        class NearCacheObjectRecordStore
+                                : public BaseHeapNearCacheRecordStore<K, V, KS, record::NearCacheObjectRecord<V> > {
                         public:
-                            NearCacheObjectRecordStore(const std::string &name, const boost::shared_ptr<config::NearCacheConfig> &config,
-                                                           serialization::pimpl::SerializationService &ss) {
+                            typedef AbstractNearCacheRecordStore <K, V, KS, record::NearCacheObjectRecord<V>, HeapNearCacheRecordMap<K, V, KS, record::NearCacheObjectRecord<V> > > ANCRS;
+
+                            NearCacheObjectRecordStore(const std::string &name,
+                                                       const config::NearCacheConfig<K, V> &config,
+                                                       serialization::pimpl::SerializationService &ss)
+                                    : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheObjectRecord<V> >(
+                                    name, config, ss) {
                             }
 
-                            void initialize() {
+                        protected:
+                            //@Override
+/*
+                        int64_t getKeyStorageMemoryCost(K key) const {
+                            // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
+                            return 0L;
                             }
 
-                            virtual boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
-                                return boost::shared_ptr<V>();
+                            //@Override
+                        int64_t getRecordStorageMemoryCost(NearCacheObjectRecord<V> record) {
+                            // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
+                            return 0L;
+                            }
+*/
+                            //@Override
+                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                                    const boost::shared_ptr<serialization::pimpl::Data> &valueData) {
+                                boost::shared_ptr<serialization::pimpl::Data> data = boost::const_pointer_cast<serialization::pimpl::Data>(
+                                        valueData);
+                                const boost::shared_ptr<V> value = ANCRS::toValue(data);
+                                return valueToRecordInternal(value);
                             }
 
-                            virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
-
+                            //@Override
+                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                                    const boost::shared_ptr<V> &value) {
+                                return valueToRecordInternal(value);
                             }
 
-                            virtual void put(const boost::shared_ptr<K> &key,
-                                             const boost::shared_ptr<serialization::pimpl::Data> &value) {
-
+                            //@Override
+                            boost::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
+                                const boost::shared_ptr<V> value = record->getValue();
+                                if (value.get() == NULL) {
+/*
+                                    nearCacheStats.incrementMisses();
+*/
+                                    return NearCache<K, V>::NULL_OBJECT;
+                                }
+                                return value;
                             }
 
-                            virtual bool remove(const boost::shared_ptr<K> &key) {
-                                return false;
+                            //@Override
+                            void putToRecord(boost::shared_ptr<record::NearCacheObjectRecord<V> > &record,
+                                             const boost::shared_ptr<V> &value) {
+                                record->setValue(value);
                             }
 
-                            virtual void clear() {
-
+                        private:
+                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
+                                    const boost::shared_ptr<V> &value) {
+                                int64_t creationTime = util::currentTimeMillis();
+                                if (ANCRS::timeToLiveMillis > 0) {
+                                    return std::auto_ptr<record::NearCacheObjectRecord<V> >(
+                                            new record::NearCacheObjectRecord<V>(value, creationTime,
+                                                                                 creationTime +
+                                                                                 ANCRS::timeToLiveMillis));
+                                } else {
+                                    return std::auto_ptr<record::NearCacheObjectRecord<V> >(
+                                            new record::NearCacheObjectRecord<V>(value, creationTime,
+                                                                                 NearCacheRecord<V>::TIME_NOT_SET));
+                                }
                             }
-
-                            virtual void destroy() {
-
-                            }
-
-                            virtual int size() {
-                                return -1;
-                            }
-
-                            virtual void doExpiration() {
-
-                            }
-
-                            virtual void doEvictionIfRequired() {
-                            }
-
-                            virtual void doEviction() {
-                            }
-
-                            virtual void storeKeys() {
-                            }
-
                         };
-
                     }
                 }
             }

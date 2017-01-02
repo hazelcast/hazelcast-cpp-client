@@ -229,7 +229,7 @@ namespace hazelcast {
                         std::pair<const K *, const V *> leftVal(key, value);
                         std::pair<const K *, const V *> rightVal(rhs.key, rhs.value);
                         if (NULL != comparator) {
-                            int result = comparator->compare(leftVal, rightVal);
+                            int result = comparator->compare(&leftVal, &rightVal);
                             if (0 != result) {
                                 // std sort: comparison function object returns ​true if the first argument is less
                                 // than (i.e. is ordered before) the second.

@@ -16,8 +16,9 @@
 #ifndef HAZELCAST_CLIENT_CONFIG_NEARCACHEPRELOADERCONFIG_H_
 #define HAZELCAST_CLIENT_CONFIG_NEARCACHEPRELOADERCONFIG_H_
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <string>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,7 +31,6 @@ namespace hazelcast {
             /**
              * @Beta
              * @BinaryInterface
-             * Configuration for eviction.
              * You can set a limit for number of entries or total memory cost of entries.
              */
             class HAZELCAST_API NearCachePreloaderConfig {
@@ -190,9 +190,12 @@ namespace hazelcast {
                     }
                 }
 */
+                bool isEnabled() const;
+            private:
+                bool enabled;
             };
 
-            std::ostream &operator<<(std::ostream &out, const NearCachePreloaderConfig &config);
+            std::ostream HAZELCAST_API &operator<<(std::ostream &out, const NearCachePreloaderConfig &config);
         }
     }
 }

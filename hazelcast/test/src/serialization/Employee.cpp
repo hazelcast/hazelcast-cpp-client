@@ -86,15 +86,15 @@ namespace hazelcast {
             void EmployeeEntryComparator::readData(serialization::ObjectDataInput &reader) {
             }
 
-            int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> &lhs,
-                        const std::pair<const int *, const Employee *> &rhs) const {
-                const Employee *lv = lhs.second;
-                const Employee *rv = rhs.second;
+            int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> *lhs,
+                        const std::pair<const int *, const Employee *> *rhs) const {
+                const Employee *lv = lhs->second;
+                const Employee *rv = rhs->second;
 
                 if (NULL == lv && NULL == rv) {
                     // order by key
-                    const int leftKey = *lhs.first;
-                    const int rightKey = *rhs.first;
+                    const int leftKey = *lhs->first;
+                    const int rightKey = *rhs->first;
 
                     if (leftKey == rightKey) {
                         return 0;
@@ -130,10 +130,10 @@ namespace hazelcast {
             }
 
 
-            int EmployeeEntryKeyComparator::compare(const std::pair<const int *, const Employee *> &lhs,
-                                                    const std::pair<const int *, const Employee *> &rhs) const {
-                const int *key1 = lhs.first;
-                const int *key2 = rhs.first;
+            int EmployeeEntryKeyComparator::compare(const std::pair<const int *, const Employee *> *lhs,
+                                                    const std::pair<const int *, const Employee *> *rhs) const {
+                const int *key1 = lhs->first;
+                const int *key2 = rhs->first;
 
                 if (NULL == key1) {
                     return -1;

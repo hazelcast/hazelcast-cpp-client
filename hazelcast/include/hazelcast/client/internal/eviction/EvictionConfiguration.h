@@ -16,8 +16,12 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONCONFIGURATION_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONCONFIGURATION_H_
 
+#include <assert.h>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
+#include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,49 +35,41 @@ namespace hazelcast {
                 /**
                  * Interface for configuration information about eviction.
                  */
-                class HAZELCAST_API EvictionConfiguration {
+                template <typename K, typename V>
+                class EvictionConfiguration {
                 public:
-/*
-                    */
-/**
+                    /**
                      * Gets the type of eviction strategy.
                      *
                      * @return the type of eviction strategy
-                     *//*
+                     */
+                    virtual EvictionStrategyType::Type getEvictionStrategyType() const = 0;
 
-                    virtual const EvictionStrategyType &getEvictionStrategyType() const = 0;
-
-                    */
-/**
+                    /**
                      * Gets the type of eviction policy.
                      *
                      * @return the type of eviction policy
-                     *//*
+                     */
+                    virtual EvictionPolicyType getEvictionPolicyType() const = 0;
 
-                    virtual const EvictionPolicyType &getEvictionPolicyType() const = 0;
-
-                    */
-/**
+                    /**
                      * Gets the class name of the configured {@link EvictionPolicyComparator} implementation.
                      *
                      * @return class name of the configured {@link EvictionPolicyComparator} implementation
-                     *//*
-
-*/
+                     */
 /*
-                    virtual std::string &getComparatorClassName();
-*//*
+                    virtual String getComparatorClassName();
+*/
 
-
-                    */
-/**
+                    /**
                      * Gets instance of the configured {@link EvictionPolicyComparator} implementation.
                      *
                      * @return instance of the configured {@link EvictionPolicyComparator} implementation.
-                     *//*
-
-                    virtual const EvictionPolicyComparator &getComparator() const = 0;
-*/
+                     */
+                    virtual const boost::shared_ptr<EvictionPolicyComparator<K, V> > getComparator() const {
+                        assert(0);
+                        return boost::shared_ptr<EvictionPolicyComparator<K, V> >();
+                    }
                 };
             }
         }

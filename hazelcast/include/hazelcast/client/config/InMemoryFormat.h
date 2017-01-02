@@ -34,12 +34,7 @@ namespace hazelcast {
                     /**
                      * As Object
                      */
-                            OBJECT,
-
-                    /**
-                     * As native storage
-                     */
-                            NATIVE
+                            OBJECT
             };
         }
     }

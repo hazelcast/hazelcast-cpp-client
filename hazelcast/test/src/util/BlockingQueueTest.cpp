@@ -17,7 +17,8 @@
 // Created by İhsan Demir on 6 June 2016.
 //
 #include <gtest/gtest.h>
-#include <hazelcast/util/Atomic.h>
+
+#include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"

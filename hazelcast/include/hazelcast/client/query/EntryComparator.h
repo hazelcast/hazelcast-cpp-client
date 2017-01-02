@@ -16,7 +16,6 @@
 #ifndef HAZELCAST_CLIENT_QUERY_ENTRYCOMPARATOR_H_
 #define HAZELCAST_CLIENT_QUERY_ENTRYCOMPARATOR_H_
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/util/Comparator.h"
 
