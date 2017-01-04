@@ -154,6 +154,7 @@ namespace hazelcast {
                     } else {
                         assert(0);
                     }
+		    return internal::eviction::NONE;
                 }
 
                 std::ostream &operator<<(std::ostream &out) {

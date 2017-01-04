@@ -30,9 +30,9 @@ namespace hazelcast {
                             hazelcast::client::protocol::ClientMessage::createForEncode(22);
                     ASSERT_EQ(0, msg->getDataSize());
 
-                    ASSERT_EQ(false, msg->isRetryable());
+                    ASSERT_FALSE(msg->isRetryable());
 
-                    ASSERT_EQ(false, msg->isBindToSingleConnection());
+                    ASSERT_FALSE(msg->isBindToSingleConnection());
 
                     ASSERT_EQ(22, msg->getFrameLength());
 
@@ -45,12 +45,12 @@ namespace hazelcast {
                     msg->setVersion(4);
                     msg->updateFrameLength();
 
-                    ASSERT_EQ(true, msg->isBindToSingleConnection());
-                    ASSERT_EQ(true, msg->isRetryable());
+                    ASSERT_TRUE(msg->isBindToSingleConnection());
+                    ASSERT_TRUE(msg->isRetryable());
                     ASSERT_EQ(0xABCDEF12, msg->getCorrelationId());
-                    ASSERT_EQ(false, msg->isFlagSet(2));
-                    ASSERT_EQ(true, msg->isFlagSet(4));
-                    ASSERT_EQ(true, msg->isFlagSet(0x05));
+                    ASSERT_FALSE(msg->isFlagSet(2));
+                    ASSERT_TRUE(msg->isFlagSet(4));
+                    ASSERT_TRUE(msg->isFlagSet(0x05));
                     ASSERT_EQ(0xABCD, msg->getMessageType());
                     ASSERT_EQ((int32_t)0x8ABCDEF1, msg->getPartitionId());
                     ASSERT_EQ(4, msg->getVersion());
