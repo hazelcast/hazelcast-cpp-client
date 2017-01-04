@@ -125,7 +125,8 @@ namespace boost {
      * Template specialization for the less operator comparing two shared_ptr Data.
      */
     template<>
-    bool operator <(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs, const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) {
+    bool operator <(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+                   const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) BOOST_NOEXCEPT {
         const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
         const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
         if (leftPtr == rightPtr) {
