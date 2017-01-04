@@ -218,7 +218,7 @@ namespace hazelcast {
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_FALSE(map.replace("key1", "valueNonExistent", "myNewValue"));
-                ASSERT_FALSE(map.replace("key1", "value1", "myNewValue"));
+                ASSERT_TRUE(map.replace("key1", "value1", "myNewValue"));
 
                 context.commitTransaction();
 

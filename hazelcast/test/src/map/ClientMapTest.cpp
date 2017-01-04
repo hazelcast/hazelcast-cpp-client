@@ -1983,10 +1983,10 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->replace("key1", "value2")));
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_EQ(false, ClientMapTest<TypeParam>::imap->replace("key1", "value1", "value3"));
+                ASSERT_FALSE(ClientMapTest<TypeParam>::imap->replace("key1", "value1", "value3"));
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_EQ(true, ClientMapTest<TypeParam>::imap->replace("key1", "value2", "value3"));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->replace("key1", "value2", "value3"));
                 ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
             }
 
@@ -2621,9 +2621,9 @@ namespace hazelcast {
                         processor);
 
                 ASSERT_EQ(3, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(5)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
                 ASSERT_EQ(4 * processor.getMultiplier(), *result[4]);
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
@@ -2644,9 +2644,9 @@ namespace hazelcast {
                         processor, query::TruePredicate());
 
                 ASSERT_EQ(3, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(5)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
                 ASSERT_EQ(4 * processor.getMultiplier(), *result[4]);
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
@@ -2692,7 +2692,7 @@ namespace hazelcast {
                         processor, andPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(5)));
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
 
@@ -2717,8 +2717,8 @@ namespace hazelcast {
                         processor, orPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
                 ASSERT_EQ(4 * processor.getMultiplier(), *result[4]);
             }
@@ -2738,8 +2738,8 @@ namespace hazelcast {
                         processor, query::BetweenPredicate<int>("a", 25, 35));
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(5)));
                 ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
                 ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
             }
@@ -2759,7 +2759,7 @@ namespace hazelcast {
                         processor, query::EqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(5)));
 
                 result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::EqualPredicate<int>("a", 10));
@@ -2782,8 +2782,8 @@ namespace hazelcast {
                         processor, query::NotEqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithGreaterLessPredicate) {
@@ -2801,27 +2801,27 @@ namespace hazelcast {
                         processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(4)));
 
                 result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, true, true)); // <=25 matching
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(4)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(5)));
 
                 result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, false, false)); // >25 matching
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(3)));
 
                 result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, true, false)); // >=25 matching
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(5)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithLikePredicate) {
@@ -2839,7 +2839,7 @@ namespace hazelcast {
                         processor, query::LikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(5)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithILikePredicate) {
@@ -2857,7 +2857,7 @@ namespace hazelcast {
                         processor, query::ILikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(5)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithInPredicate) {
@@ -2879,8 +2879,8 @@ namespace hazelcast {
                         processor, predicate);
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithInstanceOfPredicate) {
@@ -2897,9 +2897,9 @@ namespace hazelcast {
                         processor, query::InstanceOfPredicate("Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(5)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithNotPredicate) {
@@ -2918,17 +2918,17 @@ namespace hazelcast {
                         processor, notPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
 
                 query::NotPredicate notFalsePredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate()));
                 result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, notFalsePredicate);
 
                 ASSERT_EQ(3, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
-                ASSERT_EQ(true, (result.end() != result.find(5)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(5)));
 
                 query::NotPredicate notBetweenPredicate(
                         std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
@@ -2936,7 +2936,7 @@ namespace hazelcast {
                         processor, notBetweenPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(4)));
             }
 
             TYPED_TEST(ClientMapTest, testExecuteOnEntriesWithRegexPredicate) {
@@ -2954,8 +2954,8 @@ namespace hazelcast {
                         processor, query::RegexPredicate("n", ".*met"));
 
                 ASSERT_EQ(2, (int) result.size());
-                ASSERT_EQ(true, (result.end() != result.find(3)));
-                ASSERT_EQ(true, (result.end() != result.find(4)));
+                ASSERT_TRUE((result.end() != result.find(3)));
+                ASSERT_TRUE((result.end() != result.find(4)));
             }
 
             TYPED_TEST(ClientMapTest, testAddInterceptor) {

@@ -99,26 +99,26 @@ namespace hazelcast {
                 // Put a key, value to the map
                 ASSERT_EQ((int *)NULL, map.put(1, 10).get());
 
-                ASSERT_EQ(true, latch.await(20, 1)); // timeout of 20 seconds
+                ASSERT_TRUE(latch.await(20, 1)); // timeout of 20 seconds
 
                 // 5. Verify that the listener got the entry added event
                 ASSERT_EQ(1, latch.get());
 
                 // 6. Restart the server
-                ASSERT_EQ(true, server.shutdown());
-                ASSERT_EQ(true, server.start());
+                ASSERT_TRUE(server.shutdown());
+                ASSERT_TRUE(server.start());
 
                 std::string putThreadName("Map Put Thread");
                 util::Thread t(putThreadName, putMapMessage, &map, &latch);
 
                 // 8. Verify that the 2nd entry is received by the listener
-                ASSERT_EQ(true, latch.await(20, 0)); // timeout of 20 seconds
+                ASSERT_TRUE(latch.await(20, 0)); // timeout of 20 seconds
 
                 t.cancel();
                 t.join();
 
                 // 9. Shut down the server
-                ASSERT_EQ(true, server.shutdown());
+                ASSERT_TRUE(server.shutdown());
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {

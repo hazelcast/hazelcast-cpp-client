@@ -131,7 +131,7 @@ namespace hazelcast {
                 } catch (exception::IException&) {
                     gotException = true;
                 }
-                ASSERT_EQ(true, gotException);
+                ASSERT_TRUE(gotException);
             }
 
             void dummyThread(util::ThreadArgs& args) {

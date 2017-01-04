@@ -212,13 +212,13 @@ namespace hazelcast {
 
                             {
                                 bool result = getBoolean();
-                                ASSERT_EQ(true, result);
+                                ASSERT_TRUE(result);
 
                                 result = getBoolean();
-                                ASSERT_EQ(true, result);
+                                ASSERT_TRUE(result);
 
                                 result = getBoolean();
-                                ASSERT_EQ(false, result);
+                                ASSERT_FALSE(result);
                             }
 
                         }
