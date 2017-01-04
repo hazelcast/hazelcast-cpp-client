@@ -92,7 +92,7 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
         message(STATUS "${HZ_BIT} Bit")
 
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall ${HZ_BIT_FLAG}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG}")
 
         set(HZ_LIB_PATH "")
         IF (${HZ_LIB_TYPE} MATCHES "STATIC")
