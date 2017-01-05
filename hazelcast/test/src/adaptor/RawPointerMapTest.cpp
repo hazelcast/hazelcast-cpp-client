@@ -2157,10 +2157,10 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->replace("key1", "value2")));
                     ASSERT_EQ("value2", *(imap->get("key1")));
 
-                    ASSERT_EQ(false, imap->replace("key1", "value1", "value3"));
+                    ASSERT_FALSE(imap->replace("key1", "value1", "value3"));
                     ASSERT_EQ("value2", *(imap->get("key1")));
 
-                    ASSERT_EQ(true, imap->replace("key1", "value2", "value3"));
+                    ASSERT_TRUE(imap->replace("key1", "value2", "value3"));
                     ASSERT_EQ("value3", *(imap->get("key1")));
                 }
 

@@ -217,8 +217,8 @@ namespace hazelcast {
                 boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
-                ASSERT_EQ(false, map.replace("key1", "valueNonExistent", "myNewValue"));
-                ASSERT_EQ(true, map.replace("key1", "value1", "myNewValue"));
+                ASSERT_FALSE(map.replace("key1", "valueNonExistent", "myNewValue"));
+                ASSERT_TRUE(map.replace("key1", "value1", "myNewValue"));
 
                 context.commitTransaction();
 
