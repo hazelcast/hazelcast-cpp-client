@@ -280,8 +280,15 @@ void queryMapUsingDifferentPredicates() {
     size_t numberOfValues = valuesArray->size();
     if (numberOfValues > 0) {
         const int *firstValue = valuesArray->get(0);
-        firstValue = (*valuesArray)[0];
+        const int *firstValueAsArrayIndex = (*valuesArray)[0];
+	if (NULL != firstValue) {
+		std::cout << "First value:" << *firstValue << std::endl;
+		std::cout << "Pointer addresses:" << firstValue << ", as array index:" << firstValueAsArrayIndex << std::endl;
+	}
         std::auto_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
+	if (NULL != firstValueWithMemoryOwnership.get()) {
+		std::cout << "First value:" << *firstValueWithMemoryOwnership << std::endl;
+	}
     }
 
     // value == 8
