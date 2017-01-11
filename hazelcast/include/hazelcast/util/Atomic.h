@@ -16,8 +16,10 @@
 //
 // Created by ihsan demir on Nov 12, 2015.
 //
-#ifndef HAZELCAST_CLIENT_ATOMIC_H_
-#define HAZELCAST_CLIENT_ATOMIC_H_
+#ifndef HAZELCAST_UTIL_ATOMIC_H_
+#define HAZELCAST_UTIL_ATOMIC_H_
+
+#include <ostream>
 
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
@@ -53,6 +55,12 @@ namespace hazelcast {
                 return v--;
             }
 
+            T operator-=(T &delta) {
+                LockGuard lockGuard(mutex);
+                v -= delta;
+                return v;
+            }
+
             T operator++(int) {
                 LockGuard lockGuard(mutex);
                 return v++;
@@ -61,6 +69,12 @@ namespace hazelcast {
             T operator++() {
                 LockGuard lockGuard(mutex);
                 return ++v;
+            }
+
+            T operator+=(T &delta) {
+                LockGuard lockGuard(mutex);
+                v += delta;
+                return v;
             }
 
             void operator=(T i) {
@@ -101,7 +115,13 @@ namespace hazelcast {
                 }
                 return false;
             }
-        private:
+
+            std::ostream &operator<<(std::ostream &out) const {
+                LockGuard lockGuard(mutex);
+                out << v;
+                return out;
+            }
+        protected:
             mutable Mutex mutex;
             T v;
         };

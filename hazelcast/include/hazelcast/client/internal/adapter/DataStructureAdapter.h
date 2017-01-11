@@ -17,8 +17,8 @@
 #define HAZELCAST_CLIENT_INTERNAL_ADAPTER_DATASTRUCTUREADAPTER_H_
 
 #include <assert.h>
-
-#include "hazelcast/util/HazelcastDll.h"
+#include <set>
+#include <map>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

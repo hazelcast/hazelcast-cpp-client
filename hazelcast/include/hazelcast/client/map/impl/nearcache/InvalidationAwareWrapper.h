@@ -117,12 +117,11 @@ namespace hazelcast {
                             return nearCache->getPreloaderConfig();
                         }
 
-/*
                         //@Override
-                    NearCacheStats getNearCacheStats() {
+                        monitor::NearCacheStats &getNearCacheStats() {
                             return nearCache->getNearCacheStats();
                         }
-
+/*
                         //@Override
                     Object selectToSave(Object... candidates) {
                             return nearCache->selectToSave(candidates);

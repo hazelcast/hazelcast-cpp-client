@@ -111,6 +111,14 @@ namespace hazelcast {
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
             return TransactionContext(clientContext, options);
         }
+
+        internal::nearcache::NearCacheManager &HazelcastClient::getNearCacheManager() {
+            return nearCacheManager;
+        }
+
+        serialization::pimpl::SerializationService &HazelcastClient::getSerializationService() {
+            return serializationService;
+        }
     }
 }
 

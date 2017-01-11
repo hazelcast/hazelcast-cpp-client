@@ -16,8 +16,11 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_STORE_NEARCACHEDATARESCORDSTORE_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_STORE_NEARCACHEDATARESCORDSTORE_H_
 
+#include <stdint.h>
+
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"
+#include "hazelcast/client/internal/nearcache/NearCache.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,29 +44,10 @@ namespace hazelcast {
                                                      serialization::pimpl::SerializationService &ss)
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheDataRecord>(name, config, ss) {
                             }
-
-                            //@Override
-/*
-                            const boost::shared_ptr<V> selectToSave(const boost::shared_ptr<V> &value,
-                                                                    const boost::shared_ptr<serialization::pimpl::Data> &valueData) const {
-                                if (NULL != valueData.get()) {
-                                    return valueData;
-                                }
-
-                                if (NULL != value.get()) {
-                                    return boost::shared_ptr<V>(new serialization::pimpl::Data(
-                                            ANCRS::serializationService.template toData<V>(
-                                                    value.get())));
-                                }
-
-                                return boost::shared_ptr<V>();
-                            }
-*/
-
                         protected:
                             //@Override
-/*
-                        int64_t getKeyStorageMemoryCost(K key) const {
+                        virtual int64_t getKeyStorageMemoryCost(KS *key) const {
+/*TODO
                                 if (key instanceof Data) {
                                     return
                                         // reference to this key data inside map ("store" field)
@@ -74,14 +58,18 @@ namespace hazelcast {
                                     // memory cost for non-data typed instance is not supported
                                     return 0L;
                                 }
+*/
+                                return 1L;
                             }
 
-                            @Override
-                        int64_t getRecordStorageMemoryCost(NearCacheDataRecord record) {
-                                if (record == null) {
+                            //@Override
+                            virtual int64_t getRecordStorageMemoryCost(record::NearCacheDataRecord *record) const {
+                                return 1L;
+/*TODO
+                                if (record == NULL) {
                                     return 0L;
                                 }
-                                Data value = record.getValue();
+                                boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 return
                                     // reference to this record inside map ("store" field)
                                         REFERENCE_SIZE
@@ -95,8 +83,9 @@ namespace hazelcast {
                                         + REFERENCE_SIZE
                                         // primitive int typed "value" field in "AtomicInteger" typed "accessHit" field
                                         + (Integer.SIZE / Byte.SIZE);
-                            }
 */
+                            }
+
                             //@Override
                             std::auto_ptr<record::NearCacheDataRecord> valueToRecord(
                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
@@ -114,9 +103,7 @@ namespace hazelcast {
                             boost::shared_ptr<V> recordToValue(const record::NearCacheDataRecord *record) {
                                 const boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 if (value.get() == NULL) {
-/*
-                                    nearCacheStats.incrementMisses();
-*/
+                                    ANCRS::nearCacheStats.incrementMisses();
                                     return NearCache<K, V>::NULL_OBJECT;
                                 }
                                 return ANCRS::dataToValue(value);

@@ -18,7 +18,7 @@
 //
 #include <gtest/gtest.h>
 
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
@@ -39,7 +39,7 @@ namespace hazelcast {
                     }
                     static void Pop(hazelcast::util::ThreadArgs &args) {
                         hazelcast::util::BlockingConcurrentQueue<int> *q = (hazelcast::util::BlockingConcurrentQueue<int> *)args.arg0;
-                        hazelcast::util::Atomic<int> *val = (hazelcast::util::Atomic<int> *)args.arg1;
+                        hazelcast::util::AtomicInt *val = (hazelcast::util::AtomicInt *)args.arg1;
                         *val = q->pop();
                     }
                 };
@@ -81,7 +81,7 @@ namespace hazelcast {
                         ASSERT_EQ((int)i, q.pop());
                     }
 
-                    hazelcast::util::Atomic<int> val(-1);
+                    hazelcast::util::AtomicInt val(-1);
                     int testValue = 7;
                     unsigned long sleepTime = 3000U;
                     hazelcast::util::Thread t(Pop, &q, &val, &sleepTime);

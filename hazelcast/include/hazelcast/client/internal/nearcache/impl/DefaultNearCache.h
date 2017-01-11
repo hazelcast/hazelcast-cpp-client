@@ -129,9 +129,9 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                          */
-/*
-                        const NearCacheStats &getNearCacheStats() const;
-*/
+                        monitor::NearCacheStats &getNearCacheStats() {
+                            return nearCacheRecordStore->getNearCacheStats();
+                        }
 
                         /**
                          * Selects the best candidate object to store from the given <code>candidates</code>.
@@ -186,14 +186,18 @@ namespace hazelcast {
 
                         class ExpirationTask {
                         public:
-                            ExpirationTask(NearCacheRecordStore<KS, V> &store)
+                            ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store)
                                     : expirationInProgress(false), nearCacheRecordStore(store),
                                       initialDelayInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
                                       periodInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS),
-                                      cancelled(false) {
+                                      cancelled(false), name(mapName) {
                             }
 
                             void run() {
+                                std::ostringstream out;
+                                out << "Near cache expiration thread started for map " << name << ". The period is:" <<
+                                    periodInSeconds << " seconds.";
+                                util::ILogger::getLogger().info(out.str());
                                 int periodInMillis = periodInSeconds * 1000;
 
                                 util::sleep(initialDelayInSeconds);
@@ -212,7 +216,7 @@ namespace hazelcast {
                                     // sleep to complete the period
                                     int64_t now = util::currentTimeMillis();
                                     if (end > now) {
-                                        util::sleepmillis(end - now);
+                                        util::sleepmillis((uint64_t) end - now);
                                     }
                                 }
                             }
@@ -225,6 +229,10 @@ namespace hazelcast {
                                 cancelled = true;
                                 task->cancel();
                                 task->join();
+                                std::ostringstream out;
+                                out << "Near cache expiration thread is stopped for map "
+                                << name << " since near cache is being destroyed.";
+                                util::ILogger::getLogger().info(out.str());
                             }
                             
                             static void taskStarter(util::ThreadArgs &args) {
@@ -238,11 +246,12 @@ namespace hazelcast {
                             int periodInSeconds;
                             std::auto_ptr<util::Thread> task;
                             util::AtomicBoolean cancelled;
+                            std::string name;
                         };
 
                         std::auto_ptr<ExpirationTask> createAndScheduleExpirationTask() {
                             if (nearCacheConfig.getMaxIdleSeconds() > 0L || nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                std::auto_ptr<ExpirationTask> expirationTask(new ExpirationTask(*nearCacheRecordStore));
+                                std::auto_ptr<ExpirationTask> expirationTask(new ExpirationTask(name, *nearCacheRecordStore));
                                 expirationTask->schedule();
                                 return expirationTask;
                             }

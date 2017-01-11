@@ -21,6 +21,8 @@
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/spi/InitializingObject.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -64,7 +66,6 @@ namespace hazelcast {
                          */
                         virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
                             assert(0);
-
                         }
 
                         /**
@@ -108,9 +109,7 @@ namespace hazelcast {
                          *
                          * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this record store.
                          */
-/*
-                        virtual NearCacheStats getNearCacheStats();
-*/
+                        virtual monitor::NearCacheStats &getNearCacheStats() = 0;
 
                         /**
                          * Selects the best candidate object to store from the given {@code candidates}.

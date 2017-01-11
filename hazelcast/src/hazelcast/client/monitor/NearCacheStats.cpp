@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/util/AtomicInt.h"
-
-#include "hazelcast/util/LockGuard.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
 
 namespace hazelcast {
-    namespace util {
-        AtomicInt::AtomicInt() : Atomic<int32_t>(0) {
-        }
-
-        AtomicInt::AtomicInt(int value) : Atomic<int32_t>(value) {
+    namespace client {
+        namespace monitor {
+            const int64_t LocalInstanceStats::STAT_NOT_AVAILABLE = -99L;
         }
     }
 }
+
+

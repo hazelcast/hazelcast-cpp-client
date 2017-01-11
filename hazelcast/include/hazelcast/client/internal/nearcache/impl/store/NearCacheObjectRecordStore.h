@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/record/NearCacheObjectRecord.h"
+#include "hazelcast/client/internal/nearcache/NearCache.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -42,21 +43,19 @@ namespace hazelcast {
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheObjectRecord<V> >(
                                     name, config, ss) {
                             }
-
                         protected:
                             //@Override
-/*
-                        int64_t getKeyStorageMemoryCost(K key) const {
-                            // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
-                            return 0L;
+                            virtual int64_t getKeyStorageMemoryCost(KS *key) const {
+                                // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
+                                return 0L;
                             }
 
                             //@Override
-                        int64_t getRecordStorageMemoryCost(NearCacheObjectRecord<V> record) {
-                            // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
-                            return 0L;
+                            virtual int64_t getRecordStorageMemoryCost(record::NearCacheObjectRecord<V> *record) const {
+                                // memory cost for "OBJECT" in memory format is totally not supported, so just return zero
+                                return 0L;
                             }
-*/
+
                             //@Override
                             std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
                                     const boost::shared_ptr<serialization::pimpl::Data> &valueData) {

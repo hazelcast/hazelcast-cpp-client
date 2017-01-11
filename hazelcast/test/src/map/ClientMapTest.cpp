@@ -555,7 +555,7 @@ namespace hazelcast {
                 util::sleep(2);
                 // trigger eviction
                 boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
-                ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(10));
 
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
@@ -593,7 +593,7 @@ namespace hazelcast {
                           (std::string *) NULL);
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3", 1000)));
 
-                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3", 1000).get());
+                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3", 1000).get(), std::string);
                 ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value4", 1000)));
             }
 
@@ -607,7 +607,7 @@ namespace hazelcast {
                 ClientMapTest<TypeParam>::imap->set("key1", "value3", 1000);
                 ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
 
-                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get());
+                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
             }
 
             TYPED_TEST(ClientMapTest, testSetTtl) {

@@ -26,7 +26,6 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-
             std::auto_ptr<hazelcast::client::ClientConfig> ClientTestSupport::getConfig() {
                 std::auto_ptr<hazelcast::client::ClientConfig> clientConfig(new ClientConfig());
                 clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));

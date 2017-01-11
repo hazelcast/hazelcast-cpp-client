@@ -22,6 +22,7 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -37,7 +38,7 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace adapter {
-                template <typename K, typename V>
+                template<typename K, typename V>
                 class DataStructureAdapter;
             }
 
@@ -51,7 +52,7 @@ namespace hazelcast {
                  *
                  * This is a no-op interface class. See InvalidationAwareNearCache for the actual implementation
                  */
-                template <typename K, typename V>
+                template<typename K, typename V>
                 class NearCache : public spi::InitializingObject {
                 public:
                     /**
@@ -175,9 +176,7 @@ namespace hazelcast {
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
-/*
-                        const NearCacheStats &getNearCacheStats() const;
-*/
+                    virtual monitor::NearCacheStats &getNearCacheStats() = 0;
 
                     /**
                      * Selects the best candidate object to store from the given <code>candidates</code>.
@@ -224,7 +223,7 @@ namespace hazelcast {
                     }
                 };
 
-                template <typename K, typename V>
+                template<typename K, typename V>
                 boost::shared_ptr<V> NearCache<K, V>::NULL_OBJECT = boost::shared_ptr<V>(new V());
             }
         }

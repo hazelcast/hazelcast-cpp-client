@@ -75,8 +75,6 @@ namespace hazelcast {
 
                 NearCacheConfig() : name("default"), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                     maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                    maxSize(EvictionConfig<K, V>::DEFAULT_MAX_ENTRY_COUNT),
-                                    evictionPolicy(EvictionConfig<K, V>::DEFAULT_EVICTION_POLICY),
                                     inMemoryFormat(DEFAULT_MEMORY_FORMAT),
                                     localUpdatePolicy(INVALIDATE), invalidateOnChange(true), cacheLocalEntries(false),
                                     evictionConfig(new EvictionConfig<K, V>()) {
@@ -84,7 +82,6 @@ namespace hazelcast {
 
                 NearCacheConfig(const char *cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                                         maxSize(EvictionConfig<K, V>::DEFAULT_MAX_ENTRY_COUNT),
                                                          inMemoryFormat(DEFAULT_MEMORY_FORMAT),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
                                                          cacheLocalEntries(false),
@@ -93,7 +90,6 @@ namespace hazelcast {
 
                 NearCacheConfig(const char *cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
-                                                         maxSize(EvictionConfig<K, V>::DEFAULT_MAX_ENTRY_COUNT),
                                                          inMemoryFormat(memoryFormat),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
                                                          cacheLocalEntries(false),
@@ -104,7 +100,6 @@ namespace hazelcast {
                                 InMemoryFormat inMemoryFormat, boost::shared_ptr<EvictionConfig<K, V> > evictConfig)
                         : evictionConfig(new EvictionConfig<K, V>()) {
                     this->timeToLiveSeconds = timeToLiveSeconds;
-                    this->maxSize = calculateMaxSize(maxSize);
                     this->maxIdleSeconds = maxIdleSeconds;
                     this->invalidateOnChange = invalidateOnChange;
                     this->inMemoryFormat = inMemoryFormat;
@@ -112,8 +107,6 @@ namespace hazelcast {
                     // EvictionConfig is not allowed to be NULL
                     if (evictConfig.get() != NULL) {
                         this->evictionConfig = evictConfig;
-                        this->evictionPolicy = evictionConfig->getEvictionPolicy();
-                        this->maxSize = evictionConfig->getSize();
                     }
                     this->cacheLocalEntries = false;
                 }
@@ -129,8 +122,6 @@ namespace hazelcast {
                     // EvictionConfig is not allowed to be NULL
                     if (config.evictionConfig.get() != NULL) {
                         this->evictionConfig = config.evictionConfig;
-                        evictionPolicy = evictionConfig->getEvictionPolicy();
-                        this->maxSize = evictionConfig->getSize();
                     }
                     // NearCachePreloaderConfig is not allowed to be NULL
                     if (config.preloaderConfig.get() != NULL) {
@@ -349,9 +340,6 @@ namespace hazelcast {
 
                 int32_t timeToLiveSeconds;
                 int32_t maxIdleSeconds;
-
-                int32_t maxSize;
-                EvictionPolicy evictionPolicy;
 
                 InMemoryFormat inMemoryFormat;
 

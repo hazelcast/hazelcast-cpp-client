@@ -65,9 +65,8 @@ namespace hazelcast {
                                 ANCRS::onEvict(key,
                                                record,
                                                wasExpired);
-/*
-                                nearCacheStats.decrementOwnedEntryMemoryCost(getTotalStorageMemoryCost(key, record));
-*/
+                                ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                        ANCRS::getTotalStorageMemoryCost(key, record));
                             }
 
                             //@Override
@@ -134,9 +133,8 @@ namespace hazelcast {
                             boost::shared_ptr<R> putRecord(const boost::shared_ptr<KS> &key,
                                                            const boost::shared_ptr<R> &record) {
                                 boost::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
-/*
-                                nearCacheStats.incrementOwnedEntryMemoryCost(getTotalStorageMemoryCost(key, record));
-*/
+                                ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
+                                        ANCRS::getTotalStorageMemoryCost(key, record));
                                 return oldRecord;
                             }
 
@@ -144,10 +142,8 @@ namespace hazelcast {
                             boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
                                 boost::shared_ptr<R> removedRecord = ANCRS::records->remove(key);
                                 if (removedRecord.get() != NULL) {
-/*
-                                    nearCacheStats.decrementOwnedEntryMemoryCost(
-                                            getTotalStorageMemoryCost(key, removedRecord));
-*/
+                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                            ANCRS::getTotalStorageMemoryCost(key, removedRecord));
                                 }
                                 return removedRecord;
                             }

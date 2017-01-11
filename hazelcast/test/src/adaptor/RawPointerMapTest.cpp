@@ -563,7 +563,7 @@ namespace hazelcast {
                     ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *) NULL);
                     ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
 
-                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get());
+                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get(), std::string);
                     ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
                 }
 
@@ -577,7 +577,7 @@ namespace hazelcast {
                     imap->set("key1", "value3", 1000);
                     ASSERT_EQ("value3", *(imap->get("key1")));
 
-                    ASSERT_NULL_EVENTUALLY(imap->get("key1").get());
+                    ASSERT_NULL_EVENTUALLY(imap->get("key1").get(), std::string);
                 }
 
                 TEST_F(RawPointerMapTest, testSetTtl) {

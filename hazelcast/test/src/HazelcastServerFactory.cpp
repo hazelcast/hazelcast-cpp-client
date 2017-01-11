@@ -34,7 +34,6 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-
             HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
                     : address(hostAddress, 6543), socket(address), outputSocketStream(socket),
                       inputSocketStream(socket), logger(util::ILogger::getLogger()) {

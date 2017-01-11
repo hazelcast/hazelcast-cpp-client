@@ -123,8 +123,9 @@ namespace hazelcast {
                     return evictionPolicy;
                 }
 
-                void setEvictionPolicy(EvictionPolicy policy) {
-                    evictionPolicy = evictionPolicy;
+                EvictionConfig<K, V> &setEvictionPolicy(EvictionPolicy policy) {
+                    this->evictionPolicy = policy;
+                    return *this;
                 }
 
                 const boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > getComparator() const {
