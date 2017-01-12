@@ -67,7 +67,7 @@ namespace hazelcast {
                      * @return multiple {@link EvictionCandidate}s that are available to be evicted
                      */
                     virtual std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
-                            const std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > &evictionCandidates) const {
+                            util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const {
                         assert(0);
                         return std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
                     };

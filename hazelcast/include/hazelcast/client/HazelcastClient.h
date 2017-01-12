@@ -701,6 +701,9 @@ namespace hazelcast {
             */
             void shutdown();
 
+            internal::nearcache::NearCacheManager &getNearCacheManager();
+
+            serialization::pimpl::SerializationService &getSerializationService();
         private:
             template <typename FACTORY>
             boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(

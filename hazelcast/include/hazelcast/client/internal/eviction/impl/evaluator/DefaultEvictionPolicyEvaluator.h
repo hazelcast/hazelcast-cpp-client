@@ -64,12 +64,12 @@ namespace hazelcast {
                              */
                             //@Override
                             std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
-                                    const std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > &evictionCandidates) const {
+                                    util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const {
                                 boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > selectedEvictionCandidate;
                                 int64_t now = util::currentTimeMillis();
-                                for (typename std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > >::const_iterator it = evictionCandidates.begin();
-                                     it != evictionCandidates.end(); ++it) {
-                                    const boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &currentEvictionCandidate = *it;
+                                util::Iterator<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > *iterator = evictionCandidates.iterator();
+                                while (iterator->hasNext()) {
+                                    boost::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > currentEvictionCandidate = iterator->next();
                                     if (selectedEvictionCandidate.get() == NULL) {
                                         selectedEvictionCandidate = currentEvictionCandidate;
                                     } else {

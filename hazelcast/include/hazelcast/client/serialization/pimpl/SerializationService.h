@@ -84,6 +84,14 @@ namespace hazelcast {
                     }
 
                     template<typename T>
+                    inline boost::shared_ptr<Data> toSharedData(const T *object) {
+                        if (NULL == object) {
+                            return boost::shared_ptr<Data>();
+                        }
+                        return boost::shared_ptr<Data>(new Data(toData<T>(object)));
+                    }
+
+                    template<typename T>
                     inline std::auto_ptr<T> toObject(const Data *data) {
                         if (NULL == data) {
                             return std::auto_ptr<T>();

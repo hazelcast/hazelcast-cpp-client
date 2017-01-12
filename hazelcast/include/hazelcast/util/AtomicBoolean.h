@@ -28,10 +28,9 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API AtomicBoolean {
         public:
-
             AtomicBoolean();
 
-            AtomicBoolean(bool v);
+            AtomicBoolean(bool i);
 
             bool operator!();
 

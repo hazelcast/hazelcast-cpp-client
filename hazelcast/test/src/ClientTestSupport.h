@@ -22,10 +22,12 @@
 
 #include <memory>
 #include <gtest/gtest.h>
+#include <hazelcast/util/Util.h>
 
 namespace hazelcast {
     namespace client {
         class ClientConfig;
+
         class HazelcastClient;
 
         namespace test {

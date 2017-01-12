@@ -54,10 +54,9 @@ namespace hazelcast {
                      * @return the {@link NearCache} instance
                      * associated with given {@code name}
                      */
-                    template <typename K, typename V>
-                    boost::shared_ptr<NearCache<K, V> > getNearCache(const std::string &name) {
-                        // TODO
-                        return boost::shared_ptr<NearCache<K, V> >();
+                    template <typename K, typename V, typename KS>
+                    boost::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
+                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
                     };
 
                     /**

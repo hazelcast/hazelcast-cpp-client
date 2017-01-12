@@ -19,12 +19,10 @@
 
 namespace hazelcast {
     namespace util {
-        AtomicBoolean::AtomicBoolean():v(true){
-
+        AtomicBoolean::AtomicBoolean(): v(false){
         }
 
-        AtomicBoolean::AtomicBoolean(bool v):v(v) {
-
+        AtomicBoolean::AtomicBoolean(bool i) : v(i) {
         }
 
         bool AtomicBoolean::operator!(){

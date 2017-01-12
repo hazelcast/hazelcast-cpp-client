@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyEvaluator.h"
 #include "hazelcast/client/internal/eviction/MaxSizeChecker.h"
@@ -48,9 +49,6 @@ namespace hazelcast {
                                 : public NearCacheRecordStore<KS, V>, public eviction::EvictionListener<KS, R> {
                         public:
                             AbstractNearCacheRecordStore(const config::NearCacheConfig<K, V> &cacheConfig,
-/*
-                                                         NearCacheStatsImpl nearCacheStats,
-*/
                                                          serialization::pimpl::SerializationService &ss)
                                     : nearCacheConfig(cacheConfig),
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
@@ -60,9 +58,6 @@ namespace hazelcast {
                                 if (NULL != evictionConfig.get()) {
                                     evictionPolicyType = evictionConfig->getEvictionPolicyType();
                                 }
-/*
-                                this->nearCacheStats = nearCacheStats;
-*/
                             }
 
                             //@override
@@ -95,14 +90,12 @@ namespace hazelcast {
                             //@Override
                             virtual void onEvict(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
                                                  bool wasExpired) {
-/*TODO
                                 if (wasExpired) {
                                     nearCacheStats.incrementExpirations();
                                 } else {
                                     nearCacheStats.incrementEvictions();
                                 }
                                 nearCacheStats.decrementOwnedEntryCount();
-*/
                             }
 
                             //@Override
@@ -128,16 +121,12 @@ namespace hazelcast {
                                             return boost::shared_ptr<V>();
                                         }
                                         onRecordAccess(record);
-/*
                                         nearCacheStats.incrementHits();
-*/
                                         value = recordToValue(record.get());
                                         onGet(key, value, record);
                                         return value;
                                     } else {
-/*
                                         nearCacheStats.incrementMisses();
-*/
                                         return boost::shared_ptr<V>();
                                     }
                                 } catch (exception::IException &error) {
@@ -149,12 +138,13 @@ namespace hazelcast {
 
                             //@Override
                             void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value) {
-                               putInternal<V>(key, value);
+                                putInternal<V>(key, value);
                             }
 
                             //@Override
-                            void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<serialization::pimpl::Data> &value) {
-                               putInternal<serialization::pimpl::Data>(key, value);
+                            void put(const boost::shared_ptr<KS> &key,
+                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                                putInternal<serialization::pimpl::Data>(key, value);
                             }
 
                             //@Override
@@ -167,9 +157,7 @@ namespace hazelcast {
                                     record = removeRecord(key);
                                     if (record.get() != NULL) {
                                         removed = true;
-/*
                                         nearCacheStats.decrementOwnedEntryCount();
-*/
                                     }
                                     onRemove(key, record, removed);
                                     return record.get() != NULL;
@@ -184,10 +172,8 @@ namespace hazelcast {
                                 checkAvailable();
 
                                 clearRecords();
-/*
                                 nearCacheStats.setOwnedEntryCount(0);
                                 nearCacheStats.setOwnedEntryMemoryCost(0L);
-*/
                             }
 
                             //@Override
@@ -195,10 +181,8 @@ namespace hazelcast {
                                 checkAvailable();
 
                                 destroyStore();
-/*
                                 nearCacheStats.setOwnedEntryCount(0);
                                 nearCacheStats.setOwnedEntryMemoryCost(0L);
-*/
                             }
 
                             //@Override
@@ -209,14 +193,12 @@ namespace hazelcast {
                             }
 
                             //@Override
-/*TODO
-                        NearCacheStats getNearCacheStats() {
+                            virtual monitor::NearCacheStats &getNearCacheStats() {
                                 checkAvailable();
 
                                 return nearCacheStats;
                             }
 
-*/
                             //@Override
                             void doEvictionIfRequired() {
                                 checkAvailable();
@@ -235,7 +217,6 @@ namespace hazelcast {
                                     evictionStrategy->evict(records.get(), evictionPolicyEvaluator.get(), NULL, this);
                                 }
                             }
-
                         protected:
                             virtual std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
                                     const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig,
@@ -250,18 +231,17 @@ namespace hazelcast {
                                 return std::auto_ptr<NCRM>();
                             }
 
-/* TODO
-                            int64_t getKeyStorageMemoryCost(K key);
+                            virtual int64_t getKeyStorageMemoryCost(KS *key) const = 0;
 
-                            int64_t getRecordStorageMemoryCost(R record);
-*/
+                            virtual int64_t getRecordStorageMemoryCost(R *record) const = 0;
 
                             virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<V> &value) {
                                 assert(0);
                                 return std::auto_ptr<R>();
                             }
 
-                            virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            virtual std::auto_ptr<R> valueToRecord(
+                                    const boost::shared_ptr<serialization::pimpl::Data> &value) {
                                 assert(0);
                                 return std::auto_ptr<R>();
                             }
@@ -339,7 +319,8 @@ namespace hazelcast {
                             boost::shared_ptr<V> dataToValue(
                                     const boost::shared_ptr<serialization::pimpl::Data> &data) {
                                 if (data.get() != NULL) {
-                                    return boost::shared_ptr<V>(serializationService.toObject<V>(data.get()));
+                                    std::auto_ptr<V> value = serializationService.toObject<V>(data.get());
+                                    return boost::shared_ptr<V>(value);
                                 } else {
                                     return boost::shared_ptr<V>();
                                 }
@@ -371,11 +352,10 @@ namespace hazelcast {
                                 return obj;
                             }
 
-/*
-                            long getTotalStorageMemoryCost(K key, R record) {
-                                return getKeyStorageMemoryCost(key) + getRecordStorageMemoryCost(record);
+                            int64_t getTotalStorageMemoryCost(const boost::shared_ptr<KS> &key,
+                                                              const boost::shared_ptr<R> &record) {
+                                return getKeyStorageMemoryCost(key.get()) + getRecordStorageMemoryCost(record.get());
                             }
-*/
 
                             bool isRecordExpired(const boost::shared_ptr<R> &record) const {
                                 int64_t now = util::currentTimeMillis();
@@ -414,7 +394,8 @@ namespace hazelcast {
                                        const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
                             }
 
-                            void onPut(const boost::shared_ptr<KS> &key, const boost::shared_ptr<serialization::pimpl::Data> &value,
+                            void onPut(const boost::shared_ptr<KS> &key,
+                                       const boost::shared_ptr<serialization::pimpl::Data> &value,
                                        const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
                             }
 
@@ -423,7 +404,8 @@ namespace hazelcast {
                                             const exception::IException &error) {
                             }
 
-                            void onPutError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<serialization::pimpl::Data> &value,
+                            void onPutError(const boost::shared_ptr<KS> &key,
+                                            const boost::shared_ptr<serialization::pimpl::Data> &value,
                                             const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
@@ -437,9 +419,7 @@ namespace hazelcast {
                             }
 
                             void onExpire(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
-/*TODO
                                 nearCacheStats.incrementExpirations();
-*/
                             }
 
                             bool isEvictionEnabled() {
@@ -463,9 +443,7 @@ namespace hazelcast {
                             const int64_t timeToLiveMillis;
                             const int64_t maxIdleMillis;
                             serialization::pimpl::SerializationService &serializationService;
-/*
-                        const NearCacheStatsImpl nearCacheStats;
-*/
+                            monitor::impl::NearCacheStatsImpl nearCacheStats;
 
                             std::auto_ptr<eviction::MaxSizeChecker> maxSizeChecker;
                             std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator;
@@ -493,7 +471,7 @@ namespace hazelcast {
                                 const eviction::MaxSizeChecker *maxSizeChecker;
                             };
 
-                            template <typename VALUE>
+                            template<typename VALUE>
                             void putInternal(const boost::shared_ptr<KS> &key, const boost::shared_ptr<VALUE> &value) {
                                 checkAvailable();
 
@@ -510,14 +488,12 @@ namespace hazelcast {
                                     record = valueToRecord(value);
                                     onRecordCreate(key, record);
                                     oldRecord = putRecord(key, record);
-/*TODO
                                     if (oldRecord.get() == NULL) {
                                         nearCacheStats.incrementOwnedEntryCount();
                                     } else {
-                                        long oldRecordMemoryCost = getTotalStorageMemoryCost(key, oldRecord);
+                                        int64_t oldRecordMemoryCost = getTotalStorageMemoryCost(key, oldRecord);
                                         nearCacheStats.decrementOwnedEntryMemoryCost(oldRecordMemoryCost);
                                     }
-*/
                                     onPut(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {
                                     onPutError(key, value, record, oldRecord, error);

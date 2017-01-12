@@ -114,9 +114,6 @@ namespace hazelcast {
                         if (marked) {
                             tryToPutNearCache(key, value);
                         }
-
-                        resetToUnmarkedState(key);
-
                         return value;
                     } catch (...) {
                         resetToUnmarkedState(key);
@@ -356,7 +353,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::codec::IAddListenerCodec> createNearCacheEntryListenerCodec() {
                     return std::auto_ptr<protocol::codec::IAddListenerCodec>(
                             new protocol::codec::MapAddNearCacheEntryListenerCodec(
-                                    nearCache->getName(), EntryEventType::INVALIDATION, true));
+                                    nearCache->getName(), EntryEventType::INVALIDATION, false));
                 }
 
                 void resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key) {
@@ -391,14 +388,10 @@ namespace hazelcast {
                 void tryToPutNearCacheInternal(boost::shared_ptr<serialization::pimpl::Data> &keyData,
                                                boost::shared_ptr<VALUETYPE> &response) {
                     try {
-                        if (cacheLocalEntries) {
-                            nearCache->put(keyData, response);
-                        }
+                        nearCache->put(keyData, response);
+                        resetToUnmarkedState(keyData);
                     } catch (...) {
-                        if (!keyStateMarker->tryUnmark(*keyData)) {
-                            invalidateNearCache(keyData);
-                            keyStateMarker->forceUnmark(*keyData);
-                        }
+                        resetToUnmarkedState(keyData);
                         throw;
                     }
                 }

@@ -253,8 +253,8 @@ namespace hazelcast {
                             currentIndex = 0;
                         }
                         while (currentEntry.get() != NULL) {
-                            boost::shared_ptr<VS> &value = currentEntry->second;
-                            boost::shared_ptr<KS> &key = currentEntry->first;
+                            boost::shared_ptr<VS> value = currentEntry->second;
+                            boost::shared_ptr<KS> key = currentEntry->first;
                             currentEntry = internalMap.getEntry((size_t) currentIndex);
                             if (internalMap.isValidForSampling(value)) {
                                 currentSample = internalMap.createSamplingEntry(key, value);

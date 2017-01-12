@@ -51,7 +51,6 @@ namespace hazelcast {
                             bool isReachedToMaxSize() const {
                                 return (int32_t) nearCacheRecordMap.size() >= maxSize;
                             }
-
                         private:
                             const store::HeapNearCacheRecordMap<K, V, KS, R> &nearCacheRecordMap;
                             int32_t maxSize;

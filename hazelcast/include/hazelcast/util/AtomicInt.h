@@ -17,12 +17,13 @@
 // Created by sancar koyunlu on 31/03/14.
 //
 
-
 #ifndef HAZELCAST_AtomicInt
 #define HAZELCAST_AtomicInt
 
-#include "hazelcast/util/Mutex.h"
+#include <stdint.h>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Atomic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,37 +32,11 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API AtomicInt {
+        class HAZELCAST_API AtomicInt : public Atomic<int32_t> {
         public:
             AtomicInt();
 
-            AtomicInt(int v);
-
-            int operator--(int );
-
-            int operator++(int );
-
-            int operator++();
-
-            void operator =(int i);
-
-            operator int();
-
-            int operator--();
-
-            bool operator <=(int i);
-
-            bool operator ==(int i);
-
-            bool operator !=(int i);
-
-        private:
-            Mutex mutex;
-            int v;
-
-            AtomicInt(const AtomicInt &rhs);
-
-            void operator =(const AtomicInt &rhs);
+            AtomicInt(int value);
         };
     }
 }

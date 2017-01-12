@@ -48,6 +48,7 @@ namespace hazelcast {
             , readHandler(*this, iListener, 16 << 10, clientContext)
             , writeHandler(*this, oListener, 16 << 10)
             , _isOwnerConnection(isOwner)
+            , heartBeating(true)
             , receiveBuffer(new byte[16 << 10])
             , receiveByteBuffer((char *)receiveBuffer, 16 << 10)
             , messageBuilder(*this, *this)

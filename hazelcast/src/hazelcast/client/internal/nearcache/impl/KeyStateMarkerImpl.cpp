@@ -45,6 +45,9 @@ namespace hazelcast {
                     }
 
                     void KeyStateMarkerImpl::init() {
+                        for (int i = 0; i < markCount; ++i) {
+                            marks[i] = UNMARKED;
+                        }
                     }
 
                     bool KeyStateMarkerImpl::casState(const serialization::pimpl::Data &key, STATE expect, STATE update) {
