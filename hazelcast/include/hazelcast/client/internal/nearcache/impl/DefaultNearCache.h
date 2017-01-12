@@ -27,6 +27,8 @@
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,7 +40,7 @@ namespace hazelcast {
         namespace internal {
             namespace nearcache {
                 namespace impl {
-                    template <typename K, typename V, typename KS>
+                    template<typename K, typename V, typename KS>
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
                         DefaultNearCache(const std::string &cacheName, const config::NearCacheConfig<K, V> &config,
@@ -81,7 +83,8 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        void put(const boost::shared_ptr<KS> &key,
+                                 const boost::shared_ptr<serialization::pimpl::Data> &value) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();
@@ -119,11 +122,6 @@ namespace hazelcast {
                             return nearCacheConfig.getInMemoryFormat();
                         }
 
-                        //@Override
-                        const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
-                            return nearCacheConfig.getPreloaderConfig();
-                        }
-
                         /**
                          * Get the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
                          *
@@ -133,50 +131,24 @@ namespace hazelcast {
                             return nearCacheRecordStore->getNearCacheStats();
                         }
 
-                        /**
-                         * Selects the best candidate object to store from the given <code>candidates</code>.
-                         *
-                         * @param candidates the candidates from which the best candidate object will be selected.
-                         * @return the best candidate object to store, selected from the given <code>candidates</code>.
-                         */
-/*
-                    virtual boost::shared_ptr<V> selectToSave(std::vector<boost::shared_ptr<V> > candidates) const;
-*/
-
                         //@Override
                         int size() const {
                             return nearCacheRecordStore->size();
                         }
 
-/*TODO
-                        //@Override
-                        void preload(const adapter::DataStructureAdapter<K, V> &adapter) {
-                            assert(0);
-                        }
-*/
-
-                        //@Override
-                        void storeKeys() {
-                            // we don't store new keys, until the pre-loader is done
-                            if (preloadDone) {
-                                nearCacheRecordStore->storeKeys();
-                            }
-                        }
-
-                        bool isPreloadDone() {
-                            return preloadDone;
-                        }
                     private:
                         std::auto_ptr<NearCacheRecordStore<KS, V> > createNearCacheRecordStore(const std::string &name,
-                                                                                              const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                                                                               const config::NearCacheConfig<K, V> &nearCacheConfig) {
                             config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
                             switch (inMemoryFormat) {
                                 case config::BINARY:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
-                                    new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig, serializationService));
+                                            new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig,
+                                                                                          serializationService));
                                 case config::OBJECT:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
-                                    new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig, serializationService));
+                                            new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig,
+                                                                                            serializationService));
                                 default:
                                     std::ostringstream out;
                                     out << "Invalid in memory format: " << inMemoryFormat;
@@ -188,7 +160,8 @@ namespace hazelcast {
                         public:
                             ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store)
                                     : expirationInProgress(false), nearCacheRecordStore(store),
-                                      initialDelayInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
+                                      initialDelayInSeconds(
+                                              NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
                                       periodInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS),
                                       cancelled(false), name(mapName) {
                             }
@@ -196,7 +169,7 @@ namespace hazelcast {
                             void run() {
                                 std::ostringstream out;
                                 out << "Near cache expiration thread started for map " << name << ". The period is:" <<
-                                    periodInSeconds << " seconds.";
+                                periodInSeconds << " seconds.";
                                 util::ILogger::getLogger().info(out.str());
                                 int periodInMillis = periodInSeconds * 1000;
 
@@ -207,9 +180,15 @@ namespace hazelcast {
                                     if (expirationInProgress.compareAndSet(false, true)) {
                                         try {
                                             nearCacheRecordStore.doExpiration();
-                                        } catch (...) {
+                                        } catch (exception::IException &e) {
                                             expirationInProgress = false;
                                             // TODO: What to do here
+                                            std::ostringstream out;
+                                            out << "ExpirationTask nearCacheRecordStore.doExpiration failed. "
+                                            << e.what() << " This mat NOT a vital problem since this doExpiration runs "
+                                                    "periodically every " << periodInMillis <<
+                                            "milliseconds and it should recover eventually.";
+                                            util::ILogger::getLogger().info(out.str());
                                         }
                                     }
 
@@ -234,7 +213,7 @@ namespace hazelcast {
                                 << name << " since near cache is being destroyed.";
                                 util::ILogger::getLogger().info(out.str());
                             }
-                            
+
                             static void taskStarter(util::ThreadArgs &args) {
                                 ExpirationTask *expirationTask = (ExpirationTask *) args.arg0;
                                 expirationTask->run();
@@ -250,8 +229,10 @@ namespace hazelcast {
                         };
 
                         std::auto_ptr<ExpirationTask> createAndScheduleExpirationTask() {
-                            if (nearCacheConfig.getMaxIdleSeconds() > 0L || nearCacheConfig.getTimeToLiveSeconds() > 0L) {
-                                std::auto_ptr<ExpirationTask> expirationTask(new ExpirationTask(name, *nearCacheRecordStore));
+                            if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
+                                nearCacheConfig.getTimeToLiveSeconds() > 0L) {
+                                std::auto_ptr<ExpirationTask> expirationTask(
+                                        new ExpirationTask(name, *nearCacheRecordStore));
                                 expirationTask->schedule();
                                 return expirationTask;
                             }

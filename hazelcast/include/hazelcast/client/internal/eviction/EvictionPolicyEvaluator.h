@@ -18,11 +18,7 @@
 
 #include <assert.h>
 #include <vector>
-#include <memory>
 #include <boost/shared_ptr.hpp>
-
-#include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
-#include "hazelcast/client/internal/eviction/EvictionCandidate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,6 +29,12 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace eviction {
+                template<typename K, typename V>
+                class EvictionPolicyComparator;
+
+                template <typename MAPKEY, typename MAPVALUE, typename A, typename E>
+                class EvictionCandidate;
+
                 /**
                  * Interface for evaluation implementations of {@link com.hazelcast.config.EvictionPolicy}.
                  *

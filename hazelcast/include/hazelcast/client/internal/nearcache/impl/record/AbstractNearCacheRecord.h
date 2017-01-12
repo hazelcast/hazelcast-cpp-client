@@ -22,6 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/client/internal/nearcache/NearCacheRecord.h"
+#include "hazelcast/util/UUID.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

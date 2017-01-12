@@ -72,10 +72,6 @@ namespace hazelcast {
                         map.remove(key);
                     }
 
-                    /* TODO
-                    LocalMapStats getLocalMapStats() = 0;
-                    */
-
                     bool containsKey(const K &key) const {
                         return map.containsKey(key);
                     }

@@ -75,10 +75,6 @@ namespace hazelcast {
                         assert(0);
                     }
 
-                    /* TODO
-                    virtual LocalMapStats getLocalMapStats() = 0;
-                    */
-
                     virtual bool containsKey(const K &key) const {
                         assert(0);
                         return false;

@@ -16,8 +16,9 @@
 #ifndef HAZELCAST_CLIENT_MAP_IMPL_NEARCACHE_KEYSTATEMARKER_H_
 #define HAZELCAST_CLIENT_MAP_IMPL_NEARCACHE_KEYSTATEMARKER_H_
 
+#include <memory>
+
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -26,6 +27,12 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+
         namespace map {
             namespace impl {
                 namespace nearcache {

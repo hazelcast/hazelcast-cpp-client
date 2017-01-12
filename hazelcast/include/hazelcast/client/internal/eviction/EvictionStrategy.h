@@ -18,10 +18,6 @@
 
 #include <assert.h>
 
-#include "hazelcast/client/internal/eviction/EvictionPolicyEvaluator.h"
-#include "hazelcast/client/internal/eviction/EvictionChecker.h"
-#include "hazelcast/client/internal/eviction/EvictionListener.h"
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -31,6 +27,14 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace eviction {
+                template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
+                class EvictionPolicyEvaluator;
+
+                template <typename A, typename E>
+                class EvictionListener;
+
+                class EvictionChecker;
+
                 /**
                  * Interface for eviction implementations to evict {@link EvictableStore} implementations as specified
                  * {@link EvictionPolicyEvaluator}.

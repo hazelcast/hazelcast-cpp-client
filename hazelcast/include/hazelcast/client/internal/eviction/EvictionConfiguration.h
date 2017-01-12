@@ -19,7 +19,6 @@
 #include <assert.h>
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
 

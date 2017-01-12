@@ -23,6 +23,7 @@
 #include "hazelcast/client/internal/eviction/Expirable.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyEvaluator.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
+#include "hazelcast/client/internal/eviction/EvictionCandidate.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

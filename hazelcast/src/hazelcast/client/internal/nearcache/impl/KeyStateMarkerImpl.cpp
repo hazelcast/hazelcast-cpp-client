@@ -15,6 +15,7 @@
  */
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/util/HashUtil.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {

@@ -50,7 +50,7 @@ namespace hazelcast {
 
 		void sleepmillis(uint64_t milliseconds){
         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-			Sleep(milliseconds);
+			Sleep((DWORD) milliseconds);
         #else
 			::usleep((useconds_t)(1000 * milliseconds));
         #endif

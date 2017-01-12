@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 //
-// Created by sancar koyunlu on 04/08/14.
+//  Created by ihsan demir on 12 Jan 2017
 //
-#ifndef HAZELCAST_UTIL_CLOSABLE_H_
-#define HAZELCAST_UTIL_CLOSABLE_H_
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Clearable.h"
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API Closeable {
-        public:
-            virtual ~Closeable();
-
-            virtual void close() = 0;
-        };
+        Clearable::~Clearable() {
+        }
     }
 }
-#endif //HAZELCAST_UTIL_CLOSABLE_H_
+

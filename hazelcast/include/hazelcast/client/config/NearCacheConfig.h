@@ -22,11 +22,9 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
 #include "hazelcast/client/config/NearCacheConfigBase.h"
-#include "hazelcast/client/config/NearCachePreloaderConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -122,10 +120,6 @@ namespace hazelcast {
                     // EvictionConfig is not allowed to be NULL
                     if (config.evictionConfig.get() != NULL) {
                         this->evictionConfig = config.evictionConfig;
-                    }
-                    // NearCachePreloaderConfig is not allowed to be NULL
-                    if (config.preloaderConfig.get() != NULL) {
-                        this->preloaderConfig = config.preloaderConfig;
                     }
                 }
 
@@ -306,17 +300,6 @@ namespace hazelcast {
                     return *this;
                 }
 
-                const boost::shared_ptr<NearCachePreloaderConfig> &getPreloaderConfig() const {
-                    return preloaderConfig;
-                }
-
-                NearCacheConfig &setPreloaderConfig(
-                        const boost::shared_ptr<NearCachePreloaderConfig> &preloaderConfig) {
-                    this->preloaderConfig = util::Preconditions::checkNotNull<NearCachePreloaderConfig>(preloaderConfig,
-                                                                                                        "NearCachePreloaderConfig cannot be NULL!");
-                    return *this;
-                }
-
                 std::ostream &operator<<(std::ostream &out) {
                     out << "NearCacheConfig{"
                         << "timeToLiveSeconds=" << timeToLiveSeconds
@@ -326,11 +309,6 @@ namespace hazelcast {
                         << ", cacheLocalEntries=" << cacheLocalEntries
                         << ", localUpdatePolicy=" << localUpdatePolicy
                         << *evictionConfig;
-
-                    if (NULL != preloaderConfig.get()) {
-                        out << *preloaderConfig;
-                    }
-
                     out << '}';
 
                     return out;
@@ -357,8 +335,6 @@ namespace hazelcast {
                  * </ul>
                  */
                 boost::shared_ptr<EvictionConfig<K, V> > evictionConfig;
-
-                boost::shared_ptr<NearCachePreloaderConfig> preloaderConfig;
 
                 int32_t calculateMaxSize(int32_t maxSize) {
                     return (maxSize == 0) ? INT32_MAX : util::Preconditions::checkNotNegative(maxSize,
