@@ -22,6 +22,8 @@
 #include "hazelcast/client/internal/nearcache/impl/SampleableNearCacheRecordMap.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/SampleableConcurrentHashMap.h"
+#include "hazelcast/client/internal/eviction/EvictionCandidate.h"
+#include "hazelcast/client/internal/eviction/EvictionListener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

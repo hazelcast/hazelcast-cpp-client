@@ -53,7 +53,6 @@ namespace hazelcast {
                         : ClientMapProxy<K, V>(instanceName, context), cacheLocalEntries(false),
                           invalidateOnChange(false), keyStateMarker(NULL), nearCacheConfig(config) {
                 }
-
             protected:
                 //@override
                 void onInitialize() {
@@ -74,11 +73,6 @@ namespace hazelcast {
 
                     invalidateOnChange = nearCache->isInvalidatedOnChange();
                     if (invalidateOnChange) {
-
-/*TODO
-                        repairingHandler = context.getRepairingTask(SERVICE_NAME).registerAndGetHandler(name, nearCache);
-*/
-
                         std::auto_ptr<client::impl::BaseEventHandler> invalidationHandler(
                                 new ClientMapAddNearCacheEventHandler(nearCache));
                         addNearCacheInvalidateListener(invalidationHandler);
@@ -115,9 +109,9 @@ namespace hazelcast {
                             tryToPutNearCache(key, value);
                         }
                         return value;
-                    } catch (...) {
+                    } catch (exception::IException &e) {
                         resetToUnmarkedState(key);
-                        throw;
+                        throw e;
                     }
                 }
 
@@ -261,9 +255,9 @@ namespace hazelcast {
                         unmarkRemainingMarkedKeys(markers);
 
                         return responses;
-                    } catch (...) {
+                    } catch (exception::IException &e) {
                         unmarkRemainingMarkedKeys(markers);
-                        throw;
+                        throw e;
                     }
                 }
 
@@ -390,9 +384,9 @@ namespace hazelcast {
                     try {
                         nearCache->put(keyData, response);
                         resetToUnmarkedState(keyData);
-                    } catch (...) {
+                    } catch (exception::IException &e) {
                         resetToUnmarkedState(keyData);
-                        throw;
+                        throw e;
                     }
                 }
 
@@ -413,16 +407,8 @@ namespace hazelcast {
                 impl::nearcache::KeyStateMarker *keyStateMarker;
                 const config::NearCacheConfig<K, V> &nearCacheConfig;
                 boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
-/*
-                std::auto_ptr<internal::nearcache::impl::invalidation::RepairingHandler> repairingHandler;
-*/
-
                 // since we don't have atomic support in the project yet, using shared_ptr
                 boost::shared_ptr<std::string> invalidationListenerId;
-
-/*
-                boost::shared_ptr<client::impl::BaseEventHandler> invalidationHandler;
-*/
             };
         }
     }

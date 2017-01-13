@@ -42,7 +42,6 @@ namespace hazelcast {
                         class NearCacheObjectRecord
                                 : public AbstractNearCacheRecord<V> {
                         public:
-                            typedef V VALUE_TYPE;
                             NearCacheObjectRecord(const boost::shared_ptr<V> &value,
                                                 int64_t creationTime, int64_t expiryTime)
                                     : AbstractNearCacheRecord<V>(value, creationTime, expiryTime) {

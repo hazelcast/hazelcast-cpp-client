@@ -133,7 +133,6 @@ namespace hazelcast {
                     instance2 = NULL;
                     instance = NULL;
                 }
-
             protected:
                 class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
                 public:

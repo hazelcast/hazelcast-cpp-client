@@ -20,7 +20,6 @@
 
 #include "hazelcast/client/internal/nearcache/impl/store/HeapNearCacheRecordMap.h"
 #include "hazelcast/client/internal/nearcache/impl/store/AbstractNearCacheRecordStore.h"
-#include "hazelcast/client/internal/nearcache/impl/preloader/NearCachePreloader.h"
 #include "hazelcast/client/internal/nearcache/impl/maxsize/EntryCountNearCacheMaxSizeChecker.h"
 #include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 
@@ -44,14 +43,7 @@ namespace hazelcast {
                             BaseHeapNearCacheRecordStore(const std::string &name,
                                                          const config::NearCacheConfig<K, V> &nearCacheConfig,
                                                          serialization::pimpl::SerializationService &serializationService
-                            ) : ANCRS(nearCacheConfig, serializationService),
-                                nearCachePreloader(NULL != nearCacheConfig.getPreloaderConfig().get()
-                                                   ? (nearCacheConfig.getPreloaderConfig()->isEnabled()
-                                                      ? new preloader::NearCachePreloader<K>(name,
-                                                                                             nearCacheConfig.getPreloaderConfig(),
-                                                                                             serializationService)
-                                                      : (preloader::NearCachePreloader<K> *) NULL)
-                                                   : (preloader::NearCachePreloader<K> *) NULL) {
+                            ) : ANCRS(nearCacheConfig, serializationService) {
                             }
 
                             //@Override
@@ -83,25 +75,6 @@ namespace hazelcast {
                                     }
                                 }
                             }
-
-/*
-                            //@Override
-                        void loadKeys(adaptor::DataStructureAdapter<serialization::pimpl::Data, ?> &adapter) {
-                                if (nearCachePreloader != NULL) {
-                                    nearCachePreloader.loadKeys(adapter);
-                                }
-                            }
-*/
-
-                            //@Override
-                            void storeKeys() {
-                                if (nearCachePreloader.get() != NULL) {
-/*
-                                    nearCachePreloader->storeKeys(records);
-*/
-                                }
-                            }
-
                         protected:
                             //@Override
                             std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
@@ -154,8 +127,6 @@ namespace hazelcast {
                             }
 
                             static const int32_t DEFAULT_INITIAL_CAPACITY = 1000;
-                        private:
-                            const boost::shared_ptr<preloader::NearCachePreloader<K> > nearCachePreloader;
                         };
                     }
                 }

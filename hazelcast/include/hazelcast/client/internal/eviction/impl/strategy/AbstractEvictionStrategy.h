@@ -19,6 +19,9 @@
 #include <assert.h>
 
 #include "hazelcast/client/internal/eviction/EvictionStrategy.h"
+#include "hazelcast/client/internal/eviction/EvictionPolicyEvaluator.h"
+#include "hazelcast/client/internal/eviction/EvictionChecker.h"
+#include "hazelcast/client/internal/eviction/EvictionListener.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

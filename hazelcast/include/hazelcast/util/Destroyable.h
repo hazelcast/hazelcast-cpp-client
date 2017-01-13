@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 //
-// Created by sancar koyunlu on 04/08/14.
+// Created by ihsan demir on 12 Jan 2017
 //
-#ifndef HAZELCAST_UTIL_CLOSABLE_H_
-#define HAZELCAST_UTIL_CLOSABLE_H_
+#ifndef HAZELCAST_UTIL_DESTROYABLE_H_
+#define HAZELCAST_UTIL_DESTROYABLE_H_
 
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API Closeable {
+        class HAZELCAST_API Destroyable {
         public:
-            virtual ~Closeable();
+            virtual ~Destroyable();
 
-            virtual void close() = 0;
+            virtual void destroy() = 0;
         };
     }
 }
-#endif //HAZELCAST_UTIL_CLOSABLE_H_
+#endif //HAZELCAST_UTIL_DESTROYABLE_H_

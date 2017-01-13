@@ -40,6 +40,9 @@ namespace hazelcast {
             Atomic(T v) : v(v) {
             }
 
+            virtual ~Atomic() {
+            }
+
             Atomic(const Atomic<T> &rhs) {
                 LockGuard lockGuardRhs(rhs.mutex);
                 v = rhs.v;

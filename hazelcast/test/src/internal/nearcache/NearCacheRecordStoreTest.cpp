@@ -146,7 +146,7 @@ namespace hazelcast {
 
                             monitor::NearCacheStats &nearCacheStats = nearCacheRecordStore->getNearCacheStats();
 
-                            long memoryCostWhenFull = nearCacheStats.getOwnedEntryMemoryCost();
+                            int64_t memoryCostWhenFull = nearCacheStats.getOwnedEntryMemoryCost();
                             ASSERT_TRUE(nearCacheStats.getCreationTime() >= creationStartTime);
                             ASSERT_TRUE(nearCacheStats.getCreationTime() <= creationEndTime);
                             ASSERT_EQ(expectedHits, nearCacheStats.getHits());

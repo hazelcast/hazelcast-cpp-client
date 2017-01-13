@@ -16,9 +16,10 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/AtomicInt.h"
+#include <vector>
+
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
+#include "hazelcast/util/AtomicInt.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

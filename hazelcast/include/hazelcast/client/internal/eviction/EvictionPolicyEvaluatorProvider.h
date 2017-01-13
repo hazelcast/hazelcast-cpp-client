@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONPOLICYEVALUATORPROVIDER_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONPOLICYEVALUATORPROVIDER_H_
 
+#include <sstream>
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/exception/IllegalArgumentException.h"

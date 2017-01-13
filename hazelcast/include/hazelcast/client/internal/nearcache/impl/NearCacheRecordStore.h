@@ -17,12 +17,9 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHERESCORDSTORE_H_
 
 #include <assert.h>
-
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/spi/InitializingObject.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/monitor/NearCacheStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,6 +28,16 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+
+        namespace monitor {
+            class NearCacheStats;
+        }
+
         namespace internal {
             namespace nearcache {
                 namespace impl {
@@ -157,33 +164,11 @@ namespace hazelcast {
                         }
 
                         /**
-                         * Loads the keys into the Near Cache.
-                         */
-/*
-                        virtual void loadKeys(DataStructureAdapter<Data, ?> adapter);
-*/
-
-                        /**
                          * Persists the key set of the Near Cache.
                          */
                         virtual void storeKeys() {
                             assert(0);
                         }
-
-                        /**
-                         * @see StaleReadDetector
-                         */
-
-/*
-                        virtual void setStaleReadDetector(StaleReadDetector detector);
-*/
-
-                        /**
-                         * @see StaleReadDetector
-                         */
-/*
-                        virtual StaleReadDetector getStaleReadDetector();
-*/
                     };
                 }
             }

@@ -21,7 +21,6 @@
 #include <stdint.h>
 
 #include "hazelcast/client/internal/eviction/EvictableStore.h"
-#include "hazelcast/client/internal/eviction/EvictionCandidate.h"
 #include "hazelcast/util/Iterable.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

@@ -16,18 +16,16 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHE_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHE_H_
 
-#include <climits>
 #include <string>
 #include <assert.h>
 
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/client/monitor/NearCacheStats.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Clearable.h"
+#include "hazelcast/util/Destroyable.h"
 #include "hazelcast/client/spi/InitializingObject.h"
-#include "hazelcast/client/config/NearCachePreloaderConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,6 +34,16 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+
+        namespace monitor {
+            class NearCacheStats;
+        }
+
         namespace internal {
             namespace adapter {
                 template<typename K, typename V>
@@ -43,6 +51,10 @@ namespace hazelcast {
             }
 
             namespace nearcache {
+                class HAZELCAST_API BaseNearCache
+                        : public spi::InitializingObject, public util::Clearable, public util::Destroyable {
+                };
+
                 /**
                  * {@link NearCache} is the contract point to store keys and values in underlying
                  * {@link com.hazelcast.cache.impl.nearcache.NearCacheRecordStore}.
@@ -53,7 +65,7 @@ namespace hazelcast {
                  * This is a no-op interface class. See InvalidationAwareNearCache for the actual implementation
                  */
                 template<typename K, typename V>
-                class NearCache : public spi::InitializingObject {
+                class NearCache : public BaseNearCache {
                 public:
                     /**
                      * NULL Object
@@ -138,20 +150,6 @@ namespace hazelcast {
                     }
 
                     /**
-                     * Removes all stored values.
-                     */
-                    virtual void clear() {
-                        assert(0);
-                    }
-
-                    /**
-                     * Clears the record store and destroys it.
-                     */
-                    virtual void destroy() {
-                        assert(0);
-                    }
-
-                    /**
                      * Gets the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records.
                      *
                      * @return the {@link com.hazelcast.config.InMemoryFormat} of the storage for internal records
@@ -162,31 +160,11 @@ namespace hazelcast {
                     }
 
                     /**
-                     * Gets the {@link com.hazelcast.config.NearCachePreloaderConfig} of this Near Cache.
-                     *
-                     * @return the {@link NearCachePreloaderConfig} of this Near Cache
-                     */
-                    virtual const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
-                        assert(0);
-                        return boost::shared_ptr<config::NearCachePreloaderConfig>();
-                    }
-
-                    /**
                      * Get the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */
                     virtual monitor::NearCacheStats &getNearCacheStats() = 0;
-
-                    /**
-                     * Selects the best candidate object to store from the given <code>candidates</code>.
-                     *
-                     * @param candidates the candidates from which the best candidate object will be selected.
-                     * @return the best candidate object to store, selected from the given <code>candidates</code>.
-                     */
-/*
-                    virtual boost::shared_ptr<V> selectToSave(std::vector<boost::shared_ptr<V> > candidates) const;
-*/
 
                     /**
                      * Gets the count of stored records.
@@ -196,30 +174,6 @@ namespace hazelcast {
                     virtual int size() const {
                         assert(0);
                         return -1;
-                    }
-
-                    /**
-                     * Executes the Near Cache pre-loader on the given {@link DataStructureAdapter}.
-                     */
-                    virtual void preload(const adapter::DataStructureAdapter<K, V> &adapter) {
-                        assert(0);
-                    }
-
-                    /**
-                     * Stores the keys of the Near Cache.
-                     */
-                    virtual void storeKeys() {
-                        assert(0);
-                    }
-
-                    /**
-                     * Checks if the pre-loading of the Near Cache is done.
-                     *
-                     * @return {@code true} if the pre-loading is done, {@code false} otherwise.
-                     */
-                    virtual bool isPreloadDone() {
-                        assert(0);
-                        return false;
                     }
                 };
 

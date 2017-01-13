@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 //
-// Created by ihsan demir on 22 Nov 2016.
+// Created by ihsan demir on 12 Jan 2017
+//
+#ifndef HAZELCAST_UTIL_CLEARABLE_H_
+#define HAZELCAST_UTIL_CLEARABLE_H_
 
-#include "hazelcast/client/config/NearCachePreloaderConfig.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            bool NearCachePreloaderConfig::isEnabled() const {
-                return enabled;
-            }
+    namespace util {
+        class HAZELCAST_API Clearable {
+        public:
+            virtual ~Clearable();
 
-            std::ostream &operator<<(std::ostream &out, const NearCachePreloaderConfig &config) {
-                //TODO
-                return out;
-            }
-        }
+            virtual void clear() = 0;
+        };
     }
 }
-
+#endif //HAZELCAST_UTIL_CLEARABLE_H_

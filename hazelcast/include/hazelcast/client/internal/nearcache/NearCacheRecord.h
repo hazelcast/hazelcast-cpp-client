@@ -17,10 +17,10 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHERECORD_H_
 
 #include <assert.h>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/internal/eviction/Evictable.h"
 #include "hazelcast/client/internal/eviction/Expirable.h"
-#include "hazelcast/util/UUID.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -28,6 +28,10 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class UUID;
+    }
+
     namespace client {
         namespace internal {
             namespace nearcache {

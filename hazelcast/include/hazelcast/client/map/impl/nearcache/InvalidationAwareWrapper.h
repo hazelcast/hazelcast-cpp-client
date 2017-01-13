@@ -113,45 +113,18 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        const boost::shared_ptr<config::NearCachePreloaderConfig> getPreloaderConfig() const {
-                            return nearCache->getPreloaderConfig();
-                        }
-
-                        //@Override
                         monitor::NearCacheStats &getNearCacheStats() {
                             return nearCache->getNearCacheStats();
                         }
-/*
-                        //@Override
-                    Object selectToSave(Object... candidates) {
-                            return nearCache->selectToSave(candidates);
-                        }
-*/
 
                         //@Override
                         int size() const {
                             return nearCache->size();
                         }
 
-                        //@Override
-                        void preload(const internal::adapter::DataStructureAdapter<K, V> &adapter) {
-                            nearCache->preload(adapter);
-                        }
-
-                        //@Override
-                        void storeKeys() {
-                            nearCache->storeKeys();
-                        }
-
-                        //@Override
-                        bool isPreloadDone() {
-                            return nearCache->isPreloadDone();
-                        }
-
                         KeyStateMarker *getKeyStateMarker() {
                             return keyStateMarker.get();
                         }
-
                     private:
                         boost::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache;
                         std::auto_ptr<KeyStateMarker> keyStateMarker;

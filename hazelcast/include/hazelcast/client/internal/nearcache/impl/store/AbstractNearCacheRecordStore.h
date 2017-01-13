@@ -32,6 +32,8 @@
 #include "hazelcast/client/internal/nearcache/impl/NearCacheRecordStore.h"
 #include "hazelcast/client/internal/eviction/EvictionListener.h"
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -107,14 +109,6 @@ namespace hazelcast {
                                 try {
                                     record = getRecord(key);
                                     if (record.get() != NULL) {
-
-/*TODO
-                                        if (staleReadDetector.isStaleRead(key, record)) {
-                                            remove(key);
-                                            return null;
-                                        }
-*/
-
                                         if (isRecordExpired(record)) {
                                             remove(key);
                                             onExpire(key, record);
@@ -368,13 +362,6 @@ namespace hazelcast {
 
                             void onRecordCreate(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
                                 record->setCreationTime(util::currentTimeMillis());
-/*TODO
-                                MetaDataContainer metaDataContainer = staleReadDetector.getMetaDataContainer(key);
-                                if (metaDataContainer != null) {
-                                    record.setUuid(metaDataContainer.getUuid());
-                                    record.setInvalidationSequence(metaDataContainer.getSequence());
-                                }
-*/
                             }
 
                             void onRecordAccess(const boost::shared_ptr<R> &record) {
