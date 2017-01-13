@@ -99,7 +99,8 @@ namespace hazelcast {
                 * @returns all elements in the list
                 */
                 std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(list.toArrayData(), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
+                            list.toArrayData(), serializationService));
                 }
 
                 /**
@@ -211,7 +212,8 @@ namespace hazelcast {
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
                 std::auto_ptr<T> set(int index, const T &element) {
-                    return serializationService.toObject<T>(list.setData(index, serializationService.toData<T>(&element)).get());
+                    return serializationService.toObject<T>(
+                            list.setData(index, serializationService.toData<T>(&element)).get());
                 }
 
                 /**
@@ -264,7 +266,8 @@ namespace hazelcast {
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
                 std::auto_ptr<DataArray<T> > subList(int fromIndex, int toIndex) {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(list.subListData(fromIndex, toIndex), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
+                            list.subListData(fromIndex, toIndex), serializationService));
                 }
 
             private:

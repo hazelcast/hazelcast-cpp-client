@@ -175,7 +175,7 @@ namespace hazelcast {
                 * @see IMap#keySet()
                 */
                 std::auto_ptr<DataArray<K> > keySet() {
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.keySetData(), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(), serializationService));
                 }
 
                 /**
@@ -185,7 +185,7 @@ namespace hazelcast {
                 * @see IMap#keySet(predicate)
                 */
                 std::auto_ptr<DataArray<K> > keySet(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.keySetData(predicate), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(predicate), serializationService));
                 }
 
                 /**
@@ -195,7 +195,7 @@ namespace hazelcast {
                 * @see IMap#values()
                 */
                 std::auto_ptr<DataArray<V> > values() {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.valuesData(), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(), serializationService));
                 }
 
                 /**
@@ -204,7 +204,7 @@ namespace hazelcast {
                 * @see IMap#values(Predicate)
                 */
                 std::auto_ptr<DataArray<V> > values(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.valuesData(predicate), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(predicate), serializationService));
                 }
 
             private:
