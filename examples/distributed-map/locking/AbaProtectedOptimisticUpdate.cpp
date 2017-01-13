@@ -45,7 +45,7 @@ public:
     }
 
     int getClassId() const {
-        return 6;
+        return 5;
     }
 
     void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
@@ -59,6 +59,10 @@ public:
     }
 };
 
+/*
+ * For this program, you should first build and run sample server which is provided as
+ * LockingServer in /java/src/main/java/distributedMapLocking.
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);

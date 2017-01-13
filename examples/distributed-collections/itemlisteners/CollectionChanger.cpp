@@ -18,6 +18,10 @@
 //
 #include <hazelcast/client/HazelcastClient.h>
 
+/*
+ * This program is for recording queue events on the ItemListener.
+ * It should be executed when ItemListener waits for the events (the sleep time after the listener is registered on queue).
+ */
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);

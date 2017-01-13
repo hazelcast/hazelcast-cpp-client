@@ -21,30 +21,30 @@
 #include <hazelcast/client/query/GreaterLessPredicate.h>
 #include <hazelcast/client/query/QueryConstants.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener<std::string, std::string> {
+class MyEntryListener : public hazelcast::client::EntryListener<int, std::string> {
 
 public:
-    void entryAdded(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryAdded(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryRemoved(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryRemoved] " << event << std::endl;
     }
 
-    void entryUpdated(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryEvicted(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryUpdated] " << event << std::endl;
     }
 
-    void entryExpired(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryExpired(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryExpired] " << event << std::endl;
     }
 
-    void entryMerged(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
+    void entryMerged(const hazelcast::client::EntryEvent<int, std::string> &event) {
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
@@ -61,22 +61,22 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<std::string, std::string> m = hz.getMap<std::string, std::string>("map");
-    hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(m);
-    map.put("1", "Tokyo");
-    map.put("2", "Paris");
-    map.put("3", "New York");
+    hazelcast::client::IMap<int, std::string> m = hz.getMap<int, std::string>("map");
+    hazelcast::client::adaptor::RawPointerMap<int, std::string> map(m);
+    map.put(1, "Tokyo");
+    map.put(2, "Paris");
+    map.put(3, "New York");
     std::cout << "Finished loading map" << std::endl;
 
     std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = map.values();
-    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > entries = map.entrySet();
+    std::auto_ptr<hazelcast::client::EntryArray<int, std::string> > entries = map.entrySet();
 
     std::cout << "There are " << vals->size() << " values in the map" << std::endl;
     std::cout << "There are " << entries->size() << " entries in the map" << std::endl;
 
     for (size_t i = 0; i < entries->size(); ++i) {
-        const std::string * key = entries->getKey(i);
-        if ((std::string *) NULL == key) {
+        const int * key = entries->getKey(i);
+        if ((int *) NULL == key) {
             std::cout << "The key at index " << i << " is NULL" << std::endl;
         } else {
             std::auto_ptr<std::string> val = entries->releaseValue(i);
@@ -88,11 +88,11 @@ int main() {
     MyEntryListener listener;
 
     std::string listenerId = map.addEntryListener(listener, true);
-
     std::cout << "EntryListener registered" << std::endl;
 
-    // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
+    map.remove(3);
+    map.put(4, "Berlin");
+    map.put(5, "Istanbul");
 
     map.removeEntryListener(listenerId);
 
@@ -101,14 +101,16 @@ int main() {
     // Only listen events for entries with key >= 7
     listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate<int>(
             hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
+    std::cout << "EntryListener registered" << std::endl;
 
-    // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
+    map.put(7, "London");
+    map.put(8, "Kiev");
+    map.remove(2);
+    map.remove(7);
+    map.evictAll();
 
     map.removeEntryListener(listenerId);
 
-
     std::cout << "Finished" << std::endl;
-
     return 0;
 }
