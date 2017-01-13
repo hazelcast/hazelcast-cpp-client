@@ -146,7 +146,7 @@ namespace hazelcast {
                 * @return The elements in the queue.
                 */
                 std::auto_ptr<DataArray<T> > drainTo() {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(queue.drainToData(-1), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(-1), serializationService));
                 }
 
                 /**
@@ -155,7 +155,7 @@ namespace hazelcast {
                 * @return The elements in the queue.
                 */
                 std::auto_ptr<DataArray<T> > drainTo(size_t maxElements) {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(queue.drainToData(maxElements), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(maxElements), serializationService));
                 }
 
                 /**
@@ -197,7 +197,7 @@ namespace hazelcast {
                 * @returns all elements
                 */
                 std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(queue.toArrayData(), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.toArrayData(), serializationService));
                 }
 
                 /**

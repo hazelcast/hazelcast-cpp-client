@@ -90,7 +90,7 @@ namespace hazelcast {
                 * @returns all elements as std::vector
                 */
                 std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new impl::DataArrayImpl<T>(set.toArrayData(), serializationService));
+                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(set.toArrayData(), serializationService));
                 }
 
                 /**

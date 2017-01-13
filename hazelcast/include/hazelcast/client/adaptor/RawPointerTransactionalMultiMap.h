@@ -55,7 +55,7 @@ namespace hazelcast {
                 * @see Multimap#get(key)
                 */
                 std::auto_ptr<DataArray<K> > get(const K &key) {
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.getData(serializationService.toData<K>(&key)), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.getData(serializationService.toData<K>(&key)), serializationService));
                 };
 
                 /**
@@ -73,7 +73,7 @@ namespace hazelcast {
                 * @see Multimap#remove(key)
                 */
                 std::auto_ptr<DataArray<V> > remove(const K &key) {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.removeData(serializationService.toData<K>(&key)), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.removeData(serializationService.toData<K>(&key)), serializationService));
                 };
 
 

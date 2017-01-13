@@ -54,7 +54,8 @@ namespace hazelcast {
                 * @return the multimap of the values associated with the key.
                 */
                 std::auto_ptr<DataArray<V> > get(const K &key) {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.getData(serializationService.toData<K>(&key)), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                            map.getData(serializationService.toData<K>(&key)), serializationService));
                 }
 
                 /**
@@ -76,7 +77,8 @@ namespace hazelcast {
                 *         might be modifiable but it has no effect on the multimap
                 */
                 std::auto_ptr<DataArray<V> > remove(const K &key) {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.removeData(serializationService.toData<K>(&key)), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                            map.removeData(serializationService.toData<K>(&key)), serializationService));
                 }
 
                 /**
@@ -86,7 +88,8 @@ namespace hazelcast {
                 *         but it has no effect on the multimap
                 */
                 std::auto_ptr<DataArray<K> > keySet() {
-                    return std::auto_ptr<DataArray<K> >(new impl::DataArrayImpl<K>(map.keySetData(), serializationService));
+                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
+                            map.keySetData(), serializationService));
                 }
 
                 /**
@@ -96,7 +99,8 @@ namespace hazelcast {
                 *         but it has no effect on the multimap
                 */
                 std::auto_ptr<DataArray<V> > values() {
-                    return std::auto_ptr<DataArray<V> >(new impl::DataArrayImpl<V>(map.valuesData(), serializationService));
+                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(
+                            map.valuesData(), serializationService));
                 }
 
                 /**
@@ -106,7 +110,8 @@ namespace hazelcast {
                 *         but it has no effect on the multimap
                 */
                 std::auto_ptr<EntryArray<K, V> > entrySet() {
-                    return std::auto_ptr<EntryArray<K, V> >(new impl::EntryArrayImpl<K, V>(map.entrySetData(), serializationService)) ;
+                    return std::auto_ptr<EntryArray<K, V> >(new hazelcast::client::impl::EntryArrayImpl<K, V>(
+                            map.entrySetData(), serializationService)) ;
                 }
 
                 /**
