@@ -199,7 +199,7 @@ Here is an example script to build with shared library:
 
 `g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64`
 
-Please add the **__STDC_LIMIT_MACROS** and **__STDC_CONSTANT_MACROS** compilation flags for environments for which the compilation fails with error "INT32_MAX" could not be determined. E.g.
+Please add the **__STDC_LIMIT_MACROS** and **__STDC_CONSTANT_MACROS** compilation flags for environments for which the compilation fails with error "INT32_MAX" could not be determined. For example:
 
 `g++ main.cpp -pthread -I./external/include -I./hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ./hazelcast/lib/libHazelcastClientStatic_64.a`
 
@@ -911,9 +911,9 @@ void listenWithConfig() {
 # Map Near Cache
 Map can be configured to work with near cache enabled. Near cache allows local caching of entries fetched from the cluster at the client side. The local cache is updated when the client does a get request for a map entry. The locally cached entries are updated automatically as any change occurs in the map data in the cluster. Special internal event listeners are utilized for this purpose.
 
-If you are doing mostly reads from the map rather than map updates, then enabling near-cache allows you to get the entries faster since it will return the locally cached entry which will eliminate any network interaction. But if your application is doing mostly writes (update, remove, etc.) from map, then you may not gain much by enabling the near-cache since the updates will cause network traffic. 
+If you are doing mostly reads from the map rather than map updates, then enabling near cache allows you to get the entries faster since it will return the locally cached entry which will eliminate any network interaction. But if your application is doing mostly writes (update, remove, etc.) from map, then you may not gain much by enabling the near cache since the updates will cause network traffic. 
 
-You can enable the near-cache for a map by adding a near cache configuration for the map with its name. E.g.:
+You can enable the near cache for a map by adding a near cache configuration for its name. For example:
 
 ```
 boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
@@ -923,9 +923,9 @@ clientConfig..addNearCacheConfig(nearCacheConfig);
 
 As for all configuration options, this near cache config should be performed before the client instance is obtained and the client config should not be altered after the client is instantiated.
 
-The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exatly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
+The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
 
-Examples are also provided for some options at the near-cache folder of examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
+Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
 
 # Mail Group
