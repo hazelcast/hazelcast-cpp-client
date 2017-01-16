@@ -22,11 +22,6 @@
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
-#include "hazelcast/client/config/EvictionConfig.h"
-#include "hazelcast/client/config/EvictionPolicy.h"
-#include "hazelcast/client/config/InMemoryFormat.h"
-#include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/Credentials.h"
 #include "hazelcast/client/DistributedObject.h"
@@ -48,8 +43,6 @@
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/LoadBalancer.h"
@@ -68,16 +61,8 @@
 #include "hazelcast/client/TransactionalSet.h"
 #include "hazelcast/client/TransactionContext.h"
 #include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/adaptor/MapEntryView.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
-#include "hazelcast/client/adaptor/RawPointerList.h"
-#include "hazelcast/client/adaptor/RawPointerQueue.h"
-#include "hazelcast/client/adaptor/RawPointerMultiMap.h"
-#include "hazelcast/client/adaptor/RawPointerSet.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
-#include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
-
+#include "hazelcast/client/monitor/LocalMapStats.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
 
 #endif //HAZELCAST_HazelcastAll
 

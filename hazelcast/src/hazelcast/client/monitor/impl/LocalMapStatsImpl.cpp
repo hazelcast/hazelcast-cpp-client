@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
+
+#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
+#include "hazelcast/client/monitor/NearCacheStats.h"
 
 namespace hazelcast {
     namespace client {
-        namespace internal {
-            namespace eviction {
-                const EvictionStrategyType::Type EvictionStrategyType::DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION;
+        namespace monitor {
+            namespace impl {
+                NearCacheStats *LocalMapStatsImpl::getNearCacheStats() {
+                    return nearCacheStats;
+                }
+
+                void LocalMapStatsImpl::setNearCacheStats(NearCacheStats &stats) {
+                    this->nearCacheStats = &stats;
+                }
             }
         }
     }
 }
+

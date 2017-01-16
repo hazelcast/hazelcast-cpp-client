@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_
-#define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_
+#ifndef HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_
+#define HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -25,31 +25,28 @@
 
 namespace hazelcast {
     namespace client {
-        namespace internal {
-            namespace eviction {
+        namespace monitor {
+            class NearCacheStats;
+
+            class HAZELCAST_API LocalMapStats {
+            public:
+                virtual ~LocalMapStats() {
+                }
+
                 /**
-                 * Interface for configuration information about eviction.
+                 * Returns statistics related to the Near Cache.
+                 *
+                 * @return statistics object for the Near Cache
                  */
-                class HAZELCAST_API EvictionStrategyType {
-                public:
-                    enum Type {
-                        /**
-                         * Sampling based eviction strategy type
-                         */
-                                SAMPLING_BASED_EVICTION
-                    };
-                    /**
-                     * Default value of {@link com.hazelcast.internal.eviction.EvictionStrategyType}
-                     */
-                    static const Type DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION;
-                };
-            }
+                virtual monitor::NearCacheStats *getNearCacheStats() = 0;
+            };
         }
     }
-};
+}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_ */
+#endif /* HAZELCAST_CLIENT_MONITOR_LOCALMAPSTATS_H_ */
+

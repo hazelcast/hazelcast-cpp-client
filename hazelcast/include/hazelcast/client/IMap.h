@@ -872,6 +872,22 @@ namespace hazelcast {
             void destroy() {
                 mapImpl->destroy();
             }
+
+            /**
+             * Returns LocalMapStats for this map.
+             * LocalMapStats is the statistics for the local portion of this
+             * distributed map and contains information such as ownedEntryCount
+             * backupEntryCount, lastUpdateTime, lockedEntryCount.
+             * <p/>
+             * Since this stats are only for the local portion of this map, if you
+             * need the cluster-wide MapStats then you need to get the LocalMapStats
+             * from all members of the cluster and combine them.
+             *
+             * @return this map's local statistics.
+             */
+            monitor::LocalMapStats &getLocalMapStats() {
+                return mapImpl->getLocalMapStats();
+            }
         private:
             IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) {
                 mapImpl = boost::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
