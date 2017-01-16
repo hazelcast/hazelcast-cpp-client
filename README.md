@@ -29,6 +29,7 @@
   * [Reliable Topic](#reliable-topic)
     * [Publisher](#publisher)
     * [Subscriber](#subscriber)
+* [Map Near Cache](#map-near-cache)
 * [Mail Group](#mail-group)
 * [License](#license)
 * [Copyright](#copyright)
@@ -171,7 +172,7 @@ The C++ Client is tested on Linux 32/64-bit, Mac 64-bit and Windows 32/64-bit ma
 
 # Compiling the Client
 
-For compilation, you need to include the `hazelcast/include` and `external/include` folders in your distribution. You also need to link your application to the appropriate static or shared library.
+For compilation, you need to include the `hazelcast/include` and `external/include` folders in your distribution. You also need to link your application to the appropriate static or shared library. 
 
 ## Mac Client
 
@@ -197,6 +198,10 @@ Here is an example script to build with static library:
 Here is an example script to build with shared library:
 
 `g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64`
+
+Please add the **__STDC_LIMIT_MACROS** and **__STDC_CONSTANT_MACROS** compilation flags for environments for which the compilation fails with error "INT32_MAX" could not be determined. E.g.
+
+`g++ main.cpp -pthread -I./external/include -I./hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ./hazelcast/lib/libHazelcastClientStatic_64.a`
 
 
 ## Windows Client
@@ -417,6 +422,43 @@ int main() {
   if( value.get() != NULL ) {
     //process the item
   }
+
+  return 0;
+}
+```
+
+## Map With Near Cache Enabled
+
+```cpp
+#include <hazelcast/client/HazelcastAll.h>
+#include <iostream>
+
+using namespace hazelcast::client;
+
+int main() {
+  ClientConfig clientConfig;
+  Address address( "localhost", 5701 );
+  clientConfig.addAddress( address );
+  
+  boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
+  nearCacheConfig->setInvalidateOnChange(false);
+  nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)
+            .setMaximumSizePolicy(config::EvictionConfig<int, std::string>::ENTRY_COUNT);
+  config.addNearCacheConfig(nearCacheConfig);
+
+  HazelcastClient hazelcastClient( clientConfig );
+
+  IMap<int,int> myMap = hazelcastClient.getMap<int ,int>( "myIntMap" );
+  myMap.put( 1,3 );
+  boost::shared_ptr<int> value = myMap.get( 1 );
+  if( value.get() != NULL ) {
+    //process the item
+  }
+
+  hazelcast::client::monitor::NearCacheStats *stats = map.getLocalMapStats().getNearCacheStats();
+
+  printf("The Near Cache contains %lld entries.\n", stats->getOwnedEntryCount());
 
   return 0;
 }
@@ -866,7 +908,24 @@ void listenWithConfig() {
 }    
 ```
 
+# Map Near Cache
+Map can be configured to work with near cache enabled. Near cache allows local caching of entries fetched from the cluster at the client side. The local cache is updated when the client does a get request for a map entry. The locally cached entries are updated automatically as any change occurs in the map data in the cluster. Special internal event listeners are utilized for this purpose.
 
+If you are doing mostly reads from the map rather than map updates, then enabling near-cache allows you to get the entries faster since it will return the locally cached entry which will eliminate any network interaction. But if your application is doing mostly writes (update, remove, etc.) from map, then you may not gain much by enabling the near-cache since the updates will cause network traffic. 
+
+You can enable the near-cache for a map by adding a near cache configuration for the map with its name. E.g.:
+
+```
+boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>("myMap"));
+clientConfig..addNearCacheConfig(nearCacheConfig);
+```
+
+As for all configuration options, this near cache config should be performed before the client instance is obtained and the client config should not be altered after the client is instantiated.
+
+The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exatly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
+
+Examples are also provided for some options at the near-cache folder of examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
 
 # Mail Group
