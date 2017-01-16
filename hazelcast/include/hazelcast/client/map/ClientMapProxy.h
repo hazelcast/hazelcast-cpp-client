@@ -22,6 +22,10 @@
 #include <vector>
 #include <stdexcept>
 #include <climits>
+
+#include "hazelcast/client/monitor/LocalMapStats.h"
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
+#include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
@@ -1073,6 +1077,10 @@ namespace hazelcast {
                 serialization::pimpl::SerializationService &getSerializationService() const {
                     return context->getSerializationService();
                 }
+
+                virtual monitor::LocalMapStats &getLocalMapStats() {
+                    return stats;
+                }
             protected:
                 virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
                     return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
@@ -1186,6 +1194,8 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
                     return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
+            private:
+                monitor::impl::LocalMapStatsImpl stats;
             };
         }
     }

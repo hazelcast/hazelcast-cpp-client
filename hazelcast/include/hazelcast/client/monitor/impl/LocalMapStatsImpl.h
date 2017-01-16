@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_
-#define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_
+#ifndef HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
+#define HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
 
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/monitor/LocalMapStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -25,31 +29,24 @@
 
 namespace hazelcast {
     namespace client {
-        namespace internal {
-            namespace eviction {
-                /**
-                 * Interface for configuration information about eviction.
-                 */
-                class HAZELCAST_API EvictionStrategyType {
+        namespace monitor {
+            namespace impl {
+                class HAZELCAST_API LocalMapStatsImpl : public LocalMapStats {
                 public:
-                    enum Type {
-                        /**
-                         * Sampling based eviction strategy type
-                         */
-                                SAMPLING_BASED_EVICTION
-                    };
-                    /**
-                     * Default value of {@link com.hazelcast.internal.eviction.EvictionStrategyType}
-                     */
-                    static const Type DEFAULT_EVICTION_STRATEGY = SAMPLING_BASED_EVICTION;
+                    virtual monitor::NearCacheStats *getNearCacheStats();
+
+                    void setNearCacheStats(NearCacheStats &stats);
+                private:
+                    util::Atomic<monitor::NearCacheStats* > nearCacheStats;
                 };
             }
         }
     }
-};
+}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONSTRATEGYTYPE_H_ */
+#endif /* HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_ */
+

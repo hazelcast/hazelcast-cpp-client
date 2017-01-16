@@ -53,6 +53,13 @@ namespace hazelcast {
                         : ClientMapProxy<K, V>(instanceName, context), cacheLocalEntries(false),
                           invalidateOnChange(false), keyStateMarker(NULL), nearCacheConfig(config) {
                 }
+
+                virtual monitor::LocalMapStats &getLocalMapStats() {
+                    monitor::LocalMapStats &localMapStats = ClientMapProxy<K, V>::getLocalMapStats();
+                    monitor::NearCacheStats &nearCacheStats = nearCache->getNearCacheStats();
+                    ((monitor::impl::LocalMapStatsImpl &) localMapStats).setNearCacheStats(nearCacheStats);
+                    return localMapStats;
+                }
             protected:
                 //@override
                 void onInitialize() {
@@ -281,7 +288,6 @@ namespace hazelcast {
                         }
                     }
                 }
-
             private:
                 impl::nearcache::KeyStateMarker *getKeyStateMarker() {
                     return boost::static_pointer_cast<
