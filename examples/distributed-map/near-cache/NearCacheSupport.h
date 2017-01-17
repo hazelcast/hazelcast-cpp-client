@@ -30,20 +30,19 @@ public:
 
     static void printNearCacheStats(hazelcast::client::IMap<int, std::string> &map, const char *message) {
         hazelcast::client::monitor::NearCacheStats *stats = map.getLocalMapStats().getNearCacheStats();
-        printf("%s (%lld entries, %lld hits, %lld misses, %lld evictions, %lld expirations)\n",
-               message, stats->getOwnedEntryCount(), stats->getHits(), stats->getMisses(),
-               stats->getEvictions(), stats->getExpirations());
+        printf("%s (%ld entries, %ld hits, %ld misses, %ld evictions, %ld expirations)\n",
+               message, (long) stats->getOwnedEntryCount(), (long) stats->getHits(), (long) stats->getMisses(),
+               (long) stats->getEvictions(), (long) stats->getExpirations());
     }
 
     static void printNearCacheStats(hazelcast::client::IMap<int, std::string> &map) {
         hazelcast::client::monitor::NearCacheStats *stats = map.getLocalMapStats().getNearCacheStats();
 
-        printf("The Near Cache contains %lld entries.\n", stats->getOwnedEntryCount());
-        printf("The first article instance was retrieved from the remote instance (Near Cache misses: %lld).\n",
-               stats->getMisses());
-        printf(
-                "The second and third article instance were retrieved from the local Near Cache (Near Cache hits: %lld).\n",
-                stats->getHits());
+        printf("The Near Cache contains %ld entries.\n", (long) stats->getOwnedEntryCount());
+        printf("The first article instance was retrieved from the remote instance (Near Cache misses: %ld).\n",
+               (long) stats->getMisses());
+        printf("The second and third article instance were retrieved from the local Near Cache (Near Cache hits: %ld).\n",
+                (long) stats->getHits());
     }
 
     static void waitForInvalidationEvents() {
