@@ -59,7 +59,7 @@
 #define ASSERT_NOTNULL(value, type) ASSERT_NE((type *) NULL, value)
 #define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, true)
 #define ASSERT_FALSE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, false)
-#define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY(value, (type *) NULL)
+#define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
 #define ASSERT_NOTNULL_EVENTUALLY(value) ASSERT_NE_EVENTUALLY(value, NULL)
 
 #endif //HAZELCAST_TestHelperFunctions
