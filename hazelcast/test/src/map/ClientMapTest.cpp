@@ -58,6 +58,16 @@ namespace hazelcast {
                 MapClientConfig() {
                     addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 }
+
+                virtual ~MapClientConfig() {
+                }
+
+                /**
+                 * @return true if expiry at the server side should be seen by the client
+                 */
+                virtual bool shouldExpireWhenTLLExpiresAtServer() {
+                    return true;
+                }
             };
 
             const char *MapClientConfig::intMapName = "IntMap";
@@ -79,6 +89,13 @@ namespace hazelcast {
                             new config::NearCacheConfig<std::string, std::string>(imapName));
                     addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
                 }
+
+                /**
+                 * @return true if expiry at the server side should be seen by the client
+                 */
+                virtual bool shouldExpireWhenTLLExpiresAtServer() {
+                    return false;
+                }
             };
 
             class NearCachedObjectMapClientConfig : public MapClientConfig {
@@ -95,6 +112,13 @@ namespace hazelcast {
                     boost::shared_ptr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
                             new config::NearCacheConfig<std::string, std::string>(imapName, config::OBJECT));
                     addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
+                }
+
+                /**
+                 * @return true if expiry at the server side should be seen by the client
+                 */
+                virtual bool shouldExpireWhenTLLExpiresAtServer() {
+                    return false;
                 }
             };
 
@@ -552,10 +576,16 @@ namespace hazelcast {
                 boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_EQ(*temp, "value1");
                 util::sleep(2);
-                // trigger eviction
+                // trigger eviction at server
                 boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
-                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
-                ASSERT_TRUE(evict.await(10));
+                // When ttl expires at server, the server does not send near cache invalidation
+                if (ClientMapTest<TypeParam>::clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
+                    ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
+                    ASSERT_TRUE(evict.await(10));
+                } else {
+                    temp = ClientMapTest<TypeParam>::imap->get("key1");
+                    ASSERT_EQ(*temp, "value1");
+                }
 
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
             }
@@ -605,8 +635,13 @@ namespace hazelcast {
 
                 ClientMapTest<TypeParam>::imap->set("key1", "value3", 1000);
                 ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
-
-                ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
+                // When ttl expires at server, the server does not send near cache invalidation
+                if (ClientMapTest<TypeParam>::clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
+                    ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
+                } else {
+                    util::sleep(2);
+                    ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
+                }
             }
 
             TYPED_TEST(ClientMapTest, testSetTtl) {
@@ -624,7 +659,7 @@ namespace hazelcast {
                 util::sleep(2);
                 // trigger eviction
                 boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                ASSERT_NULL("The value for key1 needs to be null", temp2.get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -645,7 +680,7 @@ namespace hazelcast {
                 util::sleep(2);
                 // trigger eviction
                 boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                ASSERT_NULL("Value for key1 should be null after eviction", temp2.get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -660,7 +695,6 @@ namespace hazelcast {
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
-
             }
 
             TYPED_TEST(ClientMapTest, testLockTtl) {
@@ -673,7 +707,6 @@ namespace hazelcast {
                 ASSERT_FALSE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
-
             }
 
             TYPED_TEST(ClientMapTest, testLockTtl2) {
@@ -682,11 +715,9 @@ namespace hazelcast {
                 util::Thread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
-
             }
 
             TYPED_TEST(ClientMapTest, testTryLock) {
-
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
                 util::Thread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
@@ -705,7 +736,6 @@ namespace hazelcast {
                 ASSERT_TRUE(latch2.await(100));
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
-
             }
 
             TYPED_TEST(ClientMapTest, testForceUnlock) {
