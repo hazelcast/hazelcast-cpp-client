@@ -38,6 +38,12 @@ namespace hazelcast {
                 }
 
                 virtual void TearDown() {
+                    if (NULL != client.get()) {
+                        client->shutdown();
+                    }
+                    if (NULL != nearCachedClient.get()) {
+                        nearCachedClient->shutdown();
+                    }
                     g_srvFactory->shutdownAll();
                 }
             protected:
