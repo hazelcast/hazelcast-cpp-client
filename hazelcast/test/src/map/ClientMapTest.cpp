@@ -602,10 +602,8 @@ namespace hazelcast {
                 map.put("key1", "value1");
                 boost::shared_ptr<std::string> temp = map.get("key1");
                 ASSERT_EQ(*temp, "value1");
-                util::sleep(2);
                 // trigger eviction
-                boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -675,12 +673,8 @@ namespace hazelcast {
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.set("key1", "value1");
-                boost::shared_ptr<std::string> temp = map.get("key1");
-                ASSERT_EQ(*temp, "value1");
-                util::sleep(2);
                 // trigger eviction
-                boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_NULL("Value for key1 should be null after eviction", temp2.get(), std::string);
+                ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
