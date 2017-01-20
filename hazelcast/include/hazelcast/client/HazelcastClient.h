@@ -426,6 +426,8 @@ namespace hazelcast {
 
             class ServerListenerService;
 
+            class ClientProxyFactory;
+
         }
 
         class ClientConfig;
@@ -495,8 +497,7 @@ namespace hazelcast {
             IMap<K, V> getMap(const std::string &name) {
                 map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
                 boost::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService<map::impl::ClientMapProxyFactory<K, V> >(
-                                IMap<K, V>::SERVICE_NAME, name, factory);
+                        getDistributedObjectForService(IMap<K, V>::SERVICE_NAME, name, factory);
 
                 return IMap<K, V>(proxy);
             }
@@ -705,11 +706,9 @@ namespace hazelcast {
 
             serialization::pimpl::SerializationService &getSerializationService();
         private:
-            template <typename FACTORY>
-            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(
-                    const std::string &serviceName, const std::string &name, FACTORY &factory) {
-                return proxyManager.getOrCreateProxy<FACTORY>(serviceName, name, factory);
-            }
+            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
+                                                                               const std::string &name,
+                                                                               spi::ClientProxyFactory &factory);
 
             ClientConfig clientConfig;
             ClientProperties clientProperties;

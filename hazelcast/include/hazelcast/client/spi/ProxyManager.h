@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 25 Nov 2016.
 
 #ifndef HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
 #define HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
@@ -22,6 +20,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ObjectNamespace.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
+#include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -33,38 +32,15 @@ namespace hazelcast {
         namespace spi {
             class HAZELCAST_API ProxyManager {
             public:
-                ProxyManager(ClientContext &context) : clientContext(context) {
-                    (void) clientContext;
-                }
+                ProxyManager(ClientContext &context);
 
-                template <typename FACTORY>
-                boost::shared_ptr<ClientProxy> getOrCreateProxy(
-                        const std::string &service, const std::string &id, FACTORY &factory) {
-                    DefaultObjectNamespace ns(service, id);
-                    boost::shared_ptr<ClientProxy> proxy = proxies.get(ns);
-                    if (proxy.get() != NULL) {
-                        return proxy;
-                    }
-                    boost::shared_ptr<ClientProxy> clientProxy = factory.create(id);
-                    boost::shared_ptr<ClientProxy> current = proxies.putIfAbsent(ns, clientProxy);
-                    if (current.get() != NULL) {
-                        return current;
-                    }
-                    try {
-                        initializeWithRetry(clientProxy);
-                    } catch (exception::IException &e) {
-                        proxies.remove(ns);
-                        throw e;
-                    }
-                    return clientProxy;
-                }
+                boost::shared_ptr<ClientProxy> getOrCreateProxy(const std::string &service,
+                                                                const std::string &id,
+                                                                spi::ClientProxyFactory &factory);
+
             private:
-                void initializeWithRetry(boost::shared_ptr<ClientProxy> clientProxy) {
-                    // TODO: Implement like java
-                    clientProxy->onInitialize();
-                }
+                void initializeWithRetry(boost::shared_ptr<ClientProxy> clientProxy);
 
-                ClientContext &clientContext;
                 //TODO: Change ClientProxy to ClientProxyFuture as in java
                 util::SynchronizedMap<DefaultObjectNamespace, ClientProxy> proxies;
             };

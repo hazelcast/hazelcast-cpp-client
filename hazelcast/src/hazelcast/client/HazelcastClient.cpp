@@ -119,6 +119,13 @@ namespace hazelcast {
         serialization::pimpl::SerializationService &HazelcastClient::getSerializationService() {
             return serializationService;
         }
+
+        boost::shared_ptr<spi::ClientProxy> HazelcastClient::getDistributedObjectForService(
+                const std::string &serviceName,
+                const std::string &name,
+                spi::ClientProxyFactory &factory) {
+            return proxyManager.getOrCreateProxy(serviceName, name, factory);
+        }
     }
 }
 
