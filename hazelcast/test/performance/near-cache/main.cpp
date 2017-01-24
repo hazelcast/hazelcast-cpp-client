@@ -20,6 +20,7 @@
 
 #include <boost/date_time/microsec_time_clock.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time.hpp>
 
 #include <hdr/hdr_histogram.h>
@@ -136,31 +137,44 @@ private:
 
         return 0;
     }
+    
+    static void sleepUntil(boost::posix_time::ptime &wakeupTime) {
+        boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
+        boost::posix_time::time_duration sleepDuration = now - wakeupTime;
+        int64_t sleepUSecs = sleepDuration.total_microseconds();
+        if (sleepUSecs > 0) {
+            usleep((useconds_t) sleepUSecs);
+        }
+    }
 
     static void performGets(ThreadParameters &params) {
         int64_t testStart = currentTimeMillis();
         int64_t testEndTime = testStart + params.testDuration;
 
+        boost::posix_time::time_duration configuredLatency = boost::posix_time::milliseconds(params.operationInterval);
+
+        boost::posix_time::ptime expectedStartTime = boost::posix_time::microsec_clock::universal_time();
         while (currentTimeMillis() < testEndTime) {
             int key = rand() % params.keySetSize;
-            boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
+
+            sleepUntil(expectedStartTime);
+
             // perform the measured operation
             params.map->get(key);
+
             boost::posix_time::ptime end = boost::posix_time::microsec_clock::universal_time();
 
-            boost::posix_time::time_duration diff = end - start;
-            int64_t totalTimeMicros = (int64_t) diff.total_microseconds();
-            params.values.push_back(totalTimeMicros);
+            boost::posix_time::time_duration duration = end - expectedStartTime;
+            params.values.push_back((int64_t) duration.total_microseconds());
 
-            int64_t sleepTime = (totalTimeMicros - (params.operationInterval * 1000)) / 1000;
-            if (sleepTime > 0) {
-                sleepmillis((uint64_t) sleepTime);
-            }
+            expectedStartTime += configuredLatency;
         }
     }
 
     void warmup(ThreadParameters &params) {
-        performGets(params);
+        for (int i = 0; i < params.keySetSize; ++i) {
+            params.map->get(i);
+        }
     }
 
     void fillMap(ThreadParameters &params) {
@@ -259,7 +273,7 @@ int parseArguments(int argc, char **argv, struct ThreadParameters &params) {
     << threadCountArg << "<value> "
     << testDurationArg << "<value> "
     << operationIntervalArg << "<value> "
-    << helpArg
+    << helpArg << " "
     << statsFileArg << "<file path>";
 
     std::string usage = out.str();
