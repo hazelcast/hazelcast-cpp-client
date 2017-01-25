@@ -56,13 +56,13 @@ struct ThreadParameters {
 
 std::ostream &operator<<(std::ostream &out, const ThreadParameters &params) {
     out << "Parameters {" << std::endl
-    << "\t\t" << "Is near cache used:" << (params.useNearCache ? "yes" : "no") << std::endl
-    << "\t\t" << "Histogram output file:" << params.outFileName << std::endl
-    << "\t\t" << "Key set size:" << params.keySetSize << std::endl
-    << "\t\t" << "Number of threads:" << params.numberOfThreads << std::endl
-    << "\t\t" << "Test Duration:" << params.testDuration << " milliseconds" << std::endl
-    << "\t\t" << "Operation interval:" << params.operationInterval << " milliseconds" << std::endl
-    << "\t\t" << "Connected server ip:" << params.serverIp << std::endl
+    << "\t\t" << "Is near cache used: " << (params.useNearCache ? "yes" : "no") << std::endl
+    << "\t\t" << "Histogram output file: " << params.outFileName << std::endl
+    << "\t\t" << "Key set size: " << params.keySetSize << std::endl
+    << "\t\t" << "Number of threads: " << params.numberOfThreads << std::endl
+    << "\t\t" << "Test Duration: " << params.testDuration << " milliseconds" << std::endl
+    << "\t\t" << "Operation interval: " << params.operationInterval << " milliseconds" << std::endl
+    << "\t\t" << "Connected server ip: " << params.serverIp << std::endl
     << "}" << std::endl;
 
     return out;
@@ -154,6 +154,7 @@ private:
         boost::posix_time::time_duration configuredLatency = boost::posix_time::milliseconds(params.operationInterval);
 
         boost::posix_time::ptime expectedStartTime = boost::posix_time::microsec_clock::universal_time();
+        size_t index = 0;
         while (currentTimeMillis() < testEndTime) {
             int key = rand() % params.keySetSize;
 
@@ -168,7 +169,7 @@ private:
             if (duration.total_microseconds() < 1) {
                 std::cerr << "Negative duration:" << duration.total_microseconds() << std::endl;
             }
-            params.values.push_back((int64_t) duration.total_microseconds());
+            params.values[index++] = (int64_t) duration.total_microseconds();
 
             expectedStartTime += configuredLatency;
         }
@@ -345,6 +346,10 @@ int parseArguments(int argc, char **argv, struct ThreadParameters &params) {
             ++numFound;
         }
     }
+
+    // pre-allocate the result array
+    size_t arraySize = (size_t) params.testDuration/params.operationInterval;
+    params.values.resize(arraySize);
 
     return numFound;
 }
