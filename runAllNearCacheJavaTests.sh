@@ -43,7 +43,7 @@ mvn exec:java -Dexec.mainClass="com.hazelcast.client.map.impl.nearcache.NearCach
 
 # TEST CASE: no_miss_without_nearcache_1_member_10000keys_10minutes_1msecInterval_40threads
 DURATION=600000
-NUM_THREADS=4
+NUM_THREADS=40
 KEY_SET_SIZE=10000
 OPERATION_INTERVAL=1
 USE_NEAR_CACHE=""
