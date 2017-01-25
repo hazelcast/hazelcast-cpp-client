@@ -381,6 +381,7 @@ public class CppClientListener {
     public static void main(String args[]) throws IOException {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
+        getInstance(config);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());

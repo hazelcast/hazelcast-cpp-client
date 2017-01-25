@@ -34,8 +34,8 @@ struct ThreadParameters {
     ThreadParameters() : map(NULL),
                          keySetSize(100000),
                          numberOfThreads(40),
-                         testDuration(10 * 60 * 1000), // milliseconds
-                         operationInterval(1),  // milliseconds
+                         testDuration(10 * 60 * 1000),
+                         operationInterval(1),
                          serverIp("127.0.0.1"),
                          useNearCache(false),
                          outFileName("NearCacheResult.txt"),
@@ -46,7 +46,7 @@ struct ThreadParameters {
     int keySetSize;
     int numberOfThreads;
     int testDuration;      // milliseconds
-    int operationInterval; // usecs
+    int operationInterval; // milliseconds
     std::string serverIp;
     bool useNearCache;
     std::string outFileName;
@@ -127,9 +127,9 @@ private:
         ThreadParameters params;
     };
 
-    int initializeHdr(hdr_histogram *&histogram) {
+    int initializeHdr(hdr_histogram *&histogram, int64_t highestTrackableValue) {
         if (0 != hdr_init(
-                INT64_C(1), INT64_C(1500), 1,
+                INT64_C(1), highestTrackableValue, 1,
                 &histogram)) {
             std::cerr << "Failed to init hdr histogram" << std::endl;
             return -1;
@@ -140,7 +140,7 @@ private:
     
     static void sleepUntil(boost::posix_time::ptime &wakeupTime) {
         boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-        boost::posix_time::time_duration sleepDuration = now - wakeupTime;
+        boost::posix_time::time_duration sleepDuration = wakeupTime - now;
         int64_t sleepUSecs = sleepDuration.total_microseconds();
         if (sleepUSecs > 0) {
             usleep((useconds_t) sleepUSecs);
@@ -165,6 +165,9 @@ private:
             boost::posix_time::ptime end = boost::posix_time::microsec_clock::universal_time();
 
             boost::posix_time::time_duration duration = end - expectedStartTime;
+            if (duration.total_microseconds() < 1) {
+                std::cerr << "Negative duration:" << duration.total_microseconds() << std::endl;
+            }
             params.values.push_back((int64_t) duration.total_microseconds());
 
             expectedStartTime += configuredLatency;
@@ -189,9 +192,24 @@ private:
         performGets(*params);
     }
 
+    int64_t findMaximumValue(const std::vector<ThreadInfo> &allThreadsInfo) {
+        int64_t max = 0;
+        for (std::vector<ThreadInfo>::const_iterator it = allThreadsInfo.begin();it != allThreadsInfo.end();++it) {
+            const std::vector<int64_t> &values = (*it).params.values;
+            for (std::vector<int64_t>::const_iterator valIt = values.begin();valIt != values.end();++valIt) {
+                if (*valIt > max) {
+                    max = *valIt;
+                }
+            }
+        }
+        return max;
+    }
+
     int generateHistogram(const std::vector<ThreadInfo> &allThreadsInfo) {
-        hdr_histogram *latencies;
-        int result = initializeHdr(latencies);
+        int64_t highestTrackableValue = findMaximumValue(allThreadsInfo);
+
+        hdr_histogram *latencies = 0;
+        int result = initializeHdr(latencies, highestTrackableValue);
         if (result) {
             return result;
         }
@@ -287,13 +305,13 @@ int parseArguments(int argc, char **argv, struct ThreadParameters &params) {
             return -1;
         }
 
-        std::string valueString = getValueString(serverIpArg, argv[i]);
+        std::string valueString = getValueString(serverIpArg, argument);
         if (valueString.size()) {
             params.serverIp = valueString;
             ++numFound;
         }
 
-        valueString = getValueString(statsFileArg, argv[i]);
+        valueString = getValueString(statsFileArg, argument);
         if (valueString.size()) {
             params.outFileName = valueString;
             ++numFound;
@@ -304,24 +322,24 @@ int parseArguments(int argc, char **argv, struct ThreadParameters &params) {
             ++numFound;
         }
 
-        int val = getPozitifIntArgument(keySetSize, argv[i], usage);
+        int val = getPozitifIntArgument(keySetSize, argument, usage);
         if (val > 0) {
             params.keySetSize = val;
         }
 
-        val = getPozitifIntArgument(threadCountArg, argv[i], usage);
+        val = getPozitifIntArgument(threadCountArg, argument, usage);
         if (val > 0) {
             params.numberOfThreads = val;
             ++numFound;
         }
 
-        val = getPozitifIntArgument(testDurationArg, argv[i], usage);
+        val = getPozitifIntArgument(testDurationArg, argument, usage);
         if (val > 0) {
             params.testDuration = val;
             ++numFound;
         }
 
-        val = getPozitifIntArgument(operationIntervalArg, argv[i], usage);
+        val = getPozitifIntArgument(operationIntervalArg, argument, usage);
         if (val > 0) {
             params.operationInterval = val;
             ++numFound;
