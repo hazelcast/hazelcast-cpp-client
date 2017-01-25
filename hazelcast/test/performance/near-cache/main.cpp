@@ -82,9 +82,9 @@ public:
             clientConfig.addNearCacheConfig<int, int>(nearCacheConfig);
         }
 
-        HazelcastClient client(clientConfig);
         Address serverAddr(params.serverIp, 5701);
         clientConfig.addAddress(serverAddr);
+        HazelcastClient client(clientConfig);
 
         IMap<int, int> map = client.getMap<int, int>(params.mapName);
 
