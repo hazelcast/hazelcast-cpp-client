@@ -37,7 +37,6 @@ cp -R external/release_include/ cpp/Mac_64/external/include/
 
 echo "Moving examples to target"
 cp -r examples cpp/Mac_64/examples/src
-find ReleaseStatic/examples -perm +111 -type f -exec cp {} cpp/Mac_64/examples/ \;
 
 #MAC SPECIFIC
 cd cpp/Mac_64/hazelcast/lib/

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -e #abort the script at first failure
 
 echo "Cleanup release directories"
@@ -35,7 +36,6 @@ cp -R external/release_include/* cpp/Linux_32/external/include/
 
 echo "Moving 32bit examples to target"
 cp -r examples cpp/Linux_32/examples/src
-find ReleaseStatic32/examples -perm +111 -type f -exec cp {} cpp/Linux_32/examples/ \;
 
 echo "Clearing temporary 32bit libraries"
 rm -rf ./ReleaseShared32
@@ -72,7 +72,6 @@ cp -R external/release_include/* cpp/Linux_64/external/include/
 
 echo "Moving 64bit examples to target"
 cp -r examples cpp/Linux_64/examples/src
-find ReleaseStatic64/examples -perm +111 -type f -exec cp {} cpp/Linux_64/examples/ \;
 
 echo "Clearing temporary 64bit libraries"
 rm -rf ./ReleaseShared64
