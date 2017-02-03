@@ -66,6 +66,12 @@ namespace hazelcast {
 
                     int getPartitionHash() const;
 
+                    /**
+                     * Returns the calculated hash of the data bytes.
+                     * Caches the calculated value.
+                     */
+                    int hash() const;
+
                     bool hasPartitionHash() const;
 
                     std::vector<byte> &toByteArray() const;
@@ -74,10 +80,9 @@ namespace hazelcast {
 
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;
-                    mutable util::AtomicInt calculatedHash;
-                    mutable util::AtomicBoolean calculatedHashExist;
+                    mutable int cachedHashValue;
 
-                    int hashCode() const;
+                    inline int calculateHash() const;
                 };
             }
         }

@@ -46,33 +46,31 @@ namespace hazelcast {
                 unsigned int Data::DATA_OVERHEAD = Data::DATA_OFFSET;
 
                 Data::Data()
-                : data(NULL), calculatedHash(0), calculatedHashExist(false) {
+                : data(NULL), cachedHashValue(-1) {
                 }
 
-                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), calculatedHash(-1),
-                                                                       calculatedHashExist(false) {
-                    if (data.get() != 0 && data->size() > 0 && data->size() < Data::DATA_OVERHEAD) {
-                        char msg[100];
-                        util::snprintf(msg, 100, "Provided buffer should be either empty or "
-                                "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD, (unsigned long)data->size());
-                        throw exception::IllegalArgumentException("Data::setBuffer", msg);
+                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), cachedHashValue(-1) {
+                    if (data.get()) {
+                        size_t size = data->size();
+                        if (size > 0 && size < Data::DATA_OVERHEAD) {
+                            char msg[100];
+                            util::snprintf(msg, 100, "Provided buffer should be either empty or "
+                                    "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD, (unsigned long) size);
+                            throw exception::IllegalArgumentException("Data::setBuffer", msg);
+                        }
+
+                        cachedHashValue = getPartitionHash();
                     }
                 }
 
                 Data::Data(const Data& rhs)
                 : data(rhs.data) {
-                    int hash = rhs.calculatedHash;
-                    calculatedHash = hash;
-                    bool isCalculated = rhs.calculatedHashExist;
-                    calculatedHashExist = isCalculated;
+                    cachedHashValue = rhs.cachedHashValue;
                 }
 
                 Data& Data::operator=(const Data& rhs) {
                     data = rhs.data;
-                    int hash = rhs.calculatedHash;
-                    calculatedHash = hash;
-                    bool isCalculated = rhs.calculatedHashExist;
-                    calculatedHashExist = isCalculated;
+                    cachedHashValue = rhs.cachedHashValue;
                     return (*this);
                 }
 
@@ -88,7 +86,7 @@ namespace hazelcast {
                     if (hasPartitionHash()) {
                         return Bits::readIntB(*data, Data::PARTITION_HASH_OFFSET);
                     }
-                    return hashCode();
+                    return hash();
                 }
 
                 bool Data::hasPartitionHash() const {
@@ -108,12 +106,17 @@ namespace hazelcast {
                     return Bits::readIntB(*data, Data::TYPE_OFFSET);
                 }
 
-                int Data::hashCode() const {
-                    if (!calculatedHashExist) {
-                        calculatedHash = MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
-                        calculatedHashExist = true;
+                int Data::hash() const {
+                    if (cachedHashValue > 0) {
+                        return cachedHashValue;
                     }
-                    return calculatedHash;
+
+                    cachedHashValue = calculateHash();
+                    return cachedHashValue;
+                }
+
+                int Data::calculateHash() const {
+                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
                 }
             }
         }
@@ -141,7 +144,7 @@ namespace boost {
             return false;
         }
 
-        return lhs->getPartitionHash() < rhs->getPartitionHash();
+        return lhs->hash() < rhs->hash();
     }
 }
 
