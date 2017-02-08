@@ -82,7 +82,7 @@ namespace hazelcast {
                     state = TxnState::ACTIVE;
                 } catch (exception::IException &e) {
                     onTxnEnd();
-                    throw e;
+                    throw;
                 }
 
             }
@@ -132,7 +132,7 @@ namespace hazelcast {
                     state = TxnState::ROLLED_BACK;
                 } catch (exception::IException &e) {
                     onTxnEnd();
-                    throw e;
+                    throw;
                 }
                 onTxnEnd();
 

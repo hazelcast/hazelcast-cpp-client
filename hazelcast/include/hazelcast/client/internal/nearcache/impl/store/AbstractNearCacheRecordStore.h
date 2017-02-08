@@ -125,7 +125,7 @@ namespace hazelcast {
                                     }
                                 } catch (exception::IException &error) {
                                     onGetError(key, value, record, error);
-                                    throw error;
+                                    throw;
                                 }
                             }
 
@@ -157,7 +157,7 @@ namespace hazelcast {
                                     return record.get() != NULL;
                                 } catch (exception::IException &error) {
                                     onRemoveError(key, record, removed, error);
-                                    throw error;
+                                    throw;
                                 }
                             }
 
@@ -484,7 +484,7 @@ namespace hazelcast {
                                     onPut(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {
                                     onPutError(key, value, record, oldRecord, error);
-                                    throw error;
+                                    throw;
                                 }
                             }
 
