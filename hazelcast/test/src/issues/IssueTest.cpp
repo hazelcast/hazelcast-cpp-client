@@ -121,6 +121,27 @@ namespace hazelcast {
                 ASSERT_TRUE(server.shutdown());
             }
 
+            TEST_F(IssueTest, testIssue221) {
+                // start a server
+                HazelcastServer server(*g_srvFactory);
+                
+                // start a client
+                std::auto_ptr<ClientConfig> config = getConfig();
+                HazelcastClient client(*config);
+
+                IMap<int, int> map = client.getMap<int, int>("Issue221_test_map");
+
+                server.shutdown();
+
+                try {
+                    map.get(1);
+                } catch (exception::IOException &e) {
+                    // this is the expected exception, test passes, do nothing
+                } catch (exception::IException &e) {
+                    FAIL() << "IException is received while we expect IOException. Received exception:" << e.what();
+                }
+            }
+
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {
                 int count = latch.get();
                 if (2 == count) {

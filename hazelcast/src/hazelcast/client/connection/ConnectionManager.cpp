@@ -147,7 +147,7 @@ namespace hazelcast {
                     }
                 } catch (exception::IException &e) {
                     if (tryCount <= 0) {
-                        throw e;
+                        throw;
                     }
                 }
 
@@ -161,7 +161,7 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         ++count;
                         if (count >= tryCount) {
-                            throw e;
+                            throw;
                         }
                     }
                 }

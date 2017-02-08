@@ -118,7 +118,7 @@ namespace hazelcast {
                         return value;
                     } catch (exception::IException &e) {
                         resetToUnmarkedState(key);
-                        throw e;
+                        throw;
                     }
                 }
 
@@ -264,7 +264,7 @@ namespace hazelcast {
                         return responses;
                     } catch (exception::IException &e) {
                         unmarkRemainingMarkedKeys(markers);
-                        throw e;
+                        throw;
                     }
                 }
 
@@ -392,7 +392,7 @@ namespace hazelcast {
                         resetToUnmarkedState(keyData);
                     } catch (exception::IException &e) {
                         resetToUnmarkedState(keyData);
-                        throw e;
+                        throw;
                     }
                 }
 

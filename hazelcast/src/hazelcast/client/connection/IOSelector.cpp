@@ -57,7 +57,7 @@ namespace hazelcast {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
                 } catch(exception::IOException &e) {
                     util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
-                    throw e;
+                    throw;
                 }
             }
 
