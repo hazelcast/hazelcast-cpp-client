@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 2.6.4)
 project (HazelcastClient)
 
 # FLAGS
@@ -21,10 +21,18 @@ project (HazelcastClient)
 #  -DHZ_BIT=[32 | 64]
 #  -DHZ_CODE_COVERAGE=ON
 #  -DHZ_VALGRIND=ON
+#  -DCMAKE_BUILD_TYPE=Debug
 
 INCLUDE(TestBigEndian)
 
 SET(HZ_VERSION 3.6.4-SNAPSHOT)
+if (${CMAKE_BUILD_TYPE})
+	message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
+else()
+	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")	
+	SET(CMAKE_BUILD_TYPE Debug)
+endif (${CMAKE_BUILD_TYPE})
+
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
 execute_process(COMMAND git show -s --format="%cd" --date=short OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_DATE RESULT_VARIABLE GIT_DATE_RESULT)
