@@ -49,7 +49,7 @@ echo "Running cmake to compose Makefiles for compilation."
 cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
 
 echo "Running make. Building the project."
-make -j 8 -l 4  # run 8 jobs in parallel and a maximum load of 4
+make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
 if [ $? -ne 0 ]
 then
     echo "Client compilation failed!!!"
