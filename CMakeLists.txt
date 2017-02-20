@@ -26,12 +26,12 @@ project (HazelcastClient)
 INCLUDE(TestBigEndian)
 
 SET(HZ_VERSION 3.7.1-SNAPSHOT)
-if (${CMAKE_BUILD_TYPE})
-	message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
-else()
-	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")	
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
+	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
-endif (${CMAKE_BUILD_TYPE})
+else()
+	message(STATUS "Build type is  ${CMAKE_BUILD_TYPE}")
+endif ()
 
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
