@@ -49,7 +49,7 @@ namespace hazelcast {
 
                 ~Connection();
 
-                void init(const std::vector<byte>& PROTOCOL);
+                void init(std::vector<byte> PROTOCOL, int64_t timeoutInMillis);
 
                 void connect(int timeoutInMillis);
 
@@ -63,7 +63,8 @@ namespace hazelcast {
 
                 Socket& getSocket();
 
-                std::auto_ptr<protocol::ClientMessage> sendAndReceive(protocol::ClientMessage &clientMessage);
+                std::auto_ptr<protocol::ClientMessage>
+                sendAndReceive(protocol::ClientMessage &clientMessage, int64_t timeoutInMillis);
 
                 ReadHandler& getReadHandler();
 
@@ -107,6 +108,8 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> responseMessage;
 
                 int connectionId;
+
+                void writeBlocking(protocol::ClientMessage &message, int64_t timeoutInMillis);
             };
 
         }

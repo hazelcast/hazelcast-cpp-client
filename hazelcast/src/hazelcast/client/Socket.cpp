@@ -238,6 +238,92 @@ namespace hazelcast {
             }
         }
 
+        void Socket::setSendTimeout(size_t timeoutInMillis) const {
+            struct timeval timeout;
+            timeout.tv_sec = timeoutInMillis / 1000;
+            timeout.tv_usec = ((useconds_t)timeoutInMillis - (useconds_t)timeout.tv_sec * 1000) * 1000;
+
+            setSendTimeout(timeout);
+        }
+
+        void Socket::setSendTimeout(timeval &timeout) const {
+            if (setsockopt(this->socketId, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, sizeof(timeout))) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed set socket send timeout.");
+                throw exception::IOException("Socket::setSendTimeout", errorMsg);
+            }
+        }
+
+        void Socket::setReceiveTimeout(size_t timeoutInMillis) const {
+            struct timeval timeout;
+            timeout.tv_sec = timeoutInMillis / 1000;
+            timeout.tv_usec = ((useconds_t)timeoutInMillis - (useconds_t)timeout.tv_sec * 1000) * 1000;
+
+            setReceiveTimeout(timeout);
+        }
+
+        void Socket::setReceiveTimeout(timeval &timeout) const {
+            if (setsockopt(socketId, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout))) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed set socket receive timeout.");
+                throw exception::IOException("Socket::setSendTimeout", errorMsg);
+            }
+        }
+
+        int Socket::send(const void *buffer, int len, size_t timeoutInMillis) const {
+            struct timeval currentTimeout = getSendTimeout();
+
+            setSendTimeout(timeoutInMillis);
+
+            try {
+                int numSent = send(buffer, len);
+                setSendTimeout(currentTimeout);
+                return numSent;
+            } catch (exception::IOException &e) {
+                // reset back the timeout
+                setSendTimeout(currentTimeout);
+                throw e;
+            }
+        }
+
+        struct timeval Socket::getSendTimeout() const {
+            struct timeval timeout;
+            socklen_t len;
+            if (getsockopt(socketId, SOL_SOCKET, SO_SNDTIMEO, (char *)&timeout, &len)) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed get socket send timeout.");
+                throw exception::IOException("Socket::getSendTimeout", errorMsg);
+            }
+            return timeout;
+        }
+
+        struct timeval Socket::getReceiveTimeout() const {
+            struct timeval timeout;
+            socklen_t len;
+            if (getsockopt(socketId, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, &len)) {
+                char errorMsg[200];
+                util::strerror_s(errno, errorMsg, 200, "Failed get socket receive timeout.");
+                throw client::exception::IOException("Socket::getReceiveTimeout", errorMsg);
+            }
+            return timeout;
+        }
+
+        int Socket::receive(void *buffer, int len, size_t timeoutInMillis, int flag) const {
+            struct timeval currentTimeout = getReceiveTimeout();
+
+            setReceiveTimeout(timeoutInMillis);
+
+            try {
+                int numBytes = receive(buffer, len);
+                setReceiveTimeout(currentTimeout);
+                return numBytes;
+            } catch (client::exception::IOException &e) {
+                // reset back the timeout
+                setReceiveTimeout(currentTimeout);
+                throw e;
+            }
+        }
+
         bool socketPtrComp::operator ()(Socket const *const &lhs, Socket const *const &rhs) const {
             return lhs->getSocketId() > rhs->getSocketId();
         }

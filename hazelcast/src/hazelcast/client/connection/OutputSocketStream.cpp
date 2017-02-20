@@ -23,8 +23,8 @@ namespace hazelcast {
             : socket(socket) {
             }
 
-            void OutputSocketStream::write(const std::vector<byte>& bytes) {
-                socket.send((void *)&(bytes[0]), (int)(sizeof(char) * bytes.size()));
+            void OutputSocketStream::write(std::vector<byte> bytes, int64_t timeoutInMillis) {
+                socket.send((void *)&(bytes[0]), (int)(sizeof(char) * bytes.size()), timeoutInMillis);
             }
 
             void OutputSocketStream::writeByte(int i) {

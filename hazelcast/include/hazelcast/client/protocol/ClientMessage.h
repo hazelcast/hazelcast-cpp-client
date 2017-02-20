@@ -453,6 +453,9 @@ namespace hazelcast {
                  * Returns the number of bytes sent on the socket
                  **/
                 int32_t writeTo(Socket &socket, int32_t offset, int32_t frameLen);
+
+                int32_t writeTo(Socket &socket, int32_t offset, int32_t frameLen, int64_t timeoutInMillis);
+
             private:
                 ClientMessage(int32_t size);
 

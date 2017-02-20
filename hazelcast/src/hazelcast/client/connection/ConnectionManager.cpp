@@ -216,7 +216,9 @@ namespace hazelcast {
                 return getOrConnect(address);
             }
 
-            void ConnectionManager::authenticate(Connection *connection) {
+            void ConnectionManager::authenticate(Connection *connection, int64_t timeoutInMillis) {
+                int64_t start = util::currentTimeMillis();
+                
                 const Credentials *credentials = clientContext.getClientConfig().getCredentials();
 
                 std::auto_ptr<protocol::ClientMessage> authenticationMessage;
@@ -242,12 +244,14 @@ namespace hazelcast {
                             connection->isOwnerConnection(), protocol::ClientTypes::CPP, serializationVersion);
                 }
 
-                connection->init(PROTOCOL);
+                int64_t remainingTime = timeoutInMillis - (util::currentTimeMillis() - start);
+                connection->init(PROTOCOL, remainingTime);
 
                 authenticationMessage->setCorrelationId(getNextCallId());
 
+                remainingTime = timeoutInMillis - (util::currentTimeMillis() - start);
                 std::auto_ptr<protocol::ClientMessage> clientResponse = connection->sendAndReceive(
-                        *authenticationMessage);
+                        *authenticationMessage, remainingTime);
 
                 if (protocol::EXCEPTION == clientResponse->getMessageType()) {
                     protocol::codec::ErrorCodec errorResponse = protocol::codec::ErrorCodec::decode(*clientResponse);
@@ -344,13 +348,26 @@ namespace hazelcast {
                 std::auto_ptr<connection::Connection> conn(
                         new Connection(address, clientContext, inSelector, outSelector, ownerConnection));
 
+                int64_t start = util::currentTimeMillis();
+
+                int connectionTimeout = clientContext.getClientConfig().getConnectionTimeout();
+                
                 checkLive();
-                conn->connect(clientContext.getClientConfig().getConnectionTimeout());
+                
+                conn->connect(connectionTimeout);
                 if (socketInterceptor != NULL) {
                     socketInterceptor->onConnect(conn->getSocket());
                 }
 
-                authenticate(conn.get());
+                int64_t remainingTime = connectionTimeout - (util::currentTimeMillis() - start);
+                
+                if (remainingTime < 0) {
+                    char msg[200];
+                    util::snprintf(msg, 200, "Timeout (%d) expired and is not authenticated.", connectionTimeout);
+                    throw new exception::IOException("ConnectionManager::connectTo", msg);
+                }
+
+                authenticate(conn.get(), remainingTime);
                 return conn;
             }
 
