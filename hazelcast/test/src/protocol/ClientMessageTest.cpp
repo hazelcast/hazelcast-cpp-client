@@ -76,7 +76,7 @@ namespace hazelcast {
 
                 }
 
-                ClientMessageTest::SocketStub::SocketStub() : Socket(-1) {
+                ClientMessageTest::SocketStub::SocketStub() : internal::socket::TcpSocket(-1) {
                 }
 
                 ClientMessageTest::SocketStub::~SocketStub() {

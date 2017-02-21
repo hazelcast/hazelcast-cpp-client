@@ -18,6 +18,8 @@
 #ifndef HAZELCAST_CONNECTION
 #define HAZELCAST_CONNECTION
 
+#include <memory>
+
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
@@ -94,7 +96,7 @@ namespace hazelcast {
             private:
                 spi::ClientContext& clientContext;
                 spi::InvocationService& invocationService;
-                Socket socket;
+                std::auto_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 bool _isOwnerConnection;

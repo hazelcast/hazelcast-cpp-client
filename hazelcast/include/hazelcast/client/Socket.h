@@ -13,62 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_SOCKET
-#define HAZELCAST_SOCKET
-
+#ifndef HAZELCAST_CLIENT_SOCKET_H_
+#define HAZELCAST_CLIENT_SOCKET_H_
 
 #include "hazelcast/client/Address.h"
-#include "hazelcast/util/AtomicBoolean.h"
-#include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #endif 
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma comment(lib, "Ws2_32.lib")
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else
-
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <sys/errno.h>
-#include <sys/select.h>
-#include <fcntl.h>
-
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-    typedef int socklen_t;
-#endif
-
-#if !defined(MSG_NOSIGNAL)
-#  define MSG_NOSIGNAL 0
-#endif
-
 namespace hazelcast {
     namespace client {
         /**
-         * c Sockets wrapper class.
+         * Sockets wrapper interface class.
          */
         class HAZELCAST_API Socket {
         public:
-            /**
-             * Constructor
-             */
-            Socket(int socketId);
-            /**
-             * Constructor
-             */
-            Socket(const client::Address &address);
             /**
              * Destructor
              */
@@ -78,7 +39,7 @@ namespace hazelcast {
              * @param timeoutInMillis if not connected within timeout, it will return errorCode
              * @return zero if error. -1 otherwise.
              */
-            int connect(int timeoutInMillis);
+            virtual int connect(int timeoutInMillis) = 0;
 
             /**
              * @param buffer
@@ -86,7 +47,7 @@ namespace hazelcast {
              * @return number of bytes send
              * @throw IOException in failure.
              */
-            virtual int send(const void *buffer, int len) const;
+            virtual int send(const void *buffer, int len) const = 0;
 
             /**
              * @param buffer
@@ -95,48 +56,32 @@ namespace hazelcast {
              * @return number of bytes received.
              * @throw IOException in failure.
              */
-            int receive(void *buffer, int len, int flag = 0) const;
+            virtual int receive(void *buffer, int len, int flag = 0) const = 0;
 
             /**
              * return socketId
              */
-            int getSocketId() const;
+            virtual int getSocketId() const = 0;
 
             /**
              * @param address remote endpoint address.
              */
-            void setRemoteEndpoint(const client::Address &address);
+            virtual void setRemoteEndpoint(const client::Address &address) = 0;
 
             /**
              * @return remoteEndpoint
              */
-            const client::Address &getRemoteEndpoint() const;
+            virtual const client::Address &getRemoteEndpoint() const = 0;
+
             /**
              * closes the socket. Automatically called in destructor.
              * Second call to this function is no op.
              */
-            void close();
+            virtual void close() = 0;
 
-            client::Address getAddress() const;
+            virtual client::Address getAddress() const = 0;
 
-            void setBlocking(bool blocking);
-
-        private:
-
-            Socket(const Socket &rhs);
-
-            Socket& operator=(const Socket &rhs);
-
-            client::Address remoteEndpoint;
-
-            struct addrinfo *serverInfo;
-            int socketId;
-			util::AtomicBoolean isOpen;
-
-			#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-			WSADATA wsa_data;
-			#endif
-
+            virtual void setBlocking(bool blocking) = 0;
         };
 
         /**
@@ -148,7 +93,6 @@ namespace hazelcast {
              */
             bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const;
         };
-
     }
 }
 
@@ -156,4 +100,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif 
 
-#endif /* HAZELCAST_SOCKET */
+#endif /* HAZELCAST_CLIENT_SOCKET_H_ */

@@ -21,7 +21,7 @@
 #define HAZELCAST_CLIENT_TEST_PROTOCOL_CLIENTMESSAGETEST_H
 
 #include <gtest/gtest.h>
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 
 namespace hazelcast {
     namespace client {
@@ -32,7 +32,7 @@ namespace hazelcast {
 
                 class ClientMessageTest : public ::testing::Test {
                 protected:
-                    class SocketStub : public Socket {
+                    class SocketStub : public internal::socket::TcpSocket {
                     public:
                         virtual int send(const void *buf, int size) const;
 

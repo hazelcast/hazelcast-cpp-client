@@ -17,10 +17,13 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-
-
 #ifndef HAZELCAST_SocketSet
 #define HAZELCAST_SocketSet
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// needed for fd_set
+#include <winsock2.h>
+#endif
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/util/Mutex.h"

@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 5/10/13.
 
 #include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 
 namespace hazelcast {
     namespace client {
