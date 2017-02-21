@@ -16,13 +16,12 @@
 //
 // Created by sancar koyunlu on 8/26/13.
 
-
-
 #include <iostream>
 #include <string.h>
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
 
@@ -35,9 +34,9 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
-                    : address(hostAddress, 6543), socket(address), outputSocketStream(socket),
-                      inputSocketStream(socket), logger(util::ILogger::getLogger()) {
-                if (int error = socket.connect(5000)) {
+                    : address(hostAddress, 6543), socket(new internal::socket::TcpSocket(address)), outputSocketStream(*socket),
+                      inputSocketStream(*socket), logger(util::ILogger::getLogger()) {
+                if (int error = socket->connect(5000)) {
                     char msg[200];
                     util::snprintf(msg, 200,
                                    "[HazelcastServerFactory] Could not connect to socket %s:6543. Errno:%d, %s",

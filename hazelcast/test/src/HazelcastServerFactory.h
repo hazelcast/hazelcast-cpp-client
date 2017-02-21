@@ -20,6 +20,8 @@
 #ifndef HAZELCAST_HazelcastServerFactory
 #define HAZELCAST_HazelcastServerFactory
 
+#include <memory>
+
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/OutputSocketStream.h"
@@ -58,7 +60,7 @@ namespace hazelcast {
 
             private:
                 Address address;
-                Socket socket;
+                std::auto_ptr<Socket> socket;
                 connection::OutputSocketStream outputSocketStream;
                 connection::InputSocketStream inputSocketStream;
                 util::ILogger &logger;

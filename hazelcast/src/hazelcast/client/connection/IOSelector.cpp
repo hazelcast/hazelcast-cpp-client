@@ -18,6 +18,8 @@
 //
 
 #include <string.h>
+
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/client/connection/ListenerTask.h"
 #include "hazelcast/client/connection/IOHandler.h"
@@ -81,7 +83,7 @@ namespace hazelcast {
                 else
                     localAddress = "::1";
 
-                wakeUpSocket.reset(new Socket(Address(localAddress, p)));
+                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p)));
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());

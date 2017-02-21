@@ -27,6 +27,7 @@
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -44,7 +45,7 @@ namespace hazelcast {
             : live(true)
             , clientContext(clientContext)
             , invocationService(clientContext.getInvocationService())
-            , socket(address)
+            , socket(new internal::socket::TcpSocket(address))
             , readHandler(*this, iListener, 16 << 10, clientContext)
             , writeHandler(*this, oListener, 16 << 10)
             , _isOwnerConnection(isOwner)
@@ -69,7 +70,7 @@ namespace hazelcast {
                     throw exception::IOException("Connection::connect", out.str());
                 }
 
-                int error = socket.connect(timeoutInMillis);
+                int error = socket->connect(timeoutInMillis);
                 if (error) {
                     char errorMsg[200];
                     util::strerror_s(error, errorMsg, 200);
@@ -78,7 +79,7 @@ namespace hazelcast {
             }
 
             void Connection::init(const std::vector<byte>& PROTOCOL) {
-                connection::OutputSocketStream outputSocketStream(socket);
+                connection::OutputSocketStream outputSocketStream(*socket);
                 outputSocketStream.write(PROTOCOL);
             }
 
@@ -88,7 +89,7 @@ namespace hazelcast {
                 }
 
                 const Address &serverAddr = getRemoteEndpoint();
-                int socketId = socket.getSocketId();
+                int socketId = socket->getSocketId();
                 
                 std::stringstream message;
                 message << "Closing connection (id:" << connectionId << ") to " << serverAddr << " with socket id " << socketId <<
@@ -97,7 +98,7 @@ namespace hazelcast {
                 if (!_isOwnerConnection) {
                     readHandler.deRegisterSocket();
                 }
-                socket.close();
+                socket->close();
                 if (_isOwnerConnection) {
                     return;
                 }
@@ -113,15 +114,15 @@ namespace hazelcast {
             }
 
             Socket& Connection::getSocket() {
-                return socket;
+                return *socket;
             }
 
             const Address& Connection::getRemoteEndpoint() const {
-                return socket.getRemoteEndpoint();
+                return socket->getRemoteEndpoint();
             }
 
             void Connection::setRemoteEndpoint(const Address& remoteEndpoint) {
-                socket.setRemoteEndpoint(remoteEndpoint);
+                socket->setRemoteEndpoint(remoteEndpoint);
             }
 
             std::auto_ptr<protocol::ClientMessage> Connection::sendAndReceive(protocol::ClientMessage &clientMessage) {
@@ -134,7 +135,7 @@ namespace hazelcast {
                 int32_t numWritten = 0;
                 int32_t frameLen = message.getFrameLength();
                 while (numWritten < frameLen) {
-                    numWritten += message.writeTo(socket, numWritten, frameLen);
+                    numWritten += message.writeTo(*socket, numWritten, frameLen);
                 }
             }
 
@@ -146,14 +147,14 @@ namespace hazelcast {
                 do {
                     int32_t numRead = 0;
                     do {
-                        numRead += receiveByteBuffer.readFrom(socket,
+                        numRead += receiveByteBuffer.readFrom(*socket,
                                 protocol::ClientMessage::VERSION_FIELD_OFFSET - numRead, MSG_WAITALL);
                     } while (numRead < protocol::ClientMessage::VERSION_FIELD_OFFSET); // make sure that we can read the length
 
                     wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
                     int32_t size = wrapperMessage.getFrameLength();
 
-                    receiveByteBuffer.readFrom(socket, size - numRead, MSG_WAITALL);
+                    receiveByteBuffer.readFrom(*socket, size - numRead, MSG_WAITALL);
 
                     receiveByteBuffer.flip();
 

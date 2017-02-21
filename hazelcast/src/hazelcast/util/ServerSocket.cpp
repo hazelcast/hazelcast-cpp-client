@@ -18,8 +18,9 @@
 //
 
 #include <string.h>
+
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/util/ServerSocket.h"
-#include "hazelcast/client/Socket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
@@ -118,7 +119,7 @@ namespace hazelcast {
                 #endif
                 throw client::exception::IOException("Socket::accept", strerror(error));
             }
-            return new client::Socket(sId);
+            return new client::internal::socket::TcpSocket(sId);
         }
     }
 }
