@@ -20,9 +20,13 @@
 #ifndef HAZELCAST_SocketSet
 #define HAZELCAST_SocketSet
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 // needed for fd_set
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <winsock2.h>
+#else
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/select.h>
 #endif
 
 #include "hazelcast/client/Socket.h"
