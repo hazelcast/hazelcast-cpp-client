@@ -24,6 +24,12 @@ if [ "$4" == "WITH_COVERAGE" ]; then
     HZ_COVERAGE_STRING="-DHZ_CODE_COVERAGE=ON"
 fi
 
+if [ "$4" == "COMPILE_WITHOUT_SSL" ] || [ "$5" == "COMPILE_WITHOUT_SSL" ]; then
+    SHOULD_COMPILE_WITHOUT_SSL=OFF
+else
+    SHOULD_COMPILE_WITHOUT_SSL=ON
+fi
+
 BUILD_DIR=build${HZ_LIB_TYPE}${HZ_BIT_VERSION}${HZ_BUILD_TYPE}
 
 EXECUTABLE_NAME=clientTest_${HZ_LIB_TYPE}_${HZ_BIT_VERSION}
@@ -46,7 +52,7 @@ mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
-cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
+cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${SHOULD_COMPILE_WITHOUT_SSL}
 
 echo "Running make. Building the project."
 make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
@@ -68,7 +74,7 @@ then
 fi
 
 echo "Starting the java test server"
-mvn exec:java -Dexec.mainClass="CppClientListener" &
+mvn exec:java -Dexec.mainClass="CppClientListener"  -Dexec.args="${HAZELCAST_ENTERPRISE_KEY}" &
 serverPid=$!
 
 echo "Spawned server with pid ${serverPid}"

@@ -199,5 +199,9 @@ namespace hazelcast {
             }
             return &reliableTopicConfigMap[name];
         }
+
+        config::ClientNetworkConfig &ClientConfig::getNetworkConfig() {
+            return networkConfig;
+        }
     }
 }

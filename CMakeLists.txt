@@ -25,7 +25,7 @@ project (HazelcastClient)
 
 INCLUDE(TestBigEndian)
 
-SET(HZ_VERSION 3.7.1-SNAPSHOT)
+SET(HZ_VERSION 3.8-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
@@ -68,8 +68,6 @@ add_definitions("-DBOOST_ALL_NO_LIB")
 
 message(STATUS "Preparing hazelcast client ..... ")
 
-include_directories(${CMAKE_SOURCE_DIR}/external/include/)
-
 #detect endianness
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if (${IS_BIG_ENDIAN})
@@ -83,6 +81,7 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/generated-sources/include)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/external/include/ ${CMAKE_SOURCE_DIR}/external/include/asio/asio/include/)
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
@@ -98,23 +97,21 @@ message(STATUS "Generating ${HZ_LIB_TYPE} Library")
 
 SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
 
-add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
-
 set(HZ_CODE_COVERAGE_COMPILE_FLAGS " ")
-set(HZ_CODE_COVERAGE_LINK_FLAGS " ") 
+set(HZ_CODE_COVERAGE_LINK_FLAGS " ")
 
 IF(${HZ_CODE_COVERAGE} MATCHES "ON")
 	message(STATUS "Code coverage is on")
 	set(HZ_CODE_COVERAGE_COMPILE_FLAGS " -fprofile-arcs -ftest-coverage -fPIC -O0 ")
-	set(HZ_CODE_COVERAGE_LINK_FLAGS " -lgcov -fprofile-arcs -ftest-coverage -fPIC -O0 ") 
+	set(HZ_CODE_COVERAGE_LINK_FLAGS " -lgcov -fprofile-arcs -ftest-coverage -fPIC -O0 ")
 ENDIF(${HZ_CODE_COVERAGE} MATCHES "ON")
 
 set(HZ_VALGRIND_COMPILE_FLAGS " ")
-set(HZ_VALGRIND_LINK_FLAGS " ") 
+set(HZ_VALGRIND_LINK_FLAGS " ")
 IF(${HZ_VALGRIND} MATCHES "ON")
 	message(STATUS "Valgrind is on")
 	set(HZ_VALGRIND_COMPILE_FLAGS " -O0 ")
-	set(HZ_VALGRIND_LINK_FLAGS " -O0 ") 
+	set(HZ_VALGRIND_LINK_FLAGS " -O0 ")
 ENDIF(${HZ_VALGRIND} MATCHES "ON")
 
 set(HZ_C11_FLAGS "")
@@ -123,6 +120,15 @@ IF(${HZ_USE_C11} MATCHES "ON")
 	message(STATUS "C++11 compiler is turned on.")
 ENDIF(${HZ_USE_C11} MATCHES "ON")
 
+if (${HZ_COMPILE_WITH_SSL} MATCHES "OFF")
+	message(STATUS "Building the library without SSL.")
+ELSE ()
+	message(STATUS "Building the library with SSL support.")
+	set(HZ_COMPILE_WITH_SSL "ON")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
+ENDIF()
+
 message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
@@ -130,7 +136,28 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror ${HZ_C11_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall ${HZ_C11_FLAGS}")
 
-	link_libraries(${HZ_LIB_NAME} )
+	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+		if ("${HZ_OPENSSL_LIB_DIR}" STREQUAL "")
+			SET(HZ_OPENSSL_LIB_DIR /usr/local/opt/openssl/lib/)
+		endif ()
+
+		if ("${HZ_OPENSSL_INCLUDE_DIR}" STREQUAL "")
+			SET(HZ_OPENSSL_INCLUDE_DIR /usr/local/opt/openssl/include)
+		endif ()
+
+		message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+		message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+
+		include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+		# We need to set link directories before adding library for the path to be used
+		link_directories(${HZ_OPENSSL_LIB_DIR})
+
+		link_libraries(ssl crypto)
+	ENDIF()
+
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+
+	link_libraries(${HZ_LIB_NAME})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -147,7 +174,13 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
 
-	link_libraries(${HZ_LIB_NAME} pthread rt )
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+
+	link_libraries(${HZ_LIB_NAME} pthread rt)
+
+	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+		link_libraries(ssl crypto)
+	ENDIF()
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
@@ -164,7 +197,29 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
 
+	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+		set (HZ_OPENSSL_LIB_DIR ${HZ_OPENSSL_LIB_DIR}\\VC)
+		message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+		message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+
+		include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+		# We need to set link directories before adding library for the path to be used
+		link_directories(${HZ_OPENSSL_LIB_DIR})
+
+		if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+			SET(SSL_LIB_TYPE MDd)
+		else()
+			SET(SSL_LIB_TYPE MD)
+		endif ()
+		SET(SSL_LIBS libeay32${SSL_LIB_TYPE} ssleay32${SSL_LIB_TYPE} libcrypto${HZ_BIT}${SSL_LIB_TYPE} libssl${HZ_BIT}${SSL_LIB_TYPE})
+
+		link_libraries(${SSL_LIBS})
+	ENDIF()
+
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+
 	link_libraries(${HZ_LIB_NAME})
+
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 IF(${HZ_BUILD_TESTS} MATCHES "ON")

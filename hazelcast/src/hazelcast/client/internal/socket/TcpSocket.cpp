@@ -216,7 +216,7 @@ namespace hazelcast {
                     char host[1024];
                     char service[20];
                     getnameinfo(serverInfo->ai_addr, serverInfo->ai_addrlen, host, sizeof host, service, sizeof service,
-                                0);
+                                NI_NUMERICHOST | NI_NUMERICSERV);
                     Address address(host, atoi(service));
                     return address;
                 }

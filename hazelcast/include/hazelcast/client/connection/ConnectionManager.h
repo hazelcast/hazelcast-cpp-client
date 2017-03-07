@@ -31,6 +31,12 @@
 
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
+#include <memory>
+
+#ifdef HZ_BUILD_WITH_SSL
+#include <asio.hpp>
+#include <asio/ssl.hpp>
+#endif
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -208,6 +214,11 @@ namespace hazelcast {
 
                 util::Atomic<int64_t> callIdGenerator;
                 util::Atomic<int> connectionIdCounter;
+
+                #ifdef HZ_BUILD_WITH_SSL
+                std::auto_ptr<asio::io_service> ioService;
+                std::auto_ptr<asio::ssl::context> sslContext;
+                #endif
             };
         }
     }

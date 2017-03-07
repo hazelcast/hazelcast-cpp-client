@@ -30,6 +30,7 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -378,9 +379,19 @@ namespace hazelcast {
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
                 return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig).get();
             }
+
+            /**
+             * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             *
+             * @return {@link com.hazelcast.client.config.ClientNetworkConfig}
+             * @see com.hazelcast.client.config.ClientNetworkConfig
+             */
+            config::ClientNetworkConfig &getNetworkConfig();
         private:
 
             GroupConfig groupConfig;
+
+            config::ClientNetworkConfig networkConfig;
 
             SerializationConfig serializationConfig;
 

@@ -77,7 +77,7 @@ namespace hazelcast {
 
         size_t ByteBuffer::readFrom(client::Socket const &socket, int numBytesToRead, int flag) {
             size_t calculatedNumber = std::min<size_t>(remaining(), numBytesToRead);
-            size_t bytesReceived = (size_t)socket.receive(ix(), (int)calculatedNumber, flag);
+            size_t bytesReceived = (size_t)socket.receiveBlocking(ix(), (int)calculatedNumber, flag);
             safeIncrementPosition(bytesReceived);
             return bytesReceived;
         }

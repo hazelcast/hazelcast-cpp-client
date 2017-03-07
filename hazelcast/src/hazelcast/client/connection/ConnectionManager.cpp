@@ -62,6 +62,21 @@ namespace hazelcast {
                 inSelectorThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &inSelector));
                 outSelectorThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &outSelector));
                 heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
+                #ifdef HZ_BUILD_WITH_SSL
+                config::SSLConfig *sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
+                if (NULL != sslConfig && sslConfig->isEnabled()) {
+                    sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
+                            (asio::ssl::context_base::method) sslConfig->getProtocol()));
+
+                    try {
+                        sslContext->load_verify_file(sslConfig->getCertificateAuthorityFilePath());
+                    } catch (std::exception &e) {
+                        shutdown();
+                        throw exception::IOException("ConnectionManager::start", e.what());
+                    }
+                    ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
+                }
+                #endif
                 return true;
             }
 
@@ -342,7 +357,11 @@ namespace hazelcast {
 
             std::auto_ptr<Connection> ConnectionManager::connectTo(const Address &address, bool ownerConnection) {
                 std::auto_ptr<connection::Connection> conn(
-                        new Connection(address, clientContext, inSelector, outSelector, ownerConnection));
+                        new Connection(address, clientContext, inSelector, outSelector, ownerConnection
+                #ifdef HZ_BUILD_WITH_SSL
+                , ioService.get(), sslContext.get()
+                #endif
+                ));
 
                 checkLive();
                 conn->connect(clientContext.getClientConfig().getConnectionTimeout());

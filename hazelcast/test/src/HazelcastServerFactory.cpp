@@ -84,8 +84,9 @@ namespace hazelcast {
 
             }
 
-            int HazelcastServerFactory::getInstanceId(int retryNumber) {
-                outputSocketStream.writeInt(START);
+            int HazelcastServerFactory::getInstanceId(int retryNumber, bool useSSL) {
+                int command = (useSSL ? START_SSL : START);
+                outputSocketStream.writeInt(command);
                 int id = inputSocketStream.readInt();
                 if (FAIL == id) {
                     char msg[200];
@@ -95,7 +96,7 @@ namespace hazelcast {
                     while (id == FAIL && retryNumber > 0) {
                         util::snprintf(msg, 200, "[HazelcastServerFactory::getInstanceId] Retrying to start server. Retry number:%d", retryNumber);
                         logger.warning(msg);
-                        outputSocketStream.writeInt(START);
+                        outputSocketStream.writeInt(command);
                         id = inputSocketStream.readInt();
                         --retryNumber;
                     }

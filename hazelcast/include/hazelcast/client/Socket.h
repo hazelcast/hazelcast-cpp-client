@@ -59,6 +59,14 @@ namespace hazelcast {
             virtual int receive(void *buffer, int len, int flag = 0) const = 0;
 
             /**
+             * @param buffer
+             * @param len  length of the buffer to be received.
+             * @return number of bytes received.
+             * @throw IOException in failure.
+             */
+            virtual int receiveBlocking(void *buffer, int len, int flag = 0) const {return receive(buffer, len, flag);}
+
+            /**
              * return socketId
              */
             virtual int getSocketId() const = 0;

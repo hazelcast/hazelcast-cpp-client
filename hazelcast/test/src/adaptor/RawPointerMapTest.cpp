@@ -84,10 +84,14 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestCase() {
-                        instance = new HazelcastServer(*g_srvFactory);
-                        instance2 = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                        instance = new HazelcastServer(*g_srvFactory, true);
+                        instance2 = new HazelcastServer(*g_srvFactory, true);
+                        clientConfig = getConfig().release();
+                        #ifdef HZ_BUILD_WITH_SSL
+                        std::auto_ptr<config::SSLConfig> sslConfig(new config::SSLConfig);
+                        sslConfig->setEnabled(true).setProtocol(config::tlsv1).setCertificateAuthorityFilePath(getCAFilePath());
+                        clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
+                        #endif // HZ_BUILD_WITH_SSL
                         client = new HazelcastClient(*clientConfig);
                         legacyMap = new IMap<std::string, std::string>(client->getMap<std::string, std::string>("RawPointerMapTest"));
                         imap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyMap);

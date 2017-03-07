@@ -13,41 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
-#define HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
+#ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_
+#define HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_
 
-#include "hazelcast/client/Socket.h"
-
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/AtomicBoolean.h"
-#include <string>
+#ifdef HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma comment(lib, "Ws2_32.lib")
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#include <asio.hpp>
+#include <asio/ssl.hpp>
 
-typedef int socklen_t;
-
-#else
-
-#include <unistd.h>
-#include <netdb.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/wait.h>
-#include <sys/errno.h>
-#include <sys/select.h>
-#include <fcntl.h>
-
-#endif
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 #if !defined(MSG_NOSIGNAL)
 #  define MSG_NOSIGNAL 0
@@ -58,24 +39,20 @@ namespace hazelcast {
         namespace internal {
             namespace socket {
                 /**
-                 * c Sockets wrapper class.
+                 * SSL Socket using asio library
                  */
-                class HAZELCAST_API TcpSocket : public Socket {
+                class HAZELCAST_API SSLSocket : public Socket {
                 public:
                     /**
                      * Constructor
                      */
-                    TcpSocket(int socketId);
-
-                    /**
-                     * Constructor
-                     */
-                    TcpSocket(const client::Address &address);
+                    SSLSocket(const client::Address &address, asio::io_service &ioService,
+                              asio::ssl::context &sslContext);
 
                     /**
                      * Destructor
                      */
-                    virtual ~TcpSocket();
+                    virtual ~SSLSocket();
 
                     /**
                      * connects to given address in constructor.
@@ -100,6 +77,8 @@ namespace hazelcast {
                      * @throw IOException in failure.
                      */
                     int receive(void *buffer, int len, int flag = 0) const;
+
+                    int receiveBlocking(void *buffer, int len, int flag = 0) const;
 
                     /**
                      * return socketId
@@ -127,19 +106,19 @@ namespace hazelcast {
                     void setBlocking(bool blocking);
 
                 private:
-                    TcpSocket(const Socket &rhs);
+                    SSLSocket(const Socket &rhs);
 
-                    TcpSocket &operator=(const Socket &rhs);
+                    SSLSocket &operator=(const Socket &rhs);
+
+                    void handleError(const std::string &source, const asio::error_code &error) const;
 
                     client::Address remoteEndpoint;
 
-                    struct addrinfo *serverInfo;
-                    int socketId;
                     util::AtomicBoolean isOpen;
 
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    WSADATA wsa_data;
-                    #endif
+                    asio::io_service &ioService;
+                    asio::ssl::context &sslContext;
+                    std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                 };
             }
         }
@@ -150,4 +129,6 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_ */
+#endif /* HZ_BUILD_WITH_SSL */
+
+#endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_SSLSOCKET_H_ */

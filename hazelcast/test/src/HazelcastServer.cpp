@@ -31,14 +31,20 @@ namespace hazelcast {
             HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
             :factory(factory)
             , id(factory.getInstanceId(DEFAULT_RETRY_COUNT))
-            , isShutDown(false) {
+            , isShutDown(false), useSSL(false) {
+            }
+
+            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory, bool useSSL)
+            :factory(factory)
+            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL))
+            , isShutDown(false), useSSL(useSSL) {
             }
 
             bool HazelcastServer::start() {
                 bool result = false;
 
                 if (isShutDown) {
-                    id = factory.getInstanceId();
+                    id = factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL);
                     isShutDown = false;
                     result = true;
                 }
