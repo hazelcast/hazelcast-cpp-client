@@ -387,6 +387,16 @@ namespace hazelcast {
              * @see com.hazelcast.client.config.ClientNetworkConfig
              */
             config::ClientNetworkConfig &getNetworkConfig();
+
+            /**
+             * Sets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             *
+             * @param networkConfig {@link com.hazelcast.client.config.ClientNetworkConfig} to be set
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * @see com.hazelcast.client.config.ClientNetworkConfig
+             */
+            ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
+
         private:
 
             GroupConfig groupConfig;

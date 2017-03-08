@@ -63,13 +63,13 @@ namespace hazelcast {
                 outSelectorThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &outSelector));
                 heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
                 #ifdef HZ_BUILD_WITH_SSL
-                config::SSLConfig *sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
-                if (NULL != sslConfig && sslConfig->isEnabled()) {
+                const config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
+                if (sslConfig.isEnabled()) {
                     sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
-                            (asio::ssl::context_base::method) sslConfig->getProtocol()));
+                            (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
                     try {
-                        sslContext->load_verify_file(sslConfig->getCertificateAuthorityFilePath());
+                        sslContext->load_verify_file(sslConfig.getCertificateAuthorityFilePath());
                     } catch (std::exception &e) {
                         shutdown();
                         throw exception::IOException("ConnectionManager::start", e.what());

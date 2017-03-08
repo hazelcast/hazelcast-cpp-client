@@ -36,27 +36,26 @@ namespace hazelcast {
             public:
                 #ifdef HZ_BUILD_WITH_SSL
                 /**
-                 * Returns the current {@link SSLConfig}. It is possible that null is returned if no SSLConfig has been
-                 * set.
+                 * Returns the current {@link SSLConfig}.
                  *
                  * @return the SSLConfig.
                  * @see #setSSLConfig(SSLConfig)
                  */
-                SSLConfig *getSSLConfig() const;
+                const SSLConfig &getSSLConfig() const;
 
                 /**
-                 * Sets the {@link SSLConfig}. null value indicates that no SSLConfig should be used.
+                 * Sets the {@link SSLConfig}.
                  *
                  * @param sslConfig the SSLConfig.
                  * @return the updated ClientNetworkConfig.
                  * @see #getSSLConfig()
                  */
-                ClientNetworkConfig &setSSLConfig(std::auto_ptr<config::SSLConfig> sslConfig);
+                ClientNetworkConfig &setSSLConfig(const config::SSLConfig &sslConfig);
                 #endif // HZ_BUILD_WITH_SSL
 
             private:
                 #ifdef HZ_BUILD_WITH_SSL
-                std::auto_ptr<config::SSLConfig> sslConfig;
+                config::SSLConfig sslConfig;
                 #endif
             };
         }

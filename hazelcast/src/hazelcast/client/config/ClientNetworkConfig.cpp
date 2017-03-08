@@ -20,11 +20,11 @@ namespace hazelcast {
     namespace client {
         namespace config {
             #ifdef HZ_BUILD_WITH_SSL
-            SSLConfig* ClientNetworkConfig::getSSLConfig() const {
-                return sslConfig.get();
+            const SSLConfig &ClientNetworkConfig::getSSLConfig() const {
+                return sslConfig;
             }
 
-            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(std::auto_ptr<config::SSLConfig> sslConfig) {
+            ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
                 this->sslConfig = sslConfig;
                 return *this;
             }

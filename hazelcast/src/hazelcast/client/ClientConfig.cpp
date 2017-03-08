@@ -203,5 +203,10 @@ namespace hazelcast {
         config::ClientNetworkConfig &ClientConfig::getNetworkConfig() {
             return networkConfig;
         }
+
+        ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
+            this->networkConfig = networkConfig;
+            return *this;
+        }
     }
 }

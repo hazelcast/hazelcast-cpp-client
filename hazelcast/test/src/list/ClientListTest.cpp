@@ -38,9 +38,11 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory, true);
                     clientConfig = getConfig().release();
                     #ifdef HZ_BUILD_WITH_SSL
-                    std::auto_ptr<config::SSLConfig> sslConfig(new config::SSLConfig);
-                    sslConfig->setEnabled(true).setCertificateAuthorityFilePath(getCAFilePath());
-                    clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
+                    config::ClientNetworkConfig networkConfig;
+                    config::SSLConfig sslConfig;
+                    sslConfig.setEnabled(true).setCertificateAuthorityFilePath(getCAFilePath());
+                    networkConfig.setSSLConfig(sslConfig);
+                    clientConfig->setNetworkConfig(networkConfig);
                     #endif // HZ_BUILD_WITH_SSL
                     client = new HazelcastClient(*clientConfig);
                     list = new IList<std::string>(client->getList<std::string>("MyList"));

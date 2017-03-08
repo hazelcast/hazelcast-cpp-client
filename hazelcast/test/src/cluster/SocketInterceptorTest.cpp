@@ -47,8 +47,8 @@ namespace hazelcast {
                 util::CountDownLatch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);
                 config->setSocketInterceptor(&interceptor);
-                std::auto_ptr<config::SSLConfig> sslConfig(new config::SSLConfig());
-                sslConfig->setEnabled(true).setCertificateAuthorityFilePath(getCAFilePath());
+                config::SSLConfig sslConfig;
+                sslConfig.setEnabled(true).setCertificateAuthorityFilePath(getCAFilePath());
                 config->getNetworkConfig().setSSLConfig(sslConfig);
                 HazelcastClient client(*config);
                 interceptorLatch.await(2);
