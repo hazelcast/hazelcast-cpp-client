@@ -26,6 +26,13 @@
 #include <string.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// this define excludes some of the unused header files (e.g Cryptography, DDE, RPC, Shell, and Windows Sockets)
+// and reduces the size of the Win32 header files
+#define WIN32_LEAN_AND_MEAN
+
+// needed for MSG_WAITALL
+#include <winsock2.h>
+
 #pragma warning(push)
 #pragma warning(disable: 4996) //for strerror	
 #endif
