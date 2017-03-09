@@ -19,6 +19,10 @@
 namespace hazelcast {
     namespace client {
         namespace config {
+            ClientNetworkConfig::ClientNetworkConfig()
+                    : connectionTimeout(5000) {
+            }
+
             #ifdef HZ_BUILD_WITH_SSL
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
                 return sslConfig;
@@ -26,6 +30,15 @@ namespace hazelcast {
 
             ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
                 this->sslConfig = sslConfig;
+                return *this;
+            }
+
+            int64_t ClientNetworkConfig::getConnectionTimeout() const {
+                return connectionTimeout;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setConnectionTimeout(int64_t connectionTimeoutInMillis) {
+                this->connectionTimeout = connectionTimeoutInMillis;
                 return *this;
             }
             #endif // HZ_BUILD_WITH_SSL

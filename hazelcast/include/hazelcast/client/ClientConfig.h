@@ -56,7 +56,6 @@ namespace hazelcast {
             * Constructor with default values.
             * smart(true)
             * redoOperation(false)
-            * connectionTimeout(60000)
             * connectionAttemptLimit(2)
             * attemptPeriod(3000)
             * defaultLoadBalancer(impl::RoundRobinLB)
@@ -136,18 +135,15 @@ namespace hazelcast {
             int getConnectionAttemptLimit() const;
 
             /**
-            * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
-            *                          A zero value means wait until connection established or an error occurs.
-            *
-            * @return itself ClientConfig
-            */
+             * Use {@link ClientNetworkConfig#setConnectionTimeout} instead
+             * @Deprecated
+             */
             ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
             /**
-            * Timeout value for nodes to accept client connection requests.
-            *
-            * @return int connectionTimeoutInMillis
-            */
+             * Use {@link ClientNetworkConfig#getConnectionTimeout} instead
+             * @Deprecated
+             */
             int getConnectionTimeout() const;
 
             /**
@@ -422,8 +418,6 @@ namespace hazelcast {
             bool smart;
 
             bool redoOperation;
-
-            int connectionTimeout;
 
             int connectionAttemptLimit;
 

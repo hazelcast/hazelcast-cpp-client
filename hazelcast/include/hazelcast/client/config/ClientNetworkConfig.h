@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_CONFIG_CLIENTNETWORKCONFIG_H_
 
 #include <memory>
+#include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/SSLConfig.h"
@@ -34,6 +35,13 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientNetworkConfig  {
             public:
+
+                /**
+                * Constructor with default values.
+                * connectionTimeout(5000)
+                */
+                ClientNetworkConfig();
+
                 #ifdef HZ_BUILD_WITH_SSL
                 /**
                  * Returns the current {@link SSLConfig}.
@@ -59,19 +67,21 @@ namespace hazelcast {
                 *
                 * @return itself ClientNetworkConfig
                 */
-                ClientNetworkConfig &setConnectionTimeout(int connectionTimeoutInMillis);
+                ClientNetworkConfig &setConnectionTimeout(int64_t connectionTimeoutInMillis);
 
                 /**
                 * Timeout value for nodes to accept client connection requests.
                 *
-                * @return int connectionTimeoutInMillis
+                * @return int connectionTimeout in millis
                 */
-                int getConnectionTimeout() const;
+                int64_t getConnectionTimeout() const;
 
             private:
                 #ifdef HZ_BUILD_WITH_SSL
                 config::SSLConfig sslConfig;
                 #endif
+
+                int connectionTimeout;
             };
         }
     }
