@@ -15,6 +15,19 @@
  */
 #ifdef HZ_BUILD_WITH_SSL
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// this define excludes some of the unused header files (e.g Cryptography, DDE, RPC, Shell, and Windows Sockets)
+// and reduces the size of the Win32 header files
+#define WIN32_LEAN_AND_MEAN
+
+// needed for MSG_WAITALL
+#define _WIN32_WINNT 0x0502
+#include <WinSock2.h>
+
+#pragma warning(push)
+#pragma warning(disable: 4996) //for strerror
+#endif
+
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -24,18 +37,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <string.h>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-// this define excludes some of the unused header files (e.g Cryptography, DDE, RPC, Shell, and Windows Sockets)
-// and reduces the size of the Win32 header files
-#define WIN32_LEAN_AND_MEAN
-
-// needed for MSG_WAITALL
-#include <winsock2.h>
-
-#pragma warning(push)
-#pragma warning(disable: 4996) //for strerror	
-#endif
 
 namespace hazelcast {
     namespace client {
@@ -129,7 +130,7 @@ namespace hazelcast {
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
                         if (ec || !socket->lowest_layer().is_open()) {
-                            asio::system_error systemError = ec ? ec : asio::error::operation_aborted;
+                            asio::system_error systemError(ec ? ec : asio::error::operation_aborted);
                             throw exception::IOException("SSLSocket::connect", systemError.what());
                         }
 
@@ -208,14 +209,7 @@ namespace hazelcast {
 
                 void SSLSocket::handleError(const std::string &source, const asio::error_code &error) const {
                     if (error) {
-                        int errorNumber = error.value();
-
-                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        if (WSAEWOULDBLOCK != errorNumber && WSAEINPROGRESS != errorNumber && WSAEALREADY != errorNumber) {
-                        #else
-                        if (EINPROGRESS != errorNumber && EALREADY != errorNumber && EAGAIN != errorNumber) {
-                        #endif
-
+                        if (error != asio::error::try_again) {
                             throw exception::IOException(source, error.message());
                         }
                     }
