@@ -41,7 +41,7 @@ namespace hazelcast {
                  * @return the SSLConfig.
                  * @see #setSSLConfig(SSLConfig)
                  */
-                const SSLConfig &getSSLConfig() const;
+                SSLConfig &getSSLConfig();
 
                 /**
                  * Sets the {@link SSLConfig}.
@@ -52,6 +52,21 @@ namespace hazelcast {
                  */
                 ClientNetworkConfig &setSSLConfig(const config::SSLConfig &sslConfig);
                 #endif // HZ_BUILD_WITH_SSL
+
+                /**
+                * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
+                *                          A zero value means wait until connection established or an error occurs.
+                *
+                * @return itself ClientNetworkConfig
+                */
+                ClientNetworkConfig &setConnectionTimeout(int connectionTimeoutInMillis);
+
+                /**
+                * Timeout value for nodes to accept client connection requests.
+                *
+                * @return int connectionTimeoutInMillis
+                */
+                int getConnectionTimeout() const;
 
             private:
                 #ifdef HZ_BUILD_WITH_SSL

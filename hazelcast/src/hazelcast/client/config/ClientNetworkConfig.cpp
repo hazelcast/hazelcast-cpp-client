@@ -20,7 +20,7 @@ namespace hazelcast {
     namespace client {
         namespace config {
             #ifdef HZ_BUILD_WITH_SSL
-            const SSLConfig &ClientNetworkConfig::getSSLConfig() const {
+            SSLConfig &ClientNetworkConfig::getSSLConfig() {
                 return sslConfig;
             }
 
