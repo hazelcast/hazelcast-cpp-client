@@ -19,6 +19,7 @@
 
 #include <string.h>
 
+#include "hazelcast/util/Util.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/client/connection/IOSelector.h"
 #include "hazelcast/client/connection/ListenerTask.h"
@@ -121,6 +122,31 @@ namespace hazelcast {
                 while (ListenerTask *task = listenerTasks.poll()) {
                     task->run();
                 }
+            }
+
+            bool IOSelector::handleError(const char *messagePrefix, int numSelected) const {
+                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                if (numSelected == SOCKET_ERROR) {
+                    char errorMsg[200];
+                    util::strerror_s(WSAGetLastError(), errorMsg, 200, messagePrefix);
+                    util::ILogger::getLogger().severe(errorMsg);
+                    return true;
+                }
+                #else
+                if (numSelected == -1) {
+                    char errorMsg[200];
+                    int error = errno;
+                    util::strerror_s(error, errorMsg, 200, messagePrefix);
+                    if (EINTR == error || EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
+                        util::ILogger::getLogger().finest(errorMsg);
+                    } else{
+                        util::ILogger::getLogger().severe(errorMsg);
+                    }
+                    return true;
+                }
+                #endif
+
+                return false;
             }
         }
     }

@@ -20,7 +20,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
@@ -45,21 +44,20 @@ namespace hazelcast {
             void InSelector::listenInternal() {
                 fd_set read_fds;
                 util::SocketSet::FdRange socketRange = socketSet.fillFdSet(read_fds);
+                #if  defined(__GNUC__) || defined(__llvm__)
                 errno = 0;
+                #endif
                 t.tv_sec = 5;
                 t.tv_usec = 0;
                 int numSelected = select(socketRange.max + 1, &read_fds, NULL, NULL, &t);
                 if (numSelected == 0) {
                     return;
                 }
-                if (numSelected == -1) {
-                    if (EINTR == errno || EBADF == errno /* This case may happen if socket closed by cluster listener thread */) {
-                        util::ILogger::getLogger().finest(std::string("Exception InSelector::listen => ") + strerror(errno));
-                    } else{
-                        util::ILogger::getLogger().severe(std::string("Exception InSelector::listen => ") + strerror(errno));
-                    }
+
+                if (handleError("Exception InSelector::listen => ", numSelected)) {
                     return;
                 }
+
                 for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &read_fds)) {
                         --numSelected;

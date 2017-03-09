@@ -76,6 +76,11 @@ namespace hazelcast {
                 int wakeUpListenerSocketId;
                 ConnectionManager &connectionManager;
                 std::auto_ptr<Socket> sleepingSocket;
+
+                /**
+                 * @return true if should return from the calling method
+                 */
+                bool handleError(const char *messagePrefix, int numSelected) const;
             private:
                 void processListenerQueue();
 
