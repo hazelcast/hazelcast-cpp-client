@@ -72,13 +72,11 @@ namespace hazelcast {
                     /**
                      * @param buffer
                      * @param len  length of the buffer to be received.
-                     * @param flag bsd sockets options flag.
+                     * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
                      * @return number of bytes received.
                      * @throw IOException in failure.
                      */
                     int receive(void *buffer, int len, int flag = 0) const;
-
-                    int receiveBlocking(void *buffer, int len, int flag = 0) const;
 
                     /**
                      * return socketId
@@ -112,6 +110,8 @@ namespace hazelcast {
 
                     void handleError(const std::string &source, const asio::error_code &error) const;
 
+                    void startTimer();
+
                     client::Address remoteEndpoint;
 
                     util::AtomicBoolean isOpen;
@@ -119,6 +119,7 @@ namespace hazelcast {
                     asio::io_service &ioService;
                     asio::ssl::context &sslContext;
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+                    asio::deadline_timer deadline;
                 };
             }
         }
