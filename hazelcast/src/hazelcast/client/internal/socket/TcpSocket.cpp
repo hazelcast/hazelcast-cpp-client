@@ -127,7 +127,15 @@ namespace hazelcast {
                     }
                     setBlocking(true);
 
-                    return 0;
+                    int error = 0;
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    error = WSAGetLastError();
+                    #else
+                    error = errno;
+                    #endif
+                    char errorMsg[200];
+                    util::strerror_s(error, errorMsg, 200, "Failed to connect the socket.");
+                    throw client::exception::IOException("Socket::connect", errorMsg);
                 }
 
                 void TcpSocket::setBlocking(bool blocking) {
@@ -140,7 +148,8 @@ namespace hazelcast {
                     }
                     if (ioctlsocket(socketId, FIONBIO, &iMode)) {
                         char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Failed to set the blocking mode.");
+                        int error = WSAGetLastError();
+                        util::strerror_s(error, errorMsg, 200, "Failed to set the blocking mode.");
                         throw client::exception::IOException("TcpSocket::setBlocking", errorMsg);
                     }
                     #else
@@ -164,7 +173,10 @@ namespace hazelcast {
                 }
 
                 int TcpSocket::send(const void *buffer, int len) const {
+                    #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
+                    #endif
+
                     int bytesSend = 0;
                     /**
                      * In linux, sometimes SIGBUS may be received during this call when the server closes the connection.
@@ -174,25 +186,44 @@ namespace hazelcast {
                      * The EPIPE error is still returned.
                      */
                     if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
-                        if (errno == EAGAIN) {
+                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                        int error = WSAGetLastError();
+                        if (WSAEWOULDBLOCK == error) {
+                        #else
+                        int error = errno;
+                        if (EAGAIN == error) {
+                        #endif
                             return 0;
                         }
-                        throw client::exception::IOException("TcpSocket::send ",
-                                                             "Error socket send " + std::string(strerror(errno)));
+
+                        char errorMsg[200];
+                        util::strerror_s(error, errorMsg, 200, "Send failed.");
+                        throw client::exception::IOException("TcpSocket::send", errorMsg);
                     }
                     return bytesSend;
                 }
 
                 int TcpSocket::receive(void *buffer, int len, int flag) const {
+                    #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
+                    #endif
+
                     int size = ::recv(socketId, (char *) buffer, (size_t) len, flag);
 
                     if (size == -1) {
-                        if (errno == EAGAIN) {
+                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                        int error = WSAGetLastError();
+                        if (WSAEWOULDBLOCK == error) {
+                        #else
+                        int error = errno;
+                        if (EAGAIN == error) {
+                        #endif
                             return 0;
                         }
-                        throw client::exception::IOException("TcpSocket::receive",
-                                                             "Error socket read " + std::string(strerror(errno)));
+
+                        char errorMsg[200];
+                        util::strerror_s(error, errorMsg, 200, "Receive failed.");
+                        throw client::exception::IOException("TcpSocket::receive", errorMsg);
                     } else if (size == 0) {
                         throw client::exception::IOException("TcpSocket::receive", "Connection closed by remote");
                     }

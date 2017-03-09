@@ -96,7 +96,7 @@ namespace hazelcast {
             void ClusterListenerThread::stop() {
                 if (deletingConnection.compareAndSet(false, true)) {
                     util::IOUtil::closeResource(conn.get());
-                    //conn.reset();
+                    conn.reset();
                     deletingConnection = false;
                 }
                 clusterListenerThread->cancel();

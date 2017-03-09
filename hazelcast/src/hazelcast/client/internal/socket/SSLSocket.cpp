@@ -207,7 +207,7 @@ namespace hazelcast {
                         if (WSAEWOULDBLOCK != errorNumber && WSAEINPROGRESS != errorNumber && WSAEALREADY != errorNumber) {
                         #else
                         if (EINPROGRESS != errorNumber && EALREADY != errorNumber && EAGAIN != errorNumber) {
-                            #endif
+                        #endif
 
                             throw exception::IOException(source, error.message());
                         }

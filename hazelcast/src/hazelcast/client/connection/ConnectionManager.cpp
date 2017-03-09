@@ -71,8 +71,7 @@ namespace hazelcast {
                     try {
                         sslContext->load_verify_file(sslConfig.getCertificateAuthorityFilePath());
                     } catch (std::exception &e) {
-                        shutdown();
-                        throw exception::IOException("ConnectionManager::start", e.what());
+                        util::ILogger::getLogger().warning(std::string("ConnectionManager::start") + e.what());
                     }
                     ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
                 }
