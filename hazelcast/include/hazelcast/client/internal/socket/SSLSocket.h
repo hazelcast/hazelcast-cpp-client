@@ -108,6 +108,10 @@ namespace hazelcast {
 
                     SSLSocket &operator=(const Socket &rhs);
 
+                    /**
+                     * @return numBytes if the no error or error is try_again or would_block
+                     * @throws IOException if the error exists and different from try_again and would_block
+                     */
                     int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
 
                     void startTimer();

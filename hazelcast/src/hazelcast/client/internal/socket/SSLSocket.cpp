@@ -159,36 +159,22 @@ namespace hazelcast {
 
                 int SSLSocket::send(const void *buffer, int len) const {
                     size_t size = 0;
-                    try {
-                        while (len - size > 0) {
-                            // The following call will end either by writing all bytes or by throwing an exception for
-                            // socket not available for any more writes
-                            size += socket->write_some(asio::buffer((char *) buffer + size, (size_t) len - size));
-                        }
-                    } catch (asio::system_error &e) {
-                        return handleError("SSLSocket::send", size, e.code());
-                    }
+                    asio::error_code ec;
 
-                    return (int) size;
+                    size = asio::write(*socket, asio::buffer(buffer, (size_t) len),
+                                       asio::transfer_exactly((size_t) len), ec);
+
+                    return handleError("SSLSocket::send", size, ec);
                 }
 
                 int SSLSocket::receive(void *buffer, int len, int flag) const {
                     size_t size = 0;
-                    try {
-                        if (MSG_WAITALL == flag) {
-                            size = asio::read(*socket, asio::buffer(buffer, (size_t) len));
-                        } else {
-                            while (true) {
-                                // The following call will finish when no more non-blocking reads can be done by
-                                // throwing an exception or all the bytes are read
-                                size += socket->read_some(asio::buffer((char *) buffer + size, (size_t) len - size));
-                            }
-                        }
-                    } catch (asio::system_error &e) {
-                        return handleError("SSLSocket::receive", size, e.code());
-                    }
+                    asio::error_code ec;
 
-                    return (int) size;
+                    size = asio::read(*socket, asio::buffer(buffer, (size_t) len),
+                                      asio::transfer_exactly((size_t) len), ec);
+
+                    return handleError("SSLSocket::receive", size, ec);
                 }
 
                 int SSLSocket::getSocketId() const {
@@ -215,8 +201,8 @@ namespace hazelcast {
                 }
 
                 int SSLSocket::handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const {
-                    if (error != asio::error::try_again && error != asio::error::would_block) {
-                        throw exception::IOException(source, error.message());
+                    if (error && error != asio::error::try_again && error != asio::error::would_block) {
+                            throw exception::IOException(source, error.message());
                     }
                     return (int) numBytes;
                 }
