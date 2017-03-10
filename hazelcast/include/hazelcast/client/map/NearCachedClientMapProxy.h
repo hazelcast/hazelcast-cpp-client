@@ -117,6 +117,7 @@ namespace hazelcast {
                         }
                         return value;
                     } catch (exception::IException &e) {
+                        (void) e;
                         resetToUnmarkedState(key);
                         throw;
                     }
