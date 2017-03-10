@@ -63,7 +63,7 @@ namespace hazelcast {
                     return;
                 }
 
-                if (handleError("Exception OutSelector::listen => ", numSelected)) {
+                if (checkError("Exception OutSelector::listen => ", numSelected)) {
                     return;
                 }
 

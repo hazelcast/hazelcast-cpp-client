@@ -17,8 +17,8 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-#ifndef HAZELCAST_NIOListener
-#define HAZELCAST_NIOListener
+#ifndef HAZELCAST_CLIENT_CONNECTION_IOSELECTOR_H_
+#define HAZELCAST_CLIENT_CONNECTION_IOSELECTOR_H_
 
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/SocketSet.h"
@@ -80,7 +80,7 @@ namespace hazelcast {
                 /**
                  * @return true if should return from the calling method
                  */
-                bool handleError(const char *messagePrefix, int numSelected) const;
+                bool checkError(const char *messagePrefix, int numSelected) const;
             private:
                 void processListenerQueue();
 
@@ -96,5 +96,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_NIOListener
+#endif //HAZELCAST_CLIENT_CONNECTION_IOSELECTOR_H_
 

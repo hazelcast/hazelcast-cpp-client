@@ -108,7 +108,7 @@ namespace hazelcast {
 
                     SSLSocket &operator=(const Socket &rhs);
 
-                    void handleError(const std::string &source, const asio::error_code &error) const;
+                    int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
 
                     void startTimer();
 

@@ -54,7 +54,7 @@ namespace hazelcast {
                     return;
                 }
 
-                if (handleError("Exception InSelector::listen => ", numSelected)) {
+                if (checkError("Exception InSelector::listen => ", numSelected)) {
                     return;
                 }
 

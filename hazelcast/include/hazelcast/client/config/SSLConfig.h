@@ -89,7 +89,6 @@ namespace hazelcast {
                 SSLConfig &setProtocol(SSLProtocol protocol);
 
                 /**
-                 * Default protocol is tlsv1_client
                  * @return The configured SSL protocol
                  */
                 SSLProtocol getProtocol() const;

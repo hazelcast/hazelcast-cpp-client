@@ -113,8 +113,7 @@ namespace hazelcast {
                         // ec indicates completion.
                         asio::error_code ec = asio::error::would_block;
 
-                        // Start the asynchronous operation itself. The boost::lambda function
-                        // object is used as a callback and will update the ec variable when the
+                        // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
                         ConnectHandler handler(ec);
                         asio::async_connect(socket->lowest_layer(), iterator, handler);
@@ -146,7 +145,7 @@ namespace hazelcast {
                         // is defined at the api, hence not setting this option
 
                         // set the socket as blocking by default
-                        socket->lowest_layer().non_blocking(false);
+                        setBlocking(true);
                     } catch (asio::system_error &e) {
                         throw exception::IOException("SSLSocket::connect", e.what());
                     }
@@ -161,9 +160,13 @@ namespace hazelcast {
                 int SSLSocket::send(const void *buffer, int len) const {
                     size_t size = 0;
                     try {
-                        size = socket->write_some(asio::buffer(buffer, len));
+                        while (len - size > 0) {
+                            // The following call will end either by writing all bytes or by throwing an exception for
+                            // socket not available for any more writes
+                            size += socket->write_some(asio::buffer((char *) buffer + size, (size_t) len - size));
+                        }
                     } catch (asio::system_error &e) {
-                        handleError("SSLSocket::send", e.code());
+                        return handleError("SSLSocket::send", size, e.code());
                     }
 
                     return (int) size;
@@ -175,10 +178,14 @@ namespace hazelcast {
                         if (MSG_WAITALL == flag) {
                             size = asio::read(*socket, asio::buffer(buffer, (size_t) len));
                         } else {
-                            size = socket->read_some(asio::buffer(buffer, (size_t) len));
+                            while (true) {
+                                // The following call will finish when no more non-blocking reads can be done by
+                                // throwing an exception or all the bytes are read
+                                size += socket->read_some(asio::buffer((char *) buffer + size, (size_t) len - size));
+                            }
                         }
                     } catch (asio::system_error &e) {
-                        handleError("SSLSocket::receive", e.code());
+                        return handleError("SSLSocket::receive", size, e.code());
                     }
 
                     return (int) size;
@@ -207,12 +214,11 @@ namespace hazelcast {
                     }
                 }
 
-                void SSLSocket::handleError(const std::string &source, const asio::error_code &error) const {
-                    if (error) {
-                        if (error != asio::error::try_again) {
-                            throw exception::IOException(source, error.message());
-                        }
+                int SSLSocket::handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const {
+                    if (error != asio::error::try_again && error != asio::error::would_block) {
+                        throw exception::IOException(source, error.message());
                     }
+                    return (int) numBytes;
                 }
             }
         }
