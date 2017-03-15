@@ -80,6 +80,10 @@ namespace hazelcast {
                     builder.addByteArrayField(fieldName);
                 }
 
+                void ClassDefinitionWriter::writeBooleanArray(const char *fieldName, const std::vector<bool> *values) {
+                    builder.addBooleanArrayField(fieldName);
+                }
+
                 void ClassDefinitionWriter::writeCharArray(const char *fieldName, const std::vector<char> *values) {
                     builder.addCharArrayField(fieldName);
                 }

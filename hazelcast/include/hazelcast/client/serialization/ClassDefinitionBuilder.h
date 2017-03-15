@@ -68,6 +68,8 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addByteArrayField(const std::string& fieldName);
 
+                ClassDefinitionBuilder& addBooleanArrayField(const std::string& fieldName);
+
                 ClassDefinitionBuilder& addCharArrayField(const std::string& fieldName);
 
                 ClassDefinitionBuilder& addIntArrayField(const std::string& fieldName);

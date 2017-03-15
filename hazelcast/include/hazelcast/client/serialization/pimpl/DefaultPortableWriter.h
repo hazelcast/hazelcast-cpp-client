@@ -77,6 +77,8 @@ namespace hazelcast {
 
                     void writeByteArray(const char *fieldName, const std::vector<byte> *x);
 
+                    void writeBooleanArray(const char *fieldName, const std::vector<bool> *x);
+
                     void writeCharArray(const char *fieldName, const std::vector<char> *data);
 
                     void writeShortArray(const char *fieldName, const std::vector<short> *data);

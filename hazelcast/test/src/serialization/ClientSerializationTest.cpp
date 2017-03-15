@@ -201,6 +201,8 @@ namespace hazelcast {
                 std::vector<byte> bb(byteArray, byteArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
+                char boolArray[] = {false, true, true, false};
+                std::vector<bool> ba(boolArray, boolArray + 4);
                 short shortArray[] = {3, 4, 5};
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
@@ -218,7 +220,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
@@ -250,6 +252,8 @@ namespace hazelcast {
 
                 byte *byteArray = new byte[LARGE_ARRAY_SIZE];
                 std::vector<byte> bb(byteArray, byteArray + LARGE_ARRAY_SIZE);
+                bool *boolArray = new bool[LARGE_ARRAY_SIZE];
+                std::vector<bool> ba(boolArray, boolArray + LARGE_ARRAY_SIZE);
                 char *charArray;
                 charArray = new char[LARGE_ARRAY_SIZE];
                 std::vector<char> cc(charArray, charArray + LARGE_ARRAY_SIZE);
@@ -277,7 +281,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 
@@ -326,6 +330,8 @@ namespace hazelcast {
 
                 byte byteArray[] = {0, 1, 2};
                 std::vector<byte> bb(byteArray, byteArray + 3);
+                bool boolArray[] = {true, true, false};
+                std::vector<bool> ba(boolArray, boolArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
                 short shortArray[] = {3, 4, 5};
@@ -345,7 +351,7 @@ namespace hazelcast {
                 }
                 std::vector<TestNamedPortable> nn(portableArray, portableArray + 5);
 
-                TestInnerPortable inner(bb, cc, ss, ii, ll, ff, dd, nn);
+                TestInnerPortable inner(bb, ba, cc, ss, ii, ll, ff, dd, nn);
 
                 data = serializationService.toData<TestInnerPortable>(&inner);
 

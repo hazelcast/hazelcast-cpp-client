@@ -66,6 +66,8 @@ namespace hazelcast {
 
                     virtual std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
+                    virtual std::auto_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
+
                     virtual std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
                     virtual std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);

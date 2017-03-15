@@ -24,25 +24,28 @@ namespace hazelcast {
             TestInnerPortable::TestInnerPortable() {
             }
 
-            TestInnerPortable::TestInnerPortable(const TestInnerPortable& rhs) {
+            TestInnerPortable::TestInnerPortable(const TestInnerPortable &rhs) {
                 *this = rhs;
             }
 
             TestInnerPortable::TestInnerPortable(std::vector<byte> b,
-                    std::vector<char> c,
-                    std::vector<short> s,
-                    std::vector<int> i,
-                    std::vector<long> l,
-                    std::vector<float> f,
-                    std::vector<double> d,
-                    std::vector<TestNamedPortable> n):ii(i), bb(b), cc(c), ss(s), ll(l), ff(f), dd(d), nn(n) {
+                                                 std::vector<bool> ba,
+                                                 std::vector<char> c,
+                                                 std::vector<short> s,
+                                                 std::vector<int> i,
+                                                 std::vector<long> l,
+                                                 std::vector<float> f,
+                                                 std::vector<double> d,
+                                                 std::vector<TestNamedPortable> n) : ii(i), bb(b), ba(ba), cc(c), ss(s),
+                                                                                     ll(l), ff(f), dd(d), nn(n) {
             }
 
             TestInnerPortable::~TestInnerPortable() {
             }
 
-            TestInnerPortable& TestInnerPortable::operator = (const TestInnerPortable& rhs) {
+            TestInnerPortable &TestInnerPortable::operator=(const TestInnerPortable &rhs) {
                 bb = rhs.bb;
+                ba = rhs.ba;
                 cc = rhs.cc;
                 ss = rhs.ss;
                 ii = rhs.ii;
@@ -61,8 +64,9 @@ namespace hazelcast {
                 return TestSerializationConstants::TEST_DATA_FACTORY;
             }
 
-            bool TestInnerPortable::operator ==(const TestInnerPortable& m) const {
+            bool TestInnerPortable::operator==(const TestInnerPortable &m) const {
                 if (bb != m.bb) return false;
+                if (ba != m.ba) return false;
                 if (cc != m.cc) return false;
                 if (ss != m.ss) return false;
                 if (ii != m.ii) return false;
@@ -76,14 +80,13 @@ namespace hazelcast {
                 return true;
             }
 
-
-            bool TestInnerPortable::operator !=(const TestInnerPortable& m) const {
+            bool TestInnerPortable::operator!=(const TestInnerPortable &m) const {
                 return !(*this == m);
             }
 
-
-            void TestInnerPortable::writePortable(serialization::PortableWriter& writer) const {
+            void TestInnerPortable::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeByteArray("b", &bb);
+                writer.writeBooleanArray("ba", &ba);
                 writer.writeCharArray("c", &cc);
                 writer.writeShortArray("s", &ss);
                 writer.writeIntArray("i", &ii);
@@ -93,8 +96,9 @@ namespace hazelcast {
                 writer.writePortableArray("nn", &nn);
             }
 
-            void TestInnerPortable::readPortable(serialization::PortableReader& reader) {
+            void TestInnerPortable::readPortable(serialization::PortableReader &reader) {
                 bb = *reader.readByteArray("b");
+                ba = *reader.readBooleanArray("ba");
                 cc = *reader.readCharArray("c");
                 ss = *reader.readShortArray("s");
                 ii = *reader.readIntArray("i");

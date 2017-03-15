@@ -97,6 +97,12 @@ namespace hazelcast {
                 return classDefinitionWriter->writeByteArray(fieldName, data);
             }
 
+            void PortableWriter::writeBooleanArray(const char *fieldName, const std::vector<bool> *data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeBooleanArray(fieldName, data);
+                return classDefinitionWriter->writeBooleanArray(fieldName, data);
+            }
+
             void PortableWriter::writeCharArray(const char *fieldName, const std::vector<char > *data) {
                 if (isDefaultWriter)
                     return defaultPortableWriter->writeCharArray(fieldName, data);

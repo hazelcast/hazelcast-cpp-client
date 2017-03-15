@@ -110,6 +110,13 @@ namespace hazelcast {
                 return morphingPortableReader->readByteArray(fieldName);
             }
 
+
+            std::auto_ptr<std::vector<bool> > PortableReader::readBooleanArray(const char *fieldName) {
+                if (isDefaultReader)
+                    return defaultPortableReader->readBooleanArray(fieldName);
+                return morphingPortableReader->readBooleanArray(fieldName);
+            }
+
             std::auto_ptr<std::vector<char> > PortableReader::readCharArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readCharArray(fieldName);
