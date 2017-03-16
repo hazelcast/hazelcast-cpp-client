@@ -37,7 +37,8 @@ namespace hazelcast {
             /**
              * connects to given address in constructor.
              * @param timeoutInMillis if not connected within timeout, it will return errorCode
-             * @return zero if error. -1 otherwise.
+             * @return 0 on success.
+             * @throw IOException on failure.
              */
             virtual int connect(int timeoutInMillis) = 0;
 
@@ -52,7 +53,7 @@ namespace hazelcast {
             /**
              * @param buffer
              * @param len  length of the buffer to be received.
-             * @param flag bsd sockets options flag.
+             * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
              * @return number of bytes received.
              * @throw IOException in failure.
              */

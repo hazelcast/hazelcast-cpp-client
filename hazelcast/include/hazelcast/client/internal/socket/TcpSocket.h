@@ -31,6 +31,9 @@
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <ws2tcpip.h>
+
+typedef int socklen_t;
+
 #else
 
 #include <unistd.h>
@@ -44,11 +47,6 @@
 #include <sys/select.h>
 #include <fcntl.h>
 
-#endif
-
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-typedef int socklen_t;
 #endif
 
 #if !defined(MSG_NOSIGNAL)
@@ -133,7 +131,13 @@ namespace hazelcast {
 
                     TcpSocket &operator=(const Socket &rhs);
 
+                    void throwIOException(const char *methodName, const char *prefix) const;
+
+                    void throwIOException(int error, const char *methodName, const char *prefix) const;
+
                     client::Address remoteEndpoint;
+
+                    const client::Address configAddress;
 
                     struct addrinfo *serverInfo;
                     int socketId;

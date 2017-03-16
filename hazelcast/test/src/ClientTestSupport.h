@@ -22,7 +22,8 @@
 
 #include <memory>
 #include <gtest/gtest.h>
-#include <hazelcast/util/Util.h>
+
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -37,9 +38,11 @@ namespace hazelcast {
 
             class ClientTestSupport : public ::testing::Test {
             protected:
-                virtual std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
+                static std::string getCAFilePath();
 
-                std::auto_ptr<HazelcastClient> getNewClient();
+                static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
+
+                static std::auto_ptr<HazelcastClient> getNewClient();
             };
         }
     }

@@ -16,6 +16,9 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include <WinSock2.h>
+#endif
 
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -26,8 +29,13 @@
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "hazelcast/util/Util.h"
+
+#ifdef HZ_BUILD_WITH_SSL
+#include "hazelcast/client/internal/socket/SSLSocket.h"
+#endif
 
 #include <stdint.h>
 #include <string.h>
@@ -41,7 +49,12 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener, OutSelector& oListener, bool isOwner)
+            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
+                                   OutSelector& oListener, bool isOwner
+                    #ifdef HZ_BUILD_WITH_SSL
+                    , asio::io_service *ioService, asio::ssl::context *sslContext
+                    #endif
+                    )
             : live(true)
             , clientContext(clientContext)
             , invocationService(clientContext.getInvocationService())
@@ -54,6 +67,15 @@ namespace hazelcast {
             , receiveByteBuffer((char *)receiveBuffer, 16 << 10)
             , messageBuilder(*this, *this)
             , connectionId(-1) {
+                #ifdef HZ_BUILD_WITH_SSL
+                if (sslContext) {
+                    socket = std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *ioService, *sslContext));
+                } else {
+                #endif
+                    socket = std::auto_ptr<Socket>(new internal::socket::TcpSocket(address));
+                #ifdef HZ_BUILD_WITH_SSL
+                }
+                #endif
                 wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
                 assert(receiveByteBuffer.remaining() >= protocol::ClientMessage::HEADER_SIZE); // Note: Always make sure that the size >= ClientMessage header size.
             }

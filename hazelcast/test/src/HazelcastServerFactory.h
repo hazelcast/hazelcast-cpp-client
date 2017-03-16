@@ -45,7 +45,8 @@ namespace hazelcast {
                     END = 1,
                     START = 2,
                     SHUTDOWN = 3,
-                    SHUTDOWN_ALL = 4
+                    SHUTDOWN_ALL = 4,
+                    START_SSL = 5
                 };
             public:
                 HazelcastServerFactory(const char* hostAddress);
@@ -54,7 +55,7 @@ namespace hazelcast {
 
                 void shutdownAll();
 
-                int getInstanceId(int retryNumber = 0);
+                int getInstanceId(int retryNumber = 0, bool useSSL = false);
 
                 ~HazelcastServerFactory();
 

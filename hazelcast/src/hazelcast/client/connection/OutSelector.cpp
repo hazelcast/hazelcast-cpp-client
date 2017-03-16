@@ -23,7 +23,6 @@
 #include "hazelcast/client/connection/OutSelector.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/ILogger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -53,7 +52,9 @@ namespace hazelcast {
 
                 int maxFd = (socketRange.max > wakeupSocketRange.max ? socketRange.max : wakeupSocketRange.max);
 
+                #if  defined(__GNUC__) || defined(__llvm__)
                 errno = 0;
+                #endif
                 t.tv_sec = 5;
                 t.tv_usec = 0;
 
@@ -61,15 +62,11 @@ namespace hazelcast {
                  if (numSelected == 0) {
                     return;
                 }
-                if (numSelected == -1) {
-                    if (errno != EINTR) {
-                        util::ILogger::getLogger().severe(std::string("Exception OutSelector::listen => ") + strerror(errno));
-                    } else{
-                        util::ILogger::getLogger().finest(std::string("Exception OutSelector::listen => ") + strerror(errno));
-                    }
+
+                if (checkError("Exception OutSelector::listen => ", numSelected)) {
                     return;
                 }
-		
+
                 if (FD_ISSET(wakeUpListenerSocketId, &wakeUp_fds)) {
                     int wakeUpSignal;
                     sleepingSocket->receive(&wakeUpSignal, sizeof(int));

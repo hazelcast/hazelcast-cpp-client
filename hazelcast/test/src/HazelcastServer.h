@@ -38,6 +38,8 @@ namespace hazelcast {
 
                 HazelcastServer(HazelcastServerFactory &);
 
+                HazelcastServer(HazelcastServerFactory& factory, bool useSSL);
+
                 /**
                  * @returns true if the server were not started before and it is now started successfully
                  */
@@ -52,7 +54,7 @@ namespace hazelcast {
                 HazelcastServerFactory & factory;
                 int id;
                 bool isShutDown;
-
+                bool useSSL;
             };
         }
     }

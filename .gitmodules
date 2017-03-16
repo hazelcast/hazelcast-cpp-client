@@ -2,3 +2,7 @@
 	path = hazelcast/test/googletest
 	url = https://github.com/hazelcast/googletest.git
 	branch = hazelcasttest
+[submodule "external/include/asio"]
+	path = external/include/asio
+	url = https://github.com/ihsandemir/asio.git
+	branch = asiowithfix

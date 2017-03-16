@@ -30,6 +30,7 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
+#include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -55,7 +56,6 @@ namespace hazelcast {
             * Constructor with default values.
             * smart(true)
             * redoOperation(false)
-            * connectionTimeout(60000)
             * connectionAttemptLimit(2)
             * attemptPeriod(3000)
             * defaultLoadBalancer(impl::RoundRobinLB)
@@ -135,18 +135,15 @@ namespace hazelcast {
             int getConnectionAttemptLimit() const;
 
             /**
-            * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
-            *                          A zero value means wait until connection established or an error occurs.
-            *
-            * @return itself ClientConfig
-            */
+             * Use {@link ClientNetworkConfig#setConnectionTimeout} instead
+             * @Deprecated
+             */
             ClientConfig &setConnectionTimeout(int connectionTimeoutInMillis);
 
             /**
-            * Timeout value for nodes to accept client connection requests.
-            *
-            * @return int connectionTimeoutInMillis
-            */
+             * Use {@link ClientNetworkConfig#getConnectionTimeout} instead
+             * @Deprecated
+             */
             int getConnectionTimeout() const;
 
             /**
@@ -378,9 +375,29 @@ namespace hazelcast {
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
                 return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig).get();
             }
+
+            /**
+             * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             *
+             * @return {@link com.hazelcast.client.config.ClientNetworkConfig}
+             * @see com.hazelcast.client.config.ClientNetworkConfig
+             */
+            config::ClientNetworkConfig &getNetworkConfig();
+
+            /**
+             * Sets {@link com.hazelcast.client.config.ClientNetworkConfig}
+             *
+             * @param networkConfig {@link com.hazelcast.client.config.ClientNetworkConfig} to be set
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * @see com.hazelcast.client.config.ClientNetworkConfig
+             */
+            ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
+
         private:
 
             GroupConfig groupConfig;
+
+            config::ClientNetworkConfig networkConfig;
 
             SerializationConfig serializationConfig;
 
@@ -401,8 +418,6 @@ namespace hazelcast {
             bool smart;
 
             bool redoOperation;
-
-            int connectionTimeout;
 
             int connectionAttemptLimit;
 

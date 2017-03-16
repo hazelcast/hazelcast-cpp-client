@@ -16,6 +16,7 @@
 
 import com.hazelcast.config.Config;
 import com.hazelcast.config.RingbufferConfig;
+import com.hazelcast.config.SSLConfig;
 import com.hazelcast.config.SerializerConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
@@ -34,6 +35,8 @@ import com.hazelcast.nio.serialization.PortableFactory;
 import com.hazelcast.nio.serialization.PortableReader;
 import com.hazelcast.nio.serialization.PortableWriter;
 import com.hazelcast.nio.serialization.StreamSerializer;
+import com.hazelcast.nio.ssl.TestKeyStoreUtil;
+import com.hazelcast.spi.properties.GroupProperty;
 import org.omg.PortableInterceptor.Interceptor;
 
 import java.io.DataInputStream;
@@ -45,6 +48,7 @@ import java.net.Socket;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -375,12 +379,14 @@ public class CppClientListener {
     static final int START = 2;
     static final int SHUTDOWN = 3;
     static final int SHUTDOWN_ALL = 4;
+    static final int START_SSL = 5;
 
     public static int CAPACITY = 10;
 
     public static void main(String args[]) throws IOException {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
+        GroupProperty.ENTERPRISE_LICENSE_KEY.setSystemProperty(args[0]);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());
@@ -400,6 +406,17 @@ public class CppClientListener {
                         dataOutputStream.writeInt(id);
                     } catch (Exception e) {
                         logger.warning("START command failed. Error:" + e);
+                        dataOutputStream.writeInt(FAIL);
+                    }
+                    break;
+                case START_SSL:
+                    System.out.println("START_SSL command received: NEW INSTANCE OPEN ");
+                    try {
+                        final int id = atomicInteger.incrementAndGet();
+                        map.put(id, getInstance(getSSLConfig()));
+                        dataOutputStream.writeInt(id);
+                    } catch (Exception e) {
+                        logger.warning("START_SSL command failed. Error:" + e);
                         dataOutputStream.writeInt(FAIL);
                     }
                     break;
@@ -444,8 +461,18 @@ public class CppClientListener {
         }
     }
 
-    private static Config prepareConfig() throws FileNotFoundException {
+    private static Config getSSLConfig()
+            throws IOException {
+        Config config = prepareConfig();
+        Properties props = TestKeyStoreUtil.createSslProperties();
+        config.getNetworkConfig().setSSLConfig(new SSLConfig().setEnabled(true).setProperties(props));
+        return config;
+    }
+
+    private static Config prepareConfig()
+            throws IOException {
         final Config config = new XmlConfigBuilder().build();
+
         config.getSerializationConfig().addPortableFactory(666, new PortableFactory() {
             public Portable create(int classId) {
                 if (classId == 1) {

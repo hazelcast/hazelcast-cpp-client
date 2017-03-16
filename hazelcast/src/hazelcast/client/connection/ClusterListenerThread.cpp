@@ -48,6 +48,10 @@ namespace hazelcast {
                 clusterListenerThread.reset(thread);
             }
 
+            const util::Thread *ClusterListenerThread::getThread() const {
+                return clusterListenerThread.get();
+            }
+
             void ClusterListenerThread::run(util::Thread *currentThread) {
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;

@@ -56,6 +56,8 @@ namespace hazelcast {
 
                 void setThread(util::Thread *);
 
+                const util::Thread *getThread() const;
+
                 static void staticRun(util::ThreadArgs &args);
 
                 void run(util::Thread *currentThread);

@@ -27,7 +27,6 @@ namespace hazelcast {
         , defaultLoadBalancer(new impl::RoundRobinLB)
         , smart(true)
         , redoOperation(false)
-        , connectionTimeout(5000)
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
@@ -71,12 +70,12 @@ namespace hazelcast {
         }
 
         ClientConfig& ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
-            this->connectionTimeout = connectionTimeoutInMillis;
+            this->networkConfig.setConnectionTimeout(connectionTimeoutInMillis);
             return *this;
         }
 
         int ClientConfig::getConnectionTimeout() const {
-            return connectionTimeout;
+            return (int) this->networkConfig.getConnectionTimeout();
         }
 
         ClientConfig& ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
@@ -198,6 +197,15 @@ namespace hazelcast {
                 reliableTopicConfigMap[name] = config::ReliableTopicConfig(name.c_str());
             }
             return &reliableTopicConfigMap[name];
+        }
+
+        config::ClientNetworkConfig &ClientConfig::getNetworkConfig() {
+            return networkConfig;
+        }
+
+        ClientConfig &ClientConfig::setNetworkConfig(const config::ClientNetworkConfig &networkConfig) {
+            this->networkConfig = networkConfig;
+            return *this;
         }
     }
 }

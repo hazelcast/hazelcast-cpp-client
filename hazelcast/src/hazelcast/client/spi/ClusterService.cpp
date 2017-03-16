@@ -70,7 +70,12 @@ namespace hazelcast {
 
             void ClusterService::shutdown() {
                 active = false;
-                clusterThread.stop();
+                if (NULL != clusterThread.getThread()) {
+                    // avoid anyone waiting on the start latch to get stuck
+                    clusterThread.startLatch.countDown();
+
+                    clusterThread.stop();
+                }
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
@@ -196,7 +201,7 @@ namespace hazelcast {
                         }
                     }
 
-                    if (attempt++ >= connectionAttemptLimit) {
+                    if (++attempt >= connectionAttemptLimit) {
                         break;
                     }
                     const double remainingTime = clientContext.getClientConfig().getAttemptPeriod() -

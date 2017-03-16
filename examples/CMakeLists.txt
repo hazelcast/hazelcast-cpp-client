@@ -78,7 +78,7 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
         set_property(TARGET ${HZ_LIB_NAME} PROPERTY IMPORTED_LOCATION "${HZ_LIB_PATH}")
 
-        link_libraries(${HZ_LIB_NAME} )
+        link_libraries(${HZ_LIB_NAME})
 
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

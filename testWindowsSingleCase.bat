@@ -1,6 +1,7 @@
 @SET HZ_BIT_VERSION=%1
 @SET HZ_LIB_TYPE=%2
 @SET HZ_BUILD_TYPE=%3
+@SET COMPILE_WITHOUT_SSL=%3
 
 @SET BUILD_DIR=build%HZ_LIB_TYPE%%HZ_BIT_VERSION%%HZ_BUILD_TYPE%
 
@@ -23,17 +24,27 @@ cd %BUILD_DIR%
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
     set SOLUTIONTYPE="Visual Studio 12"
+    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
+    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win32\lib
 ) else (
     set BUILDFORPLATFORM="x64"
     set SOLUTIONTYPE="Visual Studio 12 Win64"
+    @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
+    @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
+)
+
+if %COMPILE_WITHOUT_SSL% == "COMPILE_WITHOUT_SSL" (
+    set HZ_COMPILE_WITH_SSL=OFF
+) else (
+    set HZ_COMPILE_WITH_SSL=ON
 )
 
 echo "Generating the solution files for compilation"
-cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
+cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_OPENSSL_INCLUDE_DIR=%HZ_OPENSSL_INCLUDE_DIR% -DHZ_OPENSSL_LIB_DIR=%HZ_OPENSSL_LIB_DIR% -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL%
 
 echo "Building for platform %BUILDFORPLATFORM%"
 
-MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% || exit /b 1
+MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% /verbosity:n || exit /b 1
 
 cd ..
 cd java
@@ -44,7 +55,7 @@ call mvn -U clean install
 call taskkill /F /FI "WINDOWTITLE eq cpp-java"
 
 echo "Starting the java test server"
-start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener"
+start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener" -Dexec.args="%HAZELCAST_ENTERPRISE_KEY%"
 
 SET DEFAULT_TIMEOUT=30
 SET SERVER_PORT=6543

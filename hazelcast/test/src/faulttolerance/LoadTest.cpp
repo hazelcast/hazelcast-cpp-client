@@ -32,7 +32,7 @@ namespace hazelcast {
             namespace faulttolerance {
                 class LoadTest : public ClientTestSupport {
                 public:
-                    virtual std::auto_ptr<hazelcast::client::ClientConfig> getConfig() {
+                    std::auto_ptr<hazelcast::client::ClientConfig> getLoadTestConfig() {
                         std::auto_ptr<ClientConfig> config = ClientTestSupport::getConfig();
                         config->setRedoOperation(true);
                         config->setLogLevel(FINEST);
@@ -138,14 +138,14 @@ namespace hazelcast {
                 }
 
                 TEST_F(LoadTest, testIntMapSmartClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getConfig();
+                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
                     config->setSmart(true);
 
                     loadIntMapTestWithConfig(*config, *this);
                 }
 
                 TEST_F(LoadTest, testIntMapDummyClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getConfig();
+                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
                     config->setSmart(false);
 
                     loadIntMapTestWithConfig(*config, *this);
