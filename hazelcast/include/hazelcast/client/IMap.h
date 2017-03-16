@@ -738,6 +738,24 @@ namespace hazelcast {
             }
 
             /**
+            * Applies the user defined EntryProcessor to the entries mapped by the collection of keys.
+            * Returns the results mapped by each key in the map.
+            *
+            *
+            * Notice that map EntryProcessor runs on the nodes. Because of that, same class should be implemented in java side
+            *
+            * @tparam ResultType that entry processor will return
+            * @tparam EntryProcessor type of entry processor class
+            * @tparam keys The keys for which the entry processor will be applied.
+            * @param entryProcessor that will be applied
+            */
+            template<typename ResultType, typename EntryProcessor>
+            std::map<K, boost::shared_ptr<ResultType> >
+            executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                return mapImpl->template executeOnKeys<ResultType, EntryProcessor>(keys, entryProcessor);
+            }
+
+            /**
             * Applies the user defined EntryProcessor to the all entries in the map.
             * Returns the results mapped by each key in the map.
             *

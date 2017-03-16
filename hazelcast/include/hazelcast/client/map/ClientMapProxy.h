@@ -943,6 +943,19 @@ namespace hazelcast {
                     return boost::shared_ptr<ResultType>(toObject<ResultType>(response));
                 }
 
+                template<typename ResultType, typename EntryProcessor>
+                std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                    EntryVector entries = executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
+
+                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    for (size_t i = 0; i < entries.size(); ++i) {
+                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = resObj;
+                    }
+                    return result;
+                }
+
                 /**
                 * Applies the user defined EntryProcessor to the all entries in the map.
                 * Returns the results mapped by each key in the map.
@@ -1184,6 +1197,22 @@ namespace hazelcast {
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     return proxy::IMapImpl::executeOnKeyData(keyData, processor);
+                }
+
+                template<typename ResultType, typename EntryProcessor>
+                EntryVector executeOnKeysInternal(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                    if (keys.empty()) {
+                        return EntryVector();
+                    }
+
+                    std::vector<serialization::pimpl::Data> keysData;
+                    for (typename std::set<K>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
+                        keysData.push_back(toData<K>(*it));
+                    }
+
+                    serialization::pimpl::Data entryProcessorData = toData<EntryProcessor>(entryProcessor);
+
+                    return proxy::IMapImpl::executeOnKeysData(keysData, entryProcessorData);
                 }
 
                 virtual void

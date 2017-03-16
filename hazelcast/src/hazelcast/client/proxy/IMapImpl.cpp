@@ -73,6 +73,7 @@
 #include "hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h"
+#include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
 
 #include <climits>
 
@@ -532,6 +533,29 @@ namespace hazelcast {
                         protocol::codec::MapClearCodec::RequestParameters::encode(getName());
 
                 invoke(request);
+            }
+
+            std::auto_ptr<serialization::pimpl::Data> IMapImpl::executeOnKeyData(const serialization::pimpl::Data& key,
+                                                                       const serialization::pimpl::Data &processor) {
+                int partitionId = getPartitionId(key);
+
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::MapExecuteOnKeyCodec::RequestParameters::encode(getName(),
+                                                                                         processor,
+                                                                                         key,
+                                                                                         util::getThreadId());
+
+                return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>,
+                        protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
+            }
+
+            EntryVector IMapImpl::executeOnKeysData(const std::vector<serialization::pimpl::Data> &keys,
+                                          const serialization::pimpl::Data &processor) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::MapExecuteOnKeysCodec::RequestParameters::encode(getName(), processor, keys);
+
+                return invokeAndGetResult<EntryVector,
+                        protocol::codec::MapExecuteOnKeysCodec::ResponseParameters>(request);
             }
 
             std::string IMapImpl::addInterceptor(serialization::Portable &interceptor) {
