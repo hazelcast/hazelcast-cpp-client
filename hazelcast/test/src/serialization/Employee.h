@@ -57,6 +57,27 @@ namespace hazelcast {
             private:
                 int age;
                 std::string name;
+
+                // add all possible types
+                byte by;
+                bool boolean;
+                char c;
+                short s;
+                int i;
+                long l;
+                float f;
+                double d;
+                std::string str;
+                std::string utfStr;
+
+                std::vector<byte> byteVec;
+                std::vector<char> cc;
+                std::vector<bool> ba;
+                std::vector<short> ss;
+                std::vector<int> ii;
+                std::vector<long> ll;
+                std::vector<float> ff;
+                std::vector<double> dd;
             };
 
             // Compares based on the employee age
