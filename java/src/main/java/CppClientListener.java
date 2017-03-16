@@ -216,6 +216,26 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
     }
 }
 
+class KeyMultiplierWithNullableResult extends KeyMultiplier {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 7;
+    }
+
+    @Override
+    public Object process(Map.Entry<Integer, Employee> entry) {
+        if (null == entry.getValue()) {
+            return null;
+        }
+        return super.process(entry);
+    }
+}
+
 /**
  * Compares based on the employee age
  */
@@ -471,6 +491,8 @@ public class CppClientListener {
                         return new EmployeeEntryKeyComparator();
                     case 6:
                         return new MapGetInterceptor();
+                    case 7:
+                        return new KeyMultiplierWithNullableResult();
                     default:
                         return null;
                 }

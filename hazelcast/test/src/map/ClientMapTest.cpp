@@ -2629,6 +2629,35 @@ namespace hazelcast {
                 ASSERT_EQ(-1, *result);
             }
 
+            TYPED_TEST(ClientMapTest, testExecuteOnKeys) {
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+                Employee empl3("deniz", 25);
+
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+                ClientMapTest<TypeParam>::employees->put(5, empl3);
+
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
+
+                std::set<int> keys;
+                keys.insert(3);
+                keys.insert(5);
+                // put non existent key
+                keys.insert(999);
+
+                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnKeys<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        keys, processor);
+
+                ASSERT_EQ(3, (int) result.size());
+                ASSERT_NE(result.end(), result.find(3));
+                ASSERT_NE(result.end(), result.find(5));
+                ASSERT_NE(result.end(), result.find(999));
+                ASSERT_EQ(3 * processor.getMultiplier(), *result[3]);
+                ASSERT_EQ(5 * processor.getMultiplier(), *result[5]);
+                ASSERT_EQ(-1, *result[999]);
+            }
+
             TYPED_TEST(ClientMapTest, testExecuteOnEntries) {
                 Employee empl1("ahmet", 35);
                 Employee empl2("mehmet", 21);

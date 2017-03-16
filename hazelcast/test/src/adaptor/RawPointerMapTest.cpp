@@ -341,14 +341,14 @@ namespace hazelcast {
                     /**
                      * @return factory id
                      */
-                    int getFactoryId() const {
+                    virtual int getFactoryId() const {
                         return 666;
                     }
 
                     /**
                      * @return class id
                      */
-                    int getClassId() const {
+                    virtual int getClassId() const {
                         return 3;
                     }
 
@@ -374,6 +374,19 @@ namespace hazelcast {
 
                 private:
                     int multiplier;
+                };
+
+                class EntryMultiplierWithNullableResult : public EntryMultiplier {
+                public:
+                    EntryMultiplierWithNullableResult(int multiplier) : EntryMultiplier(multiplier) { }
+
+                    virtual int getFactoryId() const {
+                        return 666;
+                    }
+
+                    virtual int getClassId() const {
+                        return 7;
+                    }
                 };
 
                 TEST_F(RawPointerMapTest, testIssue537) {
@@ -2777,6 +2790,38 @@ namespace hazelcast {
                     ASSERT_EQ(-1, *result);
                 }
 
+                TEST_F(RawPointerMapTest, testExecuteOnKeys) {
+                    Employee empl1("ahmet", 35);
+                    Employee empl2("mehmet", 21);
+                    Employee empl3("deniz", 25);
+
+                    employees->put(3, empl1);
+                    employees->put(4, empl2);
+                    employees->put(5, empl3);
+
+                    EntryMultiplierWithNullableResult processor(4);
+
+                    std::set<int> keys;
+                    keys.insert(3);
+                    keys.insert(5);
+                    // put non existent key
+                    keys.insert(999);
+
+                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = 
+                            employees->executeOnKeys<int, EntryMultiplier>(keys, processor);
+
+                    ASSERT_EQ(2, (int) result->size());
+                    ASSERT_NE((const int *) NULL, result->getKey(0));
+                    ASSERT_NE((const int *) NULL, result->getKey(1));
+                    int key0 = *result->getKey(0);
+                    ASSERT_TRUE(3 == key0 || 5 == key0);
+                    int key1 = *result->getKey(1);
+                    ASSERT_TRUE(3 == key1 || 5 == key1);
+                    ASSERT_NE(key0, key1);
+                    ASSERT_EQ(key0 * processor.getMultiplier(), *result->getValue(0));
+                    ASSERT_EQ(key1 * processor.getMultiplier(), *result->getValue(1));
+                }
+                
                 TEST_F(RawPointerMapTest, testExecuteOnEntries) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);

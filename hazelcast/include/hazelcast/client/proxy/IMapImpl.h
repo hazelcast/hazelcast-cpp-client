@@ -131,18 +131,10 @@ namespace hazelcast {
                 virtual void clear();
 
                 std::auto_ptr<serialization::pimpl::Data> executeOnKeyData(const serialization::pimpl::Data& key,
-                                                                           const serialization::pimpl::Data &processor) {
-                    int partitionId = getPartitionId(key);
+                                                                           const serialization::pimpl::Data &processor);
 
-                    std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::MapExecuteOnKeyCodec::RequestParameters::encode(getName(),
-                                                                                             processor,
-                                                                                             key,
-                                                                                             util::getThreadId());
-
-                    return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>,
-                            protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
-                }
+                EntryVector executeOnKeysData(const std::vector<serialization::pimpl::Data> &keys,
+                                                                           const serialization::pimpl::Data &processor);
 
                 template<typename ENTRYPROCESSOR>
                 EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor) {
@@ -151,8 +143,7 @@ namespace hazelcast {
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::RequestParameters::encode(getName(), processor);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
-                            invokeAndGetResult<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >,
-                                    protocol::codec::MapExecuteOnAllKeysCodec::ResponseParameters>(request);
+                            invokeAndGetResult<EntryVector, protocol::codec::MapExecuteOnAllKeysCodec::ResponseParameters>(request);
 
                     return response;
                 }
@@ -161,13 +152,11 @@ namespace hazelcast {
                 EntryVector executeOnEntriesData(ENTRYPROCESSOR &entryProcessor, const query::Predicate &predicate) {
                     serialization::pimpl::Data processor = toData<ENTRYPROCESSOR>(entryProcessor);
                     serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);
+                    std::auto_ptr<protocol::ClientMessage> request =
+                            protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(), processor, predData);
 
-                    std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
-                            invokeAndGetResult<std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >,
+                    return invokeAndGetResult<EntryVector,
                                     protocol::codec::MapExecuteWithPredicateCodec::ResponseParameters>(request);
-
-                    return response;
                 }
 
                 template <typename K, typename V>
