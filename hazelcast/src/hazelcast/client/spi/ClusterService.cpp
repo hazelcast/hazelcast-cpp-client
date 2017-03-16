@@ -201,7 +201,7 @@ namespace hazelcast {
                         }
                     }
 
-                    if (attempt++ >= connectionAttemptLimit) {
+                    if (++attempt >= connectionAttemptLimit) {
                         break;
                     }
                     const double remainingTime = clientContext.getClientConfig().getAttemptPeriod() -

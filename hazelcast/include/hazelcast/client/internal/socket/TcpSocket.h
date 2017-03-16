@@ -131,7 +131,13 @@ namespace hazelcast {
 
                     TcpSocket &operator=(const Socket &rhs);
 
+                    void throwIOException(const char *methodName, const char *prefix) const;
+
+                    void throwIOException(int error, const char *methodName, const char *prefix) const;
+
                     client::Address remoteEndpoint;
+
+                    const client::Address configAddress;
 
                     struct addrinfo *serverInfo;
                     int socketId;

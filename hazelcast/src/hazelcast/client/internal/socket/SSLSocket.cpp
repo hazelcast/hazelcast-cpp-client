@@ -41,12 +41,8 @@ namespace hazelcast {
                     template <typename Iterator>
                     void operator()(
                             const asio::error_code& error,
-                            Iterator iterator)
-                    {
+                            Iterator iterator) {
                         ec = error;
-                        if (error) {
-                            throw exception::IOException("SSLSocket::connect", error.message());
-                        }
                     }
 
                     asio::error_code &ec;
@@ -69,17 +65,16 @@ namespace hazelcast {
                     // Check whether the deadline has passed. We compare the deadline against
                     // the current time since a new asynchronous operation may have moved the
                     // deadline before this actor had a chance to run.
-                    if (deadline.expires_at() <= asio::deadline_timer::traits_type::now())
-                    {
+                    if (deadline.expires_at() <= asio::deadline_timer::traits_type::now()) {
+                        deadline.cancel();
+
                         // The deadline has passed. The socket is closed so that any outstanding
                         // asynchronous operations are cancelled. This allows the blocked
                         // connect(), read_line() or write_line() functions to return.
                         asio::error_code ignored_ec;
                         socket->lowest_layer().close(ignored_ec);
 
-                        // There is no longer an active deadline. The expiry is set to positive
-                        // infinity so that the actor takes no action until a new deadline is set.
-                        deadline.expires_at(boost::posix_time::pos_infin);
+                        return;
                     }
 
                     // Put the actor back to sleep.
@@ -115,14 +110,26 @@ namespace hazelcast {
                             ioService.run_one();
                         } while (ec == asio::error::would_block);
 
+                        // the restart is needed for the other connection attempts to work since the ioservice goes
+                        // into the stopped state following the loop
+                        ioService.restart();
+
                         // Determine whether a connection was successfully established. The
                         // deadline actor may have had a chance to run and close our socket, even
                         // though the connect operation notionally succeeded. Therefore we must
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
                         if (ec || !socket->lowest_layer().is_open()) {
-                            asio::system_error systemError(ec ? ec : asio::error::operation_aborted);
-                            throw exception::IOException("SSLSocket::connect", systemError.what());
+                            std::ostringstream out;
+                            out << "Connection to server " << remoteEndpoint << " failed. ";
+                            if (ec) {
+                                asio::system_error systemError(ec);
+                                out << systemError.what();
+                            } else {
+                                out << " Failed to connect in " << timeoutInMillis << " milliseconds";
+                            }
+
+                            throw exception::IOException("SSLSocket::connect", out.str());
                         }
 
                         deadline.cancel();
@@ -147,6 +154,22 @@ namespace hazelcast {
 
                 void SSLSocket::setBlocking(bool blocking) {
                     socket->lowest_layer().non_blocking(!blocking);
+                }
+
+                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
+                    stack_st_SSL_CIPHER *ciphers = SSL_get_ciphers(socket->native_handle());
+                    std::vector<CipherInfo> supportedCiphers;
+                    for (int i = 0; i < sk_SSL_CIPHER_num (ciphers); ++i) {
+                        struct SSLSocket::CipherInfo info;
+                        SSL_CIPHER *cipher = sk_SSL_CIPHER_value (ciphers, i);
+                        info.name = SSL_CIPHER_get_name(cipher);
+                        info.numberOfBits = SSL_CIPHER_get_bits(cipher, 0);
+                        info.version = SSL_CIPHER_get_version(cipher);
+                        char descBuf[256];
+                        info.description = SSL_CIPHER_description(cipher, descBuf, 256);
+                        supportedCiphers.push_back(info);
+                    }
+                    return supportedCiphers;
                 }
 
                 int SSLSocket::send(const void *buffer, int len) const {
@@ -197,6 +220,16 @@ namespace hazelcast {
                             throw exception::IOException(source, error.message());
                     }
                     return (int) numBytes;
+                }
+
+                std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info) {
+                    out << "Cipher{"
+                            "Name: " << info.name <<
+                    ", Bits:"<< info.numberOfBits <<
+                    ", Version:"<< info.version <<
+                    ", Description:"<< info.description << "}";
+
+                    return out;
                 }
             }
         }

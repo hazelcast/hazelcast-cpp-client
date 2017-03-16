@@ -89,7 +89,7 @@ namespace hazelcast {
                         clientConfig = getConfig().release();
                         #ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
-                        sslConfig.setEnabled(true).setProtocol(config::tlsv1).setCertificateAuthorityFilePath(getCAFilePath());
+                        sslConfig.setEnabled(true).setProtocol(config::tlsv1).addVerifyFile(getCAFilePath());
                         clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
                         #endif // HZ_BUILD_WITH_SSL
                         client = new HazelcastClient(*clientConfig);

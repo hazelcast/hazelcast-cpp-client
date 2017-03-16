@@ -32,7 +32,7 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                TcpSocket::TcpSocket(const client::Address &address) {
+                TcpSocket::TcpSocket(const client::Address &address) : configAddress(address) {
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
@@ -55,28 +55,20 @@ namespace hazelcast {
 
                     socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
                     if (-1 == socketId) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "[TcpSocket::TcpSocket] Failed to obtain socket.");
-                        throw client::exception::IOException("TcpSocket::TcpSocket", errorMsg);
+                        throwIOException("TcpSocket", "[TcpSocket::TcpSocket] Failed to obtain socket.");
                     }
                     isOpen = true;
                     int size = 32 * 1024;
                     if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size))) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Failed set socket receive buffer size.");
-                        throw client::exception::IOException("TcpSocket::TcpSocket", errorMsg);
+                        throwIOException("Socket", "Failed set socket receive buffer size.");
                     }
                     if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size))) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Failed set socket send buffer size.");
-                        throw client::exception::IOException("TcpSocket::TcpSocket", errorMsg);
+                        throwIOException("TcpSocket", "Failed set socket send buffer size.");
                     }
                     #if defined(SO_NOSIGPIPE)
                     int on = 1;
                     if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int))) {
-                        char errorMsg[200];
-                        util::strerror_s(errno, errorMsg, 200, "Failed set socket option SO_NOSIGPIPE.");
-                        throw client::exception::IOException("TcpSocket::TcpSocket", errorMsg);
+                        throwIOException("TcpSocket", "Failed set socket option SO_NOSIGPIPE.");
                     }
                     #endif
                 }
@@ -98,17 +90,14 @@ namespace hazelcast {
                     setBlocking(false);
 
                     if (::connect(socketId, serverInfo->ai_addr, serverInfo->ai_addrlen)) {
-                        int error = 0;
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                        error = WSAGetLastError();
+                        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                        int error = WSAGetLastError();
                         if (WSAEWOULDBLOCK != error && WSAEINPROGRESS != error && WSAEALREADY != error) {
-                    #else
-                        error = errno;
+                        #else
+                        int error = errno;
                         if (EINPROGRESS != error && EALREADY != error) {
-                    #endif
-                            char errorMsg[200];
-                            util::strerror_s(error, errorMsg, 200, "Failed to connect the socket.");
-                            throw client::exception::IOException("Socket::connect", errorMsg);
+                            #endif
+                            throwIOException(error, "connect", "Failed to connect the socket.");
                         }
                     }
 
@@ -125,17 +114,24 @@ namespace hazelcast {
                         setBlocking(true);
                         return 0;
                     }
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    int error = WSAGetLastError();
+                    #else
+                    int error = errno;
+                    #endif
+
                     setBlocking(true);
 
-                    int error = 0;
-                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    error = WSAGetLastError();
-                    #else
-                    error = errno;
-                    #endif
-                    char errorMsg[200];
-                    util::strerror_s(error, errorMsg, 200, "Failed to connect the socket.");
-                    throw client::exception::IOException("Socket::connect", errorMsg);
+                    if (error) {
+                        throwIOException(error, "connect", "Failed to connect the socket.");
+                    } else {
+                        char msg[200];
+                        util::snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
+                                       configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
+                        throw exception::IOException("TcpSocket::connect ", msg);
+                    }
+
+                    return -1;
                 }
 
                 void TcpSocket::setBlocking(bool blocking) {
@@ -196,9 +192,7 @@ namespace hazelcast {
                             return 0;
                         }
 
-                        char errorMsg[200];
-                        util::strerror_s(error, errorMsg, 200, "Send failed.");
-                        throw client::exception::IOException("TcpSocket::send", errorMsg);
+                        throwIOException(error, "send", "Send failed.");
                     }
                     return bytesSend;
                 }
@@ -221,9 +215,7 @@ namespace hazelcast {
                             return 0;
                         }
 
-                        char errorMsg[200];
-                        util::strerror_s(error, errorMsg, 200, "Receive failed.");
-                        throw client::exception::IOException("TcpSocket::receive", errorMsg);
+                        throwIOException(error, "receive", "Receive failed.");
                     } else if (size == 0) {
                         throw client::exception::IOException("TcpSocket::receive", "Connection closed by remote");
                     }
@@ -233,7 +225,6 @@ namespace hazelcast {
                 int TcpSocket::getSocketId() const {
                     return socketId;
                 }
-
 
                 void TcpSocket::setRemoteEndpoint(const client::Address &address) {
                     remoteEndpoint = address;
@@ -272,6 +263,22 @@ namespace hazelcast {
 
                         socketId = -1; // set it to invalid descriptor to avoid misuse of the socket for this connection
                     }
+                }
+
+                void TcpSocket::throwIOException(const char *methodName, const char *prefix) const {
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    int error = WSAGetLastError();
+                    #else
+                    int error = errno;
+                    #endif
+
+                    throwIOException(error, methodName, prefix);
+                }
+
+                void TcpSocket::throwIOException(int error, const char *methodName, const char *prefix) const {
+                    char errorMsg[200];
+                    util::strerror_s(error, errorMsg, 200, prefix);
+                    throw client::exception::IOException(std::string("TcpSocket::") + methodName, errorMsg);
                 }
             }
         }

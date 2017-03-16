@@ -41,12 +41,22 @@ namespace hazelcast {
                 return sslProtocol;
             }
 
-            const std::string &SSLConfig::getCertificateAuthorityFilePath() const {
-                return certificateAuthorityFilePath;
+            const std::vector<std::string> &SSLConfig::getVerifyFiles() const {
+                return clientVerifyFiles;
             }
 
-            void SSLConfig::setCertificateAuthorityFilePath(const std::string &certificateAuthorityFilePath) {
-                this->certificateAuthorityFilePath = certificateAuthorityFilePath;
+            SSLConfig &SSLConfig::addVerifyFile(const std::string &filename) {
+                this->clientVerifyFiles.push_back(filename);
+                return *this;
+            }
+
+            const std::string &SSLConfig::getCipherList() const {
+                return cipherList;
+            }
+
+            SSLConfig &SSLConfig::setCipherList(const std::string &ciphers) {
+                this->cipherList = ciphers;
+                return *this;
             }
         }
     }

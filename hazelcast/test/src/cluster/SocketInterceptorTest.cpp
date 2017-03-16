@@ -48,7 +48,7 @@ namespace hazelcast {
                 MySocketInterceptor interceptor(interceptorLatch);
                 config->setSocketInterceptor(&interceptor);
                 config::SSLConfig sslConfig;
-                sslConfig.setEnabled(true).setCertificateAuthorityFilePath(getCAFilePath());
+                sslConfig.setEnabled(true).addVerifyFile(getCAFilePath());
                 config->getNetworkConfig().setSSLConfig(sslConfig);
                 HazelcastClient client(*config);
                 interceptorLatch.await(2);

@@ -68,13 +68,39 @@ namespace hazelcast {
                     sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
                             (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
-                    try {
-                        sslContext->load_verify_file(sslConfig.getCertificateAuthorityFilePath());
-                    } catch (std::exception &e) {
+                    const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
+                    bool success = true;
+                    for (std::vector<std::string>::const_iterator it = verifyFiles.begin();it != verifyFiles.end();
+                         ++it) {
+                        asio::error_code ec;
+                        sslContext->load_verify_file(*it, ec);
+                        if (ec) {
+                            util::ILogger::getLogger().warning(std::string("ConnectionManager::start: Failed to load CA "
+                                                                                   "verify file at ") + *it + " "
+                                                               + ec.message());
+                            success = false;
+                        }
+                    }
+
+                    if (!success) {
                         sslContext.reset();
-                        util::ILogger::getLogger().warning(std::string("ConnectionManager::start: ") + e.what());
+                        util::ILogger::getLogger().warning("ConnectionManager::start: Failed to load one or more "
+                                                                   "configured CA verify files (PEM files). Please "
+                                                                   "correct the files and retry.");
                         return false;
                     }
+
+                    // set cipher list if the list is set
+                    const std::string &cipherList = sslConfig.getCipherList();
+                    if (!cipherList.empty()) {
+                        if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
+                            util::ILogger::getLogger().warning(std::string("ConnectionManager::start: Could not load any "
+                                                                                   "of the ciphers in the config provided "
+                                                                                   "ciphers:") + cipherList);
+                            return false;
+                        }
+                    }
+
                     ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
                 }
                 #endif

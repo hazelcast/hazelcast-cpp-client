@@ -26,6 +26,8 @@
 
 #include <memory>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
 
@@ -36,7 +38,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
 
-            class IMessageHandler {
+            class HAZELCAST_API IMessageHandler {
             public:
                 virtual void handleMessage(connection::Connection &connection, std::auto_ptr<ClientMessage> message) = 0;
             };

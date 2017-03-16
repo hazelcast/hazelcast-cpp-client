@@ -50,7 +50,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class Connection : public util::Closeable, public protocol::IMessageHandler {
+            class HAZELCAST_API Connection : public util::Closeable, public protocol::IMessageHandler {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
                            OutSelector& listener, bool isOwner

@@ -25,6 +25,7 @@
 #endif
 
 #include <asio/ssl/context_base.hpp>
+#include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -94,18 +95,41 @@ namespace hazelcast {
                 SSLProtocol getProtocol() const;
 
                 /**
-                 * @return The path of the valid CA file path. This file is being validated.
+                 * @return The list of all configured certificate verify files for the client.
                  */
-                const std::string &getCertificateAuthorityFilePath() const;
+                const std::vector<std::string> &getVerifyFiles() const;
 
                 /**
-                 * @param certificateAuthorityFilePath The file path for the certificate authority
+                 * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
+                 * with this configuration. The validity of the files are checked only when the client starts. Hence,
+                 * this call will not do any error checking. Error checking is performed only when the certificates are
+                 * actually loaded during client start.
+                 *
+                 * @param filename the name of a file containing certification authority certificates in PEM format.
                  */
-                void setCertificateAuthorityFilePath(const std::string &certificateAuthorityFilePath);
+                SSLConfig &addVerifyFile(const std::string &filename);
+
+                /**
+                 * @return Returns the use configured cipher list string.
+                 */
+                const std::string &getCipherList() const;
+
+                /**
+                 * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
+                 * SSL_CTX_set_cipher_list (https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_cipher_list.html) is
+                 * called with the provided ciphers string. The values and the format of the ciphers are described here:
+                 * https://www.openssl.org/docs/man1.0.2/apps/ciphers.html Some examples values for the string are:
+                 * "HIGH", "MEDIUM", "LOW", etc.
+                 *
+                 * If non of the provided ciphers could be selected the client initialization will fail.
+                 *
+                 */
+                SSLConfig &setCipherList(const std::string &ciphers);
             private:
                 bool enabled;
                 SSLProtocol sslProtocol;
-                std::string certificateAuthorityFilePath;
+                std::vector<std::string> clientVerifyFiles;
+                std::string cipherList;
             };
         }
     }

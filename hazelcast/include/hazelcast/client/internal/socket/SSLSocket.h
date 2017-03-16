@@ -43,6 +43,13 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API SSLSocket : public Socket {
                 public:
+                    struct CipherInfo {
+                        std::string name;
+                        int numberOfBits;
+                        std::string version;
+                        std::string description;
+                    };
+
                     /**
                      * Constructor
                      */
@@ -103,6 +110,10 @@ namespace hazelcast {
 
                     void setBlocking(bool blocking);
 
+                    /**
+                     * @return Returns the supported ciphers. Uses SSL_get_ciphers.
+                     */
+                    std::vector<SSLSocket::CipherInfo> getCiphers() const;
                 private:
                     SSLSocket(const Socket &rhs);
 
@@ -125,6 +136,8 @@ namespace hazelcast {
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                     asio::deadline_timer deadline;
                 };
+
+                std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);
             }
         }
     }
