@@ -105,6 +105,11 @@ namespace hazelcast {
                     return dataInput.readByteArray();
                 }
 
+                std::auto_ptr<std::vector<bool> > PortableReaderBase::readBooleanArray(const char *fieldName) {
+                    setPosition(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
+                    return dataInput.readBooleanArray();
+                }
+
                 std::auto_ptr<std::vector<char> > PortableReaderBase::readCharArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                     return dataInput.readCharArray();

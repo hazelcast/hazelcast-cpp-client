@@ -96,6 +96,11 @@ namespace hazelcast {
                 return *this;
             }
 
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addBooleanArrayField(const std::string& fieldName) {
+                addField(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
+                return *this;
+            }
+
             ClassDefinitionBuilder& ClassDefinitionBuilder::addCharArrayField(const std::string& fieldName) {
                 addField(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                 return *this;

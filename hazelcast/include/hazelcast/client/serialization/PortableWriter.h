@@ -123,6 +123,13 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
+                * @param values bool array to be written
+                * @throws IOException
+                */
+                void writeBooleanArray(const char *fieldName, const std::vector<bool> *values);
+
+                /**
+                * @param fieldName name of the field
                 * @param values     char array to be written
                 * @throws IOException
                 */

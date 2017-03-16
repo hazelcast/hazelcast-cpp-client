@@ -36,7 +36,9 @@ namespace hazelcast {
 
                 TestInnerPortable(const TestInnerPortable& rhs);
 
-                TestInnerPortable(std::vector<byte> b, std::vector<char> c, std::vector<short> s, std::vector<int> i, std::vector<long> l, std::vector<float> f, std::vector<double> d, std::vector<TestNamedPortable> n);
+                TestInnerPortable(std::vector<byte> b, std::vector<bool> ba, std::vector<char> c, std::vector<short> s,
+                                  std::vector<int> i, std::vector<long> l, std::vector<float> f, std::vector<double> d,
+                                  std::vector<TestNamedPortable> n);
 
                 TestInnerPortable& operator = (const TestInnerPortable& rhs);
 
@@ -57,6 +59,7 @@ namespace hazelcast {
             private:
                 std::vector<int> ii;
                 std::vector<byte> bb;
+                std::vector<bool> ba;
                 std::vector<char> cc;
                 std::vector<short> ss;
                 std::vector<long> ll;

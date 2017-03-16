@@ -25,13 +25,38 @@ namespace hazelcast {
     namespace client {
         namespace test {
             Employee::Employee():age(-1), name("") {
-
             }
 
             Employee::Employee(std::string name, int age)
                     :age(age)
                     , name(name) {
+                by = 2;
+                boolean = true;
+                c = 'c';
+                s = 4;
+                i = 2000;
+                l = 321324141;
+                f = 3.14f;
+                d = 3.14334;
+                str = "Hello world";
+                utfStr = "イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
 
+                byte byteArray[] = {50, 100, 150, 200};
+                byteVec = std::vector<byte>(byteArray, byteArray + 4);
+                char charArray[] = {'c', 'h', 'a', 'r'};
+                cc = std::vector<char>(charArray, charArray + 4);
+                bool boolArray[] = {true, false, false, true};
+                ba = std::vector<bool>(boolArray, boolArray + 4);
+                short shortArray[] = {3, 4, 5};
+                ss = std::vector<short>(shortArray, shortArray + 3);
+                int integerArray[] = {9, 8, 7, 6};
+                ii = std::vector<int>(integerArray, integerArray + 4);
+                long longArray[] = {0, 1, 5, 7, 9, 11};
+                ll = std::vector<long>(longArray, longArray + 6);
+                float floatArray[] = {0.6543f, -3.56f, 45.67f};
+                ff = std::vector<float>(floatArray, floatArray + 3);
+                double doubleArray[] = {456.456, 789.789, 321.321};
+                dd = std::vector<double>(doubleArray, doubleArray + 3);
             }
 
             bool Employee::operator==(const Employee &rhs) const {
@@ -53,11 +78,71 @@ namespace hazelcast {
             void Employee::writePortable(serialization::PortableWriter &writer) const {
                 writer.writeUTF("n", &name);
                 writer.writeInt("a", age);
+
+                writer.writeByte("b", by);
+                writer.writeChar("c", c);
+                writer.writeBoolean("bo", boolean);
+                writer.writeShort("s", s);
+                writer.writeInt("i", i);
+                writer.writeLong("l", l);
+                writer.writeFloat("f", f);
+                writer.writeDouble("d", d);
+                writer.writeUTF("str", &str);
+                writer.writeUTF("utfstr", &utfStr);
+
+                writer.writeByteArray("bb", &byteVec);
+                writer.writeCharArray("cc", &cc);
+                writer.writeBooleanArray("ba", &ba);
+                writer.writeShortArray("ss", &ss);
+                writer.writeIntArray("ii", &ii);
+                writer.writeFloatArray("ff", &ff);
+                writer.writeDoubleArray("dd", &dd);
+
+                serialization::ObjectDataOutput &out = writer.getRawDataOutput();
+                out.writeObject<byte>(&by);
+                out.writeObject<char>(&c);
+                out.writeObject<bool>(&boolean);
+                out.writeObject<short>(&s);
+                out.writeObject<int>(&i);
+                out.writeObject<float>(&f);
+                out.writeObject<double>(&d);
+                out.writeObject<std::string>(&str);
+                out.writeObject<std::string>(&utfStr);
             }
 
             void Employee::readPortable(serialization::PortableReader &reader) {
                 name = *reader.readUTF("n");
                 age = reader.readInt("a");
+
+                by = reader.readByte("b");;
+                c = reader.readChar("c");;
+                boolean = reader.readBoolean("bo");;
+                s = reader.readShort("s");;
+                i = reader.readInt("i");;
+                l = reader.readLong("l");;
+                f = reader.readFloat("f");;
+                d = reader.readDouble("d");;
+                str = *reader.readUTF("str");;
+                utfStr = *reader.readUTF("utfstr");;
+
+                byteVec = *reader.readByteArray("bb");;
+                cc = *reader.readCharArray("cc");;
+                ba = *reader.readBooleanArray("ba");;
+                ss = *reader.readShortArray("ss");;
+                ii = *reader.readIntArray("ii");;
+                ff = *reader.readFloatArray("ff");;
+                dd = *reader.readDoubleArray("dd");;
+
+                serialization::ObjectDataInput &in = reader.getRawDataInput();
+                by = *in.readObject<byte>();
+                c = *in.readObject<char>();
+                boolean = *in.readObject<bool>();
+                s = *in.readObject<short>();
+                i = *in.readObject<int>();
+                f = *in.readObject<float>();
+                d = *in.readObject<double>();
+                str = *in.readObject<std::string>();
+                utfStr = *in.readObject<std::string>();
             }
 
             int Employee::getAge() const {

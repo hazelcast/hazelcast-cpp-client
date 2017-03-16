@@ -134,6 +134,13 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
+                * @return the bool array value read
+                * @throws IOException
+                */
+                std::auto_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
+
+                /**
+                * @param fieldName name of the field
                 * @return the char array value read
                 * @throws IOException
                 */

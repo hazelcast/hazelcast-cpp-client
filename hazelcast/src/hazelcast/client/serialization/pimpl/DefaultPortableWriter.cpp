@@ -100,6 +100,11 @@ namespace hazelcast {
                     dataOutput.writeByteArray(bytes);
                 }
 
+                void DefaultPortableWriter::writeBooleanArray(const char *fieldName, const std::vector<bool> *bytes) {
+                    setPosition(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
+                    dataOutput.writeBooleanArray(bytes);
+                }
+
                 void DefaultPortableWriter::writeCharArray(const char *fieldName, const std::vector<char> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                     dataOutput.writeCharArray(data);

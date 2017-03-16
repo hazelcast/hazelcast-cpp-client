@@ -53,12 +53,14 @@ namespace hazelcast {
                 static const FieldType TYPE_UTF(9);
                 static const FieldType TYPE_PORTABLE_ARRAY(10);
                 static const FieldType TYPE_BYTE_ARRAY(11);
-                static const FieldType TYPE_CHAR_ARRAY(12);
-                static const FieldType TYPE_SHORT_ARRAY(13);
-                static const FieldType TYPE_INT_ARRAY(14);
-                static const FieldType TYPE_LONG_ARRAY(15);
-                static const FieldType TYPE_FLOAT_ARRAY(16);
-                static const FieldType TYPE_DOUBLE_ARRAY(17);
+                static const FieldType TYPE_BOOLEAN_ARRAY(12);
+                static const FieldType TYPE_CHAR_ARRAY(13);
+                static const FieldType TYPE_SHORT_ARRAY(14);
+                static const FieldType TYPE_INT_ARRAY(15);
+                static const FieldType TYPE_LONG_ARRAY(16);
+                static const FieldType TYPE_FLOAT_ARRAY(17);
+                static const FieldType TYPE_DOUBLE_ARRAY(18);
+                static const FieldType TYPE_UTF_ARRAY(19);
             }
         }
     }
