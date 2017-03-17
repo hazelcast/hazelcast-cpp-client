@@ -32,6 +32,7 @@ namespace hazelcast {
                 this->sslConfig = sslConfig;
                 return *this;
             }
+            #endif // HZ_BUILD_WITH_SSL
 
             int64_t ClientNetworkConfig::getConnectionTimeout() const {
                 return connectionTimeout;
@@ -41,7 +42,6 @@ namespace hazelcast {
                 this->connectionTimeout = connectionTimeoutInMillis;
                 return *this;
             }
-            #endif // HZ_BUILD_WITH_SSL
         }
     }
 }
