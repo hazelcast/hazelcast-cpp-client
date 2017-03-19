@@ -23,44 +23,84 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            int getHazelcastTypeId(const Portable* portable) {
+            int32_t getHazelcastTypeId(const Portable* portable) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE;
             }
 
-            int getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable) {
+            int32_t getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_DATA;
             }
 
-            int getHazelcastTypeId(const char *object) {
+            int32_t getHazelcastTypeId(const char *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR;
             }
 
-            int getHazelcastTypeId(const bool *object) {
+            int32_t getHazelcastTypeId(const bool *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN;
             }
 
-            int getHazelcastTypeId(const byte *object) {
+            int32_t getHazelcastTypeId(const byte *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE;
             }
 
-            int getHazelcastTypeId(const short *object) {
+            int32_t getHazelcastTypeId(const int16_t *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT;
             }
 
-            int getHazelcastTypeId(const int *object) {
+            int32_t getHazelcastTypeId(const int32_t *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER;
             }
 
-            int getHazelcastTypeId(const float *object) {
+            int32_t getHazelcastTypeId(const int64_t *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_LONG;
+            }
+
+            int32_t getHazelcastTypeId(const float *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT;
             }
 
-            int getHazelcastTypeId(const double *object) {
+            int32_t getHazelcastTypeId(const double *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE;
             }
 
-            int getHazelcastTypeId(const std::string *object) {
+            int32_t getHazelcastTypeId(const std::string *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_STRING;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<char> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<bool> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<byte> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<int16_t> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<int32_t> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<int64_t> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<float> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<double> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
+            }
+
+            int32_t getHazelcastTypeId(const std::vector<std::string> *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
             }
         }
     }

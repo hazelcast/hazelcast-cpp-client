@@ -37,7 +37,6 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API DataOutput {
                 public:
-
                     DataOutput();
 
                     virtual ~DataOutput();
@@ -48,13 +47,13 @@ namespace hazelcast {
 
                     void writeBoolean(bool b);
 
-                    void writeByte(int i);
+                    void writeByte(int32_t i);
 
-                    void writeShort(int i);
+                    void writeShort(int32_t i);
 
-                    void writeChar(int i);
+                    void writeChar(int32_t i);
 
-                    void writeInt(int i);
+                    void writeInt(int32_t i);
 
                     void writeLong(int64_t l);
 
@@ -64,7 +63,7 @@ namespace hazelcast {
 
                     void writeUTF(const std::string *s);
 
-                    void writeBytes(const byte *bytes, unsigned int len);
+                    void writeBytes(const byte *bytes, size_t len);
 
                     void writeByteArray(const std::vector<byte> *data);
 
@@ -72,11 +71,11 @@ namespace hazelcast {
 
                     void writeBooleanArray(const std::vector<bool> *bytes);
 
-                    void writeShortArray(const std::vector<short> *data);
+                    void writeShortArray(const std::vector<int16_t> *data);
 
-                    void writeIntArray(const std::vector<int> *data);
+                    void writeIntArray(const std::vector<int32_t> *data);
 
-                    void writeLongArray(const std::vector<long> *data);
+                    void writeLongArray(const std::vector<int64_t> *data);
 
                     void writeFloatArray(const std::vector<float> *data);
 
@@ -84,9 +83,9 @@ namespace hazelcast {
 
                     void writeUTFArray(const std::vector<std::string> *data);
 
-                    void writeByte(int index, int i);
+                    void writeByte(int index, int32_t i);
 
-                    void writeInt(int index, int v);
+                    void writeInt(int index, int32_t v);
 
                     void writeZeroBytes(int numberOfBytes);
 

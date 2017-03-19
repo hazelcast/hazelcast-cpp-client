@@ -207,8 +207,8 @@ namespace hazelcast {
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
                 std::vector<int> ii(integerArray, integerArray + 4);
-                long longArray[] = {0, 1, 5, 7, 9, 11};
-                std::vector<long> ll(longArray, longArray + 6);
+                int64_t longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<int64_t> ll(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
@@ -260,12 +260,12 @@ namespace hazelcast {
                 short *shortArray;
                 shortArray = new short[LARGE_ARRAY_SIZE];
                 std::vector<short> ss(shortArray, shortArray + LARGE_ARRAY_SIZE);
-                int *integerArray;
-                integerArray = new int[LARGE_ARRAY_SIZE];
-                std::vector<int> ii(integerArray, integerArray + LARGE_ARRAY_SIZE);
-                long *longArray;
-                longArray = new long[LARGE_ARRAY_SIZE];
-                std::vector<long> ll(longArray, longArray + LARGE_ARRAY_SIZE);
+                int32_t *integerArray;
+                integerArray = new int32_t[LARGE_ARRAY_SIZE];
+                std::vector<int32_t> ii(integerArray, integerArray + LARGE_ARRAY_SIZE);
+                int64_t *longArray;
+                longArray = new int64_t[LARGE_ARRAY_SIZE];
+                std::vector<int64_t> ll(longArray, longArray + LARGE_ARRAY_SIZE);
                 float *floatArray;
                 floatArray = new float[LARGE_ARRAY_SIZE];
                 std::vector<float> ff(floatArray, floatArray + LARGE_ARRAY_SIZE);
@@ -338,8 +338,8 @@ namespace hazelcast {
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
                 std::vector<int> ii(integerArray, integerArray + 4);
-                long longArray[] = {0, 1, 5, 7, 9, 11};
-                std::vector<long> ll(longArray, longArray + 6);
+                int64_t longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<int64_t> ll(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
@@ -406,7 +406,7 @@ namespace hazelcast {
                 char c = 'c';
                 short s = 4;
                 int i = 2000;
-                long l = 321324141;
+                int64_t l = 321324141;
                 float f = 3.14f;
                 double d = 3.14334;
                 std::string str = "Hello world";
@@ -436,8 +436,8 @@ namespace hazelcast {
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
                 std::vector<int> ii(integerArray, integerArray + 4);
-                long longArray[] = {0, 1, 5, 7, 9, 11};
-                std::vector<long> ll(longArray, longArray + 6);
+                int64_t longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<int64_t> ll(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
@@ -452,7 +452,7 @@ namespace hazelcast {
                 ASSERT_EQ(ba, toDataAndBackToObject<std::vector<bool> >(serializationService, ba));
                 ASSERT_EQ(ss, toDataAndBackToObject<std::vector<short> >(serializationService, ss));
                 ASSERT_EQ(ii, toDataAndBackToObject<std::vector<int> >(serializationService, ii));
-                ASSERT_EQ(ll, toDataAndBackToObject<std::vector<long> >(serializationService, ll));
+                ASSERT_EQ(ll, toDataAndBackToObject<std::vector<int64_t> >(serializationService, ll));
                 ASSERT_EQ(ff, toDataAndBackToObject<std::vector<float> >(serializationService, ff));
                 ASSERT_EQ(dd, toDataAndBackToObject<std::vector<double> >(serializationService, dd));
                 ASSERT_EQ(stringVector, toDataAndBackToObject<std::vector<std::string> >(serializationService,
@@ -557,7 +557,7 @@ namespace hazelcast {
                 char c = 'c';
                 short s = 4;
                 int i = 2000;
-                long l = 321324141;
+                int64_t l = 321324141;
                 float f = 3.14f;
                 double d = 3.14334;
                 std::string str = "Hello world";
@@ -573,8 +573,8 @@ namespace hazelcast {
                 std::vector<short> ss(shortArray, shortArray + 3);
                 int integerArray[] = {9, 8, 7, 6};
                 std::vector<int> ii(integerArray, integerArray + 4);
-                long longArray[] = {0, 1, 5, 7, 9, 11};
-                std::vector<long> ll(longArray, longArray + 6);
+                int64_t longArray[] = {0, 1, 5, 7, 9, 11};
+                std::vector<int64_t> ll(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
                 std::vector<float> ff(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};

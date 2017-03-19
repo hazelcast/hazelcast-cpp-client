@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 8/12/13.
 
-
-
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -54,27 +52,27 @@ namespace hazelcast {
                 dataOutput->writeBoolean(i);
             }
 
-            void ObjectDataOutput::writeByte(int i) {
+            void ObjectDataOutput::writeByte(int32_t i) {
                 if (isEmpty) return;
                 dataOutput->writeByte(i);
             }
 
-            void ObjectDataOutput::writeBytes(const byte *bytes, unsigned int len) {
+            void ObjectDataOutput::writeBytes(const byte *bytes, size_t len) {
                 if (isEmpty) return;
                 dataOutput->writeBytes(bytes, len);
             }
 
-            void ObjectDataOutput::writeShort(int v) {
+            void ObjectDataOutput::writeShort(int32_t v) {
                 if (isEmpty) return;
                 dataOutput->writeShort(v);
             }
 
-            void ObjectDataOutput::writeChar(int i) {
+            void ObjectDataOutput::writeChar(int32_t i) {
                 if (isEmpty) return;
                 dataOutput->writeChar(i);
             }
 
-            void ObjectDataOutput::writeInt(int v) {
+            void ObjectDataOutput::writeInt(int32_t v) {
                 if (isEmpty) return;
                 dataOutput->writeInt(v);
             }
@@ -119,17 +117,17 @@ namespace hazelcast {
                 dataOutput->writeBooleanArray(data);
             }
 
-            void ObjectDataOutput::writeShortArray(const std::vector<short> *data) {
+            void ObjectDataOutput::writeShortArray(const std::vector<int16_t> *data) {
                 if (isEmpty) return;
                 dataOutput->writeShortArray(data);
             }
 
-            void ObjectDataOutput::writeIntArray(const std::vector<int> *data) {
+            void ObjectDataOutput::writeIntArray(const std::vector<int32_t> *data) {
                 if (isEmpty) return;
                 dataOutput->writeIntArray(data);
             }
 
-            void ObjectDataOutput::writeLongArray(const std::vector<long> *data) {
+            void ObjectDataOutput::writeLongArray(const std::vector<int64_t > *data) {
                 if (isEmpty) return;
                 dataOutput->writeLongArray(data);
             }
@@ -147,7 +145,7 @@ namespace hazelcast {
             void ObjectDataOutput::writeUTFArray(const std::vector<std::string *> *strings) {
                 if (isEmpty) return;
 
-                int len = NULL != strings ? (int) strings->size() : util::Bits::NULL_ARRAY;
+                int32_t len = NULL != strings ? (int32_t) strings->size() : util::Bits::NULL_ARRAY;
 
                 writeInt(len);
 

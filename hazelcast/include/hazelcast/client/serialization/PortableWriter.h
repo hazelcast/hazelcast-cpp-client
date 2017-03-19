@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 8/10/13.
 
-
-
-
-
 #ifndef HAZELCAST_PortableWriter
 #define HAZELCAST_PortableWriter
 
@@ -53,70 +49,70 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value     int32_t value to be written
                 * @throws IOException
                 */
-                void writeInt(const char *fieldName, int value);
+                void writeInt(const char *fieldName, int32_t value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value int64_t value to be written
                 * @throws IOException
                 */
-                void writeLong(const char *fieldName, long value);
+                void writeLong(const char *fieldName, int64_t value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value boolean value to be written
                 * @throws IOException
                 */
                 void writeBoolean(const char *fieldName, bool value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value byte value to be written
                 * @throws IOException
                 */
                 void writeByte(const char *fieldName, byte value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value  char value to be written
                 * @throws IOException
                 */
-                void writeChar(const char *fieldName, int value);
+                void writeChar(const char *fieldName, int32_t value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value double value to be written
                 * @throws IOException
                 */
                 void writeDouble(const char *fieldName, double value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value float value to be written
                 * @throws IOException
                 */
                 void writeFloat(const char *fieldName, float value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     int value to be written
+                * @param value int16_t value to be written
                 * @throws IOException
                 */
-                void writeShort(const char *fieldName, short value);
+                void writeShort(const char *fieldName, int16_t value);
 
                 /**
                 * @param fieldName name of the field
-                * @param value     utf string value to be written
+                * @param value utf string value to be written
                 * @throws IOException
                 */
                 void writeUTF(const char *fieldName, const std::string *value);
 
                 /**
                 * @param fieldName name of the field
-                * @param values     byte array to be written
+                * @param values byte array to be written
                 * @throws IOException
                 */
                 void writeByteArray(const char *fieldName, const std::vector<byte> *values);
@@ -137,24 +133,24 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @param values     short array to be written
+                * @param values int16_t array to be written
                 * @throws IOException
                 */
-                void writeShortArray(const char *fieldName, const std::vector<short> *values);
+                void writeShortArray(const char *fieldName, const std::vector<int16_t> *values);
 
                 /**
                 * @param fieldName name of the field
-                * @param values     int array to be written
+                * @param values int32_t array to be written
                 * @throws IOException
                 */
-                void writeIntArray(const char *fieldName, const std::vector<int> *values);
+                void writeIntArray(const char *fieldName, const std::vector<int32_t> *values);
 
                 /**
                 * @param fieldName name of the field
-                * @param values     long array to be written
+                * @param values     int64_t array to be written
                 * @throws IOException
                 */
-                void writeLongArray(const char *fieldName, const std::vector<long> *values);
+                void writeLongArray(const char *fieldName, const std::vector<int64_t> *values);
 
                 /**
                 * @param fieldName name of the field

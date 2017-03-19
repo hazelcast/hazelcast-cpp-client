@@ -31,9 +31,9 @@ namespace hazelcast {
             TestInnerPortable::TestInnerPortable(std::vector<byte> b,
                                                  std::vector<bool> ba,
                                                  std::vector<char> c,
-                                                 std::vector<short> s,
-                                                 std::vector<int> i,
-                                                 std::vector<long> l,
+                                                 std::vector<int16_t> s,
+                                                 std::vector<int32_t> i,
+                                                 std::vector<int64_t> l,
                                                  std::vector<float> f,
                                                  std::vector<double> d,
                                                  std::vector<TestNamedPortable> n) : ii(i), bb(b), ba(ba), cc(c), ss(s),
@@ -56,11 +56,11 @@ namespace hazelcast {
                 return (*this);
             }
 
-            int TestInnerPortable::getClassId() const {
+            int32_t TestInnerPortable::getClassId() const {
                 return TestSerializationConstants::TEST_INNER_PORTABLE;
             }
 
-            int TestInnerPortable::getFactoryId() const {
+            int32_t TestInnerPortable::getFactoryId() const {
                 return TestSerializationConstants::TEST_DATA_FACTORY;
             }
 
@@ -73,8 +73,8 @@ namespace hazelcast {
                 if (ll != m.ll) return false;
                 if (ff != m.ff) return false;
                 if (dd != m.dd) return false;
-                int size = nn.size();
-                for (int i = 0; i < size; i++)
+                size_t size = nn.size();
+                for (size_t i = 0; i < size; i++)
                     if (nn[i] != m.nn[i])
                         return false;
                 return true;

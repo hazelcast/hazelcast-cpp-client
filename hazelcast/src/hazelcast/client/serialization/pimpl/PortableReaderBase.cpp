@@ -55,14 +55,14 @@ namespace hazelcast {
 
                 }
 
-                int PortableReaderBase::readInt(const char *fieldName) {
+                int32_t PortableReaderBase::readInt(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_INT);
                     return dataInput.readInt();
                 }
 
-                long PortableReaderBase::readLong(const char *fieldName) {
+                int64_t PortableReaderBase::readLong(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG);
-                    return (long)dataInput.readLong();
+                    return dataInput.readLong();
                 }
 
                 bool PortableReaderBase::readBoolean(const char *fieldName) {
@@ -90,7 +90,7 @@ namespace hazelcast {
                     return dataInput.readFloat();
                 }
 
-                short PortableReaderBase::readShort(const char *fieldName) {
+                int16_t PortableReaderBase::readShort(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT);
                     return dataInput.readShort();
                 }
@@ -115,12 +115,12 @@ namespace hazelcast {
                     return dataInput.readCharArray();
                 }
 
-                std::auto_ptr<std::vector<int> > PortableReaderBase::readIntArray(const char *fieldName) {
+                std::auto_ptr<std::vector<int32_t> > PortableReaderBase::readIntArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_INT_ARRAY);
                     return dataInput.readIntArray();
                 }
 
-                std::auto_ptr<std::vector<long> > PortableReaderBase::readLongArray(const char *fieldName) {
+                std::auto_ptr<std::vector<int64_t> > PortableReaderBase::readLongArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                     return dataInput.readLongArray();
                 }
@@ -135,7 +135,7 @@ namespace hazelcast {
                     return dataInput.readFloatArray();
                 }
 
-                std::auto_ptr<std::vector<short> > PortableReaderBase::readShortArray(const char *fieldName) {
+                std::auto_ptr<std::vector<int16_t> > PortableReaderBase::readShortArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                     return dataInput.readShortArray();
                 }
@@ -144,8 +144,8 @@ namespace hazelcast {
                     setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
 
                     bool isNull = dataInput.readBoolean();
-                    int factoryId = dataInput.readInt();
-                    int classId = dataInput.readInt();
+                    int32_t factoryId = dataInput.readInt();
+                    int32_t classId = dataInput.readInt();
 
                     checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
 
@@ -159,9 +159,9 @@ namespace hazelcast {
                 void PortableReaderBase::getPortableInstancesArray(char const *fieldName, std::vector<Portable *>& portableInstances) {
                     setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
-                    int len = dataInput.readInt();
-                    int factoryId = dataInput.readInt();
-                    int classId = dataInput.readInt();
+                    int32_t len = dataInput.readInt();
+                    int32_t factoryId = dataInput.readInt();
+                    int32_t classId = dataInput.readInt();
 
                     checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
 
@@ -169,14 +169,13 @@ namespace hazelcast {
                         int offset = dataInput.position();
                         for (int i = 0; i < len; i++) {
                             dataInput.position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
-                            int start = dataInput.readInt();
+                            int32_t start = dataInput.readInt();
                             dataInput.position(start);
 
                             read(dataInput, *(portableInstances[i]), factoryId, classId);
                         }
                     }
                 }
-
 
                 void PortableReaderBase::setPosition(char const *fieldName, FieldType const& fieldType) {
                     dataInput.position(readPosition(fieldName, fieldType));
@@ -197,10 +196,10 @@ namespace hazelcast {
                     }
 
                     dataInput.position(offset + cd->getField(fieldName).getIndex() * util::Bits::INT_SIZE_IN_BYTES);
-                    int pos = dataInput.readInt();
+                    int32_t pos = dataInput.readInt();
 
                     dataInput.position(pos);
-                    short len = dataInput.readShort();
+                    int16_t len = dataInput.readShort();
 
                     // name + len + type
                     return pos + util::Bits::SHORT_SIZE_IN_BYTES + len + 1;
@@ -209,14 +208,14 @@ namespace hazelcast {
                 hazelcast::client::serialization::ObjectDataInput& PortableReaderBase::getRawDataInput() {
                     if (!raw) {
                         dataInput.position(offset + cd->getFieldCount() * util::Bits::INT_SIZE_IN_BYTES);
-                        int pos = dataInput.readInt();
+                        int32_t pos = dataInput.readInt();
                         dataInput.position(pos);
                     }
                     raw = true;
                     return objectDataInput;
                 }
 
-                void PortableReaderBase::read(DataInput& dataInput, Portable& object, int factoryId, int classId) const {
+                void PortableReaderBase::read(DataInput& dataInput, Portable& object, int32_t factoryId, int32_t classId) const {
                     serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId);
                 }
 
@@ -224,7 +223,7 @@ namespace hazelcast {
                     dataInput.position(finalPosition);
                 }
 
-                void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const {
+                void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
                     if (factoryId != fd.getFactoryId()) {
                         char msg[100];
                         util::snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);

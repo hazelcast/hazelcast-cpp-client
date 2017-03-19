@@ -32,7 +32,7 @@ namespace hazelcast {
                 : PortableReaderBase(portableContext, input, cd) {
                 }
 
-                int MorphingPortableReader::readInt(char const *fieldName) {
+                int32_t MorphingPortableReader::readInt(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
                         return 0;
                     }
@@ -51,7 +51,7 @@ namespace hazelcast {
                     }
                 }
 
-                long MorphingPortableReader::readLong(char const *fieldName) {
+                int64_t MorphingPortableReader::readLong(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
                         return 0;
                     }
@@ -140,7 +140,7 @@ namespace hazelcast {
                     }
                 }
 
-                short MorphingPortableReader::readShort(char const *fieldName) {
+                int16_t MorphingPortableReader::readShort(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
                         return 0;
                     }
@@ -176,16 +176,16 @@ namespace hazelcast {
                     return PortableReaderBase::readCharArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<int> > MorphingPortableReader::readIntArray(char const *fieldName) {
+                std::auto_ptr<std::vector<int32_t> > MorphingPortableReader::readIntArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<int> >(new std::vector<int>(1, 0));
+                        return std::auto_ptr<std::vector<int32_t> >(new std::vector<int32_t>(1, 0));
                     }
                     return PortableReaderBase::readIntArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<long> > MorphingPortableReader::readLongArray(char const *fieldName) {
+                std::auto_ptr<std::vector<int64_t> > MorphingPortableReader::readLongArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<long> >(new std::vector<long>(1, 0));
+                        return std::auto_ptr<std::vector<int64_t> >(new std::vector<int64_t>(1, 0));
                     }
                     return PortableReaderBase::readLongArray(fieldName);
                 }
@@ -204,9 +204,9 @@ namespace hazelcast {
                     return PortableReaderBase::readFloatArray(fieldName);
                 }
 
-                std::auto_ptr<std::vector<short> > MorphingPortableReader::readShortArray(char const *fieldName) {
+                std::auto_ptr<std::vector<int16_t> > MorphingPortableReader::readShortArray(char const *fieldName) {
                     if (!cd->hasField(fieldName)){
-                        return std::auto_ptr<std::vector<short> >(new std::vector<short>(1, 0));
+                        return std::auto_ptr<std::vector<int16_t> >(new std::vector<int16_t>(1, 0));
                     }
                     return PortableReaderBase::readShortArray(fieldName);
                 }

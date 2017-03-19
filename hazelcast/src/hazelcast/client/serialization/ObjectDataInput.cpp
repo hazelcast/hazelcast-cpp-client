@@ -51,7 +51,7 @@ namespace hazelcast {
                 return dataInput.readByte();
             }
 
-            short ObjectDataInput::readShort() {
+            int16_t ObjectDataInput::readShort() {
                 return dataInput.readShort();
             }
 
@@ -59,7 +59,7 @@ namespace hazelcast {
                 return dataInput.readChar();
             }
 
-            int ObjectDataInput::readInt() {
+            int32_t ObjectDataInput::readInt() {
                 return dataInput.readInt();
             }
 
@@ -103,11 +103,11 @@ namespace hazelcast {
                 return dataInput.readCharArray();
             }
 
-            std::auto_ptr<std::vector<int> > ObjectDataInput::readIntArray() {
+            std::auto_ptr<std::vector<int32_t> > ObjectDataInput::readIntArray() {
                 return dataInput.readIntArray();
             }
 
-            std::auto_ptr<std::vector<long> > ObjectDataInput::readLongArray() {
+            std::auto_ptr<std::vector<int64_t> > ObjectDataInput::readLongArray() {
                 return dataInput.readLongArray();
             }
 
@@ -119,7 +119,7 @@ namespace hazelcast {
                 return dataInput.readFloatArray();
             }
 
-            std::auto_ptr<std::vector<short> > ObjectDataInput::readShortArray() {
+            std::auto_ptr<std::vector<int16_t> > ObjectDataInput::readShortArray() {
                 return dataInput.readShortArray();
             }
 
@@ -154,17 +154,17 @@ namespace hazelcast {
             }
 
             template <>
-            void ObjectDataInput::readInternal(int typeId, short *object) {
+            void ObjectDataInput::readInternal(int typeId, int16_t *object) {
                 *object = readShort();
             }
 
             template <>
-            void ObjectDataInput::readInternal(int typeId, int *object) {
+            void ObjectDataInput::readInternal(int typeId, int32_t *object) {
                 *object = readInt();
             }
 
             template <>
-            void ObjectDataInput::readInternal(int typeId, long *object) {
+            void ObjectDataInput::readInternal(int typeId, int64_t *object) {
                 *object = readLong();
             }
 

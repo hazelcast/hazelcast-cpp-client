@@ -69,10 +69,10 @@ namespace hazelcast {
                     return buffer[pos++];
                 }
 
-                short DataInput::readShort() {
+                int16_t DataInput::readShort() {
                     byte a = readByte();
                     byte b = readByte();
-                    return (short)((0xff00 & (a << 8)) |
+                    return (int16_t)((0xff00 & (a << 8)) |
                             (0x00ff & b));
                 }
 
@@ -82,7 +82,7 @@ namespace hazelcast {
                     return b;
                 }
 
-                int DataInput::readInt() {
+                int32_t DataInput::readInt() {
                     byte a = readByte();
                     byte b = readByte();
                     byte c = readByte();
@@ -114,7 +114,7 @@ namespace hazelcast {
 
                 float DataInput::readFloat() {
                     union {
-                        int i;
+                        int32_t i;
                         float f;
                     } u;
                     u.i = readInt();
@@ -124,14 +124,14 @@ namespace hazelcast {
                 double DataInput::readDouble() {
                     union {
                         double d;
-                        long long l;
+                        int64_t l;
                     } u;
                     u.l = readLong();
                     return u.d;
                 }
 
                 std::auto_ptr<std::string> DataInput::readUTF() {
-                    int len = readInt();
+                    int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
                         return std::auto_ptr<std::string>(NULL);
                     } else {
@@ -174,12 +174,12 @@ namespace hazelcast {
                     return readArray<char>();
                 }
 
-                std::auto_ptr<std::vector<int> > DataInput::readIntArray() {
-                    return readArray<int>();
+                std::auto_ptr<std::vector<int32_t> > DataInput::readIntArray() {
+                    return readArray<int32_t>();
                 }
 
-                std::auto_ptr<std::vector<long> > DataInput::readLongArray() {
-                    return readArray<long>();
+                std::auto_ptr<std::vector<int64_t> > DataInput::readLongArray() {
+                    return readArray<int64_t>();
                 }
 
                 std::auto_ptr<std::vector<double> > DataInput::readDoubleArray() {
@@ -190,19 +190,19 @@ namespace hazelcast {
                     return readArray<float>();
                 }
 
-                std::auto_ptr<std::vector<short> > DataInput::readShortArray() {
-                    return readArray<short>();
+                std::auto_ptr<std::vector<int16_t> > DataInput::readShortArray() {
+                    return readArray<int16_t>();
                 }
 
                 std::auto_ptr<std::vector<std::string> > DataInput::readUTFArray() {
-                    int len = readInt();
+                    int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
                         return std::auto_ptr<std::vector<std::string> > (NULL);
                     }
 
                     std::auto_ptr<std::vector<std::string> > values(
                             new std::vector<std::string>());
-                    for (int i = 0; i < len; ++i) {
+                    for (int32_t i = 0; i < len; ++i) {
                         values->push_back(*readUTF());
                     }
                     return values;
@@ -230,15 +230,15 @@ namespace hazelcast {
                     return util::Bits::BOOLEAN_SIZE_IN_BYTES;
                 }
 
-                int DataInput::getSize(short *dummy) {
+                int DataInput::getSize(int16_t *dummy) {
                     return util::Bits::SHORT_SIZE_IN_BYTES;
                 }
 
-                int DataInput::getSize(int *dummy) {
+                int DataInput::getSize(int32_t *dummy) {
                     return util::Bits::INT_SIZE_IN_BYTES;
                 }
 
-                int DataInput::getSize(long *dummy) {
+                int DataInput::getSize(int64_t *dummy) {
                     return util::Bits::LONG_SIZE_IN_BYTES;
                 }
 
@@ -266,18 +266,18 @@ namespace hazelcast {
                 }
 
                 template <>
-                short DataInput::read() {
+                int16_t DataInput::read() {
                     return readShort();
                 }
 
                 template <>
-                int DataInput::read() {
+                int32_t DataInput::read() {
                     return readInt();
                 }
 
                 template <>
-                long DataInput::read() {
-                    return (long)readLong();
+                int64_t DataInput::read() {
+                    return readLong();
                 }
 
                 template <>

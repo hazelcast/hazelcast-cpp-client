@@ -16,10 +16,7 @@
 //
 // Created by sancar koyunlu on 8/10/13.
 
-
-
 #include "hazelcast/client/serialization/PortableReader.h"
-
 
 namespace hazelcast {
     namespace client {
@@ -50,13 +47,13 @@ namespace hazelcast {
                 return *this;
             }
 
-            int PortableReader::readInt(const char *fieldName) {
+            int32_t PortableReader::readInt(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readInt(fieldName);
                 return morphingPortableReader->readInt(fieldName);
             }
 
-            long PortableReader::readLong(const char *fieldName) {
+            int64_t PortableReader::readLong(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readLong(fieldName);
                 return morphingPortableReader->readLong(fieldName);
@@ -92,7 +89,7 @@ namespace hazelcast {
                 return morphingPortableReader->readFloat(fieldName);
             }
 
-            short PortableReader::readShort(const char *fieldName) {
+            int16_t PortableReader::readShort(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readShort(fieldName);
                 return morphingPortableReader->readShort(fieldName);
@@ -123,13 +120,13 @@ namespace hazelcast {
                 return morphingPortableReader->readCharArray(fieldName);
             }
 
-            std::auto_ptr<std::vector<int> > PortableReader::readIntArray(const char *fieldName) {
+            std::auto_ptr<std::vector<int32_t> > PortableReader::readIntArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readIntArray(fieldName);
                 return morphingPortableReader->readIntArray(fieldName);
             }
 
-            std::auto_ptr<std::vector<long> > PortableReader::readLongArray(const char *fieldName) {
+            std::auto_ptr<std::vector<int64_t> > PortableReader::readLongArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readLongArray(fieldName);
                 return morphingPortableReader->readLongArray(fieldName);
@@ -147,7 +144,7 @@ namespace hazelcast {
                 return morphingPortableReader->readFloatArray(fieldName);
             }
 
-            std::auto_ptr<std::vector<short> > PortableReader::readShortArray(const char *fieldName) {
+            std::auto_ptr<std::vector<int16_t> > PortableReader::readShortArray(const char *fieldName) {
                 if (isDefaultReader)
                     return defaultPortableReader->readShortArray(fieldName);
                 return morphingPortableReader->readShortArray(fieldName);

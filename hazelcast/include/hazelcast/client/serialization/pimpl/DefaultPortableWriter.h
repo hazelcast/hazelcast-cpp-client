@@ -57,21 +57,21 @@ namespace hazelcast {
 
                     DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& output);
 
-                    void writeInt(const char *fieldName, int value);
+                    void writeInt(const char *fieldName, int32_t value);
 
-                    void writeLong(const char *fieldName, long value);
+                    void writeLong(const char *fieldName, int64_t  value);
 
                     void writeBoolean(const char *fieldName, bool value);
 
                     void writeByte(const char *fieldName, byte value);
 
-                    void writeChar(const char *fieldName, int value);
+                    void writeChar(const char *fieldName, int32_t value);
 
                     void writeDouble(const char *fieldName, double value);
 
                     void writeFloat(const char *fieldName, float value);
 
-                    void writeShort(const char *fieldName, int value);
+                    void writeShort(const char *fieldName, int32_t value);
 
                     void writeUTF(const char *fieldName, const std::string *str);
 
@@ -81,11 +81,11 @@ namespace hazelcast {
 
                     void writeCharArray(const char *fieldName, const std::vector<char> *data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short> *data);
+                    void writeShortArray(const char *fieldName, const std::vector<int16_t> *data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int> *data);
+                    void writeIntArray(const char *fieldName, const std::vector<int32_t> *data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long> *data);
+                    void writeLongArray(const char *fieldName, const std::vector<int64_t > *data);
 
                     void writeFloatArray(const char *fieldName, const std::vector<float> *data);
 
@@ -123,7 +123,7 @@ namespace hazelcast {
                     template<typename T>
                     void writePortableArray(const char *fieldName, const std::vector<T> *values) {
                         FieldDefinition const& fd = setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
-                        int len =  (NULL == values ? util::Bits::NULL_ARRAY : (int)values->size());
+                        int32_t len =  (NULL == values ? util::Bits::NULL_ARRAY : (int32_t)values->size());
                         dataOutput.writeInt(len);
 
                         dataOutput.writeInt(fd.getFactoryId());
@@ -132,10 +132,10 @@ namespace hazelcast {
                         if (len > 0) {
                             size_t offset = dataOutput.position();
                             dataOutput.position(offset + len * util::Bits::INT_SIZE_IN_BYTES);
-                            for (int i = 0; i < len; i++) {
+                            for (int32_t i = 0; i < len; i++) {
                                 checkPortableAttributes(fd, (*values)[i]);
                                 size_t position = dataOutput.position();
-                                dataOutput.writeInt((int)(offset + i * util::Bits::INT_SIZE_IN_BYTES), (int)position);
+                                dataOutput.writeInt((int32_t)(offset + i * util::Bits::INT_SIZE_IN_BYTES), (int32_t)position);
                                 write((*values)[i]);
                             }
                         }

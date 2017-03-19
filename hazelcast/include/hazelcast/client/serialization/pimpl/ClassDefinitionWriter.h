@@ -54,21 +54,21 @@ namespace hazelcast {
 
                     ClassDefinitionWriter(PortableContext& portableContext, ClassDefinitionBuilder& builder);
 
-                    void writeInt(const char *fieldName, int value);
+                    void writeInt(const char *fieldName, int32_t value);
 
-                    void writeLong(const char *fieldName, long value);
+                    void writeLong(const char *fieldName, int64_t value);
 
                     void writeBoolean(const char *fieldName, bool value);
 
                     void writeByte(const char *fieldName, byte value);
 
-                    void writeChar(const char *fieldName, int value);
+                    void writeChar(const char *fieldName, int32_t value);
 
                     void writeDouble(const char *fieldName, double value);
 
                     void writeFloat(const char *fieldName, float value);
 
-                    void writeShort(const char *fieldName, short value);
+                    void writeShort(const char *fieldName, int16_t value);
 
                     void writeUTF(const char *fieldName, const std::string *str);
 
@@ -78,11 +78,11 @@ namespace hazelcast {
 
                     void writeCharArray(const char *fieldName, const std::vector<char> *data);
 
-                    void writeShortArray(const char *fieldName, const std::vector<short> *data);
+                    void writeShortArray(const char *fieldName, const std::vector<int16_t> *data);
 
-                    void writeIntArray(const char *fieldName, const std::vector<int> *data);
+                    void writeIntArray(const char *fieldName, const std::vector<int32_t> *data);
 
-                    void writeLongArray(const char *fieldName, const std::vector<long> *data);
+                    void writeLongArray(const char *fieldName, const std::vector<int64_t> *data);
 
                     void writeFloatArray(const char *fieldName, const std::vector<float> *data);
 
@@ -92,8 +92,8 @@ namespace hazelcast {
                     void writeNullPortable(const char *fieldName) {
 
                         T portable;
-                        int factoryId = portable.getFactoryId();
-                        int classId = portable.getClassId();
+                        int32_t factoryId = portable.getFactoryId();
+                        int32_t classId = portable.getClassId();
                         boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId, classId, context.getVersion());
                         if (nestedClassDef == NULL) {
                             throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable",

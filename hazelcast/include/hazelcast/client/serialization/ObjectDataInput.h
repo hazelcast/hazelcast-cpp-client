@@ -95,10 +95,10 @@ namespace hazelcast {
                 byte readByte();
 
                 /**
-                * @return the short read
+                * @return the int16_t read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                short readShort();
+                int16_t readShort();
 
                 /**
                 * @return the char read
@@ -107,13 +107,13 @@ namespace hazelcast {
                 char readChar();
 
                 /**
-                * @return the int read
+                * @return the int32_t read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                int readInt();
+                int32_t readInt();
 
                 /**
-                * @return the long read
+                * @return the int64_t read
                 * @throws IOException if it reaches end of file before finish reading
                 */
                 int64_t readLong();
@@ -155,16 +155,16 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<char> > readCharArray();
 
                 /**
-                * @return the int array read
+                * @return the int32_t array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::auto_ptr<std::vector<int> > readIntArray();
+                std::auto_ptr<std::vector<int32_t> > readIntArray();
 
                 /**
-                * @return the long array read
+                * @return the int64_t array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::auto_ptr<std::vector<long> > readLongArray();
+                std::auto_ptr<std::vector<int64_t> > readLongArray();
 
                 /**
                 * @return the double array read
@@ -179,10 +179,10 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<float> > readFloatArray();
 
                 /**
-                * @return the short array read
+                * @return the int16_t array read
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::auto_ptr<std::vector<short> > readShortArray();
+                std::auto_ptr<std::vector<int16_t> > readShortArray();
 
                 /**
                 * @return the array of strings
@@ -198,7 +198,7 @@ namespace hazelcast {
                 */
                 template<typename T>
                 std::auto_ptr<T> readObject() {
-                    int typeId = readInt();
+                    int32_t typeId = readInt();
                     const pimpl::SerializationConstants& constants = portableContext.getConstants();
                     if (constants.CONSTANT_TYPE_NULL == typeId) {
                         return std::auto_ptr<T>();
@@ -274,13 +274,13 @@ namespace hazelcast {
             HAZELCAST_API void ObjectDataInput::readInternal(int typeId, char *object);
 
             template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, short *object);
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int16_t *object);
 
             template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int *object);
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int32_t *object);
 
             template <>
-            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, long *object);
+            HAZELCAST_API void ObjectDataInput::readInternal(int typeId, int64_t *object);
 
             template <>
             HAZELCAST_API void ObjectDataInput::readInternal(int typeId, float *object);

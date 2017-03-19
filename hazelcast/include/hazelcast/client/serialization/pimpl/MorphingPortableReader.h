@@ -52,9 +52,9 @@ namespace hazelcast {
 
                     MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
-                    int readInt(const char *fieldName);
+                    int32_t readInt(const char *fieldName);
 
-                    long readLong(const char *fieldName);
+                    int64_t readLong(const char *fieldName);
 
                     bool readBoolean(const char *fieldName);
 
@@ -66,7 +66,7 @@ namespace hazelcast {
 
                     float readFloat(const char *fieldName);
 
-                    short readShort(const char *fieldName);
+                    int16_t readShort(const char *fieldName);
 
                     std::auto_ptr<std::string> readUTF(const char *fieldName);
 
@@ -74,15 +74,15 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
+                    std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
+                    std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
                     std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
                     std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
+                    std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
@@ -98,7 +98,7 @@ namespace hazelcast {
                     std::vector<T> readPortableArray(const char *fieldName) {
                         PortableReaderBase::setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
-                        int len = dataInput.readInt();
+                        int32_t len = dataInput.readInt();
                         std::vector<T> portables(len);
 
                         std::vector<Portable *> baseArray(len);

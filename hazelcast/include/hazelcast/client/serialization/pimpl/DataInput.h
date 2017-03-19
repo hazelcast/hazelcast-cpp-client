@@ -58,12 +58,12 @@ namespace hazelcast {
 
                     byte readByte();
 
-                    short readShort();
+                    int16_t readShort();
 
                     // TODO: change to return 2 bytes char as in java
                     char readChar();
 
-                    int readInt();
+                    int32_t readInt();
 
                     int64_t readLong();
 
@@ -79,15 +79,15 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<char> > readCharArray();
 
-                    std::auto_ptr<std::vector<int> > readIntArray();
+                    std::auto_ptr<std::vector<int32_t> > readIntArray();
 
-                    std::auto_ptr<std::vector<long> > readLongArray();
+                    std::auto_ptr<std::vector<int64_t> > readLongArray();
 
                     std::auto_ptr<std::vector<double> > readDoubleArray();
 
                     std::auto_ptr<std::vector<float> > readFloatArray();
 
-                    std::auto_ptr<std::vector<short> > readShortArray();
+                    std::auto_ptr<std::vector<int16_t> > readShortArray();
 
                     std::auto_ptr<std::vector<std::string> > readUTFArray();
 
@@ -112,7 +112,7 @@ namespace hazelcast {
 
                     template <typename T>
                     inline std::auto_ptr<std::vector<T> > readArray() {
-                        int len = readInt();
+                        int32_t len = readInt();
                         if (util::Bits::NULL_ARRAY == len) {
                             return std::auto_ptr<std::vector<T> > (NULL);
                         }
@@ -120,7 +120,7 @@ namespace hazelcast {
                         if (len > 0) {
                             checkAvailable((size_t)len * getSize((T *)NULL));
                             std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
-                            for (int i = 0; i < len; i++) {
+                            for (int32_t i = 0; i < len; i++) {
                                 (*values)[i] = read<T>();
                             }
                             return values;
@@ -143,11 +143,11 @@ namespace hazelcast {
 
                     int getSize(bool *dummy);
 
-                    int getSize(short *dummy);
+                    int getSize(int16_t *dummy);
 
-                    int getSize(int *dummy);
+                    int getSize(int32_t *dummy);
 
-                    int getSize(long *dummy);
+                    int getSize(int64_t *dummy);
 
                     int getSize(float *dummy);
 
@@ -164,13 +164,13 @@ namespace hazelcast {
                 HAZELCAST_API bool DataInput::read();
 
                 template <>
-                HAZELCAST_API short DataInput::read();
+                HAZELCAST_API int16_t DataInput::read();
 
                 template <>
-                HAZELCAST_API int DataInput::read();
+                HAZELCAST_API int32_t DataInput::read();
 
                 template <>
-                HAZELCAST_API long DataInput::read();
+                HAZELCAST_API int64_t DataInput::read();
 
                 template <>
                 HAZELCAST_API float DataInput::read();

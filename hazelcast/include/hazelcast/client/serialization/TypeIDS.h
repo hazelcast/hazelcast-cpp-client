@@ -18,6 +18,8 @@
 #define HAZELCAST_TypeIDS
 
 #include <string>
+#include <vector>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -26,27 +28,45 @@ namespace hazelcast {
             class Portable;
             class IdentifiedDataSerializable;
 
-            int HAZELCAST_API getHazelcastTypeId(const Portable* portable);
+            int32_t HAZELCAST_API getHazelcastTypeId(const Portable* portable);
 
-            int HAZELCAST_API getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable);
+            int32_t HAZELCAST_API getHazelcastTypeId(const IdentifiedDataSerializable* identifiedDataSerializable);
 
-            int HAZELCAST_API getHazelcastTypeId(const char *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const char *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const bool *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const bool *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const byte *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const byte *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const short *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const int16_t *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const int *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const int32_t *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const long *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const int64_t *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const float *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const float *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const double *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const double *object);
 
-            int HAZELCAST_API getHazelcastTypeId(const std::string *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::string *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<char> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<bool> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<byte> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int16_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int32_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int64_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<float> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<double> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string> *object);
         }
     }
 }

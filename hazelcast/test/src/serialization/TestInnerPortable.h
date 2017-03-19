@@ -36,15 +36,15 @@ namespace hazelcast {
 
                 TestInnerPortable(const TestInnerPortable& rhs);
 
-                TestInnerPortable(std::vector<byte> b, std::vector<bool> ba, std::vector<char> c, std::vector<short> s,
-                                  std::vector<int> i, std::vector<long> l, std::vector<float> f, std::vector<double> d,
+                TestInnerPortable(std::vector<byte> b, std::vector<bool> ba, std::vector<char> c, std::vector<int16_t> s,
+                                  std::vector<int32_t> i, std::vector<int64_t> l, std::vector<float> f, std::vector<double> d,
                                   std::vector<TestNamedPortable> n);
 
                 TestInnerPortable& operator = (const TestInnerPortable& rhs);
 
-                int getClassId() const;
+                int32_t getClassId() const;
 
-                int getFactoryId() const;
+                int32_t getFactoryId() const;
 
                 ~TestInnerPortable();
 
@@ -57,12 +57,12 @@ namespace hazelcast {
                 void readPortable(serialization::PortableReader& reader);
 
             private:
-                std::vector<int> ii;
+                std::vector<int32_t> ii;
                 std::vector<byte> bb;
                 std::vector<bool> ba;
                 std::vector<char> cc;
-                std::vector<short> ss;
-                std::vector<long> ll;
+                std::vector<int16_t> ss;
+                std::vector<int64_t> ll;
                 std::vector<float> ff;
                 std::vector<double> dd;
                 std::vector< TestNamedPortable > nn;
