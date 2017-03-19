@@ -41,6 +41,7 @@ namespace hazelcast {
                 util::CountDownLatch &interceptorLatch;
             };
 
+            #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
                 HazelcastServer instance(*g_srvFactory, true);
                 std::auto_ptr<ClientConfig> config = getConfig();
@@ -53,6 +54,7 @@ namespace hazelcast {
                 HazelcastClient client(*config);
                 interceptorLatch.await(2);
             }
+            #endif
 
             TEST_F(SocketInterceptorTest, interceptBasic) {
                 HazelcastServer instance(*g_srvFactory);

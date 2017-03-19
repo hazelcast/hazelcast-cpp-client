@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifdef HZ_BUILD_WITH_SSL
 #include "hazelcast/client/internal/socket/SSLSocket.h"
+#endif
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "ClientTestSupport.h"
@@ -25,6 +27,7 @@ namespace hazelcast {
         namespace test {
             class ClientConnectionTest : public ClientTestSupport {
             protected:
+                #ifdef HZ_BUILD_WITH_SSL
                 std::vector<internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
@@ -34,6 +37,7 @@ namespace hazelcast {
                     internal::socket::SSLSocket &socket = (internal::socket::SSLSocket &) aConnection->getSocket();
                     return socket.getCiphers();
                 }
+                #endif
             };
 
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
@@ -43,18 +47,19 @@ namespace hazelcast {
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
+            TEST_F(ClientConnectionTest, testTcpSocketConnectionTimeout_withIntMax) {
+                HazelcastServer instance(*g_srvFactory, true);
+                ClientConfig config;
+                config.addAddress(Address("8.8.8.8", 5701));
+                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
+            }
+
+            #ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
                 HazelcastServer instance(*g_srvFactory, true);
                 ClientConfig config;
                 config.addAddress(Address("8.8.8.8", 5701));
                 config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
-                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
-            }
-
-            TEST_F(ClientConnectionTest, testTcpSocketConnectionTimeout_withIntMax) {
-                HazelcastServer instance(*g_srvFactory, true);
-                ClientConfig config;
-                config.addAddress(Address("8.8.8.8", 5701));
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
@@ -87,6 +92,7 @@ namespace hazelcast {
                     ASSERT_NE(unsupportedCipher, it->name);
                 }
             }
+            #endif
         }
     }
 }
