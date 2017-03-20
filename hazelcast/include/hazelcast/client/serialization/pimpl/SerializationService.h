@@ -151,13 +151,13 @@ namespace hazelcast {
                 HAZELCAST_API Data SerializationService::toData<char>(const char  *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<short>(const short  *object);
+                HAZELCAST_API Data SerializationService::toData<int16_t>(const int16_t  *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<int>(const int  *object);
+                HAZELCAST_API Data SerializationService::toData<int32_t>(const int32_t  *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<long>(const long *object);
+                HAZELCAST_API Data SerializationService::toData<int64_t >(const int64_t  *object);
 
                 template<>
                 HAZELCAST_API Data SerializationService::toData<float>(const float  *object);
@@ -172,13 +172,13 @@ namespace hazelcast {
                 HAZELCAST_API Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<short> >(const std::vector<short> *object);
+                HAZELCAST_API Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<int> >(const std::vector<int> *object);
+                HAZELCAST_API Data SerializationService::toData<std::vector<int32_t> >(const std::vector<int32_t> *object);
 
                 template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<long> >(const std::vector<long> *object);
+                HAZELCAST_API Data SerializationService::toData<std::vector<int64_t > >(const std::vector<int64_t > *object);
 
                 template<>
                 HAZELCAST_API Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object);
@@ -202,13 +202,13 @@ namespace hazelcast {
                 HAZELCAST_API std::auto_ptr<char> SerializationService::toObject(const Data &data) ;
 
                 template<>
-                HAZELCAST_API std::auto_ptr<short> SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<int16_t> SerializationService::toObject(const Data &data);
 
                 template<>
-                HAZELCAST_API std::auto_ptr<int> SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<int32_t> SerializationService::toObject(const Data &data);
 
                 template<>
-                HAZELCAST_API std::auto_ptr<long> SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<int64_t > SerializationService::toObject(const Data &data);
 
                 template<>
                 HAZELCAST_API std::auto_ptr<float> SerializationService::toObject(const Data &data);
@@ -223,12 +223,12 @@ namespace hazelcast {
                 HAZELCAST_API std::auto_ptr<std::vector<bool> > SerializationService::toObject(const Data &data);
 
                 template<>
-                HAZELCAST_API std::auto_ptr<std::vector<short> >  SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<std::vector<int16_t> >  SerializationService::toObject(const Data &data);
 
                 template<>
-                HAZELCAST_API std::auto_ptr<std::vector<int> > SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<std::vector<int32_t> > SerializationService::toObject(const Data &data);
                 template<>
-                HAZELCAST_API std::auto_ptr<std::vector<long> > SerializationService::toObject(const Data &data);
+                HAZELCAST_API std::auto_ptr<std::vector<int64_t > > SerializationService::toObject(const Data &data);
 
                 template<>
                 HAZELCAST_API std::auto_ptr< std::vector<float> >  SerializationService::toObject(const Data &data);

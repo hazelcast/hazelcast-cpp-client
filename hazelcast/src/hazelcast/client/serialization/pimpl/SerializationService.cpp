@@ -145,7 +145,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                Data SerializationService::toData<int>(const int  *object) {
+                Data SerializationService::toData<int32_t>(const int32_t  *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -285,7 +285,7 @@ namespace hazelcast {
                 }
 
                 template<>
-                Data SerializationService::toData<std::vector<int> >(const std::vector<int> *object) {
+                Data SerializationService::toData<std::vector<int32_t> >(const std::vector<int32_t> *object) {
                     if (NULL == object) {
                         return Data();
                     }
