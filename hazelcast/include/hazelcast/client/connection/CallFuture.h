@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 21/08/14.
 //
-
-
 #ifndef HAZELCAST_CallFuture
 #define HAZELCAST_CallFuture
 
@@ -53,7 +51,7 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> get();
 
-                std::auto_ptr<protocol::ClientMessage> get(time_t timeoutInSeconds);
+                std::auto_ptr<protocol::ClientMessage> get(int64_t timeoutInMilliseconds);
 
                 int64_t getCallId() const;
 

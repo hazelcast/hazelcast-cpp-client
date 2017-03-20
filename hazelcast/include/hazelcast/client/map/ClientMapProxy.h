@@ -33,6 +33,9 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/internal/concurrent/FutureImpl.h"
+#include "hazelcast/client/Future.h"
+#include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -944,6 +947,14 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
+                boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                    serialization::pimpl::Data keyData = toData(key);
+                    serialization::pimpl::Data processorData = toData(entryProcessor);
+
+                    return submitToKeyInternal<ResultType>(keyData, processorData);
+                }
+
+                template<typename ResultType, typename EntryProcessor>
                 std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
 
@@ -1197,6 +1208,25 @@ namespace hazelcast {
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     return proxy::IMapImpl::executeOnKeyData(keyData, processor);
+                }
+
+                template <typename ResultType>
+                boost::shared_ptr<Future<ResultType> >
+                submitToKeyInternal(const serialization::pimpl::Data &keyData,
+                                     const serialization::pimpl::Data &processor) {
+                    int partitionId = getPartitionId(keyData);
+
+                    std::auto_ptr<protocol::ClientMessage> request =
+                            protocol::codec::MapSubmitToKeyCodec::RequestParameters::encode(getName(),
+                                                                                             processor,
+                                                                                             keyData,
+                                                                                             util::getThreadId());
+
+                    connection::CallFuture callFuture = invokeAndGetFuture(request, partitionId);
+                    
+                    return boost::shared_ptr<Future<ResultType> >(new internal::concurrent::FutureImpl<
+                            ResultType, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(callFuture,
+                                                                                          getSerializationService()));
                 }
 
                 template<typename ResultType, typename EntryProcessor>

@@ -31,7 +31,6 @@ namespace hazelcast {
         }
 
         ConditionVariable::~ConditionVariable() {
-
         }
 
         void ConditionVariable::wait(Mutex &mutex) {
@@ -39,8 +38,8 @@ namespace hazelcast {
             assert(success && "SleepConditionVariable");
         }
 
-        bool ConditionVariable::waitFor(Mutex &mutex, time_t timeSec) {
-            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD)timeSec * 1000);
+        bool ConditionVariable::waitFor(Mutex &mutex, int64_t timeInMilliseconds) {
+            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD) timeInMilliseconds);
             if(interrupted){
                 return true;
             }
@@ -57,16 +56,21 @@ namespace hazelcast {
     }
 }
 
-
 #else
 
 #include "hazelcast/util/Mutex.h"
 #include <sys/errno.h>
 #include <cassert>
 #include <sys/time.h>
+#include <limits>
 
 namespace hazelcast {
     namespace util {
+        #define NANOS_IN_A_SECOND 1000 * 1000 * 1000
+        #define MILLIS_IN_A_SECOND 1000
+        #define NANOS_IN_A_MILLISECOND 1000 * 1000
+        #define NANOS_IN_A_USECOND 1000
+
         ConditionVariable::ConditionVariable() {
             int error = pthread_cond_init(&condition, NULL);
             (void)error;
@@ -83,15 +87,25 @@ namespace hazelcast {
             assert(EINVAL != error);
         }
 
-        bool ConditionVariable::waitFor(Mutex& mutex, time_t timeInSec) {
+        bool ConditionVariable::waitFor(Mutex& mutex, int64_t timeInMilliseconds) {
             struct timeval tv;
             ::gettimeofday(&tv, NULL);
 
             struct timespec ts;
             ts.tv_sec = tv.tv_sec;
             ts.tv_nsec = tv.tv_usec * 1000;
-            ts.tv_sec += timeInSec;
-
+            int64_t seconds = timeInMilliseconds / 1000;
+            if (seconds > std::numeric_limits<time_t>::max()) {
+                ts.tv_sec = std::numeric_limits<time_t>::max();
+            } else {
+                ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
+                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
+                if (nsec > NANOS_IN_A_SECOND) {
+                    nsec -= NANOS_IN_A_SECOND;
+                    ++ts.tv_sec;
+                }
+                ts.tv_nsec = nsec;
+            }
 
             int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
             (void)error;
@@ -111,7 +125,6 @@ namespace hazelcast {
             assert (EPERM != error);
             assert (EINVAL != error);
         }
-
 
         void ConditionVariable::notify() {
             int error = pthread_cond_signal(&condition);

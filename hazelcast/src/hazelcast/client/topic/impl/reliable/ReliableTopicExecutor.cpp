@@ -76,7 +76,7 @@ namespace hazelcast {
                                 std::auto_ptr<protocol::ClientMessage> responseMsg;
                                 do {
                                     try {
-                                        responseMsg = future.get(1); // every one second
+                                        responseMsg = future.get(1000); // every one second
                                     } catch (exception::TimeoutException &e) { // suppress timeout exception
                                         // do nothing
                                     }

@@ -172,7 +172,7 @@ namespace hazelcast {
 
         void Thread::interruptibleSleep(int seconds) {
             LockGuard guard(wakeupMutex);
-            wakeupCondition.waitFor(wakeupMutex, seconds);
+            wakeupCondition.waitFor(wakeupMutex, seconds * 1000);
         }
 
         std::string Thread::getThreadName() const {

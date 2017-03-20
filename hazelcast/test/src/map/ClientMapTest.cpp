@@ -2619,6 +2619,24 @@ namespace hazelcast {
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }
 
+            TYPED_TEST(ClientMapTest, testSubmitToKey) {
+                Employee empl1("ahmet", 35);
+                Employee empl2("mehmet", 21);
+
+                ClientMapTest<TypeParam>::employees->put(3, empl1);
+                ClientMapTest<TypeParam>::employees->put(4, empl2);
+
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
+
+                boost::shared_ptr<Future<int> > future =
+                        ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        4, processor);
+
+                boost::shared_ptr<int> result = future->get(2 * 1000);
+                ASSERT_NE((int *) NULL, result.get());
+                ASSERT_EQ(4 * processor.getMultiplier(), *result);
+            }
+
             TYPED_TEST(ClientMapTest, testExecuteOnNonExistentKey) {
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 

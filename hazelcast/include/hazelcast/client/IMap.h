@@ -29,6 +29,7 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/map/ClientMapProxy.h"
+#include "hazelcast/client/Future.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -753,6 +754,20 @@ namespace hazelcast {
             std::map<K, boost::shared_ptr<ResultType> >
             executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKeys<ResultType, EntryProcessor>(keys, entryProcessor);
+            }
+
+            /**
+             * Applies the user defined EntryProcessor to the entry mapped by the key.
+             * Returns immediately with a ICompletableFuture representing that task.
+             * <p/>
+             *
+             * @param key            key to be processed
+             * @param entryProcessor processor to process the key
+             * @return Future from which the result of the operation can be retrieved.
+             */
+            template<typename ResultType, typename EntryProcessor>
+            boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                return mapImpl->template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
             /**
