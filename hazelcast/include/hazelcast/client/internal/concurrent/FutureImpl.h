@@ -40,6 +40,9 @@ namespace hazelcast {
                             callFuture), serializationService(serializationService) {
                     }
 
+                    virtual ~FutureImpl() {
+                    }
+
                     virtual boost::shared_ptr<V> get() {
                         return get(INT64_MAX);
                     }
