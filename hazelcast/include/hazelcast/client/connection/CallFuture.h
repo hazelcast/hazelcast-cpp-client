@@ -39,7 +39,7 @@ namespace hazelcast {
 
             class Connection;
 
-            class CallFuture {
+            class HAZELCAST_API CallFuture {
             public:
                 CallFuture();
 
