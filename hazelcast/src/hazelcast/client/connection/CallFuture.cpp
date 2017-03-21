@@ -60,21 +60,25 @@ namespace hazelcast {
             }
 
             std::auto_ptr<protocol::ClientMessage> CallFuture::get() {
-                return get(INT_MAX);
+                return get(INT64_MAX);
             }
 
-            std::auto_ptr<protocol::ClientMessage> CallFuture::get(time_t timeoutInSeconds) {
-				while (timeoutInSeconds > 0) {
-                    time_t beg = time(NULL);
+            std::auto_ptr<protocol::ClientMessage> CallFuture::get(int64_t timeoutInMilliseconds) {
+				while (timeoutInMilliseconds > 0) {
+                    int64_t beg = util::currentTimeMillis();
                     try {
 						using namespace std;
-                        time_t waitSeconds = (time_t)min(timeoutInSeconds, (time_t)heartBeatTimeout);
-                        return promise->getFuture().get(waitSeconds);
+                        int64_t waitMillis = (int64_t) min(timeoutInMilliseconds, (int64_t) heartBeatTimeout * 1000);
+                        return promise->getFuture().get(waitMillis);
                     } catch (exception::FutureWaitTimeout &exception) {
                         // do nothing
                     }
-                    time_t elapsed = time(NULL) - beg;
-                    timeoutInSeconds -= elapsed;
+                    int64_t elapsed = util::currentTimeMillis() - beg;
+                    timeoutInMilliseconds -= elapsed;
+                }
+                // This check is needed for cases where a negative timeoutInMilliseconds is provided
+                if (promise->getFuture().isDone()) {
+                    promise->getFuture().get();
                 }
                 throw exception::TimeoutException("CallFuture::get(int timeoutInSeconds)", "Wait is timed out");
             }

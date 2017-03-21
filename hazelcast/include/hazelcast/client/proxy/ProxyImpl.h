@@ -212,14 +212,6 @@ namespace hazelcast {
                 }
 
                 template<typename T, typename CODEC>
-                T invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
-
-                    return (T)CODEC::decode(*response).response;
-                }
-
-                template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      int partitionId, boost::shared_ptr<connection::Connection> conn) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);

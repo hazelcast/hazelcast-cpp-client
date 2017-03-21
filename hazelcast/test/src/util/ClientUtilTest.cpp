@@ -67,7 +67,7 @@ namespace hazelcast {
                     util::LockGuard lockGuard(mutex);
                     time_t beg = time(NULL);
                     time_t end = 0;
-                    bool wokenUpByInterruption = conditionVariable.waitFor(mutex, waitSeconds);
+                    bool wokenUpByInterruption = conditionVariable.waitFor(mutex, waitSeconds * 1000);
                     if (wokenUpByInterruption) {
                         end = time(NULL);
                     }
@@ -82,7 +82,7 @@ namespace hazelcast {
                 time_t beg = time(NULL);
                 time_t end = 0;
                 try {
-                    future.get(waitSeconds);
+                    future.get(waitSeconds * 1000);
                 } catch (exception::FutureWaitTimeout&) {
                     end = time(NULL);
                 }
@@ -94,7 +94,7 @@ namespace hazelcast {
                 int waitSeconds = 3;
                 int expectedValue = 2;
                 future.set_value(expectedValue);
-                int value = future.get(waitSeconds);
+                int value = future.get(waitSeconds * 1000);
                 ASSERT_EQ(expectedValue, value);
             }
 
@@ -105,7 +105,7 @@ namespace hazelcast {
                 std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
                 future.set_exception(exception);
 
-                ASSERT_THROW(future.get(waitSeconds), exception::IException);
+                ASSERT_THROW(future.get(waitSeconds * 1000), exception::IException);
             }
 
 
@@ -115,7 +115,7 @@ namespace hazelcast {
                 int wakeUpTime = 3;
                 int expectedValue = 2;
                 util::Thread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
-                int value = future.get(waitSeconds);
+                int value = future.get(waitSeconds * 1000);
                 ASSERT_EQ(expectedValue, value);
 
             }
@@ -127,7 +127,7 @@ namespace hazelcast {
                 bool gotException = false;
                 util::Thread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
                 try {
-                    future.get(waitSeconds);
+                    future.get(waitSeconds * 1000);
                 } catch (exception::IException&) {
                     gotException = true;
                 }

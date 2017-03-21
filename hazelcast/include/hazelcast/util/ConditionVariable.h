@@ -17,9 +17,10 @@
 // Created by sancar koyunlu on 31/03/14.
 //
 
-
 #ifndef HAZELCAST_ConditionVariable
 #define HAZELCAST_ConditionVariable
+
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
@@ -39,12 +40,11 @@ namespace hazelcast {
 
             void wait(Mutex &mutex);
 
-			bool waitFor(Mutex &mutex, time_t timeInSec);
+			bool waitFor(Mutex &mutex, int64_t timeInMilliseconds);
 
             void notify();
 
             void notify_all();
-
 
         private:
             CONDITION_VARIABLE condition;
@@ -56,10 +56,10 @@ namespace hazelcast {
     }
 }
 
-
 #else
 
 #include <pthread.h>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace util {
@@ -74,7 +74,7 @@ namespace hazelcast {
 
             void wait(Mutex &mutex);
 
-            bool waitFor(Mutex &mutex, time_t timeInSec );
+            bool waitFor(Mutex &mutex, int64_t timeInMilliseconds);
 
             void notify();
 

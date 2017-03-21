@@ -24,6 +24,8 @@
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/Util.h"
+
 #include <memory>
 #include <cassert>
 
@@ -92,19 +94,12 @@ namespace hazelcast {
                 return sharedObject;
             };
 
-            T get(time_t timeInSeconds) {
+            T get(int64_t timeInMilliseconds) {
                 LockGuard guard(mutex);
-                if (resultReady) {
-                    return sharedObject;
+                int64_t endTime = util::currentTimeMillis() + timeInMilliseconds;
+                while (!(resultReady || exceptionReady) && endTime > util::currentTimeMillis()) {
+                    conditionVariable.waitFor(mutex, endTime - util::currentTimeMillis());
                 }
-                if (exceptionReady) {
-                    exception->raise();
-                }
-                time_t endTime = time(NULL) + timeInSeconds;
-                while (!(resultReady || exceptionReady) && endTime > time(NULL)) {
-                    conditionVariable.waitFor(mutex, endTime - time(NULL));
-                }
-
                 if (resultReady) {
                     return sharedObject;
                 }
@@ -113,6 +108,19 @@ namespace hazelcast {
                 }
                 throw client::exception::FutureWaitTimeout("Future::get(timeInSeconds)", "Wait is timed out");
             };
+
+            /**
+             * Returns {@code true} if this task completed.
+             *
+             * Completion may be due to normal termination, an exception, or
+             * cancellation -- in all of these cases, this method will return
+             * {@code true}.
+             *
+             * @return {@code true} if this task completed
+             */
+            bool isDone() const {
+                return resultReady || exceptionReady;
+            }
 
             void reset() {
                 LockGuard guard(mutex);
