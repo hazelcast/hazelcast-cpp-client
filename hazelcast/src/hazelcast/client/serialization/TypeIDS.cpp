@@ -66,42 +66,6 @@ namespace hazelcast {
             int32_t getHazelcastTypeId(const std::string *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_STRING;
             }
-
-            int32_t getHazelcastTypeId(const std::vector<char> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<bool> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<byte> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<int16_t> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<int32_t> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<int64_t> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_LONG_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<float> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<double> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY;
-            }
-
-            int32_t getHazelcastTypeId(const std::vector<std::string> *object) {
-                return pimpl::SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
-            }
         }
     }
 }
