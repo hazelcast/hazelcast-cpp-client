@@ -27,7 +27,7 @@ namespace hazelcast {
             Employee::Employee():age(-1), name("") {
             }
 
-            Employee::Employee(std::string name, int age)
+            Employee::Employee(std::string name, int32_t age)
                     :age(age)
                     , name(name) {
                 by = 2;
@@ -47,12 +47,12 @@ namespace hazelcast {
                 cc = std::vector<char>(charArray, charArray + 4);
                 bool boolArray[] = {true, false, false, true};
                 ba = std::vector<bool>(boolArray, boolArray + 4);
-                short shortArray[] = {3, 4, 5};
-                ss = std::vector<short>(shortArray, shortArray + 3);
-                int integerArray[] = {9, 8, 7, 6};
-                ii = std::vector<int>(integerArray, integerArray + 4);
-                long longArray[] = {0, 1, 5, 7, 9, 11};
-                ll = std::vector<long>(longArray, longArray + 6);
+                int16_t shortArray[] = {3, 4, 5};
+                ss = std::vector<int16_t>(shortArray, shortArray + 3);
+                int32_t integerArray[] = {9, 8, 7, 6};
+                ii = std::vector<int32_t>(integerArray, integerArray + 4);
+                int64_t  longArray[] = {0, 1, 5, 7, 9, 11};
+                ll = std::vector<int64_t >(longArray, longArray + 6);
                 float floatArray[] = {0.6543f, -3.56f, 45.67f};
                 ff = std::vector<float>(floatArray, floatArray + 3);
                 double doubleArray[] = {456.456, 789.789, 321.321};
@@ -67,11 +67,11 @@ namespace hazelcast {
                 return !(*this == employee);
             }
 
-            int Employee::getFactoryId() const {
+            int32_t Employee::getFactoryId() const {
                 return 666;
             }
 
-            int Employee::getClassId() const {
+            int32_t Employee::getClassId() const {
                 return 2;
             }
 
@@ -102,8 +102,8 @@ namespace hazelcast {
                 out.writeObject<byte>(&by);
                 out.writeObject<char>(&c);
                 out.writeObject<bool>(&boolean);
-                out.writeObject<short>(&s);
-                out.writeObject<int>(&i);
+                out.writeObject<int16_t>(&s);
+                out.writeObject<int32_t>(&i);
                 out.writeObject<float>(&f);
                 out.writeObject<double>(&d);
                 out.writeObject<std::string>(&str);
@@ -137,15 +137,15 @@ namespace hazelcast {
                 by = *in.readObject<byte>();
                 c = *in.readObject<char>();
                 boolean = *in.readObject<bool>();
-                s = *in.readObject<short>();
-                i = *in.readObject<int>();
+                s = *in.readObject<int16_t>();
+                i = *in.readObject<int32_t>();
                 f = *in.readObject<float>();
                 d = *in.readObject<double>();
                 str = *in.readObject<std::string>();
                 utfStr = *in.readObject<std::string>();
             }
 
-            int Employee::getAge() const {
+            int32_t Employee::getAge() const {
                 return age;
             }
 
@@ -157,11 +157,11 @@ namespace hazelcast {
                 return age < rhs.getAge();
             }
 
-            int EmployeeEntryComparator::getFactoryId() const {
+            int32_t EmployeeEntryComparator::getFactoryId() const {
                 return 666;
             }
 
-            int EmployeeEntryComparator::getClassId() const {
+            int32_t EmployeeEntryComparator::getClassId() const {
                 return 4;
             }
 
@@ -171,15 +171,15 @@ namespace hazelcast {
             void EmployeeEntryComparator::readData(serialization::ObjectDataInput &reader) {
             }
 
-            int EmployeeEntryComparator::compare(const std::pair<const int *, const Employee *> *lhs,
-                        const std::pair<const int *, const Employee *> *rhs) const {
+            int EmployeeEntryComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
+                        const std::pair<const int32_t *, const Employee *> *rhs) const {
                 const Employee *lv = lhs->second;
                 const Employee *rv = rhs->second;
 
                 if (NULL == lv && NULL == rv) {
                     // order by key
-                    const int leftKey = *lhs->first;
-                    const int rightKey = *rhs->first;
+                    const int32_t leftKey = *lhs->first;
+                    const int32_t rightKey = *rhs->first;
 
                     if (leftKey == rightKey) {
                         return 0;
@@ -200,8 +200,8 @@ namespace hazelcast {
                     return 1;
                 }
 
-                int la = lv->getAge();
-                int ra = rv->getAge();
+                int32_t la = lv->getAge();
+                int32_t ra = rv->getAge();
 
                 if (la == ra) {
                     return 0;
@@ -215,10 +215,10 @@ namespace hazelcast {
             }
 
 
-            int EmployeeEntryKeyComparator::compare(const std::pair<const int *, const Employee *> *lhs,
-                                                    const std::pair<const int *, const Employee *> *rhs) const {
-                const int *key1 = lhs->first;
-                const int *key2 = rhs->first;
+            int32_t EmployeeEntryKeyComparator::compare(const std::pair<const int32_t *, const Employee *> *lhs,
+                                                    const std::pair<const int32_t *, const Employee *> *rhs) const {
+                const int32_t *key1 = lhs->first;
+                const int32_t *key2 = rhs->first;
 
                 if (NULL == key1) {
                     return -1;
@@ -239,7 +239,7 @@ namespace hazelcast {
                 return 1;
             }
 
-            int EmployeeEntryKeyComparator::getClassId() const {
+            int32_t EmployeeEntryKeyComparator::getClassId() const {
                 return 5;
             }
 
