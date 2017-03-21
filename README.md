@@ -19,6 +19,8 @@
 * [Query API](#query-api)
 * [Ringbuffer](#ringbuffer)
 * [Reliable Topic](#reliable-topic)
+* [Map Near Cache](#map-near-cache)
+* [TLS Feature](#tls-feature)
 * [Code Examples](#code-examples)
   * [Map](#map)
   * [Queue](#queue)
@@ -29,7 +31,7 @@
   * [Reliable Topic](#reliable-topic)
     * [Publisher](#publisher)
     * [Subscriber](#subscriber)
-* [Map Near Cache](#map-near-cache)
+  * [TLS](#tls-example)
 * [Mail Group](#mail-group)
 * [License](#license)
 * [Copyright](#copyright)
@@ -57,6 +59,15 @@ We use --recursive flag for our dependency on googletest framework.
 # Building the Project
 
 First create a build directory from the root of the project. In the build directory, run the following commands depending on your environment.
+
+For compiling with SSL support: 
+- You need have the openssl installed in your development environment. Furthermore, the openssl include directory should be added to include directories and the openssl library directory should be listed in the link directories. Furthermore you need to set the openssl libraries to link.
+ 
+- You can provide your openssl installation directory to cmake using the following flags: -DHZ_OPENSSL_INCLUDE_DIR="Path to open installation include directory" and -DHZ_OPENSSL_LIB_DIR="Path to openssl lib directory"
+
+- Use -DHZ_COMPILE_WITH_SSL=ON
+
+- Check top level CMakeLists.txt file to see which libraries we link for openssl in which environment. For Mac OS and Linux, we link with "ssl" and "crypto", for windows and example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
 
 ## Mac
 
@@ -396,6 +407,114 @@ You can use Reliable Topic if you do not want to miss any messages during failur
 Reliable Topic implementation depends on the Ringbuffer data structure. The data is kept in the Hazelcast cluster's Ringbuffer structure. These Ringbuffer structures' names start with "\_hz\_rb\_".
  
 Reliable Topic also supports batch reads from the Ringbuffer. You can optimize the internal working of listener using the method `ReliableTopicConfig::setReadBatchSize`.
+
+# Map Near Cache
+Map can be configured to work with near cache enabled. Near cache allows local caching of entries fetched from the cluster at the client side. The local cache is updated when the client does a get request for a map entry. The locally cached entries are updated automatically as any change occurs in the map data in the cluster. Special internal event listeners are utilized for this purpose.
+
+If you are doing mostly reads from the map rather than map updates, then enabling near cache allows you to get the entries faster since it will return the locally cached entry which will eliminate any network interaction. But if your application is doing mostly writes (update, remove, etc.) from map, then you may not gain much by enabling the near cache since the updates will cause network traffic. 
+
+You can enable the near cache for a map by adding a near cache configuration for its name. For example:
+
+```
+boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>("myMap"));
+clientConfig..addNearCacheConfig(nearCacheConfig);
+```
+
+As for all configuration options, this near cache config should be performed before the client instance is obtained and the client config should not be altered after the client is instantiated.
+
+The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
+
+Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
+
+# TLS Feature
+Note: This feature only works when used with Enterprise Hazelcast server.
+
+You can encrypt all the communication between the client and the cluster using this feature. 
+This feature requires that you have installed openssl development library in your development environment.
+
+You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The ssl config also lets you to set the cipher suite to be used.
+
+Example usage:
+```
+config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
+
+//Cipher suite is set using a string which is defined by OpenSSL standard at this page: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html An example usage:
+config.getNetworkConfig().getSSLConfig().setCipherList("HIGH");
+```
+
+The detailed config API is below:
+```
+/**
+ * Default protocol is tlsv12 and ssl is disabled by default
+ */
+SSLConfig();
+
+/**
+ * Returns if this configuration is enabled.
+ *
+ * @return true if enabled, false otherwise
+ */
+bool isEnabled() const;
+
+/**
+ * Enables and disables this configuration.
+ *
+ * @param enabled true to enable, false to disable
+ */
+SSLConfig &setEnabled(bool enabled);
+
+/**
+ * Sets the ssl protocol to be used for this SSL socket.
+ *
+ * @param protocol One of the supported protocols
+ */
+SSLConfig &setProtocol(SSLProtocol protocol);
+
+/**
+ * @return The configured SSL protocol
+ */
+SSLProtocol getProtocol() const;
+
+/**
+ * @return The list of all configured certificate verify files for the client.
+ */
+const std::vector<std::string> &getVerifyFiles() const;
+
+/**
+ * This API calls the OpenSSL SSL_CTX_load_verify_locations method underneath while starting the client
+ * with this configuration. The validity of the files are checked only when the client starts. Hence,
+ * this call will not do any error checking. Error checking is performed only when the certificates are
+ * actually loaded during client start.
+ *
+ * @param filename the name of a file containing certification authority certificates in PEM format.
+ */
+SSLConfig &addVerifyFile(const std::string &filename);
+
+/**
+ * @return Returns the use configured cipher list string.
+ */
+const std::string &getCipherList() const;
+
+/**
+ * @param ciphers The list of ciphers to be used. During client start, if this API was set then the
+ * SSL_CTX_set_cipher_list (https://www.openssl.org/docs/man1.0.2/ssl/SSL_set_cipher_list.html) is
+ * called with the provided ciphers string. The values and the format of the ciphers are described here:
+ * https://www.openssl.org/docs/man1.0.2/apps/ciphers.html Some examples values for the string are:
+ * "HIGH", "MEDIUM", "LOW", etc.
+ *
+ * If non of the provided ciphers could be selected the client initialization will fail.
+ *
+ */
+SSLConfig &setCipherList(const std::string &ciphers);
+```
+
+You can set the protocol as one of the following values:
+```
+sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
+```
+The default value for the protocol if not set is tlsv12. The SSLConfig.setEnabled should be called explicitly to enable the SSL.
+The path of the certificate should be correctly provided. 
 
 # Code Examples
 
@@ -908,25 +1027,35 @@ void listenWithConfig() {
 }    
 ```
 
-# Map Near Cache
-Map can be configured to work with near cache enabled. Near cache allows local caching of entries fetched from the cluster at the client side. The local cache is updated when the client does a get request for a map entry. The locally cached entries are updated automatically as any change occurs in the map data in the cluster. Special internal event listeners are utilized for this purpose.
-
-If you are doing mostly reads from the map rather than map updates, then enabling near cache allows you to get the entries faster since it will return the locally cached entry which will eliminate any network interaction. But if your application is doing mostly writes (update, remove, etc.) from map, then you may not gain much by enabling the near cache since the updates will cause network traffic. 
-
-You can enable the near cache for a map by adding a near cache configuration for its name. For example:
-
+## TLS
 ```
-boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
-            new config::NearCacheConfig<int, std::string>("myMap"));
-clientConfig..addNearCacheConfig(nearCacheConfig);
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::Address serverAddress("127.0.0.1", 5701);
+    config.addAddress(serverAddress);
+
+    config.getNetworkConfig().getSSLConfig().
+            setEnabled(true).          // Mandatory setting
+            addVerifyFile("MyCAFile"). // Mandatory setting
+            setCipherList("HIGH");     // optional setting (values for string are described at
+                                       // https://www.openssl.org/docs/man1.0.2/apps/ciphers.html)
+    
+    hazelcast::client::HazelcastClient hz(config);
+
+    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
+    
+    map.put(1, 100);
+    map.put(2, 200);
+
+    boost::shared_ptr<int> value = map.get(1);
+
+    if (value.get()) {
+        std::cout << "Value for key 1 is " << *value << std::endl;
+    }
+
+    std::cout << "Finished" << std::endl;
+
+    return 0;
 ```
-
-As for all configuration options, this near cache config should be performed before the client instance is obtained and the client config should not be altered after the client is instantiated.
-
-The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
-
-Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
-
 
 # Mail Group
 
