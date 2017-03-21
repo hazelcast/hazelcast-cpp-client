@@ -56,6 +56,15 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
     include_directories(${HAZELCAST_PLATFORM_INSTALL_DIR}/hazelcast/include ${HAZELCAST_PLATFORM_INSTALL_DIR}/external/include)
 
+    if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+        message(STATUS "Building with SSL support.")
+        set(HZ_COMPILE_WITH_SSL "ON")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
+    ELSE ()
+        message(STATUS "Building without SSL support.")
+    ENDIF()
+
     SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
 
     ADD_LIBRARY(${HZ_LIB_NAME} ${HZ_LIB_TYPE} IMPORTED)
@@ -79,6 +88,25 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
         set_property(TARGET ${HZ_LIB_NAME} PROPERTY IMPORTED_LOCATION "${HZ_LIB_PATH}")
 
         link_libraries(${HZ_LIB_NAME})
+
+        if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+            if ("${HZ_OPENSSL_LIB_DIR}" STREQUAL "")
+                SET(HZ_OPENSSL_LIB_DIR /usr/local/opt/openssl/lib/)
+            endif ()
+
+            if ("${HZ_OPENSSL_INCLUDE_DIR}" STREQUAL "")
+                SET(HZ_OPENSSL_INCLUDE_DIR /usr/local/opt/openssl/include)
+            endif ()
+
+            message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+            message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+
+            include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+            # We need to set link directories before adding library for the path to be used
+            link_directories(${HZ_OPENSSL_LIB_DIR})
+
+            link_libraries(ssl crypto)
+        ENDIF()
 
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -106,6 +134,10 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
         set_property(TARGET ${HZ_LIB_NAME} PROPERTY IMPORTED_LOCATION "${HZ_LIB_PATH}")
 
         link_libraries(${HZ_LIB_NAME} pthread rt )
+
+        if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+            link_libraries(ssl crypto)
+        ENDIF()
     ENDIF( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
 
     IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -133,6 +165,26 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
         ENDIF(${HZ_LIB_TYPE} MATCHES "STATIC")
 
         link_libraries(${HZ_LIB_NAME})
+
+        if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+            set (HZ_OPENSSL_LIB_DIR ${HZ_OPENSSL_LIB_DIR}\\VC)
+            message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+            message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+
+            include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+            # We need to set link directories before adding library for the path to be used
+            link_directories(${HZ_OPENSSL_LIB_DIR})
+
+            if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+                SET(SSL_LIB_TYPE MDd)
+            else()
+                SET(SSL_LIB_TYPE MD)
+            endif ()
+            SET(SSL_LIBS libeay32${SSL_LIB_TYPE} ssleay32${SSL_LIB_TYPE} libcrypto${HZ_BIT}${SSL_LIB_TYPE} libssl${HZ_BIT}${SSL_LIB_TYPE})
+
+            link_libraries(${SSL_LIBS})
+        ENDIF()
+
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
@@ -148,6 +200,9 @@ add_subdirectory(distributed-primitives)
 add_subdirectory(distributed-map)
 add_subdirectory(distributed-collections)
 add_subdirectory(adaptor)
+if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+    add_subdirectory(tls)
+endif()
 
 
 
