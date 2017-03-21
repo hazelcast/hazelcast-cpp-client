@@ -198,7 +198,7 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
 
                 std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->setAttemptPeriod(1000 * 10).setConnectionAttemptLimit(100).setLogLevel(FINEST);
+                clientConfig->setAttemptPeriod(1000).setConnectionAttemptLimit(100).setLogLevel(FINEST);
                 // set the heartbeat interval to 1 seconds so that the heartbeater ClientPingCodec related code is
                 // executed for code coverage.
                 clientConfig->getProperties()[ClientProperties::PROP_HEARTBEAT_INTERVAL] = "1";
@@ -218,7 +218,7 @@ namespace hazelcast {
                 HazelcastServer instance2(*g_srvFactory);
                 ASSERT_TRUE(lifecycleLatch.await(120));
                 // Let enough time for the client to re-register the failed listeners
-                util::sleep(1);
+                util::sleep(5);
                 m.put("sample", "entry");
                 ASSERT_TRUE(countDownLatch.await(60));
                 ASSERT_TRUE(hazelcastClient.removeLifecycleListener(&lifecycleListener));
