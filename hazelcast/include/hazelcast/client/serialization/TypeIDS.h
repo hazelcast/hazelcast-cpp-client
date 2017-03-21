@@ -19,6 +19,7 @@
 
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 
