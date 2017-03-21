@@ -16,6 +16,8 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+#include <stdint.h>
+
 #include "customSerialization/TestCustomSerializerX.h"
 #include "customSerialization/TestCustomXSerializable.h"
 #include "customSerialization/TestCustomPersonSerializer.h"

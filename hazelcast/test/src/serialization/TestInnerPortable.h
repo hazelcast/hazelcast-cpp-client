@@ -26,6 +26,7 @@
 
 #include "TestNamedPortable.h"
 #include <vector>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
