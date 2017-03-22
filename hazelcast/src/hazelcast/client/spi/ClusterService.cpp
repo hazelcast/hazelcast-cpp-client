@@ -198,6 +198,9 @@ namespace hazelcast {
                             std::ostringstream errorStream;
                             errorStream << "IO error  during initial connection to " << (*it) << " for owner connection =>" << e.what();
                             util::ILogger::getLogger().warning(errorStream.str());
+                            if (!clientContext.getLifecycleService().isRunning()) {
+                                throw;
+                            }
                         }
                     }
 

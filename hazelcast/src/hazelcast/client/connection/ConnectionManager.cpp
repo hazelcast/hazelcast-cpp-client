@@ -188,6 +188,8 @@ namespace hazelcast {
                         }
                     }
                 } catch (exception::IException &e) {
+                    checkLive();
+
                     if (tryCount <= 0) {
                         throw;
                     }
@@ -201,6 +203,8 @@ namespace hazelcast {
                             return conn;
                         }
                     } catch (exception::IException &e) {
+                        checkLive();
+
                         ++count;
                         if (count >= tryCount) {
                             throw;
@@ -231,12 +235,17 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<Connection> ConnectionManager::getOwnerConnection() {
+                checkLive();
+
                 boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
                 return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
             }
 
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
+                // ensureOwnerConnectionAvailable
+                ownerConnectionFuture.getOrWaitForCreation();
+
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
                     util::LockGuard l(lockMutex);
@@ -378,7 +387,7 @@ namespace hazelcast {
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw exception::HazelcastInstanceNotActiveException("client");
+                    throw exception::HazelcastException("ConnectionManager is not active!");
                 }
             }
 

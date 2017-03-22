@@ -25,6 +25,7 @@
 #include "hazelcast/client/connection/OwnerConnectionFuture.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
 namespace hazelcast {
     namespace client {
@@ -53,10 +54,16 @@ namespace hazelcast {
                 int tryCount = 2 * config.getAttemptPeriod() * config.getConnectionAttemptLimit() / 1000;
 				
                 while (currentOwnerConnection.get() == NULL) {
+                    if (!clientContext.getLifecycleService().isRunning()) {
+                        throw exception::HazelcastException("OwnerConnectionFuture::getOrWaitForCreation",
+                                                            "ConnectionManager is not active!");
+                    }
+
                     currentOwnerConnection = ownerConnectionPtr;
                     util::sleep(1);
                     if (--tryCount == 0) {
-                        throw exception::IOException("ConnectionManager", "Wait for owner connection is timed out");
+                        throw exception::IOException("OwnerConnectionFuture::getOrWaitForCreation",
+                                                     "Wait for owner connection is timed out");
                     }
                 }
                 return currentOwnerConnection;
