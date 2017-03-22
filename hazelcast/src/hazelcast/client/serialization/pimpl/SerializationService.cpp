@@ -51,7 +51,6 @@ namespace hazelcast {
                     return portableContext.getSerializerHolder();
                 }
 
-
                 bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
                 }
@@ -85,7 +84,6 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
                 Data SerializationService::toData<bool>(const bool  *object) {
                     if (NULL == object) {
@@ -105,7 +103,6 @@ namespace hazelcast {
                     Data data(output.toByteArray());
                     return data;
                 }
-
 
                 template<>
                 Data SerializationService::toData<char>(const char  *object) {
@@ -127,9 +124,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<short>(const short  *object) {
+                Data SerializationService::toData<int16_t>(const int16_t  *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -148,9 +144,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<int>(const int  *object) {
+                Data SerializationService::toData<int32_t>(const int32_t  *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -169,9 +164,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<long>(const long *object) {
+                Data SerializationService::toData<int64_t>(const int64_t *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -189,7 +183,6 @@ namespace hazelcast {
                     Data data(output.toByteArray());
                     return data;
                 }
-
 
                 template<>
                 Data SerializationService::toData<float>(const float  *object) {
@@ -210,7 +203,6 @@ namespace hazelcast {
                     Data data(output.toByteArray());
                     return data;
                 }
-
 
                 template<>
                 Data SerializationService::toData<double>(const double  *object) {
@@ -272,9 +264,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<std::vector<short> >(const std::vector<short> *object) {
+                Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -293,9 +284,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<std::vector<int> >(const std::vector<int> *object) {
+                Data SerializationService::toData<std::vector<int32_t> >(const std::vector<int32_t> *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -314,9 +304,8 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
-                Data SerializationService::toData<std::vector<long> >(const std::vector<long> *object) {
+                Data SerializationService::toData<std::vector<int64_t> >(const std::vector<int64_t> *object) {
                     if (NULL == object) {
                         return Data();
                     }
@@ -334,7 +323,6 @@ namespace hazelcast {
                     Data data(output.toByteArray());
                     return data;
                 }
-
 
                 template<>
                 Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object) {
@@ -356,7 +344,6 @@ namespace hazelcast {
                     return data;
                 }
 
-
                 template<>
                 Data SerializationService::toData<std::vector<double> >(const std::vector<double> *object) {
                     if (NULL == object) {
@@ -376,7 +363,6 @@ namespace hazelcast {
                     Data data(output.toByteArray());
                     return data;
                 }
-
 
                 template<>
                 Data SerializationService::toData<std::string>(const std::string  *object) {
@@ -424,7 +410,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, typeId);
 
@@ -441,7 +427,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN, typeId);
 
@@ -458,7 +444,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR, typeId);
 
@@ -470,16 +456,16 @@ namespace hazelcast {
                 }
 
                 template<>
-                std::auto_ptr<short> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(short);
+                std::auto_ptr<int16_t> SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(int16_t);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT, typeId);
 
-                    std::auto_ptr<short> object(new short);
+                    std::auto_ptr<int16_t> object(new int16_t);
 
                     *object = dataInput.readShort();
 
@@ -487,16 +473,16 @@ namespace hazelcast {
                 }
 
                 template<>
-                std::auto_ptr<int> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(int);
+                std::auto_ptr<int32_t> SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(int32_t);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER, typeId);
 
-                    std::auto_ptr<int> object(new int);
+                    std::auto_ptr<int32_t> object(new int32_t);
 
                     *object = dataInput.readInt();
 
@@ -504,18 +490,18 @@ namespace hazelcast {
                 }
 
                 template<>
-                std::auto_ptr<long> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(long);
+                std::auto_ptr<int64_t> SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(int64_t);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, typeId);
 
-                    std::auto_ptr<long> object(new long);
+                    std::auto_ptr<int64_t> object(new int64_t);
 
-                    *object = (long)dataInput.readLong();
+                    *object = (int64_t)dataInput.readLong();
 
                     return object;
                 }
@@ -526,7 +512,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT, typeId);
 
@@ -543,7 +529,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE, typeId);
 
@@ -560,7 +546,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
 
@@ -573,7 +559,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY, typeId);
 
@@ -581,42 +567,42 @@ namespace hazelcast {
                 }
 
                 template<>
-                std::auto_ptr<std::vector<short> >  SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<short>);
+                std::auto_ptr<std::vector<int16_t> >  SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(std::vector<int16_t>);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<short> > (dataInput.readShortArray());
+                    return std::auto_ptr<std::vector<int16_t> > (dataInput.readShortArray());
                 }
 
                 template<>
-                std::auto_ptr<std::vector<int> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<int>);
+                std::auto_ptr<std::vector<int32_t> > SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(std::vector<int32_t>);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<int> > (dataInput.readIntArray());
+                    return std::auto_ptr<std::vector<int32_t> > (dataInput.readIntArray());
                 }
 
                 template<>
-                std::auto_ptr<std::vector<long> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<long>);
+                std::auto_ptr<std::vector<int64_t> > SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(std::vector<int64_t>);
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<long> > (dataInput.readLongArray());
+                    return std::auto_ptr<std::vector<int64_t> > (dataInput.readLongArray());
                 }
 
                 template<>
@@ -625,7 +611,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, typeId);
 
@@ -638,7 +624,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
 
@@ -651,7 +637,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, typeId);
 
@@ -664,7 +650,7 @@ namespace hazelcast {
 
                     DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
 
-                    int typeId = data.getType();
+                    int32_t typeId = data.getType();
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY, typeId);
 

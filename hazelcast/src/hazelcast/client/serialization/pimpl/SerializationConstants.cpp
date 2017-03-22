@@ -52,14 +52,14 @@ namespace hazelcast {
                     typeIdNameVector[idToIndex(CONSTANT_TYPE_STRING_ARRAY)] = "stringArray";
                 }
 
-                std::string SerializationConstants::typeIdToName(int typeId) const{
+                std::string SerializationConstants::typeIdToName(int32_t typeId) const{
                     int i = idToIndex(typeId);
                     if (i < 0 || i >= size)
                         return std::string("custom");
                     return typeIdNameVector[i];
                 }
 
-                void SerializationConstants::checkClassType(int expectedType, int currentType) const{
+                void SerializationConstants::checkClassType(int32_t expectedType, int32_t currentType) const{
                     if (expectedType != currentType) {
                         char message[200];
                         util::snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
@@ -71,7 +71,7 @@ namespace hazelcast {
                     }
                 }
 
-                int SerializationConstants::idToIndex(int id) const{
+                int SerializationConstants::idToIndex(int32_t id) const{
                     return id + size - 1;
                 }
 

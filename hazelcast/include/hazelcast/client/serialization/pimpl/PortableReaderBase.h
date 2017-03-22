@@ -46,9 +46,9 @@ namespace hazelcast {
 
                     virtual ~PortableReaderBase();
 
-                    virtual int readInt(const char *fieldName);
+                    virtual int32_t readInt(const char *fieldName);
 
-                    virtual long readLong(const char *fieldName);
+                    virtual int64_t readLong(const char *fieldName);
 
                     virtual bool readBoolean(const char *fieldName);
 
@@ -60,7 +60,7 @@ namespace hazelcast {
 
                     virtual float readFloat(const char *fieldName);
 
-                    virtual short readShort(const char *fieldName);
+                    virtual int16_t readShort(const char *fieldName);
 
                     virtual std::auto_ptr<std::string> readUTF(const char *fieldName);
 
@@ -70,15 +70,15 @@ namespace hazelcast {
 
                     virtual std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
                     virtual std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
                     virtual std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
-                    virtual std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
+                    virtual std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                     ObjectDataInput &getRawDataInput();
 
@@ -108,7 +108,6 @@ namespace hazelcast {
 
                     int readPosition(const char *, FieldType const& fieldType);
                 };
-
             }
         }
     }

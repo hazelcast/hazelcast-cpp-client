@@ -64,17 +64,17 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @return the int value read
+                * @return the int32_t value read
                 * @throws IOException
                 */
-                int readInt(const char *fieldName);
+                int32_t readInt(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
-                * @return the long value read
+                * @return the int64_t value read
                 * @throws IOException
                 */
-                long readLong(const char *fieldName);
+                int64_t readLong(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
@@ -113,10 +113,10 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @return the short value read
+                * @return the int32_t value read
                 * @throws IOException
                 */
-                short readShort(const char *fieldName);
+                int16_t readShort(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
@@ -148,17 +148,17 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @return the int array value read
+                * @return the int32_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<int> > readIntArray(const char *fieldName);
+                std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
-                * @return the long array value read
+                * @return the int64_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<long> > readLongArray(const char *fieldName);
+                std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
@@ -176,10 +176,10 @@ namespace hazelcast {
 
                 /**
                 * @param fieldName name of the field
-                * @return the short array value read
+                * @return the int16_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<short> > readShortArray(const char *fieldName);
+                std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                 /**
                 * @tparam type of the portable class

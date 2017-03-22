@@ -50,12 +50,12 @@ namespace hazelcast {
                     dataOutput.writeZeroBytes(fieldIndexesLength);
                 }
 
-                void DefaultPortableWriter::writeInt(const char *fieldName, int value) {
+                void DefaultPortableWriter::writeInt(const char *fieldName, int32_t value) {
                     setPosition(fieldName, FieldTypes::TYPE_INT);
                     dataOutput.writeInt(value);
                 }
 
-                void DefaultPortableWriter::writeLong(const char *fieldName, long value) {
+                void DefaultPortableWriter::writeLong(const char *fieldName, int64_t value) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG);
                     dataOutput.writeLong(value);
                 }
@@ -70,9 +70,9 @@ namespace hazelcast {
                     dataOutput.writeByte(value);
                 }
 
-                void DefaultPortableWriter::writeChar(const char *fieldName, int value) {
+                void DefaultPortableWriter::writeChar(const char *fieldName, int32_t value) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR);
-                    dataOutput.writeChar((short)value);
+                    dataOutput.writeChar(value);
                 }
 
                 void DefaultPortableWriter::writeDouble(const char *fieldName, double value) {
@@ -85,7 +85,7 @@ namespace hazelcast {
                     dataOutput.writeFloat(value);
                 }
 
-                void DefaultPortableWriter::writeShort(const char *fieldName, int value) {
+                void DefaultPortableWriter::writeShort(const char *fieldName, int32_t value) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT);
                     dataOutput.writeShort(value);
                 }
@@ -110,17 +110,17 @@ namespace hazelcast {
                     dataOutput.writeCharArray(data);
                 }
 
-                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<short> *data) {
+                void DefaultPortableWriter::writeShortArray(const char *fieldName, const std::vector<int16_t> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                     dataOutput.writeShortArray(data);
                 }
 
-                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int> *data) {
+                void DefaultPortableWriter::writeIntArray(const char *fieldName, const std::vector<int32_t> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_INT_ARRAY);
                     dataOutput.writeIntArray(data);
                 }
 
-                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<long> *data) {
+                void DefaultPortableWriter::writeLongArray(const char *fieldName, const std::vector<int64_t> *data) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                     dataOutput.writeLongArray(data);
                 }
@@ -149,8 +149,8 @@ namespace hazelcast {
 
                         writtenFields.insert(fieldName);
                         size_t pos = dataOutput.position();
-                        int index = fd.getIndex();
-                        dataOutput.writeInt((int)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int)pos);
+                        int32_t index = fd.getIndex();
+                        dataOutput.writeInt((int32_t)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t)pos);
                         size_t nameLen = strlen(fieldName);
                         dataOutput.writeShort(nameLen);
                         dataOutput.writeBytes((byte *)fieldName, nameLen);
@@ -175,15 +175,15 @@ namespace hazelcast {
                 ObjectDataOutput& DefaultPortableWriter::getRawDataOutput() {
                     if (!raw) {
                         size_t pos = dataOutput.position();
-                        int index = cd->getFieldCount(); // last index
-                        dataOutput.writeInt((int)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int)pos);
+                        int32_t index = cd->getFieldCount(); // last index
+                        dataOutput.writeInt((int32_t)(offset + index * util::Bits::INT_SIZE_IN_BYTES), (int32_t)pos);
                     }
                     raw = true;
                     return objectDataOutput;
                 }
 
                 void DefaultPortableWriter::end() {
-                    dataOutput.writeInt((int)begin, (int)dataOutput.position()); // write final offset
+                    dataOutput.writeInt((int32_t)begin, (int32_t)dataOutput.position()); // write final offset
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {

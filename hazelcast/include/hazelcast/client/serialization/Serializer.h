@@ -19,6 +19,8 @@
 #ifndef HAZELCAST_TYPE_SERIALIZER
 #define HAZELCAST_TYPE_SERIALIZER
 
+#include <stdint.h>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -43,11 +45,11 @@ namespace hazelcast {
                  * for your classes. Also not that for your serialized classes you need to implement as free function
                  * in same namespace with your class
                  *
-                 *      int getHazelcastTypeId(const MyClass*);
+                 *      int32_t getHazelcastTypeId(const MyClass*);
                  *
                  *  which should return same id with its serializer.
                  */
-                virtual int getHazelcastTypeId() const = 0;
+                virtual int32_t getHazelcastTypeId() const = 0;
             };
 
             /**
@@ -62,7 +64,7 @@ namespace hazelcast {
 
                          void read(serialization::ObjectDataInput & in, ExampleBaseClass& object);
 
-                         int getHazelcastTypeId() const;
+                         int32_t getHazelcastTypeId() const;
 
                      };
                     }
@@ -84,7 +86,7 @@ namespace hazelcast {
                            //.....
                        }
 
-                       int getHazelcastTypeId() const {
+                       int32_t getHazelcastTypeId() const {
                            //..
                        }
                     };
@@ -93,7 +95,7 @@ namespace hazelcast {
              * Along with serializer following function should be provided with same namespace that ExampleBaseClass
              * belongs to
              *
-             *     int getHazelcastTypeId(const MyClass*);
+             *     int32_t getHazelcastTypeId(const MyClass*);
              *
              *  which should return same id with its serializer.
              *
@@ -127,7 +129,6 @@ namespace hazelcast {
                  *  @param object read object
                  */
                 virtual void read(ObjectDataInput &in, Serializable &object) = 0;
-
             };
 
         }

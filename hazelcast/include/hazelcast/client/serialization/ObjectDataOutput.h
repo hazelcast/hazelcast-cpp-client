@@ -79,31 +79,31 @@ namespace hazelcast {
                 /**
                 * @param value the byte value to be written
                 */
-                void writeByte(int value);
+                void writeByte(int32_t value);
 
                 /**
                  * @param bytes The data bytes to be written
                  * @param len Number of bytes to write
                  */
-                void writeBytes(const byte *bytes, unsigned int len);
+                void writeBytes(const byte *bytes, size_t len);
 
                 /**
-                * @param value the short value to be written
+                * @param value the int16_t value to be written
                 */
-                void writeShort(int value);
+                void writeShort(int32_t value);
 
                 /**
                 * @param value the char value to be written
                 */
-                void writeChar(int value);
+                void writeChar(int32_t value);
 
                 /**
-                * @param value the int value to be written
+                * @param value the int32_t value to be written
                 */
-                void writeInt(int value);
+                void writeInt(int32_t value);
 
                 /**
-                * @param value the long value to be written
+                * @param value the int64_t  value to be written
                 */
                 void writeLong(int64_t value);
 
@@ -138,19 +138,19 @@ namespace hazelcast {
                 void writeBooleanArray(const std::vector<bool> *value);
 
                 /**
-                * @param value the short array value to be written
+                * @param value the int16_t array value to be written
                 */
-                void writeShortArray(const std::vector<short> *value);
+                void writeShortArray(const std::vector<int16_t> *value);
 
                 /**
-                * @param value the int array value to be written
+                * @param value the int32_t array value to be written
                 */
-                void writeIntArray(const std::vector<int> *value);
+                void writeIntArray(const std::vector<int32_t> *value);
 
                 /**
-                * @param value the short array value to be written
+                * @param value the int16_t array value to be written
                 */
-                void writeLongArray(const std::vector<long> *value);
+                void writeLongArray(const std::vector<int64_t > *value);
 
                 /**
                 * @param value the float array value to be written
@@ -223,7 +223,7 @@ namespace hazelcast {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         const T *object = static_cast<const T *>(serializable);
-                        int type = getHazelcastTypeId(object);
+                        int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
                         boost::shared_ptr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
@@ -272,7 +272,7 @@ namespace hazelcast {
                 }
 
                 template <typename T>
-                void writeObject(const short *object) {
+                void writeObject(const int16_t *object) {
                     if (NULL == object) {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
@@ -282,7 +282,7 @@ namespace hazelcast {
                 }
 
                 template <typename T>
-                void writeObject(const int *object) {
+                void writeObject(const int32_t *object) {
                     if (NULL == object) {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
@@ -292,7 +292,7 @@ namespace hazelcast {
                 }
 
                 template <typename T>
-                void writeObject(const long *object) {
+                void writeObject(const int64_t  *object) {
                     if (NULL == object) {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {

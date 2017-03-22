@@ -25,6 +25,7 @@
 #define HAZELCAST_DATA
 
 #include <vector>
+#include <stdint.h>
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
@@ -76,7 +77,7 @@ namespace hazelcast {
 
                     std::vector<byte> &toByteArray() const;
 
-                    int getType() const;
+                    int32_t getType() const;
 
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;

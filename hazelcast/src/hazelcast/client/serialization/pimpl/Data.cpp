@@ -99,7 +99,7 @@ namespace hazelcast {
                     return *data;
                 }
 
-                int Data::getType() const {
+                int32_t Data::getType() const {
                     if (totalSize() == 0) {
                         return SerializationConstants::CONSTANT_TYPE_NULL;
                     }

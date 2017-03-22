@@ -37,11 +37,11 @@ namespace hazelcast {
                     return context.registerClassDefinition(cd);
                 }
 
-                void ClassDefinitionWriter::writeInt(const char *fieldName, int value) {
+                void ClassDefinitionWriter::writeInt(const char *fieldName, int32_t value) {
                     builder.addIntField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeLong(const char *fieldName, long value) {
+                void ClassDefinitionWriter::writeLong(const char *fieldName, int64_t value) {
                     builder.addLongField(fieldName);
                 }
 
@@ -54,7 +54,7 @@ namespace hazelcast {
                     builder.addByteField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeChar(const char *fieldName, int value) {
+                void ClassDefinitionWriter::writeChar(const char *fieldName, int32_t value) {
                     builder.addCharField(fieldName);
                 }
 
@@ -67,7 +67,7 @@ namespace hazelcast {
                     builder.addFloatField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeShort(const char *fieldName, short value) {
+                void ClassDefinitionWriter::writeShort(const char *fieldName, int16_t value) {
                     builder.addShortField(fieldName);
                 }
 
@@ -88,11 +88,11 @@ namespace hazelcast {
                     builder.addCharArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int> *values) {
+                void ClassDefinitionWriter::writeIntArray(const char *fieldName, const std::vector<int32_t> *values) {
                     builder.addIntArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<long> *values) {
+                void ClassDefinitionWriter::writeLongArray(const char *fieldName, const std::vector<int64_t> *values) {
                     builder.addLongArrayField(fieldName);
                 }
 
@@ -104,7 +104,7 @@ namespace hazelcast {
                     builder.addFloatArrayField(fieldName);
                 }
 
-                void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<short> *values) {
+                void ClassDefinitionWriter::writeShortArray(const char *fieldName, const std::vector<int16_t> *values) {
                     builder.addShortArrayField(fieldName);
                 }
 
