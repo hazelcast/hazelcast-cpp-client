@@ -16,10 +16,6 @@
 //
 // Created by sancar koyunlu on 8/2/13.
 
-
-
-
-
 #ifndef HAZELCAST_SocketInterceptor
 #define HAZELCAST_SocketInterceptor
 

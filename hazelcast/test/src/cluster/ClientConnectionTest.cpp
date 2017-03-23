@@ -19,6 +19,7 @@
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 

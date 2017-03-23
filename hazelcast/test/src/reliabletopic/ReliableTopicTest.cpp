@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/ReliableTopic.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/util/ConcurrentQueue.h"
 
 #include "../HazelcastServerFactory.h"
 #include "../ClientTestSupport.h"

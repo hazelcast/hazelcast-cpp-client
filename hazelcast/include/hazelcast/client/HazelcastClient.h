@@ -16,6 +16,8 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
+#include <memory>
+
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
@@ -35,7 +37,6 @@
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
 
@@ -715,7 +716,7 @@ namespace hazelcast {
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
-            connection::ConnectionManager connectionManager;
+            std::auto_ptr<connection::ConnectionManager> connectionManager;
             internal::nearcache::NearCacheManager nearCacheManager;
             spi::ClusterService clusterService;
             spi::PartitionService partitionService;

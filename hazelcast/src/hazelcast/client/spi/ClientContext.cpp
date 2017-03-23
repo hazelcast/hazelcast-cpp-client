@@ -55,7 +55,7 @@ namespace hazelcast {
             }
 
             connection::ConnectionManager &ClientContext::getConnectionManager() {
-                return hazelcastClient.connectionManager;
+                return *hazelcastClient.connectionManager;
             }
 
             internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
