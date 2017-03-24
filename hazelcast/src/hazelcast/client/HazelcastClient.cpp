@@ -19,6 +19,7 @@
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
+#include "hazelcast/client/connection/ConnectionManager.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -37,7 +38,7 @@ namespace hazelcast {
         , clientContext(*this)
         , lifecycleService(clientContext, clientConfig)
         , serializationService(config.getSerializationConfig())
-        , connectionManager(clientContext, clientConfig.isSmart())
+        , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
         , nearCacheManager(serializationService)
         , clusterService(clientContext)
         , partitionService(clientContext)

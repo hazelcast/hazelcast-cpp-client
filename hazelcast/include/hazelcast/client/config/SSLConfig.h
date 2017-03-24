@@ -24,7 +24,6 @@
 #include <WinSock2.h>
 #endif
 
-#include <asio/ssl/context_base.hpp>
 #include <vector>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -40,22 +39,22 @@ namespace hazelcast {
             enum HAZELCAST_API SSLProtocol
             {
                 /// Generic SSL version 2.
-                        sslv2 = asio::ssl::context_base::sslv2,
+                        sslv2 = 0, // asio::ssl::context_base::sslv2
 
                 /// Generic SSL version 3.
-                        sslv3 = asio::ssl::context_base::sslv3,
+                        sslv3 = 3, // asio::ssl::context_base::sslv3
 
                 /// Generic TLS version 1.
-                        tlsv1 = asio::ssl::context_base::tlsv1,
+                        tlsv1 = 6, // asio::ssl::context_base::tlsv1
 
                 /// Generic SSL/TLS.
-                        sslv23 = asio::ssl::context_base::sslv23,
+                        sslv23 = 9, // asio::ssl::context_base::sslv23
 
                 /// Generic TLS version 1.1.
-                        tlsv11 = asio::ssl::context_base::tlsv11,
+                        tlsv11 = 12, // asio::ssl::context_base::tlsv11,
 
                 /// Generic TLS version 1.2.
-                        tlsv12 = asio::ssl::context_base::tlsv12
+                        tlsv12 = 15, // asio::ssl::context_base::tlsv12
             };
 
             /**

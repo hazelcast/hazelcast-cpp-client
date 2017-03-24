@@ -18,6 +18,7 @@
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/SocketInterceptor.h"
+#include "hazelcast/client/Socket.h"
 #include "HazelcastServer.h"
 
 namespace hazelcast {
@@ -68,5 +69,4 @@ namespace hazelcast {
         }
     }
 }
-
 

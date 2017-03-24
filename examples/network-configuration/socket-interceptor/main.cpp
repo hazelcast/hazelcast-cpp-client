@@ -16,7 +16,7 @@
 //
 // Created by İhsan Demir on 21/12/15.
 //
-#include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/HazelcastAll.h>
 
 class MyInterceptor : public hazelcast::client::SocketInterceptor {
 public:
