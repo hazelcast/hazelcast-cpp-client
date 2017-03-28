@@ -76,6 +76,18 @@ namespace hazelcast {
 
             }
 
+            TEST_F(ClientUtilTest, testConditionVariableForEINVAL) {
+                util::Mutex mutex;
+                util::ConditionVariable conditionVariable;
+                int wakeUpTime = 1;
+                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
+                {
+                    util::LockGuard lockGuard(mutex);
+                    // the following call should not fail with assertion for EINVAL
+                    conditionVariable.waitFor(mutex, 19999);
+                }
+            }
+
             TEST_F (ClientUtilTest, testFutureWaitTimeout) {
                 util::Future<int> future;
                 int waitSeconds = 3;
