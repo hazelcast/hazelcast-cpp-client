@@ -47,11 +47,11 @@ namespace hazelcast {
                         map.set(key, value);
                     }
 
-                    boost::shared_ptr<V> put(const K &key, const V &value) {
+                    hazelcast::util::SharedPtr<V> put(const K &key, const V &value) {
                         return map.putIfAbsent(key, value);
                     }
 
-                    boost::shared_ptr<V> get(const K &key) {
+                    hazelcast::util::SharedPtr<V> get(const K &key) {
                         return map.get(key);
                     }
 

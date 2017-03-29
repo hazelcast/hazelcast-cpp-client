@@ -59,8 +59,8 @@ namespace hazelcast {
             *
             * @see IMap#get(keu)
             */
-            boost::shared_ptr<V> get(const K& key) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::getData(toData(&key))));
+            hazelcast::util::SharedPtr<V> get(const K& key) {
+                return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::TransactionalMapImpl::getData(toData(&key))));
             }
 
             /**
@@ -88,8 +88,8 @@ namespace hazelcast {
             *
             * @see IMap#put(key, value)
             */
-            boost::shared_ptr<V> put(const K& key, const V& value) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::putData(toData(&key), toData(&value))));
+            hazelcast::util::SharedPtr<V> put(const K& key, const V& value) {
+                return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::TransactionalMapImpl::putData(toData(&key), toData(&value))));
             };
 
             /**
@@ -110,8 +110,8 @@ namespace hazelcast {
             *
             * @see IMap#putIfAbsent(key, value)
             */
-            boost::shared_ptr<V> putIfAbsent(const K& key, const V& value) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::putIfAbsentData(toData(&key), toData(&value))));
+            hazelcast::util::SharedPtr<V> putIfAbsent(const K& key, const V& value) {
+                return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::TransactionalMapImpl::putIfAbsentData(toData(&key), toData(&value))));
             };
 
             /**
@@ -121,8 +121,8 @@ namespace hazelcast {
             *
             * @see IMap#replace(key, value)
             */
-            boost::shared_ptr<V> replace(const K& key, const V& value) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::replaceData(toData(&key), toData(&value))));
+            hazelcast::util::SharedPtr<V> replace(const K& key, const V& value) {
+                return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::TransactionalMapImpl::replaceData(toData(&key), toData(&value))));
             };
 
             /**
@@ -143,8 +143,8 @@ namespace hazelcast {
             *
             * @see IMap#remove(key)
             */
-            boost::shared_ptr<V> remove(const K& key) {
-                return boost::shared_ptr<V>(toObject<V>(proxy::TransactionalMapImpl::removeData(toData(&key))));
+            hazelcast::util::SharedPtr<V> remove(const K& key) {
+                return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::TransactionalMapImpl::removeData(toData(&key))));
             };
 
             /**

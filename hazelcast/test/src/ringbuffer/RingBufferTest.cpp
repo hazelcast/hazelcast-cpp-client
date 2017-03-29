@@ -53,7 +53,7 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static boost::shared_ptr<Ringbuffer<Employee> > rb;
+                static hazelcast::util::SharedPtr<Ringbuffer<Employee> > rb;
 
                 static const int64_t CAPACITY;
             };
@@ -63,7 +63,7 @@ namespace hazelcast {
             HazelcastServer *RingbufferTest::instance = NULL;
             ClientConfig *RingbufferTest::clientConfig = NULL;
             HazelcastClient *RingbufferTest::client = NULL;
-            boost::shared_ptr<Ringbuffer<Employee> > RingbufferTest::rb = boost::shared_ptr<Ringbuffer<Employee> >();
+            hazelcast::util::SharedPtr<Ringbuffer<Employee> > RingbufferTest::rb = hazelcast::util::SharedPtr<Ringbuffer<Employee> >();
 
             TEST_F(RingbufferTest, testAPI) {
                 ASSERT_EQ(CAPACITY, rb->capacity());

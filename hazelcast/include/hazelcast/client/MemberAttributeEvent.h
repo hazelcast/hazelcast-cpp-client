@@ -23,7 +23,6 @@
 
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/util/IOUtil.h"
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

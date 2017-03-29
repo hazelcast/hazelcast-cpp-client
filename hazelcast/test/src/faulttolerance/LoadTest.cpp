@@ -57,7 +57,7 @@ namespace hazelcast {
                                 case 1:
                                     ASSERT_NO_THROW(map->remove(i));
                                 case 2: {
-                                    boost::shared_ptr<int> val;
+                                    hazelcast::util::SharedPtr<int> val;
                                     ASSERT_NO_THROW(val = map->get(i));
                                     if ((int *) NULL != val.get()) {
                                         ASSERT_EQ(*val, i);

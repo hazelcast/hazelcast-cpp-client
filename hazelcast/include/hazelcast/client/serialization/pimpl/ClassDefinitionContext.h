@@ -41,9 +41,9 @@ namespace hazelcast {
 
                     void setClassVersion(int classId, int version);
 
-                    boost::shared_ptr<ClassDefinition> lookup(int, int);
+                    hazelcast::util::SharedPtr<ClassDefinition> lookup(int, int);
 
-                    boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+                    hazelcast::util::SharedPtr<ClassDefinition> registerClassDefinition(hazelcast::util::SharedPtr<ClassDefinition>);
 
                 private:
                     long long combineToLong(int x, int y) const;

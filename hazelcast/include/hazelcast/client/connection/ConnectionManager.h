@@ -29,7 +29,7 @@
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Thread.h"
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <stdint.h>
 #include <memory>
 
@@ -73,21 +73,21 @@ namespace hazelcast {
                 * @return ownerConnection
                 * @throws Exception
                 */
-                boost::shared_ptr<Connection> createOwnerConnection(const Address &address);
+                hazelcast::util::SharedPtr<Connection> createOwnerConnection(const Address &address);
 
                 /**
                 * Gets a shared ptr to connection if available to given address
                 *
                 * @param address
                 */
-                boost::shared_ptr<Connection> getConnectionIfAvailable(const Address &address);
+                hazelcast::util::SharedPtr<Connection> getConnectionIfAvailable(const Address &address);
 
                 /**
                 * Gets a shared ptr to connection if available to the provided socket descriptor
                 *
                 * @param The socket descriptor for the connection.
                 */
-                boost::shared_ptr<Connection> getConnectionIfAvailable(int socketDescriptor);
+                hazelcast::util::SharedPtr<Connection> getConnectionIfAvailable(int socketDescriptor);
 
                 /**
                 * Tries to connect to an address in member list.
@@ -97,7 +97,7 @@ namespace hazelcast {
                 * @return authenticated connection
                 * @throws Exception authentication failed or no connection found
                 */
-                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress, int tryCount);
+                hazelcast::util::SharedPtr<Connection> getOrConnect(const Address &resolvedAddress, int tryCount);
 
                 /**
                 * Tries to connect to an address in member list.
@@ -106,7 +106,7 @@ namespace hazelcast {
                 * @return authenticated connection
                 * @throws Exception authentication failed or no connection found
                 */
-                boost::shared_ptr<Connection> getRandomConnection(int tryCount);
+                hazelcast::util::SharedPtr<Connection> getRandomConnection(int tryCount);
 
                 /**
                 * Tries to connect to an address in member list.
@@ -121,7 +121,7 @@ namespace hazelcast {
                 * @return authenticated connection
                 * @throws Exception authentication failed or no connection found
                 */
-                boost::shared_ptr<Connection> getRandomConnection(int tryCount, const std::string &lastTriedAddress,
+                hazelcast::util::SharedPtr<Connection> getRandomConnection(int tryCount, const std::string &lastTriedAddress,
                                                                   int retryWaitTime);
 
                 /**
@@ -153,7 +153,7 @@ namespace hazelcast {
                 * @param address
                 * @param ownerConnection
                 */
-                std::vector<boost::shared_ptr<Connection> > getConnections();
+                std::vector<hazelcast::util::SharedPtr<Connection> > getConnections();
 
                 /**
                 * Called heartbeat timeout is detected on a connection.
@@ -177,11 +177,11 @@ namespace hazelcast {
 
             private:
 
-                boost::shared_ptr<Connection> getOrConnectResolved(const Address &resolvedAddress);
+                hazelcast::util::SharedPtr<Connection> getOrConnectResolved(const Address &resolvedAddress);
 
-                boost::shared_ptr<Connection> getOrConnect(const Address &resolvedAddress);
+                hazelcast::util::SharedPtr<Connection> getOrConnect(const Address &resolvedAddress);
 
-                boost::shared_ptr<Connection> getRandomConnection();
+                hazelcast::util::SharedPtr<Connection> getRandomConnection();
 
                 void authenticate(Connection *connection);
 
@@ -191,7 +191,7 @@ namespace hazelcast {
                                                            std::auto_ptr<std::string> uuid,
                                                            std::auto_ptr<std::string> ownerUuid);
 
-                boost::shared_ptr<Connection> getOwnerConnection();
+                hazelcast::util::SharedPtr<Connection> getOwnerConnection();
 
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
@@ -204,7 +204,7 @@ namespace hazelcast {
                 std::auto_ptr<util::Thread> outSelectorThread;
                 util::AtomicBoolean live;
                 util::Mutex lockMutex;
-                boost::shared_ptr<protocol::Principal> principal;
+                hazelcast::util::SharedPtr<protocol::Principal> principal;
 
                 connection::HeartBeater heartBeater;
                 std::auto_ptr<util::Thread> heartBeatThread;

@@ -87,7 +87,7 @@ namespace hazelcast {
                     size_t size = keyDataSet.size();
                     std::vector<K> keys(size);
                     for (size_t i = 0; i < size; i++) {
-                        boost::shared_ptr<K> v(toObject<K>(keyDataSet[i]));
+                        hazelcast::util::SharedPtr<K> v(toObject<K>(keyDataSet[i]));
                         keys[i] = *v;
                     }
                     return keys;

@@ -34,12 +34,12 @@ namespace hazelcast {
             public:
                 ProxyManager(ClientContext &context);
 
-                boost::shared_ptr<ClientProxy> getOrCreateProxy(const std::string &service,
+                hazelcast::util::SharedPtr<ClientProxy> getOrCreateProxy(const std::string &service,
                                                                 const std::string &id,
                                                                 spi::ClientProxyFactory &factory);
 
             private:
-                void initializeWithRetry(boost::shared_ptr<ClientProxy> clientProxy);
+                void initializeWithRetry(hazelcast::util::SharedPtr<ClientProxy> clientProxy);
 
                 //TODO: Change ClientProxy to ClientProxyFuture as in java
                 util::SynchronizedMap<DefaultObjectNamespace, ClientProxy> proxies;

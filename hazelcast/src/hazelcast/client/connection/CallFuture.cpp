@@ -38,7 +38,7 @@ namespace hazelcast {
 
             }
 
-            CallFuture::CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService *invocationService)
+            CallFuture::CallFuture(hazelcast::util::SharedPtr<CallPromise> promise, hazelcast::util::SharedPtr<Connection> connection, int heartBeatTimeout, spi::InvocationService *invocationService)
             : promise(promise)
             , connection(connection)
             , invocationService(invocationService)

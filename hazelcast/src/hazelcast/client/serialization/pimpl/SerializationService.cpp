@@ -39,8 +39,8 @@ namespace hazelcast {
                 SerializationService::SerializationService(const SerializationConfig& serializationConfig)
                 : portableContext(serializationConfig.getPortableVersion(), constants)
                 , serializationConfig(serializationConfig) {
-                    std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
-                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
+                    std::vector<hazelcast::util::SharedPtr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
+                    std::vector<hazelcast::util::SharedPtr<SerializerBase> >::const_iterator it;
                     SerializerHolder& serializerHolder = getSerializerHolder();
                     for (it = serializers.begin(); it < serializers.end(); ++it) {
                         serializerHolder.registerSerializer(*it);
@@ -51,7 +51,7 @@ namespace hazelcast {
                     return portableContext.getSerializerHolder();
                 }
 
-                bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
+                bool SerializationService::registerSerializer(hazelcast::util::SharedPtr<SerializerBase> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
                 }
 

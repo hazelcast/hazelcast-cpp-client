@@ -26,15 +26,15 @@ namespace hazelcast {
             ProxyManager::ProxyManager(ClientContext &context) {
             }
 
-            boost::shared_ptr<ClientProxy> ProxyManager::getOrCreateProxy(
+            hazelcast::util::SharedPtr<ClientProxy> ProxyManager::getOrCreateProxy(
                     const std::string &service, const std::string &id, ClientProxyFactory &factory) {
                 DefaultObjectNamespace ns(service, id);
-                boost::shared_ptr<ClientProxy> proxy = proxies.get(ns);
+                hazelcast::util::SharedPtr<ClientProxy> proxy = proxies.get(ns);
                 if (proxy.get() != NULL) {
                     return proxy;
                 }
-                boost::shared_ptr<ClientProxy> clientProxy = factory.create(id);
-                boost::shared_ptr<ClientProxy> current = proxies.putIfAbsent(ns, clientProxy);
+                hazelcast::util::SharedPtr<ClientProxy> clientProxy = factory.create(id);
+                hazelcast::util::SharedPtr<ClientProxy> current = proxies.putIfAbsent(ns, clientProxy);
                 if (current.get() != NULL) {
                     return current;
                 }
@@ -47,7 +47,7 @@ namespace hazelcast {
                 return clientProxy;
             }
 
-            void ProxyManager::initializeWithRetry(boost::shared_ptr<ClientProxy> clientProxy) {
+            void ProxyManager::initializeWithRetry(hazelcast::util::SharedPtr<ClientProxy> clientProxy) {
                 // TODO: Implement like java
                 clientProxy->onInitialize();
             }

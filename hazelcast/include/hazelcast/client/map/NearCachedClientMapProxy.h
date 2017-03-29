@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_MAP_NEARCACHEDCLIENTMAPPROXY_H_
 #define HAZELCAST_CLIENT_MAP_NEARCACHEDCLIENTMAPPROXY_H_
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/map/ClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -88,8 +88,8 @@ namespace hazelcast {
 
                 //@Override
                 bool containsKeyInternal(const serialization::pimpl::Data &keyData) {
-                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
-                    boost::shared_ptr<V> cached = nearCache->get(key);
+                    hazelcast::util::SharedPtr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
+                    hazelcast::util::SharedPtr<V> cached = nearCache->get(key);
                     if (cached.get() != NULL) {
                         return internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached;
                     }
@@ -98,12 +98,12 @@ namespace hazelcast {
                 }
 
                 //@override
-                boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
-                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
-                    boost::shared_ptr<V> cached = nearCache->get(key);
+                hazelcast::util::SharedPtr<V> getInternal(serialization::pimpl::Data &keyData) {
+                    hazelcast::util::SharedPtr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(keyData);
+                    hazelcast::util::SharedPtr<V> cached = nearCache->get(key);
                     if (cached.get() != NULL) {
                         if (internal::nearcache::NearCache<K, V>::NULL_OBJECT == cached) {
-                            return boost::shared_ptr<V>();
+                            return hazelcast::util::SharedPtr<V>();
                         }
                         return cached;
                     }
@@ -111,7 +111,7 @@ namespace hazelcast {
                     bool marked = keyStateMarker->tryMark(*key);
 
                     try {
-                        boost::shared_ptr<V> value = ClientMapProxy<K, V>::getInternal(*key);
+                        hazelcast::util::SharedPtr<V> value = ClientMapProxy<K, V>::getInternal(*key);
                         if (marked) {
                             tryToPutNearCache(key, value);
                         }
@@ -221,17 +221,17 @@ namespace hazelcast {
 
                 //@Override
                 EntryVector getAllInternal(
-                        const std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > &pIdToKeyData,
+                        const std::map<int, std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> > > &pIdToKeyData,
                         std::map<K, V> &result) {
-                    std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> markers;
+                    std::map<hazelcast::util::SharedPtr<serialization::pimpl::Data>, bool> markers;
                     try {
-                        for (std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator
+                        for (std::map<int, std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> > >::const_iterator
                                      it = pIdToKeyData.begin(); it != pIdToKeyData.end(); ++it) {
-                            for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator
+                            for (std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> >::const_iterator
                                          valueIterator = it->second.begin();
                                  valueIterator != it->second.end(); ++valueIterator) {
-                                const boost::shared_ptr<serialization::pimpl::Data> &keyData = *valueIterator;
-                                boost::shared_ptr<V> cached = nearCache->get(keyData);
+                                const hazelcast::util::SharedPtr<serialization::pimpl::Data> &keyData = *valueIterator;
+                                hazelcast::util::SharedPtr<V> cached = nearCache->get(keyData);
                                 if (cached.get() != NULL &&
                                     internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached) {
                                     result[*proxy::ProxyImpl::toObject<K>(*keyData)] = *cached;
@@ -243,9 +243,9 @@ namespace hazelcast {
 
                         EntryVector responses = ClientMapProxy<K, V>::getAllInternal(pIdToKeyData, result);
                         for (EntryVector::const_iterator it = responses.begin(); it != responses.end(); ++it) {
-                            boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(
+                            hazelcast::util::SharedPtr<serialization::pimpl::Data> key = ClientMapProxy<K, V>::toShared(
                                     it->first);
-                            boost::shared_ptr<serialization::pimpl::Data> value = ClientMapProxy<K, V>::toShared(
+                            hazelcast::util::SharedPtr<serialization::pimpl::Data> value = ClientMapProxy<K, V>::toShared(
                                     it->second);
                             bool marked = false;
                             if (markers.count(key)) {
@@ -291,14 +291,12 @@ namespace hazelcast {
                 }
             private:
                 impl::nearcache::KeyStateMarker *getKeyStateMarker() {
-                    return boost::static_pointer_cast<
-                            impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, V> >(nearCache)->
-                            getKeyStateMarker();
+                    return ((impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, V> *)(nearCache.get()))->getKeyStateMarker();
                 }
 
                 void addNearCacheInvalidateListener(std::auto_ptr<client::impl::BaseEventHandler> handler) {
                     try {
-                        invalidationListenerId = boost::shared_ptr<std::string>(
+                        invalidationListenerId = hazelcast::util::SharedPtr<std::string>(
                                 new std::string(proxy::ProxyImpl::registerListener(
                                         createNearCacheEntryListenerCodec(), handler.release())));
 
@@ -314,7 +312,7 @@ namespace hazelcast {
                         : public protocol::codec::MapAddNearCacheEntryListenerCodec::AbstractEventHandler {
                 public:
                     ClientMapAddNearCacheEventHandler(
-                            const boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > &cache)
+                            const hazelcast::util::SharedPtr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > &cache)
                             : nearCache(cache) {
                     }
 
@@ -334,7 +332,7 @@ namespace hazelcast {
                         if (key.get() == NULL) {
                             nearCache->clear();
                         } else {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(key));
+                            nearCache->remove(hazelcast::util::SharedPtr<serialization::pimpl::Data>(key.release()));
                         }
                     }
 
@@ -342,13 +340,13 @@ namespace hazelcast {
                     void handleIMapBatchInvalidation(const std::vector<serialization::pimpl::Data> &keys) {
                         for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
                              it != keys.end(); ++it) {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(
+                            nearCache->remove(hazelcast::util::SharedPtr<serialization::pimpl::Data>(
                                     new serialization::pimpl::Data(*it)));
                         }
                     }
 
                 private:
-                    boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
+                    hazelcast::util::SharedPtr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
                 };
 
                 std::auto_ptr<protocol::codec::IAddListenerCodec> createNearCacheEntryListenerCodec() {
@@ -357,7 +355,7 @@ namespace hazelcast {
                                     nearCache->getName(), EntryEventType::INVALIDATION, false));
                 }
 
-                void resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key) {
+                void resetToUnmarkedState(hazelcast::util::SharedPtr<serialization::pimpl::Data> &key) {
                     if (keyStateMarker->tryUnmark(*key)) {
                         return;
                     }
@@ -366,8 +364,8 @@ namespace hazelcast {
                     keyStateMarker->forceUnmark(*key);
                 }
 
-                void unmarkRemainingMarkedKeys(std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> &markers) {
-                    for (std::map<boost::shared_ptr<serialization::pimpl::Data>, bool>::const_iterator it = markers.begin();
+                void unmarkRemainingMarkedKeys(std::map<hazelcast::util::SharedPtr<serialization::pimpl::Data>, bool> &markers) {
+                    for (std::map<hazelcast::util::SharedPtr<serialization::pimpl::Data>, bool>::const_iterator it = markers.begin();
                          it != markers.end(); ++it) {
                         if (it->second) {
                             keyStateMarker->forceUnmark(*it->first);
@@ -375,19 +373,19 @@ namespace hazelcast {
                     }
                 }
 
-                void tryToPutNearCache(boost::shared_ptr<serialization::pimpl::Data> &keyData,
-                                       boost::shared_ptr<V> &response) {
+                void tryToPutNearCache(hazelcast::util::SharedPtr<serialization::pimpl::Data> &keyData,
+                                       hazelcast::util::SharedPtr<V> &response) {
                     tryToPutNearCacheInternal<V>(keyData, response);
                 }
 
-                void tryToPutNearCache(boost::shared_ptr<serialization::pimpl::Data> &keyData,
-                                       boost::shared_ptr<serialization::pimpl::Data> &response) {
+                void tryToPutNearCache(hazelcast::util::SharedPtr<serialization::pimpl::Data> &keyData,
+                                       hazelcast::util::SharedPtr<serialization::pimpl::Data> &response) {
                     tryToPutNearCacheInternal<serialization::pimpl::Data>(keyData, response);
                 }
 
                 template<typename VALUETYPE>
-                void tryToPutNearCacheInternal(boost::shared_ptr<serialization::pimpl::Data> &keyData,
-                                               boost::shared_ptr<VALUETYPE> &response) {
+                void tryToPutNearCacheInternal(hazelcast::util::SharedPtr<serialization::pimpl::Data> &keyData,
+                                               hazelcast::util::SharedPtr<VALUETYPE> &response) {
                     try {
                         nearCache->put(keyData, response);
                         resetToUnmarkedState(keyData);
@@ -405,7 +403,7 @@ namespace hazelcast {
                     nearCache->remove(ClientMapProxy<K, V>::toShared(key));
                 }
 
-                void invalidateNearCache(boost::shared_ptr<serialization::pimpl::Data> key) {
+                void invalidateNearCache(hazelcast::util::SharedPtr<serialization::pimpl::Data> key) {
                     nearCache->remove(key);
                 }
 
@@ -413,9 +411,9 @@ namespace hazelcast {
                 bool invalidateOnChange;
                 impl::nearcache::KeyStateMarker *keyStateMarker;
                 const config::NearCacheConfig<K, V> &nearCacheConfig;
-                boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
+                hazelcast::util::SharedPtr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
                 // since we don't have atomic support in the project yet, using shared_ptr
-                boost::shared_ptr<std::string> invalidationListenerId;
+                hazelcast::util::SharedPtr<std::string> invalidationListenerId;
             };
         }
     }

@@ -22,7 +22,8 @@
 #define HAZELCAST_SerializationConfig
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
+#include "hazelcast/client/serialization/Serializer.h"
 #include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -32,10 +33,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace serialization{
-            class SerializerBase;
-        }
-
         /**
          * SerializationConfig is used to
          *   * set version of portable classes in this client (@see Portable)
@@ -69,7 +66,7 @@ namespace hazelcast {
              *
              * @return vector of registered custom serializers
              */
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > const &getSerializers() const;
+            std::vector<hazelcast::util::SharedPtr<serialization::SerializerBase> > const &getSerializers() const;
 
             /**
              * One can implement custom serializers other than Portable and IdentifiedDataSerializable
@@ -77,11 +74,11 @@ namespace hazelcast {
              *
              * @param serializer custom serializer to be registered
              */
-            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer);
+            SerializationConfig& registerSerializer(hazelcast::util::SharedPtr<serialization::SerializerBase> serializer);
 
         private:
             int version;
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > serializers;
+            std::vector<hazelcast::util::SharedPtr<serialization::SerializerBase> > serializers;
         };
     }
 }

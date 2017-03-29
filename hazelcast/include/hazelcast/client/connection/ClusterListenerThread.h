@@ -26,8 +26,9 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
 #include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/connection/Connection.h"
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -46,7 +47,6 @@ namespace hazelcast {
         }
 
         namespace connection {
-            class Connection;
 
             class ConnectionManager;
 
@@ -79,7 +79,7 @@ namespace hazelcast {
                 bool isStartedSuccessfully;
             private:
                 spi::ClientContext &clientContext;
-                boost::shared_ptr<Connection> conn;
+                hazelcast::util::SharedPtr<Connection> conn;
                 util::AtomicBoolean deletingConnection;
                 std::vector<Member> members;
 

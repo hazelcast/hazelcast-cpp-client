@@ -226,7 +226,7 @@ namespace hazelcast {
                         int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
-                        boost::shared_ptr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
+                        hazelcast::util::SharedPtr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
 
                         if (NULL == serializer.get()) {
                             const std::string message = "No serializer found for serializerId :"+

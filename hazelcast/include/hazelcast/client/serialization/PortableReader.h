@@ -56,7 +56,7 @@ namespace hazelcast {
                 * Internal Api constructor
                 */
                 PortableReader(pimpl::PortableContext& context, pimpl::DataInput& dataInput,
-                                boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader);
+                                hazelcast::util::SharedPtr<ClassDefinition> cd, bool isDefaultReader);
 
                 PortableReader(const PortableReader & reader);
 
@@ -188,7 +188,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                boost::shared_ptr<T> readPortable(const char *fieldName) {
+                hazelcast::util::SharedPtr<T> readPortable(const char *fieldName) {
                     if (isDefaultReader)
                         return defaultPortableReader->readPortable<T>(fieldName);
                     return morphingPortableReader->readPortable<T>(fieldName);

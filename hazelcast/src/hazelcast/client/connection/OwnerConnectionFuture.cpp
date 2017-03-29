@@ -39,14 +39,14 @@ namespace hazelcast {
                 ownerConnectionPtr.reset();
             }
 
-            boost::shared_ptr<Connection> OwnerConnectionFuture::createNew(const Address& address) {
-                ownerConnectionPtr = clientContext.getConnectionManager().connectTo(address, true);
+            hazelcast::util::SharedPtr<Connection> OwnerConnectionFuture::createNew(const Address& address) {
+                ownerConnectionPtr = hazelcast::util::SharedPtr<Connection>(clientContext.getConnectionManager().connectTo(address, true).release());
                 ownerConnectionPtr->setAsOwnerConnection(true);
                 return ownerConnectionPtr;
             }
 
-            boost::shared_ptr<Connection> OwnerConnectionFuture::getOrWaitForCreation() {
-                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnectionPtr;
+            hazelcast::util::SharedPtr<Connection> OwnerConnectionFuture::getOrWaitForCreation() {
+                hazelcast::util::SharedPtr<Connection> currentOwnerConnection = ownerConnectionPtr;
                 if (currentOwnerConnection.get() != NULL) {
                     return currentOwnerConnection;
                 }
@@ -71,7 +71,7 @@ namespace hazelcast {
 
 
             void OwnerConnectionFuture::closeIfAddressMatches(const Address& address) {
-                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnectionPtr;
+                hazelcast::util::SharedPtr<Connection> currentOwnerConnection = ownerConnectionPtr;
 
                 if (currentOwnerConnection.get() == NULL || !currentOwnerConnection->live) {
                     return;
@@ -83,7 +83,7 @@ namespace hazelcast {
             }
 
             void OwnerConnectionFuture::close() {
-                boost::shared_ptr<Connection> currentOwnerConnection = ownerConnectionPtr;
+                hazelcast::util::SharedPtr<Connection> currentOwnerConnection = ownerConnectionPtr;
                 if (currentOwnerConnection.get() == NULL) {
                     return;
                 }

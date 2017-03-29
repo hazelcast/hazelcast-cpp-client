@@ -22,7 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <map>
 #include <vector>
 
@@ -60,13 +60,13 @@ namespace hazelcast {
              * @return the previous value associated with the specified key,
              *         or <tt>null</tt> if there was no mapping for the key
              */
-            boost::shared_ptr<V> putIfAbsent(const K &key, boost::shared_ptr<V> value) {
+            hazelcast::util::SharedPtr<V> putIfAbsent(const K &key, hazelcast::util::SharedPtr<V> value) {
                 util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0) {
                     return internalMap[key];
                 } else {
                     internalMap[key] = value;
-                    return boost::shared_ptr<V>();
+                    return hazelcast::util::SharedPtr<V>();
                 }
             };
 
@@ -75,9 +75,9 @@ namespace hazelcast {
              * @return the previous value associated with the specified key,
              *         or <tt>null</tt> if there was no mapping for the key
              */
-            boost::shared_ptr<V> put(const K &key, boost::shared_ptr<V> value) {
+            hazelcast::util::SharedPtr<V> put(const K &key, hazelcast::util::SharedPtr<V> value) {
                 util::LockGuard lg(mapLock);
-                boost::shared_ptr<V> returnValue;
+                hazelcast::util::SharedPtr<V> returnValue;
                 if (internalMap.count(key) > 0) {
                     returnValue = internalMap[key];
                 }
@@ -90,12 +90,12 @@ namespace hazelcast {
              * or {@code null} if this map contains no mapping for the key.
              *
              */
-            boost::shared_ptr<V> get(const K &key) {
+            hazelcast::util::SharedPtr<V> get(const K &key) {
                 util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0)
                     return internalMap[key];
                 else
-                    return boost::shared_ptr<V>();
+                    return hazelcast::util::SharedPtr<V>();
             };
 
             /**
@@ -104,44 +104,44 @@ namespace hazelcast {
             * or {@code null} if this map contains no mapping for the key.
             *
             */
-            boost::shared_ptr<V> remove(const K &key) {
+            hazelcast::util::SharedPtr<V> remove(const K &key) {
                 util::LockGuard lg(mapLock);
                 if (internalMap.count(key) > 0) {
-                    boost::shared_ptr<V> v = internalMap[key];
+                    hazelcast::util::SharedPtr<V> v = internalMap[key];
                     internalMap.erase(key);
                     return v;
                 }
                 else
-                    return boost::shared_ptr<V>();
+                    return hazelcast::util::SharedPtr<V>();
             };
 
-            std::vector<std::pair<K, boost::shared_ptr<V> > > entrySet() {
+            std::vector<std::pair<K, hazelcast::util::SharedPtr<V> > > entrySet() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
-                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
+                std::vector<std::pair<K, hazelcast::util::SharedPtr<V> > > entries(internalMap.size());
+                typename std::map<K, hazelcast::util::SharedPtr<V>, Comparator>::iterator it;
                 int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries[i++] = std::pair<K, hazelcast::util::SharedPtr<V> >(it->first, it->second);
                 }
                 return entries;
             }
 
-            std::vector<std::pair<K, boost::shared_ptr<V> > > clear() {
+            std::vector<std::pair<K, hazelcast::util::SharedPtr<V> > > clear() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
-                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
+                std::vector<std::pair<K, hazelcast::util::SharedPtr<V> > > entries(internalMap.size());
+                typename std::map<K, hazelcast::util::SharedPtr<V>, Comparator>::iterator it;
                 int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries[i++] = std::pair<K, hazelcast::util::SharedPtr<V> >(it->first, it->second);
                 }
                 internalMap.clear();
                 return entries;
             }
 
-            std::vector<boost::shared_ptr<V> > values() {
+            std::vector<hazelcast::util::SharedPtr<V> > values() {
                 util::LockGuard lg(mapLock);
-                std::vector<boost::shared_ptr<V> > valueArray(internalMap.size());
-                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
+                std::vector<hazelcast::util::SharedPtr<V> > valueArray(internalMap.size());
+                typename std::map<K, hazelcast::util::SharedPtr<V>, Comparator>::iterator it;
                 int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     valueArray[i++] = it->second;
@@ -152,7 +152,7 @@ namespace hazelcast {
             std::vector<K> keys() {
                 util::LockGuard lg(mapLock);
                 std::vector<K> keysArray(internalMap.size());
-                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
+                typename std::map<K, hazelcast::util::SharedPtr<V>, Comparator>::iterator it;
                 int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
                     keysArray[i++] = it->first;
@@ -160,11 +160,11 @@ namespace hazelcast {
                 return keysArray;
             }
 
-            boost::shared_ptr<V> getOrPutIfAbsent(const K &key) {
-                boost::shared_ptr<V> value = get(key);
+            hazelcast::util::SharedPtr<V> getOrPutIfAbsent(const K &key) {
+                hazelcast::util::SharedPtr<V> value = get(key);
                 if (value.get() == NULL) {
-                    value.reset(new V());
-                    boost::shared_ptr<V> current = putIfAbsent(key, value);
+                    value = hazelcast::util::SharedPtr<V> (new V());
+                    hazelcast::util::SharedPtr<V> current = putIfAbsent(key, value);
                     value = current.get() == NULL ? value : current;
                 }
                 return value;
@@ -175,20 +175,20 @@ namespace hazelcast {
                 return internalMap.size();
             }
 
-            std::auto_ptr<std::pair<K, boost::shared_ptr<V> > > getEntry(size_t index) const {
+            std::auto_ptr<std::pair<K, hazelcast::util::SharedPtr<V> > > getEntry(size_t index) const {
                 util::LockGuard lg(mapLock);
                 if (index < 0 || index >= internalMap.size()) {
-                    return std::auto_ptr<std::pair<K, boost::shared_ptr<V> > >();
+                    return std::auto_ptr<std::pair<K, hazelcast::util::SharedPtr<V> > >();
                 }
-                typename std::map<K, boost::shared_ptr<V> >::const_iterator it = internalMap.begin();
+                typename std::map<K, hazelcast::util::SharedPtr<V> >::const_iterator it = internalMap.begin();
                 for (size_t i = 0; i < index; ++i) {
                     ++it;
                 }
-                return std::auto_ptr<std::pair<K, boost::shared_ptr<V> > >(
-                        new std::pair<K, boost::shared_ptr<V> >(it->first, it->second));
+                return std::auto_ptr<std::pair<K, hazelcast::util::SharedPtr<V> > >(
+                        new std::pair<K, hazelcast::util::SharedPtr<V> >(it->first, it->second));
             }
         private:
-            std::map<K, boost::shared_ptr<V>, Comparator> internalMap;
+            std::map<K, hazelcast::util::SharedPtr<V>, Comparator> internalMap;
             mutable util::Mutex mapLock;
         };
     }

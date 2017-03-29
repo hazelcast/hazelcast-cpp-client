@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/util/AtomicInt.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -67,9 +67,9 @@ namespace hazelcast {
         private:
 
             IAtomicLong atomicLong;
-            boost::shared_ptr< util::AtomicInt > local;
-            boost::shared_ptr< util::AtomicInt > residue;
-            boost::shared_ptr< util::Mutex > localLock;
+            hazelcast::util::SharedPtr< util::AtomicInt > local;
+            hazelcast::util::SharedPtr< util::AtomicInt > residue;
+            hazelcast::util::SharedPtr< util::Mutex > localLock;
             IdGenerator(const std::string &instanceName, spi::ClientContext *context);
 
             void onDestroy();

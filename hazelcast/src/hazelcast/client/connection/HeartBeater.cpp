@@ -59,12 +59,12 @@ namespace hazelcast {
 
                 connection::ConnectionManager& connectionManager = clientContext.getConnectionManager();
                 while (live) {
-                    std::vector<boost::shared_ptr<Connection> > connections = connectionManager.getConnections();
-                    std::vector<boost::shared_ptr<Connection> >::iterator it;
+                    std::vector<hazelcast::util::SharedPtr<Connection> > connections = connectionManager.getConnections();
+                    std::vector<hazelcast::util::SharedPtr<Connection> >::iterator it;
 
                     time_t now = time(NULL);
                     for (it = connections.begin(); it != connections.end(); ++it) {
-                        boost::shared_ptr<Connection> connection = *it;
+                        hazelcast::util::SharedPtr<Connection> connection = *it;
 
                         time_t lastReadTime = connection->lastRead;
 

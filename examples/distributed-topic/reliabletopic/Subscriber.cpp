@@ -74,7 +74,7 @@ void listenWithDefaultConfig() {
     hazelcast::client::HazelcastClient client(config);
 
     std::string topicName("MyReliableTopic");
-    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    hazelcast::util::SharedPtr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
     
     MyListener listener;
     const std::string &listenerId = topic->addMessageListener(listener);
@@ -100,7 +100,7 @@ void listenWithConfig() {
     clientConfig.addReliableTopicConfig(reliableTopicConfig);
     hazelcast::client::HazelcastClient client(clientConfig);
 
-    boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
+    hazelcast::util::SharedPtr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);
 
     MyListener listener;
     const std::string &listenerId = topic->addMessageListener(listener);

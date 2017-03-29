@@ -53,8 +53,9 @@ namespace hazelcast {
                      * associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    boost::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
-                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
+                    hazelcast::util::SharedPtr<NearCache<KS, V> > getNearCache(const std::string &name) {
+//                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
+                        throw 1;
                     };
 
                     /**
@@ -72,16 +73,16 @@ namespace hazelcast {
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    boost::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
+                    hazelcast::util::SharedPtr<NearCache<KS, V> > getOrCreateNearCache(
                             const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig,
                             std::auto_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
+                        hazelcast::util::SharedPtr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
                                 util::LockGuard guard(mutex);
                                 nearCache = nearCacheMap.get(name);
                                 if (NULL == nearCache.get()) {
-                                    nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
+//                                    nearCache = createNearCache<K, V, KS>(name, nearCacheConfig);
                                     nearCache->initialize();
 
                                     nearCacheMap.put(name, nearCache);
@@ -89,7 +90,8 @@ namespace hazelcast {
 
                             }
                         }
-                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCache);
+//                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCache);
+                        throw 1;
                     }
 
                     /**
@@ -98,7 +100,7 @@ namespace hazelcast {
                      * @return all existing {@link NearCache} instances
                      */
 /*
-                    virtual std::vector<boost::shared_ptr<NearCache<K, V> > > listAllNearCaches() const = 0;
+                    virtual std::vector<hazelcast::util::SharedPtr<NearCache<K, V> > > listAllNearCaches() const = 0;
 */
 
                     /**
@@ -108,7 +110,7 @@ namespace hazelcast {
                      * @return {@code true} if {@link NearCache} was found and cleared, {@code false} otherwise
                      */
                     bool clearNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
+                        hazelcast::util::SharedPtr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (nearCache.get() != NULL) {
                             nearCache->clear();
                         }
@@ -119,8 +121,8 @@ namespace hazelcast {
                      * Clears all defined {@link NearCache} instances.
                      */
                     void clearAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
+                        std::vector<hazelcast::util::SharedPtr<BaseNearCache> > caches = nearCacheMap.values();
+                        for (std::vector<hazelcast::util::SharedPtr<BaseNearCache> >::iterator it = caches.begin();
                              it != caches.end(); ++it) {
                             (*it)->clear();
                         }
@@ -133,7 +135,7 @@ namespace hazelcast {
                      * @return {@code true} if {@link NearCache} was found and destroyed, {@code false} otherwise
                      */
                     bool destroyNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.remove(name);
+                        hazelcast::util::SharedPtr<BaseNearCache> nearCache = nearCacheMap.remove(name);
                         if (nearCache.get() != NULL) {
                             nearCache->destroy();
                         }
@@ -144,8 +146,8 @@ namespace hazelcast {
                      * Destroys all defined {@link NearCache} instances.
                      */
                     void destroyAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
+                        std::vector<hazelcast::util::SharedPtr<BaseNearCache> > caches = nearCacheMap.values();
+                        for (std::vector<hazelcast::util::SharedPtr<BaseNearCache> >::iterator it = caches.begin();
                              it != caches.end(); ++it) {
                             (*it)->destroy();
                         }

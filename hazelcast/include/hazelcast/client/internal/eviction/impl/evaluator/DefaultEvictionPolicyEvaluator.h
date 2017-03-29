@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_EVALUATOR_DEFAULTEVICTIONPOLICYEVALUATOR_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_EVALUATOR_DEFAULTEVICTIONPOLICYEVALUATOR_H_
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/internal/eviction/Evictable.h"
@@ -46,12 +46,12 @@ namespace hazelcast {
                         template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                         class DefaultEvictionPolicyEvaluator : public EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> {
                         public:
-                            DefaultEvictionPolicyEvaluator(const boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator)
+                            DefaultEvictionPolicyEvaluator(const hazelcast::util::SharedPtr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator)
                                     : evictionPolicyComparator(comparator) {
                             }
 
                             //@Override
-                            const boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const {
+                            const hazelcast::util::SharedPtr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > getEvictionPolicyComparator() const {
                                 return evictionPolicyComparator;
                             }
 
@@ -64,17 +64,17 @@ namespace hazelcast {
                              * @return multiple {@link com.hazelcast.internal.eviction.EvictionCandidate} these are available to be evicted
                              */
                             //@Override
-                            std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
+                            std::auto_ptr<std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evaluate(
                                     util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidates) const {
-                                boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > selectedEvictionCandidate;
+                                hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > selectedEvictionCandidate;
                                 int64_t now = util::currentTimeMillis();
                                 util::Iterator<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > *iterator = evictionCandidates.iterator();
                                 while (iterator->hasNext()) {
-                                    boost::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > currentEvictionCandidate = iterator->next();
+                                    hazelcast::util::SharedPtr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > currentEvictionCandidate = iterator->next();
                                     if (selectedEvictionCandidate.get() == NULL) {
                                         selectedEvictionCandidate = currentEvictionCandidate;
                                     } else {
-                                        boost::shared_ptr<E> evictable = currentEvictionCandidate->getEvictable();
+                                        hazelcast::util::SharedPtr<E> evictable = currentEvictionCandidate->getEvictable();
 
                                         if (isExpired(now, evictable.get())) {
                                             return returnEvictionCandidate(currentEvictionCandidate);
@@ -91,13 +91,13 @@ namespace hazelcast {
                             }
 
                         private:
-                            std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > returnEvictionCandidate(
-                                    const boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidate) const {
+                            std::auto_ptr<std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > returnEvictionCandidate(
+                                    const hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > &evictionCandidate) const {
                                 if (evictionCandidate.get() == NULL) {
-                                    return std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
+                                    return std::auto_ptr<std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > >();
                                 } else {
-                                    std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > result(
-                                            new std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > >());
+                                    std::auto_ptr<std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > result(
+                                            new std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > >());
                                     result->push_back(evictionCandidate);
                                     return result;
                                 }
@@ -117,7 +117,7 @@ namespace hazelcast {
                                 return expired;
                             }
 
-                            const boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
+                            const hazelcast::util::SharedPtr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
                         };
                     }
                 }

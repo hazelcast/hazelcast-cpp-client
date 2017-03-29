@@ -39,7 +39,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <string>
 #include <list>
 
@@ -63,7 +63,7 @@ namespace hazelcast {
                     *
                     *  return false if a serializer is already given corresponding to serializerId
                     */
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(hazelcast::util::SharedPtr<SerializerBase> serializer);
 
                     template<typename T>
                     inline Data toData(const T *object) {
@@ -84,11 +84,11 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline boost::shared_ptr<Data> toSharedData(const T *object) {
+                    inline hazelcast::util::SharedPtr<Data> toSharedData(const T *object) {
                         if (NULL == object) {
-                            return boost::shared_ptr<Data>();
+                            return hazelcast::util::SharedPtr<Data>();
                         }
-                        return boost::shared_ptr<Data>(new Data(toData<T>(object)));
+                        return hazelcast::util::SharedPtr<Data>(new Data(toData<T>(object)));
                     }
 
                     template<typename T>
@@ -114,12 +114,12 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<Data> &data) {
-                        return boost::shared_ptr<T>(toObject<T>(data.get()));
+                    inline const hazelcast::util::SharedPtr<T> toSharedObject(const hazelcast::util::SharedPtr<Data> &data) {
+                        return hazelcast::util::SharedPtr<T>(toObject<T>(data.get()).release());
                     }
 
                     template<typename T>
-                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<T> &obj) {
+                    inline const hazelcast::util::SharedPtr<T> toSharedObject(const hazelcast::util::SharedPtr<T> &obj) {
                         return obj;
                     }
 

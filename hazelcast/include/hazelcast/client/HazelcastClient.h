@@ -74,8 +74,6 @@ namespace hazelcast {
  *
  *  The user should make sure that the libraries are in appropriate linkage path for the application.
  *
- * Only dependency is shared_ptr from the boost library.
- *
  *  Downloaded release folder consist of
  *  * Windows_32/
  *  * Windows_64/
@@ -91,7 +89,7 @@ namespace hazelcast {
  *      +  lib/        => Contains both shared and static library of hazelcast.
  *      +  include/    => Contains headers of client
  *  * external/
- *      + include/     => Contains headers of dependencies.(zlib and boost::shared_ptr)
+ *      + include/     => Contains headers of dependencies.(zlib and hazelcast::util::SharedPtr)
  *
  *
  * \section guides Platform Specific Installation Guides
@@ -167,7 +165,7 @@ namespace hazelcast {
  *
  *              IMap<int,int> myMap = hazelcastClient.getMap<int ,int>("myIntMap");
  *              myMap.put(1,3);
- *              boost::shared_ptr<int> v = myMap.get(1);
+ *              hazelcast::util::SharedPtr<int> v = myMap.get(1);
  *              if(v.get() != NULL){
  *                  //process the item
  *              }
@@ -228,7 +226,7 @@ namespace hazelcast {
  *
  *              IQueue<std::string> q = hazelcastClient.getQueue<std::string>("q");
  *              q.offer("sample");
- *              boost::shared_ptr<std::string> v = q.poll();
+ *              hazelcast::util::SharedPtr<std::string> v = q.poll();
  *              if(v.get() != NULL){
  *                  //process the item
  *              }
@@ -497,7 +495,7 @@ namespace hazelcast {
             template<typename K, typename V>
             IMap<K, V> getMap(const std::string &name) {
                 map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                hazelcast::util::SharedPtr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(IMap<K, V>::SERVICE_NAME, name, factory);
 
                 return IMap<K, V>(proxy);
@@ -568,10 +566,10 @@ namespace hazelcast {
             * @return distributed topic instance with the specified name
             */
             template<typename E>
-            boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
+            hazelcast::util::SharedPtr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
+                hazelcast::util::SharedPtr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
                         getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
-                return boost::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
+                return hazelcast::util::SharedPtr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
             }
 
             /**
@@ -636,8 +634,8 @@ namespace hazelcast {
              * @return distributed RingBuffer instance with the specified name
              */
             template <typename E>
-            boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+            hazelcast::util::SharedPtr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
+                return hazelcast::util::SharedPtr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
             }
 
             /**
@@ -707,7 +705,7 @@ namespace hazelcast {
 
             serialization::pimpl::SerializationService &getSerializationService();
         private:
-            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
+            hazelcast::util::SharedPtr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
                                                                                const std::string &name,
                                                                                spi::ClientProxyFactory &factory);
 

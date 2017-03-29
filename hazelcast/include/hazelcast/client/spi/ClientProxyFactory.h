@@ -20,8 +20,8 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTPROXYFACTORY_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
-
+#include "hazelcast/util/SharedPtr.h"
+#include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -32,7 +32,6 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            class ClientProxy;
 
             /**
              * Factory interface creating client proxies.
@@ -47,7 +46,7 @@ namespace hazelcast {
                  * @param id the ID of the client proxy
                  * @return the client proxy
                  */
-                virtual boost::shared_ptr<ClientProxy> create(const std::string &id) = 0;
+                virtual hazelcast::util::SharedPtr<ClientProxy> create(const std::string &id) = 0;
             };
         }
     }

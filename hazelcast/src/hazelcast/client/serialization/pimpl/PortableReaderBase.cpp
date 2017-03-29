@@ -28,7 +28,7 @@ namespace hazelcast {
             namespace pimpl {
 
 
-                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd)
+                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, DataInput& input, hazelcast::util::SharedPtr<ClassDefinition> cd)
                 : cd(cd)
                 , dataInput(input)
                 , serializerHolder(portableContext.getSerializerHolder())

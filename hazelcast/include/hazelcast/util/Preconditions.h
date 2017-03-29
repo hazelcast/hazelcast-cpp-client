@@ -20,7 +20,7 @@
 #define HAZELCAST_UTIL_PRECONDITIONS_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -47,8 +47,8 @@ namespace hazelcast {
              * @throws NullPointerException if argument is null
              */
             template <typename T>
-            static boost::shared_ptr<T> checkNotNull(const boost::shared_ptr<T> &argument, const std::string &errorMessage) {
-                if (argument == NULL) {
+            static hazelcast::util::SharedPtr<T> checkNotNull(const hazelcast::util::SharedPtr<T> &argument, const std::string &errorMessage) {
+                if (argument.get() == NULL) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
                 return argument;

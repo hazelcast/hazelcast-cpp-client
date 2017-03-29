@@ -111,7 +111,7 @@ namespace hazelcast {
             *
             * @return the head of the queue. If queue is empty waits for an item to be added.
             */
-            boost::shared_ptr<E> take() {
+            hazelcast::util::SharedPtr<E> take() {
                 return poll(-1);
             }
 
@@ -120,9 +120,9 @@ namespace hazelcast {
             * @param timeoutInMillis time to wait if item is not available.
             * @return the head of the queue. If queue is empty waits for specified time.
             */
-            boost::shared_ptr<E> poll(long timeoutInMillis) {
-                return boost::shared_ptr<E>(boost::shared_ptr<E>(toObject<E>(
-                        proxy::IQueueImpl::pollData(timeoutInMillis))));
+            hazelcast::util::SharedPtr<E> poll(long timeoutInMillis) {
+                return hazelcast::util::SharedPtr<E>(hazelcast::util::SharedPtr<E>(toObject<E>(
+                        proxy::IQueueImpl::pollData(timeoutInMillis)).release()));
             }
 
             /**
@@ -182,7 +182,7 @@ namespace hazelcast {
             *
             * @return removes head of the queue and returns it to user . If not available returns empty constructed shared_ptr.
             */
-            boost::shared_ptr<E> poll() {
+            hazelcast::util::SharedPtr<E> poll() {
                 return poll(0);
             }
 
@@ -191,8 +191,8 @@ namespace hazelcast {
             *
             * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
             */
-            boost::shared_ptr<E> peek() {
-                return boost::shared_ptr<E>(toObject<E>(proxy::IQueueImpl::peekData()));
+            hazelcast::util::SharedPtr<E> peek() {
+                return hazelcast::util::SharedPtr<E>(toObject<E>(proxy::IQueueImpl::peekData()));
             }
 
             /**

@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_CONCURRENT_FUTUREIMPL_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <hazelcast/client/connection/CallFuture.h>
 #include <hazelcast/client/serialization/pimpl/SerializationService.h>
 
@@ -43,16 +43,16 @@ namespace hazelcast {
                     virtual ~FutureImpl() {
                     }
 
-                    virtual boost::shared_ptr<V> get() {
+                    virtual hazelcast::util::SharedPtr<V> get() {
                         return get(INT64_MAX);
                     }
 
-                    virtual boost::shared_ptr<V> get(int64_t timeoutInMilliseconds) {
+                    virtual hazelcast::util::SharedPtr<V> get(int64_t timeoutInMilliseconds) {
                         std::auto_ptr<protocol::ClientMessage> responseMsg = callFuture.get(timeoutInMilliseconds);
 
                         std::auto_ptr<serialization::pimpl::Data> response = CODEC::decode(*responseMsg).response;
 
-                        return boost::shared_ptr<V>(serializationService.toObject<V>(response.get()));
+                        return hazelcast::util::SharedPtr<V>(serializationService.toObject<V>(response.release()));
 
                     }
                 private:

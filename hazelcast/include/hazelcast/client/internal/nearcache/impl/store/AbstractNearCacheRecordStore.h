@@ -56,7 +56,7 @@ namespace hazelcast {
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       maxIdleMillis(cacheConfig.getMaxIdleSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serializationService(ss) {
-                                const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
+                                const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
                                 if (NULL != evictionConfig.get()) {
                                     evictionPolicyType = evictionConfig->getEvictionPolicyType();
                                 }
@@ -64,7 +64,7 @@ namespace hazelcast {
 
                             //@override
                             void initialize() {
-                                const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
+                                const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
                                 this->records = createNearCacheRecordMap(nearCacheConfig);
                                 this->maxSizeChecker = createNearCacheMaxSizeChecker(evictionConfig, nearCacheConfig);
                                 this->evictionPolicyEvaluator = createEvictionPolicyEvaluator(evictionConfig);
@@ -84,13 +84,13 @@ namespace hazelcast {
 */
 
                             // public for tests.
-                            virtual const boost::shared_ptr<R> getRecord(const boost::shared_ptr<KS> &key) {
+                            virtual const hazelcast::util::SharedPtr<R> getRecord(const hazelcast::util::SharedPtr<KS> &key) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return hazelcast::util::SharedPtr<R>();
                             }
 
                             //@Override
-                            virtual void onEvict(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            virtual void onEvict(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record,
                                                  bool wasExpired) {
                                 if (wasExpired) {
                                     nearCacheStats.incrementExpirations();
@@ -101,18 +101,18 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            boost::shared_ptr<V> get(const boost::shared_ptr<KS> &key) {
+                            hazelcast::util::SharedPtr<V> get(const hazelcast::util::SharedPtr<KS> &key) {
                                 checkAvailable();
 
-                                boost::shared_ptr<R> record;
-                                boost::shared_ptr<V> value;
+                                hazelcast::util::SharedPtr<R> record;
+                                hazelcast::util::SharedPtr<V> value;
                                 try {
                                     record = getRecord(key);
                                     if (record.get() != NULL) {
                                         if (isRecordExpired(record)) {
                                             remove(key);
                                             onExpire(key, record);
-                                            return boost::shared_ptr<V>();
+                                            return hazelcast::util::SharedPtr<V>();
                                         }
                                         onRecordAccess(record);
                                         nearCacheStats.incrementHits();
@@ -121,7 +121,7 @@ namespace hazelcast {
                                         return value;
                                     } else {
                                         nearCacheStats.incrementMisses();
-                                        return boost::shared_ptr<V>();
+                                        return hazelcast::util::SharedPtr<V>();
                                     }
                                 } catch (exception::IException &error) {
                                     onGetError(key, value, record, error);
@@ -131,21 +131,21 @@ namespace hazelcast {
 
 
                             //@Override
-                            void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value) {
+                            void put(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value) {
                                 putInternal<V>(key, value);
                             }
 
                             //@Override
-                            void put(const boost::shared_ptr<KS> &key,
-                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            void put(const hazelcast::util::SharedPtr<KS> &key,
+                                     const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                                 putInternal<serialization::pimpl::Data>(key, value);
                             }
 
                             //@Override
-                            bool remove(const boost::shared_ptr<KS> &key) {
+                            bool remove(const hazelcast::util::SharedPtr<KS> &key) {
                                 checkAvailable();
 
-                                boost::shared_ptr<R> record;
+                                hazelcast::util::SharedPtr<R> record;
                                 bool removed = false;
                                 try {
                                     record = removeRecord(key);
@@ -213,7 +213,7 @@ namespace hazelcast {
                             }
                         protected:
                             virtual std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig,
+                                    const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig,
                                     const config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 assert(0);
                                 return std::auto_ptr<eviction::MaxSizeChecker>();
@@ -229,39 +229,39 @@ namespace hazelcast {
 
                             virtual int64_t getRecordStorageMemoryCost(R *record) const = 0;
 
-                            virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<V> &value) {
+                            virtual std::auto_ptr<R> valueToRecord(const hazelcast::util::SharedPtr<V> &value) {
                                 assert(0);
                                 return std::auto_ptr<R>();
                             }
 
                             virtual std::auto_ptr<R> valueToRecord(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                                    const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                                 assert(0);
                                 return std::auto_ptr<R>();
                             }
 
-                            virtual boost::shared_ptr<V> recordToValue(const R *record) {
+                            virtual hazelcast::util::SharedPtr<V> recordToValue(const R *record) {
                                 assert(0);
-                                return boost::shared_ptr<V>();
+                                return hazelcast::util::SharedPtr<V>();
                             }
 
-                            virtual boost::shared_ptr<R> putRecord(const boost::shared_ptr<KS> &key,
-                                                                   const boost::shared_ptr<R> &record) {
+                            virtual hazelcast::util::SharedPtr<R> putRecord(const hazelcast::util::SharedPtr<KS> &key,
+                                                                   const hazelcast::util::SharedPtr<R> &record) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return hazelcast::util::SharedPtr<R>();
                             }
 
-                            virtual void putToRecord(boost::shared_ptr<R> &record,
-                                                     const boost::shared_ptr<V> &value) {
+                            virtual void putToRecord(hazelcast::util::SharedPtr<R> &record,
+                                                     const hazelcast::util::SharedPtr<V> &value) {
                                 assert(0);
                             }
 
-                            virtual boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
+                            virtual hazelcast::util::SharedPtr<R> removeRecord(const hazelcast::util::SharedPtr<KS> &key) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return hazelcast::util::SharedPtr<R>();
                             }
 
-                            virtual bool containsRecordKey(const boost::shared_ptr<KS> &key) const {
+                            virtual bool containsRecordKey(const hazelcast::util::SharedPtr<KS> &key) const {
                                 assert(0);
                                 return false;
                             }
@@ -274,15 +274,17 @@ namespace hazelcast {
                             }
 
                             std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > createEvictionPolicyEvaluator(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig) {
-                                return eviction::EvictionPolicyEvaluatorProvider::getEvictionPolicyEvaluator<K, V, KS, R>(
-                                        evictionConfig);
+                                    const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig) {
+//                                return eviction::EvictionPolicyEvaluatorProvider::getEvictionPolicyEvaluator<K, V, KS, R>(
+//                                        evictionConfig);
+                                throw 1;
                             }
 
-                            boost::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig) {
-                                return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::getEvictionStrategy(
-                                        evictionConfig);
+                            hazelcast::util::SharedPtr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
+                                    const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig) {
+//                                return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::getEvictionStrategy(
+//                                        evictionConfig);
+                                throw 1;
                             }
 
                             std::auto_ptr<eviction::EvictionChecker> createEvictionChecker(
@@ -295,63 +297,63 @@ namespace hazelcast {
                                 return records.get() != NULL;
                             }
 
-                            boost::shared_ptr<serialization::pimpl::Data> valueToData(
-                                    const boost::shared_ptr<V> &value) {
+                            hazelcast::util::SharedPtr<serialization::pimpl::Data> valueToData(
+                                    const hazelcast::util::SharedPtr<V> &value) {
                                 if (value.get() != NULL) {
-                                    return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(
+                                    return hazelcast::util::SharedPtr<serialization::pimpl::Data>(new serialization::pimpl::Data(
                                             serializationService.toData<V>(value.get())));
                                 } else {
-                                    return boost::shared_ptr<serialization::pimpl::Data>();
+                                    return hazelcast::util::SharedPtr<serialization::pimpl::Data>();
                                 }
                             }
 
-                            boost::shared_ptr<serialization::pimpl::Data> valueToData(
-                                    boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            hazelcast::util::SharedPtr<serialization::pimpl::Data> valueToData(
+                                    hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                                 return value;
                             }
 
-                            boost::shared_ptr<V> dataToValue(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &data) {
+                            hazelcast::util::SharedPtr<V> dataToValue(
+                                    const hazelcast::util::SharedPtr<serialization::pimpl::Data> &data) {
                                 if (data.get() != NULL) {
                                     std::auto_ptr<V> value = serializationService.toObject<V>(data.get());
-                                    return boost::shared_ptr<V>(value);
+                                    return hazelcast::util::SharedPtr<V>(value);
                                 } else {
-                                    return boost::shared_ptr<V>();
+                                    return hazelcast::util::SharedPtr<V>();
                                 }
                             }
 
-                            const boost::shared_ptr<serialization::pimpl::Data> toData(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &obj) {
+                            const hazelcast::util::SharedPtr<serialization::pimpl::Data> toData(
+                                    const hazelcast::util::SharedPtr<serialization::pimpl::Data> &obj) {
                                 return obj;
                             }
 
-                            const boost::shared_ptr<serialization::pimpl::Data> toData(
-                                    const boost::shared_ptr<V> &obj) {
+                            const hazelcast::util::SharedPtr<serialization::pimpl::Data> toData(
+                                    const hazelcast::util::SharedPtr<V> &obj) {
                                 if (obj.get() == NULL) {
-                                    return boost::shared_ptr<serialization::pimpl::Data>();
+                                    return hazelcast::util::SharedPtr<serialization::pimpl::Data>();
                                 } else {
                                     return valueToData(obj);
                                 }
                             }
 
-                            boost::shared_ptr<V> toValue(boost::shared_ptr<serialization::pimpl::Data> &obj) {
+                            hazelcast::util::SharedPtr<V> toValue(hazelcast::util::SharedPtr<serialization::pimpl::Data> &obj) {
                                 if (obj.get() == NULL) {
-                                    return boost::shared_ptr<V>();
+                                    return hazelcast::util::SharedPtr<V>();
                                 } else {
                                     return dataToValue(obj);
                                 }
                             }
 
-                            boost::shared_ptr<V> toValue(boost::shared_ptr<V> &obj) {
+                            hazelcast::util::SharedPtr<V> toValue(hazelcast::util::SharedPtr<V> &obj) {
                                 return obj;
                             }
 
-                            int64_t getTotalStorageMemoryCost(const boost::shared_ptr<KS> &key,
-                                                              const boost::shared_ptr<R> &record) {
+                            int64_t getTotalStorageMemoryCost(const hazelcast::util::SharedPtr<KS> &key,
+                                                              const hazelcast::util::SharedPtr<R> &record) {
                                 return getKeyStorageMemoryCost(key.get()) + getRecordStorageMemoryCost(record.get());
                             }
 
-                            bool isRecordExpired(const boost::shared_ptr<R> &record) const {
+                            bool isRecordExpired(const hazelcast::util::SharedPtr<R> &record) const {
                                 int64_t now = util::currentTimeMillis();
                                 if (record->isExpiredAt(now)) {
                                     return true;
@@ -360,52 +362,52 @@ namespace hazelcast {
                                 }
                             }
 
-                            void onRecordCreate(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
+                            void onRecordCreate(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record) {
                                 record->setCreationTime(util::currentTimeMillis());
                             }
 
-                            void onRecordAccess(const boost::shared_ptr<R> &record) {
+                            void onRecordAccess(const hazelcast::util::SharedPtr<R> &record) {
                                 record->setAccessTime(util::currentTimeMillis());
                                 record->incrementAccessHit();
                             }
 
-                            void onGet(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                       const boost::shared_ptr<R> &record) {
+                            void onGet(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value,
+                                       const hazelcast::util::SharedPtr<R> &record) {
                             }
 
-                            void onGetError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                            const boost::shared_ptr<R> &record, const exception::IException &error) {
+                            void onGetError(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value,
+                                            const hazelcast::util::SharedPtr<R> &record, const exception::IException &error) {
                             }
 
-                            void onPut(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                       const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
+                            void onPut(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value,
+                                       const hazelcast::util::SharedPtr<R> &record, const hazelcast::util::SharedPtr<R> &oldRecord) {
                             }
 
-                            void onPut(const boost::shared_ptr<KS> &key,
-                                       const boost::shared_ptr<serialization::pimpl::Data> &value,
-                                       const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
+                            void onPut(const hazelcast::util::SharedPtr<KS> &key,
+                                       const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value,
+                                       const hazelcast::util::SharedPtr<R> &record, const hazelcast::util::SharedPtr<R> &oldRecord) {
                             }
 
-                            void onPutError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                            const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord,
+                            void onPutError(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value,
+                                            const hazelcast::util::SharedPtr<R> &record, const hazelcast::util::SharedPtr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
 
-                            void onPutError(const boost::shared_ptr<KS> &key,
-                                            const boost::shared_ptr<serialization::pimpl::Data> &value,
-                                            const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord,
+                            void onPutError(const hazelcast::util::SharedPtr<KS> &key,
+                                            const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value,
+                                            const hazelcast::util::SharedPtr<R> &record, const hazelcast::util::SharedPtr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
 
-                            void onRemove(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onRemove(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record,
                                           bool removed) {
                             }
 
-                            void onRemoveError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onRemoveError(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record,
                                                bool removed, const exception::IException &error) {
                             }
 
-                            void onExpire(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
+                            void onExpire(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record) {
                                 nearCacheStats.incrementExpirations();
                             }
 
@@ -435,7 +437,7 @@ namespace hazelcast {
                             std::auto_ptr<eviction::MaxSizeChecker> maxSizeChecker;
                             std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator;
                             std::auto_ptr<eviction::EvictionChecker> evictionChecker;
-                            boost::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > evictionStrategy;
+                            hazelcast::util::SharedPtr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > evictionStrategy;
                             eviction::EvictionPolicyType evictionPolicyType;
                             std::auto_ptr<NCRM> records;
 
@@ -459,7 +461,7 @@ namespace hazelcast {
                             };
 
                             template<typename VALUE>
-                            void putInternal(const boost::shared_ptr<KS> &key, const boost::shared_ptr<VALUE> &value) {
+                            void putInternal(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<VALUE> &value) {
                                 checkAvailable();
 
                                 // if there is no eviction configured we return if the Near Cache is full and it's a new key
@@ -469,10 +471,10 @@ namespace hazelcast {
                                     return;
                                 }
 
-                                boost::shared_ptr<R> record;
-                                boost::shared_ptr<R> oldRecord;
+                                hazelcast::util::SharedPtr<R> record;
+                                hazelcast::util::SharedPtr<R> oldRecord;
                                 try {
-                                    record = valueToRecord(value);
+                                    record = hazelcast::util::SharedPtr<R>(valueToRecord(value).release());
                                     onRecordCreate(key, record);
                                     oldRecord = putRecord(key, record);
                                     if (oldRecord.get() == NULL) {

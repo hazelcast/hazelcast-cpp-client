@@ -32,9 +32,9 @@ namespace hazelcast {
                 std::vector<internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
-                    std::vector<boost::shared_ptr<connection::Connection> > conns = context.getConnectionManager().getConnections();
+                    std::vector<hazelcast::util::SharedPtr<connection::Connection> > conns = context.getConnectionManager().getConnections();
                     EXPECT_GT(conns.size(), (size_t) 0);
-                    boost::shared_ptr<connection::Connection> aConnection = conns[0];
+                    hazelcast::util::SharedPtr<connection::Connection> aConnection = conns[0];
                     internal::socket::SSLSocket &socket = (internal::socket::SSLSocket &) aConnection->getSocket();
                     return socket.getCiphers();
                 }

@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
 #define HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/HazelcastDll.h"

@@ -131,7 +131,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, hazelcast::util::SharedPtr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
@@ -141,7 +141,7 @@ namespace hazelcast {
                 return *this;
             }
 
-            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, hazelcast::util::SharedPtr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
                     throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
@@ -165,9 +165,9 @@ namespace hazelcast {
                 return *this;
             }
 
-            boost::shared_ptr<ClassDefinition> ClassDefinitionBuilder::build() {
+            hazelcast::util::SharedPtr<ClassDefinition> ClassDefinitionBuilder::build() {
                 done = true;
-                boost::shared_ptr<ClassDefinition> cd(new ClassDefinition(factoryId, classId, version));
+                hazelcast::util::SharedPtr<ClassDefinition> cd(new ClassDefinition(factoryId, classId, version));
 
                 std::vector<FieldDefinition>::iterator fdIt;
                 for (fdIt = fieldDefinitions.begin(); fdIt != fieldDefinitions.end(); fdIt++) {

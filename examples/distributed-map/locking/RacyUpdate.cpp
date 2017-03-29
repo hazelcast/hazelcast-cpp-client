@@ -70,7 +70,7 @@ int main() {
             std::cout << "At: " << k << std::endl;
         }
 
-        boost::shared_ptr<Value> oldValue = map.get(key);
+        hazelcast::util::SharedPtr<Value> oldValue = map.get(key);
         hazelcast::util::sleepmillis(10);
         map.put(key, *oldValue);
     }

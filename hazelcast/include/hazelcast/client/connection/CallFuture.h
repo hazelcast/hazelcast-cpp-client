@@ -20,8 +20,9 @@
 #define HAZELCAST_CallFuture
 
 #include "hazelcast/util/HazelcastDll.h"
-
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/util/SharedPtr.h"
+#include "hazelcast/client/connection/CallPromise.h"
 #include <stdint.h>
 
 namespace hazelcast {
@@ -35,15 +36,11 @@ namespace hazelcast {
         }
 
         namespace connection {
-            class CallPromise;
-
-            class Connection;
-
             class HAZELCAST_API CallFuture {
             public:
                 CallFuture();
 
-                CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService* invocationService);
+                CallFuture(hazelcast::util::SharedPtr<CallPromise> promise, hazelcast::util::SharedPtr<Connection> connection, int heartBeatTimeout, spi::InvocationService* invocationService);
 
                 CallFuture(const CallFuture &rhs);
 
@@ -57,8 +54,8 @@ namespace hazelcast {
 
                 const Connection &getConnection() const;
             private:
-                boost::shared_ptr<CallPromise> promise;
-                boost::shared_ptr<Connection> connection;
+                hazelcast::util::SharedPtr<CallPromise> promise;
+                hazelcast::util::SharedPtr<Connection> connection;
                 spi::InvocationService* invocationService;
                 int heartBeatTimeout;
             };
