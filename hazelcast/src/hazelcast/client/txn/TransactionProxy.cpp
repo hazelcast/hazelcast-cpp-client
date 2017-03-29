@@ -34,7 +34,7 @@ namespace hazelcast {
             #define MILLISECOND_IN_A_SECOND 1000
 
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
-                                               boost::shared_ptr<connection::Connection> connection)
+                                               hazelcast::util::SharedPtr<connection::Connection> connection)
                     : options(txnOptions), clientContext(clientContext), connection(connection),
                       threadId(util::getThreadId()), state(TxnState::NO_TXN), startTime(0) {
 
@@ -146,7 +146,7 @@ namespace hazelcast {
                 return clientContext.getInvocationService();
             }
 
-            boost::shared_ptr<connection::Connection>TransactionProxy::getConnection() {
+            hazelcast::util::SharedPtr<connection::Connection>TransactionProxy::getConnection() {
                 return connection;
             }
 

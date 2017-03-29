@@ -57,7 +57,7 @@ namespace hazelcast {
                             ASSERT_EQ(DEFAULT_RECORD_COUNT, nearCacheRecordStore->size());
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                boost::shared_ptr<std::string> value = nearCacheRecordStore->get(getSharedKey(i));
+                                util::SharedPtr<std::string> value = nearCacheRecordStore->get(getSharedKey(i));
                                 ASSERT_NOTNULL(value.get(), std::string);
                                 ASSERT_EQ(*getSharedValue(i), *value);
                             }
@@ -72,7 +72,7 @@ namespace hazelcast {
                                     inMemoryFormat);
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                boost::shared_ptr<serialization::pimpl::Data> key = getSharedKey(i);
+                                util::SharedPtr<serialization::pimpl::Data> key = getSharedKey(i);
                                 nearCacheRecordStore->put(key, getSharedValue(i));
 
                                 // ensure that they are stored
@@ -82,7 +82,7 @@ namespace hazelcast {
                             ASSERT_EQ(DEFAULT_RECORD_COUNT, nearCacheRecordStore->size());
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                boost::shared_ptr<serialization::pimpl::Data> key = getSharedKey(i);
+                                util::SharedPtr<serialization::pimpl::Data> key = getSharedKey(i);
                                 ASSERT_TRUE(nearCacheRecordStore->remove(key));
                                 ASSERT_NULL("Should not exist", nearCacheRecordStore->get(key).get(), std::string);
                             }
@@ -99,7 +99,7 @@ namespace hazelcast {
                                     inMemoryFormat);
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                                boost::shared_ptr<serialization::pimpl::Data> key = getSharedKey(i);
+                                util::SharedPtr<serialization::pimpl::Data> key = getSharedKey(i);
                                 nearCacheRecordStore->put(key, getSharedValue(i));
 
                                 // ensure that they are stored
@@ -137,7 +137,7 @@ namespace hazelcast {
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                                 int selectedKey = i * 3;
-                                if (nearCacheRecordStore->get(getSharedKey(selectedKey)) != NULL) {
+                                if (nearCacheRecordStore->get(getSharedKey(selectedKey)).get() != NULL) {
                                     expectedHits++;
                                 } else {
                                     expectedMisses++;
@@ -279,7 +279,7 @@ namespace hazelcast {
                                                               int32_t size) {
                             config::NearCacheConfig<int, std::string> nearCacheConfig = createNearCacheConfig<int, std::string>(
                                     DEFAULT_NEAR_CACHE_NAME, inMemoryFormat);
-                            boost::shared_ptr<config::EvictionConfig<int, std::string> > evictionConfig(
+                            util::SharedPtr<config::EvictionConfig<int, std::string> > evictionConfig(
                                     new config::EvictionConfig<int, std::string>());
                             evictionConfig->setMaximumSizePolicy(maxSizePolicy);
                             evictionConfig->setSize(size);
@@ -299,7 +299,7 @@ namespace hazelcast {
                                     DEFAULT_NEAR_CACHE_NAME, inMemoryFormat);
 
 
-                            boost::shared_ptr<config::EvictionConfig<int, std::string> > evictionConfig(
+                            util::SharedPtr<config::EvictionConfig<int, std::string> > evictionConfig(
                                     new config::EvictionConfig<int, std::string>());
 
                             evictionConfig->setMaximumSizePolicy(config::EvictionConfig<int, std::string>::ENTRY_COUNT);
@@ -354,13 +354,13 @@ namespace hazelcast {
                             return config;
                         }
 
-                        boost::shared_ptr<std::string> getSharedValue(int value) const {
+                        util::SharedPtr<std::string> getSharedValue(int value) const {
                             char buf[30];
                             util::snprintf(buf, 30, "Record-%ld", value);
-                            return boost::shared_ptr<std::string>(new std::string(buf));
+                            return util::SharedPtr<std::string>(new std::string(buf));
                         }
 
-                        boost::shared_ptr<serialization::pimpl::Data> getSharedKey(int value) {
+                        util::SharedPtr<serialization::pimpl::Data> getSharedKey(int value) {
                             return ss->toSharedData<int>(&value);
                         }
 

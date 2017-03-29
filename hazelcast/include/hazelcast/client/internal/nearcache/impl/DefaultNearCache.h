@@ -67,14 +67,14 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        boost::shared_ptr<V> get(const boost::shared_ptr<KS> &key) {
+                        hazelcast::util::SharedPtr<V> get(const hazelcast::util::SharedPtr<KS> &key) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on get!");
 
                             return nearCacheRecordStore->get(key);
                         }
 
                         //@Override
-                        void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value) {
+                        void put(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<V> &value) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();
@@ -83,8 +83,8 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        void put(const boost::shared_ptr<KS> &key,
-                                 const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        void put(const hazelcast::util::SharedPtr<KS> &key,
+                                 const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on put!");
 
                             nearCacheRecordStore->doEvictionIfRequired();
@@ -93,7 +93,7 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        bool remove(const boost::shared_ptr<KS> &key) {
+                        bool remove(const hazelcast::util::SharedPtr<KS> &key) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on remove!");
 
                             return nearCacheRecordStore->remove(key);

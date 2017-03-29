@@ -38,7 +38,7 @@ namespace hazelcast {
                 }
 
                 void PortableSerializer::write(DataOutput& out, const Portable& p) const {
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
+                    hazelcast::util::SharedPtr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
                     out.writeInt(cd->getVersion());
 
                     DefaultPortableWriter dpw(context, cd, out);
@@ -64,8 +64,8 @@ namespace hazelcast {
                         effectiveVersion = context.getVersion();
                     }
 
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
-                    if (cd == NULL) {
+                    hazelcast::util::SharedPtr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
+                    if (cd.get() == NULL) {
                         int begin = input.position();
                         cd = context.readClassDefinition(input, factoryId, classId, effectiveVersion);
                         input.position(begin);

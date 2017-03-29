@@ -48,8 +48,8 @@ namespace hazelcast {
             void TestRawDataPortable::readPortable(serialization::PortableReader &reader) {
                 l = reader.readLong("l");
                 c = *reader.readCharArray("c");
-                boost::shared_ptr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
-                if (ptr != NULL)
+                hazelcast::util::SharedPtr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
+                if (ptr.get() != NULL)
                     p = *ptr;
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
                 k = in.readInt();

@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
-                                                 boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+                                                 hazelcast::util::SharedPtr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ProxyImpl("hz:impl:topicService", instanceName, context), ringbuffer(rb),
                       logger(util::ILogger::getLogger()), config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
             }

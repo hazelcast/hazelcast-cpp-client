@@ -77,15 +77,15 @@ namespace hazelcast {
             class NearCachedDataMapClientConfig : public MapClientConfig {
             public:
                 NearCachedDataMapClientConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
                             new config::NearCacheConfig<int, int>(intMapName));
                     addNearCacheConfig<int, int>(intMapNearCacheConfig);
 
-                    boost::shared_ptr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
                             new config::NearCacheConfig<int, Employee>(employeesMapName));
                     addNearCacheConfig<int, Employee>(employeesCacheConfig);
 
-                    boost::shared_ptr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
                             new config::NearCacheConfig<std::string, std::string>(imapName));
                     addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
                 }
@@ -101,15 +101,15 @@ namespace hazelcast {
             class NearCachedObjectMapClientConfig : public MapClientConfig {
             public:
                 NearCachedObjectMapClientConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
                             new config::NearCacheConfig<int, int>(intMapName, config::OBJECT));
                     addNearCacheConfig<int, int>(intMapNearCacheConfig);
 
-                    boost::shared_ptr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
                             new config::NearCacheConfig<int, Employee>(employeesMapName, config::OBJECT));
                     addNearCacheConfig<int, Employee>(employeesCacheConfig);
 
-                    boost::shared_ptr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
+                    hazelcast::util::SharedPtr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
                             new config::NearCacheConfig<std::string, std::string>(imapName, config::OBJECT));
                     addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
                 }
@@ -482,7 +482,7 @@ namespace hazelcast {
                 for (int i = 0; i < 10; i++) {
                     std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get(key);
+                    hazelcast::util::SharedPtr<std::string> temp = ClientMapTest<TypeParam>::imap->get(key);
 
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
@@ -492,14 +492,14 @@ namespace hazelcast {
 
             TYPED_TEST(ClientMapTest, testRemoveAndDelete) {
                 ClientMapTest<TypeParam>::fillMap();
-                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->remove("key10");
+                hazelcast::util::SharedPtr<std::string> temp = ClientMapTest<TypeParam>::imap->remove("key10");
                 ASSERT_EQ(temp.get(), (std::string *) NULL);
                 ClientMapTest<TypeParam>::imap->deleteEntry("key9");
                 ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 9);
                 for (int i = 0; i < 9; i++) {
                     std::string key = "key";
                     key += util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->remove(key);
+                    hazelcast::util::SharedPtr<std::string> temp2 = ClientMapTest<TypeParam>::imap->remove(key);
                     std::string value = "value";
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp2, value);
@@ -530,7 +530,7 @@ namespace hazelcast {
 
                 for (int i = 0; i < 100; i++) {
                     std::string expected = util::IOUtil::to_string(i);
-                    boost::shared_ptr<std::string> actual = ClientMapTest<TypeParam>::imap->get(
+                    hazelcast::util::SharedPtr<std::string> actual = ClientMapTest<TypeParam>::imap->get(
                             util::IOUtil::to_string(i));
                     ASSERT_EQ(expected, *actual);
                 }
@@ -573,11 +573,11 @@ namespace hazelcast {
                 std::string id = ClientMapTest<TypeParam>::imap->addEntryListener(sampleEntryListener, false);
 
                 ClientMapTest<TypeParam>::imap->put("key1", "value1", 2000);
-                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
+                hazelcast::util::SharedPtr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_EQ(*temp, "value1");
                 util::sleep(2);
                 // trigger eviction at server
-                boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
+                hazelcast::util::SharedPtr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
                 // When ttl expires at server, the server does not send near cache invalidation
                 if (ClientMapTest<TypeParam>::clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
                     ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
@@ -600,7 +600,7 @@ namespace hazelcast {
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.put("key1", "value1");
-                boost::shared_ptr<std::string> temp = map.get("key1");
+                hazelcast::util::SharedPtr<std::string> temp = map.get("key1");
                 ASSERT_EQ(*temp, "value1");
                 // trigger eviction
                 ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
@@ -610,7 +610,7 @@ namespace hazelcast {
             }
 
             TYPED_TEST(ClientMapTest, testPutIfAbsent) {
-                boost::shared_ptr<std::string> o = ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value1");
+                hazelcast::util::SharedPtr<std::string> o = ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value1");
                 ASSERT_EQ(o.get(), (std::string *) NULL);
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->putIfAbsent("key1", "value3")));
             }
@@ -652,11 +652,11 @@ namespace hazelcast {
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.set("key1", "value1", 1000);
-                boost::shared_ptr<std::string> temp = map.get("key1");
+                hazelcast::util::SharedPtr<std::string> temp = map.get("key1");
                 ASSERT_EQ(*temp, "value1");
                 util::sleep(2);
                 // trigger eviction
-                boost::shared_ptr<std::string> temp2 = map.get("key1");
+                hazelcast::util::SharedPtr<std::string> temp2 = map.get("key1");
                 ASSERT_NULL("The value for key1 needs to be null", temp2.get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
@@ -1996,7 +1996,7 @@ namespace hazelcast {
             }
 
             TYPED_TEST(ClientMapTest, testReplace) {
-                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->replace("key1", "value");
+                hazelcast::util::SharedPtr<std::string> temp = ClientMapTest<TypeParam>::imap->replace("key1", "value");
                 ASSERT_EQ(temp.get(), (std::string *) NULL);
 
                 std::string tempKey = "key1";
@@ -2092,7 +2092,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2128,7 +2128,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2165,7 +2165,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2206,7 +2206,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2249,7 +2249,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2289,7 +2289,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2328,7 +2328,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2370,7 +2370,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::imap->set("hasan", "suphi");
-                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("hasan");
+                hazelcast::util::SharedPtr<std::string> value = ClientMapTest<TypeParam>::imap->get("hasan");
                 ASSERT_NE((std::string *) NULL, value.get());
                 ASSERT_EQ("suphi", *value);
 
@@ -2410,7 +2410,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2450,7 +2450,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2498,7 +2498,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2546,7 +2546,7 @@ namespace hazelcast {
 
                 // update an entry
                 ClientMapTest<TypeParam>::intMap->set(1, 5);
-                boost::shared_ptr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
+                hazelcast::util::SharedPtr<int> value = ClientMapTest<TypeParam>::intMap->get(1);
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
 
@@ -2580,10 +2580,10 @@ namespace hazelcast {
             }
 
             TYPED_TEST(ClientMapTest, testMapWithPortable) {
-                boost::shared_ptr<Employee> n1 = ClientMapTest<TypeParam>::employees->get(1);
+                hazelcast::util::SharedPtr<Employee> n1 = ClientMapTest<TypeParam>::employees->get(1);
                 ASSERT_EQ(n1.get(), (Employee *) NULL);
                 Employee employee("sancar", 24);
-                boost::shared_ptr<Employee> ptr = ClientMapTest<TypeParam>::employees->put(1, employee);
+                hazelcast::util::SharedPtr<Employee> ptr = ClientMapTest<TypeParam>::employees->put(1, employee);
                 ASSERT_EQ(ptr.get(), (Employee *) NULL);
                 ASSERT_FALSE(ClientMapTest<TypeParam>::employees->isEmpty());
                 EntryView<int, Employee> view = ClientMapTest<TypeParam>::employees->getEntryView(1);
@@ -2612,7 +2612,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                hazelcast::util::SharedPtr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         4, processor);
 
                 ASSERT_NE((int *) NULL, result.get());
@@ -2628,11 +2628,11 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<Future<int> > future =
+                hazelcast::util::SharedPtr<Future<int> > future =
                         ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         4, processor);
 
-                boost::shared_ptr<int> result = future->get(2 * 1000);
+                hazelcast::util::SharedPtr<int> result = future->get(2 * 1000);
                 ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }
@@ -2640,7 +2640,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testExecuteOnNonExistentKey) {
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                hazelcast::util::SharedPtr<int> result = ClientMapTest<TypeParam>::employees->template executeOnKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         17, processor);
 
                 ASSERT_NE((int *) NULL, result.get());
@@ -2664,7 +2664,7 @@ namespace hazelcast {
                 // put non existent key
                 keys.insert(999);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnKeys<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnKeys<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         keys, processor);
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2687,7 +2687,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor);
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2710,7 +2710,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::TruePredicate());
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2733,7 +2733,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::FalsePredicate());
 
                 ASSERT_EQ(0, (int) result.size());
@@ -2758,7 +2758,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, andPredicate);
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2783,7 +2783,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, orPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2804,7 +2804,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::BetweenPredicate<int>("a", 25, 35));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2825,7 +2825,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::EqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2848,7 +2848,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::NotEqualPredicate<int>("a", 25));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2867,7 +2867,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2905,7 +2905,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::LikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2923,7 +2923,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::ILikePredicate("n", "deniz"));
 
                 ASSERT_EQ(1, (int) result.size());
@@ -2945,7 +2945,7 @@ namespace hazelcast {
                 values.push_back("ahmet");
                 query::InPredicate<std::string> predicate("n", values);
                 predicate.add("mehmet");
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, predicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -2963,7 +2963,7 @@ namespace hazelcast {
                 ClientMapTest<TypeParam>::employees->put(5, empl3);
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::InstanceOfPredicate("Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
@@ -2984,7 +2984,7 @@ namespace hazelcast {
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
                 std::auto_ptr<query::Predicate> eqPredicate(new query::EqualPredicate<int>("a", 25));
                 query::NotPredicate notPredicate(eqPredicate);
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, notPredicate);
 
                 ASSERT_EQ(2, (int) result.size());
@@ -3020,7 +3020,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                std::map<int, hazelcast::util::SharedPtr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         processor, query::RegexPredicate("n", ".*met"));
 
                 ASSERT_EQ(2, (int) result.size());
@@ -3034,7 +3034,7 @@ namespace hazelcast {
                 ClientMapTest<TypeParam>::imap->template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(
                         interceptor);
 
-                boost::shared_ptr<std::string> val = ClientMapTest<TypeParam>::imap->get("nonexistent");
+                hazelcast::util::SharedPtr<std::string> val = ClientMapTest<TypeParam>::imap->get("nonexistent");
                 ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ(prefix, *val);
 

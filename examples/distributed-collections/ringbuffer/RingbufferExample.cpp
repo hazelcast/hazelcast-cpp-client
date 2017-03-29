@@ -22,7 +22,7 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    boost::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = hz.getRingbuffer<std::string>("myringbuffer");
+    hazelcast::util::SharedPtr<hazelcast::client::Ringbuffer<std::string> > rb = hz.getRingbuffer<std::string>("myringbuffer");
 
     std::cout << "Capacity of the ringbuffer is:" << rb->capacity() << std::endl;
 

@@ -55,7 +55,7 @@ namespace hazelcast {
                 class HAZELCAST_API DefaultPortableWriter  {
                 public:
 
-                    DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& output);
+                    DefaultPortableWriter(PortableContext& portableContext, hazelcast::util::SharedPtr<ClassDefinition> cd, DataOutput& output);
 
                     void writeInt(const char *fieldName, int32_t value);
 
@@ -158,7 +158,7 @@ namespace hazelcast {
                     size_t begin;
                     size_t offset;
                     std::set<std::string> writtenFields;
-                    boost::shared_ptr<ClassDefinition> cd;
+                    hazelcast::util::SharedPtr<ClassDefinition> cd;
 
                 };
             }

@@ -31,31 +31,31 @@ namespace hazelcast {
                 }
 
                 int ClassDefinitionContext::getClassVersion(int classId) {
-                    boost::shared_ptr<int> version = currentClassVersions.get(classId);
-                    return version != NULL ? *version : -1;
+                    hazelcast::util::SharedPtr<int> version = currentClassVersions.get(classId);
+                    return version.get() != NULL ? *version : -1;
                 }
 
                 void ClassDefinitionContext::setClassVersion(int classId, int version) {
-                    boost::shared_ptr<int> current = currentClassVersions.putIfAbsent(classId, boost::shared_ptr<int>(new int(version)));
-                    if (current != NULL && *current != version) {
+                    hazelcast::util::SharedPtr<int> current = currentClassVersions.putIfAbsent(classId, hazelcast::util::SharedPtr<int>(new int(version)));
+                    if (current.get() != NULL && *current != version) {
                         std::stringstream error;
                         error << "Class-id: " << classId << " is already registered!";
                         throw exception::IllegalArgumentException("ClassDefinitionContext::setClassVersion", error.str());
                     }
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
+                hazelcast::util::SharedPtr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
                     long long key = combineToLong(classId, version);
                     return versionedDefinitions.get(key);
 
                 }
 
-                boost::shared_ptr<ClassDefinition>  ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                hazelcast::util::SharedPtr<ClassDefinition>  ClassDefinitionContext::registerClassDefinition(hazelcast::util::SharedPtr<ClassDefinition> cd) {
                     cd->setVersionIfNotSet(portableContext->getVersion());
 
                     long long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    boost::shared_ptr<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(versionedClassId, cd);
-                    if (currentCD == NULL) {
+                    hazelcast::util::SharedPtr<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    if (currentCD.get() == NULL) {
                         return cd;
                     }
 

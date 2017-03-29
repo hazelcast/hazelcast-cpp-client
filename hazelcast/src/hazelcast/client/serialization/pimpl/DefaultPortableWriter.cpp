@@ -32,7 +32,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& dataOutput)
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, hazelcast::util::SharedPtr<ClassDefinition> cd, DataOutput& dataOutput)
                 : raw(false)
                 , serializerHolder(portableContext.getSerializerHolder())
                 , dataOutput(dataOutput)

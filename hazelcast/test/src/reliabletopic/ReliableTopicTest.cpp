@@ -164,7 +164,7 @@ namespace hazelcast {
             HazelcastClient *ReliableTopicTest::client = NULL;
 
             TEST_F(ReliableTopicTest, testBasics) {
-                boost::shared_ptr<ReliableTopic<Employee> > rt;
+                hazelcast::util::SharedPtr<ReliableTopic<Employee> > rt;
                 ASSERT_NO_THROW(rt = client->getReliableTopic<Employee>("testBasics"));
 
                 ASSERT_EQ("testBasics", rt->getName());
@@ -192,7 +192,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testListenerSequence) {
-                boost::shared_ptr<ReliableTopic<Employee> > rt;
+                hazelcast::util::SharedPtr<ReliableTopic<Employee> > rt;
                 ASSERT_NO_THROW(rt = client->getReliableTopic<Employee>("testListenerSequence"));
 
                 Employee empl1("first", 10);
@@ -218,7 +218,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenExisting) {
-                boost::shared_ptr<ReliableTopic<Employee> > rt;
+                hazelcast::util::SharedPtr<ReliableTopic<Employee> > rt;
                 ASSERT_NO_THROW(rt = client->getReliableTopic<Employee>("removeMessageListener_whenExisting"));
 
                 Employee empl1("first", 10);
@@ -239,7 +239,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, removeMessageListener_whenNonExisting) {
-                boost::shared_ptr<ReliableTopic<Employee> > rt;
+                hazelcast::util::SharedPtr<ReliableTopic<Employee> > rt;
                 ASSERT_NO_THROW(rt = client->getReliableTopic<Employee>("removeMessageListener_whenNonExisting"));
 
                 // remove listener
@@ -247,7 +247,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, publishNull) {
-                boost::shared_ptr<ReliableTopic<int> > intTopic;
+                hazelcast::util::SharedPtr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("publishNull"));
 
                 util::CountDownLatch latch(1);
@@ -265,7 +265,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
-                boost::shared_ptr<ReliableTopic<std::string> > topic;
+                hazelcast::util::SharedPtr<ReliableTopic<std::string> > topic;
                 ASSERT_NO_THROW(topic = client->getReliableTopic<std::string>("publishMultiple"));
 
                 util::CountDownLatch latch(5);
@@ -299,7 +299,7 @@ namespace hazelcast {
                 clientConfig.addReliableTopicConfig(relConfig);
                 HazelcastClient configClient(clientConfig);
 
-                boost::shared_ptr<ReliableTopic<std::string> > topic;
+                hazelcast::util::SharedPtr<ReliableTopic<std::string> > topic;
                 ASSERT_NO_THROW(topic = configClient.getReliableTopic<std::string>("testConfig"));
 
                 util::CountDownLatch latch(5);
@@ -326,7 +326,7 @@ namespace hazelcast {
             }
 
             TEST_F(ReliableTopicTest, testMessageFieldSetCorrectly) {
-                boost::shared_ptr<ReliableTopic<int> > intTopic;
+                hazelcast::util::SharedPtr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testMessageFieldSetCorrectly"));
 
                 util::CountDownLatch latch(1);
@@ -355,7 +355,7 @@ namespace hazelcast {
             // makes sure that when a listener is register, we don't see any messages being published before
             // it got registered. We'll only see the messages after it got registered.
             TEST_F(ReliableTopicTest, testAlwaysStartAfterTail) {
-                boost::shared_ptr<ReliableTopic<int> > intTopic;
+                hazelcast::util::SharedPtr<ReliableTopic<int> > intTopic;
                 ASSERT_NO_THROW(intTopic = client->getReliableTopic<int>("testAlwaysStartAfterTail"));
 
                 int publishedValue = 1;

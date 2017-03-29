@@ -20,7 +20,7 @@
 #define HAZELCAST_UTIL_ITERABLE_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/util/Iterator.h"
 

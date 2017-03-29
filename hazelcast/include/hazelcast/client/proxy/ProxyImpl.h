@@ -97,7 +97,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
 
                 std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                              boost::shared_ptr<connection::Connection> conn);
+                                                              hazelcast::util::SharedPtr<connection::Connection> conn);
 
                 /**
                 * Internal API.
@@ -198,7 +198,7 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     boost::shared_ptr<connection::Connection> conn) {
+                                     hazelcast::util::SharedPtr<connection::Connection> conn) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
 
                     return (T)CODEC::decode(*response).response;
@@ -213,7 +213,7 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     int partitionId, boost::shared_ptr<connection::Connection> conn) {
+                                     int partitionId, hazelcast::util::SharedPtr<connection::Connection> conn) {
                     std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
 
                     return (T)CODEC::decode(*response).response;

@@ -47,14 +47,14 @@ namespace hazelcast {
                         assert(0);
                     }
 
-                    virtual boost::shared_ptr<V> put(const K &key, const V &value) {
+                    virtual hazelcast::util::SharedPtr<V> put(const K &key, const V &value) {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return hazelcast::util::SharedPtr<V>();
                     }
 
-                    virtual boost::shared_ptr<V> get(const K &key) {
+                    virtual hazelcast::util::SharedPtr<V> get(const K &key) {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return hazelcast::util::SharedPtr<V>();
                     }
 
 /*

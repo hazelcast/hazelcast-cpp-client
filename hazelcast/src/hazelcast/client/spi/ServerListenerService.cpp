@@ -63,13 +63,13 @@ namespace hazelcast {
             void ServerListenerService::reRegisterListener(std::string registrationId,
                                                            protocol::ClientMessage *response) {
 
-                boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.get(
+                hazelcast::util::SharedPtr<impl::listener::EventRegistration> registration = registrationIdMap.get(
                         registrationId);
                 if ((impl::listener::EventRegistration *)NULL != registration.get()) {
                     // registration exists, just change the alias
-                    boost::shared_ptr<std::string> alias(
+                    hazelcast::util::SharedPtr<const std::string> alias(
                             new std::string(registration->getAddCodec()->decodeResponse(*response)));
-                    boost::shared_ptr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
+                    hazelcast::util::SharedPtr<const std::string> oldAlias = registrationAliasMap.put(registrationId, alias);
                     if (oldAlias.get() != (const std::string *)NULL) {
                         registrationIdMap.remove(*oldAlias);
                         registration->setCorrelationId(response->getCorrelationId());
@@ -79,9 +79,9 @@ namespace hazelcast {
             }
 
             bool ServerListenerService::deRegisterListener(protocol::codec::IRemoveListenerCodec &removeListenerCodec) {
-                boost::shared_ptr<const std::string> uuid = registrationAliasMap.remove(removeListenerCodec.getRegistrationId());
+                hazelcast::util::SharedPtr<const std::string> uuid = registrationAliasMap.remove(removeListenerCodec.getRegistrationId());
                 if ((const std::string *)NULL != uuid.get()) {
-                    boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.remove(*uuid);
+                    hazelcast::util::SharedPtr<impl::listener::EventRegistration> registration = registrationIdMap.remove(*uuid);
 
                     if ((impl::listener::EventRegistration *)NULL != registration.get()) {
                         clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId());
@@ -111,10 +111,10 @@ namespace hazelcast {
             }
 
             void ServerListenerService::retryFailedListener(
-                    boost::shared_ptr<connection::CallPromise> listenerPromise) {
+                    hazelcast::util::SharedPtr<connection::CallPromise> listenerPromise) {
                 try {
                     InvocationService &invocationService = clientContext.getInvocationService();
-                    boost::shared_ptr<connection::Connection> result =
+                    hazelcast::util::SharedPtr<connection::Connection> result =
                             invocationService.resend(listenerPromise, "internalRetryOfUnkownAddress");
                     if ((connection::Connection *)NULL == result.get()) {
                         util::LockGuard lockGuard(failedListenerLock);
@@ -127,14 +127,14 @@ namespace hazelcast {
             }
 
             void ServerListenerService::triggerFailedListeners() {
-                std::vector<boost::shared_ptr<connection::CallPromise> >::iterator it;
-                std::vector<boost::shared_ptr<connection::CallPromise> > newFailedListeners;
+                std::vector<hazelcast::util::SharedPtr<connection::CallPromise> >::iterator it;
+                std::vector<hazelcast::util::SharedPtr<connection::CallPromise> > newFailedListeners;
                 InvocationService &invocationService = clientContext.getInvocationService();
 
                 util::LockGuard lockGuard(failedListenerLock);
                 for (it = failedListeners.begin(); it != failedListeners.end(); ++it) {
                     try {
-                        boost::shared_ptr<connection::Connection> result =
+                        hazelcast::util::SharedPtr<connection::Connection> result =
                                 invocationService.resend(*it, "internalRetryOfUnkownAddress");
                         // resend failed
                         if ((connection::Connection *)NULL == result.get()) {
@@ -159,9 +159,9 @@ namespace hazelcast {
                 std::string registrationId = addListenerCodec->decodeResponse(*response);
 
                 registrationAliasMap.put(registrationId,
-                                         boost::shared_ptr<std::string>(new std::string(registrationId)));
+                                         hazelcast::util::SharedPtr<const std::string>(new std::string(registrationId)));
 
-                registrationIdMap.put(registrationId, boost::shared_ptr<spi::impl::listener::EventRegistration>(
+                registrationIdMap.put(registrationId, hazelcast::util::SharedPtr<spi::impl::listener::EventRegistration>(
                         new spi::impl::listener::EventRegistration(correlationId,
                                                                    future.getConnection().getRemoteEndpoint(),
                                                                    addListenerCodec)));

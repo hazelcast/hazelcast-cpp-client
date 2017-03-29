@@ -27,6 +27,7 @@
 #include "hazelcast/client/serialization/Portable.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
+#include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include <map>
 #include <vector>
 #include <memory>
@@ -46,8 +47,6 @@ namespace hazelcast {
 
                 class Data;
 
-                class ClassDefinitionContext;
-
                 class SerializationConstants;
 
                 class HAZELCAST_API PortableContext {
@@ -59,15 +58,15 @@ namespace hazelcast {
 
                     void setClassVersion(int factoryId, int classId, int version);
 
-                    boost::shared_ptr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
+                    hazelcast::util::SharedPtr<ClassDefinition> lookupClassDefinition(int factoryId, int classId, int version);
 
-                    boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
+                    hazelcast::util::SharedPtr<ClassDefinition> registerClassDefinition(hazelcast::util::SharedPtr<ClassDefinition>);
 
-                    boost::shared_ptr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
+                    hazelcast::util::SharedPtr<ClassDefinition> lookupOrRegisterClassDefinition(const Portable& portable);
 
                     int getVersion();
 
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
+                    hazelcast::util::SharedPtr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
 
                     SerializerHolder &getSerializerHolder();
 

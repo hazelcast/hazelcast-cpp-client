@@ -21,7 +21,7 @@
 #define HAZELCAST_OwnerConnectionFuture
 
 #include "hazelcast/util/HazelcastDll.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -45,15 +45,15 @@ namespace hazelcast {
 
                 void markAsClosed();
 
-                boost::shared_ptr<Connection> getOrWaitForCreation();
+                hazelcast::util::SharedPtr<Connection> getOrWaitForCreation();
 
-                boost::shared_ptr<Connection> createNew(const Address& address);
+                hazelcast::util::SharedPtr<Connection> createNew(const Address& address);
 
                 void closeIfAddressMatches(const Address& address);
 
                 void close();
             private:
-                boost::shared_ptr<Connection> ownerConnectionPtr;
+                hazelcast::util::SharedPtr<Connection> ownerConnectionPtr;
                 spi::ClientContext& clientContext;
             };
         }

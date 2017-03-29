@@ -50,9 +50,9 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                boost::shared_ptr<serialization::SerializerBase> serializer1(
+                hazelcast::util::SharedPtr<serialization::SerializerBase> serializer1(
                         new TestCustomSerializerX<TestCustomXSerializable>());
-                boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
+                hazelcast::util::SharedPtr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
 
                 serializationService.registerSerializer(serializer1);
                 serializationService.registerSerializer(serializer2);
@@ -490,7 +490,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(
+                hazelcast::util::SharedPtr<serialization::SerializerBase> serializer(
                         new TestCustomSerializerX<TestCustomXSerializable>());
 
                 ss.registerSerializer(serializer);
@@ -507,7 +507,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomPersonSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(new TestCustomPersonSerializer());
+                hazelcast::util::SharedPtr<serialization::SerializerBase> serializer(new TestCustomPersonSerializer());
 
                 ss.registerSerializer(serializer);
 

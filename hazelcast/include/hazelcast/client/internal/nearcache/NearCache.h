@@ -19,7 +19,7 @@
 #include <string>
 #include <assert.h>
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -70,7 +70,7 @@ namespace hazelcast {
                     /**
                      * NULL Object
                      */
-                    static boost::shared_ptr<V> NULL_OBJECT;
+                    static hazelcast::util::SharedPtr<V> NULL_OBJECT;
 
                     virtual ~NearCache() {
                     }
@@ -105,9 +105,9 @@ namespace hazelcast {
                      * @param key the key of the requested value
                      * @return the value associated with the given <code>key</code>
                      */
-                    virtual boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
+                    virtual hazelcast::util::SharedPtr<V> get(const hazelcast::util::SharedPtr<K> &key) {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return hazelcast::util::SharedPtr<V>();
                     }
 
                     /**
@@ -116,7 +116,7 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value will be stored
                      */
-                    virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
+                    virtual void put(const hazelcast::util::SharedPtr<K> &key, const hazelcast::util::SharedPtr<V> &value) {
                         assert(0);
                     }
 
@@ -126,8 +126,8 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value as Data which will be stored
                      */
-                    virtual void put(const boost::shared_ptr<K> &key,
-                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                    virtual void put(const hazelcast::util::SharedPtr<K> &key,
+                                     const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                         assert(0);
                     }
 
@@ -136,7 +136,7 @@ namespace hazelcast {
                      *
                      * @param key the key of the value will be removed
                      */
-                    virtual bool remove(const boost::shared_ptr<K> &key) {
+                    virtual bool remove(const hazelcast::util::SharedPtr<K> &key) {
                         assert(0);
                         return false;
                     }
@@ -178,7 +178,7 @@ namespace hazelcast {
                 };
 
                 template<typename K, typename V>
-                boost::shared_ptr<V> NearCache<K, V>::NULL_OBJECT = boost::shared_ptr<V>(new V());
+                hazelcast::util::SharedPtr<V> NearCache<K, V>::NULL_OBJECT = hazelcast::util::SharedPtr<V>(new V());
             }
         }
     }

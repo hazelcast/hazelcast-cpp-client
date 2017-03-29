@@ -165,10 +165,10 @@ namespace hazelcast {
             const int CONNECTION_TRY_COUNT;
             spi::ClientContext &clientContext;
             TransactionOptions options;
-            boost::shared_ptr<connection::Connection> txnConnection;
+            hazelcast::util::SharedPtr<connection::Connection> txnConnection;
             txn::TransactionProxy transaction;
 
-            boost::shared_ptr<connection::Connection> connect();
+            hazelcast::util::SharedPtr<connection::Connection> connect();
 
         };
 

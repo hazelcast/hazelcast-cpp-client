@@ -43,9 +43,9 @@ namespace hazelcast {
 
                 virtual void handleItem(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
                                         const int32_t &eventType) {
-                    boost::shared_ptr<E> obj;
+                    hazelcast::util::SharedPtr<E> obj;
                     if (includeValue) {
-                        obj = serializationService.toObject<E>(*item);
+                        obj = hazelcast::util::SharedPtr<E>(serializationService.toObject<E>(*item).release());
                     }
                     std::auto_ptr<Member> member = clusterService.getMember(uuid);
                     ItemEventType type((ItemEventType::Type) eventType);

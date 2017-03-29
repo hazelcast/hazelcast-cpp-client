@@ -61,7 +61,7 @@ namespace hazelcast {
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
-                boost::shared_ptr<std::string> s;
+                hazelcast::util::SharedPtr<std::string> s;
                 latch.countDown();
                 s = q0.poll(10 * 1000);
                 ASSERT_EQ("item0", *s);

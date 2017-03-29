@@ -20,7 +20,7 @@
 #include <sstream>
 #include <stdint.h>
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
@@ -95,7 +95,7 @@ namespace hazelcast {
                 }
 
                 NearCacheConfig(int32_t timeToLiveSeconds, int32_t maxIdleSeconds, bool invalidateOnChange,
-                                InMemoryFormat inMemoryFormat, boost::shared_ptr<EvictionConfig<K, V> > evictConfig)
+                                InMemoryFormat inMemoryFormat, hazelcast::util::SharedPtr<EvictionConfig<K, V> > evictConfig)
                         : evictionConfig(new EvictionConfig<K, V>()) {
                     this->timeToLiveSeconds = timeToLiveSeconds;
                     this->maxIdleSeconds = maxIdleSeconds;
@@ -284,7 +284,7 @@ namespace hazelcast {
                  *
                  * @return The eviction configuration.
                  */
-                const boost::shared_ptr<EvictionConfig<K, V> > &getEvictionConfig() const {
+                const hazelcast::util::SharedPtr<EvictionConfig<K, V> > &getEvictionConfig() const {
                     return evictionConfig;
                 }
 
@@ -294,7 +294,7 @@ namespace hazelcast {
                  * @param evictionConfig The eviction configuration.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setEvictionConfig(const boost::shared_ptr<EvictionConfig<K, V> > &evictionConfig) {
+                NearCacheConfig &setEvictionConfig(const hazelcast::util::SharedPtr<EvictionConfig<K, V> > &evictionConfig) {
                     this->evictionConfig = util::Preconditions::checkNotNull<EvictionConfig<K, V> >(evictionConfig,
                                                                                                     "EvictionConfig cannot be NULL!");
                     return *this;
@@ -334,7 +334,7 @@ namespace hazelcast {
                  * <li>LRU as eviction policy</li>
                  * </ul>
                  */
-                boost::shared_ptr<EvictionConfig<K, V> > evictionConfig;
+                hazelcast::util::SharedPtr<EvictionConfig<K, V> > evictionConfig;
 
                 int32_t calculateMaxSize(int32_t maxSize) {
                     return (maxSize == 0) ? INT32_MAX : util::Preconditions::checkNotNegative(maxSize,

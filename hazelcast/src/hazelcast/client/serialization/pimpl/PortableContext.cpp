@@ -51,11 +51,11 @@ namespace hazelcast {
                     getClassDefinitionContext(factoryId).setClassVersion(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
+                hazelcast::util::SharedPtr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput& in, int factoryId, int classId, int version) {
+                hazelcast::util::SharedPtr<ClassDefinition> PortableContext::readClassDefinition(DataInput& in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -112,20 +112,20 @@ namespace hazelcast {
                         FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId);
                         builder.addField(fieldDef);
                     }
-                    boost::shared_ptr<ClassDefinition> classDefinition = builder.build();
+                    hazelcast::util::SharedPtr<ClassDefinition> classDefinition = builder.build();
                     if (shouldRegister) {
                         classDefinition = registerClassDefinition(classDefinition);
                     }
                     return classDefinition;
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                hazelcast::util::SharedPtr<ClassDefinition> PortableContext::registerClassDefinition(hazelcast::util::SharedPtr<ClassDefinition> cd) {
                     return getClassDefinitionContext(cd->getFactoryId()).registerClassDefinition(cd);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
+                hazelcast::util::SharedPtr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
                     int portableVersion = PortableVersionHelper::getVersion(&portable, contextVersion);
-                    boost::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
+                    hazelcast::util::SharedPtr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
                     if (cd.get() == NULL) {
                         ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(), portableVersion);
                         ClassDefinitionWriter cdw(*this, classDefinitionBuilder);
@@ -150,11 +150,11 @@ namespace hazelcast {
                 }
 
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
-                    boost::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
-                    if (value == NULL) {
-                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(this));
-                        boost::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
-                        if (current != NULL) {
+                    hazelcast::util::SharedPtr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
+                    if (value.get() == NULL) {
+                        value = hazelcast::util::SharedPtr<ClassDefinitionContext>(new ClassDefinitionContext(this));
+                        hazelcast::util::SharedPtr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
+                        if (current.get() != NULL) {
                             value = current;
                         }
                     }

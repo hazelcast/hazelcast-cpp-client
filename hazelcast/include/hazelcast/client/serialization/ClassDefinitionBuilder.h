@@ -82,13 +82,13 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addShortArrayField(const std::string& fieldName);
 
-                ClassDefinitionBuilder& addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def);
+                ClassDefinitionBuilder& addPortableField(const std::string& fieldName, hazelcast::util::SharedPtr<ClassDefinition> def);
 
-                ClassDefinitionBuilder& addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def);
+                ClassDefinitionBuilder& addPortableArrayField(const std::string& fieldName, hazelcast::util::SharedPtr<ClassDefinition> def);
 
                 ClassDefinitionBuilder& addField(FieldDefinition &fieldDefinition);
 
-                boost::shared_ptr<ClassDefinition> build();
+                hazelcast::util::SharedPtr<ClassDefinition> build();
 
                 int getFactoryId();
 

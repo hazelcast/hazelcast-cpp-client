@@ -65,7 +65,7 @@ namespace hazelcast {
                             int wakeUpSignal;
                             sleepingSocket->receive(&wakeUpSignal, sizeof(int));
                         } else {
-                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+                            hazelcast::util::SharedPtr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
                             if (conn.get() != NULL) {
                                 conn->getReadHandler().handle();
                             }

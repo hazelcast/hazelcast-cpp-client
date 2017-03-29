@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHERESCORDSTORE_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/spi/InitializingObject.h"
 
@@ -60,9 +60,9 @@ namespace hazelcast {
                          * @param key the key from which to get the associated value.
                          * @return the value associated with the given {@code key}.
                          */
-                        virtual boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
+                        virtual hazelcast::util::SharedPtr<V> get(const hazelcast::util::SharedPtr<K> &key) {
                             assert(0);
-                            return boost::shared_ptr<V>();
+                            return hazelcast::util::SharedPtr<V>();
                         }
 
                         /**
@@ -71,7 +71,7 @@ namespace hazelcast {
                          * @param key   the key to which the given value will be associated.
                          * @param value the value that will be associated with the key.
                          */
-                        virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
+                        virtual void put(const hazelcast::util::SharedPtr<K> &key, const hazelcast::util::SharedPtr<V> &value) {
                             assert(0);
                         }
 
@@ -81,8 +81,8 @@ namespace hazelcast {
                          * @param key   the key to which the given value will be associated.
                          * @param value the value that will be associated with the key.
                          */
-                        virtual void put(const boost::shared_ptr<K> &key,
-                                         const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        virtual void put(const hazelcast::util::SharedPtr<K> &key,
+                                         const hazelcast::util::SharedPtr<serialization::pimpl::Data> &value) {
                             assert(0);
                         }
 
@@ -92,7 +92,7 @@ namespace hazelcast {
                          * @param key the key from which the value will be removed.
                          * @return {@code true} if the value was removed, otherwise {@code false}.
                          */
-                        virtual bool remove(const boost::shared_ptr<K> &key) {
+                        virtual bool remove(const hazelcast::util::SharedPtr<K> &key) {
                             assert(0);
                             return false;
                         }
@@ -124,10 +124,10 @@ namespace hazelcast {
                          * @param candidates the candidates from which the best candidate object will be selected.
                          * @return the best candidate object to store, selected from the given {@code candidates}.
                          */
-                        virtual const boost::shared_ptr<V> selectToSave(const boost::shared_ptr<V> &value,
-                                                                 const boost::shared_ptr<serialization::pimpl::Data> &valueData) const {
+                        virtual const hazelcast::util::SharedPtr<V> selectToSave(const hazelcast::util::SharedPtr<V> &value,
+                                                                 const hazelcast::util::SharedPtr<serialization::pimpl::Data> &valueData) const {
                             assert(0);
-                            return boost::shared_ptr<V>();
+                            return hazelcast::util::SharedPtr<V>();
                         }
 
                         /**

@@ -27,8 +27,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include <ctime>
 
-//#define BOOST_THREAD_PROVIDES_FUTURE
-
 namespace hazelcast {
     namespace client {
         namespace connection {

@@ -32,6 +32,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -79,6 +80,7 @@ namespace hazelcast {
 
                     int32_t getType() const;
 
+                    bool operator <(const Data &rhs) const;
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;
                     mutable int cachedHashValue;
@@ -88,13 +90,9 @@ namespace hazelcast {
             }
         }
     }
+
 }
 
-namespace boost {
-    template<>
-    bool HAZELCAST_API operator<(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
-                   const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) BOOST_NOEXCEPT;
-}
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

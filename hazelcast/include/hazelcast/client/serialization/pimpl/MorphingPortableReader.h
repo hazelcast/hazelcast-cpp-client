@@ -50,7 +50,7 @@ namespace hazelcast {
                 class HAZELCAST_API MorphingPortableReader : public PortableReaderBase {
                 public:
 
-                    MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    MorphingPortableReader(PortableContext &portableContext, DataInput &input, hazelcast::util::SharedPtr<ClassDefinition> cd);
 
                     int32_t readInt(const char *fieldName);
 
@@ -85,9 +85,9 @@ namespace hazelcast {
                     std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                     template<typename T>
-                    boost::shared_ptr<T> readPortable(const char *fieldName) {
+                    hazelcast::util::SharedPtr<T> readPortable(const char *fieldName) {
                         setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
-                        boost::shared_ptr<T> portableInstance(new T);
+                        hazelcast::util::SharedPtr<T> portableInstance(new T);
 
                         Portable * p = portableInstance.get();
                         getPortableInstance(fieldName, p);

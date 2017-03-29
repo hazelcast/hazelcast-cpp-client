@@ -46,9 +46,9 @@ namespace hazelcast {
                 public:
                     SerializerHolder(PortableContext &context);
 
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(hazelcast::util::SharedPtr<SerializerBase> serializer);
 
-                    boost::shared_ptr<SerializerBase> serializerFor(int typeId);
+                    hazelcast::util::SharedPtr<SerializerBase> serializerFor(int typeId);
 
                     PortableSerializer &getPortableSerializer();
 

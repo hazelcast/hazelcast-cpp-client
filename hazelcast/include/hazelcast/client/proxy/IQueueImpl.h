@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 namespace hazelcast {
     namespace client {
