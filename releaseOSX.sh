@@ -36,7 +36,6 @@ cd ..
 #STANDART PART
 mkdir -p ./cpp/Mac_64/hazelcast/include/hazelcast/
 mkdir -p ./cpp/Mac_64/hazelcast/lib/tls
-mkdir -p ./cpp/Mac_64/external/include
 
 echo "Moving headers to target"
 cp -R hazelcast/include/hazelcast/ cpp/Mac_64/hazelcast/include/hazelcast/
@@ -50,8 +49,8 @@ cp ReleaseSharedTLS/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/tls/
 echo "Copying external libraries and the examples"
 mkdir -p cpp/external
 cp -R external/release_include cpp/external/include
-mkdir -p examples
-cp -r examples examples/src
+mkdir -p cpp/examples
+cp -r examples cpp/examples/src
 
 echo "Linking to external libraries and examples"
 cd cpp/Mac_64
