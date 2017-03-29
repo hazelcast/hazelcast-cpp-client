@@ -40,6 +40,8 @@ namespace hazelcast {
 
             class HAZELCAST_API IMessageHandler {
             public:
+                virtual ~IMessageHandler() { }
+
                 virtual void handleMessage(connection::Connection &connection, std::auto_ptr<ClientMessage> message) = 0;
             };
         }

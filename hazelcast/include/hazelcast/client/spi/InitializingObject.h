@@ -34,6 +34,8 @@ namespace hazelcast {
              */
             class HAZELCAST_API InitializingObject {
             public:
+                virtual ~InitializingObject() { }
+
                 virtual void initialize() = 0;
             };
         }

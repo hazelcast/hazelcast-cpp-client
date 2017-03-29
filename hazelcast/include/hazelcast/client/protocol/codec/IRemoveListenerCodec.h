@@ -33,6 +33,8 @@ namespace hazelcast {
             namespace codec {
                 class IRemoveListenerCodec {
                 public:
+                    virtual ~IRemoveListenerCodec() { }
+
                     virtual std::auto_ptr<ClientMessage> encodeRequest() const = 0;
 
                     virtual bool decodeResponse(ClientMessage &clientMessage) const = 0;

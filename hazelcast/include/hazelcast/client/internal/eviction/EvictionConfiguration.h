@@ -37,6 +37,8 @@ namespace hazelcast {
                 template <typename K, typename V>
                 class EvictionConfiguration {
                 public:
+                    virtual ~EvictionConfiguration() { }
+
                     /**
                      * Gets the type of eviction strategy.
                      *

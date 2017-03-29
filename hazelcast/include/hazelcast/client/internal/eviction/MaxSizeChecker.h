@@ -32,6 +32,8 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API MaxSizeChecker {
                 public:
+                    virtual ~MaxSizeChecker() { }
+
                     /**
                      * Checks the state to see if it has reached its maximum configured size
                      * {@link com.hazelcast.config.EvictionConfig.MaxSizePolicy}

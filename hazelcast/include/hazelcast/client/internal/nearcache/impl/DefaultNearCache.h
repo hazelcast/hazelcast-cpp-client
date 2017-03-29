@@ -151,7 +151,7 @@ namespace hazelcast {
                                                                                             serializationService));
                                 default:
                                     std::ostringstream out;
-                                    out << "Invalid in memory format: " << inMemoryFormat;
+                                    out << "Invalid in memory format: " << (int) inMemoryFormat;
                                     throw exception::IllegalArgumentException(out.str());
                             }
                         }

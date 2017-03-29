@@ -34,6 +34,8 @@ namespace hazelcast {
              */
             class HAZELCAST_API ObjectNamespace {
             public:
+                virtual ~ObjectNamespace() { }
+
                 /**
                  * Gets the service name.
                  *

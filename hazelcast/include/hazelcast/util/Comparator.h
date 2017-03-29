@@ -24,6 +24,8 @@ namespace hazelcast {
         template <typename T>
         class Comparator {
         public:
+            virtual ~Comparator() { }
+
             /**
              * @lhs First value to compare
              * @rhs Second value to compare
