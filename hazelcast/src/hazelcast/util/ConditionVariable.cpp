@@ -100,7 +100,7 @@ namespace hazelcast {
             } else {
                 ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
                 long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
-                if (nsec > NANOS_IN_A_SECOND) {
+                if (nsec >= NANOS_IN_A_SECOND) {
                     nsec -= NANOS_IN_A_SECOND;
                     ++ts.tv_sec;
                 }
