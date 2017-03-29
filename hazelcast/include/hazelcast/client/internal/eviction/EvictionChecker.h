@@ -34,6 +34,8 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API EvictionChecker {
                 public:
+                    virtual ~EvictionChecker() { }
+
                     /**
                      * Empty {@link} EvictionChecker to allow eviction always.
                      */

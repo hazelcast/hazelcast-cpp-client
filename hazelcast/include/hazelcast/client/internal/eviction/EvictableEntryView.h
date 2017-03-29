@@ -39,6 +39,8 @@ namespace hazelcast {
                 template <typename K, typename V>
                 class EvictableEntryView {
                 public:
+                    virtual ~EvictableEntryView() { }
+
                     /**
                      * Gets the creation time of this {@link EvictableEntryView} in milliseconds.
                      *

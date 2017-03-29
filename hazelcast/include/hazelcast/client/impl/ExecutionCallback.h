@@ -42,6 +42,8 @@ namespace hazelcast {
             template <typename V>
             class HAZELCAST_API ExecutionCallback {
             public:
+                virtual ~ExecutionCallback() { }
+
                 /**
                  * Called when an execution is completed successfully.
                  *

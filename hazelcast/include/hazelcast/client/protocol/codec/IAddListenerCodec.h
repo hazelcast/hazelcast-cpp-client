@@ -33,6 +33,8 @@ namespace hazelcast {
             namespace codec {
                 class IAddListenerCodec {
                 public:
+                    virtual ~IAddListenerCodec() { }
+
                     virtual std::auto_ptr<ClientMessage> encodeRequest() const = 0;
 
                     virtual std::string decodeResponse(ClientMessage &responseMessage) const = 0;

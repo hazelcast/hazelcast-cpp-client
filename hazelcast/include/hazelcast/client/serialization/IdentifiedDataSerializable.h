@@ -45,7 +45,6 @@ namespace hazelcast {
                  * Destructor
                  */
                 virtual ~IdentifiedDataSerializable(){
-
                 }
 
                 /**

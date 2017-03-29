@@ -41,6 +41,8 @@ namespace hazelcast {
             template <typename E>
             class MessageListener {
             public:
+                virtual ~MessageListener() { }
+
                 /**
                 * Invoked when a message is received for the added topic. Note that topic guarantees message ordering.
                 * Therefore there is only one thread invoking onMessage. The user should not keep the thread busy, but preferably

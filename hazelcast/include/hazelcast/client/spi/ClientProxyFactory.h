@@ -41,6 +41,8 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientProxyFactory {
             public:
+                virtual ~ClientProxyFactory() { }
+
                 /**
                  * Creates a new client proxy with the given id.
                  *
