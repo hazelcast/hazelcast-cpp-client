@@ -103,7 +103,7 @@ namespace hazelcast {
              *
 
                    clientConfig.getSerializationConfig().registerSerializer(
-                   boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
+                   hazelcast::util::SharedPtr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
 
              */
             template <typename Serializable>

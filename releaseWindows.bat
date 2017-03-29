@@ -50,8 +50,6 @@ copy ReleaseStatic32\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\stat
 copy ReleaseStatic32TLS\Release\HazelcastClient*  cpp\Windows_32\hazelcast\lib\tls\static\
 
 echo "Copying external libraries and the examples"
-mkdir cpp\external\include
-xcopy external\release_include\* cpp\external\include\ /s
 mkdir cpp\examples\src
 xcopy examples\* cpp\examples\src\ /s
 

@@ -29,7 +29,7 @@
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/CallFuture.h"
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -85,7 +85,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
+                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, hazelcast::util::SharedPtr<connection::Connection> connection);
 
                 const std::string &getTxnId() const;
 
@@ -103,12 +103,12 @@ namespace hazelcast {
 
                 spi::InvocationService& getInvocationService();
 
-                boost::shared_ptr<connection::Connection> getConnection();
+                hazelcast::util::SharedPtr<connection::Connection> getConnection();
 
             private:
                 TransactionOptions& options;
                 spi::ClientContext& clientContext;
-                boost::shared_ptr<connection::Connection> connection;
+                hazelcast::util::SharedPtr<connection::Connection> connection;
 
                 long threadId;
                 std::string txnId;

@@ -23,8 +23,6 @@
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 
-#include <boost/smart_ptr/shared_ptr.hpp>
-
 #include <vector>
 #include <string>
 #include <memory>

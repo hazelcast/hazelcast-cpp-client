@@ -353,8 +353,8 @@ namespace hazelcast {
              * Memory ownership of the config is passed to the client config
              */
             template <typename K, typename V>
-            ClientConfig &addNearCacheConfig(const boost::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig) {
-                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+            ClientConfig &addNearCacheConfig(const hazelcast::util::SharedPtr<config::NearCacheConfig<K, V> > nearCacheConfig) {
+                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig.template castShare<config::NearCacheConfigBase>());
                 return *this;
             }
 
@@ -367,13 +367,13 @@ namespace hazelcast {
              */
             template <typename K, typename V>
             const config::NearCacheConfig<K, V> *getNearCacheConfig(const std::string &name) {
-                boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = lookupByPattern(name);
+                hazelcast::util::SharedPtr<config::NearCacheConfigBase> nearCacheConfig = lookupByPattern(name);
                 if (nearCacheConfig.get() == NULL) {
                     nearCacheConfig = nearCacheConfigMap.get("default");
                 }
                 // not needed for c++ client since it is always native memory
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
-                return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig).get();
+                return (config::NearCacheConfig<K, V>*)nearCacheConfig.get();
             }
 
             /**
@@ -433,7 +433,7 @@ namespace hazelcast {
 
             util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
 
-            const boost::shared_ptr<config::NearCacheConfigBase> lookupByPattern(const std::string &name) {
+            const hazelcast::util::SharedPtr<config::NearCacheConfigBase> lookupByPattern(const std::string &name) {
                     // TODO: implement the lookup
                     return nearCacheConfigMap.get(name);
             }

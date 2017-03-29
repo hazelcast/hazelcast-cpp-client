@@ -48,8 +48,6 @@ cp ReleaseShared/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/
 cp ReleaseSharedTLS/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/tls/
 
 echo "Copying external libraries and the examples"
-mkdir -p cpp/external
-cp -R external/release_include cpp/external/include
 mkdir -p examples
 cp -r examples examples/src
 

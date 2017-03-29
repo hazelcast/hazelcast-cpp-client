@@ -100,7 +100,7 @@ namespace hazelcast {
                 * then return NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                boost::shared_ptr<V> get(const K &key) {
+                hazelcast::util::SharedPtr<V> get(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
                     return getInternal(keyData);
                 }
@@ -113,7 +113,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> put(const K &key, const V &value) {
+                hazelcast::util::SharedPtr<V> put(const K &key, const V &value) {
                     return put(key, value, -1);
                 }
 
@@ -128,11 +128,11 @@ namespace hazelcast {
                 * @return the previous value in shared_ptr, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+                hazelcast::util::SharedPtr<V> put(const K &key, const V &value, long ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    return boost::shared_ptr<V>(toObject<V>(putInternal(keyData, valueData, ttlInMillis)));
+                    return hazelcast::util::SharedPtr<V>(toObject<V>(putInternal(keyData, valueData, ttlInMillis)).release());
                 }
 
                 /**
@@ -142,11 +142,11 @@ namespace hazelcast {
                 * then returns NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                boost::shared_ptr<V> remove(const K &key) {
+                hazelcast::util::SharedPtr<V> remove(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
 
                     std::auto_ptr<serialization::pimpl::Data> response = removeInternal(keyData);
-                    return boost::shared_ptr<V>(toObject<V>(response));
+                    return hazelcast::util::SharedPtr<V>(toObject<V>(response).release());
                 }
 
                 /**
@@ -242,7 +242,7 @@ namespace hazelcast {
                 * @return the previous value in shared_ptr, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
+                hazelcast::util::SharedPtr<V> putIfAbsent(const K &key, const V &value) {
                     return putIfAbsent(key, value, -1);
                 }
 
@@ -257,12 +257,12 @@ namespace hazelcast {
                 * @return the previous value of the entry, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+                hazelcast::util::SharedPtr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
                     std::auto_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData, ttlInMillis);
-                    return boost::shared_ptr<V>(toObject<V>(response));
+                    return hazelcast::util::SharedPtr<V>(toObject<V>(response).release());
                 }
 
                 /**
@@ -287,11 +287,11 @@ namespace hazelcast {
                 * @return the previous value of the entry, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> replace(const K &key, const V &value) {
+                hazelcast::util::SharedPtr<V> replace(const K &key, const V &value) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    return boost::shared_ptr<V>(toObject<V>(replaceInternal(keyData, valueData)));
+                    return hazelcast::util::SharedPtr<V>(toObject<V>(replaceInternal(keyData, valueData)).release());
                 }
 
                 /**
@@ -605,7 +605,7 @@ namespace hazelcast {
                         return std::map<K, V>();
                     }
 
-                    std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > partitionToKeyData;
+                    std::map<int, std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> > > partitionToKeyData;
                     // group the request per parition id
                     for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end(); ++it) {
                         serialization::pimpl::Data keyData = toData<K>(*it);
@@ -937,17 +937,17 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                hazelcast::util::SharedPtr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
                     std::auto_ptr<serialization::pimpl::Data> response = executeOnKeyInternal(keyData, processorData);
 
-                    return boost::shared_ptr<ResultType>(toObject<ResultType>(response));
+                    return hazelcast::util::SharedPtr<ResultType>(toObject<ResultType>(response).release());
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                hazelcast::util::SharedPtr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -955,10 +955,10 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                std::map<K, hazelcast::util::SharedPtr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
 
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, hazelcast::util::SharedPtr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
                         std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
                         std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
@@ -981,9 +981,9 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+                std::map<K, hazelcast::util::SharedPtr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, hazelcast::util::SharedPtr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
                         std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
                         std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
@@ -1010,7 +1010,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
+                std::map<K, hazelcast::util::SharedPtr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
                                                                              const serialization::IdentifiedDataSerializable &predicate) {
                     const query::Predicate *p = (const query::Predicate *) (&predicate);
                     return executeOnEntries<ResultType, EntryProcessor>(entryProcessor, *p);
@@ -1031,11 +1031,11 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> >
+                std::map<K, hazelcast::util::SharedPtr<ResultType> >
                 executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor,
                                                                                                 predicate);
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, hazelcast::util::SharedPtr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
                         std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
                         std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
@@ -1106,8 +1106,8 @@ namespace hazelcast {
                     return stats;
                 }
             protected:
-                virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
-                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
+                virtual hazelcast::util::SharedPtr<V> getInternal(serialization::pimpl::Data &keyData) {
+                    return hazelcast::util::SharedPtr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)).release());
                 }
 
                 virtual bool containsKeyInternal(const serialization::pimpl::Data &keyData) {
@@ -1175,12 +1175,12 @@ namespace hazelcast {
                 }
 
                 virtual EntryVector getAllInternal(
-                        const std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > &partitionToKeyData,
+                        const std::map<int, std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> > > &partitionToKeyData,
                         std::map<K, V> &result) {
                     std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
-                    for (std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator
+                    for (std::map<int, std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> > >::const_iterator
                                  it = partitionToKeyData.begin();it != partitionToKeyData.end();++it) {
-                        for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator
+                        for (std::vector<hazelcast::util::SharedPtr<serialization::pimpl::Data> >::const_iterator
                                      keyIt = it->second.begin();keyIt != it->second.end();++keyIt) {
                             // Deep copiy the data bytes. This is needed since IMapImpl::getAllData
                             // implicitely changes the internal pointer of Data object which is needed later by the
@@ -1211,7 +1211,7 @@ namespace hazelcast {
                 }
 
                 template <typename ResultType>
-                boost::shared_ptr<Future<ResultType> >
+                hazelcast::util::SharedPtr<Future<ResultType> >
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
@@ -1224,7 +1224,7 @@ namespace hazelcast {
 
                     connection::CallFuture callFuture = invokeAndGetFuture(request, partitionId);
                     
-                    return boost::shared_ptr<Future<ResultType> >(new internal::concurrent::FutureImpl<
+                    return hazelcast::util::SharedPtr<Future<ResultType> >(new internal::concurrent::FutureImpl<
                             ResultType, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(callFuture,
                                                                                           getSerializationService()));
                 }
@@ -1250,8 +1250,8 @@ namespace hazelcast {
                     proxy::IMapImpl::putAllData(entries);
                 }
 
-                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
-                    return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+                hazelcast::util::SharedPtr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
+                    return hazelcast::util::SharedPtr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
             private:
                 monitor::impl::LocalMapStatsImpl stats;

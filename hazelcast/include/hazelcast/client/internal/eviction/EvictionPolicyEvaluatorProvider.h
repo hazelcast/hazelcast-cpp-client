@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONPOLICYEVALUATORPROVIDER_H_
 
 #include <sstream>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/client/internal/eviction/impl/comparator/LRUEvictionPolicyComparator.h"
@@ -50,14 +50,14 @@ namespace hazelcast {
                      */
                     template<typename MAPKEY, typename MAPVALUE, typename A, typename E>
                     static std::auto_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> > getEvictionPolicyEvaluator(
-                            const boost::shared_ptr<EvictionConfiguration<MAPKEY, MAPVALUE> > &evictionConfig) {
+                            const hazelcast::util::SharedPtr<config::EvictionConfig<MAPKEY, MAPVALUE> > &evictionConfig) {
                         if (evictionConfig.get() == NULL) {
                             return std::auto_ptr<EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> >();
                         }
 
-                        boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
+                        hazelcast::util::SharedPtr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > evictionPolicyComparator;
 
-                        const boost::shared_ptr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator = evictionConfig->getComparator();
+                        const hazelcast::util::SharedPtr<EvictionPolicyComparator<MAPKEY, MAPVALUE> > &comparator = evictionConfig->getComparator();
                         if (comparator.get() != NULL) {
                             evictionPolicyComparator = comparator;
                         } else {
@@ -72,20 +72,20 @@ namespace hazelcast {
 
                 private:
                     template<typename A, typename E>
-                    static boost::shared_ptr<EvictionPolicyComparator<A, E> > createEvictionPolicyComparator(
+                    static hazelcast::util::SharedPtr<EvictionPolicyComparator<A, E> > createEvictionPolicyComparator(
                             EvictionPolicyType evictionPolicyType) {
                         switch (evictionPolicyType) {
                             case LRU:
-                                return boost::shared_ptr<EvictionPolicyComparator<A, E> >(
+                                return hazelcast::util::SharedPtr<EvictionPolicyComparator<A, E> >(
                                         new impl::comparator::LRUEvictionPolicyComparator<A, E>());
                             case LFU:
-                                return boost::shared_ptr<EvictionPolicyComparator<A, E> >(
+                                return hazelcast::util::SharedPtr<EvictionPolicyComparator<A, E> >(
                                         new impl::comparator::LFUEvictionPolicyComparator<A, E>());
                             case RANDOM:
-                                return boost::shared_ptr<EvictionPolicyComparator<A, E> >(
+                                return hazelcast::util::SharedPtr<EvictionPolicyComparator<A, E> >(
                                         new impl::comparator::RandomEvictionPolicyComparator<A, E>());
                             case NONE:
-                                return boost::shared_ptr<EvictionPolicyComparator<A, E> >();
+                                return hazelcast::util::SharedPtr<EvictionPolicyComparator<A, E> >();
                             default:
                                 std::ostringstream out;
                                 out << "Unsupported eviction policy type: " << evictionPolicyType;

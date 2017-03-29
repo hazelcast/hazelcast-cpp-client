@@ -79,7 +79,7 @@ namespace hazelcast {
             */
             std::string addMessageListener(topic::ReliableMessageListener<E> &listener) {
                 int id = ++runnerCounter;
-                boost::shared_ptr<MessageRunner<E> > runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
+                hazelcast::util::SharedPtr<MessageRunner<E> > runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
                                                                           &context->getSerializationService(), config));
                 runnersMap.put(id, runner);
                 runner->next();
@@ -96,8 +96,8 @@ namespace hazelcast {
             */
             bool removeMessageListener(const std::string &registrationId) {
                 int id = util::IOUtil::to_value<int>(registrationId);
-                boost::shared_ptr<MessageRunner<E> > runner = runnersMap.get(id);
-                if (NULL == runner) {
+                hazelcast::util::SharedPtr<MessageRunner<E> > runner = runnersMap.get(id);
+                if (NULL == runner.get()) {
                     return false;
                 }
                 runner->cancel();
@@ -107,8 +107,8 @@ namespace hazelcast {
         protected:
             virtual void onDestroy() {
                 // cancel all runners
-                std::vector<std::pair<int, boost::shared_ptr<MessageRunner<E> > > > runners = runnersMap.clear();
-                for (typename std::vector<std::pair<int, boost::shared_ptr<MessageRunner<E> > > >::const_iterator it = runners.begin();
+                std::vector<std::pair<int, hazelcast::util::SharedPtr<MessageRunner<E> > > > runners = runnersMap.clear();
+                for (typename std::vector<std::pair<int, hazelcast::util::SharedPtr<MessageRunner<E> > > >::const_iterator it = runners.begin();
                         it != runners.end(); ++it) {
                     it->second->cancel();
                 }
@@ -117,7 +117,7 @@ namespace hazelcast {
                 ringbuffer->destroy();
             }
         private:
-            ReliableTopic(const std::string &instanceName, spi::ClientContext *context, boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+            ReliableTopic(const std::string &instanceName, spi::ClientContext *context, hazelcast::util::SharedPtr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ReliableTopicImpl(instanceName, context, rb) {
             }
 

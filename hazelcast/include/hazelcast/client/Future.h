@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_FUTURE_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,6 +29,9 @@ namespace hazelcast {
         template <typename V>
         class Future {
         public:
+            virtual ~Future(){
+
+            }
             /**
              * Waits if necessary for the computation to complete, and then
              * retrieves its result.
@@ -39,7 +42,7 @@ namespace hazelcast {
              * @throws InterruptedException if the current thread was interrupted
              * while waiting
              */
-            virtual boost::shared_ptr<V> get() = 0;
+            virtual hazelcast::util::SharedPtr<V> get() = 0;
 
             /**
              * Waits if necessary for at most the given time for the computation
@@ -49,7 +52,7 @@ namespace hazelcast {
              * @return the computed result
              * @throws exception::TimeoutException if the wait timed out
              */
-            virtual boost::shared_ptr<V> get(int64_t timeoutInMilliseconds) = 0;
+            virtual hazelcast::util::SharedPtr<V> get(int64_t timeoutInMilliseconds) = 0;
         };
     }
 }

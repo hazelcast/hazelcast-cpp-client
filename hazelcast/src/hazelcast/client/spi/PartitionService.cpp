@@ -60,14 +60,14 @@ namespace hazelcast {
                 }
             }
 
-            boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
+            hazelcast::util::SharedPtr<Address> PartitionService::getPartitionOwner(int partitionId) {
                 // TODO: Use Read/Write Lock instead, it is read most of the time
                 util::LockGuard lg(lock);
-                std::map<int, boost::shared_ptr<Address> >::iterator it = partitions->find(partitionId);
+                std::map<int, hazelcast::util::SharedPtr<Address> >::iterator it = partitions->find(partitionId);
                 if (partitions->end() != it) {
                     return it->second;
                 } else {
-                    return boost::shared_ptr<Address>();
+                    return hazelcast::util::SharedPtr<Address>();
                 }
             }
 
@@ -132,10 +132,10 @@ namespace hazelcast {
                 protocol::codec::ClientGetPartitionsCodec::ResponseParameters result =
                         protocol::codec::ClientGetPartitionsCodec::ResponseParameters::decode(response);
 
-                std::auto_ptr<std::map<int, boost::shared_ptr<Address> > > newPartitions(new std::map<int, boost::shared_ptr<Address> >());
+                std::auto_ptr<std::map<int, hazelcast::util::SharedPtr<Address> > > newPartitions(new std::map<int, hazelcast::util::SharedPtr<Address> >());
                 for (std::vector<std::pair<Address, std::vector<int32_t > > >::const_iterator it = result.partitions.begin();
                      it != result.partitions.end(); ++it) {
-                    boost::shared_ptr<Address> addr(new Address(it->first));
+                    hazelcast::util::SharedPtr<Address> addr(new Address(it->first));
                     for (std::vector<int32_t>::const_iterator partIt = it->second.begin(); partIt != it->second.end(); ++partIt) {
                         (*newPartitions)[*partIt] = addr;
                     }

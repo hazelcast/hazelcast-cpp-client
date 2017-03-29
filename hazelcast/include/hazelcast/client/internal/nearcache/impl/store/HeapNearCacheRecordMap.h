@@ -59,8 +59,8 @@ namespace hazelcast {
                                     : public util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry,
                                       public C {
                             public:
-                                NearCacheEvictableSamplingEntry(const boost::shared_ptr<KS> &key,
-                                                                const boost::shared_ptr<R> &value,
+                                NearCacheEvictableSamplingEntry(const hazelcast::util::SharedPtr<KS> &key,
+                                                                const hazelcast::util::SharedPtr<R> &value,
                                                                 serialization::pimpl::SerializationService &ss)
                                         : util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry(key,
                                                                                                         value),
@@ -71,24 +71,24 @@ namespace hazelcast {
                                 }
 
                                 //@Override
-                                boost::shared_ptr<KS> getAccessor() const {
+                                hazelcast::util::SharedPtr<KS> getAccessor() const {
                                     return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key;
                                 }
 
                                 //@Override
-                                boost::shared_ptr<R> getEvictable() const {
+                                hazelcast::util::SharedPtr<R> getEvictable() const {
                                     return util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value;
                                 }
 
                                 //@Override
-                                boost::shared_ptr<K> getKey() const {
-                                    return boost::shared_ptr<K>(serializationService.toSharedObject<K>(
+                                hazelcast::util::SharedPtr<K> getKey() const {
+                                    return hazelcast::util::SharedPtr<K>(serializationService.toSharedObject<K>(
                                             util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::key));
                                 }
 
                                 //@Override
-                                boost::shared_ptr<V> getValue() const {
-                                    return boost::shared_ptr<V>(serializationService.toSharedObject<V>(
+                                hazelcast::util::SharedPtr<V> getValue() const {
+                                    return hazelcast::util::SharedPtr<V>(serializationService.toSharedObject<V>(
                                             util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry::value->getValue()));
                                 }
 
@@ -112,16 +112,16 @@ namespace hazelcast {
                             };
 
                             //@Override
-                            int evict(std::vector<boost::shared_ptr<C> > *evictionCandidates,
+                            int evict(std::vector<hazelcast::util::SharedPtr<C> > *evictionCandidates,
                                       eviction::EvictionListener<KS, R> *evictionListener) {
                                 if (evictionCandidates == NULL) {
                                     return 0;
                                 }
                                 int actualEvictedCount = 0;
-                                for (typename std::vector<boost::shared_ptr<C> >::const_iterator it = evictionCandidates->begin();
+                                for (typename std::vector<hazelcast::util::SharedPtr<C> >::const_iterator it = evictionCandidates->begin();
                                      it != evictionCandidates->end(); ++it) {
-                                    const boost::shared_ptr<C> &evictionCandidate = *it;
-                                    if (util::SynchronizedMap<boost::shared_ptr<KS>, R>::remove(
+                                    const hazelcast::util::SharedPtr<C> &evictionCandidate = *it;
+                                    if (util::SynchronizedMap<hazelcast::util::SharedPtr<KS>, R>::remove(
                                             evictionCandidate->getAccessor()).get() != NULL) {
                                         actualEvictedCount++;
                                         if (evictionListener != NULL) {
@@ -167,12 +167,10 @@ namespace hazelcast {
                                         return it.hasNext();
                                     }
 
-                                    virtual boost::shared_ptr<eviction::EvictionCandidate<K, V, KS, R> > next() {
-                                        boost::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> obj = it.next();
-                                        boost::shared_ptr<NearCacheEvictableSamplingEntry> heapObj = boost::static_pointer_cast<NearCacheEvictableSamplingEntry>(
-                                                obj);
-                                        return boost::static_pointer_cast<eviction::EvictionCandidate<K, V, KS, R> >(
-                                                heapObj);
+                                    virtual hazelcast::util::SharedPtr<eviction::EvictionCandidate<K, V, KS, R> > next() {
+                                        hazelcast::util::SharedPtr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::E> obj = it.next();
+                                        hazelcast::util::SharedPtr<NearCacheEvictableSamplingEntry> heapObj = obj.template castShare<NearCacheEvictableSamplingEntry>();
+                                        return heapObj.template castShare<eviction::EvictionCandidate<K, V, KS, R> >();
                                     }
 
                                     virtual void remove() {
@@ -195,10 +193,10 @@ namespace hazelcast {
 
                         protected:
                             //@Override
-                            boost::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry> createSamplingEntry(
-                                    boost::shared_ptr<KS> &key,
-                                    boost::shared_ptr<R> &value) const {
-                                return boost::shared_ptr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry>(
+                            hazelcast::util::SharedPtr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry> createSamplingEntry(
+                                    hazelcast::util::SharedPtr<KS> &key,
+                                    hazelcast::util::SharedPtr<R> &value) const {
+                                return hazelcast::util::SharedPtr<typename util::SampleableConcurrentHashMap<K, V, KS, R>::SamplingEntry>(
                                         new NearCacheEvictableSamplingEntry(key, value, serializationService));
                             }
 

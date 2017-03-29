@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_NEARCACHERECORD_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/internal/eviction/Evictable.h"
 #include "hazelcast/client/internal/eviction/Expirable.h"
@@ -54,7 +54,7 @@ namespace hazelcast {
                      *
                      * @param value the value for this {@link NearCacheRecord}
                      */
-                    virtual void setValue(const boost::shared_ptr<V> &value) {
+                    virtual void setValue(const hazelcast::util::SharedPtr<V> &value) {
                         assert(0);
                     }
 
@@ -112,13 +112,13 @@ namespace hazelcast {
                     /**
                      * @param uuid last known uuid of invalidation source at time of this records' creation
                      */
-                    virtual void setUuid(const boost::shared_ptr<util::UUID> &uuid) = 0;
+                    virtual void setUuid(const hazelcast::util::SharedPtr<util::UUID> &uuid) = 0;
 
                     /**
                      * @return {@code true} if supplied uuid equals existing one, otherwise and when one of supplied
                      * or existing is null returns {@code false}
                      */
-                    virtual bool hasSameUuid(const boost::shared_ptr<util::UUID> &thatUuid) const = 0;
+                    virtual bool hasSameUuid(const hazelcast::util::SharedPtr<util::UUID> &thatUuid) const = 0;
                 };
             }
         }

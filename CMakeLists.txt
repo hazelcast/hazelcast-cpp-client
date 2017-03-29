@@ -84,7 +84,6 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/generated-sources/include)
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/external/include/ ${CMAKE_SOURCE_DIR}/external/include/asio/asio/include/)
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
@@ -125,6 +124,7 @@ ENDIF(${HZ_USE_C11} MATCHES "ON")
 
 if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
 	message(STATUS "Building the library with SSL support.")
+	include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/external/include/ ${CMAKE_SOURCE_DIR}/external/include/asio/asio/include/)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
 ELSE ()

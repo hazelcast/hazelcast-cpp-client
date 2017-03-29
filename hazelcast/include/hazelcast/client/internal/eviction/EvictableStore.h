@@ -18,7 +18,7 @@
 
 #include <assert.h>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -55,7 +55,7 @@ namespace hazelcast {
                      * @return evicted entry count
                      */
                     virtual int evict(
-                            std::vector<boost::shared_ptr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > *evictionCandidates,
+                            std::vector<hazelcast::util::SharedPtr<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > *evictionCandidates,
                             EvictionListener<A, E> *evictionListener) {
                         assert(0);
                         return 0;

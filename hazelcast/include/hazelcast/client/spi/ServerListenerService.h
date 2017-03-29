@@ -27,6 +27,7 @@
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/spi/impl/listener/EventRegistration.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -85,14 +86,14 @@ namespace hazelcast {
 
                 bool deRegisterListener(protocol::codec::IRemoveListenerCodec &removeListenerCodec);
 
-                void retryFailedListener(boost::shared_ptr<connection::CallPromise> listenerPromise);
+                void retryFailedListener(hazelcast::util::SharedPtr<connection::CallPromise> listenerPromise);
 
                 void triggerFailedListeners();
 
             private:
 
                 util::Mutex failedListenerLock;
-                std::vector< boost::shared_ptr<connection::CallPromise> > failedListeners;
+                std::vector< hazelcast::util::SharedPtr<connection::CallPromise> > failedListeners;
 
                 util::SynchronizedMap<std::string, impl::listener::EventRegistration> registrationIdMap;
                 util::SynchronizedMap<std::string, const std::string > registrationAliasMap;

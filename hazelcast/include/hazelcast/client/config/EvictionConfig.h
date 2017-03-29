@@ -18,7 +18,7 @@
 
 #include <string>
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
 #include "hazelcast/util/Preconditions.h"
@@ -94,7 +94,7 @@ namespace hazelcast {
 
 
                 EvictionConfig(int size, MaxSizePolicy maxSizePolicy,
-                               const boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
+                               const hazelcast::util::SharedPtr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
                     this->size = util::Preconditions::checkPositive(size, "Size must be positive number!");
                     this->maxSizePolicy = maxSizePolicy;
                     this->comparator = util::Preconditions::checkNotNull<internal::eviction::EvictionPolicyComparator>(
@@ -128,12 +128,12 @@ namespace hazelcast {
                     return *this;
                 }
 
-                const boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > getComparator() const {
+                const hazelcast::util::SharedPtr<internal::eviction::EvictionPolicyComparator<K, V> > getComparator() const {
                     return comparator;
                 }
 
                 EvictionConfig &setComparator(
-                        const boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
+                        const hazelcast::util::SharedPtr<internal::eviction::EvictionPolicyComparator<K, V> > &comparator) {
                     this->comparator = comparator;
                     return *this;
                 }
@@ -172,7 +172,7 @@ namespace hazelcast {
                 int32_t size;
                 MaxSizePolicy maxSizePolicy;
                 EvictionPolicy evictionPolicy;
-                boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > comparator;
+                hazelcast::util::SharedPtr<internal::eviction::EvictionPolicyComparator<K, V> > comparator;
             };
 
             /**

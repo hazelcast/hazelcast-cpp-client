@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_IMPL_STRATEGY_SAMPLINGBASEDEVICTIONSTRATEGY_H_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/client/internal/eviction/EvictableStore.h"
 #include "hazelcast/client/internal/eviction/EvictionCandidate.h"
@@ -57,7 +57,7 @@ namespace hazelcast {
                                                   EvictionPolicyEvaluator<MAPKEY, MAPVALUE, A, E> *evictionPolicyEvaluator,
                                                   EvictionListener<A, E> *evictionListener) {
                                     std::auto_ptr<util::Iterable<EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > samples = sampleableEvictableStore->sample(SAMPLE_COUNT);
-                                    std::auto_ptr<std::vector<boost::shared_ptr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evictionCandidates =
+                                    std::auto_ptr<std::vector<hazelcast::util::SharedPtr<eviction::EvictionCandidate<MAPKEY, MAPVALUE, A, E> > > > evictionCandidates =
                                             evictionPolicyEvaluator->evaluate(*samples);
                                     return sampleableEvictableStore->evict(evictionCandidates.get(), evictionListener);
                                 }

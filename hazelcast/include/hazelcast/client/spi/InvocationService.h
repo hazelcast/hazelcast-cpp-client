@@ -25,7 +25,7 @@
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -94,7 +94,7 @@ namespace hazelcast {
                                                               client::impl::BaseEventHandler *handler, int partitionId);
 
                 connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request,
-                                                          boost::shared_ptr<connection::Connection> connection);
+                                                          hazelcast::util::SharedPtr<connection::Connection> connection);
 
                 bool isRedoOperation() const;
 
@@ -126,12 +126,12 @@ namespace hazelcast {
                 *  Retries the given promise on an available connection if request is retryable.
                 */
                 void tryResend(std::auto_ptr<exception::IException> exception,
-                               boost::shared_ptr<connection::CallPromise> promise, const std::string& lastTriedAddress);
+                               hazelcast::util::SharedPtr<connection::CallPromise> promise, const std::string& lastTriedAddress);
 
                 /**
                 *  Retries the given promise on an available connection.
                 */
-                boost::shared_ptr<connection::Connection> resend(boost::shared_ptr<connection::CallPromise> promise,
+                hazelcast::util::SharedPtr<connection::Connection> resend(hazelcast::util::SharedPtr<connection::CallPromise> promise,
                                                                  const std::string& lastAddress);
             private:
                 bool redoOperation;
@@ -149,43 +149,43 @@ namespace hazelcast {
 
                 connection::CallFuture doSend(std::auto_ptr<protocol::ClientMessage> request,
                                               std::auto_ptr<client::impl::BaseEventHandler> eventHandler,
-                                              boost::shared_ptr<connection::Connection>, int);
+                                              hazelcast::util::SharedPtr<connection::Connection>, int);
 
                 /**
                 * Returns the actual connection that request is send over,
                 * Returns null shared_ptr if request is not send.
                 */
-                boost::shared_ptr<connection::Connection> registerAndEnqueue(boost::shared_ptr<connection::Connection> &conn,
-                                                                             boost::shared_ptr<connection::CallPromise>);
+                hazelcast::util::SharedPtr<connection::Connection> registerAndEnqueue(hazelcast::util::SharedPtr<connection::Connection> &conn,
+                                                                             hazelcast::util::SharedPtr<connection::CallPromise>);
 
                 /** CallId Related **/
 
-                void registerCall(connection::Connection &connection, boost::shared_ptr<connection::CallPromise> promise);
+                void registerCall(connection::Connection &connection, hazelcast::util::SharedPtr<connection::CallPromise> promise);
 
-                boost::shared_ptr<connection::CallPromise> deRegisterCall(int connectionId, int64_t callId);
+                hazelcast::util::SharedPtr<connection::CallPromise> deRegisterCall(int connectionId, int64_t callId);
 
                 /** **/
                 void registerEventHandler(int64_t correlationId,
-                                          connection::Connection& connection, boost::shared_ptr<connection::CallPromise> promise);
+                                          connection::Connection& connection, hazelcast::util::SharedPtr<connection::CallPromise> promise);
 
-                boost::shared_ptr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection,
+                hazelcast::util::SharedPtr<connection::CallPromise> deRegisterEventHandler(connection::Connection& connection,
                                                                                   int64_t callId);
 
                 /* returns shouldSetResponse */
-                bool handleEventUuid(protocol::ClientMessage *response, boost::shared_ptr<connection::CallPromise> promise);
+                bool handleEventUuid(protocol::ClientMessage *response, hazelcast::util::SharedPtr<connection::CallPromise> promise);
 
                 /** CallPromise Map **/
 
-                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getCallPromiseMap(int connectionId);
+                hazelcast::util::SharedPtr< util::SynchronizedMap<int64_t, connection::CallPromise> > getCallPromiseMap(int connectionId);
 
                 /** EventHandler Map **/
 
                 // TODO: Put the promise map as a member of the connection object. In this way, we can get the promise map directly from connection object
                 // without a need for a map lookup since we already know the connection and the map is specific to a connection
-                boost::shared_ptr< util::SynchronizedMap<int64_t, connection::CallPromise> > getEventHandlerPromiseMap(
+                hazelcast::util::SharedPtr< util::SynchronizedMap<int64_t, connection::CallPromise> > getEventHandlerPromiseMap(
                         connection::Connection& connection);
 
-                boost::shared_ptr<connection::CallPromise> getEventHandlerPromise(connection::Connection& , int64_t callId);
+                hazelcast::util::SharedPtr<connection::CallPromise> getEventHandlerPromise(connection::Connection& , int64_t callId);
             };
         }
     }

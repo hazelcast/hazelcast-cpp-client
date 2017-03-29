@@ -46,8 +46,6 @@ cp ReleaseStatic32/libHazelcastClient* cpp/Linux_32/hazelcast/lib/
 cp ReleaseStatic32TLS/libHazelcastClient* cpp/Linux_32/hazelcast/lib/tls/
 
 echo "Copying external libraries and the examples"
-mkdir -p cpp/external
-cp -R external/release_include cpp/external/include
 mkdir -p cpp/examples
 cp -r examples cpp/examples/src
 

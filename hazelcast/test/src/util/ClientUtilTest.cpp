@@ -24,6 +24,7 @@
 #include <ctime>
 #include <errno.h>
 #include <gtest/gtest.h>
+#include <hazelcast/util/SharedPtr.h>
 
 namespace hazelcast {
     namespace client {
@@ -191,6 +192,25 @@ namespace hazelcast {
                 ASSERT_EQ(0, util::strerror_s(error, msg, 100));
                 ASSERT_STREQ(expectedErrorString.c_str(), msg);
             }
+
+            void sharedPtrCarryingThread(util::ThreadArgs& args) {
+                util::SharedPtr<int> ptr = *(util::SharedPtr<int> *)args.arg0;
+                std::cout << " in "<< ptr.getCount() << std::endl;
+                args.currentThread->interruptibleSleep(4);
+            }
+
+            TEST_F (ClientUtilTest, testSharedPtr) {
+                {
+                    util::SharedPtr<int> ptr(new int(100));
+                    util::Thread thread(sharedPtrCarryingThread, &ptr);
+                    std::cout << " out " << ptr.getCount() << std::endl;
+                    sleep(1);
+                    std::cout << " out " << ptr.getCount() << std::endl;
+                    sleep(10);
+                    std::cout << " out "<< ptr.getCount() << std::endl;
+                }
+            }
+
         }
     }
 }

@@ -18,7 +18,6 @@
 //
 
 #include <set>
-#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -43,15 +42,15 @@ namespace hazelcast {
                  */
                 static const std::string DEFAULT_NEAR_CACHE_NAME;
 
-                boost::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
+                util::SharedPtr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
+                    util::SharedPtr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
                     nearCacheConfig->setInMemoryFormat(config::OBJECT);
                     nearCacheConfig->setInvalidateOnChange(false);
                     return nearCacheConfig;
                 }
 
-                boost::shared_ptr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
-                    return boost::shared_ptr<config::NearCacheConfig<int, int> >(
+                util::SharedPtr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
+                    return util::SharedPtr<config::NearCacheConfig<int, int> >(
                             new config::NearCacheConfig<int, int>());
                 }
 
@@ -60,10 +59,10 @@ namespace hazelcast {
                 }
 
                 IMap<int, int> getNearCachedMapFromClient(
-                        boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
+                        util::SharedPtr<config::NearCacheConfig<int, int> > nearCacheConfig) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
                     servers.push_back(
-                            boost::shared_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
+                            util::SharedPtr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
 
                     nearCacheConfig->setName(mapName);
 
@@ -83,9 +82,9 @@ namespace hazelcast {
                 }
 
                 std::auto_ptr<ClientConfig> clientConfig;
-                boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
+                util::SharedPtr<config::NearCacheConfig<int, int> > nearCacheConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::vector<boost::shared_ptr<HazelcastServer> > servers;
+                std::vector<util::SharedPtr<HazelcastServer> > servers;
             };
 
             const std::string ClientMapNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";

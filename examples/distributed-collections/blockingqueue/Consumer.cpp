@@ -25,7 +25,7 @@ int main() {
     hazelcast::client::IQueue<int> queue = hz.getQueue<int>("queue");
 
     while (true) {
-        boost::shared_ptr<int> item = queue.take();
+        hazelcast::util::SharedPtr<int> item = queue.take();
         if (item.get()) {
             std::cout << "Consumed: " << *item << std::endl;
 

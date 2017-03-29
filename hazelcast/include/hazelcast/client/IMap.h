@@ -98,7 +98,7 @@ namespace hazelcast {
             * then return NULL in shared_ptr.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            boost::shared_ptr<V> get(const K &key) {
+            hazelcast::util::SharedPtr<V> get(const K &key) {
                 return mapImpl->get(key);
             }
 
@@ -110,7 +110,7 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> put(const K &key, const V &value) {
+            hazelcast::util::SharedPtr<V> put(const K &key, const V &value) {
                 return mapImpl->put(key, value);
             }
 
@@ -125,7 +125,7 @@ namespace hazelcast {
             * @return the previous value in shared_ptr, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+            hazelcast::util::SharedPtr<V> put(const K &key, const V &value, long ttlInMillis) {
                 return mapImpl->put(key, value, ttlInMillis);
             }
 
@@ -136,7 +136,7 @@ namespace hazelcast {
             * then returns NULL in shared_ptr.
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             */
-            boost::shared_ptr<V> remove(const K &key) {
+            hazelcast::util::SharedPtr<V> remove(const K &key) {
                 return mapImpl->remove(key);
             }
 
@@ -220,7 +220,7 @@ namespace hazelcast {
             * @return the previous value in shared_ptr, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
+            hazelcast::util::SharedPtr<V> putIfAbsent(const K &key, const V &value) {
                 return mapImpl->putIfAbsent(key, value);
             }
 
@@ -235,7 +235,7 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+            hazelcast::util::SharedPtr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
                 return mapImpl->putIfAbsent(key, value, ttlInMillis);
             }
 
@@ -257,7 +257,7 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> replace(const K &key, const V &value) {
+            hazelcast::util::SharedPtr<V> replace(const K &key, const V &value) {
                 return mapImpl->replace(key, value);
             }
 
@@ -734,7 +734,7 @@ namespace hazelcast {
             * @return result of entry process.
             */
             template<typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+            hazelcast::util::SharedPtr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -751,7 +751,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> >
+            std::map<K, hazelcast::util::SharedPtr<ResultType> >
             executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKeys<ResultType, EntryProcessor>(keys, entryProcessor);
             }
@@ -766,7 +766,7 @@ namespace hazelcast {
              * @return Future from which the result of the operation can be retrieved.
              */
             template<typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+            hazelcast::util::SharedPtr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
                 return mapImpl->template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -784,7 +784,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+            std::map<K, hazelcast::util::SharedPtr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor);
             }
 
@@ -806,7 +806,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
+            std::map<K, hazelcast::util::SharedPtr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
                                                                          const serialization::IdentifiedDataSerializable &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
@@ -826,7 +826,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> >
+            std::map<K, hazelcast::util::SharedPtr<ResultType> >
             executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
@@ -922,11 +922,11 @@ namespace hazelcast {
                 return mapImpl->getLocalMapStats();
             }
         private:
-            IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) {
-                mapImpl = boost::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
+            IMap(hazelcast::util::SharedPtr<spi::ClientProxy> clientProxy) {
+                mapImpl = clientProxy.castShare<map::ClientMapProxy<K, V> >();
             }
 
-            boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
+            hazelcast::util::SharedPtr<typename map::ClientMapProxy<K, V> > mapImpl;
         };
 
         template <typename K, typename V>

@@ -46,7 +46,7 @@ namespace hazelcast {
             transaction.rollback();
         }
 
-        boost::shared_ptr<connection::Connection> TransactionContext::connect() {
+        hazelcast::util::SharedPtr<connection::Connection> TransactionContext::connect() {
             return clientContext.getConnectionManager().getRandomConnection(CONNECTION_TRY_COUNT);
         }
 

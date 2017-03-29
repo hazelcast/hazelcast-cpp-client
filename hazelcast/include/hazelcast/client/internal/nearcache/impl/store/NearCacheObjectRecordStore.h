@@ -58,22 +58,21 @@ namespace hazelcast {
 
                             //@Override
                             std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &valueData) {
-                                boost::shared_ptr<serialization::pimpl::Data> data = boost::const_pointer_cast<serialization::pimpl::Data>(
-                                        valueData);
-                                const boost::shared_ptr<V> value = ANCRS::toValue(data);
+                                    const hazelcast::util::SharedPtr<serialization::pimpl::Data> &valueData) {
+                                hazelcast::util::SharedPtr<serialization::pimpl::Data> data =valueData;
+                                const hazelcast::util::SharedPtr<V> value = ANCRS::toValue(data);
                                 return valueToRecordInternal(value);
                             }
 
                             //@Override
                             std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const boost::shared_ptr<V> &value) {
+                                    const hazelcast::util::SharedPtr<V> &value) {
                                 return valueToRecordInternal(value);
                             }
 
                             //@Override
-                            boost::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
-                                const boost::shared_ptr<V> value = record->getValue();
+                            hazelcast::util::SharedPtr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
+                                const hazelcast::util::SharedPtr<V> value = record->getValue();
                                 if (value.get() == NULL) {
                                     return NearCache<K, V>::NULL_OBJECT;
                                 }
@@ -81,14 +80,14 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            void putToRecord(boost::shared_ptr<record::NearCacheObjectRecord<V> > &record,
-                                             const boost::shared_ptr<V> &value) {
+                            void putToRecord(hazelcast::util::SharedPtr<record::NearCacheObjectRecord<V> > &record,
+                                             const hazelcast::util::SharedPtr<V> &value) {
                                 record->setValue(value);
                             }
 
                         private:
                             std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
-                                    const boost::shared_ptr<V> &value) {
+                                    const hazelcast::util::SharedPtr<V> &value) {
                                 int64_t creationTime = util::currentTimeMillis();
                                 if (ANCRS::timeToLiveMillis > 0) {
                                     return std::auto_ptr<record::NearCacheObjectRecord<V> >(

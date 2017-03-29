@@ -93,8 +93,8 @@ namespace hazelcast {
                 f = reader.readFloat("f");
                 d = reader.readDouble("d");
                 str = *reader.readUTF("str");
-                boost::shared_ptr<TestInnerPortable> ptr = reader.readPortable<TestInnerPortable>("p");
-                if (ptr != NULL)
+                hazelcast::util::SharedPtr<TestInnerPortable> ptr = reader.readPortable<TestInnerPortable>("p");
+                if (ptr.get() != NULL)
                     p = *ptr;
             }
 

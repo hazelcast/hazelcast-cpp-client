@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,6 +39,9 @@ namespace hazelcast {
                 template <typename K, typename V>
                 class EvictableEntryView {
                 public:
+                    virtual ~EvictableEntryView(){
+
+                    }
                     /**
                      * Gets the creation time of this {@link EvictableEntryView} in milliseconds.
                      *
@@ -65,9 +68,9 @@ namespace hazelcast {
                      *
                      * @return the key of the entry
                      */
-                    virtual boost::shared_ptr<K> getKey() const {
+                    virtual hazelcast::util::SharedPtr<K> getKey() const {
                         assert(0);
-                        return boost::shared_ptr<K>();
+                        return hazelcast::util::SharedPtr<K>();
                     }
 
                     /**
@@ -75,9 +78,9 @@ namespace hazelcast {
                      *
                      * @return the value of the entry
                      */
-                    virtual boost::shared_ptr<V> getValue() const {
+                    virtual hazelcast::util::SharedPtr<V> getValue() const {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return hazelcast::util::SharedPtr<V>();
                     }
                 };
             }

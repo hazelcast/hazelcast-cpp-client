@@ -136,20 +136,20 @@ namespace hazelcast {
                 ownerConnectionFuture.markAsClosed();
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::createOwnerConnection(const Address &address) {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::createOwnerConnection(const Address &address) {
                 return ownerConnectionFuture.createNew(address);
             }
 
-            boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount) {
+            hazelcast::util::SharedPtr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount) {
                 Address address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
                 return getOrConnect(address, tryCount);
             }
 
-            boost::shared_ptr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount,
+            hazelcast::util::SharedPtr<connection::Connection> ConnectionManager::getRandomConnection(int tryCount,
                                                                                              const std::string &lastTriedAddress,
                                                                                              int retryWaitTime) {
                 if (!smartRouting) {
-                    boost::shared_ptr<Connection> conn = getOwnerConnection();
+                    hazelcast::util::SharedPtr<Connection> conn = getOwnerConnection();
                     // Check if the retrieved connection is the same as the last one, if so we need to close it so that
                     // a connection to a new member is established.
                     if ((Connection *)NULL != conn.get() &&
@@ -175,13 +175,13 @@ namespace hazelcast {
                 return getOrConnect(address, tryCount);
             }
 
-            boost::shared_ptr<connection::Connection> ConnectionManager::getOrConnect(const Address &target,
+            hazelcast::util::SharedPtr<connection::Connection> ConnectionManager::getOrConnect(const Address &target,
                                                                                       int tryCount) {
                 checkLive();
 
                 try {
                     if (clientContext.getClusterService().isMemberExists(target)) {
-                        boost::shared_ptr<Connection> connection = getOrConnect(target);
+                        hazelcast::util::SharedPtr<Connection> connection = getOrConnect(target);
                         // Only return the live connections
                         if (connection->live) {
                             return connection;
@@ -198,7 +198,7 @@ namespace hazelcast {
                 int count = 0;
                 while (true) {
                     try {
-                        boost::shared_ptr<Connection> conn = getRandomConnection();
+                        hazelcast::util::SharedPtr<Connection> conn = getRandomConnection();
                         if (conn.get() != (Connection *) NULL && conn->live) {
                             return conn;
                         }
@@ -213,19 +213,19 @@ namespace hazelcast {
                 }
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(const Address &address) {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getConnectionIfAvailable(const Address &address) {
                 if (!live)
-                    return boost::shared_ptr<Connection>();
+                    return hazelcast::util::SharedPtr<Connection>();
                 return connections.get(address);
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getConnectionIfAvailable(int socketDescriptor) {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getConnectionIfAvailable(int socketDescriptor) {
                 if (!live)
-                    return boost::shared_ptr<Connection>();
+                    return hazelcast::util::SharedPtr<Connection>();
                 return socketConnections.get(socketDescriptor);
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getOrConnect(const Address &address) {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getOrConnect(const Address &address) {
                 checkLive();
                 if (smartRouting) {
                     return getOrConnectResolved(address);
@@ -234,24 +234,24 @@ namespace hazelcast {
                 return getOwnerConnection();
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getOwnerConnection() {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getOwnerConnection() {
                 checkLive();
 
-                boost::shared_ptr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
+                hazelcast::util::SharedPtr<Connection> ownerConnPtr = ownerConnectionFuture.getOrWaitForCreation();
                 return getOrConnectResolved(ownerConnPtr->getRemoteEndpoint());
             }
 
 
-            boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
                 // ensureOwnerConnectionAvailable
                 ownerConnectionFuture.getOrWaitForCreation();
 
-                boost::shared_ptr<Connection> conn = connections.get(address);
+                hazelcast::util::SharedPtr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
                     util::LockGuard l(lockMutex);
                     conn = connections.get(address);
                     if (conn.get() == NULL) {
-                        boost::shared_ptr<Connection> newConnection(connectTo(address, false));
+                        hazelcast::util::SharedPtr<Connection> newConnection(connectTo(address, false).release());
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         socketConnections.put(newConnection->getSocket().getSocketId(), newConnection);
@@ -261,7 +261,7 @@ namespace hazelcast {
                 return conn;
             }
 
-            boost::shared_ptr<Connection> ConnectionManager::getRandomConnection() {
+            hazelcast::util::SharedPtr<Connection> ConnectionManager::getRandomConnection() {
                 checkLive();
                 Address address = clientContext.getClientConfig().getLoadBalancer()->next().getAddress();
                 return getOrConnect(address);
@@ -274,7 +274,7 @@ namespace hazelcast {
                 byte serializationVersion = clientContext.getSerializationService().getVersion();
 
                 // get principal as a shared_ptr first since it may be changed concurrently
-                boost::shared_ptr<protocol::Principal> latestPrincipal = principal;
+                hazelcast::util::SharedPtr<protocol::Principal> latestPrincipal = principal;
                 if (NULL == credentials) {
                     GroupConfig &groupConfig = clientContext.getClientConfig().getGroupConfig();
                     const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
@@ -410,7 +410,7 @@ namespace hazelcast {
             }
 
 
-            std::vector<boost::shared_ptr<Connection> > ConnectionManager::getConnections() {
+            std::vector<hazelcast::util::SharedPtr<Connection> > ConnectionManager::getConnections() {
                 return connections.values();
             }
 
@@ -425,7 +425,7 @@ namespace hazelcast {
             }
 
             void ConnectionManager::removeEndpoint(const Address &address) {
-                boost::shared_ptr<Connection> connection = getConnectionIfAvailable(address);
+                hazelcast::util::SharedPtr<Connection> connection = getConnectionIfAvailable(address);
                 if (connection.get() != NULL) {
                     connection->close();
                 }
@@ -447,7 +447,7 @@ namespace hazelcast {
                         << connection->getConnectionId() << " , socket id:" << connection->getSocket().getSocketId();
 
                 if (connection->isOwnerConnection()) {
-                    principal = std::auto_ptr<protocol::Principal>(new protocol::Principal(uuid, ownerUuid));
+                    principal = util::SharedPtr<protocol::Principal>(new protocol::Principal(uuid, ownerUuid));
                     message << " as owner connection";
                 } else {
                     connection->getSocket().setBlocking(false);

@@ -129,7 +129,7 @@ namespace hazelcast {
 
                 util::Thread t2(testOfferPollThread2, q);
 
-                boost::shared_ptr<std::string> item = q->poll(30 * 1000);
+                hazelcast::util::SharedPtr<std::string> item = q->poll(30 * 1000);
                 ASSERT_NE(item.get(), (std::string *) NULL);
                 ASSERT_EQ("item1", *item);
                 t2.join();
@@ -140,7 +140,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer("peek 2"));
                 ASSERT_TRUE(q->offer("peek 3"));
 
-                boost::shared_ptr<std::string> item = q->peek();
+                hazelcast::util::SharedPtr<std::string> item = q->peek();
                 ASSERT_NE((std::string *)NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
             }
@@ -150,7 +150,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer("peek 2"));
                 ASSERT_TRUE(q->offer("peek 3"));
 
-                boost::shared_ptr<std::string> item = q->take();
+                hazelcast::util::SharedPtr<std::string> item = q->take();
                 ASSERT_NE((std::string *)NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
 

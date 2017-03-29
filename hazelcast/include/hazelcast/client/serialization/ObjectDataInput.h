@@ -34,7 +34,7 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
 
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 #include <vector>
 #include <string>
 #include <stdint.h>
@@ -237,7 +237,7 @@ namespace hazelcast {
 
                 template <typename T>
                 void readInternal(int typeId, T * object) {
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
+                    hazelcast::util::SharedPtr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
                     if (NULL == serializer.get()) {
                         const std::string message = "No serializer found for serializerId :"+
                                                      util::IOUtil::to_string(typeId) + ", typename :" +

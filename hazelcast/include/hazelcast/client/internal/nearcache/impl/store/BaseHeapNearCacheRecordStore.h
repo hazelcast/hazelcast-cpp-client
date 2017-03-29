@@ -47,12 +47,12 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            const boost::shared_ptr<R> getRecord(const boost::shared_ptr<KS> &key) {
+                            const hazelcast::util::SharedPtr<R> getRecord(const hazelcast::util::SharedPtr<KS> &key) {
                                 return ANCRS::records->get(key);
                             }
 
                             //@Override
-                            void onEvict(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onEvict(const hazelcast::util::SharedPtr<KS> &key, const hazelcast::util::SharedPtr<R> &record,
                                          bool wasExpired) {
                                 ANCRS::onEvict(key,
                                                record,
@@ -63,12 +63,12 @@ namespace hazelcast {
 
                             //@Override
                             void doExpiration() {
-                                std::vector<std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > > entries = ANCRS::records->entrySet();
-                                for (typename std::vector<std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > >::const_iterator it = entries.begin();
+                                std::vector<std::pair<hazelcast::util::SharedPtr<KS>, hazelcast::util::SharedPtr<R> > > entries = ANCRS::records->entrySet();
+                                for (typename std::vector<std::pair<hazelcast::util::SharedPtr<KS>, hazelcast::util::SharedPtr<R> > >::const_iterator it = entries.begin();
                                      it != entries.end(); ++it) {
-                                    const std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > &entry = (*it);
-                                    const boost::shared_ptr<KS> &key = entry.first;
-                                    const boost::shared_ptr<R> &value = entry.second;
+                                    const std::pair<hazelcast::util::SharedPtr<KS>, hazelcast::util::SharedPtr<R> > &entry = (*it);
+                                    const hazelcast::util::SharedPtr<KS> &key = entry.first;
+                                    const hazelcast::util::SharedPtr<R> &value = entry.second;
                                     if (ANCRS::isRecordExpired(value)) {
                                         ANCRS::remove(key);
                                         ANCRS::onExpire(key, value);
@@ -78,7 +78,7 @@ namespace hazelcast {
                         protected:
                             //@Override
                             std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig,
+                                    const hazelcast::util::SharedPtr<config::EvictionConfig<K, V> > &evictionConfig,
                                     const config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 typename config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy = evictionConfig->getMaximumSizePolicy();
                                 if (maxSizePolicy == config::EvictionConfig<K, V>::ENTRY_COUNT) {
@@ -103,17 +103,17 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            boost::shared_ptr<R> putRecord(const boost::shared_ptr<KS> &key,
-                                                           const boost::shared_ptr<R> &record) {
-                                boost::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
+                            hazelcast::util::SharedPtr<R> putRecord(const hazelcast::util::SharedPtr<KS> &key,
+                                                           const hazelcast::util::SharedPtr<R> &record) {
+                                hazelcast::util::SharedPtr<R> oldRecord = ANCRS::records->put(key, record);
                                 ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                                 return oldRecord;
                             }
 
                             //@OverrideR
-                            boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
-                                boost::shared_ptr<R> removedRecord = ANCRS::records->remove(key);
+                            hazelcast::util::SharedPtr<R> removeRecord(const hazelcast::util::SharedPtr<KS> &key) {
+                                hazelcast::util::SharedPtr<R> removedRecord = ANCRS::records->remove(key);
                                 if (removedRecord.get() != NULL) {
                                     ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
                                             ANCRS::getTotalStorageMemoryCost(key, removedRecord));
@@ -122,7 +122,7 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            bool containsRecordKey(const boost::shared_ptr<KS> &key) const {
+                            bool containsRecordKey(const hazelcast::util::SharedPtr<KS> &key) const {
                                 return ANCRS::records->containsKey(key);
                             }
 

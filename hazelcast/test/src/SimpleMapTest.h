@@ -117,7 +117,7 @@ public:
                     map.get(key);
                     ++getCount;
                 } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                    boost::shared_ptr<std::vector<char> > vector = map.put(key, value);
+                    hazelcast::util::SharedPtr<std::vector<char> > vector = map.put(key, value);
                     ++putCount;
                 } else {
                     map.remove(key);

@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_RECORD_ABSTRACTNEARCACHERECORD_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Atomic.h"
@@ -45,19 +45,19 @@ namespace hazelcast {
                         class AbstractNearCacheRecord : public NearCacheRecord<V> {
                         public:
                             typedef V RECORD_TYPE;
-                            AbstractNearCacheRecord(const boost::shared_ptr<V> &v, int64_t createTime,
+                            AbstractNearCacheRecord(const hazelcast::util::SharedPtr<V> &v, int64_t createTime,
                                                     int64_t expiryTime)
                                     : value(v), creationTime(createTime), sequence(0), expirationTime(expiryTime),
                                       accessTime(NearCacheRecord<V>::TIME_NOT_SET), accessHit(0) {
                             }
 
                             //@Override
-                            boost::shared_ptr<V> getValue() const {
+                            hazelcast::util::SharedPtr<V> getValue() const {
                                 return value;
                             }
 
                             //@Override
-                            void setValue(const boost::shared_ptr<V> &value) {
+                            void setValue(const hazelcast::util::SharedPtr<V> &value) {
                                 AbstractNearCacheRecord::value = value;
                             }
 
@@ -72,12 +72,12 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            const boost::shared_ptr<util::UUID> &getUuid() const {
+                            const hazelcast::util::SharedPtr<util::UUID> &getUuid() const {
                                 return uuid;
                             }
 
                             //@Override
-                            void setUuid(const boost::shared_ptr<util::UUID> &uuid) {
+                            void setUuid(const hazelcast::util::SharedPtr<util::UUID> &uuid) {
                                 AbstractNearCacheRecord::uuid = uuid;
                             }
 
@@ -151,7 +151,7 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            bool hasSameUuid(const boost::shared_ptr<util::UUID> &thatUuid) const {
+                            bool hasSameUuid(const hazelcast::util::SharedPtr<util::UUID> &thatUuid) const {
                                 if (uuid.get() == NULL || thatUuid.get() == NULL) {
                                     return false;
                                 }
@@ -159,10 +159,10 @@ namespace hazelcast {
                             }
 
                         protected:
-                            boost::shared_ptr<V> value;
+                            hazelcast::util::SharedPtr<V> value;
                             int64_t creationTime;
                             int64_t sequence;
-                            boost::shared_ptr<util::UUID> uuid;
+                            hazelcast::util::SharedPtr<util::UUID> uuid;
 
                             hazelcast::util::Atomic<int64_t> expirationTime;
                             hazelcast::util::Atomic<int64_t> accessTime;

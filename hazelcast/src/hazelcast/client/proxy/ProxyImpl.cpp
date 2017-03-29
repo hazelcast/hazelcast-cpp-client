@@ -84,7 +84,7 @@ namespace hazelcast {
             }
 
             std::auto_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                                     boost::shared_ptr<connection::Connection> conn) {
+                                                                     hazelcast::util::SharedPtr<connection::Connection> conn) {
                 connection::CallFuture future = context->getInvocationService().invokeOnConnection(request, conn);
                 return future.get();
             }

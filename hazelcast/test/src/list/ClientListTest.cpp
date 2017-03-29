@@ -91,7 +91,7 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add("item2"));
                 list->add(0, "item3");
                 ASSERT_EQ(3, list->size());
-                boost::shared_ptr<std::string> temp = list->set(2, "item4");
+                hazelcast::util::SharedPtr<std::string> temp = list->set(2, "item4");
                 ASSERT_EQ("item2", *temp);
 
                 ASSERT_EQ(3, list->size());

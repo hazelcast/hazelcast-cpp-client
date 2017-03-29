@@ -19,10 +19,6 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Thread.h"
 
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/microsec_time_clock.hpp>
-#include <boost/date_time.hpp>
-
 #include <string.h>
 #include <algorithm>
 #include <stdio.h>
@@ -34,8 +30,8 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
-
 #endif
+
 
 namespace hazelcast {
     namespace util {
@@ -100,12 +96,17 @@ namespace hazelcast {
             }
         }
 
-        int64_t currentTimeMillis() {
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
-            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-            boost::posix_time::time_duration diff = now - epoch;
-            return diff.total_milliseconds();
+        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+        int64_t currentTimeMillis(){
+            return timeGetTime();
         }
+        #else
+        int64_t currentTimeMillis() {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+            return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+        }
+        #endif
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
             int numChars = 0;

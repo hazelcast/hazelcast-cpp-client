@@ -101,7 +101,6 @@ namespace hazelcast {
 
                     std::vector<hazelcast::util::Thread *> threads((size_t)numThreads);
                     for (int i = 0; i < numThreads; ++i) {
-                        // I would prefer using scoped_ptr or boost:::scoped_array for array if there was one available
                         threads[i] = new hazelcast::util::Thread(ConcurentQueueTest::ConcurrentQueueTask, &q, &startLatch, &startRemoveLatch, &removalValue);
                     }
 

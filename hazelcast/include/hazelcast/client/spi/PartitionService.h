@@ -27,7 +27,7 @@
 #include "hazelcast/util/Mutex.h"
 
 #include <map>
-#include <boost/shared_ptr.hpp>
+#include "hazelcast/util/SharedPtr.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -66,7 +66,7 @@ namespace hazelcast {
 
                 void shutdown();
 
-                boost::shared_ptr<Address> getPartitionOwner(int partitionId);
+                hazelcast::util::SharedPtr<Address> getPartitionOwner(int partitionId);
 
                 int getPartitionId(const serialization::pimpl::Data &key);
 
@@ -90,7 +90,7 @@ namespace hazelcast {
 
                 util::AtomicInt partitionCount;
 
-                std::auto_ptr<std::map<int, boost::shared_ptr<Address> > > partitions;
+                std::auto_ptr<std::map<int, hazelcast::util::SharedPtr<Address> > > partitions;
 
                 util::Mutex lock;
 

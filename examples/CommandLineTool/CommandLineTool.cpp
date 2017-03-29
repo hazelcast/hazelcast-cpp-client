@@ -54,7 +54,7 @@ struct printer mout;
 
 struct printerSharedPtr {
     template<typename T>
-    printer &operator <<(const boost::shared_ptr<T> &obj) {
+    printer &operator <<(const hazelcast::util::SharedPtr<T> &obj) {
         if (silent) {
             return mout;
         }
@@ -1209,7 +1209,7 @@ public:
         }
         int c = 1;
         for (int i = 0; i < count; i++) {
-            boost::shared_ptr<std::string> obj = getQueue().poll();
+            hazelcast::util::SharedPtr<std::string> obj = getQueue().poll();
             if (obj == NULL) {
                 break;
             }

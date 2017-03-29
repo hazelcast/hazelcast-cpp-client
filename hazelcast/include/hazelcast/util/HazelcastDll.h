@@ -16,10 +16,6 @@
 #ifndef HAZELCAST_HAZELCASTDLL
 #define HAZELCAST_HAZELCASTDLL
 
-#if defined(__SIZEOF_INT128__)
-#  define BOOST_HAS_INT128
-#endif
-
 //# pragma warning(push)
 //#pragma warning(disable: 4251) 	
 //# pragma warning(pop)
