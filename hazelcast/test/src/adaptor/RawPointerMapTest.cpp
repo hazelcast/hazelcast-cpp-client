@@ -380,6 +380,53 @@ namespace hazelcast {
                     int multiplier;
                 };
 
+
+                class WaitMultiplierProcessor : public serialization::IdentifiedDataSerializable {
+                public:
+                    WaitMultiplierProcessor(int waitTime, int multiplier)
+                            : waiTimeInMillis(waitTime), multiplier(multiplier) { }
+
+                    /**
+                     * @return factory id
+                     */
+                    int getFactoryId() const {
+                        return 666;
+                    }
+
+                    /**
+                     * @return class id
+                     */
+                    int getClassId() const {
+                        return 8;
+                    }
+
+                    /**
+                     * Defines how this class will be written.
+                     * @param writer ObjectDataOutput
+                     */
+                    void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeInt(waiTimeInMillis);
+                        writer.writeInt(multiplier);
+                    }
+
+                    /**
+                     *Defines how this class will be read.
+                     * @param reader ObjectDataInput
+                     */
+                    void readData(serialization::ObjectDataInput &reader) {
+                        waiTimeInMillis = reader.readInt();
+                        multiplier = reader.readInt();
+                    }
+
+                    int getMultiplier() const {
+                        return multiplier;
+                    }
+
+                private:
+                    int waiTimeInMillis;
+                    int multiplier;
+                };
+
                 class EntryMultiplierWithNullableResult : public EntryMultiplier {
                 public:
                     EntryMultiplierWithNullableResult(int multiplier) : EntryMultiplier(multiplier) { }
@@ -2847,6 +2894,25 @@ namespace hazelcast {
                         ASSERT_TRUE(*key == 3 || *key == 4 || *key == 5);
                         ASSERT_EQ((*key) * processor.getMultiplier(), (*value));
                     }
+                }
+
+                TEST_F(RawPointerMapTest, testSubmitToKey) {
+                    Employee empl1("ahmet", 35);
+                    Employee empl2("mehmet", 21);
+
+                    employees->put(3, empl1);
+                    employees->put(4, empl2);
+
+                    WaitMultiplierProcessor processor(1000, 4);
+
+                    boost::shared_ptr<Future<int> > future =
+                            employees->submitToKey<int, WaitMultiplierProcessor>(4, processor);
+
+                    ASSERT_FALSE(future->isDone());
+                    boost::shared_ptr<int> result = future->get(2 * 1000);
+                    ASSERT_TRUE(future->isDone());
+                    ASSERT_NE((int *) NULL, result.get());
+                    ASSERT_EQ(4 * processor.getMultiplier(), *result);
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithTruePredicate) {

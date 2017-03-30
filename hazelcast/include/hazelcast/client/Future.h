@@ -50,6 +50,8 @@ namespace hazelcast {
              * @throws exception::TimeoutException if the wait timed out
              */
             virtual boost::shared_ptr<V> get(int64_t timeoutInMilliseconds) = 0;
+
+            virtual bool isDone() const = 0;
         };
     }
 }

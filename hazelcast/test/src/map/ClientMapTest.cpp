@@ -423,6 +423,52 @@ namespace hazelcast {
                     int multiplier;
                 };
 
+                class WaitMultiplierProcessor : public serialization::IdentifiedDataSerializable {
+                public:
+                    WaitMultiplierProcessor(int waitTime, int multiplier)
+                            : waiTimeInMillis(waitTime), multiplier(multiplier) { }
+
+                    /**
+                     * @return factory id
+                     */
+                    int getFactoryId() const {
+                        return 666;
+                    }
+
+                    /**
+                     * @return class id
+                     */
+                    int getClassId() const {
+                        return 8;
+                    }
+
+                    /**
+                     * Defines how this class will be written.
+                     * @param writer ObjectDataOutput
+                     */
+                    void writeData(serialization::ObjectDataOutput &writer) const {
+                        writer.writeInt(waiTimeInMillis);
+                        writer.writeInt(multiplier);
+                    }
+
+                    /**
+                     *Defines how this class will be read.
+                     * @param reader ObjectDataInput
+                     */
+                    void readData(serialization::ObjectDataInput &reader) {
+                        waiTimeInMillis = reader.readInt();
+                        multiplier = reader.readInt();
+                    }
+
+                    int getMultiplier() const {
+                        return multiplier;
+                    }
+
+                private:
+                    int waiTimeInMillis;
+                    int multiplier;
+                };
+
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
                 static CONFIGTYPE *clientConfig;
@@ -2626,13 +2672,15 @@ namespace hazelcast {
                 ClientMapTest<TypeParam>::employees->put(3, empl1);
                 ClientMapTest<TypeParam>::employees->put(4, empl2);
 
-                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
+                typename ClientMapTest<TypeParam>::WaitMultiplierProcessor processor(1000, 4);
 
                 boost::shared_ptr<Future<int> > future =
-                        ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
+                        ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::WaitMultiplierProcessor>(
                         4, processor);
 
+                ASSERT_FALSE(future->isDone());
                 boost::shared_ptr<int> result = future->get(2 * 1000);
+                ASSERT_TRUE(future->isDone());
                 ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }

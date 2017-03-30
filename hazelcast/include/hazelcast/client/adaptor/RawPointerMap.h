@@ -800,6 +800,20 @@ namespace hazelcast {
                 }
 
                 /**
+                 * Applies the user defined EntryProcessor to the entry mapped by the key.
+                 * Returns immediately with a ICompletableFuture representing that task.
+                 * <p/>
+                 *
+                 * @param key            key to be processed
+                 * @param entryProcessor processor to process the key
+                 * @return Future from which the result of the operation can be retrieved.
+                 */
+                template<typename ResultType, typename EntryProcessor>
+                boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                    return map.template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
+                }
+
+                /**
                 * Applies the user defined EntryProcessor to the all entries in the map.
                 * Returns the results mapped by each key in the map.
                 *
