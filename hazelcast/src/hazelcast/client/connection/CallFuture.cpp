@@ -96,7 +96,7 @@ namespace hazelcast {
                 return *connection;
             }
 
-            const bool CallFuture::isDone() const {
+            bool CallFuture::isDone() const {
                 return promise->getFuture().isDone();
             }
         }
