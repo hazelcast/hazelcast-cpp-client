@@ -56,6 +56,8 @@ namespace hazelcast {
                 int64_t getCallId() const;
 
                 const Connection &getConnection() const;
+
+                bool isDone() const;
             private:
                 boost::shared_ptr<CallPromise> promise;
                 boost::shared_ptr<Connection> connection;

@@ -55,6 +55,10 @@ namespace hazelcast {
                         return boost::shared_ptr<V>(serializationService.toObject<V>(response.get()));
 
                     }
+
+                    virtual bool isDone() const {
+                        return callFuture.isDone();
+                    }
                 private:
                     connection::CallFuture callFuture;
                     serialization::pimpl::SerializationService &serializationService;

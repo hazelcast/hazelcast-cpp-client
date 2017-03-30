@@ -37,11 +37,9 @@ import com.hazelcast.nio.serialization.PortableWriter;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.nio.ssl.TestKeyStoreUtil;
 import com.hazelcast.spi.properties.GroupProperty;
-import org.omg.PortableInterceptor.Interceptor;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -289,6 +287,54 @@ class KeyMultiplier implements IdentifiedDataSerializable, EntryProcessor<Intege
 
     @Override
     public Object process(Map.Entry<Integer, Employee> entry) {
+        if (null == entry.getValue()) {
+            return -1;
+        }
+        return multiplier * entry.getKey();
+    }
+
+    @Override
+    public EntryBackupProcessor<Integer, Employee> getBackupProcessor() {
+        return null;
+    }
+}
+
+class WaitMultiplierProcessor
+        implements IdentifiedDataSerializable, EntryProcessor<Integer, Employee> {
+    private int waiTimeInMillis;
+    private int multiplier;
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 8;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out)
+            throws IOException {
+        out.writeInt(waiTimeInMillis);
+        out.writeInt(multiplier);
+    }
+
+    @Override
+    public void readData(ObjectDataInput in)
+            throws IOException {
+        waiTimeInMillis = in.readInt();
+        multiplier = in.readInt();
+    }
+
+    @Override
+    public Object process(Map.Entry<Integer, Employee> entry) {
+        try {
+            Thread.sleep(waiTimeInMillis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (null == entry.getValue()) {
             return -1;
         }
@@ -601,6 +647,8 @@ public class CppClientListener {
                         return new MapGetInterceptor();
                     case 7:
                         return new KeyMultiplierWithNullableResult();
+                    case 8:
+                        return new WaitMultiplierProcessor();
                     default:
                         return null;
                 }
