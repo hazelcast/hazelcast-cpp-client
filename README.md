@@ -61,13 +61,18 @@ We use --recursive flag for our dependency on googletest framework.
 First create a build directory from the root of the project. In the build directory, run the following commands depending on your environment.
 
 For compiling with SSL support: 
-- You need have the openssl installed in your development environment. Furthermore, the openssl include directory should be added to include directories and the openssl library directory should be listed in the link directories. Furthermore you need to set the openssl libraries to link.
+
+- You need to have the openssl installed in your development environment: (i) Add openssl include directory to include directories, (ii) Add openssl library directory to the link directories list (This is the directory named tls. e.g. cpp/Linux_64/hazelcast/lib/tls), (iii) Set the openssl libraries to link.
  
-- You can provide your openssl installation directory to cmake using the following flags: -DHZ_OPENSSL_INCLUDE_DIR="Path to open installation include directory" and -DHZ_OPENSSL_LIB_DIR="Path to openssl lib directory"
+- You can provide your openssl installation directory to cmake using the following flags: 
+    - DHZ_OPENSSL_INCLUDE_DIR="Path to open installation include directory" 
+    - DHZ_OPENSSL_LIB_DIR="Path to openssl lib directory"
 
 - Use -DHZ_COMPILE_WITH_SSL=ON
 
-- Check top level CMakeLists.txt file to see which libraries we link for openssl in which environment. For Mac OS and Linux, we link with "ssl" and "crypto", for windows and example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
+- Check the top level CMakeLists.txt file to see which libraries we link for openssl in which environment. 
+    - For Mac OS and Linux, we link with "ssl" and "crypto" 
+    - For Windows there is an example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
 
 ## Mac
 
@@ -185,17 +190,19 @@ The C++ Client is tested on Linux 32/64-bit, Mac 64-bit and Windows 32/64-bit ma
 
 For compilation, you need to include the `hazelcast/include` and `external/include` folders in your distribution. You also need to link your application to the appropriate static or shared library. 
 
+If you want to use tls feature, use the lib directory similar to: cpp/Linux_64/hazelcast/lib/tls
+
 ## Mac Client
 
 For Mac, there is one distribution: 64 bit.
 
 Here is an example script to build with static library:
 
-`g++ main.cpp -I./external/include -I./hazelcast/include ./hazelcast/lib/libHazelcastClientStatic_64.a`
+`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
 Here is an example script to build with shared library:
 
-`g++ main.cpp -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64`
+`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClientShared_64`
 
 ## Linux Client
 
@@ -203,16 +210,16 @@ For Linux, there are two distributions: 32 bit and 64 bit.
 
 Here is an example script to build with static library:
 
-`g++ main.cpp -pthread -I./external/include -I./hazelcast/include
-      ./hazelcast/lib/libHazelcastClientStatic_64.a`
+`g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include
+      cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
 Here is an example script to build with shared library:
 
-`g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -I./external/include -I./hazelcast/include -L./hazelcast/lib -lHazelcastClientShared_64`
+`g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClientShared_64`
 
 Please add the **__STDC_LIMIT_MACROS** and **__STDC_CONSTANT_MACROS** compilation flags for environments for which the compilation fails with error "INT32_MAX" could not be determined. For example:
 
-`g++ main.cpp -pthread -I./external/include -I./hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ./hazelcast/lib/libHazelcastClientStatic_64.a`
+`g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
 
 ## Windows Client
@@ -423,17 +430,15 @@ clientConfig..addNearCacheConfig(nearCacheConfig);
 
 As for all configuration options, this near cache config should be performed before the client instance is obtained and the client config should not be altered after the client is instantiated.
 
-The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction .
+The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. More information on the options can be found at http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#creating-near-cache-for-map and http://docs.hazelcast.org/docs/3.7/manual/html-single/index.html#map-eviction.
 
 Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
 # TLS Feature
-Note: This feature only works when used with Enterprise Hazelcast server.
 
-You can encrypt all the communication between the client and the cluster using this feature. 
-This feature requires that you have installed openssl development library in your development environment.
+Note: This is a Hazelcast IMDG Enterprise feature.
 
-You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The ssl config also lets you to set the cipher suite to be used.
+You can encrypt all the communication between the client and the cluster using this feature. It requires the openssl development library installed in your development environment. You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The SSL config also lets you set the cipher suite to be used.
 
 Example usage:
 ```
