@@ -243,8 +243,9 @@ namespace hazelcast {
 
 
             boost::shared_ptr<Connection> ConnectionManager::getOrConnectResolved(const Address &address) {
+                // TODO: Commented out until issue https://github.com/hazelcast/hazelcast-cpp-client/issues/258 is resolved
                 // ensureOwnerConnectionAvailable
-                ownerConnectionFuture.getOrWaitForCreation();
+                // ownerConnectionFuture.getOrWaitForCreation();
 
                 boost::shared_ptr<Connection> conn = connections.get(address);
                 if (conn.get() == NULL) {
