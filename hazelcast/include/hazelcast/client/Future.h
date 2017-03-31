@@ -140,7 +140,7 @@ namespace hazelcast {
              * Important Note: get moves the result at the first call and hence it should not be called more than one
              * time. The second call will result in undefined behaviour.
              *
-             * The behavior is undefined if valid() is false before the call to this function. Any shared state is
+             * The behaviour is undefined if valid() is false before the call to this function. Any shared state is
              * released. valid() is false after a call to this method.
              *
              * @return The returned value.
@@ -173,7 +173,7 @@ namespace hazelcast {
              * steady clock is used to measure the duration. This function may block for longer than timeout_duration
              * due to scheduling or resource contention delays.
              *
-             * The behavior is undefined if valid()== false before the call to this function.
+             * The behaviour is undefined if valid()== false before the call to this function.
              *
              * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
              */
@@ -188,7 +188,7 @@ namespace hazelcast {
             /**
              * Blocks until the result becomes available. valid() == true after the call.
              *
-             * The behavior is undefined if valid()== false before the call to this function.
+             * The behaviour is undefined if valid()== false before the call to this function.
              */
             void wait() const {
                 wait_for(INT64_MAX);
