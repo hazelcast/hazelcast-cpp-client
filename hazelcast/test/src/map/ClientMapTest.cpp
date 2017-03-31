@@ -2672,15 +2672,15 @@ namespace hazelcast {
                 ClientMapTest<TypeParam>::employees->put(3, empl1);
                 ClientMapTest<TypeParam>::employees->put(4, empl2);
 
-                typename ClientMapTest<TypeParam>::WaitMultiplierProcessor processor(1000, 4);
+                typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
 
-                boost::shared_ptr<Future<int> > future =
-                        ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::WaitMultiplierProcessor>(
+                Future<int> future =
+                        ClientMapTest<TypeParam>::employees->template submitToKey<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
                         4, processor);
 
-                ASSERT_FALSE(future->isDone());
-                boost::shared_ptr<int> result = future->get(2 * 1000);
-                ASSERT_TRUE(future->isDone());
+                future_status status = future.wait_for(2 * 1000);
+                ASSERT_EQ(future_status::ready, status);
+                std::auto_ptr<int> result = future.get();
                 ASSERT_NE((int *) NULL, result.get());
                 ASSERT_EQ(4 * processor.getMultiplier(), *result);
             }

@@ -67,6 +67,16 @@ int main() {
     for (std::map<std::string, boost::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
         std::cout << it->first << " salary: " << *it->second << std::endl;
     }
+    
+    // use submitToKey api
+    hazelcast::client::Future<int> future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>("Mark", processor);
+    // wait for 1 second
+    if (future.wait_for(1000) == hazelcast::client::future_status::ready) {
+        std::auto_ptr<int> result = future.get();
+        std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *result << std::endl;
+    } else {
+        std::cout << "Could not get the result of submitToKey in 1 second for Mark" << std::endl;
+    }
 
     std::cout << "Finished" << std::endl;
 

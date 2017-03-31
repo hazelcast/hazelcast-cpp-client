@@ -766,7 +766,7 @@ namespace hazelcast {
              * @return Future from which the result of the operation can be retrieved.
              */
             template<typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+            Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
                 return mapImpl->template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 

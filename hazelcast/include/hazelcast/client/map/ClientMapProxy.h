@@ -33,7 +33,6 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/internal/concurrent/FutureImpl.h"
 #include "hazelcast/client/Future.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
 
@@ -947,7 +946,7 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                boost::shared_ptr<Future<ResultType> > submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -1211,7 +1210,7 @@ namespace hazelcast {
                 }
 
                 template <typename ResultType>
-                boost::shared_ptr<Future<ResultType> >
+                Future<ResultType>
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
@@ -1223,10 +1222,12 @@ namespace hazelcast {
                                                                                              util::getThreadId());
 
                     connection::CallFuture callFuture = invokeAndGetFuture(request, partitionId);
-                    
-                    return boost::shared_ptr<Future<ResultType> >(new internal::concurrent::FutureImpl<
-                            ResultType, protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(callFuture,
-                                                                                          getSerializationService()));
+
+                    return client::Future<ResultType>(callFuture, getSerializationService(), submitToKeyDecoder);
+                }
+
+                static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response) {
+                    return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(response).response;
                 }
 
                 template<typename ResultType, typename EntryProcessor>

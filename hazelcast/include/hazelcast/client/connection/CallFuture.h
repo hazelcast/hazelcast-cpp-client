@@ -51,13 +51,18 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> get();
 
-                std::auto_ptr<protocol::ClientMessage> get(int64_t timeoutInMilliseconds);
+                /**
+                 * This method assumes that the caller already has the lock acquired
+                 *
+                 * @return true if result or exception is ready. false otherwise when timeout expires.
+                 *
+                 * Does not throw exception
+                 */
+                bool waitFor(int64_t timeoutInMilliseconds);
 
                 int64_t getCallId() const;
 
                 const Connection &getConnection() const;
-
-                bool isDone() const;
             private:
                 boost::shared_ptr<CallPromise> promise;
                 boost::shared_ptr<Connection> connection;

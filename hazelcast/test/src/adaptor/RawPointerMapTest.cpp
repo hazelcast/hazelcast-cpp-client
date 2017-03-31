@@ -2841,6 +2841,39 @@ namespace hazelcast {
                     ASSERT_EQ(-1, *result);
                 }
 
+                TEST_F(RawPointerMapTest, testSubmitToKey) {
+                    Employee empl1("ahmet", 35);
+                    Employee empl2("mehmet", 21);
+
+                    employees->put(3, empl1);
+                    employees->put(4, empl2);
+
+                    // Waits at the server side before running the operation
+                    WaitMultiplierProcessor processor(3000, 4);
+
+                    Future<int> initialFuture =
+                            employees->submitToKey<int, WaitMultiplierProcessor>(
+                                    4, processor);
+
+                    // Should invalidate the initialFuture
+                    Future<int> future = initialFuture;
+
+                    ASSERT_FALSE(initialFuture.valid());
+                    ASSERT_THROW(initialFuture.wait_for(1000), exception::FutureUninitialized);
+                    ASSERT_TRUE(future.valid());
+
+                    future_status status = future.wait_for(1 * 1000);
+                    ASSERT_EQ(future_status::timeout, status);
+                    ASSERT_TRUE(future.valid());
+
+                    status = future.wait_for(3 * 1000);
+                    ASSERT_EQ(future_status::ready, status);
+                    std::auto_ptr<int> result = future.get();
+                    ASSERT_NE((int *) NULL, result.get());
+                    ASSERT_EQ(4 * processor.getMultiplier(), *result);
+                    ASSERT_FALSE(future.valid());
+                }
+
                 TEST_F(RawPointerMapTest, testExecuteOnKeys) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
@@ -2894,25 +2927,6 @@ namespace hazelcast {
                         ASSERT_TRUE(*key == 3 || *key == 4 || *key == 5);
                         ASSERT_EQ((*key) * processor.getMultiplier(), (*value));
                     }
-                }
-
-                TEST_F(RawPointerMapTest, testSubmitToKey) {
-                    Employee empl1("ahmet", 35);
-                    Employee empl2("mehmet", 21);
-
-                    employees->put(3, empl1);
-                    employees->put(4, empl2);
-
-                    WaitMultiplierProcessor processor(1000, 4);
-
-                    boost::shared_ptr<Future<int> > future =
-                            employees->submitToKey<int, WaitMultiplierProcessor>(4, processor);
-
-                    ASSERT_FALSE(future->isDone());
-                    boost::shared_ptr<int> result = future->get(2 * 1000);
-                    ASSERT_TRUE(future->isDone());
-                    ASSERT_NE((int *) NULL, result.get());
-                    ASSERT_EQ(4 * processor.getMultiplier(), *result);
                 }
 
                 TEST_F(RawPointerMapTest, testExecuteOnEntriesWithTruePredicate) {

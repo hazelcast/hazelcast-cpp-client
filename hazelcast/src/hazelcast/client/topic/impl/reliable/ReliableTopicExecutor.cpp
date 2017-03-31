@@ -15,7 +15,6 @@
  */
 
 #include "hazelcast/client/proxy/RingbufferImpl.h"
-#include "hazelcast/client/exception/FutureWaitTimeout.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 
 namespace hazelcast {
@@ -75,10 +74,8 @@ namespace hazelcast {
                                 connection::CallFuture future = ringbuffer->readManyAsync(m.sequence, 1, m.maxCount);
                                 std::auto_ptr<protocol::ClientMessage> responseMsg;
                                 do {
-                                    try {
-                                        responseMsg = future.get(1000); // every one second
-                                    } catch (exception::TimeoutException &e) { // suppress timeout exception
-                                        // do nothing
+                                    if (future.waitFor(1000)) {
+                                        responseMsg = future.get(); // every one second
                                     }
                                 } while (!(*shutdownFlag) && (protocol::ClientMessage *)NULL == responseMsg.get());
 
