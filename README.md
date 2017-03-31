@@ -498,33 +498,46 @@ int main() {
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/query/ILikePredicate.h"
+#include "hazelcast/client/query/QueryConstants.h"
 #include <iostream>
 #include <string>
 
 using namespace hazelcast::client;
 
-class SampleEntryListener {
+class SampleEntryListener : public hazelcast::client::EntryListener<std::string, std::string> {
   public:
-
-  void entryAdded( EntryEvent<std::string, std::string> &event ) {
-    std::cout << "entry added " <<  event.getKey() << " "
-        << event.getValue() << std::endl;
+  void entryAdded( const EntryEvent<std::string, std::string> &event ) override {
+		std::cout << "[entryAdded] " << event << std::endl;
   };
 
-  void entryRemoved( EntryEvent<std::string, std::string> &event ) {
-    std::cout << "entry added " <<  event.getKey() << " " 
-        << event.getValue() << std::endl;
+  void entryRemoved( const EntryEvent<std::string, std::string> &event ) override {
+		std::cout << "[entryRemoved] " << event << std::endl;
   }
 
-  void entryUpdated( EntryEvent<std::string, std::string> &event ) {
-    std::cout << "entry added " <<  event.getKey() << " " 
-        << event.getValue() << std::endl;
+  void entryUpdated( const EntryEvent<std::string, std::string> &event ) override {
+		std::cout << "[entryUpdated] " << event << std::endl;
   }
 
-  void entryEvicted( EntryEvent<std::string, std::string> &event ) {
-    std::cout << "entry added " <<  event.getKey() << " " 
-        << event.getValue() << std::endl;
+  void entryEvicted( const EntryEvent<std::string, std::string> &event ) override {
+		std::cout << "[entryEvicted] " << event << std::endl;
   }
+
+	void entryExpired(const EntryEvent<std::string, std::string>& event) override  {
+		std::cout << "[entryExpired] " << event << std::endl;
+	}
+
+	void entryMerged(const EntryEvent<std::string, std::string>& event) override {
+		std::cout << "[entryMerged] " << event << std::endl;
+	}
+
+	void mapEvicted(const MapEvent& event) override {
+		std::cout << "[mapEvicted] " << event << std::endl;
+	}
+
+	void mapCleared(const MapEvent& event) override {
+		std::cout << "[mapCleared] " << event << std::endl;
+	}
 };
 
 
@@ -537,9 +550,9 @@ int main( int argc, char **argv ) {
 
   IMap<std::string,std::string> myMap = hazelcastClient
       .getMap<std::string ,std::string>( "myIntMap" );
-  SampleEntryListener *  listener = new SampleEntryListener();
+  SampleEntryListener  listener;
 
-  std::string id = myMap.addEntryListener( *listener, true );
+  std::string id = myMap.addEntryListener(listener, true );
   // Prints entryAdded
   myMap.put( "key1", "value1" );
   // Prints updated
@@ -549,24 +562,22 @@ int main( int argc, char **argv ) {
   // Prints entryEvicted after 1 second
   myMap.put( "key2", "value2", 1000 );
 
-  // WARNING: deleting listener before removing it from Hazelcast leads to crashes.
   myMap.removeEntryListener( id );
-  
+
+
   // listen using predicates
-  // only listen the events for entries which has the value that matches the 
+  // only listen the events for entries which has the value that matches the
   // string "%VALue%1%", i.e. any string containing the text value1 case insensitive
-  id = myMap.addEntryListener(*listener, query::ILikePredicate(
+  id = myMap.addEntryListener(listener, query::ILikePredicate(
         query::QueryConstants::getValueAttributeName(), "%VALue%1%"), true);
-  
+
   // this will generate an event
   myMap.put("key1", "my__value1_new" );
-  
+
   sleep(1);
-    
+
   myMap.removeEntryListener( id );
-    
-  // Delete listener after removing it from Hazelcast.
-  delete listener;
+
   return 0;
 };
 ```
