@@ -20,11 +20,12 @@
 #ifndef HAZELCAST_Future
 #define HAZELCAST_Future
 
-#include "hazelcast/client/exception/FutureWaitTimeout.h"
+#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/Mutex.h"
 
 #include <memory>
 #include <cassert>
@@ -43,7 +44,7 @@ namespace hazelcast {
             : resultReady(false)
             , exceptionReady(false) {
 
-            };
+            }
 
             void set_value(T& value) {
                 LockGuard guard(mutex);
@@ -53,7 +54,7 @@ namespace hazelcast {
                 sharedObject = value;
                 resultReady = true;
                 conditionVariable.notify_all();
-            };
+            }
 
             void set_exception(std::auto_ptr<client::exception::IException> exception) {
                 LockGuard guard(mutex);
@@ -65,7 +66,7 @@ namespace hazelcast {
                 this->exception = exception;
                 exceptionReady = true;
                 conditionVariable.notify_all();
-            };
+            }
 
             void reset_exception(std::auto_ptr<client::exception::IException> exception) {
                 LockGuard guard(mutex);
@@ -73,7 +74,7 @@ namespace hazelcast {
                 this->exception = exception;
                 exceptionReady = true;
                 conditionVariable.notify_all();
-            };
+            }
 
             T get() {
                 LockGuard guard(mutex);
@@ -83,42 +84,24 @@ namespace hazelcast {
                 if (exceptionReady) {
                     exception->raise();
                 }
-                conditionVariable.wait(mutex);
-                if (resultReady) {
-                    return sharedObject;
-                }
-                if (exceptionReady) {
-                    exception->raise();
-                }
                 assert(false && "InvalidState");
                 return sharedObject;
-            };
+            }
 
-            T get(int64_t timeInMilliseconds) {
-                LockGuard guard(mutex);
+            /**
+             *
+             * @return true if result or exception is ready. false otherwise when timeout expires.
+             *
+             * Does not throw
+             */
+            bool waitFor(int64_t timeInMilliseconds) {
                 int64_t endTime = util::currentTimeMillis() + timeInMilliseconds;
+
+                LockGuard guard(mutex);
                 while (!(resultReady || exceptionReady) && endTime > util::currentTimeMillis()) {
                     conditionVariable.waitFor(mutex, endTime - util::currentTimeMillis());
                 }
-                if (resultReady) {
-                    return sharedObject;
-                }
-                if (exceptionReady) {
-                    exception->raise();
-                }
-                throw client::exception::FutureWaitTimeout("Future::get(timeInSeconds)", "Wait is timed out");
-            };
 
-            /**
-             * Returns {@code true} if this task completed.
-             *
-             * Completion may be due to normal termination, an exception, or
-             * cancellation -- in all of these cases, this method will return
-             * {@code true}.
-             *
-             * @return {@code true} if this task completed
-             */
-            bool isDone() const {
                 return resultReady || exceptionReady;
             }
 

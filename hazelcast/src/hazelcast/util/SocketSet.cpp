@@ -49,7 +49,8 @@ namespace hazelcast {
             assert(NULL != socket);
 
             int socketId = socket->getSocketId();
-            assert(socketId >= 0);
+            // Can not uncomment the below assert since when working with SSLSocket it may return to -1 for socket id
+            //assert(socketId >= 0);
 
             bool found = false;
 

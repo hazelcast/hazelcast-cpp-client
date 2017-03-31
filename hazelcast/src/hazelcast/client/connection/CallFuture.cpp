@@ -60,27 +60,25 @@ namespace hazelcast {
             }
 
             std::auto_ptr<protocol::ClientMessage> CallFuture::get() {
-                return get(INT64_MAX);
+                // no need to check for the return value
+                waitFor(INT64_MAX);
+
+                return promise->getFuture().get();
             }
 
-            std::auto_ptr<protocol::ClientMessage> CallFuture::get(int64_t timeoutInMilliseconds) {
-				while (timeoutInMilliseconds > 0) {
+            bool CallFuture::waitFor(int64_t timeoutInMilliseconds) {
+                bool resultReady = false;
+				while (timeoutInMilliseconds > 0 && !resultReady) {
                     int64_t beg = util::currentTimeMillis();
-                    try {
-						using namespace std;
-                        int64_t waitMillis = (int64_t) min(timeoutInMilliseconds, (int64_t) heartBeatTimeout * 1000);
-                        return promise->getFuture().get(waitMillis);
-                    } catch (exception::FutureWaitTimeout &exception) {
-                        // do nothing
-                    }
+                    using namespace std;
+                    int64_t waitMillis = (int64_t) min(timeoutInMilliseconds, (int64_t) heartBeatTimeout * 1000);
+                    resultReady = promise->getFuture().waitFor(waitMillis);
+
                     int64_t elapsed = util::currentTimeMillis() - beg;
                     timeoutInMilliseconds -= elapsed;
                 }
-                // This check is needed for cases where a negative timeoutInMilliseconds is provided
-                if (promise->getFuture().isDone()) {
-                    promise->getFuture().get();
-                }
-                throw exception::TimeoutException("CallFuture::get(int timeoutInSeconds)", "Wait is timed out");
+
+                return resultReady;
             }
 
             int64_t CallFuture::getCallId() const {
@@ -96,9 +94,6 @@ namespace hazelcast {
                 return *connection;
             }
 
-            bool CallFuture::isDone() const {
-                return promise->getFuture().isDone();
-            }
         }
     }
 }
