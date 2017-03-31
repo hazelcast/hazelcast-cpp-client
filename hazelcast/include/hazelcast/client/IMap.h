@@ -758,7 +758,7 @@ namespace hazelcast {
 
             /**
              * Applies the user defined EntryProcessor to the entry mapped by the key.
-             * Returns immediately with a ICompletableFuture representing that task.
+             * Returns immediately with a Future representing that task.
              * <p/>
              *
              * @param key            key to be processed
