@@ -78,6 +78,29 @@ int main() {
         std::cout << "Could not get the result of submitToKey in 1 second for Mark" << std::endl;
     }
 
+    // multiple futures
+    std::vector<hazelcast::client::Future<int> > allFutures;
+
+    // test putting into a vector of futures
+    future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>(
+            "Mark", processor);
+    allFutures.push_back(future);
+
+    allFutures.push_back(employees.submitToKey<int, EmployeeRaiseEntryProcessor>(
+            "John", processor));
+
+    for (std::vector<hazelcast::client::Future<int> >::const_iterator it = allFutures.begin();it != allFutures.end();++it) {
+        hazelcast::client::future_status status = (*it).wait_for(1000);
+        if (status == hazelcast::client::future_status::ready) {
+            std::cout << "Got ready for the future" << std::endl;
+        }
+    }
+
+    for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin();it != allFutures.end();++it) {
+        std::auto_ptr<int> result = (*it).get();
+        std::cout << "Result:" << *result << std::endl;
+    }
+
     std::cout << "Finished" << std::endl;
 
     return 0;
