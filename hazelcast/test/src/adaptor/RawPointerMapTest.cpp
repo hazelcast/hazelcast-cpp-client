@@ -2874,6 +2874,46 @@ namespace hazelcast {
                     ASSERT_FALSE(future.valid());
                 }
 
+                TEST_F(RawPointerMapTest, testSubmitToKeyMultipleAsyncCalls) {
+                    Employee empl1("ahmet", 35);
+                    Employee empl2("mehmet", 21);
+
+                    employees->put(3, empl1);
+                    employees->put(4, empl2);
+
+                    int waitTimeInMillis = 500;
+
+                    // Waits at the server side before running the operation
+                    WaitMultiplierProcessor processor(waitTimeInMillis, 4);
+
+                    std::vector<Future<int> > allFutures;
+
+                    // test putting into a vector of futures
+                    Future<int> future = employees->submitToKey<int, WaitMultiplierProcessor>(
+                                                3, processor);
+                    allFutures.push_back(future);
+
+                    // test re-assigning a future and putting into the vector
+                    future = employees->submitToKey<int, WaitMultiplierProcessor>(
+                            3, processor);
+                    allFutures.push_back(future);
+
+                    // test submitting a non-existent key
+                    allFutures.push_back(employees->submitToKey<int, WaitMultiplierProcessor>(
+                                    99, processor));
+
+                    for (std::vector<Future<int> >::const_iterator it = allFutures.begin();it != allFutures.end();++it) {
+                        future_status status = (*it).wait_for(2 * waitTimeInMillis);
+                        ASSERT_EQ(future_status::ready, status);
+                    }
+
+                    for (std::vector<Future<int> >::iterator it = allFutures.begin();it != allFutures.end();++it) {
+                        std::auto_ptr<int> result = (*it).get();
+                        ASSERT_NE((int *) NULL, result.get());
+                        ASSERT_FALSE((*it).valid());
+                    }
+                }
+
                 TEST_F(RawPointerMapTest, testExecuteOnKeys) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);

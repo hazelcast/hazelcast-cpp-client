@@ -123,11 +123,24 @@ namespace hazelcast {
 
             /**
              * This is actually a move constructor
-             *
+             * Constructs a Future with the shared state of movedFuture using move semantics. After construction,
+             * movedFuture.valid() == false.
              */
             Future(const Future &movedFuture) : callFuture(movedFuture.callFuture),
                                                 serializationService(movedFuture.serializationService),
                                                 decoderFunction(movedFuture.decoderFunction) {
+            }
+
+            /**
+             * Assigns the contents of another future object.
+             * 1) Releases any shared state and move-assigns the contents of movedFuture to *this. After the assignment,
+             * movedFuture.valid() == false and this->valid() will yield the same value as movedFuture.valid() before
+             * the assignment.
+             */
+            Future &operator=(const Future &movedFuture) {
+                this->callFuture = movedFuture.callFuture;
+                this->decoderFunction = movedFuture.decoderFunction;
+                return *this;
             }
 
             virtual ~Future() {
@@ -140,7 +153,8 @@ namespace hazelcast {
              * Important Note: get moves the result at the first call and hence it should not be called more than one
              * time. The second call will result in undefined behaviour.
              *
-             * The behaviour is undefined if valid() is false before the call to this function. Any shared state is
+             * The behaviour is undefined if valid() is false before the call to this function (Our implementation
+             * throws FutureUninitialized). Any shared state is
              * released. valid() is false after a call to this method.
              *
              * @return The returned value.
@@ -173,7 +187,8 @@ namespace hazelcast {
              * steady clock is used to measure the duration. This function may block for longer than timeout_duration
              * due to scheduling or resource contention delays.
              *
-             * The behaviour is undefined if valid()== false before the call to this function.
+             * The behaviour is undefined if valid()== false before the call to this function (Our implementation throws
+             * FutureUninitialized).
              *
              * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
              */
@@ -188,7 +203,8 @@ namespace hazelcast {
             /**
              * Blocks until the result becomes available. valid() == true after the call.
              *
-             * The behaviour is undefined if valid()== false before the call to this function.
+             * The behaviour is undefined if valid()== false before the call to this function (Our implementation throws
+             * FutureUninitialized).
              */
             void wait() const {
                 wait_for(INT64_MAX);
