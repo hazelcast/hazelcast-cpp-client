@@ -33,6 +33,8 @@ namespace hazelcast {
         template<typename K, typename V>
         class EntryArray {
         public:
+            virtual ~EntryArray() { }
+
             /**
              * @return Returns the number of data items
              */

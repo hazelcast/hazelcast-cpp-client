@@ -32,6 +32,8 @@ namespace hazelcast {
         template<typename T>
         class DataArray {
         public:
+            virtual ~DataArray() { }
+
             /**
              * @return Returns the number of data items
              */
