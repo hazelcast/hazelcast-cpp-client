@@ -36,7 +36,6 @@ import com.hazelcast.nio.serialization.PortableReader;
 import com.hazelcast.nio.serialization.PortableWriter;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.nio.ssl.TestKeyStoreUtil;
-import com.hazelcast.spi.properties.GroupProperty;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -533,7 +532,9 @@ public class CppClientListener {
     public static void main(String args[]) throws IOException {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
-        GroupProperty.ENTERPRISE_LICENSE_KEY.setSystemProperty(args[0]);
+        if (args.length >= 1) {
+            System.setProperty("hazelcast.enterprise.license.key", args[0]);
+        }
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());
