@@ -62,7 +62,7 @@ First create a build directory from the root of the project. In the build direct
 
 For compiling with SSL support: 
 
-- You need to have the openssl installed in your development environment: (i) Add openssl include directory to include directories, (ii) Add openssl library directory to the link directories list (This is the directory named tls. e.g. cpp/Linux_64/hazelcast/lib/tls), (iii) Set the openssl libraries to link.
+- You need to have the openssl (version 1.0.2) installed in your development environment: (i) Add openssl `include` directory to include directories, (ii) Add openssl `library` directory to the link directories list (This is the directory named `tls`. e.g. `cpp/Linux_64/hazelcast/lib/tls`), (iii) Set the openssl libraries to link.
  
 - You can provide your openssl installation directory to cmake using the following flags: 
     - DHZ_OPENSSL_INCLUDE_DIR="Path to open installation include directory" 
@@ -73,6 +73,12 @@ For compiling with SSL support:
 - Check the top level CMakeLists.txt file to see which libraries we link for openssl in which environment. 
     - For Mac OS and Linux, we link with "ssl" and "crypto" 
     - For Windows there is an example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
+
+# Tested Platforms
+Our CI tests are run continuously on the following platforms and compilers:
+- Linux: CentOs5 gcc 3.4.6, CentOs5.11 gcc 4.1.2, centos 7 gcc 4.8.2
+- Windows: Visual Studio 12
+- Mac OS: Apple LLVM version 7.3.0 (clang-703.0.31)
 
 ## Mac
 
@@ -126,8 +132,8 @@ For compiling with SSL support:
 
 	cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release
 	cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Release
-	cmake .. -G "Visual Studio 10 Win64"  -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
-	cmake .. -G "Visual Studio 10 Win64"  -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
+	cmake .. -G "Visual Studio 12 Win64"  -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
+	cmake .. -G "Visual Studio 12 Win64"  -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release
 
 	MSBuild.exe HazelcastClient.sln /property:Configuration=Release
 
@@ -135,8 +141,8 @@ For compiling with SSL support:
 
 	cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Debug
 	cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=32 -DCMAKE_BUILD_TYPE=Debug
-	cmake .. -G "Visual Studio 10 Win64"  -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
-	cmake .. -G "Visual Studio 10 Win64"  -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
+	cmake .. -G "Visual Studio 12 Win64"  -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
+	cmake .. -G "Visual Studio 12 Win64"  -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
 
 	MSBuild.exe HazelcastClient.sln /property:TreatWarningsAsErrors=true /property:Configuration=Debug
 
@@ -177,6 +183,7 @@ Each of the folders above contains the following:
 
 - hazelcast/
 	- lib/ => Contains both shared and static library of hazelcast.
+	- lib/tls => Contains the library with TLS (SSL) support enabled.
 	- include/ => Contains headers of client.
 
 - external/
