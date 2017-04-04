@@ -157,7 +157,7 @@ namespace hazelcast {
                 }
 
                 std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
-                    stack_st_SSL_CIPHER *ciphers = SSL_get_ciphers(socket->native_handle());
+                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket->native_handle());
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num (ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
