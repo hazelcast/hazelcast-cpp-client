@@ -105,8 +105,6 @@ mkdir .\cpp\Windows_64\hazelcast\lib\tls\static
 mkdir .\cpp\Windows_64\hazelcast\lib\shared
 mkdir .\cpp\Windows_64\hazelcast\lib\tls\shared
 mkdir .\cpp\Windows_64\hazelcast\include\hazelcast
-mkdir .\cpp\Windows_64\external\include
-mkdir .\cpp\Windows_64\examples
 
 xcopy /S /Q hazelcast\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
 xcopy /S /Q hazelcast\generated-sources\include\hazelcast\* cpp\Windows_64\hazelcast\include\hazelcast\
@@ -116,7 +114,7 @@ copy ReleaseShared64TLS\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\t
 copy ReleaseStatic64\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\static\
 copy ReleaseStatic64TLS\Release\HazelcastClient*  cpp\Windows_64\hazelcast\lib\tls\static\
 
-echo "Linking to external libraries and examples for 32-bit release"
+echo "Linking to external libraries and examples for 64-bit release"
 pushd cpp\Windows_64
 mklink /j examples ..\examples
 mklink /j external ..\external
