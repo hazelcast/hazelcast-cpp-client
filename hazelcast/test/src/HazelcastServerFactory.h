@@ -26,6 +26,7 @@
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
+#include "hazelcast/client/internal/socket/TcpSocket.h"
 
 namespace hazelcast {
     namespace util {
@@ -60,11 +61,14 @@ namespace hazelcast {
                 ~HazelcastServerFactory();
 
             private:
+                void checkConnection();
+
                 Address address;
-                std::auto_ptr<Socket> socket;
+                internal::socket::TcpSocket socket;
                 connection::OutputSocketStream outputSocketStream;
                 connection::InputSocketStream inputSocketStream;
                 util::ILogger &logger;
+                bool connected;
 
                 void shutdownInstance(int id);
             };
