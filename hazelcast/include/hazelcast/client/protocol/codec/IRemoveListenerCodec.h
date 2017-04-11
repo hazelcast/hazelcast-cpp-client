@@ -25,13 +25,15 @@
 #include <memory>
 #include <string>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
             class ClientMessage;
 
             namespace codec {
-                class IRemoveListenerCodec {
+                class HAZELCAST_API IRemoveListenerCodec {
                 public:
                     virtual ~IRemoveListenerCodec() { }
 

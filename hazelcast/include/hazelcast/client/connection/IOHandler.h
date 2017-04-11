@@ -21,6 +21,8 @@
 #define HAZELCAST_IOHandler
 
 #include "hazelcast/client/connection/ListenerTask.h"
+#include "hazelcast/util/HazelcastDll.h"
+
 #include <string>
 
 namespace hazelcast {
@@ -30,7 +32,7 @@ namespace hazelcast {
 
             class Connection;
 
-            class IOHandler : public ListenerTask {
+            class HAZELCAST_API IOHandler : public ListenerTask {
             public:
 
                 IOHandler(Connection &connection, IOSelector & ioSelector);

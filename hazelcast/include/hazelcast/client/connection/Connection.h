@@ -35,6 +35,12 @@
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -120,10 +126,13 @@ namespace hazelcast {
 
                 int connectionId;
             };
-
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CONNECTION
 

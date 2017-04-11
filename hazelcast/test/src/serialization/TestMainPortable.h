@@ -26,6 +26,7 @@
 
 #include "TestInnerPortable.h"
 #include <string>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +36,7 @@ namespace hazelcast {
 
                 TestMainPortable();
 
-                TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p);
+                TestMainPortable(byte b, bool boolean, char c, short s, int i, int64_t l, float f, double d, std::string str, TestInnerPortable p);
 
                 bool operator ==(const TestMainPortable &m) const;
 
@@ -57,7 +58,7 @@ namespace hazelcast {
                 bool boolean;
                 char c;
                 short s;
-                long l;
+                int64_t l;
                 float f;
                 double d;
                 std::string str;

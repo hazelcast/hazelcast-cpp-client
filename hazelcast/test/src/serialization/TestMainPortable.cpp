@@ -25,7 +25,7 @@ namespace hazelcast {
             :null(true) {
             }
 
-            TestMainPortable::TestMainPortable(byte b, bool boolean, char c, short s, int i, long l, float f, double d, std::string str, TestInnerPortable p) {
+            TestMainPortable::TestMainPortable(byte b, bool boolean, char c, short s, int i, int64_t l, float f, double d, std::string str, TestInnerPortable p) {
                 null = false;
                 this->b = b;
                 this->boolean = boolean;

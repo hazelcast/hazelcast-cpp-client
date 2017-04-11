@@ -263,7 +263,7 @@ namespace hazelcast {
                         unmarkRemainingMarkedKeys(markers);
 
                         return responses;
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         unmarkRemainingMarkedKeys(markers);
                         throw;
                     }
@@ -391,7 +391,7 @@ namespace hazelcast {
                     try {
                         nearCache->put(keyData, response);
                         resetToUnmarkedState(keyData);
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         resetToUnmarkedState(keyData);
                         throw;
                     }

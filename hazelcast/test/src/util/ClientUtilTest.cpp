@@ -138,7 +138,7 @@ namespace hazelcast {
                 try {
                     future.get();
                     FAIL();
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     // expect exception here
                 }
             }

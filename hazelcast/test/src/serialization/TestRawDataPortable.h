@@ -22,6 +22,7 @@
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
 #include <vector>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
@@ -39,16 +40,16 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader &reader);
 
-                TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds);
+                TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k, std::string s, TestDataSerializable ds);
 
                 bool operator ==(const TestRawDataPortable &m) const;
 
                 bool operator !=(const TestRawDataPortable &m) const;
 
-                long l;
+                int64_t l;
                 std::vector<char> c;
                 TestNamedPortable p;
-                int k;
+                int32_t k;
                 std::string s;
                 TestDataSerializable ds;
             };

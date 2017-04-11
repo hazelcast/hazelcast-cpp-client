@@ -57,7 +57,7 @@ namespace hazelcast {
                 ds.readData(in);
             }
 
-            TestRawDataPortable::TestRawDataPortable(long l, std::vector<char> c, TestNamedPortable p, int k, std::string s, TestDataSerializable ds) {
+            TestRawDataPortable::TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k, std::string s, TestDataSerializable ds) {
                 this->l = l;
                 this->c = c;
                 this->p = p;

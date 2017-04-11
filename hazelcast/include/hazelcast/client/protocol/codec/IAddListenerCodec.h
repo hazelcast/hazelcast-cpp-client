@@ -25,13 +25,15 @@
 #include <memory>
 #include <string>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
             class ClientMessage;
 
             namespace codec {
-                class IAddListenerCodec {
+                class HAZELCAST_API IAddListenerCodec {
                 public:
                     virtual ~IAddListenerCodec() { }
 

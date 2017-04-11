@@ -203,7 +203,7 @@ namespace hazelcast {
                 std::vector<byte> bb(byteArray, byteArray + 3);
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
-                char boolArray[] = {false, true, true, false};
+                bool boolArray[] = {false, true, true, false};
                 std::vector<bool> ba(boolArray, boolArray + 4);
                 int16_t shortArray[] = {3, 4, 5};
                 std::vector<int16_t> ss(shortArray, shortArray + 3);

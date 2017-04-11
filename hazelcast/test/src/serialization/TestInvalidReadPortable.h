@@ -21,6 +21,7 @@
 
 #include "hazelcast/client/serialization/Portable.h"
 #include <string>
+#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
@@ -40,8 +41,8 @@ namespace hazelcast {
 
                 void readPortable(serialization::PortableReader& reader);
             private:
-                long l;
-                int i;
+                int64_t l;
+                int32_t i;
                 std::string s;
             };
         }
