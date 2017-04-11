@@ -37,7 +37,7 @@ namespace hazelcast {
              * @return the value
              * @throws IllegalArgumentException if the value is not positive.
              */
-             static int checkPositive(int value, const std::string &errorMessage);
+            static int checkPositive(int value, const std::string &errorMessage);
 
             /**
              * Tests if an argument is not null.
@@ -46,8 +46,9 @@ namespace hazelcast {
              * @param errorMessage the errorMessage
              * @throws NullPointerException if argument is null
              */
-            template <typename T>
-            static boost::shared_ptr<T> checkNotNull(const boost::shared_ptr<T> &argument, const std::string &errorMessage) {
+            template<typename T>
+            static boost::shared_ptr<T> checkNotNull(const boost::shared_ptr<T> &argument,
+                                                     const std::string &errorMessage) {
                 if (argument == NULL) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
@@ -63,6 +64,17 @@ namespace hazelcast {
              * @throws java.lang.IllegalArgumentException if the value is negative.
              */
             static int checkNotNegative(int value, const std::string &errorMessage);
+
+            /**
+             * Tests if a string contains text.
+             *
+             * @param argument     the string tested to see if it contains text.
+             * @param source the source where the check is performed
+             * @param errorMessage the errorMessage
+             * @return the string argument that was tested.
+             * @throws client::exception::IllegalArgumentException if the string is empty
+             */
+            static const std::string &checkHasText(const std::string &argument, const std::string &errorMessage);
         };
     }
 }

@@ -42,6 +42,17 @@ namespace hazelcast {
                 this->connectionTimeout = connectionTimeoutInMillis;
                 return *this;
             }
+
+            #ifdef HZ_BUILD_WITH_SSL
+            ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
+                this->clientAwsConfig = clientAwsConfig;
+                return *this;
+            }
+
+            ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
+                return clientAwsConfig;
+            }
+            #endif // HZ_BUILD_WITH_SSL
         }
     }
 }

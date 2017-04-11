@@ -21,6 +21,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/client/config/ClientAwsConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -76,12 +77,29 @@ namespace hazelcast {
                 */
                 int64_t getConnectionTimeout() const;
 
+                #ifdef HZ_BUILD_WITH_SSL
+                /**
+                 * Sets configuration to connect nodes in aws environment.
+                 *
+                 * @param clientAwsConfig the ClientAwsConfig
+                 * @see #getAwsConfig()
+                 */
+                ClientNetworkConfig &setAwsConfig(const ClientAwsConfig &clientAwsConfig);
+
+                /**
+                 * Returns the current {@link ClientAwsConfig}.
+                 *
+                 * @return ClientAwsConfig
+                 */
+                ClientAwsConfig &getAwsConfig();
+                #endif
             private:
                 #ifdef HZ_BUILD_WITH_SSL
                 config::SSLConfig sslConfig;
+                config::ClientAwsConfig clientAwsConfig;
                 #endif
 
-                int connectionTimeout;
+                int64_t connectionTimeout;
             };
         }
     }
