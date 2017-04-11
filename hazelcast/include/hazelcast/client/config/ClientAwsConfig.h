@@ -197,12 +197,12 @@ namespace hazelcast {
                 int32_t getConnectionTimeoutSeconds() const;
 
                 /**
-                 * Sets the connect timeout in seconds. See {@link TcpIpConfig#setConnectionTimeoutSeconds(int32_t)} for more information.
+                 * Sets the connect timeout in seconds. See {@link ClientConfig#setConnectionTimeoutSeconds(int)} for more information.
                  *
                  * @param connectionTimeoutSeconds the connectionTimeoutSeconds (connection timeout in seconds) to set
                  * @return the updated ClientAwsConfig.
                  * @see #getConnectionTimeoutSeconds()
-                 * @see TcpIpConfig#setConnectionTimeoutSeconds(int32_t)
+                 * @see ClientConfig#setConnectionTimeoutSeconds(int32_t)
                  */
                 ClientAwsConfig &setConnectionTimeoutSeconds(int32_t connectionTimeoutSeconds);
 
