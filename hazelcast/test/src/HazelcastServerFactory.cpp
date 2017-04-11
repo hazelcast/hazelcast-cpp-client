@@ -21,9 +21,10 @@
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
+
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/exception/IllegalStateException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,15 +35,8 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
-                    : address(hostAddress, 6543), socket(new internal::socket::TcpSocket(address)), outputSocketStream(*socket),
-                      inputSocketStream(*socket), logger(util::ILogger::getLogger()) {
-                if (int error = socket->connect(5000)) {
-                    char msg[200];
-                    util::snprintf(msg, 200,
-                                   "[HazelcastServerFactory] Could not connect to socket %s:6543. Errno:%d, %s",
-                                   hostAddress, error, strerror(error));
-                    logger.severe(msg);
-                }
+                    : address(hostAddress, 6543), socket(address), outputSocketStream(socket),
+                      inputSocketStream(socket), logger(util::ILogger::getLogger()), connected(false) {
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
@@ -51,12 +45,15 @@ namespace hazelcast {
                     inputSocketStream.readInt();
                 } catch (std::exception &e) {
                     char msg[200];
-                    util::snprintf(msg, 200, "[HazelcastServerFactory] ~HazelcastServerFactory() exception:%s", e.what());
+                    util::snprintf(msg, 200, "[HazelcastServerFactory] ~HazelcastServerFactory() exception:%s",
+                                   e.what());
                     logger.severe(msg);
                 }
             }
 
             void HazelcastServerFactory::shutdownInstance(int id) {
+                checkConnection();
+
                 outputSocketStream.writeInt(SHUTDOWN);
                 outputSocketStream.writeInt(id);
                 int i = inputSocketStream.readInt();
@@ -68,6 +65,8 @@ namespace hazelcast {
             }
 
             void HazelcastServerFactory::shutdownAll() {
+                checkConnection();
+
                 outputSocketStream.writeInt(SHUTDOWN_ALL);
                 try {
                     int i = inputSocketStream.readInt();
@@ -85,6 +84,8 @@ namespace hazelcast {
             }
 
             int HazelcastServerFactory::getInstanceId(int retryNumber, bool useSSL) {
+                checkConnection();
+
                 int command = (useSSL ? START_SSL : START);
                 outputSocketStream.writeInt(command);
                 int id = inputSocketStream.readInt();
@@ -94,7 +95,9 @@ namespace hazelcast {
                     logger.warning(msg);
 
                     while (id == FAIL && retryNumber > 0) {
-                        util::snprintf(msg, 200, "[HazelcastServerFactory::getInstanceId] Retrying to start server. Retry number:%d", retryNumber);
+                        util::snprintf(msg, 200,
+                                       "[HazelcastServerFactory::getInstanceId] Retrying to start server. Retry number:%d",
+                                       retryNumber);
                         logger.warning(msg);
                         outputSocketStream.writeInt(command);
                         id = inputSocketStream.readInt();
@@ -108,6 +111,24 @@ namespace hazelcast {
 
             const std::string &HazelcastServerFactory::getServerAddress() const {
                 return address.getHost();
+            }
+
+            void HazelcastServerFactory::checkConnection() {
+                if (connected) {
+                    return;
+                }
+
+                if (int error = socket.connect(5000)) {
+                    char msg[200];
+                    util::snprintf(msg, 200,
+                                   "[HazelcastServerFactory] Could not connect to socket %s:6543. Errno:%d, %s",
+                                   address.getHost().c_str(), error, strerror(error));
+
+                    throw hazelcast::client::exception::IllegalStateException("HazelcastServerFactory::checkConnection",
+                                                                              msg);
+                }
+
+                this->connected = true;
             }
         }
     }
