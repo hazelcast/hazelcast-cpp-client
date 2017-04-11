@@ -42,6 +42,15 @@ namespace hazelcast {
                 this->connectionTimeout = connectionTimeoutInMillis;
                 return *this;
             }
+
+            ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
+                this->clientAwsConfig = clientAwsConfig;
+                return *this;
+            }
+
+            ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
+                return clientAwsConfig;
+            }
         }
     }
 }

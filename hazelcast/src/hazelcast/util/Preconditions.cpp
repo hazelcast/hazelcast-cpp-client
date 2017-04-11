@@ -34,6 +34,15 @@ namespace hazelcast {
             }
             return value;
         }
+
+        const std::string &Preconditions::checkHasText(const std::string &argument,
+                                                       const std::string &errorMessage) {
+            if (argument.empty()) {
+                throw client::exception::IllegalArgumentException("", errorMessage);
+            }
+
+            return argument;
+        }
     }
 }
 
