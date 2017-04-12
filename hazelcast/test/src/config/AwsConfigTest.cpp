@@ -40,8 +40,8 @@ namespace hazelcast {
                     ASSERT_EQ("", awsConfig.getTagKey());
                     ASSERT_EQ("", awsConfig.getTagValue());
                     ASSERT_EQ(5, awsConfig.getConnectionTimeoutSeconds());
-                    ASSERT_EQ(false, awsConfig.isInsideAws());
-                    ASSERT_EQ(false, awsConfig.isEnabled());
+                    ASSERT_FALSE(awsConfig.isInsideAws());
+                    ASSERT_FALSE(awsConfig.isEnabled());
                 }
 
                 TEST_F (AwsConfigTest, testSetValues) {
@@ -68,8 +68,8 @@ namespace hazelcast {
                     ASSERT_EQ("mytagkey", awsConfig.getTagKey());
                     ASSERT_EQ("mytagvalue", awsConfig.getTagValue());
                     ASSERT_EQ(3, awsConfig.getConnectionTimeoutSeconds());
-                    ASSERT_EQ(true, awsConfig.isInsideAws());
-                    ASSERT_EQ(true, awsConfig.isEnabled()) << awsConfig;
+                    ASSERT_TRUE(awsConfig.isInsideAws());
+                    ASSERT_TRUE(awsConfig.isEnabled()) << awsConfig;
                 }
 
                 TEST_F (AwsConfigTest, testSetEmptyValues) {
