@@ -80,7 +80,7 @@ namespace hazelcast {
 
                     txnId = result.response;
                     state = TxnState::ACTIVE;
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     onTxnEnd();
                     throw;
                 }
@@ -130,7 +130,7 @@ namespace hazelcast {
                     } catch (std::exception &) {
                     }
                     state = TxnState::ROLLED_BACK;
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     onTxnEnd();
                     throw;
                 }

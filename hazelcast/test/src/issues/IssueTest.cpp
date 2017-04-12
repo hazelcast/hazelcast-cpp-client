@@ -135,7 +135,7 @@ namespace hazelcast {
 
                 try {
                     map.get(1);
-                } catch (exception::IOException &e) {
+                } catch (exception::IOException &) {
                     // this is the expected exception, test passes, do nothing
                 } catch (exception::IException &e) {
                     FAIL() << "IException is received while we expect IOException. Received exception:" << e.what();

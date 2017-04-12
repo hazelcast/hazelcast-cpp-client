@@ -21,7 +21,7 @@ namespace hazelcast {
         IdGenerator::IdGenerator(const std::string& instanceName, spi::ClientContext *context)
         : proxy::ProxyImpl("idGeneratorService", instanceName, context)
         , atomicLong("hz:atomic:idGenerator:" + instanceName, context)
-        , local(new util::AtomicInt(-1))
+        , local(new util::Atomic<int64_t>(-1))
         , residue(new util::AtomicInt(BLOCK_SIZE))
         , localLock(new util::Mutex) {
 
@@ -32,7 +32,7 @@ namespace hazelcast {
             if (id <= 0) {
                 return false;
             }
-            long step = (id / BLOCK_SIZE);
+            int64_t step = (id / BLOCK_SIZE);
 
             util::LockGuard lg(*localLock);
             bool init = atomicLong.compareAndSet(0, step + 1);

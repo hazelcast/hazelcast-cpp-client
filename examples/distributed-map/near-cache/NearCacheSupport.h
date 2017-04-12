@@ -21,6 +21,7 @@
 #define HAZELCASTCLIENT_NEARCACHESUPPORT_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include <hazelcast/client/HazelcastAll.h>
 
@@ -50,7 +51,7 @@ public:
     }
 
     static void waitForNearCacheEvictionCount(hazelcast::client::IMap<int, std::string> &map, int64_t expectedEvictionCount) {
-        long evictionCount;
+        int64_t evictionCount;
         do {
             hazelcast::client::monitor::NearCacheStats *stats = map.getLocalMapStats().getNearCacheStats();
             evictionCount = stats->getEvictions();

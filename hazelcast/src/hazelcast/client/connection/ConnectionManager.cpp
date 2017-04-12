@@ -187,7 +187,7 @@ namespace hazelcast {
                             return connection;
                         }
                     }
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     checkLive();
 
                     if (tryCount <= 0) {
@@ -202,7 +202,7 @@ namespace hazelcast {
                         if (conn.get() != (Connection *) NULL && conn->live) {
                             return conn;
                         }
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         checkLive();
 
                         ++count;

@@ -20,6 +20,7 @@
 #ifndef HAZELCAST_ReadHandler
 #define HAZELCAST_ReadHandler
 
+#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
@@ -37,7 +38,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class ReadHandler : public IOHandler {
+            class HAZELCAST_API ReadHandler : public IOHandler {
             public:
                 ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize, spi::ClientContext& clientContext);
 

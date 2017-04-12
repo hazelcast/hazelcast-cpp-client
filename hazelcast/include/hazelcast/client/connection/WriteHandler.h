@@ -27,6 +27,7 @@
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,7 +48,7 @@ namespace hazelcast {
 
             class OutSelector;
 
-            class WriteHandler : public IOHandler {
+            class HAZELCAST_API WriteHandler : public IOHandler {
             public:
                 WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize);
 

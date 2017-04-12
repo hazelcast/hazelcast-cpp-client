@@ -40,7 +40,7 @@ namespace hazelcast {
                 }
                 try {
                     initializeWithRetry(clientProxy);
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     proxies.remove(ns);
                     throw;
                 }

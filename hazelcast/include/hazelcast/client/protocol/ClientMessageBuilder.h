@@ -32,6 +32,11 @@
 #include <stdint.h>
 #include <memory>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace util {
         class ByteBuffer;
@@ -44,7 +49,7 @@ namespace hazelcast {
         namespace protocol {
             class IMessageHandler;
 
-            class ClientMessageBuilder {
+            class HAZELCAST_API ClientMessageBuilder {
 
             public:
                 ClientMessageBuilder(IMessageHandler &service, connection::Connection &connection);
@@ -86,5 +91,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif //HAZELCAST_CLIENT_MESSAGE_BUILDER
 
