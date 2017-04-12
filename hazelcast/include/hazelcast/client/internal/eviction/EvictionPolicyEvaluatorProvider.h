@@ -88,7 +88,7 @@ namespace hazelcast {
                                 return boost::shared_ptr<EvictionPolicyComparator<A, E> >();
                             default:
                                 std::ostringstream out;
-                                out << "Unsupported eviction policy type: " << evictionPolicyType;
+                                out << "Unsupported eviction policy type: " << (int) evictionPolicyType;
                                 throw exception::IllegalArgumentException(out.str());
                         }
                     }
