@@ -507,35 +507,35 @@ using namespace hazelcast::client;
 
 class SampleEntryListener : public hazelcast::client::EntryListener<std::string, std::string> {
   public:
-  void entryAdded( const EntryEvent<std::string, std::string> &event ) override {
+  void entryAdded( const EntryEvent<std::string, std::string> &event ) {
 		std::cout << "[entryAdded] " << event << std::endl;
   };
 
-  void entryRemoved( const EntryEvent<std::string, std::string> &event ) override {
+  void entryRemoved( const EntryEvent<std::string, std::string> &event ) {
 		std::cout << "[entryRemoved] " << event << std::endl;
   }
 
-  void entryUpdated( const EntryEvent<std::string, std::string> &event ) override {
+  void entryUpdated( const EntryEvent<std::string, std::string> &event ) {
 		std::cout << "[entryUpdated] " << event << std::endl;
   }
 
-  void entryEvicted( const EntryEvent<std::string, std::string> &event ) override {
+  void entryEvicted( const EntryEvent<std::string, std::string> &event ) {
 		std::cout << "[entryEvicted] " << event << std::endl;
   }
 
-	void entryExpired(const EntryEvent<std::string, std::string>& event) override  {
+	void entryExpired(const EntryEvent<std::string, std::string>& event) {
 		std::cout << "[entryExpired] " << event << std::endl;
 	}
 
-	void entryMerged(const EntryEvent<std::string, std::string>& event) override {
+	void entryMerged(const EntryEvent<std::string, std::string>& event) {
 		std::cout << "[entryMerged] " << event << std::endl;
 	}
 
-	void mapEvicted(const MapEvent& event) override {
+	void mapEvicted(const MapEvent& event) {
 		std::cout << "[mapEvicted] " << event << std::endl;
 	}
 
-	void mapCleared(const MapEvent& event) override {
+	void mapCleared(const MapEvent& event) {
 		std::cout << "[mapCleared] " << event << std::endl;
 	}
 };
