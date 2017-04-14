@@ -17,6 +17,8 @@
 // Created by İhsan Demir on 17/05/15.
 //
 
+#ifdef HZ_BUILD_WITH_SSL
+
 #include <cmath>
 #include <gtest/gtest.h>
 
@@ -98,3 +100,4 @@ namespace hazelcast {
         }
     }
 }
+#endif // HZ_BUILD_WITH_SSL
