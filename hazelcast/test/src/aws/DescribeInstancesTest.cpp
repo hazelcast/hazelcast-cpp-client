@@ -32,7 +32,7 @@ namespace hazelcast {
                 /**
                  * This test will be enabled when the credentials are provided from environment
                  */
-                TEST_F (DescribeInstancesTest, testDescibeInstances) {
+                TEST_F (DescribeInstancesTest, testDescribeInstances) {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true);
 
@@ -40,7 +40,7 @@ namespace hazelcast {
                     awsConfig.setSecretKey(getenv("HZ_TEST_AWS_SECRET"));
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
                     std::map<std::string, std::string> results = desc.execute();
-                    ASSERT_GT(results.size(), 0);
+                    ASSERT_GT(results.size(), 0U);
                 }
             }
         }

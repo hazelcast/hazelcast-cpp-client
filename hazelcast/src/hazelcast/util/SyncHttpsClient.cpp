@@ -32,7 +32,6 @@ namespace hazelcast {
             SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp), uriPath(uriPath),
                                                                          sslContext(asio::ssl::context::sslv23),
                                                                          responseStream(&response) {
-                sslContext.set_verify_mode(asio::ssl::verify_peer);
                 sslContext.set_default_verify_paths();
                 sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
                                                asio::ssl::context::single_dh_use);

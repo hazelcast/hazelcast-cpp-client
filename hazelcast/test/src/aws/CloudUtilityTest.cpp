@@ -39,7 +39,7 @@ namespace hazelcast {
 
                     config::ClientAwsConfig awsConfig;
                     std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(4, results.size());
+                    ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ("", results["10.0.16.13"]);
                     ASSERT_NE(results.end(), results.find("10.0.16.17"));
@@ -58,7 +58,7 @@ namespace hazelcast {
                     config::ClientAwsConfig awsConfig;
                     awsConfig.setTagKey("mytagkey");
                     std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2, results.size());
+                    ASSERT_EQ(2U, results.size());
                     ASSERT_EQ(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ(results.end(), results.find("10.0.16.17"));
                     ASSERT_NE(results.end(), results.find("10.0.16.25"));
@@ -76,7 +76,7 @@ namespace hazelcast {
                     awsConfig.setTagKey("mytagkey");
                     awsConfig.setTagValue("mytagvalue");
                     std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2, results.size());
+                    ASSERT_EQ(2U, results.size());
                     ASSERT_EQ(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ(results.end(), results.find("10.0.16.17"));
                     ASSERT_NE(results.end(), results.find("10.0.16.25"));
@@ -93,7 +93,7 @@ namespace hazelcast {
                     config::ClientAwsConfig awsConfig;
                     awsConfig.setSecurityGroupName("mygroup");
                     std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2, results.size());
+                    ASSERT_EQ(2U, results.size());
                     ASSERT_EQ(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ(results.end(), results.find("10.0.16.25"));
                     ASSERT_NE(results.end(), results.find("10.0.16.17"));
