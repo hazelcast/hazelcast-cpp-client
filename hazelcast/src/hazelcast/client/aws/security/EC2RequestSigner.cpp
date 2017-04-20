@@ -170,7 +170,7 @@ namespace hazelcast {
                 std::string EC2RequestSigner::convertToHexString(const unsigned char *buffer, unsigned int len) const {
                     std::stringstream ss;
                     ss << std::hex << std::setfill('0');
-                    for (int i = 0; i < len; i++) {
+                    for (unsigned int i = 0; i < len; i++) {
                         ss << std::hex << std::setw(2) << (unsigned int) buffer[i];
                     }
 
