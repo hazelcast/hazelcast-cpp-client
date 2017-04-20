@@ -51,8 +51,6 @@ namespace hazelcast {
              * </li>
              * </ol>
              * <p/>
-             * Once Hazelcast has figured out which instances are available, it will use the private ip addresses of these
-             * instances to create a tcp/ip-cluster.
              */
             class HAZELCAST_API ClientAwsConfig {
             public:
@@ -189,24 +187,6 @@ namespace hazelcast {
                 const std::string &getTagValue() const;
 
                 /**
-                 * Gets the connection timeout in seconds.
-                 *
-                 * @return the connectionTimeoutSeconds; connection timeout in seconds
-                 * @see #setConnectionTimeoutSeconds(int32_t)
-                 */
-                int32_t getConnectionTimeoutSeconds() const;
-
-                /**
-                 * Sets the connect timeout in seconds. See {@link ClientConfig#setConnectionTimeoutSeconds(int)} for more information.
-                 *
-                 * @param connectionTimeoutSeconds the connectionTimeoutSeconds (connection timeout in seconds) to set
-                 * @return the updated ClientAwsConfig.
-                 * @see #getConnectionTimeoutSeconds()
-                 * @see ClientConfig#setConnectionTimeoutSeconds(int32_t)
-                 */
-                ClientAwsConfig &setConnectionTimeoutSeconds(int32_t connectionTimeoutSeconds);
-
-                /**
                  * Gets the iamRole name
                  *
                  * @return the iamRole. empty string if nothing is returned.
@@ -249,7 +229,6 @@ namespace hazelcast {
                 std::string tagValue;
                 std::string hostHeader;
                 std::string iamRole;
-                int32_t connectionTimeoutSeconds;
 
                 bool insideAws;
             };

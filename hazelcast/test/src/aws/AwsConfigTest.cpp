@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 17/05/15.
-//
 
 #ifdef HZ_BUILD_WITH_SSL
 
@@ -27,7 +24,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            namespace config {
+            namespace aws {
                 class AwsConfigTest : public ::testing::Test {
                 };
 
@@ -41,7 +38,6 @@ namespace hazelcast {
                     ASSERT_EQ("", awsConfig.getSecurityGroupName());
                     ASSERT_EQ("", awsConfig.getTagKey());
                     ASSERT_EQ("", awsConfig.getTagValue());
-                    ASSERT_EQ(5, awsConfig.getConnectionTimeoutSeconds());
                     ASSERT_FALSE(awsConfig.isInsideAws());
                     ASSERT_FALSE(awsConfig.isEnabled());
                 }
@@ -57,7 +53,6 @@ namespace hazelcast {
                     awsConfig.setSecurityGroupName("mygroup");
                     awsConfig.setTagKey("mytagkey");
                     awsConfig.setTagValue("mytagvalue");
-                    awsConfig.setConnectionTimeoutSeconds(3);
                     awsConfig.setInsideAws(true);
                     awsConfig.setEnabled(true);
 
@@ -69,7 +64,6 @@ namespace hazelcast {
                     ASSERT_EQ("mygroup", awsConfig.getSecurityGroupName());
                     ASSERT_EQ("mytagkey", awsConfig.getTagKey());
                     ASSERT_EQ("mytagvalue", awsConfig.getTagValue());
-                    ASSERT_EQ(3, awsConfig.getConnectionTimeoutSeconds());
                     ASSERT_TRUE(awsConfig.isInsideAws());
                     ASSERT_TRUE(awsConfig.isEnabled()) << awsConfig;
                 }
