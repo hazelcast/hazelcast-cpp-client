@@ -110,8 +110,8 @@ namespace hazelcast {
                                                      const std::map<std::string, std::string> &attributes,
                                                      const std::string &key) const {
                     std::ostringstream out;
-                    out << utility::AwsURLEncoder::urlEncode(key) << '=' <<
-                    utility::AwsURLEncoder::urlEncode(attributes.at(key));
+                    out << utility::AwsURLEncoder::urlEncode(key) << '=' << utility::AwsURLEncoder::urlEncode(
+                            (const_cast<std::map<std::string, std::string> &>(attributes))[key]);
                     components.push_back(out.str());
                 }
 
