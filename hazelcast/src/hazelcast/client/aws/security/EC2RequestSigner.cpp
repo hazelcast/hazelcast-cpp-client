@@ -41,6 +41,9 @@ namespace hazelcast {
                                                                                   endpoint(endpoint) {
                 }
 
+                EC2RequestSigner::~EC2RequestSigner() {
+                }
+
                 std::string EC2RequestSigner::sign(const std::map<std::string, std::string> &attributes) {
                     std::string canonicalRequest = getCanonicalizedRequest(attributes);
                     std::string stringToSign = createStringToSign(canonicalRequest);

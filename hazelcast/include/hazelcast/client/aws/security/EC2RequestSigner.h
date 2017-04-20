@@ -41,6 +41,8 @@ namespace hazelcast {
                     EC2RequestSigner(const config::ClientAwsConfig &awsConfig, const std::string &timestamp,
                                      const std::string &endpoint);
 
+                    virtual ~EC2RequestSigner();
+
                     std::string sign(const std::map<std::string, std::string> &attributes);
 
                     std::string createFormattedCredential() const;
