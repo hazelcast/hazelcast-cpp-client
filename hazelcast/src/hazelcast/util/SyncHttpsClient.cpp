@@ -64,7 +64,7 @@ namespace hazelcast {
                     request_stream << "Connection: close\r\n\r\n";
 
                     // Send the request.
-                    asio::write(*socket, request);
+                    asio::write(*socket, request.data());
 
                     // Read the response status line. The response streambuf will automatically
                     // grow to accommodate the entire line. The growth may be limited by passing
@@ -96,11 +96,15 @@ namespace hazelcast {
 
                     // Read until EOF
                     asio::error_code error;
-                    while (asio::read(*socket, response,
-                                      asio::transfer_at_least(1), error));
+                    size_t bytesRead;
+                    while ((bytesRead = asio::read(*socket, response.prepare(512),
+                                      asio::transfer_at_least(1), error))) {
+                        response.commit(bytesRead);
+                    }
 
-                    if (error != asio::error::eof)
+                    if (error != asio::error::eof) {
                         throw asio::system_error(error);
+                    }
 
                     return responseStream;
                 } catch (asio::system_error &e) {
