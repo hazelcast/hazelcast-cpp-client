@@ -40,6 +40,10 @@ namespace hazelcast {
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
+                if (!connected) {
+                    return;
+                }
+
                 try {
                     outputSocketStream.writeInt(END);
                     inputSocketStream.readInt();

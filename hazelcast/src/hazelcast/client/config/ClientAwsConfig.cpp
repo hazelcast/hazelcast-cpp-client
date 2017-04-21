@@ -22,7 +22,7 @@ namespace hazelcast {
     namespace client {
         namespace config {
             ClientAwsConfig::ClientAwsConfig() : enabled(false), region("us-east-1"), hostHeader("ec2.amazonaws.com"),
-                                                 connectionTimeoutSeconds(5), insideAws(false) {
+                                                 insideAws(false) {
             }
 
             const std::string &ClientAwsConfig::getAccessKey() const {
@@ -97,19 +97,6 @@ namespace hazelcast {
                 return tagValue;
             }
 
-            int32_t ClientAwsConfig::getConnectionTimeoutSeconds() const {
-                return connectionTimeoutSeconds;
-            }
-
-            ClientAwsConfig &ClientAwsConfig::setConnectionTimeoutSeconds(int32_t connectionTimeoutSeconds) {
-                if (connectionTimeoutSeconds < 0) {
-                    throw exception::IllegalArgumentException("ClientAwsConfig::setConnectionTimeoutSeconds",
-                                                              "connection timeout can't be smaller than 0");
-                }
-                this->connectionTimeoutSeconds = connectionTimeoutSeconds;
-                return *this;
-            }
-
             const std::string &ClientAwsConfig::getIamRole() const {
                 return iamRole;
             }
@@ -136,8 +123,7 @@ namespace hazelcast {
                        << ", tagKey='" << config.getTagKey() << '\''
                        << ", tagValue='" << config.getTagValue() << '\''
                        << ", hostHeader='" << config.getHostHeader() << '\''
-                       << ", iamRole='" << config.getIamRole() << '\''
-                       << ", connectionTimeoutSeconds=" << config.getConnectionTimeoutSeconds() << '}';
+                       << ", iamRole='" << config.getIamRole() << "\'}";
             }
         }
     }
