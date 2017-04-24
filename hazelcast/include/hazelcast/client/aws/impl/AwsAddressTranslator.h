@@ -53,13 +53,13 @@ namespace hazelcast {
                      *
                      * @throws IOException if the address can not be translated.
                      */
-                    virtual std::auto_ptr<Address> translate(const Address &address);
+                    std::auto_ptr<Address> translate(const Address &address);
 
                 private:
                     /**
                      * Update the internal lookup table from AWS.
                      */
-                    virtual void refresh();
+                    void refresh();
 
                     std::auto_ptr<Address> findFromCache(const Address &address);
 
