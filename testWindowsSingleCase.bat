@@ -55,7 +55,7 @@ call mvn -U clean install
 call taskkill /F /FI "WINDOWTITLE eq cpp-java"
 
 echo "Starting the java test server"
-start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener" -Dexec.args="%HAZELCAST_ENTERPRISE_KEY%"
+start "cpp-java" mvn package exec:java -Dexec.mainClass="CppClientListener"
 
 SET DEFAULT_TIMEOUT=30
 SET SERVER_PORT=6543

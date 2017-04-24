@@ -33,7 +33,7 @@ namespace hazelcast {
             namespace impl {
                 const std::string DescribeInstances::QUERY_PREFIX = "/?";
 
-                DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig,
+                DescribeInstances::DescribeInstances(const config::ClientAwsConfig &awsConfig,
                                                      const std::string &endpoint) : awsConfig(awsConfig),
                                                                                     endpoint(endpoint) {
 /*TODO
@@ -76,7 +76,8 @@ namespace hazelcast {
 
                 std::istream &DescribeInstances::callService() {
                     std::string query = rs->getCanonicalizedQueryString(attributes);
-                    httpsClient = std::auto_ptr<util::SyncHttpsClient>(new util::SyncHttpsClient(endpoint.c_str(), QUERY_PREFIX + query));
+                    httpsClient = std::auto_ptr<util::SyncHttpsClient>(
+                            new util::SyncHttpsClient(endpoint.c_str(), QUERY_PREFIX + query));
                     return httpsClient->openConnection();
                 }
             }

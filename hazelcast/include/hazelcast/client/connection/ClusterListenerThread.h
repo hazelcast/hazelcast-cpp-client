@@ -98,6 +98,10 @@ namespace hazelcast {
 
                 std::vector<Address> getConfigAddresses() const;
 
+                #ifdef HZ_BUILD_WITH_SSL
+                std::vector<Address> getAwsAddresses() const;
+                #endif // HZ_BUILD_WITH_SSL
+
                 void memberAdded(const Member &member);
 
                 void memberRemoved(const Member &member);

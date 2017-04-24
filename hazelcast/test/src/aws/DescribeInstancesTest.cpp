@@ -36,8 +36,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true);
 
-                    awsConfig.setAccessKey(getenv("HZ_TEST_AWS_ACCESS_KEY"));
-                    awsConfig.setSecretKey(getenv("HZ_TEST_AWS_SECRET"));
+                    awsConfig.setAccessKey(getenv("HZ_TEST_AWS_ACCESS_KEY")).setSecretKey(getenv("HZ_TEST_AWS_SECRET"));
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_GT(results.size(), 0U);

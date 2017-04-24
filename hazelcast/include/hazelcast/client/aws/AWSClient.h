@@ -36,13 +36,13 @@ namespace hazelcast {
         namespace aws {
             class HAZELCAST_API AWSClient {
             public:
-                AWSClient(config::ClientAwsConfig &awsConfig);
+                AWSClient(const config::ClientAwsConfig &awsConfig);
 
                 std::map<std::string, std::string> getAddresses();
 
                 const std::string &getEndpoint() const;
             private:
-                config::ClientAwsConfig &awsConfig;
+                const config::ClientAwsConfig &awsConfig;
                 std::string endpoint;
             };
         }

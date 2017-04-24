@@ -46,7 +46,11 @@ namespace hazelcast {
                     : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
                       outSelectorThread(NULL), live(true), heartBeater(clientContext),
                       heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
-                      callIdGenerator(0), connectionIdCounter(0) {
+                      callIdGenerator(0), connectionIdCounter(0)
+            #ifdef HZ_BUILD_WITH_SSL
+            , translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig())
+            #endif // HZ_BUILD_WITH_SSL
+            {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
                 PROTOCOL.insert(PROTOCOL.begin(), &protocol_bytes[0], &protocol_bytes[3]);
             }
@@ -70,14 +74,15 @@ namespace hazelcast {
 
                     const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                     bool success = true;
-                    for (std::vector<std::string>::const_iterator it = verifyFiles.begin();it != verifyFiles.end();
+                    for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                          ++it) {
                         asio::error_code ec;
                         sslContext->load_verify_file(*it, ec);
                         if (ec) {
-                            util::ILogger::getLogger().warning(std::string("ConnectionManager::start: Failed to load CA "
-                                                                                   "verify file at ") + *it + " "
-                                                               + ec.message());
+                            util::ILogger::getLogger().warning(
+                                    std::string("ConnectionManager::start: Failed to load CA "
+                                                        "verify file at ") + *it + " "
+                                    + ec.message());
                             success = false;
                         }
                     }
@@ -94,9 +99,10 @@ namespace hazelcast {
                     const std::string &cipherList = sslConfig.getCipherList();
                     if (!cipherList.empty()) {
                         if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                            util::ILogger::getLogger().warning(std::string("ConnectionManager::start: Could not load any "
-                                                                                   "of the ciphers in the config provided "
-                                                                                   "ciphers:") + cipherList);
+                            util::ILogger::getLogger().warning(
+                                    std::string("ConnectionManager::start: Could not load any "
+                                                        "of the ciphers in the config provided "
+                                                        "ciphers:") + cipherList);
                             return false;
                         }
                     }
@@ -152,8 +158,8 @@ namespace hazelcast {
                     boost::shared_ptr<Connection> conn = getOwnerConnection();
                     // Check if the retrieved connection is the same as the last one, if so we need to close it so that
                     // a connection to a new member is established.
-                    if ((Connection *)NULL != conn.get() &&
-                            lastTriedAddress == util::IOUtil::to_string(conn->getRemoteEndpoint())) {
+                    if ((Connection *) NULL != conn.get() &&
+                        lastTriedAddress == util::IOUtil::to_string(conn->getRemoteEndpoint())) {
                         // close the connection
                         conn->close();
 
@@ -247,12 +253,14 @@ namespace hazelcast {
                 // ensureOwnerConnectionAvailable
                 // ownerConnectionFuture.getOrWaitForCreation();
 
-                boost::shared_ptr<Connection> conn = connections.get(address);
+                Address connectionAddress = translateAddress(address);
+
+                boost::shared_ptr<Connection> conn = connections.get(connectionAddress);
                 if (conn.get() == NULL) {
                     util::LockGuard l(lockMutex);
-                    conn = connections.get(address);
+                    conn = connections.get(connectionAddress);
                     if (conn.get() == NULL) {
-                        boost::shared_ptr<Connection> newConnection(connectTo(address, false));
+                        boost::shared_ptr<Connection> newConnection(connectTo(connectionAddress, false));
                         newConnection->getReadHandler().registerSocket();
                         connections.put(newConnection->getRemoteEndpoint(), newConnection);
                         socketConnections.put(newConnection->getSocket().getSocketId(), newConnection);
@@ -392,6 +400,10 @@ namespace hazelcast {
                 }
             }
 
+            std::auto_ptr<Connection> ConnectionManager::connectAsOwner(const Address &address) {
+                return connectTo(translateAddress(address), true);
+            }
+
             std::auto_ptr<Connection> ConnectionManager::connectTo(const Address &address, bool ownerConnection) {
                 std::auto_ptr<connection::Connection> conn(
                         new Connection(address, clientContext, inSelector, outSelector, ownerConnection
@@ -472,6 +484,15 @@ namespace hazelcast {
                 }
 
                 util::ILogger::getLogger().info(message.str());
+            }
+
+            Address ConnectionManager::translateAddress(const Address &address) {
+                #ifdef HZ_BUILD_WITH_SSL
+                // translate ip
+                return *translator.translate(address);
+                #else
+                return address;
+                #endif // HZ_BUILD_WITH_SSL
             }
         }
     }

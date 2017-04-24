@@ -16,6 +16,10 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
+#ifdef HZ_BUILD_WITH_SSL
+#include <boost/foreach.hpp>
+#include "hazelcast/client/aws/AWSClient.h"
+#endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
@@ -115,6 +119,10 @@ namespace hazelcast {
                 }
                 std::vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(configAddresses.begin(), configAddresses.end());
+                #ifdef HZ_BUILD_WITH_SSL
+                std::vector<Address> awsAddresses = getAwsAddresses();
+                addresses.insert(awsAddresses.begin(), awsAddresses.end());
+                #endif // HZ_BUILD_WITH_SSL
                 return addresses;
             }
 
@@ -185,6 +193,29 @@ namespace hazelcast {
                 std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
             }
+
+            #ifdef HZ_BUILD_WITH_SSL
+            std::vector<Address> ClusterListenerThread::getAwsAddresses() const {
+                std::vector<Address> awsAdresses;
+                const config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
+                if (awsConfig.isEnabled()) {
+                    try {
+                        aws::AWSClient awsClient(awsConfig);
+                        typedef std::map<std::string, std::string> AddressMap;
+                        BOOST_FOREACH(const AddressMap::value_type &addressPair , awsClient.getAddresses()) {
+                            // by default, ports 5701-5703 will be tried
+                            for (int port = 5701;port < 5704; ++port) {
+                                awsAdresses.push_back(Address(addressPair.first, port));
+                            }
+                        }
+                    } catch (exception::IException &e) {
+                        util::ILogger::getLogger().warning(std::string("Aws addresses failed to load: ") + e.what());
+                    }
+                }
+
+                return awsAdresses;
+            }
+            #endif // HZ_BUILD_WITH_SSL
 
             void ClusterListenerThread::handleMember(const Member &member, const int32_t &eventType) {
                 switch (eventType) {
@@ -340,7 +371,6 @@ namespace hazelcast {
                     clientContext.getClusterService().fireMembershipEvent(*it);
                 }
             }
-
         }
     }
 }

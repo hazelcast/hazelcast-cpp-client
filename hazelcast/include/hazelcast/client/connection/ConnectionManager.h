@@ -36,7 +36,8 @@
 #ifdef HZ_BUILD_WITH_SSL
 #include <asio.hpp>
 #include <asio/ssl.hpp>
-#endif
+#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
+#endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -151,6 +152,13 @@ namespace hazelcast {
                 std::auto_ptr<Connection> connectTo(const Address &address, bool ownerConnection);
 
                 /**
+                 * Connects to the translated ip address (if translation is needed, such as when aws is used)
+                * @param address
+                * @return Return the newly created connection.
+                */
+                std::auto_ptr<Connection> connectAsOwner(const Address &address);
+
+                /**
                 * @param address
                 * @param ownerConnection
                 */
@@ -194,6 +202,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getOwnerConnection();
 
+                inline Address translateAddress(const Address &address);
+
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 util::SynchronizedMap<int, Connection> socketConnections;
@@ -219,6 +229,7 @@ namespace hazelcast {
                 #ifdef HZ_BUILD_WITH_SSL
                 std::auto_ptr<asio::io_service> ioService;
                 std::auto_ptr<asio::ssl::context> sslContext;
+                aws::impl::AwsAddressTranslator translator;
                 #endif
             };
         }

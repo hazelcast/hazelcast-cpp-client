@@ -41,7 +41,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint);
+                    DescribeInstances(const config::ClientAwsConfig &awsConfig, const std::string &endpoint);
 
                     virtual ~DescribeInstances();
 
@@ -60,7 +60,7 @@ namespace hazelcast {
                     std::istream &callService();
 
                     std::auto_ptr<security::EC2RequestSigner> rs;
-                    config::ClientAwsConfig &awsConfig;
+                    const config::ClientAwsConfig &awsConfig;
                     const std::string &endpoint;
                     std::map<std::string, std::string> attributes;
                     std::auto_ptr<util::SyncHttpsClient> httpsClient;
