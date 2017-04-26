@@ -34,6 +34,7 @@ namespace hazelcast {
                     static const char *DOC_VERSION;
                     static const char *SIGNATURE_METHOD_V4;
                     static const char *GET;
+                    static const char *ECS_CREDENTIALS_ENV_VAR_NAME;
                 };
             };
         }

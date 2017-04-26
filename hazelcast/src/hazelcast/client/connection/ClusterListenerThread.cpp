@@ -216,7 +216,7 @@ namespace hazelcast {
             #ifdef HZ_BUILD_WITH_SSL
             std::vector<Address> ClusterListenerThread::getAwsAddresses() const {
                 std::vector<Address> awsAdresses;
-                const config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
+                config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
                 if (awsConfig.isEnabled()) {
                     try {
                         aws::AWSClient awsClient(awsConfig);

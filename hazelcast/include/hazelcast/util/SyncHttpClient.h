@@ -13,39 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_AWS_AWSCLIENT_H_
-#define HAZELCAST_CLIENT_AWS_AWSCLIENT_H_
-
-#ifdef HZ_BUILD_WITH_SSL
+#ifndef HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
+#define HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
 
 #include <string>
-#include <map>
+#include <asio.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
-    namespace client {
-        namespace config {
-            class ClientAwsConfig;
-        }
-        namespace aws {
-            class HAZELCAST_API AWSClient {
-            public:
-                AWSClient(config::ClientAwsConfig &awsConfig);
+    namespace util {
+        class HAZELCAST_API SyncHttpClient {
+        public:
+            SyncHttpClient(const std::string &serverIp, const std::string &uriPath);
 
-                std::map<std::string, std::string> getAddresses();
-
-                const std::string &getEndpoint() const;
-            private:
-                config::ClientAwsConfig &awsConfig;
-                std::string endpoint;
-            };
-        }
+            std::istream &openConnection();
+        private:
+            std::string server;
+            std::string uriPath;
+            asio::io_service ioService;
+            asio::ip::tcp::socket socket;
+            asio::streambuf response;
+            std::istream responseStream;
+        };
     }
 }
 
@@ -53,6 +49,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif // HZ_BUILD_WITH_SSL
+#endif //HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
 
-#endif /* HAZELCAST_CLIENT_AWS_AWSCLIENT_H_ */

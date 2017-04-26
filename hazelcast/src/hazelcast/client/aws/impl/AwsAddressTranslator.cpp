@@ -26,7 +26,7 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             namespace impl {
-                AwsAddressTranslator::AwsAddressTranslator(const config::ClientAwsConfig &awsConfig) {
+                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig) {
                     if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
                         awsClient = std::auto_ptr<AWSClient>(new AWSClient(awsConfig));
                     }

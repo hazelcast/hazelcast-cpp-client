@@ -43,7 +43,7 @@ namespace hazelcast {
                      *
                      * Keeps a lookup table of private to public IP addresses.
                      */
-                    AwsAddressTranslator(const config::ClientAwsConfig &awsConfig);
+                    AwsAddressTranslator(config::ClientAwsConfig &awsConfig);
 
                     /**
                      * Translates an IP address from the private AWS network to the public network.

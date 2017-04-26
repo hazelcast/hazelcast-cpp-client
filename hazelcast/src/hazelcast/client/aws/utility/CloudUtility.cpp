@@ -16,6 +16,7 @@
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
 #include "hazelcast/client/aws/utility/CloudUtility.h"
@@ -129,6 +130,14 @@ namespace hazelcast {
                     return false;
                 }
 
+                void CloudUtility::unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                                                         std::map<std::string, std::string> &attributes) {
+                    pt::ptree json;
+                    pt::read_json(stream, json);
+                    awsConfig.setAccessKey(json.get_optional<std::string>("AccessKeyId").get_value_or(""));
+                    awsConfig.setSecretKey(json.get_optional<std::string>("SecretAccessKey").get_value_or(""));
+                    attributes["X-Amz-Security-Token"] = json.get_optional<std::string>("Token").get_value_or("");
+                }
             }
         }
     }

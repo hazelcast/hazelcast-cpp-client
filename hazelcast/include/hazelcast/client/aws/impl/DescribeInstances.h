@@ -41,7 +41,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(const config::ClientAwsConfig &awsConfig, const std::string &endpoint);
+                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint);
 
                     virtual ~DescribeInstances();
 
@@ -59,13 +59,22 @@ namespace hazelcast {
 
                     std::istream &callService();
 
+                    void checkKeysFromIamRoles();
+                    void tryGetDefaultIamRole();
+                    void getKeysFromIamTaskRole();
+                    void getKeysFromIamRole();
+                    void parseAndStoreRoleCreds(std::istream &in);
+
                     std::auto_ptr<security::EC2RequestSigner> rs;
-                    const config::ClientAwsConfig &awsConfig;
+                    config::ClientAwsConfig &awsConfig;
                     const std::string &endpoint;
                     std::map<std::string, std::string> attributes;
                     std::auto_ptr<util::SyncHttpsClient> httpsClient;
 
                     static const std::string QUERY_PREFIX;
+                    static const std::string IAM_ROLE_ENDPOINT;
+                    static const std::string IAM_ROLE_QUERY;
+                    static const std::string IAM_TASK_ROLE_ENDPOINT;
                 };
             }
         }

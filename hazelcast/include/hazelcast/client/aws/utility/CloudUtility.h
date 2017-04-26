@@ -53,6 +53,9 @@ namespace hazelcast {
                     static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
                                                                                    const config::ClientAwsConfig &awsConfig);
 
+                    static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                                                      std::map<std::string, std::string> &attributes);
+
                 private:
                     static bool acceptTag(const config::ClientAwsConfig &awsConfig, pt::ptree &reservationSetItem);
 

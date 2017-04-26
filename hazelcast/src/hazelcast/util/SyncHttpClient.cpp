@@ -16,42 +16,29 @@
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
-#ifdef HZ_BUILD_WITH_SSL
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <WinSock2.h>
 #endif
 
-#include <asio/asio/include/asio/ssl/rfc2818_verification.hpp>
-
-#include "hazelcast/util/SyncHttpsClient.h"
+#include "hazelcast/util/SyncHttpClient.h"
 #include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace util {
-            SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp), uriPath(uriPath),
-                                                                         sslContext(asio::ssl::context::sslv23),
-                                                                         responseStream(&response) {
-                sslContext.set_default_verify_paths();
-                sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
-                                               asio::ssl::context::single_dh_use);
-
-                socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
-                        new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
+            SyncHttpClient::SyncHttpClient(const std::string &serverIp, const std::string &uriPath)
+                    : server(serverIp), uriPath(uriPath), socket(ioService), responseStream(&response) {
             }
 
-            std::istream &SyncHttpsClient::openConnection() {
+            std::istream &SyncHttpClient::openConnection() {
                 try {
                     // Get a list of endpoints corresponding to the server name.
                     asio::ip::tcp::resolver resolver(ioService);
-                    asio::ip::tcp::resolver::query query(server, "https");
+                    asio::ip::tcp::resolver::query query(server, "http");
                     asio::ip::tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
 
-                    asio::connect(socket->lowest_layer(), endpoint_iterator);
+                    asio::connect(socket, endpoint_iterator);
 
-                    socket->lowest_layer().set_option(asio::ip::tcp::no_delay(true));
-                    socket->set_verify_callback(asio::ssl::rfc2818_verification(server));
-                    socket->handshake(asio::ssl::stream_base::client);
+                    socket.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
 
                     // Form the request. We specify the "Connection: close" header so that the
                     // server will close the socket after transmitting the response. This will
@@ -64,12 +51,12 @@ namespace hazelcast {
                     request_stream << "Connection: close\r\n\r\n";
 
                     // Send the request.
-                    asio::write(*socket, request.data());
+                    asio::write(socket, request.data());
 
                     // Read the response status line. The response streambuf will automatically
                     // grow to accommodate the entire line. The growth may be limited by passing
                     // a maximum size to the streambuf constructor.
-                    asio::read_until(*socket, response, "\r\n");
+                    asio::read_until(socket, response, "\r\n");
 
                     // Check that response is OK.
                     std::string httpVersion;
@@ -84,11 +71,11 @@ namespace hazelcast {
                     if (statusCode != 200) {
                         std::stringstream out;
                         out << "Response returned with status: " << statusCode << " Status message:" << statusMessage;
-                        throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());;
+                        throw client::exception::IOException("SyncHttpClient::openConnection", out.str());;
                     }
 
                     // Read the response headers, which are terminated by a blank line.
-                    asio::read_until(*socket, response, "\r\n\r\n");
+                    asio::read_until(socket, response, "\r\n\r\n");
 
                     // Process the response headers.
                     std::string header;
@@ -97,7 +84,7 @@ namespace hazelcast {
                     // Read until EOF
                     asio::error_code error;
                     size_t bytesRead;
-                    while ((bytesRead = asio::read(*socket, response.prepare(1024),
+                    while ((bytesRead = asio::read(socket, response.prepare(1024),
                                       asio::transfer_at_least(1), error))) {
                         response.commit(bytesRead);
                     }
@@ -109,11 +96,9 @@ namespace hazelcast {
                     return responseStream;
                 } catch (asio::system_error &e) {
                     std::ostringstream out;
-                    out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
-                    throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
+                    out << "Could not retrieve response from http://" << server << uriPath << " Error:" << e.what();
+                    throw client::exception::IOException("SyncHttpClient::openConnection", out.str());
                 }
             }
     }
 }
-
-#endif // HZ_BUILD_WITH_SSL

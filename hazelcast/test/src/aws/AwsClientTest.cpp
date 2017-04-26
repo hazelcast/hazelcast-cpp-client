@@ -45,6 +45,21 @@ namespace hazelcast {
 
                     HazelcastClient hazelcastClient(clientConfig);
                 }
+
+                /**
+                 * Following test can only run from inside the AWS network
+                 */
+                #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                TEST_F (AwsClientTest, testRetrieveCredentialsFromIamRoleAndConnect) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees").setTagKey(
+                            "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+
+                    HazelcastClient hazelcastClient(clientConfig);
+                }
+                #endif
             }
         }
     }

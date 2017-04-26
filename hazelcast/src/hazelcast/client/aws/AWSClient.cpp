@@ -25,7 +25,7 @@
 namespace hazelcast {
     namespace client {
         namespace aws {
-            AWSClient::AWSClient(const config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
+            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
                 if (awsConfig.getAccessKey().empty() && awsConfig.getIamRole().empty()) {
                     throw exception::IllegalArgumentException("AWSClient::AWSClient",
                                                               "AWS access key or IAM Role is required!");
