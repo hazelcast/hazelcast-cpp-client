@@ -443,7 +443,8 @@ Examples are also provided for some options at the near cache folder under examp
 
 # TLS Feature
 
-Note: This is a Hazelcast IMDG Enterprise feature.
+*Note: This is a Hazelcast IMDG Enterprise feature. You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library.
+
 
 You can encrypt all the communication between the client and the cluster using this feature. It requires the openssl development library installed in your development environment. You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The SSL config also lets you set the cipher suite to be used.
 
@@ -527,6 +528,24 @@ sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
 ```
 The default value for the protocol if not set is tlsv12. The SSLConfig.setEnabled should be called explicitly to enable the SSL.
 The path of the certificate should be correctly provided. 
+
+# AWS Cloud Discovery
+
+Note: You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since Aws depends on openssl library.
+
+The C++ client can discover the exiting Hazelcast servers in Amazon AWS environment. The client queries the Amazon AWS environment using the "describe-instances (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)" query of AWS. The client only finds the up and running instances and filters them based on the filter config provided at the ClientAwsConfig configuration.
+ 
+An example configuration:
+```cpp
+clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setSecurityGroupName("MySecureGroup").setRegion("us-east-1");
+```
+You need to enable the discovery by calling setEnabled(true). You can set your access key and secret in the config as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances shall be retrieved from, the default is to use us-east-1.
+ 
+You can also set the IAM role using the setIamRole method. If access key is configured and no IAM role is set, the client will use the configured access key and secret. Otherwise, the client should be inside the AWS network and it will try retrieve the access key for the configured IAM role.
+ 
+The C++ client works the same way as the Java client as described at https://github.com/hazelcast/hazelcast-aws/blob/master/README.md. 
 
 # Code Examples
 
