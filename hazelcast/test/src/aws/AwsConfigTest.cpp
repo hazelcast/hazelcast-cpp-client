@@ -19,7 +19,9 @@
 #include <cmath>
 #include <gtest/gtest.h>
 
-#include <hazelcast/client/ClientConfig.h>
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ClientProperties.h"
+#include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
@@ -89,6 +91,21 @@ namespace hazelcast {
                     clientConfig.getNetworkConfig().setAwsConfig(newConfig);
                     // default constructor sets enabled to false
                     ASSERT_FALSE(clientConfig.getNetworkConfig().getAwsConfig().isEnabled());
+                }
+
+                TEST_F (AwsConfigTest, testInvalidAwsMemberPortConfig) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "65536";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+
+                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "-1";
+
+                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
                 }
             }
         }

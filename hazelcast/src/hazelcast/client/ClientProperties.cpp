@@ -38,6 +38,9 @@ namespace hazelcast {
         const std::string ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME = "hazelcast_client_request_retry_wait_time";
         const std::string ClientProperties::PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT = "1";
 
+        const std::string ClientProperties::PROP_AWS_MEMBER_PORT = "hz-port";
+        const std::string ClientProperties::PROP_AWS_MEMBER_PORT_DEFAULT = "5701";
+
         ClientProperty::ClientProperty(ClientConfig& config, const std::string& name, const std::string& defaultValue)
         : name(name) {
             if (config.getProperties().count(name) > 0) {
@@ -82,10 +85,10 @@ namespace hazelcast {
         : heartbeatTimeout(clientConfig, PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT)
         , heartbeatInterval(clientConfig, PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT)
         , retryCount(clientConfig, PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT)
-        , retryWaitTime(clientConfig, PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT) {
+        , retryWaitTime(clientConfig, PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT)
+        , awsMemberPort(clientConfig, PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT) {
 
         }
-
 
         const ClientProperty& ClientProperties::getHeartbeatTimeout() const {
             return heartbeatTimeout;
@@ -101,6 +104,10 @@ namespace hazelcast {
 
         const ClientProperty& ClientProperties::getRetryWaitTime() const {
             return retryWaitTime;
+        }
+
+        const ClientProperty& ClientProperties::getAwsMemberPort() const {
+            return awsMemberPort;
         }
     }
 }

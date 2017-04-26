@@ -19,6 +19,7 @@
 #ifdef HZ_BUILD_WITH_SSL
 #include <boost/foreach.hpp>
 #include "hazelcast/client/aws/AWSClient.h"
+#include "hazelcast/client/ClientProperties.h"
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/Util.h"
@@ -40,7 +41,24 @@ namespace hazelcast {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
                     : startLatch(1), clientContext(clientContext), deletingConnection(false) {
+                #ifdef HZ_BUILD_WITH_SSL
+                config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
+                if (awsConfig.isEnabled()) {
+                    int port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
+                    if (port < 0) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be greater 0. Provided port config:" << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
+                    if (port > 65535) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be less or equal to 65535. Provided port config:" << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
 
+                    awsMemberPort = port;
+                }
+                #endif
             }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
@@ -123,6 +141,11 @@ namespace hazelcast {
                 std::vector<Address> awsAddresses = getAwsAddresses();
                 addresses.insert(awsAddresses.begin(), awsAddresses.end());
                 #endif // HZ_BUILD_WITH_SSL
+
+                if (addresses.empty()) {
+                    addresses.insert(Address("127.0.0.1", 5701));
+                }
+
                 return addresses;
             }
 
@@ -187,10 +210,6 @@ namespace hazelcast {
                     socketAddresses.push_back((*it));
                 }
 
-                if (socketAddresses.size() == 0) {
-                    socketAddresses.push_back(Address("127.0.0.1", 5701));
-                }
-                std::random_shuffle(socketAddresses.begin(), socketAddresses.end());
                 return socketAddresses;
             }
 
@@ -203,10 +222,7 @@ namespace hazelcast {
                         aws::AWSClient awsClient(awsConfig);
                         typedef std::map<std::string, std::string> AddressMap;
                         BOOST_FOREACH(const AddressMap::value_type &addressPair , awsClient.getAddresses()) {
-                            // by default, ports 5701-5703 will be tried
-                            for (int port = 5701;port < 5704; ++port) {
-                                awsAdresses.push_back(Address(addressPair.first, port));
-                            }
+                            awsAdresses.push_back(Address(addressPair.first, awsMemberPort));
                         }
                     } catch (exception::IException &e) {
                         util::ILogger::getLogger().warning(std::string("Aws addresses failed to load: ") + e.what());

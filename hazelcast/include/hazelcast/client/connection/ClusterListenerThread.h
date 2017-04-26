@@ -88,6 +88,10 @@ namespace hazelcast {
                 bool isInitialMembersLoaded;
                 bool isRegistrationIdReceived;
 
+                #ifdef HZ_BUILD_WITH_SSL
+                int awsMemberPort;
+                #endif
+
                 void loadInitialMemberList();
 
                 void listenMembershipEvents();

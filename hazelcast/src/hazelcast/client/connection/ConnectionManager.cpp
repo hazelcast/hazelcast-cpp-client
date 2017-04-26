@@ -489,7 +489,7 @@ namespace hazelcast {
             Address ConnectionManager::translateAddress(const Address &address) {
                 #ifdef HZ_BUILD_WITH_SSL
                 // translate ip
-                return *translator.translate(address);
+                return translator.translate(address);
                 #else
                 return address;
                 #endif // HZ_BUILD_WITH_SSL

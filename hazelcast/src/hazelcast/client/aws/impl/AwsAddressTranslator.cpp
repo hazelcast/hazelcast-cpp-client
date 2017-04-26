@@ -32,22 +32,21 @@ namespace hazelcast {
                     }
                 }
 
-                std::auto_ptr<Address> AwsAddressTranslator::translate(const Address &address) {
+                Address AwsAddressTranslator::translate(const Address &address) {
+                    Address translatedAddress = address;
                     // if no translation is needed just return the address as it is
                     if (NULL == awsClient.get()) {
-                        return std::auto_ptr<Address>(new Address(address));
+                        return translatedAddress;
                     }
 
-                    std::auto_ptr<Address> result = findFromCache(address);
-                    if (NULL != result.get()) {
-                        return result;
+                    if (findFromCache(address, translatedAddress)) {
+                        return translatedAddress;
                     }
 
                     refresh();
 
-                    result = findFromCache(address);
-                    if (NULL != result.get()) {
-                        return result;
+                    if (findFromCache(address, translatedAddress)) {
+                        return translatedAddress;
                     }
 
                     std::stringstream out;
@@ -64,10 +63,10 @@ namespace hazelcast {
                     }
                 }
 
-                std::auto_ptr<Address> AwsAddressTranslator::findFromCache(const Address &address) {
+                bool AwsAddressTranslator::findFromCache(const Address &address, Address &translatedAddress) {
                     boost::shared_ptr<std::map<std::string, std::string> > mapping = privateToPublic;
                     if (mapping.get() == NULL) {
-                        return std::auto_ptr<Address>();
+                        return false;
                     }
 
                     std::map<std::string, std::string>::const_iterator publicAddressIt = mapping->find(
@@ -75,11 +74,12 @@ namespace hazelcast {
                     if (publicAddressIt != mapping->end()) {
                         const std::string &publicIp = (*publicAddressIt).second;
                         if (!publicIp.empty()) {
-                            return std::auto_ptr<Address>(new Address((*publicAddressIt).second, address.getPort()));
+                            translatedAddress = Address((*publicAddressIt).second, address.getPort());
+                            return true;
                         }
                     }
 
-                    return std::auto_ptr<Address>();
+                    return false;
                 }
             }
         }

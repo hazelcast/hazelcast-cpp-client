@@ -29,18 +29,21 @@ namespace hazelcast {
                 class AwsClientTest : public ::testing::Test {
                 };
 
-                TEST_F (AwsClientTest, testConnectionToAwsCluster) {
-                    ClientConfig config;
-                    // consume the addresses quickly
-                    config.getNetworkConfig().setConnectionTimeout(500);
-                    config::ClientAwsConfig &awsConfig = config.getNetworkConfig().getAwsConfig();
-                    awsConfig.setEnabled(true).setAccessKey(getenv("HZ_TEST_AWS_ACCESS_KEY")).
-                            setSecretKey(getenv("HZ_TEST_AWS_SECRET")).setTagKey("Name").setTagValue("*linux-release");
-                    try {
-                        HazelcastClient hazelcastClient(config);
-                    } catch (exception::IException &e) {
-                        ASSERT_STREQ("HazelcastClient could not be started!", e.getMessage().c_str());
-                    }
+                TEST_F (AwsClientTest, testClientAwsMemberNonDefaultPortConfig) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
+
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    #else
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
+                    #endif
+
+                    HazelcastClient hazelcastClient(clientConfig);
                 }
             }
         }

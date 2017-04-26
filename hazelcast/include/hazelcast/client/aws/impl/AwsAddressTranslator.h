@@ -53,7 +53,7 @@ namespace hazelcast {
                      *
                      * @throws IOException if the address can not be translated.
                      */
-                    std::auto_ptr<Address> translate(const Address &address);
+                    Address translate(const Address &address);
 
                 private:
                     /**
@@ -61,7 +61,7 @@ namespace hazelcast {
                      */
                     void refresh();
 
-                    std::auto_ptr<Address> findFromCache(const Address &address);
+                    bool findFromCache(const Address &address, Address &translatedAddress);
 
                     std::auto_ptr<AWSClient> awsClient;
                     util::Atomic<boost::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
