@@ -26,14 +26,6 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             AWSClient::AWSClient(config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
-                if (awsConfig.getAccessKey().empty() && awsConfig.getIamRole().empty()) {
-                    throw exception::IllegalArgumentException("AWSClient::AWSClient",
-                                                              "AWS access key or IAM Role is required!");
-                }
-                if (awsConfig.getSecretKey().empty() && awsConfig.getIamRole().empty()) {
-                    throw exception::IllegalArgumentException("AWSClient::AWSClient",
-                                                              "AWS secret key or Iam Role is required!");
-                }
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {

@@ -54,7 +54,17 @@ namespace hazelcast {
                     ClientConfig clientConfig;
 
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
-                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees").setTagKey(
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setIamRole("cloudbees-role").setTagKey(
+                            "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
+
+                    HazelcastClient hazelcastClient(clientConfig);
+                }
+
+                TEST_F (AwsClientTest, testRetrieveCredentialsFromInstanceProfileDefaultIamRoleAndConnect) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey(
                             "aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
                     HazelcastClient hazelcastClient(clientConfig);

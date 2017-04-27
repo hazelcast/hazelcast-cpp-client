@@ -142,7 +142,7 @@ namespace hazelcast {
                 void DescribeInstances::getKeysFromIamRole() {
                     std::string query = "/latest/meta-data/iam/security-credentials/" + awsConfig.getIamRole();
 
-                    util::SyncHttpClient httpClient(IAM_TASK_ROLE_ENDPOINT, query);
+                    util::SyncHttpClient httpClient(IAM_ROLE_ENDPOINT, query);
 
                     try {
                         std::istream &istream = httpClient.openConnection();
