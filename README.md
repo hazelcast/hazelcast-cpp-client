@@ -533,7 +533,7 @@ The path of the certificate should be correctly provided.
 
 Note: You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since AWS depends on openssl library.
 
-The C++ client can discover the exiting Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the "describe-instances (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)" query of AWS. The client only finds only the up and running instances and filters them based on the filter config provided at the ClientAwsConfig configuration.
+The C++ client can discover the exiting Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the "describe-instances (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)" query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the ClientAwsConfig configuration.
  
 An example configuration:
 ```cpp
@@ -559,7 +559,7 @@ If no IAM role or access key is provided, the client will retrieve the IAM role 
         setTagValue("aws-tag-value-1").setInsideAws(true);
 ```
 
-The details of IAM role usage for applications are described at http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html. The IAM role access key retrieval requires that the instance has a valid instance profile association for the iam role and the iam role should have the AWS DescribeInstances permission.
+The details of IAM role usage for applications are described at http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html. The IAM role access key retrieval requires that the instance has a valid instance profile association for the IAM role and the IAM role should have the AWS DescribeInstances permission.
  
 # Code Examples
 
