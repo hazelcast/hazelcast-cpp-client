@@ -14,3 +14,5 @@
 # limitations under the License.
 #
 add_executable(awsClientWithKey AwsClientWithKey.cpp)
+add_executable(AwsClientWithNoKeyNoIAMRoleInsideAws AwsClientWithNoKeyNoIAMRoleInsideAws.cpp)
+add_executable(AwsClientWithNoKeyWithIAMRoleInsideAws AwsClientWithNoKeyWithIAMRoleInsideAws.cpp)
