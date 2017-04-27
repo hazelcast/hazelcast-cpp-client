@@ -443,7 +443,8 @@ Examples are also provided for some options at the near cache folder under examp
 
 # TLS Feature
 
-Note: This is a Hazelcast IMDG Enterprise feature.
+*Note: This is a Hazelcast IMDG Enterprise feature. You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library.
+
 
 You can encrypt all the communication between the client and the cluster using this feature. It requires the openssl development library installed in your development environment. You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The SSL config also lets you set the cipher suite to be used.
 
@@ -528,6 +529,38 @@ sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
 The default value for the protocol if not set is tlsv12. The SSLConfig.setEnabled should be called explicitly to enable the SSL.
 The path of the certificate should be correctly provided. 
 
+# AWS Cloud Discovery
+
+Note: You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since AWS depends on openssl library.
+
+The C++ client can discover the exiting Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the "describe-instances (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html)" query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the ClientAwsConfig configuration.
+ 
+An example configuration:
+```cpp
+clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setSecurityGroupName("MySecureGroup").setRegion("us-east-1");
+```
+You need to enable the discovery by calling setEnabled(true). You can set your access key and secret in the config as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default is to use us-east-1.
+ 
+The C++ client works the same way as the Java client as described at https://github.com/hazelcast/hazelcast-aws/blob/master/README.md. 
+ 
+## IAM Role Usage
+You can set the IAM role using the setIamRole method. If the access key is configured and no IAM role is set, the client will use the configured access key and secret. Otherwise, the client should be inside the AWS network and it will try to retrieve the access key for the configured IAM role.
+
+If IAM role is set in the config the key and secret is obtained using the query http://169.254.169.254/latest/meta-data/iam/security-credentials/<configured-iam-role>. Example usage:
+```cpp
+    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey("aws-test-tag").
+        setTagValue("aws-tag-value-1").setIamRole("MyInstanceRole").setInsideAws(true);
+```
+If no IAM role or access key is provided, the client will retrieve the IAM role using the HTTP query http://169.254.169.254/latest/meta-data/iam/security-credentials/ and then it will retrieve the key and secret using the HTTP query http://169.254.169.254/latest/meta-data/iam/security-credentials/<found-iam-role>.
+```cpp
+    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).setTagKey("aws-test-tag").
+        setTagValue("aws-tag-value-1").setInsideAws(true);
+```
+
+The details of IAM role usage for applications are described at http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html. The IAM role access key retrieval requires that the instance has a valid instance profile association for the IAM role and the IAM role should have the AWS DescribeInstances permission.
+ 
 # Code Examples
 
 You can try the following C++ client code examples. You need to have a Hazelcast client member running for the code examples to work. 

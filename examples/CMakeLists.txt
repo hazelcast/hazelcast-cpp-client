@@ -218,6 +218,7 @@ add_subdirectory(distributed-collections)
 add_subdirectory(adaptor)
 if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
     add_subdirectory(tls)
+    add_subdirectory(aws)
 endif()
 
 
