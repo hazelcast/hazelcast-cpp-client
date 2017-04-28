@@ -88,9 +88,7 @@ namespace hazelcast {
                 bool isInitialMembersLoaded;
                 bool isRegistrationIdReceived;
 
-                #ifdef HZ_BUILD_WITH_SSL
                 int awsMemberPort;
-                #endif
 
                 void loadInitialMemberList();
 
@@ -102,9 +100,7 @@ namespace hazelcast {
 
                 std::vector<Address> getConfigAddresses() const;
 
-                #ifdef HZ_BUILD_WITH_SSL
                 std::vector<Address> getAwsAddresses() const;
-                #endif // HZ_BUILD_WITH_SSL
 
                 void memberAdded(const Member &member);
 

@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_
 #define HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 #include <boost/property_tree/ptree.hpp>
@@ -70,7 +68,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_ */

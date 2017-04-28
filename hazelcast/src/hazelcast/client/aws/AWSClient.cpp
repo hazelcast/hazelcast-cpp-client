@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <boost/algorithm/string/replace.hpp>
 
 #include "hazelcast/client/aws/AWSClient.h"
@@ -39,12 +37,7 @@ namespace hazelcast {
             std::map<std::string, std::string> AWSClient::getAddresses() {
                 return impl::DescribeInstances(awsConfig, endpoint).execute();
             }
-
-            const std::string &AWSClient::getEndpoint() const {
-                return endpoint;
-            }
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

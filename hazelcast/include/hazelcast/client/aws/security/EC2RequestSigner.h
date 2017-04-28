@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_AWS_SECURITY_EC2REQUESTSIGNER_H_
 #define HAZELCAST_CLIENT_AWS_SECURITY_EC2REQUESTSIGNER_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 #include <vector>
@@ -76,8 +74,6 @@ namespace hazelcast {
 
                     std::string convertToHexString(const unsigned char *buffer, unsigned int len) const;
 
-                    std::string hmacSHA256(const std::string &key, const std::string &msg) const;
-
                     unsigned int hmacSHA256Bytes(const void *key, int keyLen, const std::string &msg,
                                                  unsigned char *hash) const;
 
@@ -108,7 +104,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_SECURITY_EC2REQUESTSIGNER_H_ */

@@ -16,12 +16,14 @@
 #ifndef HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
 #define HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
 
-#ifdef HZ_BUILD_WITH_SSL
 
 #include <string>
 #include <asio.hpp>
+
+#ifdef HZ_BUILD_WITH_SSL
 #include <asio/asio/include/asio/ssl/context.hpp>
 #include <asio/asio/include/asio/ssl/stream.hpp>
+#endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -43,8 +45,12 @@ namespace hazelcast {
             std::string uriPath;
 
             asio::io_service ioService;
+
+            #ifdef HZ_BUILD_WITH_SSL
             asio::ssl::context sslContext;
             std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+            #endif // HZ_BUILD_WITH_SSL
+
             asio::streambuf response;
             std::istream responseStream;
         };
@@ -54,8 +60,6 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif //HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
 

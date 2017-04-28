@@ -16,11 +16,9 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-#ifdef HZ_BUILD_WITH_SSL
 #include <boost/foreach.hpp>
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/client/ClientProperties.h"
-#endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
@@ -41,7 +39,6 @@ namespace hazelcast {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
                     : startLatch(1), clientContext(clientContext), deletingConnection(false) {
-                #ifdef HZ_BUILD_WITH_SSL
                 config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
                 if (awsConfig.isEnabled()) {
                     int port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
@@ -58,7 +55,6 @@ namespace hazelcast {
 
                     awsMemberPort = port;
                 }
-                #endif
             }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
@@ -137,10 +133,8 @@ namespace hazelcast {
                 }
                 std::vector<Address> configAddresses = getConfigAddresses();
                 addresses.insert(configAddresses.begin(), configAddresses.end());
-                #ifdef HZ_BUILD_WITH_SSL
                 std::vector<Address> awsAddresses = getAwsAddresses();
                 addresses.insert(awsAddresses.begin(), awsAddresses.end());
-                #endif // HZ_BUILD_WITH_SSL
 
                 if (addresses.empty()) {
                     addresses.insert(Address("127.0.0.1", 5701));
@@ -213,7 +207,6 @@ namespace hazelcast {
                 return socketAddresses;
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
             std::vector<Address> ClusterListenerThread::getAwsAddresses() const {
                 std::vector<Address> awsAdresses;
                 config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
@@ -231,7 +224,6 @@ namespace hazelcast {
 
                 return awsAdresses;
             }
-            #endif // HZ_BUILD_WITH_SSL
 
             void ClusterListenerThread::handleMember(const Member &member, const int32_t &eventType) {
                 switch (eventType) {

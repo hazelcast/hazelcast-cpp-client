@@ -46,11 +46,7 @@ namespace hazelcast {
                     : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
                       outSelectorThread(NULL), live(true), heartBeater(clientContext),
                       heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
-                      callIdGenerator(0), connectionIdCounter(0)
-            #ifdef HZ_BUILD_WITH_SSL
-            , translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig())
-            #endif // HZ_BUILD_WITH_SSL
-            {
+                      callIdGenerator(0), connectionIdCounter(0), socketFactory(clientContext) {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
                 PROTOCOL.insert(PROTOCOL.begin(), &protocol_bytes[0], &protocol_bytes[3]);
             }
@@ -66,51 +62,8 @@ namespace hazelcast {
                 inSelectorThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &inSelector));
                 outSelectorThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &outSelector));
                 heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
-                #ifdef HZ_BUILD_WITH_SSL
-                const config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
-                if (sslConfig.isEnabled()) {
-                    sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
-                            (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
-                    const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
-                    bool success = true;
-                    for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
-                         ++it) {
-                        asio::error_code ec;
-                        sslContext->load_verify_file(*it, ec);
-                        if (ec) {
-                            util::ILogger::getLogger().warning(
-                                    std::string("ConnectionManager::start: Failed to load CA "
-                                                        "verify file at ") + *it + " "
-                                    + ec.message());
-                            success = false;
-                        }
-                    }
-
-                    if (!success) {
-                        sslContext.reset();
-                        util::ILogger::getLogger().warning("ConnectionManager::start: Failed to load one or more "
-                                                                   "configured CA verify files (PEM files). Please "
-                                                                   "correct the files and retry.");
-                        return false;
-                    }
-
-                    // set cipher list if the list is set
-                    const std::string &cipherList = sslConfig.getCipherList();
-                    if (!cipherList.empty()) {
-                        if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                            util::ILogger::getLogger().warning(
-                                    std::string("ConnectionManager::start: Could not load any "
-                                                        "of the ciphers in the config provided "
-                                                        "ciphers:") + cipherList);
-                            return false;
-                        }
-                    }
-
-                    ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
-                }
-                #endif
-                return true;
+                return socketFactory.start();
             }
 
             void ConnectionManager::shutdown() {
@@ -406,11 +359,7 @@ namespace hazelcast {
 
             std::auto_ptr<Connection> ConnectionManager::connectTo(const Address &address, bool ownerConnection) {
                 std::auto_ptr<connection::Connection> conn(
-                        new Connection(address, clientContext, inSelector, outSelector, ownerConnection
-                #ifdef HZ_BUILD_WITH_SSL
-                , ioService.get(), sslContext.get()
-                #endif
-                ));
+                        new Connection(address, clientContext, inSelector, outSelector, socketFactory, ownerConnection));
 
                 checkLive();
                 conn->connect(clientContext.getClientConfig().getConnectionTimeout());
@@ -487,12 +436,7 @@ namespace hazelcast {
             }
 
             Address ConnectionManager::translateAddress(const Address &address) {
-                #ifdef HZ_BUILD_WITH_SSL
-                // translate ip
-                return translator.translate(address);
-                #else
-                return address;
-                #endif // HZ_BUILD_WITH_SSL
+                return socketFactory.translateAddress(address);
             }
         }
     }

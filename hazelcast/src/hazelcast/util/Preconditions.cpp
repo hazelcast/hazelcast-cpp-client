@@ -43,6 +43,14 @@ namespace hazelcast {
 
             return argument;
         }
+
+        void Preconditions::checkSSL(const std::string &sourceMethod) throw(client::exception::InvalidConfigurationException) {
+            #ifndef HZ_BUILD_WITH_SSL
+            throw client::exception::InvalidConfigurationException(sourceMethod, "You should compile with "
+                    "HZ_BUILD_WITH_SSL flag. You should also have the openssl installed on your machine and you need "
+                    "to link with the openssl library.");
+            #endif
+        }
     }
 }
 

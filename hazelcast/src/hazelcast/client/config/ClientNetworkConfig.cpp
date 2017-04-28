@@ -15,6 +15,7 @@
  */
 
 #include "hazelcast/client/config/ClientNetworkConfig.h"
+#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -23,16 +24,16 @@ namespace hazelcast {
                     : connectionTimeout(5000) {
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
+                util::Preconditions::checkSSL("getSSLConfig");
                 return sslConfig;
             }
 
             ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
+                util::Preconditions::checkSSL("setSSLConfig");
                 this->sslConfig = sslConfig;
                 return *this;
             }
-            #endif // HZ_BUILD_WITH_SSL
 
             int64_t ClientNetworkConfig::getConnectionTimeout() const {
                 return connectionTimeout;
@@ -43,16 +44,16 @@ namespace hazelcast {
                 return *this;
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
             ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
+                util::Preconditions::checkSSL("setAwsConfig");
                 this->clientAwsConfig = clientAwsConfig;
                 return *this;
             }
 
             ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
+                util::Preconditions::checkSSL("getAwsConfig");
                 return clientAwsConfig;
             }
-            #endif // HZ_BUILD_WITH_SSL
         }
     }
 }

@@ -16,13 +16,10 @@
 #ifndef HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_
 #define HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,6 +27,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class SyncHttpsClient;
+    }
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -84,7 +84,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_ */

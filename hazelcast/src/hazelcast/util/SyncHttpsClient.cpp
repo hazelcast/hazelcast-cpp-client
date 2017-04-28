@@ -16,31 +16,42 @@
 //
 //  Created by ihsan demir on 12 Jan 2017
 //
-#ifdef HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <WinSock2.h>
 #endif
 
+#ifdef HZ_BUILD_WITH_SSL
 #include <asio/asio/include/asio/ssl/rfc2818_verification.hpp>
+#endif // HZ_BUILD_WITH_SSL
+
+#include <hazelcast/util/Preconditions.h>
 
 #include "hazelcast/util/SyncHttpsClient.h"
-#include "hazelcast/client/exception/IOException.h"
 
 namespace hazelcast {
     namespace util {
             SyncHttpsClient::SyncHttpsClient(const std::string &serverIp, const std::string &uriPath) : server(serverIp), uriPath(uriPath),
+                                                                        #ifdef HZ_BUILD_WITH_SSL
                                                                          sslContext(asio::ssl::context::sslv23),
+                                                                        #endif
                                                                          responseStream(&response) {
+                util::Preconditions::checkSSL("SyncHttpsClient::SyncHttpsClient");
+
+                #ifdef HZ_BUILD_WITH_SSL
                 sslContext.set_default_verify_paths();
                 sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
                                                asio::ssl::context::single_dh_use);
 
                 socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                         new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
+                #endif // HZ_BUILD_WITH_SSL
             }
 
             std::istream &SyncHttpsClient::openConnection() {
+                util::Preconditions::checkSSL("SyncHttpsClient::openConnection");
+
+                #ifdef HZ_BUILD_WITH_SSL
                 try {
                     // Get a list of endpoints corresponding to the server name.
                     asio::ip::tcp::resolver resolver(ioService);
@@ -50,6 +61,7 @@ namespace hazelcast {
                     asio::connect(socket->lowest_layer(), endpoint_iterator);
 
                     socket->lowest_layer().set_option(asio::ip::tcp::no_delay(true));
+
                     socket->set_verify_callback(asio::ssl::rfc2818_verification(server));
                     socket->handshake(asio::ssl::stream_base::client);
 
@@ -105,15 +117,15 @@ namespace hazelcast {
                     if (error != asio::error::eof) {
                         throw asio::system_error(error);
                     }
-
-                    return responseStream;
                 } catch (asio::system_error &e) {
                     std::ostringstream out;
                     out << "Could not retrieve response from https://" << server << uriPath << " Error:" << e.what();
                     throw client::exception::IOException("SyncHttpsClient::openConnection", out.str());
                 }
+                #endif // HZ_BUILD_WITH_SSL
+
+                return responseStream;
             }
     }
 }
 
-#endif // HZ_BUILD_WITH_SSL
