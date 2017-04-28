@@ -56,7 +56,7 @@ namespace hazelcast {
                     #ifdef HZ_BUILD_WITH_SSL
                     std::auto_ptr<asio::io_service> ioService;
                     std::auto_ptr<asio::ssl::context> sslContext;
-                    std::auto_ptr<aws::impl::AwsAddressTranslator> translator;
+                    aws::impl::AwsAddressTranslator translator;
                     #endif
                 };
             }

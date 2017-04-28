@@ -32,11 +32,12 @@ namespace hazelcast {
                 }
 
                 Address AwsAddressTranslator::translate(const Address &address) {
-                    Address translatedAddress = address;
                     // if no translation is needed just return the address as it is
                     if (NULL == awsClient.get()) {
-                        return translatedAddress;
+                        return address;
                     }
+
+                    Address translatedAddress = address;
 
                     if (findFromCache(address, translatedAddress)) {
                         return translatedAddress;

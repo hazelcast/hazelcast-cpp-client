@@ -35,7 +35,11 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SocketFactory::SocketFactory(spi::ClientContext &clientContext) : clientContext(clientContext) {
+                SocketFactory::SocketFactory(spi::ClientContext &clientContext) : clientContext(clientContext)
+                    #ifdef HZ_BUILD_WITH_SSL
+                        , translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig())
+                    #endif
+                {
                 }
 
                 bool SocketFactory::start() {
@@ -101,7 +105,7 @@ namespace hazelcast {
                 Address SocketFactory::translateAddress(const Address &address) {
                     #ifdef HZ_BUILD_WITH_SSL
                     // translate ip
-                    return translator->translate(address);
+                    return translator.translate(address);
                     #else
                     return address;
                     #endif // HZ_BUILD_WITH_SSL
