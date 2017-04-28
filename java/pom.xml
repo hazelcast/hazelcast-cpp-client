@@ -16,12 +16,12 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast-enterprise</artifactId>
-            <version>3.8.1-SNAPSHOT</version>
+            <version>3.8.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.8.1-SNAPSHOT</version>
+            <version>3.8.2-SNAPSHOT</version>
             <type>test-jar</type>
         </dependency>
     </dependencies>
