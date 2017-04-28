@@ -35,8 +35,14 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
+                    #ifdef HZ_BUILD_WITH_SSL
                     instance = new HazelcastServer(*g_srvFactory, true);
+                    #else
+                    instance = new HazelcastServer(*g_srvFactory);
+                    #endif
+
                     clientConfig = getConfig().release();
+
                     #ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
@@ -44,6 +50,7 @@ namespace hazelcast {
                     networkConfig.setSSLConfig(sslConfig);
                     clientConfig->setNetworkConfig(networkConfig);
                     #endif // HZ_BUILD_WITH_SSL
+
                     client = new HazelcastClient(*clientConfig);
                     list = new IList<std::string>(client->getList<std::string>("MyList"));
                 }

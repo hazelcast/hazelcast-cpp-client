@@ -84,8 +84,14 @@ namespace hazelcast {
                     }
 
                     static void SetUpTestCase() {
+                        #ifdef HZ_BUILD_WITH_SSL
                         instance = new HazelcastServer(*g_srvFactory, true);
                         instance2 = new HazelcastServer(*g_srvFactory, true);
+                        #else
+                        instance = new HazelcastServer(*g_srvFactory);
+                        instance2 = new HazelcastServer(*g_srvFactory);
+                        #endif
+
                         clientConfig = getConfig().release();
                         #ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
