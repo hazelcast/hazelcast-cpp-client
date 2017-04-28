@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/config/SSLConfig.h"
+#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,6 +27,7 @@ namespace hazelcast {
             }
 
             SSLConfig &SSLConfig::setEnabled(bool enabled) {
+                util::Preconditions::checkSSL("getAwsConfig");
                 this->enabled = enabled;
                 return *this;
             }

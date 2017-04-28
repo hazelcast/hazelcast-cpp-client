@@ -23,7 +23,6 @@
 #ifdef HZ_BUILD_WITH_SSL
 #include <asio.hpp>
 #include <asio/ssl.hpp>
-#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -48,15 +47,12 @@ namespace hazelcast {
                     bool start();
 
                     std::auto_ptr<Socket> create(const Address &address) const;
-
-                    Address translateAddress(const Address &address);
                 private:
                     spi::ClientContext &clientContext;
 
                     #ifdef HZ_BUILD_WITH_SSL
                     std::auto_ptr<asio::io_service> ioService;
                     std::auto_ptr<asio::ssl::context> sslContext;
-                    aws::impl::AwsAddressTranslator translator;
                     #endif
                 };
             }

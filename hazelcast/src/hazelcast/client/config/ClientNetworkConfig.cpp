@@ -15,7 +15,6 @@
  */
 
 #include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -25,12 +24,10 @@ namespace hazelcast {
             }
 
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
-                util::Preconditions::checkSSL("getSSLConfig");
                 return sslConfig;
             }
 
             ClientNetworkConfig &ClientNetworkConfig::setSSLConfig(const config::SSLConfig &sslConfig) {
-                util::Preconditions::checkSSL("setSSLConfig");
                 this->sslConfig = sslConfig;
                 return *this;
             }
@@ -45,13 +42,11 @@ namespace hazelcast {
             }
 
             ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
-                util::Preconditions::checkSSL("setAwsConfig");
                 this->clientAwsConfig = clientAwsConfig;
                 return *this;
             }
 
             ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
-                util::Preconditions::checkSSL("getAwsConfig");
                 return clientAwsConfig;
             }
         }

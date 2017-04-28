@@ -35,11 +35,7 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SocketFactory::SocketFactory(spi::ClientContext &clientContext) : clientContext(clientContext)
-                    #ifdef HZ_BUILD_WITH_SSL
-                        , translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig())
-                    #endif
-                {
+                SocketFactory::SocketFactory(spi::ClientContext &clientContext) : clientContext(clientContext) {
                 }
 
                 bool SocketFactory::start() {
@@ -100,15 +96,6 @@ namespace hazelcast {
                     }
                     #endif
                     return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address));
-                }
-
-                Address SocketFactory::translateAddress(const Address &address) {
-                    #ifdef HZ_BUILD_WITH_SSL
-                    // translate ip
-                    return translator.translate(address);
-                    #else
-                    return address;
-                    #endif // HZ_BUILD_WITH_SSL
                 }
             }
         }

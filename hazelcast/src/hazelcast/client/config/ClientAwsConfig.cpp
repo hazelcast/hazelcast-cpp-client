@@ -60,6 +60,7 @@ namespace hazelcast {
             }
 
             ClientAwsConfig &ClientAwsConfig::setEnabled(bool enabled) {
+                util::Preconditions::checkSSL("getAwsConfig");
                 this->enabled = enabled;
                 return *this;
             }

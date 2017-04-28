@@ -44,6 +44,12 @@ namespace hazelcast {
                     #endif
 
                     HazelcastClient hazelcastClient(clientConfig);
+
+                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
+                    map.put(5, 20);
+                    boost::shared_ptr<int> val = map.get(5);
+                    ASSERT_NE((int *) NULL, val.get());
+                    ASSERT_EQ(20, *val);
                 }
 
                 /**

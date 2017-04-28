@@ -19,6 +19,10 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
+#include <boost/shared_ptr.hpp>
+#include <stdint.h>
+#include <memory>
+
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/connection/InSelector.h"
@@ -27,12 +31,9 @@
 #include "hazelcast/client/connection/HeartBeater.h"
 #include "hazelcast/client/protocol/Principal.h"
 #include "hazelcast/client/internal/socket/SocketFactory.h"
+#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Thread.h"
-
-#include <boost/shared_ptr.hpp>
-#include <stdint.h>
-#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -222,6 +223,7 @@ namespace hazelcast {
                 util::Atomic<int> connectionIdCounter;
 
                 internal::socket::SocketFactory socketFactory;
+                aws::impl::AwsAddressTranslator translator;
             };
         }
     }

@@ -46,7 +46,8 @@ namespace hazelcast {
                     : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
                       outSelectorThread(NULL), live(true), heartBeater(clientContext),
                       heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
-                      callIdGenerator(0), connectionIdCounter(0), socketFactory(clientContext) {
+                      callIdGenerator(0), connectionIdCounter(0), socketFactory(clientContext),
+                      translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig()) {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
                 PROTOCOL.insert(PROTOCOL.begin(), &protocol_bytes[0], &protocol_bytes[3]);
             }
@@ -436,7 +437,7 @@ namespace hazelcast {
             }
 
             Address ConnectionManager::translateAddress(const Address &address) {
-                return socketFactory.translateAddress(address);
+                return translator.translate(address);
             }
         }
     }
