@@ -34,13 +34,12 @@ namespace hazelcast {
                  */
                 TEST_F (DescribeInstancesTest, testDescribeInstances) {
                     client::config::ClientAwsConfig awsConfig;
-                    awsConfig.setEnabled(true);
-
-                    awsConfig.setAccessKey(getenv("HZ_TEST_AWS_ACCESS_KEY"));
-                    awsConfig.setSecretKey(getenv("HZ_TEST_AWS_SECRET"));
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
                     client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
                     std::map<std::string, std::string> results = desc.execute();
-                    ASSERT_GT(results.size(), 0U);
+                    ASSERT_EQ(results.size(), 1U);
+                    ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
                 }
             }
         }

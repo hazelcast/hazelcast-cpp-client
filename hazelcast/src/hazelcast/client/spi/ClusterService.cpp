@@ -168,6 +168,9 @@ namespace hazelcast {
                 if ((Address *) NULL != previousConnectionAddr) {
                     addresses.push_back(*previousConnectionAddr);
                 }
+
+                std::random_shuffle(addresses.begin(), addresses.end());
+
                 return addresses;
             }
             //--------- Used by CLUSTER LISTENER THREAD ------------

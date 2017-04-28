@@ -40,7 +40,7 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<Connection> OwnerConnectionFuture::createNew(const Address& address) {
-                ownerConnectionPtr = clientContext.getConnectionManager().connectTo(address, true);
+                ownerConnectionPtr = clientContext.getConnectionManager().connectAsOwner(address);
                 ownerConnectionPtr->setAsOwnerConnection(true);
                 return ownerConnectionPtr;
             }

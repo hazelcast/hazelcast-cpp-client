@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_AWS_AWSCLIENT_H_
 #define HAZELCAST_CLIENT_AWS_AWSCLIENT_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 
@@ -40,7 +38,6 @@ namespace hazelcast {
 
                 std::map<std::string, std::string> getAddresses();
 
-                const std::string &getEndpoint() const;
             private:
                 config::ClientAwsConfig &awsConfig;
                 std::string endpoint;
@@ -52,7 +49,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_AWSCLIENT_H_ */

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
 
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/foreach.hpp>
 
 #include "hazelcast/client/aws/utility/CloudUtility.h"
@@ -94,13 +94,16 @@ namespace hazelcast {
 
                     bool emptyExpectedValue = expectedTagValue.empty();
 
-                    BOOST_FOREACH(pt::ptree::value_type & item, reservationSetItem.get_child("tagSet")) {
-                        std::string key = item.second.get_optional<std::string>("key").get_value_or("");
-                        std::string value = item.second.get_optional<std::string>("value").get_value_or(
-                                "");
-                        if (key == expectedTagKey &&
-                            (emptyExpectedValue || value == expectedTagValue)) {
-                            return true;
+                    boost::optional<pt::ptree &> tags = reservationSetItem.get_child_optional("tagSet");
+                    if (tags) {
+                        BOOST_FOREACH(pt::ptree::value_type &item, tags.get()) {
+                                        std::string key = item.second.get_optional<std::string>("key").get_value_or("");
+                                        std::string value = item.second.get_optional<std::string>("value").get_value_or(
+                                                "");
+                                        if (key == expectedTagKey &&
+                                            (emptyExpectedValue || value == expectedTagValue)) {
+                                            return true;
+                                        }
                         }
                     }
                     return false;
@@ -112,19 +115,30 @@ namespace hazelcast {
                         return true;
                     }
 
-                    BOOST_FOREACH(pt::ptree::value_type & item, reservationSetItem.get_child("groupSet")) {
-                        boost::optional<std::string> groupNameOptional = item.second.get_optional<std::string>(
-                                "groupName");
-                        if (groupNameOptional && groupNameOptional.get() == securityGroupName) {
-                            return true;
+                    boost::optional<pt::ptree &> groups = reservationSetItem.get_child_optional("groupSet");
+                    if (groups) {
+                        BOOST_FOREACH(pt::ptree::value_type &item, groups.get()) {
+                                        boost::optional<std::string> groupNameOptional = item.second.get_optional<std::string>(
+                                                "groupName");
+                                        if (groupNameOptional && groupNameOptional.get() == securityGroupName) {
+                                            return true;
+                                        }
                         }
                     }
+
                     return false;
                 }
 
+                void CloudUtility::unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                                                         std::map<std::string, std::string> &attributes) {
+                    pt::ptree json;
+                    pt::read_json(stream, json);
+                    awsConfig.setAccessKey(json.get_optional<std::string>("AccessKeyId").get_value_or(""));
+                    awsConfig.setSecretKey(json.get_optional<std::string>("SecretAccessKey").get_value_or(""));
+                    attributes["X-Amz-Security-Token"] = json.get_optional<std::string>("Token").get_value_or("");
+                }
             }
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

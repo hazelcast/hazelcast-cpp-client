@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
 
 #include <sstream>
 #include <iomanip>
 
 #include <boost/algorithm/string/replace.hpp>
 
+#ifdef HZ_BUILD_WITH_SSL
 #include <openssl/ssl.h>
+#endif
 
 #include "hazelcast/client/aws/utility/AwsURLEncoder.h"
 #include "hazelcast/client/aws/impl/Constants.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/util/Preconditions.h"
 
 namespace hazelcast {
     namespace client {
@@ -180,16 +182,6 @@ namespace hazelcast {
                     return (ss.str());
                 }
 
-                std::string EC2RequestSigner::hmacSHA256(const std::string &key, const std::string &msg) const {
-                    char hash[33];
-
-                    unsigned int len = hmacSHA256Bytes(key, msg, (unsigned char *) hash);
-
-                    hash[len] = '\0';
-
-                    return hash;
-                }
-
                 unsigned int EC2RequestSigner::hmacSHA256Bytes(const void *key, int keyLen, const std::string &msg,
                                                                unsigned char *hash) const {
                     return hmacSHA256Bytes(key, keyLen, (unsigned char *) &msg[0], msg.length(),
@@ -213,6 +205,7 @@ namespace hazelcast {
                                                                const unsigned char *data,
                                                                size_t dataLen,
                                                                unsigned char *hash) const {
+                    #ifdef HZ_BUILD_WITH_SSL
                     HMAC_CTX hmac;
                     HMAC_CTX_init(&hmac);
                     HMAC_Init_ex(&hmac, keyBuffer, keyLen, EVP_sha256(), NULL);
@@ -221,9 +214,14 @@ namespace hazelcast {
                     HMAC_Final(&hmac, hash, &len);
                     HMAC_CTX_cleanup(&hmac);
                     return len;
+                    #else
+                    util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
+                    return 0;
+                    #endif
                 }
 
                 std::string EC2RequestSigner::sha256Hashhex(const std::string &in) const {
+                    #ifdef HZ_BUILD_WITH_SSL
                     unsigned char hash[SHA256_DIGEST_LENGTH];
                     SHA256_CTX sha256;
                     SHA256_Init(&sha256);
@@ -231,10 +229,13 @@ namespace hazelcast {
                     SHA256_Final(hash, &sha256);
 
                     return convertToHexString(hash, SHA256_DIGEST_LENGTH);
+                    #else
+                    util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
+                    return "";
+                    #endif
                 }
             }
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

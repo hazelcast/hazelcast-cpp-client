@@ -74,7 +74,7 @@ then
 fi
 
 echo "Starting the java test server"
-mvn exec:java -Dexec.mainClass="CppClientListener"  -Dexec.args="${HAZELCAST_ENTERPRISE_KEY}" &
+mvn exec:java -Dexec.mainClass="CppClientListener" &
 serverPid=$!
 
 echo "Spawned server with pid ${serverPid}"

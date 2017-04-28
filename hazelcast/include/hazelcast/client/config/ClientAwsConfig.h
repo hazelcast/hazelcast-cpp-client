@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_
 #define HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <ostream>
 #include <stdint.h>
@@ -241,7 +239,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_CONFIG_CLIENTAWSCONFIG_H_ */

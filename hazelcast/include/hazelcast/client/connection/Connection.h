@@ -20,11 +20,6 @@
 
 #include <memory>
 
-#ifdef HZ_BUILD_WITH_SSL
-#include <asio.hpp>
-#include <asio/ssl.hpp>
-#endif
-
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
@@ -49,6 +44,12 @@ namespace hazelcast {
             class InvocationService;
         }
 
+        namespace internal {
+            namespace socket {
+                class SocketFactory;
+            }
+        }
+
         class Address;
 
         namespace connection {
@@ -59,11 +60,7 @@ namespace hazelcast {
             class HAZELCAST_API Connection : public util::Closeable, public protocol::IMessageHandler {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
-                           OutSelector& listener, bool isOwner
-                #ifdef HZ_BUILD_WITH_SSL
-                        , asio::io_service *ioService, asio::ssl::context *sslContext
-                #endif
-                           );
+                           OutSelector& listener, internal::socket::SocketFactory &socketFactory, bool isOwner);
 
                 ~Connection();
 

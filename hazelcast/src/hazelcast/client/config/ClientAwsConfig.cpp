@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
-
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/util/Preconditions.h"
 
@@ -62,6 +60,7 @@ namespace hazelcast {
             }
 
             ClientAwsConfig &ClientAwsConfig::setEnabled(bool enabled) {
+                util::Preconditions::checkSSL("getAwsConfig");
                 this->enabled = enabled;
                 return *this;
             }
@@ -128,5 +127,4 @@ namespace hazelcast {
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

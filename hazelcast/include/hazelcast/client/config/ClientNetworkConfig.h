@@ -43,7 +43,6 @@ namespace hazelcast {
                 */
                 ClientNetworkConfig();
 
-                #ifdef HZ_BUILD_WITH_SSL
                 /**
                  * Returns the current {@link SSLConfig}.
                  *
@@ -60,7 +59,6 @@ namespace hazelcast {
                  * @see #getSSLConfig()
                  */
                 ClientNetworkConfig &setSSLConfig(const config::SSLConfig &sslConfig);
-                #endif // HZ_BUILD_WITH_SSL
 
                 /**
                 * @param connectionTimeout Timeout value in millis for nodes to accept client connection requests.
@@ -77,7 +75,6 @@ namespace hazelcast {
                 */
                 int64_t getConnectionTimeout() const;
 
-                #ifdef HZ_BUILD_WITH_SSL
                 /**
                  * Sets configuration to connect nodes in aws environment.
                  *
@@ -92,12 +89,9 @@ namespace hazelcast {
                  * @return ClientAwsConfig
                  */
                 ClientAwsConfig &getAwsConfig();
-                #endif
             private:
-                #ifdef HZ_BUILD_WITH_SSL
                 config::SSLConfig sslConfig;
                 config::ClientAwsConfig clientAwsConfig;
-                #endif
 
                 int64_t connectionTimeout;
             };

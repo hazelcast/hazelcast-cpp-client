@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <boost/algorithm/string/replace.hpp>
 
 #include "hazelcast/client/aws/AWSClient.h"
@@ -26,14 +24,6 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             AWSClient::AWSClient(config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
-                if (awsConfig.getAccessKey().empty() && awsConfig.getIamRole().empty()) {
-                    throw exception::IllegalArgumentException("AWSClient::AWSClient",
-                                                              "AWS access key or IAM Role is required!");
-                }
-                if (awsConfig.getSecretKey().empty() && awsConfig.getIamRole().empty()) {
-                    throw exception::IllegalArgumentException("AWSClient::AWSClient",
-                                                              "AWS secret key or Iam Role is required!");
-                }
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
@@ -47,12 +37,7 @@ namespace hazelcast {
             std::map<std::string, std::string> AWSClient::getAddresses() {
                 return impl::DescribeInstances(awsConfig, endpoint).execute();
             }
-
-            const std::string &AWSClient::getEndpoint() const {
-                return endpoint;
-            }
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

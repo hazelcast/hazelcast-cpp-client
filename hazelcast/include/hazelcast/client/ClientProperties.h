@@ -80,6 +80,7 @@ namespace hazelcast {
 
             const ClientProperty& getRetryWaitTime() const;
 
+            const ClientProperty& getAwsMemberPort() const;
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
@@ -124,11 +125,20 @@ namespace hazelcast {
             */
             static const std::string PROP_REQUEST_RETRY_WAIT_TIME;
             static const std::string PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT;
+
+            /**
+             * The discovery mechanism will discover only IP addresses. You can define the port on which Hazelcast is expected to be
+             * running here. This port number is not used by the discovery mechanism itself, it is only returned by the discovery
+             * mechanism. The default port is {@link PROP_AWS_MEMBER_PORT_DEFAULT}
+             */
+            static const std::string PROP_AWS_MEMBER_PORT;
+            static const std::string PROP_AWS_MEMBER_PORT_DEFAULT;
         private:
             ClientProperty heartbeatTimeout;
             ClientProperty heartbeatInterval;
             ClientProperty retryCount;
             ClientProperty retryWaitTime;
+            ClientProperty awsMemberPort;
         };
 
     }

@@ -13,17 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
-#define HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
-
+#ifndef HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
+#define HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
 
 #include <string>
 #include <asio.hpp>
-
-#ifdef HZ_BUILD_WITH_SSL
-#include <asio/asio/include/asio/ssl/context.hpp>
-#include <asio/asio/include/asio/ssl/stream.hpp>
-#endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -35,22 +29,16 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API SyncHttpsClient {
+        class HAZELCAST_API SyncHttpClient {
         public:
-            SyncHttpsClient(const std::string &serverIp, const std::string &uriPath);
+            SyncHttpClient(const std::string &serverIp, const std::string &uriPath);
 
             std::istream &openConnection();
         private:
             std::string server;
             std::string uriPath;
-
             asio::io_service ioService;
-
-            #ifdef HZ_BUILD_WITH_SSL
-            asio::ssl::context sslContext;
-            std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
-            #endif // HZ_BUILD_WITH_SSL
-
+            asio::ip::tcp::socket socket;
             asio::streambuf response;
             std::istream responseStream;
         };
@@ -61,5 +49,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_UTIL_SYNCHTTPSCLIENT_H_
+#endif //HAZELCAST_UTIL_SYNCHTTPCLIENT_H_
 

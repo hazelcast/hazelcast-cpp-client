@@ -23,7 +23,6 @@ namespace hazelcast {
                     : connectionTimeout(5000) {
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
                 return sslConfig;
             }
@@ -32,7 +31,6 @@ namespace hazelcast {
                 this->sslConfig = sslConfig;
                 return *this;
             }
-            #endif // HZ_BUILD_WITH_SSL
 
             int64_t ClientNetworkConfig::getConnectionTimeout() const {
                 return connectionTimeout;
@@ -43,7 +41,6 @@ namespace hazelcast {
                 return *this;
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
             ClientNetworkConfig &ClientNetworkConfig::setAwsConfig(const ClientAwsConfig &clientAwsConfig) {
                 this->clientAwsConfig = clientAwsConfig;
                 return *this;
@@ -52,7 +49,6 @@ namespace hazelcast {
             ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
                 return clientAwsConfig;
             }
-            #endif // HZ_BUILD_WITH_SSL
         }
     }
 }

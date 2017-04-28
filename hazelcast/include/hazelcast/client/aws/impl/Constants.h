@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_AWS_IMPL_CONSTANTS_H_
 #define HAZELCAST_CLIENT_AWS_IMPL_CONSTANTS_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -34,6 +32,7 @@ namespace hazelcast {
                     static const char *DOC_VERSION;
                     static const char *SIGNATURE_METHOD_V4;
                     static const char *GET;
+                    static const char *ECS_CREDENTIALS_ENV_VAR_NAME;
                 };
             };
         }
@@ -43,7 +42,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_IMPL_CONSTANTS_H_ */

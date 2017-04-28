@@ -19,6 +19,10 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
+#include <boost/shared_ptr.hpp>
+#include <stdint.h>
+#include <memory>
+
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/connection/InSelector.h"
@@ -26,17 +30,10 @@
 #include "hazelcast/client/connection/OwnerConnectionFuture.h"
 #include "hazelcast/client/connection/HeartBeater.h"
 #include "hazelcast/client/protocol/Principal.h"
+#include "hazelcast/client/internal/socket/SocketFactory.h"
+#include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Thread.h"
-
-#include <boost/shared_ptr.hpp>
-#include <stdint.h>
-#include <memory>
-
-#ifdef HZ_BUILD_WITH_SSL
-#include <asio.hpp>
-#include <asio/ssl.hpp>
-#endif
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -151,6 +148,13 @@ namespace hazelcast {
                 std::auto_ptr<Connection> connectTo(const Address &address, bool ownerConnection);
 
                 /**
+                 * Connects to the translated ip address (if translation is needed, such as when aws is used)
+                * @param address
+                * @return Return the newly created connection.
+                */
+                std::auto_ptr<Connection> connectAsOwner(const Address &address);
+
+                /**
                 * @param address
                 * @param ownerConnection
                 */
@@ -194,6 +198,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getOwnerConnection();
 
+                inline Address translateAddress(const Address &address);
+
                 std::vector<byte> PROTOCOL;
                 util::SynchronizedMap<Address, Connection, addressComparator> connections;
                 util::SynchronizedMap<int, Connection> socketConnections;
@@ -216,10 +222,8 @@ namespace hazelcast {
                 util::Atomic<int64_t> callIdGenerator;
                 util::Atomic<int> connectionIdCounter;
 
-                #ifdef HZ_BUILD_WITH_SSL
-                std::auto_ptr<asio::io_service> ioService;
-                std::auto_ptr<asio::ssl::context> sslContext;
-                #endif
+                internal::socket::SocketFactory socketFactory;
+                aws::impl::AwsAddressTranslator translator;
             };
         }
     }

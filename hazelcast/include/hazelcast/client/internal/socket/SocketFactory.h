@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_AWS_UTILITY_AWSURLENCODER_H_
-#define HAZELCAST_CLIENT_AWS_UTILITY_AWSURLENCODER_H_
+#ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_SOCKETFACTORY_H_
+#define HAZELCAST_CLIENT_INTERNAL_SOCKET_SOCKETFACTORY_H_
 
-#include <string>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+
+#ifdef HZ_BUILD_WITH_SSL
+#include <asio.hpp>
+#include <asio/ssl.hpp>
+#endif // HZ_BUILD_WITH_SSL
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -27,14 +32,28 @@
 
 namespace hazelcast {
     namespace client {
-        namespace aws {
-            namespace utility {
-                class HAZELCAST_API AwsURLEncoder {
-                public:
-                    static std::string urlEncode(const std::string &value);
+        class Socket;
+        class Address;
 
+        namespace spi {
+            class ClientContext;
+        }
+        namespace internal {
+            namespace socket {
+                class HAZELCAST_API SocketFactory {
+                public:
+                    SocketFactory(spi::ClientContext &clientContext);
+
+                    bool start();
+
+                    std::auto_ptr<Socket> create(const Address &address) const;
                 private:
-                    static std::string escapeEncode(const std::string &value);
+                    spi::ClientContext &clientContext;
+
+                    #ifdef HZ_BUILD_WITH_SSL
+                    std::auto_ptr<asio::io_service> ioService;
+                    std::auto_ptr<asio::ssl::context> sslContext;
+                    #endif
                 };
             }
         }
@@ -45,4 +64,4 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_AWS_UTILITY_AWSURLENCODER_H_ */
+#endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_SOCKETFACTORY_H_ */

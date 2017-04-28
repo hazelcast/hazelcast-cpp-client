@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <cctype>
 #include <sstream>
@@ -60,5 +58,4 @@ namespace hazelcast {
         }
     }
 }
-#endif // HZ_BUILD_WITH_SSL
 

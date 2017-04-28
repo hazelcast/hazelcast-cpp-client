@@ -16,13 +16,10 @@
 #ifndef HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_
 #define HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,6 +27,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class SyncHttpsClient;
+    }
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -59,6 +59,12 @@ namespace hazelcast {
 
                     std::istream &callService();
 
+                    void checkKeysFromIamRoles();
+                    void tryGetDefaultIamRole();
+                    void getKeysFromIamTaskRole();
+                    void getKeysFromIamRole();
+                    void parseAndStoreRoleCreds(std::istream &in);
+
                     std::auto_ptr<security::EC2RequestSigner> rs;
                     config::ClientAwsConfig &awsConfig;
                     const std::string &endpoint;
@@ -66,6 +72,9 @@ namespace hazelcast {
                     std::auto_ptr<util::SyncHttpsClient> httpsClient;
 
                     static const std::string QUERY_PREFIX;
+                    static const std::string IAM_ROLE_ENDPOINT;
+                    static const std::string IAM_ROLE_QUERY;
+                    static const std::string IAM_TASK_ROLE_ENDPOINT;
                 };
             }
         }
@@ -75,7 +84,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_IMPL_DESCRIBEINSTANCES_H_ */

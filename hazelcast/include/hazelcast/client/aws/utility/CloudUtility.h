@@ -16,8 +16,6 @@
 #ifndef HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_
 #define HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_
 
-#ifdef HZ_BUILD_WITH_SSL
-
 #include <string>
 #include <map>
 #include <boost/property_tree/ptree.hpp>
@@ -53,6 +51,9 @@ namespace hazelcast {
                     static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
                                                                                    const config::ClientAwsConfig &awsConfig);
 
+                    static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
+                                                      std::map<std::string, std::string> &attributes);
+
                 private:
                     static bool acceptTag(const config::ClientAwsConfig &awsConfig, pt::ptree &reservationSetItem);
 
@@ -67,7 +68,5 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-
-#endif // HZ_BUILD_WITH_SSL
 
 #endif /* HAZELCAST_CLIENT_AWS_UTILITY_CLOUDUTILITY_H_ */

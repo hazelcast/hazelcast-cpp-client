@@ -88,6 +88,8 @@ namespace hazelcast {
                 bool isInitialMembersLoaded;
                 bool isRegistrationIdReceived;
 
+                int awsMemberPort;
+
                 void loadInitialMemberList();
 
                 void listenMembershipEvents();
@@ -97,6 +99,8 @@ namespace hazelcast {
                 std::vector<Address> getClusterAddresses() const;
 
                 std::vector<Address> getConfigAddresses() const;
+
+                std::vector<Address> getAwsAddresses() const;
 
                 void memberAdded(const Member &member);
 
