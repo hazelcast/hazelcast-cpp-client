@@ -21,6 +21,7 @@
 * [Reliable Topic](#reliable-topic)
 * [Map Near Cache](#map-near-cache)
 * [TLS Feature](#tls-feature)
+* [AWS Cloud Discovery](#aws-cloud-discovery)
 * [Code Examples](#code-examples)
   * [Map](#map)
   * [Queue](#queue)
