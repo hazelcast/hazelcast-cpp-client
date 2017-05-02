@@ -29,10 +29,7 @@ namespace hazelcast {
                 class DescribeInstancesTest : public ::testing::Test {
                 };
 
-                /**
-                 * This test will be enabled when the credentials are provided from environment
-                 */
-                TEST_F (DescribeInstancesTest, testDescribeInstances) {
+                TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
@@ -40,6 +37,72 @@ namespace hazelcast {
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndNonExistentValueSet) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("non-existent-value");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_TRUE(results.empty());
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSet) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_EQ(results.size(), 1U);
+                    ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyTagIsSetToNonExistentTag) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("non-existent-tag");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_TRUE(results.empty());
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSet) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("aws-tag-value-1");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_EQ(results.size(), 1U);
+                    ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesOnlyValueIsSetToNonExistentValue) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("non-existent-value");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_TRUE(results.empty());
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesSecurityGroup) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("launch-wizard-147");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_EQ(results.size(), 1U);
+                    ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
+                }
+
+                TEST_F (DescribeInstancesTest, testDescribeInstancesNonExistentSecurityGroup) {
+                    client::config::ClientAwsConfig awsConfig;
+                    awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
+                            getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("non-existent-group");
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    std::map<std::string, std::string> results = desc.execute();
+                    ASSERT_TRUE(results.empty());
                 }
             }
         }

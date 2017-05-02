@@ -40,6 +40,10 @@ namespace hazelcast {
                 class EC2RequestSigner;
             }
             namespace impl {
+                /**
+                 * See http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
+                 * for AWS API details.
+                 */
                 class HAZELCAST_API DescribeInstances {
                 public:
                     DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint);
@@ -65,6 +69,11 @@ namespace hazelcast {
                     void getKeysFromIamTaskRole();
                     void getKeysFromIamRole();
                     void parseAndStoreRoleCreds(std::istream &in);
+
+                    /**
+                     * Add available filters to narrow down the scope of the query
+                     */
+                    void addFilters();
 
                     std::auto_ptr<security::EC2RequestSigner> rs;
                     config::ClientAwsConfig &awsConfig;

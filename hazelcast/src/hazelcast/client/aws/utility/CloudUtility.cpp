@@ -26,107 +26,48 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             namespace utility {
-                std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
-                                                                               const config::ClientAwsConfig &awsConfig) {
+                std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream) {
                     std::map<std::string, std::string> privatePublicPairs;
 
                     pt::ptree tree;
-                    pt::read_xml(stream, tree);
+                    try {
+                        pt::read_xml(stream, tree);
+                    } catch (pt::xml_parser_error &e) {
+                        util::ILogger::getLogger().warning(
+                                std::string("The parsed xml stream has errors: ") + e.what());
+                        return privatePublicPairs;
+                    }
 
                     // Use get_child to find the node containing the reservation set, and iterate over
                     // its children.
                     BOOST_FOREACH(pt::ptree::value_type & item,
                                   tree.get_child("DescribeInstancesResponse.reservationSet")) {
-                        BOOST_FOREACH(pt::ptree::value_type & instanceItem,
-                                      item.second.get_child("instancesSet")) {
-                            std::string state = instanceItem.second.get<std::string>(
-                                    "instanceState.name");
-                            boost::optional<std::string> privateIp = instanceItem.second.get_optional<std::string>(
-                                    "privateIpAddress");
-                            boost::optional<std::string> publicIp = instanceItem.second.get_optional<std::string>(
-                                    "ipAddress");
-                            boost::optional<std::string> instanceName = instanceItem.second.get_optional<std::string>(
-                                    "tagset.item.value");
+                                    BOOST_FOREACH(pt::ptree::value_type & instanceItem,
+                                                  item.second.get_child("instancesSet")) {
+                                                    boost::optional<std::string> privateIp = instanceItem.second.get_optional<std::string>(
+                                                            "privateIpAddress");
+                                                    boost::optional<std::string> publicIp = instanceItem.second.get_optional<std::string>(
+                                                            "ipAddress");
+                                                    std::string prIp = privateIp.value_or("");
+                                                    std::string pubIp = publicIp.value_or("");
 
-                            std::string instName = instanceName.value_or("");
-                            std::string prIp = privateIp.value_or("");
-                            std::string pubIp = publicIp.value_or("");
+                                                    if (privateIp) {
+                                                        privatePublicPairs[prIp] = pubIp;
+                                                        util::ILogger &logger = util::ILogger::getLogger();
+                                                        if (logger.isFinestEnabled()) {
+                                                            boost::optional<std::string> instanceName = instanceItem.second.get_optional<std::string>(
+                                                                    "tagset.item.value");
 
-                            if (privateIp) {
-                                if (state != "running") {
-                                    std::ostringstream out;
-                                    out << "Ignoring EC2 instance [" << instName << "][" <<
-                                    prIp <<
-                                    "] reason: the instance is not running but " << state;
-                                    util::ILogger::getLogger().finest(out.str());
-                                } else if (!acceptTag(awsConfig, instanceItem.second)) {
-                                    std::ostringstream out;
-                                    out << "Ignoring EC2 instance [" << instName << "][" <<
-                                    prIp <<
-                                    "] reason: tag-key/tag-value don't match.";
-                                    util::ILogger::getLogger().finest(out.str());
-                                } else if (!acceptGroupName(awsConfig, instanceItem.second)) {
-                                    std::ostringstream out;
-                                    out << "Ignoring EC2 instance [" << instName << "][" <<
-                                    prIp <<
-                                    "] reason: security-group-name doesn't match.";
-                                    util::ILogger::getLogger().finest(out.str());
-                                } else {
-                                    privatePublicPairs[prIp] = pubIp;
-                                    std::ostringstream out;
-                                    out << "Accepting EC2 instance [" << instName << "][" <<
-                                    prIp << "]";
-                                    util::ILogger::getLogger().finest(out.str());
+                                                            std::string instName = instanceName.value_or("");
+
+                                                            logger.finest(
+                                                                    std::string("Accepting EC2 instance [") + instName +
+                                                                    "][" + prIp + "]");
+                                                        }
+                                                    }
+                                                }
                                 }
-                            }
-                        }
-                    }
                     return privatePublicPairs;
-                }
-
-                bool CloudUtility::acceptTag(const config::ClientAwsConfig &awsConfig, pt::ptree &reservationSetItem) {
-                    const std::string &expectedTagKey = awsConfig.getTagKey();
-                    const std::string &expectedTagValue = awsConfig.getTagValue();
-
-                    if (expectedTagKey.empty()) {
-                        return true;
-                    }
-
-                    bool emptyExpectedValue = expectedTagValue.empty();
-
-                    boost::optional<pt::ptree &> tags = reservationSetItem.get_child_optional("tagSet");
-                    if (tags) {
-                        BOOST_FOREACH(pt::ptree::value_type &item, tags.get()) {
-                                        std::string key = item.second.get_optional<std::string>("key").get_value_or("");
-                                        std::string value = item.second.get_optional<std::string>("value").get_value_or(
-                                                "");
-                                        if (key == expectedTagKey &&
-                                            (emptyExpectedValue || value == expectedTagValue)) {
-                                            return true;
-                                        }
-                        }
-                    }
-                    return false;
-                }
-
-                bool CloudUtility::acceptGroupName(const config::ClientAwsConfig &awsConfig, pt::ptree &reservationSetItem) {
-                    const std::string &securityGroupName = awsConfig.getSecurityGroupName();
-                    if (securityGroupName.empty()) {
-                        return true;
-                    }
-
-                    boost::optional<pt::ptree &> groups = reservationSetItem.get_child_optional("groupSet");
-                    if (groups) {
-                        BOOST_FOREACH(pt::ptree::value_type &item, groups.get()) {
-                                        boost::optional<std::string> groupNameOptional = item.second.get_optional<std::string>(
-                                                "groupName");
-                                        if (groupNameOptional && groupNameOptional.get() == securityGroupName) {
-                                            return true;
-                                        }
-                        }
-                    }
-
-                    return false;
                 }
 
                 void CloudUtility::unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
