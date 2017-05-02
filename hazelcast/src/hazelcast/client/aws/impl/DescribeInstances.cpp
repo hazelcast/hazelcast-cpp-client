@@ -20,6 +20,7 @@
 #include <asio.hpp>
 
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
+#include "hazelcast/client/aws/impl/Filter.h"
 #include "hazelcast/client/aws/impl/Constants.h"
 #include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
@@ -52,6 +53,7 @@ namespace hazelcast {
                     attributes["X-Amz-Date"] = timeStamp;
                     attributes["X-Amz-SignedHeaders"] = "host";
                     attributes["X-Amz-Expires"] = "30";
+                    addFilters();
                 }
 
                 DescribeInstances::~DescribeInstances() {
@@ -62,7 +64,7 @@ namespace hazelcast {
                     attributes["X-Amz-Signature"] = signature;
 
                     std::istream &stream = callService();
-                    return utility::CloudUtility::unmarshalTheResponse(stream, awsConfig);
+                    return utility::CloudUtility::unmarshalTheResponse(stream);
                 }
 
                 std::string DescribeInstances::getFormattedTimestamp() {
@@ -155,6 +157,30 @@ namespace hazelcast {
 
                 void DescribeInstances::parseAndStoreRoleCreds(std::istream &in) {
                     utility::CloudUtility::unmarshalJsonResponse(in, awsConfig, attributes);
+                }
+
+                /**
+                 * Add available filters to narrow down the scope of the query
+                 */
+                void DescribeInstances::addFilters() {
+                    Filter filter;
+                    if (!awsConfig.getTagKey().empty()) {
+                        if (!awsConfig.getTagValue().empty()) {
+                            filter.addFilter(std::string("tag:") + awsConfig.getTagKey(), awsConfig.getTagValue());
+                        } else {
+                            filter.addFilter("tag-key", awsConfig.getTagKey());
+                        }
+                    } else if (!awsConfig.getTagValue().empty())  {
+                        filter.addFilter("tag-value", awsConfig.getTagValue());
+                    }
+
+                    if (!awsConfig.getSecurityGroupName().empty()) {
+                        filter.addFilter("instance.group-name", awsConfig.getSecurityGroupName());
+                    }
+
+                    filter.addFilter("instance-state-name", "running");
+                    const std::map<std::string, std::string> &filters = filter.getFilters();
+                    attributes.insert(filters.begin(), filters.end());
                 }
             }
         }

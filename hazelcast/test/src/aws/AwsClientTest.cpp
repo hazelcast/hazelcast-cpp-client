@@ -52,6 +52,30 @@ namespace hazelcast {
                     ASSERT_EQ(20, *val);
                 }
 
+                TEST_F (AwsClientTest, testClientAwsMemberWithSecurityGroupDefaultIamRole) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+                            setSecurityGroupName("launch-wizard-147");
+
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    // The access key and secret will be retrieved from default IAM role at windows machine
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    #else
+                    clientConfig.getNetworkConfig().getAwsConfig().setAccessKey(getenv("AWS_ACCESS_KEY_ID")).
+                            setSecretKey(getenv("AWS_SECRET_ACCESS_KEY"));
+                    #endif
+
+                    HazelcastClient hazelcastClient(clientConfig);
+
+                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
+                    map.put(5, 20);
+                    boost::shared_ptr<int> val = map.get(5);
+                    ASSERT_NE((int *) NULL, val.get());
+                    ASSERT_EQ(20, *val);
+                }
+
                 /**
                  * Following test can only run from inside the AWS network
                  */

@@ -562,6 +562,27 @@ If no IAM role or access key is provided, the client will retrieve the IAM role 
 
 The details of IAM role usage for applications are described at http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_switch-role-ec2.html. The IAM role access key retrieval requires that the instance has a valid instance profile association for the IAM role and the IAM role should have the AWS DescribeInstances permission.
  
+### Policy for IAM User
+
+If you are using IAM role configuration (`iam-role`) for EC2 discovery, you need to give the following policy to your IAM user at the least:
+
+`"ec2:DescribeInstances"`
+```
+{
+  "Version": "XXXXXXXX",
+  "Statement": [
+    {
+      "Sid": "XXXXXXXX",
+      "Action": [
+        "ec2:DescribeInstances"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    }
+  ]
+}
+```
+ 
 # Code Examples
 
 You can try the following C++ client code examples. You need to have a Hazelcast client member running for the code examples to work. 

@@ -40,25 +40,16 @@ namespace hazelcast {
                 public:
                     /**
                      * Unmarshal the response from {@link DescribeInstances} and return the discovered node map.
-                     * The map contains mappings from private to public IP and all contained nodes match the filtering rules defined by
-                     * the {@code awsConfig}.
-                     * If there is an exception while unmarshaling the response, returns an empty map.
+                     * The map contains mappings from private to public IP.
+                     * If there is an exception while unmarshalling the response, returns an empty map.
                      *
                      * @param stream    the response XML stream
-                     * @param awsConfig the AWS configuration for filtering the returned addresses
                      * @return map from private to public IP or empty map in case of exceptions
                      */
-                    static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
-                                                                                   const config::ClientAwsConfig &awsConfig);
+                    static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream);
 
                     static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
                                                       std::map<std::string, std::string> &attributes);
-
-                private:
-                    static bool acceptTag(const config::ClientAwsConfig &awsConfig, pt::ptree &reservationSetItem);
-
-                    static bool acceptGroupName(const config::ClientAwsConfig &awsConfig,
-                                                pt::ptree &reservationSetItem);
                 };
             }
         }

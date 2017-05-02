@@ -20,7 +20,7 @@ namespace hazelcast {
         namespace aws {
             namespace impl {
                 const char *Constants::DATE_FORMAT = "%Y%m%dT%H%M%SZ";
-                const char *Constants::DOC_VERSION = "2014-06-15";
+                const char *Constants::DOC_VERSION = "2016-11-15";
                 const char *Constants::SIGNATURE_METHOD_V4 = "AWS4-HMAC-SHA256";
                 const char *Constants::GET = "GET";
                 const char *Constants::ECS_CREDENTIALS_ENV_VAR_NAME = "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI";

@@ -32,72 +32,19 @@ namespace hazelcast {
                 class CloudUtilityTest : public ::testing::Test {
                 };
 
-                TEST_F (CloudUtilityTest, testUnmarshallResponseXmlNoFilter) {
+                TEST_F (CloudUtilityTest, testUnmarshallResponseXml) {
                     std::filebuf fb;
                     ASSERT_TRUE(fb.open("hazelcast/test/resources/sample_aws_response.xml", std::ios::in));
                     std::istream responseStream(&fb);
 
                     config::ClientAwsConfig awsConfig;
-                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
+                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream);
                     ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ("", results["10.0.16.13"]);
                     ASSERT_NE(results.end(), results.find("10.0.16.17"));
                     ASSERT_EQ("54.85.192.215", results["10.0.16.17"]);
                     ASSERT_NE(results.end(), results.find("10.0.16.25"));
-                    ASSERT_EQ("", results["10.0.16.25"]);
-                    ASSERT_NE(results.end(), results.find("172.30.4.118"));
-                    ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
-                }
-
-                TEST_F (CloudUtilityTest, testUnmarshallResponseXmlFilterByTagKeyAndNoTagValue) {
-                    std::filebuf fb;
-                    ASSERT_TRUE(fb.open("hazelcast/test/resources/sample_aws_response.xml", std::ios::in));
-                    std::istream responseStream(&fb);
-
-                    config::ClientAwsConfig awsConfig;
-                    awsConfig.setTagKey("mytagkey");
-                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2U, results.size());
-                    ASSERT_EQ(results.end(), results.find("10.0.16.13"));
-                    ASSERT_EQ(results.end(), results.find("10.0.16.17"));
-                    ASSERT_NE(results.end(), results.find("10.0.16.25"));
-                    ASSERT_EQ("", results["10.0.16.25"]);
-                    ASSERT_NE(results.end(), results.find("172.30.4.118"));
-                    ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
-                }
-
-                TEST_F (CloudUtilityTest, testUnmarshallResponseXmlFilterByTagKeyAndTagValue) {
-                    std::filebuf fb;
-                    ASSERT_TRUE(fb.open("hazelcast/test/resources/sample_aws_response.xml", std::ios::in));
-                    std::istream responseStream(&fb);
-
-                    config::ClientAwsConfig awsConfig;
-                    awsConfig.setTagKey("mytagkey");
-                    awsConfig.setTagValue("mytagvalue");
-                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2U, results.size());
-                    ASSERT_EQ(results.end(), results.find("10.0.16.13"));
-                    ASSERT_EQ(results.end(), results.find("10.0.16.17"));
-                    ASSERT_NE(results.end(), results.find("10.0.16.25"));
-                    ASSERT_EQ("", results["10.0.16.25"]);
-                    ASSERT_NE(results.end(), results.find("172.30.4.118"));
-                    ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
-                }
-
-                TEST_F (CloudUtilityTest, testUnmarshallResponseXmlFilterBySecurityGroup) {
-                    std::filebuf fb;
-                    ASSERT_TRUE(fb.open("hazelcast/test/resources/sample_aws_response.xml", std::ios::in));
-                    std::istream responseStream(&fb);
-
-                    config::ClientAwsConfig awsConfig;
-                    awsConfig.setSecurityGroupName("mygroup");
-                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream, awsConfig);
-                    ASSERT_EQ(2U, results.size());
-                    ASSERT_EQ(results.end(), results.find("10.0.16.13"));
-                    ASSERT_EQ(results.end(), results.find("10.0.16.25"));
-                    ASSERT_NE(results.end(), results.find("10.0.16.17"));
-                    ASSERT_EQ("54.85.192.215", results["10.0.16.17"]);
                     ASSERT_EQ("", results["10.0.16.25"]);
                     ASSERT_NE(results.end(), results.find("172.30.4.118"));
                     ASSERT_EQ("54.85.192.213", results["172.30.4.118"]);
