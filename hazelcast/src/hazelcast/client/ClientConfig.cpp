@@ -30,8 +30,7 @@ namespace hazelcast {
         , connectionAttemptLimit(2)
         , attemptPeriod(3000)
         , socketInterceptor(NULL)
-        , credentials(NULL)
-        , defaultCredentials(NULL){
+        , credentials(NULL) {
         }
 
         ClientConfig& ClientConfig::addAddress(const Address& address) {
@@ -146,7 +145,7 @@ namespace hazelcast {
         }
 
         const Credentials *ClientConfig::getCredentials() {
-            return defaultCredentials.get();
+            return credentials;
         }
 
         ClientConfig& ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {

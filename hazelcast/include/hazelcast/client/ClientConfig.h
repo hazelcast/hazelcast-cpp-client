@@ -427,8 +427,6 @@ namespace hazelcast {
 
             Credentials *credentials;
 
-            std::auto_ptr<Credentials> defaultCredentials;
-
             std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
             util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
