@@ -20,6 +20,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Thread.h"
+#include "hazelcast/util/CountDownLatch.h"
 
 #include <ctime>
 #include <errno.h>
@@ -29,7 +30,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ClientUtilTest : public ::testing::Test {
-            public:
+            protected:
                 static void wakeTheConditionUp(util::ThreadArgs& args) {
                     util::Mutex *mutex = (util::Mutex *)args.arg0;
                     util::ConditionVariable *cv = (util::ConditionVariable *)args.arg1;
@@ -54,6 +55,19 @@ namespace hazelcast {
                     util::sleep(wakeUpTime);
                     std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
                     future->set_exception(exception);
+                }
+
+                static void cancelJoinFromRunningThread(util::ThreadArgs& args) {
+                    util::Thread *currentThread = args.currentThread;
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    currentThread->cancel();
+                    ASSERT_FALSE(currentThread->join());
+                    latch->countDown();
+                }
+
+                static void notifyExitingThread(util::ThreadArgs& args) {
+                    util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
+                    latch->countDown();
                 }
             };
 
@@ -150,6 +164,25 @@ namespace hazelcast {
                 std::string threadName = "myThreadName";
                 util::Thread thread(threadName, dummyThread);
                 ASSERT_EQ(threadName, thread.getThreadName());
+            }
+
+            TEST_F (ClientUtilTest, testThreadJoinAfterThreadExited) {
+                std::string threadName = "myThreadName";
+                util::CountDownLatch latch(1);
+                util::Thread thread(threadName, notifyExitingThread, &latch);
+                ASSERT_TRUE(latch.await(2));
+                // guarantee that the thread exited
+                util::sleep(1);
+
+                // call join after thread exit
+                thread.join();
+            }
+
+            TEST_F (ClientUtilTest, testCancelJoinItselfFromTheRunningThread) {
+                std::string threadName = "myThreadName";
+                util::CountDownLatch latch(1);
+                util::Thread thread(threadName, cancelJoinFromRunningThread, &latch);
+                ASSERT_TRUE(latch.await(1000));
             }
 
             void sleepyThread(util::ThreadArgs& args) {

@@ -50,6 +50,7 @@ namespace hazelcast {
         , isJoined(false)
 		, isInterrupted(false){
             init(func, arg0, arg1, arg2, arg3);
+
         }
 
         long Thread::getThreadID() {
@@ -92,6 +93,11 @@ namespace hazelcast {
             if (!isJoined.compareAndSet(false, true)) {
                 return true;
             }
+            if (id == getThreadID()) {
+                // called from inside the thread, deadlock possibility
+                return false;
+            }
+
             DWORD err = WaitForSingleObject(thread, INFINITE);
             if (err != WAIT_OBJECT_0) {
                 return false;
@@ -197,6 +203,12 @@ namespace hazelcast {
             if (!isJoined.compareAndSet(false, true)) {
                 return true;
             }
+
+            if (pthread_equal(thread, pthread_self())) {
+                // called from inside the thread, deadlock possibility
+                return false;
+            }
+
             int err = pthread_join(thread, NULL);
             if (EINVAL == err || ESRCH == err || EDEADLK == err) {
                 isJoined = false;

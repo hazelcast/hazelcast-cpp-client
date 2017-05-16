@@ -85,6 +85,7 @@ namespace hazelcast {
                                         std::string("Error while connecting to cluster! =>") + e.what());
                                 isStartedSuccessfully = false;
                                 startLatch.countDown();
+                                clientContext.getLifecycleService().shutdown();
                                 return;
                             }
                         }

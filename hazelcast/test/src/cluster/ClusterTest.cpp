@@ -58,6 +58,64 @@ namespace hazelcast {
                 }
             };
 
+            class ClientAllStatesListener : public LifecycleListener {
+            public:
+
+                ClientAllStatesListener(util::CountDownLatch *startingLatch, util::CountDownLatch *startedLatch = NULL,
+                                        util::CountDownLatch *connectedLatch = NULL,
+                                        util::CountDownLatch *disconnectedLatch = NULL,
+                                        util::CountDownLatch *shuttingDownLatch = NULL,
+                                        util::CountDownLatch *shutdownLatch = NULL)
+                        : startingLatch(startingLatch), startedLatch(startedLatch), connectedLatch(connectedLatch),
+                          disconnectedLatch(disconnectedLatch), shuttingDownLatch(shuttingDownLatch),
+                          shutdownLatch(shutdownLatch) { }
+
+                virtual void stateChanged(const LifecycleEvent &lifecycleEvent) {
+                    switch (lifecycleEvent.getState()) {
+                        case LifecycleEvent::STARTING:
+                            if (startingLatch) {
+                                startingLatch->countDown();
+                            }
+                            break;
+                        case LifecycleEvent::STARTED:
+                            if (startedLatch) {
+                                startedLatch->countDown();
+                            }
+                            break;
+                        case LifecycleEvent::CLIENT_CONNECTED:
+                            if (connectedLatch) {
+                                connectedLatch->countDown();
+                            }
+                            break;
+                        case LifecycleEvent::CLIENT_DISCONNECTED:
+                            if (disconnectedLatch) {
+                                disconnectedLatch->countDown();
+                            }
+                            break;
+                        case LifecycleEvent::SHUTTING_DOWN:
+                            if (shuttingDownLatch) {
+                                shuttingDownLatch->countDown();
+                            }
+                            break;
+                        case LifecycleEvent::SHUTDOWN:
+                            if (shutdownLatch) {
+                                shutdownLatch->countDown();
+                            }
+                            break;
+                        default:
+                            FAIL() << "No such state expected:" << lifecycleEvent.getState();
+                    }
+                }
+
+            private:
+                util::CountDownLatch *startingLatch;
+                util::CountDownLatch *startedLatch;
+                util::CountDownLatch *connectedLatch;
+                util::CountDownLatch *disconnectedLatch;
+                util::CountDownLatch *shuttingDownLatch;
+                util::CountDownLatch *shutdownLatch;
+            };
+
             class SampleInitialListener : public InitialMembershipListener {
             public:
                 SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
@@ -251,6 +309,35 @@ namespace hazelcast {
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
                 ClientConfig clientConfig;
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
+            }
+
+            TEST_P(ClusterTest, testAllClientStates) {
+                HazelcastServer instance(*g_srvFactory);
+
+                ClientConfig clientConfig;
+                clientConfig.setAttemptPeriod(1000);
+                clientConfig.setConnectionAttemptLimit(1);
+                util::CountDownLatch startingLatch(1);
+                util::CountDownLatch startedLatch(1);
+                util::CountDownLatch connectedLatch(1);
+                util::CountDownLatch disconnectedLatch(1);
+                util::CountDownLatch shuttingDownLatch(1);
+                util::CountDownLatch shutdownLatch(1);
+                ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
+                                                 &shuttingDownLatch, &shutdownLatch);
+                clientConfig.addListener(&listener);
+
+                HazelcastClient client(clientConfig);
+
+                ASSERT_TRUE(startingLatch.await(0));
+                ASSERT_TRUE(startedLatch.await(0));
+                ASSERT_TRUE(connectedLatch.await(0));
+
+                instance.shutdown();
+
+                ASSERT_TRUE(disconnectedLatch.await(3));
+                ASSERT_TRUE(shuttingDownLatch.await(5));
+                ASSERT_TRUE(shutdownLatch.await(500));
             }
 
             #ifdef HZ_BUILD_WITH_SSL
