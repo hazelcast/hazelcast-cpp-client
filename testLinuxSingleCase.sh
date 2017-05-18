@@ -10,6 +10,9 @@ function cleanup {
     exit
 }
 
+# Disables printing security sensitive data to the logs
+set +x
+
 trap cleanup EXIT
 
 HZ_BIT_VERSION=$1
