@@ -17,13 +17,10 @@
 // Created by İhsan Demir on 26/05/15.
 //
 
-#ifndef HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
-#define HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
+#ifndef HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
+#define HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
 
 #include <memory>
-#include <gtest/gtest.h>
-
-#include "ClientTestSupportBase.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,10 +33,17 @@ namespace hazelcast {
 
             extern HazelcastServerFactory *g_srvFactory;
 
-            class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
+            class ClientTestSupportBase {
+            public:
+                static std::string getCAFilePath();
+            protected:
+
+                static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
+
+                static std::auto_ptr<HazelcastClient> getNewClient();
             };
         }
     }
 }
 
-#endif //HAZELCASTCLIENT_CLIENTTESTSUPPORT_H
+#endif //HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
