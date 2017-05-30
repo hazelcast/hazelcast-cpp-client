@@ -21,6 +21,7 @@
 #define HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H
 
 #include <memory>
+#include <string>
 
 namespace hazelcast {
     namespace client {
