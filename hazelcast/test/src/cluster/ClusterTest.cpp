@@ -307,7 +307,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 
