@@ -13,30 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 26/05/15.
-//
 
-#include "ClientTestSupport.h"
+#include "ClientTestSupportBase.h"
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            std::string ClientTestSupport::getCAFilePath() {
+            std::string ClientTestSupportBase::getCAFilePath() {
                 return "hazelcast/test/resources/cpp_client.crt";
             }
 
-            std::auto_ptr<hazelcast::client::ClientConfig> ClientTestSupport::getConfig() {
+            std::auto_ptr<hazelcast::client::ClientConfig> ClientTestSupportBase::getConfig() {
                 std::auto_ptr<hazelcast::client::ClientConfig> clientConfig(new ClientConfig());
-                clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                 return clientConfig;
             }
 
-            std::auto_ptr<HazelcastClient> ClientTestSupport::getNewClient() {
+            std::auto_ptr<HazelcastClient> ClientTestSupportBase::getNewClient() {
                 std::auto_ptr<HazelcastClient> result(new HazelcastClient(*getConfig()));
                 return result;
             }

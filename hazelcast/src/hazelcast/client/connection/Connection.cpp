@@ -51,7 +51,6 @@ namespace hazelcast {
             : live(true)
             , clientContext(clientContext)
             , invocationService(clientContext.getInvocationService())
-            , socket(new internal::socket::TcpSocket(address))
             , readHandler(*this, iListener, 16 << 10, clientContext)
             , writeHandler(*this, oListener, 16 << 10)
             , _isOwnerConnection(isOwner)

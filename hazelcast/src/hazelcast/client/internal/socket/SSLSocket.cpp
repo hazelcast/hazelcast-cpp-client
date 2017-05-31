@@ -50,7 +50,7 @@ namespace hazelcast {
 
                 SSLSocket::SSLSocket(const client::Address &address, asio::io_service &ioSrv,
                                      asio::ssl::context &context)
-                        : remoteEndpoint(address), isOpen(true), ioService(ioSrv), sslContext(context),
+                        : remoteEndpoint(address), ioService(ioSrv), sslContext(context),
                           deadline(ioSrv) {
                     socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                             new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
@@ -60,14 +60,18 @@ namespace hazelcast {
                     close();
                 }
 
-                void SSLSocket::startTimer()
+                void SSLSocket::checkDeadline(const asio::error_code &ec)
                 {
+                    // The timer may return an error, e.g. operation_aborted when we cancel it. would_block is OK,
+                    // since we set it at the start of the connection.
+                    if (ec != asio::error::would_block) {
+                        return;
+                    }
+
                     // Check whether the deadline has passed. We compare the deadline against
                     // the current time since a new asynchronous operation may have moved the
                     // deadline before this actor had a chance to run.
                     if (deadline.expires_at() <= asio::deadline_timer::traits_type::now()) {
-                        deadline.cancel();
-
                         // The deadline has passed. The socket is closed so that any outstanding
                         // asynchronous operations are cancelled. This allows the blocked
                         // connect(), read_line() or write_line() functions to return.
@@ -77,8 +81,8 @@ namespace hazelcast {
                         return;
                     }
 
-                    // Put the actor back to sleep.
-                    deadline.async_wait(boost::bind(&SSLSocket::startTimer, this));
+                    // Put the actor back to sleep. _1 is for passing the error_code to the method.
+                    deadline.async_wait(boost::bind(&SSLSocket::checkDeadline, this, _1));
                 }
 
                 int SSLSocket::connect(int timeoutInMillis) {
@@ -91,14 +95,15 @@ namespace hazelcast {
 
                         deadline.expires_from_now(boost::posix_time::milliseconds(timeoutInMillis));
 
-                        startTimer();
+                        asio::error_code ec;
+                        checkDeadline(ec);
 
                         // Set up the variable that receives the result of the asynchronous
                         // operation. The error code is set to would_block to signal that the
                         // operation is incomplete. Asio guarantees that its asynchronous
                         // operations will never fail with would_block, so any other value in
                         // ec indicates completion.
-                        asio::error_code ec = asio::error::would_block;
+                        ec = asio::error::would_block;
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
@@ -107,8 +112,14 @@ namespace hazelcast {
 
                         // Block until the asynchronous operation has completed.
                         do {
-                            ioService.run_one();
+                            ioService.run_one(ec);
                         } while (ec == asio::error::would_block);
+
+                        // cancel the deadline timer
+                        deadline.cancel();
+
+                        // Cancel async connect operation if it is still in operation
+                        socket->lowest_layer().cancel();
 
                         // the restart is needed for the other connection attempts to work since the ioservice goes
                         // into the stopped state following the loop
@@ -131,8 +142,6 @@ namespace hazelcast {
 
                             throw exception::IOException("SSLSocket::connect", out.str());
                         }
-
-                        deadline.cancel();
 
                         socket->handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
 
@@ -210,9 +219,9 @@ namespace hazelcast {
                 }
 
                 void SSLSocket::close() {
-                    if (isOpen.compareAndSet(true, false)) {
-                        socket->lowest_layer().close();
-                    }
+                    asio::error_code ec;
+                    // Call the non-exception throwing versions of the following method
+                    socket->lowest_layer().close(ec);
                 }
 
                 int SSLSocket::handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const {

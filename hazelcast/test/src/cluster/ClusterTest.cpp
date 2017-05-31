@@ -17,7 +17,10 @@
 // Created by sancar koyunlu on 26/02/14.
 //
 
-#include "ClientTestSupport.h"
+#include <gtest/gtest.h>
+
+#include "ClientTestSupportBase.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -31,7 +34,28 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClusterTest : public ClientTestSupport {
+            class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig *> {
+            protected:
+                virtual void TearDown() {
+                    g_srvFactory->shutdownAll();
+                }
+
+                std::auto_ptr<HazelcastServer> startMember() {
+                    ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                    if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
+                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory, true));
+                    }
+
+                    return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
+                }
+            };
+
+            class SSLClientConfig : public ClientConfig {
+            public:
+                SSLClientConfig() {
+                    this->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(
+                            ClientTestSupportBase::getCAFilePath());
+                }
             };
 
             class SampleInitialListener : public InitialMembershipListener {
@@ -96,10 +120,10 @@ namespace hazelcast {
                 util::CountDownLatch &_memberRemoved;
             };
 
-            TEST_F(ClusterTest, testClusterListeners) {
-                HazelcastServer instance(*g_srvFactory);
-                std::auto_ptr<HazelcastClient> hazelcastClient(getNewClient());
-                Cluster cluster = hazelcastClient->getCluster();
+            TEST_P(ClusterTest, testClusterListeners) {
+                std::auto_ptr<HazelcastServer> instance = startMember();
+                HazelcastClient hazelcastClient(*const_cast<ParamType &>(GetParam()));
+                Cluster cluster = hazelcastClient.getCluster();
                 util::CountDownLatch memberAdded(1);
                 util::CountDownLatch memberAddedInit(2);
                 util::CountDownLatch memberRemoved(1);
@@ -113,25 +137,25 @@ namespace hazelcast {
                 cluster.addMembershipListener(&sampleInitialListener);
                 cluster.addMembershipListener(&sampleListener);
 
-                HazelcastServer instance2(*g_srvFactory);
+                std::auto_ptr<HazelcastServer> instance2 = startMember();
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
                 ASSERT_TRUE(memberAdded.await(30));
                 ASSERT_TRUE(memberAddedInit.await(30));
 
-                instance2.shutdown();
+                instance2->shutdown();
 
                 ASSERT_TRUE(memberRemoved.await(30));
                 ASSERT_TRUE(memberRemovedInit.await(30));
 
-                instance.shutdown();
+                instance->shutdown();
 
                 cluster.removeMembershipListener(&sampleInitialListener);
                 cluster.removeMembershipListener(&sampleListener);
             }
 
-            TEST_F(ClusterTest, testClusterListenersFromConfig) {
+            TEST_P(ClusterTest, testClusterListenersFromConfig) {
                 util::CountDownLatch memberAdded(2);
                 util::CountDownLatch memberAddedInit(3);
                 util::CountDownLatch memberRemoved(1);
@@ -141,26 +165,26 @@ namespace hazelcast {
                 SampleInitialListener sampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit);
                 SampleListenerInClusterTest sampleListener(memberAdded, attributeLatch, memberRemoved);
 
-                std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->addListener(&sampleListener);
-                clientConfig->addListener(&sampleInitialListener);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                clientConfig.addListener(&sampleListener);
+                clientConfig.addListener(&sampleInitialListener);
 
-                HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(*clientConfig);
+                std::auto_ptr<HazelcastServer> instance = startMember();
+                HazelcastClient hazelcastClient(clientConfig);
 
-                HazelcastServer instance2(*g_srvFactory);
+                std::auto_ptr<HazelcastServer> instance2 = startMember();
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
                 ASSERT_TRUE(memberAdded.await(30));
                 ASSERT_TRUE(memberAddedInit.await(30));
 
-                instance2.shutdown();
+                instance2->shutdown();
 
                 ASSERT_TRUE(memberRemoved.await(30));
                 ASSERT_TRUE(memberRemovedInit.await(30));
 
-                instance.shutdown();
+                instance->shutdown();
             }
 
             class DummyListenerClusterTest : public EntryAdapter<std::string, std::string> {
@@ -194,28 +218,28 @@ namespace hazelcast {
                 util::CountDownLatch &latch;
             };
 
-            TEST_F(ClusterTest, testListenersWhenClusterDown) {
-                HazelcastServer instance(*g_srvFactory);
+            TEST_P(ClusterTest, testListenersWhenClusterDown) {
+                std::auto_ptr<HazelcastServer> instance = startMember();
 
-                std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->setAttemptPeriod(1000).setConnectionAttemptLimit(100).setLogLevel(FINEST);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                clientConfig.setAttemptPeriod(1000).setConnectionAttemptLimit(100).setLogLevel(FINEST);
                 // set the heartbeat interval to 1 seconds so that the heartbeater ClientPingCodec related code is
                 // executed for code coverage.
-                clientConfig->getProperties()[ClientProperties::PROP_HEARTBEAT_INTERVAL] = "1";
-                HazelcastClient hazelcastClient(*clientConfig);
+                clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_INTERVAL] = "1";
+                HazelcastClient hazelcastClient(clientConfig);
 
                 util::CountDownLatch countDownLatch(1);
                 DummyListenerClusterTest listener(countDownLatch);
                 IMap<std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>(
                         "testListenersWhenClusterDown");
                 m.addEntryListener(listener, true);
-                instance.shutdown();
+                instance->shutdown();
 
                 util::CountDownLatch lifecycleLatch(1);
                 LclForClusterTest lifecycleListener(lifecycleLatch);
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
-                HazelcastServer instance2(*g_srvFactory);
+                std::auto_ptr<HazelcastServer> instance2 = startMember();
                 ASSERT_TRUE(lifecycleLatch.await(120));
                 // Let enough time for the client to re-register the failed listeners
                 util::sleep(5);
@@ -224,10 +248,15 @@ namespace hazelcast {
                 ASSERT_TRUE(hazelcastClient.removeLifecycleListener(&lifecycleListener));
             }
 
-            TEST_F(ClusterTest, testBehaviourWhenClusterNotFound) {
+            TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
                 ClientConfig clientConfig;
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
+
+            INSTANTIATE_TEST_CASE_P(All,
+                                    ClusterTest,
+                                    ::testing::Values(new ClientConfig(), new SSLClientConfig()));
+
         }
     }
 }

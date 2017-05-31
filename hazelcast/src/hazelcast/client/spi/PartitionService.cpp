@@ -189,7 +189,7 @@ namespace hazelcast {
                         if (ptr.get() == NULL) {
                             partitionResponse = getPartitionsFrom();
                         } else {
-                            partitionResponse = getPartitionsFrom(*ptr.get());
+                            partitionResponse = getPartitionsFrom(*ptr);
                         }
                         if (partitionResponse.get() != NULL) {
                             processPartitionResponse(*partitionResponse);

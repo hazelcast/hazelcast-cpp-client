@@ -126,11 +126,9 @@ namespace hazelcast {
                      */
                     int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
 
-                    void startTimer();
+                    void checkDeadline(const asio::error_code &ec);
 
                     client::Address remoteEndpoint;
-
-                    util::AtomicBoolean isOpen;
 
                     asio::io_service &ioService;
                     asio::ssl::context &sslContext;
