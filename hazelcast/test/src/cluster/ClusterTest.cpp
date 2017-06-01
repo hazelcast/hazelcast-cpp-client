@@ -253,10 +253,15 @@ namespace hazelcast {
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 
+            #ifdef HZ_BUILD_WITH_SSL
             INSTANTIATE_TEST_CASE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new ClientConfig(), new SSLClientConfig()));
-
+            #else
+            INSTANTIATE_TEST_CASE_P(All,
+                                    ClusterTest,
+                                    ::testing::Values(new ClientConfig()));
+            #endif
         }
     }
 }
