@@ -80,7 +80,7 @@ namespace hazelcast {
              * @throws client::exception::InvalidConfigurationException if the user does not compile with
              * HZ_BUILD_WITH_SSL flag but is trying to use a feature (e.g. TLS, AWS Cloud Discovery) that needs this flag.
              */
-            static void checkSSL(const std::string &sourceMethod) throw (client::exception::InvalidConfigurationException);
+            static void checkSSL(const std::string &sourceMethod);
         };
     }
 }
