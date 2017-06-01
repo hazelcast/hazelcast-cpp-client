@@ -67,7 +67,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-
+                util::Mutex shutdownLock;
             };
 
         }

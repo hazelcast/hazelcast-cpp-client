@@ -64,6 +64,10 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
+                // Take this lock to prevent client being destructed. If shutdown is called from ClusterListenerThread
+                // and this thread starts the shutdown, then we need to prevent client from destruction
+                util::LockGuard guard(shutdownLock);
+
                 if (!active.compareAndSet(true, false))
                     return;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
