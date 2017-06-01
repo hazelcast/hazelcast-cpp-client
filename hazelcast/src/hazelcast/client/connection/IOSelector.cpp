@@ -42,7 +42,6 @@ namespace hazelcast {
             :connectionManager(connectionManager) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
-                isAlive = true;
             }
 
             void IOSelector::staticListen(util::ThreadArgs &args) {
@@ -55,6 +54,10 @@ namespace hazelcast {
             }
 
             void IOSelector::wakeUp() {
+                if (!wakeUpSocket.get()) {
+                    return;
+                }
+
                 int wakeUpSignal = 9;
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int));
@@ -91,6 +94,7 @@ namespace hazelcast {
                     sleepingSocket->setBlocking(false);
                     wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
+                    isAlive = true;
                     return true;
                 } else {
                     util::ILogger::getLogger().severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
@@ -99,7 +103,9 @@ namespace hazelcast {
             }
 
             void IOSelector::shutdown() {
-                isAlive = false;
+                if (!isAlive.compareAndSet(true, false)) {
+                    return;
+                }
                 try {
                     wakeUp();
                 } catch (exception::IOException &) {
