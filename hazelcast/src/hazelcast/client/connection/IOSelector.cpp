@@ -100,6 +100,11 @@ namespace hazelcast {
 
             void IOSelector::shutdown() {
                 isAlive = false;
+                try {
+                    wakeUp();
+                } catch (exception::IOException &) {
+                    // suppress io exception
+                }
             }
 
             void IOSelector::addTask(ListenerTask *listenerTask) {
