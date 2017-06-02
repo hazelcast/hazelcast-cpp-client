@@ -137,14 +137,14 @@ namespace hazelcast {
                             "[LoadTest::loadIntMapTestWithConfig] Finished the test successfully :)");
                 }
 
-                TEST_F(LoadTest, testIntMapSmartClientServerRestart) {
+                TEST_F(LoadTest, DISABLED_testIntMapSmartClientServerRestart) {
                     std::auto_ptr<ClientConfig> config = getLoadTestConfig();
                     config->setSmart(true);
 
                     loadIntMapTestWithConfig(*config, *this);
                 }
 
-                TEST_F(LoadTest, testIntMapDummyClientServerRestart) {
+                TEST_F(LoadTest, DISABLED_testIntMapDummyClientServerRestart) {
                     std::auto_ptr<ClientConfig> config = getLoadTestConfig();
                     config->setSmart(false);
 
