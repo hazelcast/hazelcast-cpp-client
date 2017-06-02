@@ -33,7 +33,8 @@ namespace hazelcast {
 
             LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
             :clientContext(clientContext)
-            , active(false) {
+            , active(false)
+            , shutdownLatch(1) {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
 
@@ -64,10 +65,6 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                // Take this lock to prevent client being destructed. If shutdown is called from ClusterListenerThread
-                // and this thread starts the shutdown, then we need to prevent client from destruction
-                util::LockGuard guard(shutdownLock);
-
                 if (!active.compareAndSet(true, false))
                     return;
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
@@ -77,6 +74,12 @@ namespace hazelcast {
                 clientContext.getInvocationService().shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                shutdownLatch.countDown();
+            }
+
+            void LifecycleService::shutdownAndWait() {
+                shutdown();
+                shutdownLatch.await();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {

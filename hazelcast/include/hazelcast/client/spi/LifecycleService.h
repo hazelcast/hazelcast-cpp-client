@@ -25,6 +25,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/CountDownLatch.h"
 #include <set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -55,6 +56,8 @@ namespace hazelcast {
 
                 void shutdown();
 
+                void shutdownAndWait();
+
                 void addLifecycleListener(LifecycleListener *lifecycleListener);
 
                 bool removeLifecycleListener(LifecycleListener *lifecycleListener);
@@ -67,7 +70,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-                util::Mutex shutdownLock;
+                util::CountDownLatch shutdownLatch;
             };
 
         }
