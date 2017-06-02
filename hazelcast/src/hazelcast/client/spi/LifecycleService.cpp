@@ -65,8 +65,10 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false))
+                if (!active.compareAndSet(true, false)) {
+                    shutdownLatch.await();
                     return;
+                }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getConnectionManager().shutdown();
                 clientContext.getClusterService().shutdown();
@@ -75,11 +77,6 @@ namespace hazelcast {
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 shutdownLatch.countDown();
-            }
-
-            void LifecycleService::shutdownAndWait() {
-                shutdown();
-                shutdownLatch.await();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {

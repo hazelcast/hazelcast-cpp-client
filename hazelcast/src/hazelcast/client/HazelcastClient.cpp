@@ -60,7 +60,7 @@ namespace hazelcast {
         }
 
         HazelcastClient::~HazelcastClient() {
-            lifecycleService.shutdownAndWait();
+            lifecycleService.shutdown();
         }
 
 

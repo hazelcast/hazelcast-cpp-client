@@ -56,8 +56,6 @@ namespace hazelcast {
 
                 void shutdown();
 
-                void shutdownAndWait();
-
                 void addLifecycleListener(LifecycleListener *lifecycleListener);
 
                 bool removeLifecycleListener(LifecycleListener *lifecycleListener);
