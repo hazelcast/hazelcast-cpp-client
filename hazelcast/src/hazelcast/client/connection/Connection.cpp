@@ -89,7 +89,7 @@ namespace hazelcast {
                 outputSocketStream.write(PROTOCOL);
             }
 
-            void Connection::close() {
+            void Connection::close(const char *closeReason) {
                 if (!live.compareAndSet(true, false)) {
                     return;
                 }
@@ -98,8 +98,10 @@ namespace hazelcast {
                 int socketId = socket->getSocketId();
                 
                 std::stringstream message;
-                message << "Closing connection (id:" << connectionId << ") to " << serverAddr << " with socket id " << socketId <<
-                        (_isOwnerConnection ? " as the owner connection." : ".");
+                message << "Closing connection (id:" << connectionId << ") to " << serverAddr <<
+                        " with socket id " << socketId <<
+                        (_isOwnerConnection ? " as the owner connection." : ". ") <<
+                        (NULL != closeReason ? closeReason : "");
                 util::ILogger::getLogger().warning(message.str());
                 if (!_isOwnerConnection) {
                     readHandler.deRegisterSocket();

@@ -16,6 +16,7 @@
 //
 // Created by sancar koyunlu on 8/21/13.
 
+#include <boost/foreach.hpp>
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/protocol/AuthenticationStatus.h"
 #include "hazelcast/client/exception/AuthenticationException.h"
@@ -69,6 +70,10 @@ namespace hazelcast {
 
             void ConnectionManager::shutdown() {
                 live = false;
+                // close connections
+                BOOST_FOREACH(boost::shared_ptr<Connection> connection ,  connections.values()) {
+                                connection->close("Hazelcast client is shutting down");
+                            }
                 heartBeater.shutdown();
                 if (heartBeatThread.get() != NULL) {
                     heartBeatThread->cancel();
@@ -384,7 +389,7 @@ namespace hazelcast {
                 } else {
                     ownerConnectionFuture.close();
                 }
-                util::IOUtil::closeResource(&connection);
+                util::IOUtil::closeResource(&connection, "Heartbeat failed");
             }
 
             void ConnectionManager::removeEndpoint(const Address &address) {

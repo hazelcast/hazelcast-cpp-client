@@ -106,7 +106,7 @@ namespace hazelcast {
 
                         clientContext.getConnectionManager().onCloseOwnerConnection();
                         if (deletingConnection.compareAndSet(false, true)) {
-                            util::IOUtil::closeResource(conn.get());
+                            util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
                             conn.reset();
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
@@ -118,7 +118,7 @@ namespace hazelcast {
 
             void ClusterListenerThread::stop() {
                 if (deletingConnection.compareAndSet(false, true)) {
-                    util::IOUtil::closeResource(conn.get());
+                    util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
                     conn.reset();
                     deletingConnection = false;
                 }
