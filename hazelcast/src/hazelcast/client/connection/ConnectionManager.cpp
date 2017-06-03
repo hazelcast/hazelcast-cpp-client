@@ -355,7 +355,7 @@ namespace hazelcast {
 
             void ConnectionManager::checkLive() {
                 if (!live) {
-                    throw exception::HazelcastException("ConnectionManager is not active!");
+                    throw exception::HazelcastException("ConnectionManager", "ConnectionManager is not active!");
                 }
             }
 
