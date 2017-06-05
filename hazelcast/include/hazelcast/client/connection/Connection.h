@@ -68,7 +68,7 @@ namespace hazelcast {
 
                 void connect(int timeoutInMillis);
 
-                void close();
+                void close(const char *closeReason = NULL);
 
                 void write(protocol::ClientMessage *message);
 

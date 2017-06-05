@@ -64,13 +64,16 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false))
+                util::LockGuard guard(shutdownLock);
+
+                if (!active.compareAndSet(true, false)) {
                     return;
+                }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                clientContext.getInvocationService().shutdown();
-                clientContext.getPartitionService().shutdown();
-                clientContext.getClusterService().shutdown();
                 clientContext.getConnectionManager().shutdown();
+                clientContext.getClusterService().shutdown();
+                clientContext.getPartitionService().shutdown();
+                clientContext.getInvocationService().shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             }

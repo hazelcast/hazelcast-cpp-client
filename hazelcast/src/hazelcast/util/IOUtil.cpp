@@ -22,10 +22,10 @@
 
 namespace hazelcast {
     namespace util {
-        void IOUtil::closeResource(Closeable *closable) {
+        void IOUtil::closeResource(Closeable *closable, const char *closeReason) {
             if (closable != NULL) {
                 try {
-                    closable->close();
+                    closable->close(closeReason);
                 } catch (client::exception::IException& e) {
                     std::stringstream message;
                     message << "closeResource failed" << e.what();

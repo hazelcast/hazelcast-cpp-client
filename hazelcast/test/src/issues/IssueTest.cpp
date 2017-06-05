@@ -138,7 +138,10 @@ namespace hazelcast {
                 } catch (exception::IOException &) {
                     // this is the expected exception, test passes, do nothing
                 } catch (exception::IException &e) {
-                    FAIL() << "IException is received while we expect IOException. Received exception:" << e.what();
+                    std::string msg = e.what();
+                    if (msg.find("ConnectionManager is not active") == std::string::npos) {
+                        FAIL() << "Unexpected exception. Received exception:" << msg;
+                    }
                 }
             }
 

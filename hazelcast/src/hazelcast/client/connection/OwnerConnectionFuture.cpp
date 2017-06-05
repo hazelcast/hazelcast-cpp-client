@@ -91,7 +91,7 @@ namespace hazelcast {
                 std::stringstream message;
                 message << "Closing owner connection to " << currentOwnerConnection->getRemoteEndpoint();
                 util::ILogger::getLogger().finest(message.str());
-                util::IOUtil::closeResource(currentOwnerConnection.get());
+                util::IOUtil::closeResource(currentOwnerConnection.get(), message.str().c_str());
                 markAsClosed();
             }
         }

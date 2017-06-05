@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 6/17/13.
 
-
-
-
 #ifndef HAZELCAST_LIFECYCLE_SERVICE
 #define HAZELCAST_LIFECYCLE_SERVICE
 
@@ -67,7 +64,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-
+                util::Mutex shutdownLock;
             };
 
         }

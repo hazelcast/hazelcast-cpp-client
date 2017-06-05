@@ -33,8 +33,9 @@ namespace hazelcast {
         namespace exception {
             class HAZELCAST_API ProtocolException : public IException {
             public:
-                ProtocolException(const std::string& source, const std::string& message, int32_t errorNo, int32_t causeCode)
-                        : IException(source, message), errorCode(errorNo), causeErrorCode(causeCode) {
+                ProtocolException(const std::string& message, const std::string& details, int32_t errorNo,
+                                  int32_t causeCode)
+                        : IException("Cluster", details), errorCode(errorNo), causeErrorCode(causeCode) {
                 }
 
                 ProtocolException(const std::string& source, const std::string& message)
@@ -56,8 +57,8 @@ namespace hazelcast {
 #define DEFINE_PROTOCOL_EXCEPTION(ClassName) \
             class HAZELCAST_API ClassName : public ProtocolException {\
             public:\
-                ClassName(const std::string& source, const std::string& message, int32_t errorCode, int32_t causeCode) \
-                    : ProtocolException(source, message, errorCode, causeCode) {\
+                ClassName(const std::string& message, const std::string& details, int32_t errorNo, int32_t causeCode) \
+                    : ProtocolException(message, details, errorNo, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
                     : ProtocolException(source, message) {\

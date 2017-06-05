@@ -69,7 +69,9 @@ namespace hazelcast {
             }
 
             void ClusterService::shutdown() {
-                active = false;
+                if (!active.compareAndSet(true, false)) {
+                    return;
+                }
                 if (NULL != clusterThread.getThread()) {
                     // avoid anyone waiting on the start latch to get stuck
                     clusterThread.startLatch.countDown();

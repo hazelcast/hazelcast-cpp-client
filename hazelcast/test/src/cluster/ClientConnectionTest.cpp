@@ -48,13 +48,6 @@ namespace hazelcast {
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
-            TEST_F(ClientConnectionTest, testTcpSocketConnectionTimeout_withIntMax) {
-                HazelcastServer instance(*g_srvFactory, true);
-                ClientConfig config;
-                config.addAddress(Address("8.8.8.8", 5701));
-                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
-            }
-
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
                 HazelcastServer instance(*g_srvFactory, true);
