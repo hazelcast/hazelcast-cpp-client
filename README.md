@@ -6,6 +6,10 @@
   * [Mac](#mac)
   * [Linux](#linux)
   * [Windows](#windows)
+* [Producing Released Libraries](#producing-released-libraries)
+  * [Mac](#mac)
+  * [Linux](#linux)
+  * [Windows](#windows)
 * [Features](#features)
 * [Setting Up the Client](#setting-up-the-client)
 * [Installing the Client](#installing-the-client)
@@ -146,6 +150,25 @@ Our CI tests are run continuously on the following platforms and compilers:
 	cmake .. -G "Visual Studio 12 Win64"  -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Debug
 
 	MSBuild.exe HazelcastClient.sln /property:TreatWarningsAsErrors=true /property:Configuration=Debug
+
+# Producing Released Libraries
+
+Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
+
+Note: 
+- The default release scripts require that you have openssl (version 1.0.2) installed in your development environment.
+
+## Mac
+
+Run releaseOSX.sh.
+
+## Linux
+
+Run releaseLinux.sh
+
+## Windows
+
+Run releaseWindows.bat.
 
 # Features
 
