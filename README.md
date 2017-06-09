@@ -6,7 +6,7 @@
   * [Mac](#mac)
   * [Linux](#linux)
   * [Windows](#windows)
-* [Producing Released Libraries](#producing-released-libraries)
+* [Reproducing Released Libraries](#producing-released-libraries)
   * [Mac](#mac)
   * [Linux](#linux)
   * [Windows](#windows)
@@ -151,7 +151,7 @@ Our CI tests are run continuously on the following platforms and compilers:
 
 	MSBuild.exe HazelcastClient.sln /property:TreatWarningsAsErrors=true /property:Configuration=Debug
 
-# Producing Released Libraries
+# Reproducing Released Libraries
 
 Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
 
