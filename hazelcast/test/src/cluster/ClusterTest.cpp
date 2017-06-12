@@ -290,7 +290,7 @@ namespace hazelcast {
                 DummyListenerClusterTest listener(countDownLatch);
                 IMap<std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>(
                         "testListenersWhenClusterDown");
-                m.addEntryListener(listener, true);
+                std::string entryListenerRegistrationId = m.addEntryListener(listener, true);
                 instance->shutdown();
 
                 util::CountDownLatch lifecycleLatch(1);
@@ -304,6 +304,7 @@ namespace hazelcast {
                 m.put("sample", "entry");
                 ASSERT_TRUE(countDownLatch.await(60));
                 ASSERT_TRUE(hazelcastClient.removeLifecycleListener(&lifecycleListener));
+                ASSERT_TRUE(m.removeEntryListener(entryListenerRegistrationId));
             }
 
             TEST_P(ClusterTest, testBehaviourWhenClusterNotFound) {
