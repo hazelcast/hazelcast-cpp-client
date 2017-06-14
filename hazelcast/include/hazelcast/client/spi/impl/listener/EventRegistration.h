@@ -29,10 +29,10 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/Address.h"
 
 namespace hazelcast {
     namespace client {
-        class Address;
         namespace protocol {
             class ClientMessage;
             namespace codec {
@@ -59,7 +59,7 @@ namespace hazelcast {
 
                     private:
                         int64_t correlationId;
-                        const Address &memberAddress;
+                        Address memberAddress;
                         std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec;
                     };
                 }
