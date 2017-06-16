@@ -77,7 +77,7 @@ For compiling with SSL support:
 
 - Check the top level CMakeLists.txt file to see which libraries we link for openssl in which environment. 
     - For Mac OS and Linux, we link with "ssl" and "crypto" 
-    - For Windows there is an example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
+    - For Windows, install also the 1.1.x version of the openssl library. An example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
 
 # Tested Platforms
 Our CI tests are run continuously on the following platforms and compilers:
