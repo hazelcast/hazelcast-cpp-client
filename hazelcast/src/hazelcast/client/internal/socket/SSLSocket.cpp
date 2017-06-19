@@ -130,17 +130,12 @@ namespace hazelcast {
                         // though the connect operation notionally succeeded. Therefore we must
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
-                        if (ec || !socket->lowest_layer().is_open()) {
-                            std::ostringstream out;
-                            out << "Connection to server " << remoteEndpoint << " failed. ";
-                            if (ec) {
-                                asio::system_error systemError(ec);
-                                out << systemError.what();
-                            } else {
-                                out << " Failed to connect in " << timeoutInMillis << " milliseconds";
-                            }
+                        if (ec) {
+                            return ec.value();
+                        }
 
-                            throw exception::IOException("SSLSocket::connect", out.str());
+                        if (!socket->lowest_layer().is_open()) {
+                            return asio::error::operation_aborted;
                         }
 
                         socket->handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
@@ -155,7 +150,7 @@ namespace hazelcast {
                         // set the socket as blocking by default
                         setBlocking(true);
                     } catch (asio::system_error &e) {
-                        throw exception::IOException("SSLSocket::connect", e.what());
+                        return e.code().value();
                     }
 
                     return 0;
