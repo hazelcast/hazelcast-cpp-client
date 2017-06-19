@@ -72,7 +72,8 @@ namespace hazelcast {
                 live = false;
                 // close connections
                 BOOST_FOREACH(boost::shared_ptr<Connection> connection ,  connections.values()) {
-                                connection->close("Hazelcast client is shutting down");
+                                // prevent any exceptions
+                                util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                             }
                 heartBeater.shutdown();
                 if (heartBeatThread.get() != NULL) {
