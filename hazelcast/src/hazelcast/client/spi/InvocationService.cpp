@@ -136,15 +136,18 @@ namespace hazelcast {
                 return retryCount;
             }
 
-            void InvocationService::removeEventHandler(int64_t callId) {
+            bool InvocationService::removeEventHandler(int64_t callId) {
                 std::vector<boost::shared_ptr<connection::Connection> > connections = clientContext.getConnectionManager().getConnections();
                 std::vector<boost::shared_ptr<connection::Connection> >::iterator it;
                 for (it = connections.begin(); it != connections.end(); ++it) {
                     boost::shared_ptr<connection::Connection> &connectionPtr = *it;
-                    if (deRegisterEventHandler(*connectionPtr, callId) != NULL) {
-                        return;
+                    boost::shared_ptr<connection::CallPromise> eventPromise = deRegisterEventHandler(*connectionPtr,
+                                                                                                     callId);
+                    if (eventPromise.get() != (connection::CallPromise *) NULL) {
+                        return true;
                     }
                 }
+                return false;
             }
 
 
@@ -221,12 +224,11 @@ namespace hazelcast {
                 boost::shared_ptr<connection::Connection> actualConn = registerAndEnqueue(connection, promise);
 
                 if (NULL != actualConn.get()) {
-                    char msg[300];
-                    const Address &serverAddr = connection->getRemoteEndpoint();
-                    hazelcast::util::snprintf(msg, 300, "[InvocationService::resend] Re-sending the request with id %lld "
-                                                      "originally destined for %s to server [%s:%d] using the new correlation id %lld", correlationId,
-                                              lastTriedAddress.c_str(), serverAddr.getHost().c_str(), serverAddr.getPort(), promise->getRequest()->getCorrelationId());
-                    util::ILogger::getLogger().info(msg);
+                    std::ostringstream out;
+                    out << "[InvocationService::resend] Re-sending the request with id " << correlationId <<
+                            " originally destined for " << lastTriedAddress << " on connection " << *actualConn <<
+                            " using the new correlation id " << promise->getRequest()->getCorrelationId();
+                    util::ILogger::getLogger().info(out.str());
                 }
 
                 return actualConn;
@@ -343,9 +345,13 @@ namespace hazelcast {
                                                     boost::shared_ptr<connection::CallPromise> promise) {
                 client::impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
-                    if (eventHandler->registrationId.size() ==
-                        0) //if uuid is not set, it means it is first time that we are getting uuid.
-                        return true;                    // then no need to handle it, just set as normal response
+                    /**
+                     * if uuid is not set, it means it is first time that we are getting uuid.
+                     * then no need to handle it, just treat non-event response.
+                     */
+                    if (eventHandler->registrationId.empty()) {
+                        return true;
+                    }
 
                     // result->registrationId is the alias for the original registration
                     clientContext.getServerListenerService().reRegisterListener(eventHandler->registrationId, response);

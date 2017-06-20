@@ -110,7 +110,7 @@ namespace hazelcast {
                 * @param callId of event handler registration request
                 * @return true if found and removed, false otherwise
                 */
-                void removeEventHandler(int64_t callId);
+                bool removeEventHandler(int64_t callId);
 
                 /**
                 * Clean all promises (both request and event handlers). Retries requests on available connections if applicable.

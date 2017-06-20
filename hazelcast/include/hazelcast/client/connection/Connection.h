@@ -123,6 +123,8 @@ namespace hazelcast {
 
                 int connectionId;
             };
+
+            std::ostream HAZELCAST_API &operator << (std::ostream &out, const Connection &connection);
         }
     }
 }

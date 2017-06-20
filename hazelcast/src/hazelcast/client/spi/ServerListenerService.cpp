@@ -54,10 +54,9 @@ namespace hazelcast {
                 handler->beforeListenerRegister();
                 connection::CallFuture future = clientContext.getInvocationService().invokeOnRandomTarget(
                         addListenerCodec->encodeRequest(), handler);
-
-                std::string registrationId = registerInternal(addListenerCodec, future);
+                handler->registrationId = registerInternal(addListenerCodec, future);
                 handler->onListenerRegister();
-                return registrationId;
+                return handler->registrationId;
             }
 
             void ServerListenerService::reRegisterListener(std::string registrationId,
@@ -84,7 +83,9 @@ namespace hazelcast {
                     boost::shared_ptr<impl::listener::EventRegistration> registration = registrationIdMap.remove(*uuid);
 
                     if ((impl::listener::EventRegistration *)NULL != registration.get()) {
-                        clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId());
+                        if (!clientContext.getInvocationService().removeEventHandler(registration->getCorrelationId())) {
+                            return false;
+                        }
 
                         // send a remove listener request
                         removeListenerCodec.setRegistrationId(*uuid);
@@ -93,10 +94,23 @@ namespace hazelcast {
                             connection::CallFuture future = clientContext.getInvocationService().invokeOnTarget(
                                     request, registration->getMemberAddress());
 
-                            std::auto_ptr<protocol::ClientMessage> response = future.get();
+                            future.get();
+                        } catch (exception::IOException &e) {
+                            //if invocation cannot be done that means connection is broken, the server is shutdown
+                            util::ILogger &logger = util::ILogger::getLogger();
+                            if (logger.isFinestEnabled()) {
+                                std::ostringstream out;
+                                const Address &memberAddress = registration->getMemberAddress();
+                                out << "[ServerListenerService::deRegisterListener] Removal of listener with id " <<
+                                        uuid << " from server " << memberAddress << " failed. " << e.what();
+                                logger.finest(out.str());
+                            }
                         } catch (exception::IException &e) {
-                            //if invocation cannot be done that means connection is broken and listener is already removed
-                            (void)e; // suppress the unused variable warning
+                            std::ostringstream out;
+                            const Address &memberAddress = registration->getMemberAddress();
+                            out << "[ServerListenerService::deRegisterListener] Removal of listener with id " <<
+                                    uuid << " from server " << memberAddress << " failed. " << e.what();
+                            util::ILogger::getLogger().warning(out.str());
                         }
 
                         return true;
