@@ -223,6 +223,21 @@ namespace hazelcast {
             bool Connection::isOwnerConnection() const {
                 return _isOwnerConnection;
             }
+
+            std::ostream HAZELCAST_API &operator << (std::ostream &out, const Connection &connection) {
+                Connection &conn = const_cast<Connection &>(connection);
+                time_t lastRead = conn.lastRead;
+                bool live = conn.live;
+                out << "ClientConnection{"
+                << "alive=" << live
+                << ", connectionId=" << connection.getConnectionId()
+                << ", remoteEndpoint=" << connection.getRemoteEndpoint()
+                << ", lastReadTime=" << lastRead
+                << ", isHeartbeating=" << conn.isHeartBeating()
+                << '}';
+
+                return out;
+            }
         }
     }
 }

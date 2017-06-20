@@ -131,7 +131,7 @@ namespace hazelcast {
                 void onConnectionClose(const Address &address, int socketId);
 
                 /**
-                * Shutdown clientConnectionManager
+                * Shutdown clientConnectionManager. It does not throw any excpetion.
                 */
                 void shutdown();
 

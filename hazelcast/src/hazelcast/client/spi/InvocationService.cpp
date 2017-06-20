@@ -31,6 +31,7 @@
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
@@ -42,7 +43,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             InvocationService::InvocationService(spi::ClientContext &clientContext)
-                    : clientContext(clientContext), isOpen(false) {
+                    : clientContext(clientContext) {
                 redoOperation = clientContext.getClientConfig().isRedoOperation();
                 ClientProperties &properties = clientContext.getClientProperties();
                 retryWaitTime = properties.getRetryWaitTime().getInteger();
@@ -65,11 +66,10 @@ namespace hazelcast {
             }
 
             bool InvocationService::start() {
-                return isOpen.compareAndSet(false, true);
+                return true;
             }
 
             void InvocationService::shutdown() {
-                isOpen.compareAndSet(true, false);
             }
 
             connection::CallFuture  InvocationService::invokeOnRandomTarget(
@@ -136,15 +136,18 @@ namespace hazelcast {
                 return retryCount;
             }
 
-            void InvocationService::removeEventHandler(int64_t callId) {
+            bool InvocationService::removeEventHandler(int64_t callId) {
                 std::vector<boost::shared_ptr<connection::Connection> > connections = clientContext.getConnectionManager().getConnections();
                 std::vector<boost::shared_ptr<connection::Connection> >::iterator it;
                 for (it = connections.begin(); it != connections.end(); ++it) {
                     boost::shared_ptr<connection::Connection> &connectionPtr = *it;
-                    if (deRegisterEventHandler(*connectionPtr, callId) != NULL) {
-                        return;
+                    boost::shared_ptr<connection::CallPromise> eventPromise = deRegisterEventHandler(*connectionPtr,
+                                                                                                     callId);
+                    if (eventPromise.get() != (connection::CallPromise *) NULL) {
+                        return true;
                     }
                 }
+                return false;
             }
 
 
@@ -221,12 +224,11 @@ namespace hazelcast {
                 boost::shared_ptr<connection::Connection> actualConn = registerAndEnqueue(connection, promise);
 
                 if (NULL != actualConn.get()) {
-                    char msg[300];
-                    const Address &serverAddr = connection->getRemoteEndpoint();
-                    hazelcast::util::snprintf(msg, 300, "[InvocationService::resend] Re-sending the request with id %lld "
-                                                      "originally destined for %s to server [%s:%d] using the new correlation id %lld", correlationId,
-                                              lastTriedAddress.c_str(), serverAddr.getHost().c_str(), serverAddr.getPort(), promise->getRequest()->getCorrelationId());
-                    util::ILogger::getLogger().info(msg);
+                    std::ostringstream out;
+                    out << "[InvocationService::resend] Re-sending the request with id " << correlationId <<
+                            " originally destined for " << lastTriedAddress << " on connection " << *actualConn <<
+                            " using the new correlation id " << promise->getRequest()->getCorrelationId();
+                    util::ILogger::getLogger().info(out.str());
                 }
 
                 return actualConn;
@@ -235,15 +237,13 @@ namespace hazelcast {
             boost::shared_ptr<connection::Connection> InvocationService::registerAndEnqueue(
                     boost::shared_ptr<connection::Connection> &connection,
                     boost::shared_ptr<connection::CallPromise> promise) {
-                if (!isOpen) {
+                if (!clientContext.getLifecycleService().isRunning()) {
                     char msg[200];
-                    util::snprintf(msg, 200, "[InvocationService::registerAndEnqueue] InvocationService is shutdown. "
-                            "Did not register the promise for message correlation id:%lld",
-                                   promise->getRequest()->getCorrelationId());
-                    hazelcast::util::ILogger::getLogger().info(msg);
+                    util::snprintf(msg, 200, "Client is not running. Did not register the promise for message "
+                            "correlation id:%lld", promise->getRequest()->getCorrelationId());
 
                     std::auto_ptr<exception::IException> exception(new exception::IllegalStateException(
-                            "InvocationService::registerAndEnqueue", "Invocation service is not open. Can not process the request."));
+                            "InvocationService::registerAndEnqueue", msg));
                     promise->setException(exception);
 
                     return boost::shared_ptr<connection::Connection>();
@@ -343,9 +343,13 @@ namespace hazelcast {
                                                     boost::shared_ptr<connection::CallPromise> promise) {
                 client::impl::BaseEventHandler *eventHandler = promise->getEventHandler();
                 if (eventHandler != NULL) {
-                    if (eventHandler->registrationId.size() ==
-                        0) //if uuid is not set, it means it is first time that we are getting uuid.
-                        return true;                    // then no need to handle it, just set as normal response
+                    /**
+                     * if uuid is not set, it means it is first time that we are getting uuid.
+                     * then no need to handle it, just treat non-event response.
+                     */
+                    if (eventHandler->registrationId.empty()) {
+                        return true;
+                    }
 
                     // result->registrationId is the alias for the original registration
                     clientContext.getServerListenerService().reRegisterListener(eventHandler->registrationId, response);
@@ -359,8 +363,8 @@ namespace hazelcast {
             void InvocationService::tryResend(std::auto_ptr<exception::IException> exception,
                                               boost::shared_ptr<connection::CallPromise> promise,
                                               const std::string &lastTriedAddress) {
-                bool serviceOpen = isOpen;
-                if (serviceOpen && (promise->getRequest()->isRetryable() || isRedoOperation())) {
+                if (clientContext.getLifecycleService().isRunning() &&
+                    (promise->getRequest()->isRetryable() || isRedoOperation())) {
                     resend(promise, lastTriedAddress);
                     return;
                 }
@@ -385,16 +389,19 @@ namespace hazelcast {
 
                 std::string address = util::IOUtil::to_string(connection.getRemoteEndpoint());
 
-                char msg[200];
-                util::snprintf(msg, 200, "[cleanResources] There are %u waiting promises on connection with id:%d (%s) ",
-                               promises.size(), connection.getConnectionId(), address.c_str());
-                util::ILogger::getLogger().info(msg);
+                util::ILogger &logger = util::ILogger::getLogger();
+                if (logger.isFinestEnabled()) {
+                    std::ostringstream out;
+                    out << "[InvocationService::cleanResources] There are " << promises.size() << " waiting promises on "
+                           "connection " << connection;
+                    logger.finest(out.str());
+                }
 
                 for (std::vector<std::pair<int64_t, boost::shared_ptr<connection::CallPromise> > >::iterator it = promises.begin();
                      it != promises.end(); ++it) {
-                    if (!isOpen) {
+                    if (!clientContext.getLifecycleService().isRunning()) {
                         std::auto_ptr<exception::IException> exception(new exception::IllegalStateException(
-                                "InvocationService::cleanResources", "Invocation service is not open."));
+                                "InvocationService::cleanResources", "Client is not running."));
                         it->second->setException(exception);
                     } else {
                         std::auto_ptr<exception::IException> exception(new exception::IOException(
@@ -411,19 +418,20 @@ namespace hazelcast {
                         connection)->clear();
 
                 util::ILogger &logger = util::ILogger::getLogger();
+                if (logger.isFinestEnabled()) {
+                    char msg[200];
+                    util::snprintf(msg, 200, "[InvocationService::cleanEventHandlers] There are %ld event handler promises "
+                            "on connection with id:%d to be retried", promises.size(), connection.getConnectionId());
+                    logger.finest(msg);
+                }
 
-                char msg[200];
-                util::snprintf(msg, 200, "[InvocationService::cleanEventHandlers] There are %ld event handler promises on connection with id:%d to be retried",
-                               promises.size(), connection.getConnectionId());
-                logger.info(msg);
-
-                if (isOpen) {
+                if (clientContext.getLifecycleService().isRunning()) {
                     for (std::vector<std::pair<int64_t, boost::shared_ptr<connection::CallPromise> > >::const_iterator it = promises.begin();
                          it != promises.end(); ++it) {
                         clientContext.getServerListenerService().retryFailedListener(it->second);
                     }
                 } else {
-                    logger.info("[InvocationService::cleanEventHandlers] The service is closed. Shall not retry "
+                    logger.finest("[InvocationService::cleanEventHandlers] The service is closed. Shall not retry "
                                         "registering any event handler if exists.");
                 }
             }
