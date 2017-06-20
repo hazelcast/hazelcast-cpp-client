@@ -22,7 +22,6 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 
 #include <boost/shared_ptr.hpp>
@@ -65,6 +64,7 @@ namespace hazelcast {
 
         namespace spi {
             class ClientContext;
+            class LifecycleService;
 
             class HAZELCAST_API InvocationService : public protocol::IMessageHandler {
             public:
@@ -142,7 +142,6 @@ namespace hazelcast {
                 // Is not using the Connection* for the key due to a possible ABA problem.
                 util::SynchronizedMap<int , util::SynchronizedMap<int64_t, connection::CallPromise > > callPromises;
                 util::SynchronizedMap<int, util::SynchronizedMap<int64_t, connection::CallPromise > > eventHandlerPromises;
-                util::AtomicBoolean isOpen;
                 protocol::ClientExceptionFactory exceptionFactory;
 
                 bool isAllowedToSentRequest(connection::Connection& connection, protocol::ClientMessage const&);

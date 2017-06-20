@@ -107,7 +107,9 @@ namespace hazelcast {
                     responseMessage = future.get();
 
                 } catch (exception::IOException& e) {
-                    util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
+                    if (clientContext.getLifecycleService().isRunning()) {
+                        util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
+                    }
                 }
                 return responseMessage;
             }
@@ -123,7 +125,9 @@ namespace hazelcast {
                     responseMessage = future.get();
 
                 } catch (exception::IOException& e) {
-                    util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
+                    if (clientContext.getLifecycleService().isRunning()) {
+                        util::ILogger::getLogger().severe(std::string("Error while fetching cluster partition table => ") + e.what());
+                    }
                 }
                 return responseMessage;
             }
@@ -170,12 +174,14 @@ namespace hazelcast {
                     }
                 }
 
-                if (!result) {
-                    util::ILogger::getLogger().severe("PartitionService::getInitialPartitions Cannot get initial partitions!");
-                } else {
-                    util::ILogger::getLogger().finest("PartitionService::getInitialPartitions Got " +
-                                                              util::IOUtil::to_string<int>(partitionCount) +
-                                                              " initial partitions successfully.");
+                if (clientContext.getLifecycleService().isRunning()) {
+                    if (!result) {
+                        util::ILogger::getLogger().severe("PartitionService::getInitialPartitions Cannot get initial partitions!");
+                    } else {
+                        util::ILogger::getLogger().finest("PartitionService::getInitialPartitions Got " +
+                                                          util::IOUtil::to_string<int>(partitionCount) +
+                                                          " initial partitions successfully.");
+                    }
                 }
                 return result;
             }
@@ -195,9 +201,13 @@ namespace hazelcast {
                             processPartitionResponse(*partitionResponse);
                         }
                     } catch (hazelcast::client::exception::IException& e) {
-                        util::ILogger::getLogger().finest(std::string("Exception in partitionService::refreshPartitions ") + e.what());
+                        if (clientContext.getLifecycleService().isRunning()) {
+                            util::ILogger::getLogger().finest(std::string("Exception in partitionService::refreshPartitions ") + e.what());
+                        }
                     } catch (...) {
-                        util::ILogger::getLogger().finest(std::string("Unkown exception in partitionService::refreshPartitions "));
+                        if (clientContext.getLifecycleService().isRunning()) {
+                            util::ILogger::getLogger().finest(std::string("Unkown exception in partitionService::refreshPartitions "));
+                        }
                         throw;
                     }
                     updating = false;

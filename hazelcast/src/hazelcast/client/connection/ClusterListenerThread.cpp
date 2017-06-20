@@ -81,8 +81,10 @@ namespace hazelcast {
                                 previousConnectionAddr = conn->getRemoteEndpoint();
                                 previousConnectionAddrPtr = &previousConnectionAddr;
                             } catch (std::exception &e) {
-                                util::ILogger::getLogger().severe(
-                                        std::string("Error while connecting to cluster! =>") + e.what());
+                                if (clientContext.getLifecycleService().isRunning()) {
+                                    util::ILogger::getLogger().severe(
+                                            std::string("Error while connecting to cluster! =>") + e.what());
+                                }
                                 isStartedSuccessfully = false;
                                 clientContext.getLifecycleService().shutdown();
                                 startLatch.countDown();

@@ -43,15 +43,16 @@ namespace hazelcast {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
                 active = true;
 
+
+                if (!clientContext.getInvocationService().start()) {
+                    return false;
+                }
+
                 if (!clientContext.getConnectionManager().start()) {
                     return false;
                 }
 
                 if (!clientContext.getClusterService().start()) {
-                    return false;
-                }
-
-                if (!clientContext.getInvocationService().start()) {
                     return false;
                 }
 
@@ -71,9 +72,9 @@ namespace hazelcast {
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getInvocationService().shutdown();
+                clientContext.getPartitionService().shutdown();
                 clientContext.getConnectionManager().shutdown();
                 clientContext.getClusterService().shutdown();
-                clientContext.getPartitionService().shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
             }
