@@ -390,8 +390,9 @@ namespace hazelcast {
                 }
             }
 
-            void ClusterListenerThread::awaitStart() {
+            bool ClusterListenerThread::awaitStart() {
                 startLatch.await();
+                return !clientContext.getClusterService().getMemberList().empty();
             }
         }
     }

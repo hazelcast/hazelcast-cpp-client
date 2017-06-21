@@ -49,8 +49,7 @@ namespace hazelcast {
                 util::Thread *t = new util::Thread("hz.clusterListenerThread",
                                                    connection::ClusterListenerThread::staticRun, &clusterThread);
                 clusterThread.setThread(t);
-                clusterThread.awaitStart();
-                if (!clientContext.getLifecycleService().isRunning()) {
+                if (!clusterThread.awaitStart()) {
                     return false;
                 }
                 initMembershipListeners();

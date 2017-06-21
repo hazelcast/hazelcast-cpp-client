@@ -73,7 +73,10 @@ namespace hazelcast {
                 std::set<Address, addressComparator> getSocketAddresses() const;
 
 
-                void awaitStart();
+                /**
+                 * @return true if started and initialized successfully, false otherwise
+                 */
+                bool awaitStart();
 
             private:
                 util::CountDownLatch startLatch;
