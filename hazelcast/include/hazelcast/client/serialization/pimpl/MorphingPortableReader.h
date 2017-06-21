@@ -84,6 +84,8 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
+                    std::auto_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+					
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
                         setPosition(fieldName, FieldTypes::TYPE_PORTABLE);

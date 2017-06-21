@@ -211,6 +211,12 @@ namespace hazelcast {
                     return PortableReaderBase::readShortArray(fieldName);
                 }
 
+                std::auto_ptr<std::vector<std::string> > MorphingPortableReader::readUTFArray(char const *fieldName) {
+                    if (!cd->hasField(fieldName)){
+                        return std::auto_ptr<std::vector<std::string> >(new std::vector<std::string>(1));
+                    }
+                    return PortableReaderBase::readUTFArray(fieldName);
+                }
 
             }
         }

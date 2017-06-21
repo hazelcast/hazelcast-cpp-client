@@ -135,6 +135,12 @@ namespace hazelcast {
                     dataOutput.writeDoubleArray(data);
                 }
 
+                void DefaultPortableWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *data) {
+                    setPosition(fieldName, FieldTypes::TYPE_UTF_ARRAY);
+                    dataOutput.writeUTFArray(data);
+                }
+
+				
                 FieldDefinition const& DefaultPortableWriter::setPosition(const char *fieldName, FieldType fieldType) {
                     if (raw) {
                         throw exception::HazelcastSerializationException("PortableWriter::setPosition", "Cannot write Portable fields after getRawDataOutput() is called!");

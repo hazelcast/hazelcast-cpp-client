@@ -20,6 +20,7 @@
 #define HAZELCAST_CLIENT_SPI_DEFAULTOBJECTNAMESPACE_H_
 
 #include <string>
+#include <functional>
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

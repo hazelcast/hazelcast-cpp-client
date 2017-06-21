@@ -182,6 +182,14 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                 /**
+                * @param fieldName name of the field
+                * @return the utf string array value read
+                * @throws IOException
+                */
+                std::auto_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+
+				
+                /**
                 * @tparam type of the portable class
                 * @param fieldName name of the field
                 * @return the portable value read

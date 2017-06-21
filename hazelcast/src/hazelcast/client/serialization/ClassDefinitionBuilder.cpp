@@ -131,6 +131,12 @@ namespace hazelcast {
                 return *this;
             }
 
+            ClassDefinitionBuilder& ClassDefinitionBuilder::addUTFArrayField(const std::string& fieldName) {
+                addField(fieldName, FieldTypes::TYPE_UTF_ARRAY);
+                return *this;
+            }
+
+			
             ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {

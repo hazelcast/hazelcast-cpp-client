@@ -139,6 +139,12 @@ namespace hazelcast {
                 return classDefinitionWriter->writeDoubleArray(fieldName, data);
             }
 
+            void PortableWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *data) {
+                if (isDefaultWriter)
+                    return defaultPortableWriter->writeUTFArray(fieldName, data);
+                return classDefinitionWriter->writeUTFArray(fieldName, data);
+            }
+
             void PortableWriter::end() {
                 if (isDefaultWriter)
                     return defaultPortableWriter->end();

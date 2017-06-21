@@ -140,6 +140,12 @@ namespace hazelcast {
                     return dataInput.readShortArray();
                 }
 
+				std::auto_ptr<std::vector<std::string> > PortableReaderBase::readUTFArray(const char *fieldName) {
+                    setPosition(fieldName, FieldTypes::TYPE_UTF_ARRAY);
+                    return dataInput.readUTFArray();
+                }
+
+				
                 void PortableReaderBase::getPortableInstance(char const *fieldName, Portable *& portableInstance) {
                     setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
 

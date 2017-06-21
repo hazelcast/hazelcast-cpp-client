@@ -150,6 +150,13 @@ namespace hazelcast {
                 return morphingPortableReader->readShortArray(fieldName);
             }
 
+            std::auto_ptr<std::vector<std::string> > PortableReader::readUTFArray(const char *fieldName) {
+                if (isDefaultReader)
+                    return defaultPortableReader->readUTFArray(fieldName);
+                return morphingPortableReader->readUTFArray(fieldName);
+            }
+
+			
             ObjectDataInput& PortableReader::getRawDataInput() {
                 if (isDefaultReader)
                     return defaultPortableReader->getRawDataInput();

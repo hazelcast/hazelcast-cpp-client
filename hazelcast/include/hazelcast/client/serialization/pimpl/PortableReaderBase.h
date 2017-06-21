@@ -80,6 +80,8 @@ namespace hazelcast {
 
                     virtual std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
+                    virtual std::auto_ptr<std::vector<std::string> > readUTFArray(const char *fieldName);
+
                     ObjectDataInput &getRawDataInput();
 
                     void end();

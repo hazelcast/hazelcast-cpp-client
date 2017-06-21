@@ -108,6 +108,11 @@ namespace hazelcast {
                     builder.addShortArrayField(fieldName);
                 }
 
+                void ClassDefinitionWriter::writeUTFArray(const char *fieldName, const std::vector<std::string> *values) {
+                    builder.addUTFArrayField(fieldName);
+                }
+
+				
                 ObjectDataOutput& ClassDefinitionWriter::getRawDataOutput() {
                     return emptyDataOutput;
                 }

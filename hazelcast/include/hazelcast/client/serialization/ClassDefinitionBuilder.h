@@ -82,6 +82,8 @@ namespace hazelcast {
 
                 ClassDefinitionBuilder& addShortArrayField(const std::string& fieldName);
 
+                ClassDefinitionBuilder& addUTFArrayField(const std::string& fieldName);
+				
                 ClassDefinitionBuilder& addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def);
 
                 ClassDefinitionBuilder& addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def);
