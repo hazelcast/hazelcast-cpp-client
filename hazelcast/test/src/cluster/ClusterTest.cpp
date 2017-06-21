@@ -298,11 +298,11 @@ namespace hazelcast {
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
-                ASSERT_TRUE(lifecycleLatch.await(120));
+                ASSERT_TRUE(lifecycleLatch.await(60));
                 // Let enough time for the client to re-register the failed listeners
                 util::sleep(5);
                 m.put("sample", "entry");
-                ASSERT_TRUE(countDownLatch.await(60));
+                ASSERT_TRUE(countDownLatch.await(30));
                 ASSERT_TRUE(hazelcastClient.removeLifecycleListener(&lifecycleListener));
                 ASSERT_TRUE(m.removeEntryListener(entryListenerRegistrationId));
             }
@@ -338,7 +338,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(disconnectedLatch.await(3));
                 ASSERT_TRUE(shuttingDownLatch.await(5));
-                ASSERT_TRUE(shutdownLatch.await(500));
+                ASSERT_TRUE(shutdownLatch.await(10));
             }
 
             #ifdef HZ_BUILD_WITH_SSL
