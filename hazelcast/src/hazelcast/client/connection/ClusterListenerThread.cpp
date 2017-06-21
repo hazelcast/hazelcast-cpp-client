@@ -113,6 +113,7 @@ namespace hazelcast {
             }
 
             void ClusterListenerThread::stop() {
+                startLatch.countDown();
                 if (deletingConnection.compareAndSet(false, true)) {
                     util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
                     conn.reset();
