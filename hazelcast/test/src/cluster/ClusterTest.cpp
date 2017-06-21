@@ -341,6 +341,33 @@ namespace hazelcast {
                 ASSERT_TRUE(shutdownLatch.await(10));
             }
 
+            TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
+                HazelcastServer instance(*g_srvFactory);
+
+                ClientConfig clientConfig;
+                util::CountDownLatch startingLatch(1);
+                util::CountDownLatch startedLatch(1);
+                util::CountDownLatch connectedLatch(1);
+                util::CountDownLatch disconnectedLatch(1);
+                util::CountDownLatch shuttingDownLatch(1);
+                util::CountDownLatch shutdownLatch(1);
+                ClientAllStatesListener listener(&startingLatch, &startedLatch, &connectedLatch, &disconnectedLatch,
+                                                 &shuttingDownLatch, &shutdownLatch);
+                clientConfig.addListener(&listener);
+
+                HazelcastClient client(clientConfig);
+
+                ASSERT_TRUE(startingLatch.await(0));
+                ASSERT_TRUE(startedLatch.await(0));
+                ASSERT_TRUE(connectedLatch.await(0));
+
+                client.shutdown();
+
+                ASSERT_TRUE(disconnectedLatch.await(3));
+                ASSERT_TRUE(shuttingDownLatch.await(5));
+                ASSERT_TRUE(shutdownLatch.await(10));
+            }
+
             #ifdef HZ_BUILD_WITH_SSL
             INSTANTIATE_TEST_CASE_P(All,
                                     ClusterTest,

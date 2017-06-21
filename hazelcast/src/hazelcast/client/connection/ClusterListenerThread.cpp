@@ -127,6 +127,7 @@ namespace hazelcast {
                     util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
                     conn.reset();
                     deletingConnection = false;
+                    clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                 }
                 if (clusterListenerThread.get()) {
                     clusterListenerThread->cancel();
