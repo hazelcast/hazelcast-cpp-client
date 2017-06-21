@@ -81,7 +81,16 @@ namespace hazelcast {
                                     util::ILogger::getLogger().severe(
                                             std::string("Error while connecting to cluster! =>") + e.what());
                                 }
-                                clientContext.getLifecycleService().shutdown();
+                                /**
+                                 * We can not call shutdown if the client is already shutting down.
+                                 * If we do this, then it will cause deadlock since shutdown waits for
+                                 * until another in-progress shutdown is finished. Hence, if the shutdown
+                                 * was called and it was waiting for cluster thread termination but the following
+                                 * line was reached at cluster thread, then this will be a deadlock.
+                                 */
+                                if (clientContext.getLifecycleService().isRunning()) {
+                                    clientContext.getLifecycleService().shutdown();
+                                }
                                 startLatch.countDown();
                                 return;
                             }
