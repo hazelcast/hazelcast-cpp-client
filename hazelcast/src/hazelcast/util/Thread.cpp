@@ -191,6 +191,15 @@ namespace hazelcast {
         }
 
         void Thread::cancel() {
+            if (pthread_equal(thread, pthread_self())) {
+                /**
+                 * do not allow cancelling itself
+                 * at Linux, pthread_cancel may cause cancel by signal
+                 * and calling thread may be terminated.
+                 */
+                return;
+            }
+
             if (!isJoined) {
                 LockGuard guard(wakeupMutex);
                 wakeupCondition.notify();
@@ -200,13 +209,13 @@ namespace hazelcast {
         }
 
         bool Thread::join() {
-            if (!isJoined.compareAndSet(false, true)) {
-                return true;
-            }
-
             if (pthread_equal(thread, pthread_self())) {
                 // called from inside the thread, deadlock possibility
                 return false;
+            }
+
+            if (!isJoined.compareAndSet(false, true)) {
+                return true;
             }
 
             int err = pthread_join(thread, NULL);
