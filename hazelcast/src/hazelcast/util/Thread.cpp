@@ -192,8 +192,7 @@ namespace hazelcast {
 
         void Thread::cancel() {
             if (!isJoined) {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
+                wakeup();
 
                 pthread_cancel(thread);
             }
