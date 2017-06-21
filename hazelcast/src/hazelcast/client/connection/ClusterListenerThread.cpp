@@ -119,8 +119,10 @@ namespace hazelcast {
                     conn.reset();
                     deletingConnection = false;
                 }
-                clusterListenerThread->cancel();
-                clusterListenerThread->join();
+                if (clusterListenerThread.get()) {
+                    clusterListenerThread->cancel();
+                    clusterListenerThread->join();
+                }
             }
 
             std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() const {
