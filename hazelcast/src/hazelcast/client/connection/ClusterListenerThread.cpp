@@ -66,10 +66,6 @@ namespace hazelcast {
                 clusterListenerThread.reset(thread);
             }
 
-            const util::Thread *ClusterListenerThread::getThread() const {
-                return clusterListenerThread.get();
-            }
-
             void ClusterListenerThread::run(util::Thread *currentThread) {
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;
@@ -85,7 +81,6 @@ namespace hazelcast {
                                     util::ILogger::getLogger().severe(
                                             std::string("Error while connecting to cluster! =>") + e.what());
                                 }
-                                isStartedSuccessfully = false;
                                 clientContext.getLifecycleService().shutdown();
                                 startLatch.countDown();
                                 return;
@@ -96,7 +91,6 @@ namespace hazelcast {
                         isRegistrationIdReceived = false;
                         loadInitialMemberList();
                         clientContext.getServerListenerService().triggerFailedListeners();
-                        isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
@@ -381,6 +375,10 @@ namespace hazelcast {
                 for (std::vector<MembershipEvent>::const_iterator it = events.begin(); it != events.end(); ++it) {
                     clientContext.getClusterService().fireMembershipEvent(*it);
                 }
+            }
+
+            void ClusterListenerThread::awaitStart() {
+                startLatch.await();
             }
         }
     }

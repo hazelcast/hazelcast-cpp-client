@@ -49,8 +49,8 @@ namespace hazelcast {
                 util::Thread *t = new util::Thread("hz.clusterListenerThread",
                                                    connection::ClusterListenerThread::staticRun, &clusterThread);
                 clusterThread.setThread(t);
-                clusterThread.startLatch.await();
-                if (!clusterThread.isStartedSuccessfully) {
+                clusterThread.awaitStart();
+                if (!clientContext.getLifecycleService().isRunning()) {
                     return false;
                 }
                 initMembershipListeners();
@@ -68,12 +68,7 @@ namespace hazelcast {
             }
 
             void ClusterService::shutdown() {
-                if (NULL != clusterThread.getThread()) {
-                    // avoid anyone waiting on the start latch to get stuck
-                    clusterThread.startLatch.countDown();
-
-                    clusterThread.stop();
-                }
+                clusterThread.stop();
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {

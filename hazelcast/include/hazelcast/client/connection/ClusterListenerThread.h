@@ -56,8 +56,6 @@ namespace hazelcast {
 
                 void setThread(util::Thread *);
 
-                const util::Thread *getThread() const;
-
                 static void staticRun(util::ThreadArgs &args);
 
                 void run(util::Thread *currentThread);
@@ -74,18 +72,20 @@ namespace hazelcast {
 
                 std::set<Address, addressComparator> getSocketAddresses() const;
 
-                util::CountDownLatch startLatch;
 
-                bool isStartedSuccessfully;
+                void awaitStart();
+
             private:
+                util::CountDownLatch startLatch;
                 spi::ClientContext &clientContext;
                 boost::shared_ptr<Connection> conn;
                 util::AtomicBoolean deletingConnection;
+
                 std::vector<Member> members;
 
                 std::auto_ptr<util::Thread> clusterListenerThread;
-
                 bool isInitialMembersLoaded;
+
                 bool isRegistrationIdReceived;
 
                 int awsMemberPort;

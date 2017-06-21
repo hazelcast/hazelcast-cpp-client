@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 
-
-
 #ifndef HAZELCAST_CLUSTER_SERVICE
 #define HAZELCAST_CLUSTER_SERVICE
 
