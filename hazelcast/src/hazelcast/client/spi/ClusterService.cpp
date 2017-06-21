@@ -35,7 +35,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             ClusterService::ClusterService(ClientContext &clientContext)
-                    : clientContext(clientContext), clusterThread(clientContext), active(false) {
+                    : clientContext(clientContext), clusterThread(clientContext) {
 
             }
 
@@ -54,7 +54,6 @@ namespace hazelcast {
                     return false;
                 }
                 initMembershipListeners();
-                active = true;
                 return true;
             }
 
@@ -69,9 +68,6 @@ namespace hazelcast {
             }
 
             void ClusterService::shutdown() {
-                if (!active.compareAndSet(true, false)) {
-                    return;
-                }
                 if (NULL != clusterThread.getThread()) {
                     // avoid anyone waiting on the start latch to get stuck
                     clusterThread.startLatch.countDown();
@@ -178,7 +174,6 @@ namespace hazelcast {
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
             boost::shared_ptr<connection::Connection> ClusterService::connectToOne(const Address *previousConnectionAddr) {
-                active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
                 exception::IException lastError;
@@ -195,7 +190,6 @@ namespace hazelcast {
                         try {
                             boost::shared_ptr<connection::Connection> pConnection =
                                     clientContext.getConnectionManager().createOwnerConnection(*it);
-                            active = true;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;
                         } catch (exception::IException &e) {

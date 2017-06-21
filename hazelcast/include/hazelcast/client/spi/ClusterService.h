@@ -94,8 +94,6 @@ namespace hazelcast {
                 util::Mutex listenerLock;
                 util::Mutex membersLock;
 
-                util::AtomicBoolean active;
-
                 void initMembershipListeners();
 
                 std::vector<Address> findServerAddressesToConnect(const Address *previousConnectionAddr) const;
