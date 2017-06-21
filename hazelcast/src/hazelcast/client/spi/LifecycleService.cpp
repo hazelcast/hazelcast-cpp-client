@@ -72,8 +72,8 @@ namespace hazelcast {
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
                 clientContext.getInvocationService().shutdown();
-                clientContext.getPartitionService().shutdown();
                 clientContext.getConnectionManager().shutdown();
+                clientContext.getPartitionService().shutdown();
                 clientContext.getClusterService().shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
