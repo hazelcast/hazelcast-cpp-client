@@ -3079,8 +3079,8 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testAddInterceptor) {
                 std::string prefix("My Prefix");
                 typename ClientMapTest<TypeParam>::MapGetInterceptor interceptor(prefix);
-                ClientMapTest<TypeParam>::imap->template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(
-                        interceptor);
+                std::string interceptorId = ClientMapTest<TypeParam>::imap->
+                        template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(interceptor);
 
                 boost::shared_ptr<std::string> val = ClientMapTest<TypeParam>::imap->get("nonexistent");
                 ASSERT_NE((std::string *) NULL, val.get());
@@ -3092,6 +3092,8 @@ namespace hazelcast {
                 val = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ(prefix + "value1", *val);
+
+                ClientMapTest<TypeParam>::imap->removeInterceptor(interceptorId);
             }
         }
     }
