@@ -26,6 +26,7 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
 #include "hazelcast/client/MembershipEvent.h"
+#include "hazelcast/client/spi/ClusterService.h"
 
 #include <boost/shared_ptr.hpp>
 #include <set>
@@ -43,6 +44,7 @@ namespace hazelcast {
 
         namespace spi {
             class ClientContext;
+            class ClusterService;
         }
 
         namespace connection {
@@ -51,14 +53,9 @@ namespace hazelcast {
             class ConnectionManager;
 
             class HAZELCAST_API ClusterListenerThread : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+                friend class spi::ClusterService;
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
-
-                void setThread(util::Thread *);
-
-                static void staticRun(util::ThreadArgs &args);
-
-                void run(util::Thread *currentThread);
 
                 void stop();
 
@@ -86,7 +83,7 @@ namespace hazelcast {
 
                 std::vector<Member> members;
 
-                std::auto_ptr<util::Thread> clusterListenerThread;
+                util::Atomic<util::Thread *> workerThread;
                 bool isInitialMembersLoaded;
 
                 bool isRegistrationIdReceived;
@@ -114,6 +111,10 @@ namespace hazelcast {
                 void applyMemberListChanges();
 
                 void fireMembershipEvents(const std::vector<MembershipEvent> &events) const;
+
+                static void staticRun(util::ThreadArgs &args);
+
+                void run(util::Thread *currentThread);
             };
         }
     }

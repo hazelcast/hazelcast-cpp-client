@@ -46,9 +46,12 @@ namespace hazelcast {
                 std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
                 initialListeners.insert(initialMembershipListeners.begin(), initialMembershipListeners.end());
 
-                util::Thread *t = new util::Thread("hz.clusterListenerThread",
-                                                   connection::ClusterListenerThread::staticRun, &clusterThread);
-                clusterThread.setThread(t);
+                /**
+                 * This thread lifecycle is managed by ClusterListenerThread::stop method
+                 * which is guaranteed to be called during shutdown
+                 */
+                new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun, &clusterThread);
+
                 if (!clusterThread.awaitStart()) {
                     return false;
                 }

@@ -62,14 +62,13 @@ namespace hazelcast {
                 clusterListenerThread->run(args.currentThread);
             }
 
-            void ClusterListenerThread::setThread(util::Thread *thread) {
-                clusterListenerThread.reset(thread);
-            }
-
             void ClusterListenerThread::run(util::Thread *currentThread) {
+                workerThread = currentThread;
+
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;
-                while (clientContext.getLifecycleService().isRunning()) {
+                spi::LifecycleService &lifecycleService = clientContext.getLifecycleService();
+                while (lifecycleService.isRunning()) {
                     try {
                         if (conn.get() == NULL) {
                             try {
@@ -77,19 +76,10 @@ namespace hazelcast {
                                 previousConnectionAddr = conn->getRemoteEndpoint();
                                 previousConnectionAddrPtr = &previousConnectionAddr;
                             } catch (std::exception &e) {
-                                if (clientContext.getLifecycleService().isRunning()) {
+                                if (lifecycleService.isRunning()) {
                                     util::ILogger::getLogger().severe(
                                             std::string("Error while connecting to cluster! =>") + e.what());
-                                }
-                                /**
-                                 * We can not call shutdown if the client is already shutting down.
-                                 * If we do this, then it will cause deadlock since shutdown waits for
-                                 * until another in-progress shutdown is finished. Hence, if the shutdown
-                                 * was called and it was waiting for cluster thread termination but the following
-                                 * line was reached at cluster thread, then this will be a deadlock.
-                                 */
-                                if (clientContext.getLifecycleService().isRunning()) {
-                                    clientContext.getLifecycleService().shutdown();
+                                    lifecycleService.shutdown();
                                 }
                                 startLatch.countDown();
                                 return;
@@ -104,7 +94,7 @@ namespace hazelcast {
                         listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
                     } catch (std::exception &e) {
-                        if (clientContext.getLifecycleService().isRunning()) {
+                        if (lifecycleService.isRunning()) {
                             util::ILogger::getLogger().warning(
                                     std::string("Error while listening cluster events! -> ") + e.what());
                         }
@@ -114,7 +104,7 @@ namespace hazelcast {
                             util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
                             conn.reset();
                             deletingConnection = false;
-                            clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
+                            lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                         currentThread->interruptibleSleep(1);
                     }
@@ -129,9 +119,12 @@ namespace hazelcast {
                     deletingConnection = false;
                     clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                 }
-                if (clusterListenerThread.get()) {
-                    clusterListenerThread->cancel();
-                    clusterListenerThread->join();
+                util::Thread *worker = workerThread;
+                if (worker) {
+                    workerThread = (util::Thread *) NULL;
+                    worker->cancel();
+                    worker->join();
+                    delete worker;
                 }
             }
 

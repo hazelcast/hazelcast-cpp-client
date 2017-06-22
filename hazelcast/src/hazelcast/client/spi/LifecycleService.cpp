@@ -33,7 +33,7 @@ namespace hazelcast {
 
             LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
             :clientContext(clientContext)
-            , active(false) {
+            , active(false), shutdownLatch(1) {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
 
@@ -42,7 +42,6 @@ namespace hazelcast {
             bool LifecycleService::start() {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
                 active = true;
-
 
                 if (!clientContext.getInvocationService().start()) {
                     return false;
@@ -65,8 +64,6 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                util::LockGuard guard(shutdownLock);
-
                 if (!active.compareAndSet(true, false)) {
                     return;
                 }
@@ -77,6 +74,7 @@ namespace hazelcast {
                 clientContext.getClusterService().shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                shutdownLatch.countDown();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
@@ -131,6 +129,11 @@ namespace hazelcast {
 
             bool LifecycleService::isRunning() {
                 return active;
+            }
+
+            LifecycleService::~LifecycleService() {
+                shutdown();
+                shutdownLatch.await();
             }
         }
     }
