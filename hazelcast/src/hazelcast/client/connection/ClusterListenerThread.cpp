@@ -38,7 +38,8 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
-                    : startLatch(1), clientContext(clientContext), deletingConnection(false) {
+                    : startLatch(1), clientContext(clientContext), deletingConnection(false),
+                      workerThread((util::Thread *)NULL) {
                 config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
                 if (awsConfig.isEnabled()) {
                     int port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
