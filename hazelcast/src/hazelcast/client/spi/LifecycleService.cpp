@@ -33,7 +33,7 @@ namespace hazelcast {
 
             LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
             :clientContext(clientContext)
-            , active(false), shutdownLatch(1) {
+            , active(true), shutdownLatch(1) {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
 
@@ -41,7 +41,6 @@ namespace hazelcast {
 
             bool LifecycleService::start() {
                 fireLifecycleEvent(LifecycleEvent::STARTING);
-                active = true;
 
                 if (!clientContext.getInvocationService().start()) {
                     return false;

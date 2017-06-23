@@ -25,6 +25,7 @@
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Util.h"
@@ -41,6 +42,24 @@ namespace hazelcast {
 
             bool ClusterService::start() {
                 ClientConfig &config = clientContext.getClientConfig();
+
+                config::ClientAwsConfig &awsConfig = config.getNetworkConfig().getAwsConfig();
+                int port = -1;
+                if (awsConfig.isEnabled()) {
+                    port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
+                    if (port < 0) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be greater 0. Provided port config:" << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
+                    if (port > 65535) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be less or equal to 65535. Provided port config:"
+                            << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
+                }
+
                 std::set<MembershipListener *> const &membershipListeners = config.getMembershipListeners();
                 listeners.insert(membershipListeners.begin(), membershipListeners.end());
                 std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
@@ -50,7 +69,8 @@ namespace hazelcast {
                  * This thread lifecycle is managed by ClusterListenerThread::stop method
                  * which is guaranteed to be called during shutdown
                  */
-                new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun, &clusterThread);
+                new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun,
+                                 &clusterThread, &port);
 
                 if (!clusterThread.awaitStart()) {
                     return false;

@@ -114,7 +114,7 @@ namespace hazelcast {
 
                 static void staticRun(util::ThreadArgs &args);
 
-                void run(util::Thread *currentThread);
+                void run(util::Thread *currentThread, int memberPort);
             };
         }
     }

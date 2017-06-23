@@ -40,31 +40,17 @@ namespace hazelcast {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
                     : startLatch(1), clientContext(clientContext), deletingConnection(false),
                       workerThread((util::Thread *)NULL) {
-                config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
-                if (awsConfig.isEnabled()) {
-                    int port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
-                    if (port < 0) {
-                        std::stringstream out;
-                        out << "hz-port client property number must be greater 0. Provided port config:" << port;
-                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
-                    }
-                    if (port > 65535) {
-                        std::stringstream out;
-                        out << "hz-port client property number must be less or equal to 65535. Provided port config:" << port;
-                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
-                    }
-
-                    awsMemberPort = port;
-                }
             }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                clusterListenerThread->run(args.currentThread);
+                int memberPort = *((int *)args.arg1);
+                clusterListenerThread->run(args.currentThread, memberPort);
             }
 
-            void ClusterListenerThread::run(util::Thread *currentThread) {
+            void ClusterListenerThread::run(util::Thread *currentThread, int memberPort) {
                 workerThread = currentThread;
+                awsMemberPort = memberPort;
 
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;
