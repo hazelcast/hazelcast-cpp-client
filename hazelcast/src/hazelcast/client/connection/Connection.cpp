@@ -106,14 +106,18 @@ namespace hazelcast {
                 if (!_isOwnerConnection) {
                     readHandler.deRegisterSocket();
                 }
-                socket->close();
-                if (_isOwnerConnection) {
-                    return;
+
+                if (!_isOwnerConnection) {
+                    /**
+                     * Remove connection and socket from the list before closing the socket
+                     * in order to prevent the use of closed socket descriptor.
+                     */
+                    clientContext.getConnectionManager().onConnectionClose(serverAddr, socketId);
+
+                    clientContext.getInvocationService().cleanResources(*this);
                 }
 
-                clientContext.getConnectionManager().onConnectionClose(serverAddr, socketId);
-
-                clientContext.getInvocationService().cleanResources(*this);
+                socket->close();
             }
 
 
