@@ -60,7 +60,6 @@ namespace hazelcast {
                 }
 
                 void SerializationService::writeHash(DataOutput &out) {
-                    // TODO: Implement PartitionStrategy and write calculated hash.
                     out.writeInt(0);
                 }
 
