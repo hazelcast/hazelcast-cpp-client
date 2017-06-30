@@ -25,6 +25,7 @@
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Util.h"
@@ -35,26 +36,46 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             ClusterService::ClusterService(ClientContext &clientContext)
-                    : clientContext(clientContext), clusterThread(clientContext), active(false) {
+                    : clientContext(clientContext), clusterThread(clientContext) {
 
             }
 
             bool ClusterService::start() {
                 ClientConfig &config = clientContext.getClientConfig();
+
+                config::ClientAwsConfig &awsConfig = config.getNetworkConfig().getAwsConfig();
+                int port = -1;
+                if (awsConfig.isEnabled()) {
+                    port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
+                    if (port < 0) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be greater 0. Provided port config:" << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
+                    if (port > 65535) {
+                        std::stringstream out;
+                        out << "hz-port client property number must be less or equal to 65535. Provided port config:"
+                            << port;
+                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
+                    }
+                }
+
                 std::set<MembershipListener *> const &membershipListeners = config.getMembershipListeners();
                 listeners.insert(membershipListeners.begin(), membershipListeners.end());
                 std::set<InitialMembershipListener *> const &initialMembershipListeners = config.getInitialMembershipListeners();
                 initialListeners.insert(initialMembershipListeners.begin(), initialMembershipListeners.end());
 
-                util::Thread *t = new util::Thread("hz.clusterListenerThread",
-                                                   connection::ClusterListenerThread::staticRun, &clusterThread);
-                clusterThread.setThread(t);
-                clusterThread.startLatch.await();
-                if (!clusterThread.isStartedSuccessfully) {
+                /**
+                 * This thread lifecycle is managed by ClusterListenerThread::stop method
+                 * which is guaranteed to be called during shutdown
+                 */
+                new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun,
+                                 &clusterThread, &port);
+
+                if (!clusterThread.awaitStart()) {
                     return false;
                 }
                 initMembershipListeners();
-                active = true;
                 return true;
             }
 
@@ -69,15 +90,7 @@ namespace hazelcast {
             }
 
             void ClusterService::shutdown() {
-                if (!active.compareAndSet(true, false)) {
-                    return;
-                }
-                if (NULL != clusterThread.getThread()) {
-                    // avoid anyone waiting on the start latch to get stuck
-                    clusterThread.startLatch.countDown();
-
-                    clusterThread.stop();
-                }
+                clusterThread.stop();
             }
 
             std::auto_ptr<Address> ClusterService::getMasterAddress() {
@@ -178,7 +191,6 @@ namespace hazelcast {
             //--------- Used by CLUSTER LISTENER THREAD ------------
 
             boost::shared_ptr<connection::Connection> ClusterService::connectToOne(const Address *previousConnectionAddr) {
-                active = false;
                 const int connectionAttemptLimit = clientContext.getClientConfig().getConnectionAttemptLimit();
                 int attempt = 0;
                 exception::IException lastError;
@@ -195,7 +207,6 @@ namespace hazelcast {
                         try {
                             boost::shared_ptr<connection::Connection> pConnection =
                                     clientContext.getConnectionManager().createOwnerConnection(*it);
-                            active = true;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_CONNECTED);
                             return pConnection;
                         } catch (exception::IException &e) {

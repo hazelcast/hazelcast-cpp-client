@@ -38,42 +38,24 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
-                    : startLatch(1), clientContext(clientContext), deletingConnection(false) {
-                config::ClientAwsConfig &awsConfig = clientContext.getClientConfig().getNetworkConfig().getAwsConfig();
-                if (awsConfig.isEnabled()) {
-                    int port = clientContext.getClientProperties().getAwsMemberPort().getInteger();
-                    if (port < 0) {
-                        std::stringstream out;
-                        out << "hz-port client property number must be greater 0. Provided port config:" << port;
-                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
-                    }
-                    if (port > 65535) {
-                        std::stringstream out;
-                        out << "hz-port client property number must be less or equal to 65535. Provided port config:" << port;
-                        throw exception::InvalidConfigurationException("ClusterListenerThread", out.str());
-                    }
-
-                    awsMemberPort = port;
-                }
+                    : startLatch(1), clientContext(clientContext), deletingConnection(false),
+                      workerThread((util::Thread *)NULL) {
             }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
                 ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                clusterListenerThread->run(args.currentThread);
+                int memberPort = *((int *)args.arg1);
+                clusterListenerThread->run(args.currentThread, memberPort);
             }
 
-            void ClusterListenerThread::setThread(util::Thread *thread) {
-                clusterListenerThread.reset(thread);
-            }
+            void ClusterListenerThread::run(util::Thread *currentThread, int memberPort) {
+                workerThread = currentThread;
+                awsMemberPort = memberPort;
 
-            const util::Thread *ClusterListenerThread::getThread() const {
-                return clusterListenerThread.get();
-            }
-
-            void ClusterListenerThread::run(util::Thread *currentThread) {
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;
-                while (clientContext.getLifecycleService().isRunning()) {
+                spi::LifecycleService &lifecycleService = clientContext.getLifecycleService();
+                while (lifecycleService.isRunning()) {
                     try {
                         if (conn.get() == NULL) {
                             try {
@@ -81,12 +63,11 @@ namespace hazelcast {
                                 previousConnectionAddr = conn->getRemoteEndpoint();
                                 previousConnectionAddrPtr = &previousConnectionAddr;
                             } catch (std::exception &e) {
-                                if (clientContext.getLifecycleService().isRunning()) {
+                                if (lifecycleService.isRunning()) {
                                     util::ILogger::getLogger().severe(
                                             std::string("Error while connecting to cluster! =>") + e.what());
+                                    lifecycleService.shutdown();
                                 }
-                                isStartedSuccessfully = false;
-                                clientContext.getLifecycleService().shutdown();
                                 startLatch.countDown();
                                 return;
                             }
@@ -96,12 +77,11 @@ namespace hazelcast {
                         isRegistrationIdReceived = false;
                         loadInitialMemberList();
                         clientContext.getServerListenerService().triggerFailedListeners();
-                        isStartedSuccessfully = true;
                         startLatch.countDown();
                         listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
                     } catch (std::exception &e) {
-                        if (clientContext.getLifecycleService().isRunning()) {
+                        if (lifecycleService.isRunning()) {
                             util::ILogger::getLogger().warning(
                                     std::string("Error while listening cluster events! -> ") + e.what());
                         }
@@ -111,7 +91,7 @@ namespace hazelcast {
                             util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
                             conn.reset();
                             deletingConnection = false;
-                            clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
+                            lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                         currentThread->interruptibleSleep(1);
                     }
@@ -119,13 +99,20 @@ namespace hazelcast {
             }
 
             void ClusterListenerThread::stop() {
+                startLatch.countDown();
                 if (deletingConnection.compareAndSet(false, true)) {
                     util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
                     conn.reset();
                     deletingConnection = false;
+                    clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                 }
-                clusterListenerThread->cancel();
-                clusterListenerThread->join();
+                util::Thread *worker = workerThread;
+                if (worker) {
+                    workerThread = (util::Thread *) NULL;
+                    worker->cancel();
+                    worker->join();
+                    delete worker;
+                }
             }
 
             std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() const {
@@ -381,6 +368,11 @@ namespace hazelcast {
                 for (std::vector<MembershipEvent>::const_iterator it = events.begin(); it != events.end(); ++it) {
                     clientContext.getClusterService().fireMembershipEvent(*it);
                 }
+            }
+
+            bool ClusterListenerThread::awaitStart() {
+                startLatch.await();
+                return !clientContext.getClusterService().getMemberList().empty();
             }
         }
     }

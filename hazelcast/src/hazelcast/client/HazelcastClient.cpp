@@ -52,9 +52,13 @@ namespace hazelcast {
             util::ILogger::getLogger().setPrefix(prefix.str());
             LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
 
-            if (!lifecycleService.start()) {
+            try {
+                if (!lifecycleService.start()) {
+                    throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
+                }
+            } catch (exception::IException &e) {
                 lifecycleService.shutdown();
-                throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
+                throw;
             }
             loadBalancer->init(cluster);
         }

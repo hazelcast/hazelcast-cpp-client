@@ -16,8 +16,6 @@
 //
 // Created by sancar koyunlu on 5/21/13.
 
-
-
 #ifndef HAZELCAST_CLUSTER_SERVICE
 #define HAZELCAST_CLUSTER_SERVICE
 
@@ -93,8 +91,6 @@ namespace hazelcast {
                 std::set<InitialMembershipListener *> initialListeners;
                 util::Mutex listenerLock;
                 util::Mutex membersLock;
-
-                util::AtomicBoolean active;
 
                 void initMembershipListeners();
 
