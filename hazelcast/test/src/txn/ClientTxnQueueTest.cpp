@@ -47,6 +47,21 @@ namespace hazelcast {
                 ASSERT_EQ(0, client->getQueue<std::string>(name).size());
             }
 
+            TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
+                std::string name = "defQueue";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+                TransactionalQueue<std::vector<byte> > q = context.getQueue<std::vector<byte> >(name);
+                std::vector<byte> value(3);
+                ASSERT_TRUE(q.offer(value));
+                ASSERT_EQ(1, q.size());
+                ASSERT_EQ(value, *(q.poll()));
+                ASSERT_EQ(0, q.size());
+                context.commitTransaction();
+                ASSERT_EQ(0, client->getQueue<std::vector<byte> >(name).size());
+            }
+
             void testTransactionalOfferPoll2Thread(util::ThreadArgs& args) {
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;                
