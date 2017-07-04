@@ -166,7 +166,7 @@ namespace hazelcast {
             return smart;
         }
 
-        SerializationConfig const& ClientConfig::getSerializationConfig() const {
+        SerializationConfig &ClientConfig::getSerializationConfig() {
             return serializationConfig;
         }
 

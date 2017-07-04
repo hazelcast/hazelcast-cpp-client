@@ -26,6 +26,7 @@
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
+#include "hazelcast/client/PartitionAware.h"
 
 #include<stdint.h>
 

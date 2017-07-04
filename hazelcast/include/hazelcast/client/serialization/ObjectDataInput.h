@@ -205,13 +205,7 @@ namespace hazelcast {
                     } else {
                         std::auto_ptr<T> result(new T);
                         constants.checkClassType(getHazelcastTypeId(result.get()) , typeId);
-                        if (constants.CONSTANT_TYPE_DATA == typeId) {
-                            readDataSerializable(reinterpret_cast<IdentifiedDataSerializable *>(result.get()));
-                        } else if (constants.CONSTANT_TYPE_PORTABLE == typeId) {
-                            readPortable(reinterpret_cast<Portable *>(result.get()));
-                        } else {
-                            readInternal<T>(typeId, result.get());
-                        }
+                        fillObject<T>(typeId, result.get());
                         return std::auto_ptr<T>(result.release());
                     }
                 }
@@ -248,6 +242,21 @@ namespace hazelcast {
                     Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
                     ObjectDataInput objectDataInput(dataInput, portableContext);
                     s->read(objectDataInput, *object);
+                }
+
+                template <typename T>
+                void fillObject(int typeId, void *serializable) {
+                    readInternal<T>(typeId, (T *) serializable);
+                }
+
+                template <typename T>
+                void fillObject(int typeId, IdentifiedDataSerializable *serializable) {
+                    readDataSerializable(serializable);
+                }
+
+                template <typename T>
+                void fillObject(int typeId, Portable *serializable) {
+                    readPortable(serializable);
                 }
 
                 void readPortable(Portable *object);
