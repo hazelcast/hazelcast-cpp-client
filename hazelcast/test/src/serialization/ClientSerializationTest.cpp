@@ -124,7 +124,6 @@ namespace hazelcast {
 
             }
 
-
             TEST_F(ClientSerializationTest, testInvalidWrite) {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
@@ -377,7 +376,6 @@ namespace hazelcast {
                 ASSERT_EQ(main, *tmp2);
             }
 
-
             TEST_F(ClientSerializationTest, testTemplatedPortable_whenMultipleTypesAreUsed) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
@@ -433,6 +431,8 @@ namespace hazelcast {
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
                 bool boolArray[] = {true, false, false, true};
+                byte byteArray[] = {0, 1, 2};
+                std::vector<byte> bb(byteArray, byteArray + 3);
                 std::vector<bool> ba(boolArray, boolArray + 4);
                 int16_t shortArray[] = {3, 4, 5};
                 std::vector<int16_t> ss(shortArray, shortArray + 3);
@@ -452,6 +452,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(cc, toDataAndBackToObject<std::vector<char> >(serializationService, cc));
                 ASSERT_EQ(ba, toDataAndBackToObject<std::vector<bool> >(serializationService, ba));
+                ASSERT_EQ(bb, toDataAndBackToObject<std::vector<byte> >(serializationService, bb));
                 ASSERT_EQ(ss, toDataAndBackToObject<std::vector<int16_t> >(serializationService, ss));
                 ASSERT_EQ(ii, toDataAndBackToObject<std::vector<int32_t> >(serializationService, ii));
                 ASSERT_EQ(ll, toDataAndBackToObject<std::vector<int64_t> >(serializationService, ll));

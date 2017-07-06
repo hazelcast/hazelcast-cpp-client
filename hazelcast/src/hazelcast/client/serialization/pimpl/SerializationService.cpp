@@ -265,6 +265,26 @@ namespace hazelcast {
                 }
 
                 template<>
+                Data SerializationService::toData<std::vector<byte> >(const std::vector<byte> *object) {
+                    if (NULL == object) {
+                        return Data();
+                    }
+
+                    DataOutput output;
+
+                    // write partition hash
+                    writeHash(output);
+
+                    // write type
+                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY);
+
+                    output.writeByteArray(object);
+
+                    Data data(output.toByteArray());
+                    return data;
+                }
+
+                template<>
                 Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object) {
                     if (NULL == object) {
                         return Data();
@@ -550,7 +570,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<char> > (dataInput.readCharArray());
+                    return dataInput.readCharArray();
                 }
 
                 template<>
@@ -563,7 +583,20 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<bool> > (dataInput.readBooleanArray());
+                    return dataInput.readBooleanArray();
+                }
+
+                template<>
+                std::auto_ptr<std::vector<byte> > SerializationService::toObject(const Data &data) {
+                    CHECK_NULL(std::vector<byte>);
+
+                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
+
+                    int32_t typeId = data.getType();
+
+                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY, typeId);
+
+                    return dataInput.readByteArray();
                 }
 
                 template<>
@@ -576,7 +609,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<int16_t> > (dataInput.readShortArray());
+                    return dataInput.readShortArray();
                 }
 
                 template<>
@@ -589,7 +622,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<int32_t> > (dataInput.readIntArray());
+                    return dataInput.readIntArray();
                 }
 
                 template<>
@@ -602,7 +635,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<int64_t> > (dataInput.readLongArray());
+                    return dataInput.readLongArray();
                 }
 
                 template<>
@@ -615,7 +648,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<float> > (dataInput.readFloatArray());
+                    return dataInput.readFloatArray();
                 }
 
                 template<>
@@ -628,7 +661,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<double> > (dataInput.readDoubleArray());
+                    return dataInput.readDoubleArray();
                 }
 
                 template<>
@@ -641,7 +674,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, typeId);
 
-                    return std::auto_ptr<std::string> (dataInput.readUTF());
+                    return dataInput.readUTF();
                 }
 
                 template<>
@@ -654,7 +687,7 @@ namespace hazelcast {
 
                     constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY, typeId);
 
-                    return std::auto_ptr<std::vector<std::string> > (dataInput.readUTFArray());
+                    return dataInput.readUTFArray();
                 }
 
                 template<>
