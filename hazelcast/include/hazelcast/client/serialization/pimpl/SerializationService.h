@@ -172,6 +172,9 @@ namespace hazelcast {
                 HAZELCAST_API Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object);
 
                 template<>
+                HAZELCAST_API Data SerializationService::toData<std::vector<byte> >(const std::vector<byte> *object);
+
+                template<>
                 HAZELCAST_API Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object);
 
                 template<>
@@ -221,6 +224,9 @@ namespace hazelcast {
 
                 template<>
                 HAZELCAST_API std::auto_ptr<std::vector<bool> > SerializationService::toObject(const Data &data);
+
+                template<>
+                HAZELCAST_API std::auto_ptr<std::vector<byte> > SerializationService::toObject(const Data &data);
 
                 template<>
                 HAZELCAST_API std::auto_ptr<std::vector<int16_t> >  SerializationService::toObject(const Data &data);

@@ -140,7 +140,7 @@ namespace hazelcast {
                     int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
                     writeInt(len);
                     if (len > 0) {
-                        outputStream->insert(outputStream->end(),  data->begin(),  data->end());
+                        outputStream->insert(outputStream->end(), data->begin(), data->end());
                     }
                 }
 
