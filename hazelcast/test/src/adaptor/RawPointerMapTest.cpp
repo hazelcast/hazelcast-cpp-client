@@ -76,6 +76,27 @@ namespace hazelcast {
                         std::auto_ptr<std::string> prefix;
                     };
 
+                    /**
+                     * This processor validates that the string value for the entry is the same as the test string
+                     * "xyzä123 イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム"
+                     */
+                    class UTFValueValidatorProcessor : public serialization::IdentifiedDataSerializable {
+                    public:
+                        virtual int getFactoryId() const {
+                            return 666;
+                        }
+
+                        virtual int getClassId() const {
+                            return 9;
+                        }
+
+                        virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                        }
+
+                        virtual void readData(serialization::ObjectDataInput &reader) {
+                        }
+                    };
+
                     virtual void TearDown() {
                         // clear maps
                         intMap->clear();
@@ -3371,6 +3392,18 @@ namespace hazelcast {
                     val = imap->get("key1");
                     ASSERT_NE((std::string *)NULL, val.get());
                     ASSERT_EQ(prefix + "value1", *val);
+                }
+
+                TEST_F(RawPointerMapTest, testReadUTFWrittenByJava) {
+                    std::string value = "xyzä123 イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
+                    std::string key = "myutfkey";
+                    IMap<std::string, std::string> map = client->getMap<std::string, std::string>(
+                            "testReadUTFWrittenByJavaMap");
+                    map.put(key, value);
+                    UTFValueValidatorProcessor processor;
+                    boost::shared_ptr<bool> result = map.executeOnKey<bool, UTFValueValidatorProcessor>(key, processor);
+                    ASSERT_NOTNULL(result.get(), bool);
+                    ASSERT_TRUE(*result);
                 }
             }
         }

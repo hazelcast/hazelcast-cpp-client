@@ -657,6 +657,22 @@ namespace hazelcast {
                 ASSERT_EQ(utfStr, *in.readObject<std::string>());
 
             }
+
+            TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
+                std::string utfStr = "xyzä123";
+
+                serialization::pimpl::SerializationConstants constants;
+                serialization::pimpl::PortableContext context(1, constants);
+
+                serialization::pimpl::DataOutput dataOutput;
+                serialization::ObjectDataOutput out(dataOutput, context);
+
+
+                out.writeUTF(&utfStr);
+                std::auto_ptr<std::vector<byte> > byteArray = out.toByteArray();
+                int strLen = util::Bits::readIntB(*byteArray, 0);
+                ASSERT_EQ(7, strLen);
+            }
         }
     }
 }

@@ -459,6 +459,39 @@ class EmployeeEntryKeyComparator extends EmployeeEntryComparator {
     }
 }
 
+class UTFValueValidatorProcessor
+        implements EntryProcessor<String, String>, IdentifiedDataSerializable {
+    @Override
+    public Object process(Map.Entry<String, String> entry) {
+        return entry.getKey().equals("myutfkey") && entry.getValue().equals("xyzä123 イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム");
+    }
+
+    @Override
+    public EntryBackupProcessor<String, String> getBackupProcessor() {
+        return null;
+    }
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 9;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+    }
+}
+
 class MapGetInterceptor implements MapInterceptor, IdentifiedDataSerializable {
     private String prefix;
 
@@ -648,6 +681,8 @@ public class CppClientListener {
                         return new KeyMultiplierWithNullableResult();
                     case 8:
                         return new WaitMultiplierProcessor();
+                    case 9:
+                        return new UTFValueValidatorProcessor();
                     default:
                         return null;
                 }

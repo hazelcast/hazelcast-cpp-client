@@ -241,27 +241,11 @@ namespace hazelcast {
 
                 int DataOutput::getUTF8CharCount(const std::string &str) {
                     int size = 0;
-                    for (std::string::const_iterator it = str.begin();it != str.end();) {
-                        byte buffer[3];
-                        buffer[0] = (unsigned char)(*it);
-                        if (buffer[0] <= 0x7F) {
-                            ++it;
-                            ++size;
-                        } else {
-                            ++it;
-                            if (it != str.end()) {
-                                buffer[1] = (unsigned char)(*it);
-                                uint16_t twoByteChar = ((buffer[0] << 8) | (buffer[1]));
-                                if (twoByteChar > 0x07FF) {
-                                    it += 2;
-                                    ++size;
-                                } else {
-                                    ++it;
-                                    ++size;
-                                }
-                            }
-                        }
+                    for (std::string::const_iterator it = str.begin();it != str.end();++it) {
+                        // Any additional byte for an UTF character has a bit mask of 10xxxxxx
+                        size += (*it & 0xC0) != 0x80;
                     }
+
                     return size;
                 }
             }
