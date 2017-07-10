@@ -113,7 +113,9 @@ namespace hazelcast {
                             deletingConnection = false;
                             clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
-                        currentThread->interruptibleSleep(1);
+                        if (clientContext.getLifecycleService().isRunning()) {
+                            currentThread->interruptibleSleep(1);
+                        }
                     }
                 }
             }
