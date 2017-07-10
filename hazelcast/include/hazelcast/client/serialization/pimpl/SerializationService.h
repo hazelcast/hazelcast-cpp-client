@@ -39,6 +39,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/PartitionAware.h"
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <list>
@@ -75,7 +76,7 @@ namespace hazelcast {
 
                         ObjectDataOutput dataOutput(output, portableContext);
 
-                        writeHash(output);
+                        writeHash<T>(object, output);
 
                         dataOutput.writeObject<T>(object);
 
@@ -139,6 +140,22 @@ namespace hazelcast {
                     bool isNullData(const Data &data);
 
                     void writeHash(DataOutput &out);
+
+                    template<typename T>
+                    void writeHash(const PartitionAwareMarker *obj, DataOutput &out) {
+                        typedef typename T::KEY_TYPE PK_TYPE;
+                        const PartitionAware<PK_TYPE> *partitionAwareObj = static_cast<const PartitionAware<PK_TYPE> *>(obj);
+                        const PK_TYPE *pk = partitionAwareObj->getPartitionKey();
+                        if (pk != NULL) {
+                            Data partitionKey = toData<PK_TYPE>(pk);
+                            out.writeInt(partitionKey.getPartitionHash());
+                        }
+                    }
+
+                    template<typename T>
+                    void writeHash(const void *obj, DataOutput &out) {
+                        out.writeInt(0);
+                    }
                 };
 
                 template<>

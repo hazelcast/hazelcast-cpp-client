@@ -220,17 +220,16 @@ namespace hazelcast {
                 }
 
                 //@Override
-                EntryVector getAllInternal(
-                        const std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > &pIdToKeyData,
-                        std::map<K, V> &result) {
+                virtual EntryVector
+                getAllInternal(const std::map<int, std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR> > &pIdToKeyData,
+                               std::map<K, V> &result) {
                     std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> markers;
                     try {
-                        for (std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator
+                        for (typename std::map<int, std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR> >::const_iterator
                                      it = pIdToKeyData.begin(); it != pIdToKeyData.end(); ++it) {
-                            for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator
-                                         valueIterator = it->second.begin();
+                            for (typename std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR>::const_iterator valueIterator = it->second.begin();
                                  valueIterator != it->second.end(); ++valueIterator) {
-                                const boost::shared_ptr<serialization::pimpl::Data> &keyData = *valueIterator;
+                                const boost::shared_ptr<serialization::pimpl::Data> &keyData = (*valueIterator).second;
                                 boost::shared_ptr<V> cached = nearCache->get(keyData);
                                 if (cached.get() != NULL &&
                                     internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached) {

@@ -366,6 +366,32 @@ class KeyMultiplierWithNullableResult extends KeyMultiplier {
     }
 }
 
+class PartitionAwareInt implements IdentifiedDataSerializable {
+    private int value;
+
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 9;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+        objectDataOutput.writeInt(value);
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+        value = objectDataInput.readInt();
+    }
+}
+
 /**
  * Compares based on the employee age
  */

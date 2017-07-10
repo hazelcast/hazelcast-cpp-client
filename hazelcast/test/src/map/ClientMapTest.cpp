@@ -49,6 +49,46 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+            class PartitionAwareInt : public PartitionAware<int>, public serialization::IdentifiedDataSerializable {
+            public:
+                PartitionAwareInt() {}
+
+                PartitionAwareInt(int partitionKey, int actualKey)
+                        : partitionKey(partitionKey), actualKey(actualKey) {}
+
+                virtual const int *getPartitionKey() const {
+                    return &partitionKey;
+                }
+
+                int getActualKey() const {
+                    return actualKey;
+                }
+
+                virtual int getFactoryId() const {
+                    return 666;
+                }
+
+                virtual int getClassId() const {
+                    return 9;
+                }
+
+                virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    writer.writeInt(actualKey);
+                }
+
+                virtual void readData(serialization::ObjectDataInput &reader) {
+                    actualKey = reader.readInt();
+                }
+
+            private:
+                int partitionKey;
+                int actualKey;
+            };
+
+            bool operator<(const PartitionAwareInt &lhs, const PartitionAwareInt &rhs) {
+                return lhs.getActualKey() < rhs.getActualKey();
+            }
+
             class MapClientConfig : public ClientConfig {
             public:
                 static const char *intMapName;
@@ -534,6 +574,18 @@ namespace hazelcast {
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp, value);
                 }
+            }
+
+            TYPED_TEST(ClientMapTest, testPartitionAwareKey) {
+                int partitionKey = 5;
+                int value = 25;
+                IMap<PartitionAwareInt, int> map =
+                        ClientMapTest<TypeParam>::client->template getMap<PartitionAwareInt, int>(MapClientConfig::intMapName);
+                PartitionAwareInt partitionAwareInt(partitionKey, 7);
+                map.put(partitionAwareInt, value);
+                boost::shared_ptr<int> val = map.get(partitionAwareInt);
+                ASSERT_NOTNULL(val.get(), int);
+                ASSERT_EQ(*val, value);
             }
 
             TYPED_TEST(ClientMapTest, testRemoveAndDelete) {
