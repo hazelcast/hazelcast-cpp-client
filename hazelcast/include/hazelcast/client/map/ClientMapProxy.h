@@ -1206,16 +1206,15 @@ namespace hazelcast {
                     }
                     EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
                     EntryVector responseEntries;
-                    for (EntryVector::const_iterator it = allData.begin();it != allData.end(); ++it) {
+                    for (EntryVector::iterator it = allData.begin();it != allData.end(); ++it) {
                         std::auto_ptr<V> value = toObject<V>(it->second);
                         boost::shared_ptr<serialization::pimpl::Data> keyPtr = boost::shared_ptr<serialization::pimpl::Data>(
                                 new serialization::pimpl::Data(it->first));
                         const K * &keyObject = dataKeyPairMap[keyPtr];
                         assert(keyObject != 0);
                         result[*keyObject] = *value;
-                        responseEntries.push_back(
-                                std::make_pair<serialization::pimpl::Data, serialization::pimpl::Data>(*keyPtr,
-                                                                                                       it->second));
+                        responseEntries.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(
+                                *keyPtr, it->second));
                     }
 
                     return responseEntries;
