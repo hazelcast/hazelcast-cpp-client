@@ -68,7 +68,11 @@ namespace hazelcast {
                                             std::string("Error while connecting to cluster! =>") + e.what());
                                     lifecycleService.shutdown();
                                 }
-                                startLatch.countDown();
+                                /**
+                                 * Do nothing except returning here. Since client and cluster service may have been
+                                 * already been destructed, any access to startLatch or any other client variable
+                                 * may cause invalid memory access.
+                                 */
                                 return;
                             }
                         }
@@ -88,10 +92,12 @@ namespace hazelcast {
 
                         clientContext.getConnectionManager().onCloseOwnerConnection();
                         if (deletingConnection.compareAndSet(false, true)) {
-                            util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
-                            conn.reset();
+                            if (conn.get()) {
+                                util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
+                                conn.reset();
+                                lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
+                            }
                             deletingConnection = false;
-                            lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                         }
                         if (clientContext.getLifecycleService().isRunning()) {
                             currentThread->interruptibleSleep(1);
@@ -103,10 +109,12 @@ namespace hazelcast {
             void ClusterListenerThread::stop() {
                 startLatch.countDown();
                 if (deletingConnection.compareAndSet(false, true)) {
-                    util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
-                    conn.reset();
+                    if (conn.get()) {
+                        util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
+                        conn.reset();
+                        clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
+                    }
                     deletingConnection = false;
-                    clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                 }
                 util::Thread *worker = workerThread;
                 if (worker) {
