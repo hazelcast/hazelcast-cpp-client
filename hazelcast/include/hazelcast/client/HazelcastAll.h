@@ -63,6 +63,7 @@
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/PartitionAware.h"
 
 #endif //HAZELCAST_HazelcastAll
 
