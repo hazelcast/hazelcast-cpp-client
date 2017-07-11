@@ -26,6 +26,7 @@
 * [Map Near Cache](#map-near-cache)
 * [TLS Feature](#tls-feature)
 * [AWS Cloud Discovery](#aws-cloud-discovery)
+* [ParitionAware](#partitionaware)
 * [Code Examples](#code-examples)
   * [Map](#map)
   * [Queue](#queue)
@@ -605,6 +606,12 @@ If you are using IAM role configuration (`iam-role`) for EC2 discovery, you need
   ]
 }
 ```
+# ParitionAware
+Hazelcast client distributes the data that throughout the cluster. The hash code of the serialised key is calculated and the partition id is found from the hash code. Based on the partition id to member mapping table, the request is being sent to the corresponding member in the cluster. You may sometimes want certain related keys and the values be on the same member at the cluster so that you can use/change them using local operations on the member. PartitionAware interface allows you to put a data on a specific partition hence on a certain member. This allows data affinity for the related data items (e.g. customer and orders). 
+
+A more detailed explanation of the "Data Affinity" can be found at Hazelcast Reference (http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#data-affinity). 
+
+Please see examples/distributed-map/partitionaware folder for an example usage of PartitionAware interface. 
  
 # Code Examples
 
