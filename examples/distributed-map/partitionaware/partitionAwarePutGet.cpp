@@ -25,7 +25,11 @@ class PartitionAwareString
 public:
     static const std::string desiredPartitionString;
 
-    PartitionAwareString(const std::string &actualKey);
+    PartitionAwareString() {
+    }
+
+    PartitionAwareString(const std::string &actualKey) : actualKey(actualKey) {
+    }
 
     virtual const std::string *getPartitionKey() const {
         return &desiredPartitionString;
@@ -57,7 +61,9 @@ private:
 
 const std::string PartitionAwareString::desiredPartitionString = "desiredKeyString";
 
-PartitionAwareString::PartitionAwareString(const std::string &actualKey) : actualKey(actualKey) {}
+bool operator<(const PartitionAwareString &lhs, const PartitionAwareString &rhs) {
+    return lhs.getActualKey() < rhs.getActualKey();
+}
 
 int main() {
     hazelcast::client::ClientConfig config;
