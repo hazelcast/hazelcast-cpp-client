@@ -31,12 +31,12 @@ namespace hazelcast {
     namespace client {
         namespace spi {
 
-            LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
+            LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig,
+                                               util::CountDownLatch &shutdownLatch)
             :clientContext(clientContext)
-            , active(true), shutdownLatch(1) {
+            , active(true), shutdownLatch(shutdownLatch) {
                 std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
-
             }
 
             bool LifecycleService::start() {

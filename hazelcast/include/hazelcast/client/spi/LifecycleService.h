@@ -46,7 +46,8 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig);
+                LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig,
+                                 util::CountDownLatch &shutdownLatch);
 
                 virtual ~LifecycleService();
 
@@ -68,7 +69,7 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-                util::CountDownLatch shutdownLatch;
+                util::CountDownLatch &shutdownLatch;
             };
 
         }

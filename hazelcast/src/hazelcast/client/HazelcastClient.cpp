@@ -35,8 +35,9 @@ namespace hazelcast {
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)
         , clientProperties(config)
+        , shutdownLatch(1)
         , clientContext(*this)
-        , lifecycleService(clientContext, clientConfig)
+        , lifecycleService(clientContext, clientConfig, shutdownLatch)
         , serializationService(config.getSerializationConfig())
         , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
         , nearCacheManager(serializationService)
@@ -65,6 +66,12 @@ namespace hazelcast {
 
         HazelcastClient::~HazelcastClient() {
             lifecycleService.shutdown();
+            /**
+             * We can not depend on the destruction order of the variables. lifecycleService may be destructed later
+             * than the clientContext which is accessed by different service threads, hence we need to explicitly wait
+             * for shutdown completion.
+             */
+            shutdownLatch.await();
         }
 
 

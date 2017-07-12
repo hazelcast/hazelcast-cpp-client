@@ -713,6 +713,7 @@ namespace hazelcast {
 
             ClientConfig clientConfig;
             ClientProperties clientProperties;
+            util::CountDownLatch shutdownLatch;
             spi::ClientContext clientContext;
             spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
