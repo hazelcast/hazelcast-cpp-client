@@ -69,7 +69,9 @@ namespace hazelcast {
             }
 
             void HazelcastServerFactory::shutdownAll() {
-                checkConnection();
+                if (!connected) {
+                    return;
+                }
 
                 outputSocketStream.writeInt(SHUTDOWN_ALL);
                 try {

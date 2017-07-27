@@ -312,6 +312,12 @@ namespace hazelcast {
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 
+            TEST_P(ClusterTest, testDummyClientBehaviourWhenClusterNotFound) {
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                clientConfig.setSmart(false);
+                ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
+            }
+
             TEST_P(ClusterTest, testAllClientStates) {
                 HazelcastServer instance(*g_srvFactory);
 
