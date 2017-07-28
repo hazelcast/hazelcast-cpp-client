@@ -177,8 +177,9 @@ namespace hazelcast {
                         if (*previousConnectionAddr != *it) {
                             addresses.push_back(*it);
                         }
+                    } else {
+                        addresses.push_back(*it);
                     }
-                    addresses.push_back(*it);
                 }
                 if ((Address *) NULL != previousConnectionAddr) {
                     addresses.push_back(*previousConnectionAddr);
