@@ -347,6 +347,20 @@ namespace hazelcast {
                 ASSERT_TRUE(shutdownLatch.await(10));
             }
 
+            TEST_P(ClusterTest, testConnectionAttemptPeriod) {
+                ClientConfig clientConfig;
+                clientConfig.setAttemptPeriod(900);
+                clientConfig.setConnectionAttemptLimit(3);
+
+                int64_t startTimeMillis = util::currentTimeMillis();
+                try {
+                    HazelcastClient client(clientConfig);
+                } catch (exception::IllegalStateException &e) {
+                    // this is expected
+                }
+                ASSERT_GE(util::currentTimeMillis() - startTimeMillis, 3 * 900);
+            }
+
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
                 HazelcastServer instance(*g_srvFactory);
 
