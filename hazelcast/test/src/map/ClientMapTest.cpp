@@ -618,18 +618,16 @@ namespace hazelcast {
 
             TYPED_TEST(ClientMapTest, testRemoveAll) {
                 ClientMapTest<TypeParam>::fillMap();
-                
-                query::EqualPredicate<std::string> key5Predicate(query::QueryConstants::getKeyAttributeName(), "key5");
-                
-                ClientMapTest<TypeParam>::imap->removeAll(key5Predicate);
+
+                ClientMapTest<TypeParam>::imap->removeAll(
+                        query::EqualPredicate<std::string>(query::QueryConstants::getKeyAttributeName(), "key5"));
 
                 boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key5");
                 
                 ASSERT_NULL("key5 should not exist", value.get(), std::string);
 
-                query::LikePredicate likeAllValues(query::QueryConstants::getValueAttributeName(), "value%");
-
-                ClientMapTest<TypeParam>::imap->removeAll(likeAllValues);
+                ClientMapTest<TypeParam>::imap->removeAll(
+                        query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value%"));
 
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isEmpty());
             }

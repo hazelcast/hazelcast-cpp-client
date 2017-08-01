@@ -147,7 +147,7 @@ namespace hazelcast {
                  *
                  * @param predicate matching entries with this predicate will be removed from this map
                  */
-                void removeAll(query::Predicate &predicate) {
+                void removeAll(const query::Predicate &predicate) {
                     map.removeAll(predicate);
                 }
 

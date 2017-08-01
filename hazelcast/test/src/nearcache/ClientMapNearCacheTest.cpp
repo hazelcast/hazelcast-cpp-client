@@ -149,10 +149,7 @@ namespace hazelcast {
                     map.get(i);
                 }
 
-                query::EqualPredicate<int> equal20Predicate = query::EqualPredicate<int>(
-                        query::QueryConstants::getKeyAttributeName(), 20);
-
-                map.removeAll(equal20Predicate);
+                map.removeAll(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20));
 
                 assertThatOwnedEntryCountEquals(map, 0);
             }
