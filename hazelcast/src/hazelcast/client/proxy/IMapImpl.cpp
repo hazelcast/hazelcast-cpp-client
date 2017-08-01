@@ -74,6 +74,7 @@
 #include "hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
+#include "hazelcast/client/protocol/codec/MapRemoveAllCodec.h"
 
 #include <climits>
 
@@ -130,6 +131,13 @@ namespace hazelcast {
 
                 return invokeAndGetResult<bool, protocol::codec::MapRemoveIfSameCodec::ResponseParameters>(request,
                                                                                                            partitionId);
+            }
+
+            void IMapImpl::removeAll(const serialization::pimpl::Data& predicateData) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::MapRemoveAllCodec::RequestParameters::encode(getName(), predicateData);
+
+                invoke(request);
             }
 
             void IMapImpl::deleteEntry(const serialization::pimpl::Data &key) {

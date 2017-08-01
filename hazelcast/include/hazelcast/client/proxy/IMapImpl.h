@@ -46,6 +46,8 @@ namespace hazelcast {
 
                 bool remove(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
+                void removeAll(const serialization::pimpl::Data& predicateData);
+
                 void deleteEntry(const serialization::pimpl::Data& key);
 
                 virtual void flush();

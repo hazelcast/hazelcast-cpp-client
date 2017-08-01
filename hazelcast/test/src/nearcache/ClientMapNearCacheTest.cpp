@@ -19,6 +19,8 @@
 
 #include <set>
 #include <boost/shared_ptr.hpp>
+#include <hazelcast/client/query/EqualPredicate.h>
+#include <hazelcast/client/query/QueryConstants.h>
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -130,6 +132,29 @@ namespace hazelcast {
                 map.getAll(keys);
 
                 assertThatOwnedEntryCountEquals(map, size);
+            }
+
+            TEST_P(ClientMapNearCacheTest, testRemoveAllNearCache) {
+                IMap<int, int> map = getNearCachedMapFromClient(newNearCacheConfig());
+
+                std::set<int> keys;
+
+                int size = 1214;
+                for (int i = 0; i < size; i++) {
+                    map.put(i, i);
+                    keys.insert(i);
+                }
+                // populate Near Cache
+                for (int i = 0; i < size; i++) {
+                    map.get(i);
+                }
+
+                query::EqualPredicate<int> equal20Predicate = query::EqualPredicate<int>(
+                        query::QueryConstants::getKeyAttributeName(), 20);
+
+                map.removeAll(equal20Predicate);
+
+                assertThatOwnedEntryCountEquals(map, 0);
             }
 
             INSTANTIATE_TEST_CASE_P(ClientMapNearCacheTestInstance, ClientMapNearCacheTest,

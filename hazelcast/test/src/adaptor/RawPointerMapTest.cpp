@@ -536,6 +536,25 @@ namespace hazelcast {
 
                 }
 
+                TEST_F(RawPointerMapTest, testRemoveAll) {
+                    fillMap();
+
+                    query::EqualPredicate<std::string> key5Predicate(query::QueryConstants::getKeyAttributeName(), "key5");
+
+                    imap->removeAll(key5Predicate);
+
+                    std::auto_ptr<std::string> value = imap->get("key5");
+
+                    ASSERT_NULL("key5 should not exist", value.get(), std::string);
+
+                    query::LikePredicate likeAllValues(query::QueryConstants::getValueAttributeName(), "value%");
+
+                    imap->removeAll(likeAllValues);
+
+                    ASSERT_TRUE(imap->isEmpty());
+                }
+
+
                 TEST_F(RawPointerMapTest, testGetAllPutAll) {
                     std::map<std::string, std::string> mapTemp;
 
