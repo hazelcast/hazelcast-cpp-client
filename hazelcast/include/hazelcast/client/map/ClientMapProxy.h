@@ -164,6 +164,18 @@ namespace hazelcast {
                 }
 
                 /**
+                 * Removes all entries which match with the supplied predicate.
+                 * If this map has index, matching entries will be found via index search, otherwise they will be found by full-scan.
+                 *
+                 * @param predicate matching entries with this predicate will be removed from this map
+                 */
+                void removeAll(const query::Predicate &predicate) {
+                    serialization::pimpl::Data predicateData = toData(predicate);
+
+                    removeAllInternal(predicateData);
+                }
+
+                /**
                 * removes entry from map.
                 * Does not return anything.
                 * @param key The key of the map entry to remove.
@@ -1124,6 +1136,10 @@ namespace hazelcast {
                 virtual bool removeInternal(
                         const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
                     return proxy::IMapImpl::remove(keyData, valueData);
+                }
+
+                virtual void removeAllInternal(const serialization::pimpl::Data &predicateData) {
+                    return proxy::IMapImpl::removeAll(predicateData);
                 }
 
                 virtual void deleteInternal(const serialization::pimpl::Data &keyData) {

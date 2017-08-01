@@ -124,7 +124,7 @@ namespace hazelcast {
                 }
 
                 //@Override
-                std::auto_ptr<serialization::pimpl::Data> removeInternal(
+                virtual std::auto_ptr<serialization::pimpl::Data> removeInternal(
                         const serialization::pimpl::Data &key) {
                     std::auto_ptr<serialization::pimpl::Data> responseData = ClientMapProxy<K, V>::removeInternal(key);
                     invalidateNearCache(key);
@@ -132,36 +132,43 @@ namespace hazelcast {
                 }
 
                 //@Override
-                bool removeInternal(
+                virtual bool removeInternal(
                         const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
                     bool response = ClientMapProxy<K, V>::removeInternal(key, value);
                     invalidateNearCache(key);
                     return response;
                 }
 
-                //@Override
-                void deleteInternal(const serialization::pimpl::Data &key) {
+                virtual void removeAllInternal(const serialization::pimpl::Data &predicateData) {
+                    try {
+                        ClientMapProxy<K, V>::removeAllInternal(predicateData);
+
+                        nearCache->clear();
+                    } catch (exception::IException &e) {
+                        nearCache->clear();
+                        throw;
+                    }
+                }
+
+                virtual void deleteInternal(const serialization::pimpl::Data &key) {
                     ClientMapProxy<K, V>::deleteInternal(key);
                     invalidateNearCache(key);
                 }
 
-                //@Override
-                bool tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
+                virtual bool tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
                     bool response = ClientMapProxy<K, V>::tryRemoveInternal(key, timeoutInMillis);
                     invalidateNearCache(key);
                     return response;
                 }
 
-                //@Override
-                bool tryPutInternal(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
+                virtual bool tryPutInternal(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
                                     long timeoutInMillis) {
                     bool response = ClientMapProxy<K, V>::tryPutInternal(key, value, timeoutInMillis);
                     invalidateNearCache(key);
                     return response;
                 }
 
-                //@Override
-                std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &key,
+                virtual std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &key,
                                                                       const serialization::pimpl::Data &value,
                                                                       long timeoutInMillis) {
                     std::auto_ptr<serialization::pimpl::Data> previousValue =
@@ -170,15 +177,13 @@ namespace hazelcast {
                     return previousValue;
                 }
 
-                //@Override
-                void tryPutTransientInternal(const serialization::pimpl::Data &key,
+                virtual void tryPutTransientInternal(const serialization::pimpl::Data &key,
                                              const serialization::pimpl::Data &value, int ttlInMillis) {
                     ClientMapProxy<K, V>::tryPutTransientInternal(key, value, ttlInMillis);
                     invalidateNearCache(key);
                 }
 
-                //@Override
-                std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+                virtual std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                                                               const serialization::pimpl::Data &valueData,
                                                                               int ttlInMillis) {
                     std::auto_ptr<serialization::pimpl::Data> previousValue =
@@ -187,8 +192,7 @@ namespace hazelcast {
                     return previousValue;
                 }
 
-                //@Override
-                bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
+                virtual bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
                                            const serialization::pimpl::Data &valueData,
                                            const serialization::pimpl::Data &newValueData) {
                     bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
@@ -196,8 +200,7 @@ namespace hazelcast {
                     return result;
                 }
 
-                //@Override
-                std::auto_ptr<serialization::pimpl::Data> replaceInternal(const serialization::pimpl::Data &keyData,
+                virtual std::auto_ptr<serialization::pimpl::Data> replaceInternal(const serialization::pimpl::Data &keyData,
                                                                           const serialization::pimpl::Data &valueData) {
                     std::auto_ptr<serialization::pimpl::Data> value =
                             proxy::IMapImpl::replaceData(keyData, valueData);
@@ -205,21 +208,18 @@ namespace hazelcast {
                     return value;
                 }
 
-                //@Override
-                void setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
+                virtual void setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
                                  int ttlInMillis) {
                     proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                     invalidateNearCache(keyData);
                 }
 
-                //@Override
-                bool evictInternal(const serialization::pimpl::Data &keyData) {
+                virtual bool evictInternal(const serialization::pimpl::Data &keyData) {
                     bool evicted = proxy::IMapImpl::evict(keyData);
                     invalidateNearCache(keyData);
                     return evicted;
                 }
 
-                //@Override
                 virtual EntryVector
                 getAllInternal(const std::map<int, std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR> > &pIdToKeyData,
                                std::map<K, V> &result) {
@@ -268,7 +268,7 @@ namespace hazelcast {
                     }
                 }
 
-                std::auto_ptr<serialization::pimpl::Data>
+                virtual std::auto_ptr<serialization::pimpl::Data>
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     std::auto_ptr<serialization::pimpl::Data> response =
@@ -277,7 +277,7 @@ namespace hazelcast {
                     return response;
                 }
 
-                void
+                virtual void
                 putAllInternal(const std::map<int, EntryVector> &entries) {
                     ClientMapProxy<K, V>::putAllInternal(entries);
 

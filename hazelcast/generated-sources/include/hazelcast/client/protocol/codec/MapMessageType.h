@@ -45,19 +45,15 @@ namespace hazelcast {
                     HZ_MAP_UNLOCK=0x0116,
                     HZ_MAP_ADDINTERCEPTOR=0x0117,
                     HZ_MAP_REMOVEINTERCEPTOR=0x0118,
-                    HZ_MAP_ADDENTRYLISTENERTOKEYWITHPREDICATE=0x0119,
                     HZ_MAP_ADDENTRYLISTENERWITHPREDICATE=0x011a,
                     HZ_MAP_ADDENTRYLISTENERTOKEY=0x011b,
                     HZ_MAP_ADDENTRYLISTENER=0x011c,
                     HZ_MAP_ADDNEARCACHEENTRYLISTENER=0x011d,
                     HZ_MAP_REMOVEENTRYLISTENER=0x011e,
-                    HZ_MAP_ADDPARTITIONLOSTLISTENER=0x011f,
-                    HZ_MAP_REMOVEPARTITIONLOSTLISTENER=0x0120,
                     HZ_MAP_GETENTRYVIEW=0x0121,
                     HZ_MAP_EVICT=0x0122,
                     HZ_MAP_EVICTALL=0x0123,
                     HZ_MAP_LOADALL=0x0124,
-                    HZ_MAP_LOADGIVENKEYS=0x0125,
                     HZ_MAP_KEYSET=0x0126,
                     HZ_MAP_GETALL=0x0127,
                     HZ_MAP_VALUES=0x0128,
@@ -79,7 +75,7 @@ namespace hazelcast {
                     HZ_MAP_KEYSETWITHPAGINGPREDICATE=0x0138,
                     HZ_MAP_VALUESWITHPAGINGPREDICATE=0x0139,
                     HZ_MAP_ENTRIESWITHPAGINGPREDICATE=0x013a,
-                    HZ_MAP_CLEARNEARCACHE=0x013b
+                    HZ_MAP_REMOVEALL=0x0144,
                 };
             }
         }
