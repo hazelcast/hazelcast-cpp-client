@@ -202,7 +202,7 @@ namespace hazelcast {
                         util::ILogger::getLogger().finest(message.str());
                     }
 
-                    time_t tryStartTime = std::time(NULL);
+                    int64_t tryStartTime = util::currentTimeMillis();
                     std::vector<Address> addresses = findServerAddressesToConnect(previousConnectionAddr);
                     for (std::vector<Address>::const_iterator it = addresses.begin(); it != addresses.end(); ++it) {
                         try {
@@ -221,19 +221,25 @@ namespace hazelcast {
                         }
                     }
 
-                    if (++attempt >= connectionAttemptLimit) {
+                    if (++attempt > connectionAttemptLimit) {
                         break;
                     }
-                    const double remainingTime = clientContext.getClientConfig().getAttemptPeriod() -
-                                                 std::difftime(std::time(NULL), tryStartTime);
+
+                    int64_t remainingTime = clientContext.getClientConfig().getAttemptPeriod() -
+                                            (util::currentTimeMillis() - tryStartTime);
+
+                    if (remainingTime < 0) {
+                        remainingTime = 0;
+                    }
+
                     using namespace std;
                     std::ostringstream errorStream;
-                    errorStream << "Unable to get alive cluster connection, try in " << max(0.0, remainingTime)
+                    errorStream << "Unable to get alive cluster connection, try in " << remainingTime
                     << " ms later, attempt " << attempt << " of " << connectionAttemptLimit << ".";
                     util::ILogger::getLogger().warning(errorStream.str());
 
                     if (remainingTime > 0) {
-                        util::sleep((unsigned) remainingTime / 1000);//MTODO
+                        util::sleepmillis(remainingTime);
                     }
                 }
                 throw exception::IllegalStateException("ClusterService",
