@@ -13,16 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(basic)
-add_subdirectory(near-cache)
-add_subdirectory(query)
-add_subdirectory(custom-attributes)
-add_subdirectory(entry-listener)
-add_subdirectory(entry-processor)
-add_subdirectory(eviction)
-add_subdirectory(index)
-add_subdirectory(locking)
-add_subdirectory(map-interceptor)
-add_subdirectory(multimap)
-add_subdirectory(partitionaware)
-add_subdirectory(removeAll)
+add_executable(removeAllExample removeAllExample.cpp)
