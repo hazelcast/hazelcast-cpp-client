@@ -66,13 +66,12 @@ install_name_tool -id ${HAZELCAST_SHARED_LIB_NAME} ${HAZELCAST_SHARED_LIB_NAME}
 cd ../../../../
 
 # Uncomment below if you want to generate doxygen docs
-##mkdir -p ./cpp/docs/
 
 #echo "Generating docs "
-#doxygen docsConfig
+doxygen docsConfig
 
 #echo "Moving docs to target"
-#mv  docs/ cpp
+mv  docs cpp/
 
 echo "Removing temporary files"
 rm -rf ./ReleaseShared
