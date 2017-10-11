@@ -181,6 +181,17 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	link_libraries(${HZ_LIB_NAME} pthread rt)
 
 	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+		if (HZ_OPENSSL_LIB_DIR)
+			message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+			# We need to set link directories before adding library for the path to be used
+			link_directories(${HZ_OPENSSL_LIB_DIR})
+		endif ()
+
+		if (HZ_OPENSSL_INCLUDE_DIR)
+			message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+			include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+		endif ()
+
 		link_libraries(ssl crypto)
 	ENDIF()
 
