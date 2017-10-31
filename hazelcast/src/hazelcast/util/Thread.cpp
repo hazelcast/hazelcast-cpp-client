@@ -202,8 +202,6 @@ namespace hazelcast {
 
             if (!isJoined) {
                 wakeup();
-
-                pthread_cancel(thread);
             }
         }
 
@@ -227,6 +225,7 @@ namespace hazelcast {
         }
 
         void *Thread::controlledThread(void *args) {
+            pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
             std::auto_ptr<ThreadArgs> threadArgs((ThreadArgs *) args);
             try {
                 threadArgs->func(*threadArgs);
