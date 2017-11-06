@@ -50,6 +50,17 @@ namespace hazelcast {
                  *  which should return same id with its serializer.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
+
+                /**
+                 * The factory method to construct the custom objects
+                 * Override this method if you want to provide a factory for the custom object.
+                 * The memory should be managed correctly to avoid any leaks.
+                 *
+                 * @return The constructed object or NULL if no factory is provided.
+                 */
+                virtual void *create(ObjectDataInput &in) {
+                    return 0;
+                }
             };
 
             /**

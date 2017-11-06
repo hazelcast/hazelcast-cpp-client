@@ -49,7 +49,7 @@ namespace hazelcast {
                 class HAZELCAST_API DefaultPortableReader : public PortableReaderBase {
                 public:
 
-                    DefaultPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    DefaultPortableReader(PortableContext &portableContext, ObjectDataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {

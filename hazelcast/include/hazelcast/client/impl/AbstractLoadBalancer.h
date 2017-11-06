@@ -38,6 +38,9 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
             public:
+                AbstractLoadBalancer();
+
+                AbstractLoadBalancer(AbstractLoadBalancer &rhs);
 
                 void setMembersRef();
 

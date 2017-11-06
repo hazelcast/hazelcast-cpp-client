@@ -54,10 +54,6 @@ namespace hazelcast {
                     }
 
                     virtual ~GenericListener() {
-                        T *e = NULL;
-                        while ((e = objects.poll()) != NULL) {
-                            delete(e);
-                        }
                         topic::Message<T> *m = NULL;
                         while ((m = messages.poll()) != NULL) {
                             delete(m);
@@ -77,10 +73,9 @@ namespace hazelcast {
                         }
                         util::ILogger::getLogger().info(out.str());
 
-                        objects.offer(message->releaseMessageObject().release());
-                        latch.countDown();
-
                         messages.offer(message.release());
+
+                        latch.countDown();
                     }
 
                     virtual int64_t retrieveInitialSequence() const {
@@ -103,10 +98,6 @@ namespace hazelcast {
                         return value;
                     }
 
-                    util::ConcurrentQueue<T> &getObjects() {
-                        return objects;
-                    }
-
                     util::ConcurrentQueue<topic::Message<T> > &getMessages() {
                         return messages;
                     }
@@ -114,7 +105,6 @@ namespace hazelcast {
                     util::CountDownLatch &latch;
                     int64_t startSequence;
                     util::AtomicInt numberOfMessagesReceived;
-                    util::ConcurrentQueue<T> objects;
                     util::ConcurrentQueue<topic::Message<T> > messages;
                 };
 
@@ -182,7 +172,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(2));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                Employee *employee = listener.getObjects().poll();
+                const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *)NULL, employee);
                 ASSERT_EQ(empl1, *employee);
 
@@ -209,7 +199,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(1));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                Employee *employee = listener.getObjects().poll();
+                const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *)NULL, employee);
                 ASSERT_EQ(empl2, *employee);
 
@@ -260,8 +250,8 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                int *val = listener.getObjects().poll();
-                ASSERT_EQ((int *)NULL, val);
+                const int *val = listener.getMessages().poll()->getMessageObject();
+                ASSERT_EQ((const int *)NULL, val);
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
@@ -283,10 +273,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
-                    std::string *val = queue.poll();
-                    ASSERT_NE((std::string *)NULL, val);
+                    const std::string *val = queue.poll()->getMessageObject();
+                    ASSERT_NE((const std::string *)NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -317,10 +307,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
-                    std::string *val = queue.poll();
-                    ASSERT_NE((std::string *)NULL, val);
+                    const std::string *val = queue.poll()->getMessageObject();
+                    ASSERT_NE((const std::string *)NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -342,10 +332,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                int *val = listener.getObjects().poll();
+                topic::Message<int> *message = listener.getMessages().poll();
+                const int *val = message->getMessageObject();
                 ASSERT_EQ(publishedValue, *val);
 
-                topic::Message<int> *message = listener.getMessages().poll();
                 ASSERT_LE(timeBeforePublish, message->getPublishTime());
                 ASSERT_GE(timeAfterPublish, message->getPublishTime());
                 ASSERT_EQ(intTopic->getName(), message->getSource());
@@ -381,11 +371,11 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(10));
                 ASSERT_EQ((int)expectedValues.size(), listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<int> &objects = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<int> > &objects = listener.getMessages();
 
                 for (std::vector<int>::const_iterator it = expectedValues.begin();it != expectedValues.end(); ++it) {
-                    int *val = objects.poll();
-                    ASSERT_NE((int *)NULL, val);
+                    std::auto_ptr<int> val = objects.poll()->releaseMessageObject();
+                    ASSERT_NE((int *)NULL, val.get());
                     ASSERT_EQ(*it, *val);
                 }
             }

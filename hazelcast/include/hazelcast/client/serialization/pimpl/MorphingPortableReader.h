@@ -50,7 +50,8 @@ namespace hazelcast {
                 class HAZELCAST_API MorphingPortableReader : public PortableReaderBase {
                 public:
 
-                    MorphingPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    MorphingPortableReader(PortableContext &portableContext, ObjectDataInput &input,
+                                           boost::shared_ptr<ClassDefinition> cd);
 
                     int32_t readInt(const char *fieldName);
 

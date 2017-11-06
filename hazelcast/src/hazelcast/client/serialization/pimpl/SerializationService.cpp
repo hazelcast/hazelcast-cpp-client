@@ -21,24 +21,20 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
-#include "hazelcast/util/Util.h"
+#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/exception/IClassCastException.h"
 #include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                #define CHECK_NULL(type) \
-                if (isNullData(data)) { \
-                    return std::auto_ptr<type >(); \
-                }
+                SerializationService::SerializationService(const SerializationConfig &serializationConfig)
+                        : portableContext(serializationConfig),
+                          serializationConfig(serializationConfig) {
+                    registerConstantSerializers();
 
-                SerializationService::SerializationService(const SerializationConfig& serializationConfig)
-                : portableContext(serializationConfig.getPortableVersion(), constants)
-                , serializationConfig(serializationConfig) {
                     std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
                     std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
                     SerializerHolder& serializerHolder = getSerializerHolder();
@@ -424,278 +420,73 @@ namespace hazelcast {
                 }
 
                 template<>
-                std::auto_ptr<byte> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(byte);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE, typeId);
-
-                    std::auto_ptr<byte> object(new byte);
-
-                    *object = dataInput.readByte();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<bool> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(bool);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN, typeId);
-
-                    std::auto_ptr<bool> object(new bool);
-
-                    *object = dataInput.readBoolean();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<char> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(char);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR, typeId);
-
-                    std::auto_ptr<char> object(new char);
-
-                    *object = dataInput.readChar();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<int16_t> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(int16_t);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT, typeId);
-
-                    std::auto_ptr<int16_t> object(new int16_t);
-
-                    *object = dataInput.readShort();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<int32_t> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(int32_t);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER, typeId);
-
-                    std::auto_ptr<int32_t> object(new int32_t);
-
-                    *object = dataInput.readInt();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<int64_t> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(int64_t);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_LONG, typeId);
-
-                    std::auto_ptr<int64_t> object(new int64_t);
-
-                    *object = (int64_t)dataInput.readLong();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<float> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(float);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT, typeId);
-
-                    std::auto_ptr<float> object(new float);
-
-                    *object = dataInput.readFloat();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<double> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(double);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE, typeId);
-
-                    std::auto_ptr<double> object(new double);
-
-                    *object = dataInput.readDouble();
-
-                    return object;
-                }
-
-                template<>
-                std::auto_ptr<std::vector<char> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<char>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY, typeId);
-
-                    return dataInput.readCharArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<bool> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<bool>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY, typeId);
-
-                    return dataInput.readBooleanArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<byte> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<byte>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY, typeId);
-
-                    return dataInput.readByteArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<int16_t> >  SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<int16_t>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY, typeId);
-
-                    return dataInput.readShortArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<int32_t> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<int32_t>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY, typeId);
-
-                    return dataInput.readIntArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<int64_t> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<int64_t>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY, typeId);
-
-                    return dataInput.readLongArray();
-                }
-
-                template<>
-                std::auto_ptr< std::vector<float> >  SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<float>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY, typeId);
-
-                    return dataInput.readFloatArray();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<double> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<double>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY, typeId);
-
-                    return dataInput.readDoubleArray();
-                }
-
-                template<>
-                std::auto_ptr<std::string> SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::string);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING, typeId);
-
-                    return dataInput.readUTF();
-                }
-
-                template<>
-                std::auto_ptr<std::vector<std::string> > SerializationService::toObject(const Data &data) {
-                    CHECK_NULL(std::vector<std::string>);
-
-                    DataInput dataInput(data.toByteArray(), Data::DATA_OFFSET);
-
-                    int32_t typeId = data.getType();
-
-                    constants.checkClassType(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY, typeId);
-
-                    return dataInput.readUTFArray();
-                }
-
-                template<>
                 std::auto_ptr<Data> SerializationService::toObject(const Data *data) {
                     return std::auto_ptr<Data>((Data *) data);
                 }
 
                 const byte SerializationService::getVersion() const {
                     return 1;
+                }
+
+                ObjectType SerializationService::getObjectType(const Data *data) {
+                    ObjectType type;
+
+                    if (NULL == data) {
+                        return type;
+                    }
+
+                    type.typeId = data->getType();
+
+                    // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
+                    // let usage of static member.
+                    DataInput dataInput(data->toByteArray(), 4);
+
+                    ObjectDataInput objectDataInput(dataInput, getSerializerHolder());
+
+                    if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId ||
+                            SerializationConstants::CONSTANT_TYPE_PORTABLE == type.typeId) {
+                        int32_t objectTypeId = objectDataInput.readInt();
+                        assert(type.typeId == objectTypeId);
+
+                        if (SerializationConstants::CONSTANT_TYPE_DATA == type.typeId) {
+                            bool identified = objectDataInput.readBoolean();
+                            if (!identified) {
+                                throw exception::HazelcastSerializationException("SerializationService::getObjectType",
+                                                                                 " DataSerializable is not identified");
+                            }
+                        }
+
+                        type.factoryId = objectDataInput.readInt();
+                        type.classId = objectDataInput.readInt();
+                    }
+
+                    return type;
+                }
+
+                void SerializationService::registerConstantSerializers() {
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new NullSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new DataSerializer(serializationConfig)));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new PortableSerializer(portableContext)));
+                    //primitives and String
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ByteSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::BooleanSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::CharSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ShortSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::IntegerSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::LongSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::FloatSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::DoubleSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::StringSerializer));
+                    //Arrays of primitives and String
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new TheByteArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new BooleanArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new CharArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new ShortArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new IntegerArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new LongArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new FloatArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new DoubleArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new StringArraySerializer()));
                 }
             }
         }

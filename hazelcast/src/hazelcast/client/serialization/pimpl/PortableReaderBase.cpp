@@ -26,13 +26,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-
-
-                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd)
+                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, ObjectDataInput& input, boost::shared_ptr<ClassDefinition> cd)
                 : cd(cd)
                 , dataInput(input)
                 , serializerHolder(portableContext.getSerializerHolder())
-                , objectDataInput(input, portableContext)
                 , raw(false) {
                     int fieldCount;
                     try {
@@ -152,7 +149,7 @@ namespace hazelcast {
                     if (isNull) {
                         portableInstance = NULL;
                     } else {
-                        read(dataInput, *portableInstance, factoryId, classId);
+                        read(dataInput, *portableInstance);
                     }
                 }
 
@@ -172,7 +169,7 @@ namespace hazelcast {
                             int32_t start = dataInput.readInt();
                             dataInput.position(start);
 
-                            read(dataInput, *(portableInstances[i]), factoryId, classId);
+                            read(dataInput, *(portableInstances[i]));
                         }
                     }
                 }
@@ -212,11 +209,14 @@ namespace hazelcast {
                         dataInput.position(pos);
                     }
                     raw = true;
-                    return objectDataInput;
+                    return dataInput;
                 }
 
-                void PortableReaderBase::read(DataInput& dataInput, Portable& object, int32_t factoryId, int32_t classId) const {
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId);
+                void PortableReaderBase::read(ObjectDataInput& dataInput, Portable& object) const {
+                    boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+
+                    serializer->read(dataInput, object);
                 }
 
                 void PortableReaderBase::end() {

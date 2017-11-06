@@ -197,13 +197,27 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<std::string> > DataInput::readUTFArray() {
                     int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
-                        return std::auto_ptr<std::vector<std::string> > (NULL);
+                        return std::auto_ptr<std::vector<std::string> >();
                     }
 
                     std::auto_ptr<std::vector<std::string> > values(
                             new std::vector<std::string>());
                     for (int32_t i = 0; i < len; ++i) {
                         values->push_back(*readUTF());
+                    }
+                    return values;
+                }
+
+                std::auto_ptr<std::vector<std::string *> > DataInput::readStringArray() {
+                    int32_t len = readInt();
+                    if (util::Bits::NULL_ARRAY == len) {
+                        return std::auto_ptr<std::vector<std::string *> >();
+                    }
+
+                    std::auto_ptr<std::vector<std::string *> > values(
+                            new std::vector<std::string *>());
+                    for (int32_t i = 0; i < len; ++i) {
+                        values->push_back(readUTF().release());
                     }
                     return values;
                 }

@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd)
+                MorphingPortableReader::MorphingPortableReader(PortableContext&portableContext, ObjectDataInput &input, boost::shared_ptr<ClassDefinition> cd)
                 : PortableReaderBase(portableContext, input, cd) {
                 }
 

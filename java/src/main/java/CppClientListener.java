@@ -576,6 +576,114 @@ class MapGetInterceptor implements MapInterceptor, IdentifiedDataSerializable {
     }
 }
 
+class BaseCustom {
+    private int value;
+
+    public BaseCustom() {}
+
+    public BaseCustom(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+};
+
+class Derived1Custom extends BaseCustom {
+    public Derived1Custom() {
+    }
+
+    public Derived1Custom(int value) {
+        super(value);
+    }
+}
+
+class Derived2Custom extends Derived1Custom {
+    public Derived2Custom() {
+    }
+
+    public Derived2Custom(int value) {
+        super(value);
+    }
+}
+
+class BaseDataSerializable implements IdentifiedDataSerializable {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getId() {
+        return 10;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput objectDataOutput)
+            throws IOException {
+    }
+
+    @Override
+    public void readData(ObjectDataInput objectDataInput)
+            throws IOException {
+    }
+}
+
+class Derived1DataSerializable extends BaseDataSerializable {
+    @Override
+    public int getId() {
+        return 11;
+    }
+}
+
+class Derived2DataSerializable extends Derived1DataSerializable {
+    @Override
+    public int getId() {
+        return 12;
+    }
+}
+
+class BasePortable implements Portable  {
+    @Override
+    public int getFactoryId() {
+        return 666;
+    }
+
+    @Override
+    public int getClassId() {
+        return 3;
+    }
+
+    @Override
+    public void writePortable(PortableWriter portableWriter)
+            throws IOException {
+    }
+
+    @Override
+    public void readPortable(PortableReader portableReader)
+            throws IOException {
+    }
+}
+
+class Derived1Portable extends BasePortable {
+    @Override
+    public int getClassId() {
+        return 4;
+    }
+}
+
+class Derived2Portable extends BasePortable {
+    @Override
+    public int getClassId() {
+        return 5;
+    }
+}
+
 public class CppClientListener {
 
     static final int OK = 5678;
@@ -684,6 +792,12 @@ public class CppClientListener {
                     return new SampleRunnableTask();
                 } else if (classId == 2) {
                     return new Employee();
+                } else if (classId == 3) {
+                    return new BasePortable();
+                } else if (classId == 4) {
+                    return new Derived1Portable();
+                } else if (classId == 5) {
+                    return new Derived2Portable();
                 }
                 return null;
             }
@@ -709,6 +823,12 @@ public class CppClientListener {
                         return new WaitMultiplierProcessor();
                     case 9:
                         return new UTFValueValidatorProcessor();
+                    case 10:
+                        return new BaseDataSerializable();
+                    case 11:
+                        return new Derived1DataSerializable();
+                    case 12:
+                        return new Derived2DataSerializable();
                     default:
                         return null;
                 }
@@ -748,6 +868,72 @@ public class CppClientListener {
         });
         serializerConfig.setTypeClass(Person.class);
         config.getSerializationConfig().addSerializerConfig(serializerConfig);
+
+        final SerializerConfig baseCustomSerializerConfig = new SerializerConfig();
+        baseCustomSerializerConfig.setImplementation(new StreamSerializer<BaseCustom>() {
+            @Override
+            public int getTypeId() {
+                return 3;
+            }
+
+            public void destroy() {
+            }
+
+            @Override
+            public void write(ObjectDataOutput objectDataOutput, BaseCustom baseCustom) throws IOException {
+                objectDataOutput.writeInt(baseCustom.getValue());
+            }
+
+            public BaseCustom read(ObjectDataInput in) throws IOException {
+                return new BaseCustom(in.readInt());
+            }
+        });
+        baseCustomSerializerConfig.setTypeClass(BaseCustom.class);
+        config.getSerializationConfig().addSerializerConfig(baseCustomSerializerConfig);
+
+        final SerializerConfig derived1CustomSerializerConfig = new SerializerConfig();
+        derived1CustomSerializerConfig.setImplementation(new StreamSerializer<Derived1Custom>() {
+            @Override
+            public int getTypeId() {
+                return 4;
+            }
+
+            public void destroy() {
+            }
+
+            @Override
+            public void write(ObjectDataOutput objectDataOutput, Derived1Custom object) throws IOException {
+                objectDataOutput.writeInt(object.getValue());
+            }
+
+            public Derived1Custom read(ObjectDataInput in) throws IOException {
+                return new Derived1Custom(in.readInt());
+            }
+        });
+        derived1CustomSerializerConfig.setTypeClass(Derived1Custom.class);
+        config.getSerializationConfig().addSerializerConfig(derived1CustomSerializerConfig);
+
+        final SerializerConfig derived2CustomSerializerConfig = new SerializerConfig();
+        derived2CustomSerializerConfig.setImplementation(new StreamSerializer<Derived2Custom>() {
+            @Override
+            public int getTypeId() {
+                return 5;
+            }
+
+            public void destroy() {
+            }
+
+            @Override
+            public void write(ObjectDataOutput objectDataOutput, Derived2Custom object) throws IOException {
+                objectDataOutput.writeInt(object.getValue());
+            }
+
+            public Derived2Custom read(ObjectDataInput in) throws IOException {
+                return new Derived2Custom(in.readInt());
+            }
+        });
+        derived2CustomSerializerConfig.setTypeClass(Derived2Custom.class);
+        config.getSerializationConfig().addSerializerConfig(derived2CustomSerializerConfig);
 
         config.addRingBufferConfig(new RingbufferConfig("rb*").setCapacity(CAPACITY));
 

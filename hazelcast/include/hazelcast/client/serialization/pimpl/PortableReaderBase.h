@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 public:
                     PortableReaderBase(PortableContext &portableContext,
-                            DataInput &input,
+                                       ObjectDataInput &input,
                             boost::shared_ptr<ClassDefinition> cd);
 
                     virtual ~PortableReaderBase();
@@ -94,17 +94,16 @@ namespace hazelcast {
                     void setPosition(char const * , FieldType const& fieldType);
 
                     boost::shared_ptr<ClassDefinition> cd;
-                    DataInput &dataInput;
+                    ObjectDataInput &dataInput;
                 private:
                     SerializerHolder &serializerHolder;
                     int finalPosition;
-                    ObjectDataInput objectDataInput;
                     int offset;
                     bool raw;
 
                     void checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const;
 
-                    void read(DataInput &dataInput, Portable &object, int factoryId, int classId) const;
+                    void read(ObjectDataInput &dataInput, Portable &object) const;
 
                     int readPosition(const char *, FieldType const& fieldType);
                 };

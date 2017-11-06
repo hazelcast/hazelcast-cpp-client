@@ -54,7 +54,7 @@ namespace hazelcast {
                 /**
                 * Internal API Constructor
                 */
-                ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::PortableContext& portableContext);
+                ObjectDataOutput(pimpl::DataOutput& dataOutput, pimpl::SerializerHolder *serializerHolder);
 
                 /**
                 * Internal API Constructor
@@ -168,6 +168,8 @@ namespace hazelcast {
                  */
                 void writeUTFArray(const std::vector<std::string *> *strings);
 
+                void writeStringArray(const std::vector<std::string> *strings);
+
                 /**
                 * @param value the data value to be written
                 */
@@ -190,7 +192,9 @@ namespace hazelcast {
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
 
-                        context->getSerializerHolder().getPortableSerializer().write(*this->dataOutput, *object);
+                        boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
+                        serializer->write(*this, *object);
                     }
                 }
 
@@ -207,7 +211,9 @@ namespace hazelcast {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
-                        context->getSerializerHolder().getDataSerializer().write(*this, *object);
+                        boost::shared_ptr<Serializer<IdentifiedDataSerializable> > serializer = boost::static_pointer_cast<Serializer<IdentifiedDataSerializable> >(
+                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
+                        serializer->write(*this, *object);
                     }
                 }
 
@@ -227,7 +233,7 @@ namespace hazelcast {
                         int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
-                        boost::shared_ptr<SerializerBase> serializer = context->getSerializerHolder().serializerFor(type);
+                        boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
 
                         if (NULL == serializer.get()) {
                             const std::string message = "No serializer found for serializerId :"+
@@ -331,6 +337,9 @@ namespace hazelcast {
                         writeUTF(object);
                     }
                 }
+
+                pimpl::DataOutput *getDataOutput() const;
+
             private:
                 pimpl::DataOutput *dataOutput;
                 pimpl::PortableContext *context;

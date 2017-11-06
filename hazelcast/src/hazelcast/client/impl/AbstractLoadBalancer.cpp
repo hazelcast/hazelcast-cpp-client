@@ -26,6 +26,12 @@ namespace hazelcast {
         namespace impl {
             class ClientMembershipEvent;
 
+            AbstractLoadBalancer::AbstractLoadBalancer(AbstractLoadBalancer &rhs) {
+                util::LockGuard lg(rhs.membersLock);
+                membersRef = rhs.membersRef;
+                cluster = rhs.cluster;
+            }
+
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster = &cluster;
                 setMembersRef();
@@ -45,9 +51,7 @@ namespace hazelcast {
                 setMembersRef();
             }
 
-
             void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-
             }
 
             std::vector<Member>  AbstractLoadBalancer::getMembers() {
@@ -56,7 +60,9 @@ namespace hazelcast {
             }
 
             AbstractLoadBalancer::~AbstractLoadBalancer() {
+            }
 
+            AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
             }
         }
     }

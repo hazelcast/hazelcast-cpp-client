@@ -24,7 +24,6 @@ namespace hazelcast {
     namespace client {
 
         SerializationConfig::SerializationConfig() : version(0) {
-
         }
 
         int SerializationConfig::getPortableVersion() const {
@@ -36,13 +35,37 @@ namespace hazelcast {
             return *this;
         }
 
-        std::vector<boost::shared_ptr<serialization::SerializerBase> > const &SerializationConfig::getSerializers() const {
+        std::vector<boost::shared_ptr<serialization::SerializerBase> > const &
+        SerializationConfig::getSerializers() const {
             return serializers;
         }
 
-        SerializationConfig &SerializationConfig::registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer) {
+        SerializationConfig &
+        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer) {
             serializers.push_back(serializer);
             return *this;
+        }
+
+        SerializationConfig &SerializationConfig::addDataSerializableFactory(int32_t factoryId,
+                                                                             boost::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory) {
+            dataSerializableFactories[factoryId] = dataSerializableFactory;
+            return *this;
+        }
+
+        SerializationConfig &SerializationConfig::addPortableFactory(int32_t factoryId,
+                                                                     boost::shared_ptr<serialization::PortableFactory> portableFactory) {
+            portableFactories[factoryId] = portableFactory;
+            return *this;
+        }
+
+        const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &
+        SerializationConfig::getDataSerializableFactories() const {
+            return dataSerializableFactories;
+        }
+
+        const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &
+        SerializationConfig::getPortableFactories() const {
+            return portableFactories;
         }
     }
 }

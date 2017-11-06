@@ -20,10 +20,19 @@
 #ifndef HAZELCAST_DATA_SERIALIZER
 #define HAZELCAST_DATA_SERIALIZER
 
+#include <memory>
+#include <stdint.h>
+#include <boost/shared_ptr.hpp>
+#include <map>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {
+
+        class SerializationConfig;
+
         namespace serialization {
             class IdentifiedDataSerializable;
 
@@ -31,17 +40,29 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
+            class IdentifiedDataSerializable;
+
+            class DataSerializableFactory;
+
             namespace pimpl {
-                class HAZELCAST_API DataSerializer {
+                class HAZELCAST_API DataSerializer : public Serializer<IdentifiedDataSerializable> {
                 public:
-                    DataSerializer();
+                    DataSerializer(const SerializationConfig &serializationConfig);
 
                     ~DataSerializer();
 
-                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const;
+                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object);
 
-                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object) const;
+                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object);
 
+                    virtual int32_t getHazelcastTypeId() const;
+
+                    virtual void *create(ObjectDataInput &in);
+
+                private:
+                    void checkIfIdentifiedDataSerializable(ObjectDataInput &in) const;
+
+                    const SerializationConfig &serializationConfig;
                 };
             }
         }

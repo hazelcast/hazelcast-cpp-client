@@ -24,8 +24,8 @@
 #ifndef HAZELCAST_DEFAULT_PORTABLE_WRITER
 #define HAZELCAST_DEFAULT_PORTABLE_WRITER
 
-#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/FieldType.h"
 #include "hazelcast/client/serialization/FieldDefinition.h"
@@ -55,7 +55,8 @@ namespace hazelcast {
                 class HAZELCAST_API DefaultPortableWriter  {
                 public:
 
-                    DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& output);
+                    DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd,
+                                          ObjectDataOutput& output);
 
                     void writeInt(const char *fieldName, int32_t value);
 
@@ -154,7 +155,7 @@ namespace hazelcast {
                     bool raw;
                     SerializerHolder& serializerHolder;
                     DataOutput& dataOutput;
-                    ObjectDataOutput objectDataOutput;
+                    ObjectDataOutput &objectDataOutput;
                     size_t begin;
                     size_t offset;
                     std::set<std::string> writtenFields;

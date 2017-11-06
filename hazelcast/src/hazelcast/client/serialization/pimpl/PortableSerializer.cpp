@@ -27,6 +27,8 @@
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/PortableFactory.h"
+#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,10 +36,9 @@ namespace hazelcast {
             namespace pimpl {
                 PortableSerializer::PortableSerializer(PortableContext& portableContext)
                 : context(portableContext) {
-
                 }
 
-                void PortableSerializer::write(DataOutput& out, const Portable& p) const {
+                void PortableSerializer::write(ObjectDataOutput& out, const Portable& p) {
                     boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
                     out.writeInt(cd->getVersion());
 
@@ -47,8 +48,11 @@ namespace hazelcast {
                     portableWriter.end();
                 }
 
-                void PortableSerializer::read(DataInput &in, Portable &p, int factoryId, int classId) const {
+                void PortableSerializer::read(ObjectDataInput &in, Portable &p) {
                     int version = in.readInt();
+
+                    int factoryId = p.getFactoryId();
+                    int classId = p.getClassId();
 
                     int portableVersion = findPortableVersion(factoryId, classId, p);
 
@@ -57,7 +61,14 @@ namespace hazelcast {
                     reader.end();
                 }
 
-                PortableReader PortableSerializer::createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const {
+                void *PortableSerializer::create(ObjectDataInput &in) {
+                    int32_t factoryId = in.readInt();
+                    int32_t classId = in.readInt();
+
+                    return createNewPortableInstance(factoryId, classId).release();
+                }
+
+                PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
 
                     int effectiveVersion = version;
                     if (version < 0) {
@@ -90,6 +101,25 @@ namespace hazelcast {
                     }
                     return currentVersion;
                 }
+
+                std::auto_ptr<Portable>
+                PortableSerializer::createNewPortableInstance(int32_t factoryId, int32_t classId) {
+                    const std::map<int32_t, boost::shared_ptr<PortableFactory> > &portableFactories =
+                            context.getSerializationConfig().getPortableFactories();
+                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::PortableFactory> >::const_iterator factoryIt =
+                            portableFactories.find(factoryId);
+                    
+                    if (portableFactories.end() == factoryIt) {
+                        return std::auto_ptr<Portable>();
+                    }
+
+                    return factoryIt->second->create(classId);
+                }
+
+                int32_t PortableSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                }
+
             }
         }
     }

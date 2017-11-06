@@ -24,11 +24,13 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <vector>
 #include <map>
 #include <memory>
 #include <boost/shared_ptr.hpp>
+
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/Serializer.h"
 
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -53,21 +55,27 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class HAZELCAST_API PortableSerializer {
+                class HAZELCAST_API PortableSerializer : public Serializer<Portable> {
                 public:
 
                     PortableSerializer(PortableContext& portableContext);
 
-                    void write(DataOutput& dataOutput, const Portable& p) const;
+                    void write(ObjectDataOutput& dataOutput, const Portable& p);
 
-                    void read(DataInput &in, Portable &p, int factoryId, int classId) const;
+                    void read(ObjectDataInput &in, Portable &p);
+
+                    virtual int32_t getHazelcastTypeId() const;
+
+                    virtual void *create(ObjectDataInput &in);
 
                 private:
                     PortableContext& context;
 
                     int findPortableVersion(int factoryId, int classId, const Portable& portable) const;
 
-                    PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+                    PortableReader createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+
+                    std::auto_ptr<Portable> createNewPortableInstance(int32_t factoryId, int32_t classId);
                 };
 
             }

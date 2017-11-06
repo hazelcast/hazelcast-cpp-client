@@ -16,18 +16,14 @@
 //
 // Created by sancar koyunlu on 7/31/13.
 
-
-
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
-#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializerHolder::SerializerHolder(PortableContext&context)
-                :portableSerializer(context) {
-
+                SerializerHolder::SerializerHolder() {
                 }
 
                 bool SerializerHolder::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
@@ -37,14 +33,6 @@ namespace hazelcast {
 
                 boost::shared_ptr<SerializerBase> SerializerHolder::serializerFor(int typeId) {
                     return serializers.get(typeId);
-                }
-
-                PortableSerializer &SerializerHolder::getPortableSerializer() {
-                    return portableSerializer;
-                }
-
-                DataSerializer &SerializerHolder::getDataSerializer() {
-                    return dataSerializer;
                 }
             }
         }

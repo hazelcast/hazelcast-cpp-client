@@ -34,11 +34,11 @@ namespace hazelcast {
     namespace client {
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)
-        , clientProperties(config)
+        , clientProperties(clientConfig)
         , shutdownLatch(1)
         , clientContext(*this)
         , lifecycleService(clientContext, clientConfig, shutdownLatch)
-        , serializationService(config.getSerializationConfig())
+        , serializationService(clientConfig.getSerializationConfig())
         , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
         , nearCacheManager(serializationService)
         , clusterService(clientContext)

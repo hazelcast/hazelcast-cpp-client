@@ -28,11 +28,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::PortableContext& context)
+            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::SerializerHolder &serializerHolder)
             : dataInput(dataInput)
-            , portableContext(context)
-            , serializerHolder(context.getSerializerHolder()) {
-
+            , serializerHolder(serializerHolder) {
             }
 
             void ObjectDataInput::readFully(std::vector<byte>& bytes) {
@@ -127,61 +125,10 @@ namespace hazelcast {
                 return dataInput.readUTFArray();
             }
 
-            void ObjectDataInput::readPortable(Portable * object) {
-                int factoryId = readInt();
-                int classId = readInt();
-                serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
+            std::auto_ptr<std::vector<std::string *> > ObjectDataInput::readStringArray() {
+                return dataInput.readStringArray();
             }
 
-            void ObjectDataInput::readDataSerializable(IdentifiedDataSerializable * object) {
-                ObjectDataInput input(dataInput, portableContext);
-                serializerHolder.getDataSerializer().read(input, *object);
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, byte *object) {
-                *object = readByte();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, bool *object) {
-                *object = readBoolean();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, char *object) {
-                *object = readChar();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int16_t *object) {
-                *object = readShort();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int32_t *object) {
-                *object = readInt();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int64_t *object) {
-                *object = readLong();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, float *object) {
-                *object = readFloat();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, double *object) {
-                *object = readDouble();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, std::string *object) {
-                *object = *readUTF();
-            }
         }
     }
 }

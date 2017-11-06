@@ -549,11 +549,12 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
-                serialization::pimpl::SerializationConstants constants;
-                serialization::pimpl::PortableContext context(1, constants);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput out(dataOutput, context);
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
                 byte by = 2;
                 bool boolean = true;
@@ -620,7 +621,7 @@ namespace hazelcast {
 
                 std::auto_ptr<std::vector<byte> > buffer = dataOutput.toByteArray();
                 serialization::pimpl::DataInput dataInput(*buffer);
-                serialization::ObjectDataInput in(dataInput, context);
+                serialization::ObjectDataInput in(dataInput, serializationService.getSerializerHolder());
 
                 ASSERT_EQ(by, in.readByte());
                 ASSERT_EQ(c, in.readChar());
@@ -662,11 +663,12 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
                 std::string utfStr = "xyzä123";
 
-                serialization::pimpl::SerializationConstants constants;
-                serialization::pimpl::PortableContext context(1, constants);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput out(dataOutput, context);
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
 
                 out.writeUTF(&utfStr);

@@ -24,16 +24,13 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput,
-                                               pimpl::PortableContext &portableContext)
-                    : dataOutput(&dataOutput), context(&portableContext),
-                      serializerHolder(&portableContext.getSerializerHolder()), isEmpty(false) {
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializerHolder *serializerHolder)
+                    : dataOutput(&dataOutput), serializerHolder(serializerHolder), isEmpty(false) {
 
             }
 
             ObjectDataOutput::ObjectDataOutput()
-                    : dataOutput(NULL), context(NULL), serializerHolder(NULL), isEmpty(true) {
-
+                    : dataOutput(NULL), serializerHolder(NULL), isEmpty(true) {
             }
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
@@ -156,6 +153,20 @@ namespace hazelcast {
                 }
             }
 
+            void ObjectDataOutput::writeStringArray(const std::vector<std::string> *strings) {
+                if (isEmpty) return;
+
+                int32_t len = NULL != strings ? (int32_t) strings->size() : util::Bits::NULL_ARRAY;
+
+                writeInt(len);
+
+                if (len > 0) {
+                    for (std::vector<std::string>::const_iterator it = strings->begin(); it != strings->end(); ++it) {
+                        writeUTF(&(*it));
+                    }
+                }
+            }
+
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
                 if (NULL == data || 0 == data->dataSize()) {
                     writeInt(util::Bits::NULL_ARRAY);
@@ -171,6 +182,10 @@ namespace hazelcast {
 
             void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
+            }
+
+            pimpl::DataOutput *ObjectDataOutput::getDataOutput() const {
+                return dataOutput;
             }
         }
     }

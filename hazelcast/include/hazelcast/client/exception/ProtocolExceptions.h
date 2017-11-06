@@ -175,6 +175,12 @@ namespace hazelcast {
                 int64_t messageCallId;
                 std::string detailedErrorMessage;
             };
+
+            class HAZELCAST_API HazelcastClientNotActiveException : public IException {
+            public:
+                HazelcastClientNotActiveException(const std::string &source, const std::string &message) : IException(
+                        source, message) {}
+            };
         }
     }
 }
