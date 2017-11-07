@@ -21,17 +21,18 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
+            class IdentifiedDataSerializable;
+
             /**
              * DataSerializableFactory is used to create IdentifiedDataSerializable instances during de-serialization.
              *
              * You should implement this interface as copyable since it will be copied into the SerializationConfig.
              *
-             * @see com.hazelcast.nio.serialization.IdentifiedDataSerializable
+             * @see IdentifiedDataSerializable
              */
             class HAZELCAST_API DataSerializableFactory {
             public:

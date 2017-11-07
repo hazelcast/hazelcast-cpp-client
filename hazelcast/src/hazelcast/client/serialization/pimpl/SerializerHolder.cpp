@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 7/31/13.
 
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
+#include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {

@@ -26,6 +26,8 @@
 
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
+#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
@@ -219,16 +221,35 @@ namespace hazelcast {
                         throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
                     }
 
-                    std::auto_ptr<T> object(reinterpret_cast<T *>(serializer->create(*this)));
-                    if (NULL == object.get() && pimpl::SerializationConstants::CONSTANT_TYPE_NULL != typeId) {
-                        object = std::auto_ptr<T>(new T);
-                        pimpl::SerializationConstants::checkClassType(getHazelcastTypeId(object.get()), typeId);
+                    #ifdef __clang__
+                    #pragma clang diagnostic push
+                    #pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                    #endif
+                    switch (typeId) {
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
+                            serialization::pimpl::DataSerializer *dataSerializer =
+                                    reinterpret_cast<serialization::pimpl::DataSerializer *>(serializer.get());
+                            return std::auto_ptr<T>(reinterpret_cast<T *>(dataSerializer->read(*this,
+                                                                                               std::auto_ptr<IdentifiedDataSerializable>(
+                                                                                                       reinterpret_cast<IdentifiedDataSerializable *>(new T))).release()));
+                        }
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
+                            serialization::pimpl::PortableSerializer *portableSerializer =
+                                    reinterpret_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
+
+                            return std::auto_ptr<T>(reinterpret_cast<T *>(portableSerializer->read(*this,
+                                                                                                   std::auto_ptr<Portable>(
+                                                                                                           reinterpret_cast<Portable *>(new T))).release()));
+                        }
+                        default: {
+                            serialization::StreamSerializer<T> *streamSerializer =
+                                    reinterpret_cast<serialization::StreamSerializer<T> *>(serializer.get());
+                            return std::auto_ptr<T>(reinterpret_cast<T *>(streamSerializer->read(*this)));
+                        }
                     }
-
-                    Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
-                    s->read(*this, *object);
-
-                    return object;
+                    #ifdef __clang__
+                    #pragma clang diagnostic pop
+                    #endif
                 }
 
                 /**

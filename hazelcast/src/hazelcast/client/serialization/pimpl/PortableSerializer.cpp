@@ -38,6 +38,30 @@ namespace hazelcast {
                 : context(portableContext) {
                 }
 
+                std::auto_ptr<Portable> PortableSerializer::read(ObjectDataInput &in, std::auto_ptr<Portable> portable,
+                                                                 int32_t factoryId, int32_t classId) {
+                    int version = in.readInt();
+
+                    int portableVersion = findPortableVersion(factoryId, classId, *portable);
+
+                    PortableReader reader = createReader(in, factoryId, classId, version, portableVersion);
+                    portable->readPortable(reader);
+                    reader.end();
+                    return portable;
+                }
+
+                std::auto_ptr<Portable> PortableSerializer::read(ObjectDataInput &in, std::auto_ptr<Portable> portable) {
+                    int32_t factoryId = in.readInt();
+                    int32_t classId = in.readInt();
+
+                    std::auto_ptr<Portable> portableInstance = createNewPortableInstance(factoryId, classId);
+                    if (NULL == portableInstance.get()) {
+                        portableInstance = portable;
+                    }
+
+                    return read(in, portableInstance, factoryId, classId);
+                }
+
                 void PortableSerializer::write(ObjectDataOutput& out, const Portable& p) {
                     boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
                     out.writeInt(cd->getVersion());
@@ -46,26 +70,6 @@ namespace hazelcast {
                     PortableWriter portableWriter(&dpw);
                     p.writePortable(portableWriter);
                     portableWriter.end();
-                }
-
-                void PortableSerializer::read(ObjectDataInput &in, Portable &p) {
-                    int version = in.readInt();
-
-                    int factoryId = p.getFactoryId();
-                    int classId = p.getClassId();
-
-                    int portableVersion = findPortableVersion(factoryId, classId, p);
-
-                    PortableReader reader = createReader(in, factoryId, classId, version, portableVersion);
-                    p.readPortable(reader);
-                    reader.end();
-                }
-
-                void *PortableSerializer::create(ObjectDataInput &in) {
-                    int32_t factoryId = in.readInt();
-                    int32_t classId = in.readInt();
-
-                    return createNewPortableInstance(factoryId, classId).release();
                 }
 
                 PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {

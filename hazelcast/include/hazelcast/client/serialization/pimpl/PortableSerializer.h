@@ -24,14 +24,10 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
-#include <vector>
-#include <map>
 #include <memory>
-#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/Serializer.h"
-
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -49,24 +45,22 @@ namespace hazelcast {
             class PortableReader;
 
             namespace pimpl {
-                class DataOutput;
-
-                class DataInput;
 
                 class PortableContext;
 
-                class HAZELCAST_API PortableSerializer : public Serializer<Portable> {
+                class HAZELCAST_API PortableSerializer : public SerializerBase {
                 public:
 
                     PortableSerializer(PortableContext& portableContext);
 
+                    std::auto_ptr<Portable> read(ObjectDataInput &in, std::auto_ptr<Portable> portable);
+
+                    std::auto_ptr<Portable>
+                    read(ObjectDataInput &in, std::auto_ptr<Portable> portable, int32_t factoryId, int32_t classId);
+
                     void write(ObjectDataOutput& dataOutput, const Portable& p);
 
-                    void read(ObjectDataInput &in, Portable &p);
-
                     virtual int32_t getHazelcastTypeId() const;
-
-                    virtual void *create(ObjectDataInput &in);
 
                 private:
                     PortableContext& context;

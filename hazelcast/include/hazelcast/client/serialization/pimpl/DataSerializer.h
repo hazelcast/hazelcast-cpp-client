@@ -22,15 +22,12 @@
 
 #include <memory>
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
-#include <map>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/Serializer.h"
 
 namespace hazelcast {
     namespace client {
-
         class SerializationConfig;
 
         namespace serialization {
@@ -40,12 +37,8 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
-            class IdentifiedDataSerializable;
-
-            class DataSerializableFactory;
-
             namespace pimpl {
-                class HAZELCAST_API DataSerializer : public Serializer<IdentifiedDataSerializable> {
+                class HAZELCAST_API DataSerializer : public SerializerBase {
                 public:
                     DataSerializer(const SerializationConfig &serializationConfig);
 
@@ -53,11 +46,9 @@ namespace hazelcast {
 
                     void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object);
 
-                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object);
-
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void *create(ObjectDataInput &in);
+                    std::auto_ptr<IdentifiedDataSerializable> read(ObjectDataInput &in, std::auto_ptr<IdentifiedDataSerializable> object);
 
                 private:
                     void checkIfIdentifiedDataSerializable(ObjectDataInput &in) const;

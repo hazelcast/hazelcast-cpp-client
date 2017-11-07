@@ -23,6 +23,8 @@
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
+#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
+#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
@@ -192,7 +194,7 @@ namespace hazelcast {
                         writeInt(object->getFactoryId());
                         writeInt(object->getClassId());
 
-                        boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                        boost::shared_ptr<serialization::pimpl::PortableSerializer> serializer = boost::static_pointer_cast<serialization::pimpl::PortableSerializer>(
                                 serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
                         serializer->write(*this, *object);
                     }
@@ -211,7 +213,7 @@ namespace hazelcast {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
-                        boost::shared_ptr<Serializer<IdentifiedDataSerializable> > serializer = boost::static_pointer_cast<Serializer<IdentifiedDataSerializable> >(
+                        boost::shared_ptr<serialization::pimpl::DataSerializer> serializer = boost::static_pointer_cast<serialization::pimpl::DataSerializer>(
                                 serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
                         serializer->write(*this, *object);
                     }

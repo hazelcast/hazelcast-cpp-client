@@ -19,7 +19,6 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/serialization/DataSerializableFactory.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
@@ -33,15 +32,29 @@ namespace hazelcast {
                 DataSerializer::~DataSerializer() {
                 }
 
+                std::auto_ptr<IdentifiedDataSerializable> DataSerializer::read(ObjectDataInput &in, std::auto_ptr<IdentifiedDataSerializable> object) {
+                    checkIfIdentifiedDataSerializable(in);
+                    int32_t factoryId = in.readInt();
+                    int32_t classId = in.readInt();
+
+                    const std::map<int32_t, boost::shared_ptr<DataSerializableFactory> > &dataSerializableFactories =
+                            serializationConfig.getDataSerializableFactories();
+                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator =
+                            dataSerializableFactories.find(factoryId);
+                    if (dsfIterator != dataSerializableFactories.end()) {
+                        object = dsfIterator->second->create(classId);
+                    }
+
+                    object->readData(in);
+
+                    return object;
+                }
+
                 void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) {
                     out.writeBoolean(true);
                     out.writeInt(object.getFactoryId());
                     out.writeInt(object.getClassId());
                     object.writeData(out);
-                }
-
-                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) {
-                    object.readData(in);
                 }
 
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
@@ -53,25 +66,6 @@ namespace hazelcast {
 
                 int32_t DataSerializer::getHazelcastTypeId() const {
                     return SerializationConstants::CONSTANT_TYPE_DATA;
-                }
-
-                void *DataSerializer::create(ObjectDataInput &in) {
-                    // we read these three fields first so that if the other version of read method is called for
-                    // backward compatibility, these fields will not be read again.
-                    checkIfIdentifiedDataSerializable(in);
-                    int32_t factoryId = in.readInt();
-                    int32_t classId = in.readInt();
-
-                    const std::map<int32_t, boost::shared_ptr<DataSerializableFactory> > &dataSerializableFactories =
-                            serializationConfig.getDataSerializableFactories();
-                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator =
-                            dataSerializableFactories.find(factoryId);
-                    if (dsfIterator == dataSerializableFactories.end()) {
-                        // keep backward compatible, do not throw exception
-                        return NULL;
-                    }
-
-                    return dsfIterator->second->create(classId).release();
                 }
             }
         }

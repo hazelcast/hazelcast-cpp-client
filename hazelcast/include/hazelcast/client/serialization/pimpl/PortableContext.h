@@ -40,9 +40,12 @@
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
 
             class ClassDefinition;
+            class ObjectDataInput;
 
             namespace pimpl {
 

@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerMap.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
@@ -74,7 +77,7 @@ namespace hazelcast {
 
             class MixedMapTest : public ClientTestSupport {
             protected:
-                class BaseCustomSerializer : public serialization::Serializer<BaseCustom> {
+                class BaseCustomSerializer : public serialization::StreamSerializer<BaseCustom> {
                 public:
                     virtual int32_t getHazelcastTypeId() const {
                         return 3;
@@ -84,12 +87,10 @@ namespace hazelcast {
                         out.writeInt(object.getValue());
                     }
 
-                    virtual void read(serialization::ObjectDataInput &in, BaseCustom &object) {
-                        object.setValue(in.readInt());
-                    }
-
-                    virtual void *create(serialization::ObjectDataInput &in) {
-                        return new BaseCustom;
+                    virtual void *read(serialization::ObjectDataInput &in) {
+                        std::auto_ptr<BaseCustom> object(new BaseCustom);
+                        object->setValue(in.readInt());
+                        return object.release();
                     }
                 };
 
@@ -99,8 +100,10 @@ namespace hazelcast {
                         return 4;
                     }
 
-                    virtual void *create(serialization::ObjectDataInput &in) {
-                        return new Derived1Custom;
+                    virtual void *read(serialization::ObjectDataInput &in) {
+                        std::auto_ptr<Derived1Custom> object(new Derived1Custom);
+                        object->setValue(in.readInt());
+                        return object.release();
                     }
                 };
 
@@ -110,8 +113,10 @@ namespace hazelcast {
                         return 5;
                     }
 
-                    virtual void *create(serialization::ObjectDataInput &in) {
-                        return new Derived2Custom;
+                    virtual void *read(serialization::ObjectDataInput &in) {
+                        std::auto_ptr<Derived2Custom> object(new Derived2Custom);
+                        object->setValue(in.readInt());
+                        return object.release();
                     }
                 };
 

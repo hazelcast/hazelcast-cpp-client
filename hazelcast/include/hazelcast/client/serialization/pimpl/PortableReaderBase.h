@@ -85,13 +85,19 @@ namespace hazelcast {
                     void end();
 
                 protected:
-                    void getPortableInstance(char const *fieldName,
-                            Portable * &portableInstance);
-
-                    void getPortableInstancesArray(char const *fieldName,
-                            std::vector<Portable *> &portableInstances);
+                    std::auto_ptr<Portable> getPortableInstance(char const *fieldName,
+                            std::auto_ptr<Portable> portableInstance);
 
                     void setPosition(char const * , FieldType const& fieldType);
+
+                    void checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const;
+
+                    std::auto_ptr<Portable> read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object) const;
+
+                    std::auto_ptr<Portable> read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object,
+                                                 int32_t factoryId, int32_t classId) const;
+
+                    int readPosition(const char *, FieldType const& fieldType);
 
                     boost::shared_ptr<ClassDefinition> cd;
                     ObjectDataInput &dataInput;
@@ -101,11 +107,6 @@ namespace hazelcast {
                     int offset;
                     bool raw;
 
-                    void checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const;
-
-                    void read(ObjectDataInput &dataInput, Portable &object) const;
-
-                    int readPosition(const char *, FieldType const& fieldType);
                 };
             }
         }

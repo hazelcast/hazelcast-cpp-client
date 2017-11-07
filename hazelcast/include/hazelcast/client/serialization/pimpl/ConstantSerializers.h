@@ -35,13 +35,13 @@ namespace hazelcast {
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API NullSerializer : public Serializer<byte> {
+                class HAZELCAST_API NullSerializer : public StreamSerializer<byte> {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
                     virtual void write(ObjectDataOutput &out, const byte &object);
 
-                    virtual void read(ObjectDataInput &in, byte &object);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
                 class HAZELCAST_API ByteSerializer : public Serializer<byte> {

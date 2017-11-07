@@ -137,7 +137,8 @@ namespace hazelcast {
                     return dataInput.readShortArray();
                 }
 
-                void PortableReaderBase::getPortableInstance(char const *fieldName, Portable *& portableInstance) {
+                std::auto_ptr<Portable> PortableReaderBase::getPortableInstance(char const *fieldName,
+                                                                                std::auto_ptr<Portable> portableInstance) {
                     setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
 
                     bool isNull = dataInput.readBoolean();
@@ -147,30 +148,10 @@ namespace hazelcast {
                     checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
 
                     if (isNull) {
-                        portableInstance = NULL;
+                        portableInstance.reset();
+                        return portableInstance;
                     } else {
-                        read(dataInput, *portableInstance);
-                    }
-                }
-
-                void PortableReaderBase::getPortableInstancesArray(char const *fieldName, std::vector<Portable *>& portableInstances) {
-                    setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
-
-                    int32_t len = dataInput.readInt();
-                    int32_t factoryId = dataInput.readInt();
-                    int32_t classId = dataInput.readInt();
-
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
-
-                    if (len > 0) {
-                        int offset = dataInput.position();
-                        for (int i = 0; i < len; i++) {
-                            dataInput.position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
-                            int32_t start = dataInput.readInt();
-                            dataInput.position(start);
-
-                            read(dataInput, *(portableInstances[i]));
-                        }
+                        return read(dataInput, portableInstance, factoryId, classId);
                     }
                 }
 
@@ -212,11 +193,21 @@ namespace hazelcast {
                     return dataInput;
                 }
 
-                void PortableReaderBase::read(ObjectDataInput& dataInput, Portable& object) const {
-                    boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                std::auto_ptr<Portable>
+                PortableReaderBase::read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object) const {
+                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
                             serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
 
-                    serializer->read(dataInput, object);
+                    return serializer->read(dataInput, object);
+                }
+
+                std::auto_ptr<Portable>
+                PortableReaderBase::read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object, int32_t factoryId,
+                                         int32_t classId) const {
+                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+
+                    return serializer->read(dataInput, object, factoryId, classId);
                 }
 
                 void PortableReaderBase::end() {

@@ -187,7 +187,7 @@ namespace hazelcast {
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {
-                    boost::shared_ptr<Serializer<Portable> > serializer = boost::static_pointer_cast<Serializer<Portable> >(
+                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
                             serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
                     serializer->write(objectDataOutput, p);
                 }

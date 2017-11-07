@@ -176,7 +176,8 @@ namespace hazelcast {
                 void NullSerializer::write(ObjectDataOutput &out, const byte &object) {
                 }
 
-                void NullSerializer::read(ObjectDataInput &in, byte &object) {
+                void *NullSerializer::read(ObjectDataInput &in) {
+                    return NULL;
                 }
 
                 int32_t TheByteArraySerializer::getHazelcastTypeId() const {

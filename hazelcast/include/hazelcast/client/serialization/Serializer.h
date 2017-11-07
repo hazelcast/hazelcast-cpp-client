@@ -20,6 +20,7 @@
 #define HAZELCAST_TYPE_SERIALIZER
 
 #include <stdint.h>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -50,17 +51,28 @@ namespace hazelcast {
                  *  which should return same id with its serializer.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
+            };
+
+            template <typename T>
+            class StreamSerializer : public SerializerBase {
+            public:
+                /**
+                 *  This method writes object to ObjectDataOutput
+                 *
+                 *  @param out    ObjectDataOutput stream that object will be written to
+                 *  @param object that will be written to out
+                 */
+                virtual void write(ObjectDataOutput &out, const T &object) = 0;
 
                 /**
                  * The factory method to construct the custom objects
                  * Override this method if you want to provide a factory for the custom object.
                  * The memory should be managed correctly to avoid any leaks.
                  *
-                 * @return The constructed object or NULL if no factory is provided.
+                 * @param in The input stream to be read.
+                 * @return The constructed object.
                  */
-                virtual void *create(ObjectDataInput &in) {
-                    return 0;
-                }
+                virtual void *read(ObjectDataInput &in) = 0;
             };
 
             /**
@@ -117,8 +129,8 @@ namespace hazelcast {
                    boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
 
              */
-            template <typename Serializable>
-            class Serializer : public SerializerBase {
+            template <typename T>
+            class Serializer : public StreamSerializer<T> {
             public:
                 /**
                  * Destructor
@@ -131,15 +143,26 @@ namespace hazelcast {
                  *  @param out    ObjectDataOutput stream that object will be written to
                  *  @param object that will be written to out
                  */
-                virtual void write(ObjectDataOutput &out, const Serializable &object) = 0;
+                virtual void write(ObjectDataOutput &out, const T &object) = 0;
 
                 /**
                  *  Reads object from objectDataInputStream
                  *
                  *  @param in ObjectDataInput stream that object will read from
-                 *  @param object read object
+                 *  @param object read object from input data
                  */
-                virtual void read(ObjectDataInput &in, Serializable &object) = 0;
+                virtual void read(ObjectDataInput &in, T &object) = 0;
+
+                /**
+                 * This is an internal method for backward compatibility.
+                 * @param in ObjectDataInput stream that object will read from
+                 * @return read object from input data
+                 */
+                virtual void *read(ObjectDataInput &in) {
+                    std::auto_ptr<T> object(new T);
+                    read(in, *object);
+                    return object.release();
+                }
             };
 
         }
