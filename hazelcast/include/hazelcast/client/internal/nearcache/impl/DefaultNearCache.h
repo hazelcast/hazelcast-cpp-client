@@ -201,7 +201,7 @@ namespace hazelcast {
                             }
 
                             void schedule() {
-                                task = std::auto_ptr<util::Thread>(new util::Thread(taskStarter, this));
+                                task = std::auto_ptr<util::Thread>(new util::Thread("nearcache" , taskStarter, this));
                             }
 
                             void cancel() {

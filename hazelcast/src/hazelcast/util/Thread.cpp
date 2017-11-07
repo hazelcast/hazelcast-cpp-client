@@ -139,6 +139,7 @@ namespace hazelcast {
 #else
 
 #include <sys/errno.h>
+#include <hazelcast/util/IOUtil.h>
 #include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
@@ -169,7 +170,9 @@ namespace hazelcast {
         }
 
         Thread::~Thread() {
+            ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " destructor ");
             if (!isJoined) {
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " destructor cancel/join ");
                 cancel();
                 join();
             }
@@ -197,29 +200,38 @@ namespace hazelcast {
                  * at Linux, pthread_cancel may cause cancel by signal
                  * and calling thread may be terminated.
                  */
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " can not cancel itself ");
                 return;
             }
 
             if (!isJoined) {
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " wakeup called ");
                 wakeup();
+            } else {
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " wakeup is not called since already joined ");
             }
         }
 
         bool Thread::join() {
             if (pthread_equal(thread, pthread_self())) {
                 // called from inside the thread, deadlock possibility
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " can not join to itself ");
                 return false;
             }
 
             if (!isJoined.compareAndSet(false, true)) {
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " join skipped since already joined ");
                 return true;
             }
 
+            ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " join call ");
             int err = pthread_join(thread, NULL);
             if (EINVAL == err || ESRCH == err || EDEADLK == err) {
                 isJoined = false;
+                ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " join returned false ");
                 return false;
             }
+            ILogger::getLogger().warning(getThreadName() + " " + IOUtil::to_string(getThreadID()) + " join returned true ");
             isJoined = true;
             return true;
         }

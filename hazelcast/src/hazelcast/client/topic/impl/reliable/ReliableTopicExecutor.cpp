@@ -32,7 +32,7 @@ namespace hazelcast {
 
                     void ReliableTopicExecutor::start() {
                         if (NULL == runnerThread.get()) {
-                            runnerThread = std::auto_ptr<util::Thread>(new util::Thread(executerRun, &shutdown, &q, ringbuffer));
+                            runnerThread = std::auto_ptr<util::Thread>(new util::Thread("reliableTopicExecutor", executerRun, &shutdown, &q, ringbuffer));
                         }
                     }
 
