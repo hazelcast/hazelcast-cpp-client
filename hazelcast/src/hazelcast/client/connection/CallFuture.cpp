@@ -33,28 +33,24 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             CallFuture::CallFuture()
-            : invocationService(NULL)
-            , heartBeatTimeout(0) {
+            : heartBeatTimeout(0) {
 
             }
 
-            CallFuture::CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService *invocationService)
+            CallFuture::CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout)
             : promise(promise)
             , connection(connection)
-            , invocationService(invocationService)
             , heartBeatTimeout(heartBeatTimeout) {
 
             }
 
             CallFuture::CallFuture(const CallFuture &rhs) : promise(rhs.promise), connection(rhs.connection),
-                                                            invocationService(rhs.invocationService),
                                                             heartBeatTimeout(rhs.heartBeatTimeout) {
             }
 
             CallFuture &CallFuture::operator=(const CallFuture &rhs) {
                 promise = rhs.promise;
                 connection = rhs.connection;
-                invocationService = rhs.invocationService;
                 heartBeatTimeout = rhs.heartBeatTimeout;
                 return *this;
             }

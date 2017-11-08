@@ -96,6 +96,10 @@ namespace hazelcast {
                 connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request,
                                                           boost::shared_ptr<connection::Connection> connection);
 
+                connection::CallFuture invokeOnConnection(std::auto_ptr<protocol::ClientMessage> request,
+                                                          client::impl::BaseEventHandler *handler,
+                                                          boost::shared_ptr<connection::Connection> connection);
+
                 bool isRedoOperation() const;
 
                 int getRetryWaitTime() const;

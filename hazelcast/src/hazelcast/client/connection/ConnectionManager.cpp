@@ -30,6 +30,7 @@
 #include "hazelcast/client/protocol/codec/ClientAuthenticationCustomCodec.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/util/Thread.h"
@@ -236,7 +237,7 @@ namespace hazelcast {
                 return getOrConnect(address);
             }
 
-            void ConnectionManager::authenticate(Connection *connection) {
+            void ConnectionManager::authenticate(boost::shared_ptr<Connection>& connection) {
                 const Credentials *credentials = clientContext.getClientConfig().getCredentials();
 
                 std::auto_ptr<protocol::ClientMessage> authenticationMessage;
@@ -264,10 +265,8 @@ namespace hazelcast {
 
                 connection->init(PROTOCOL);
 
-                authenticationMessage->setCorrelationId(getNextCallId());
-
-                std::auto_ptr<protocol::ClientMessage> clientResponse = connection->sendAndReceive(
-                        *authenticationMessage);
+                CallFuture callFuture = clientContext.getInvocationService().invokeOnConnection(authenticationMessage, connection);
+                std::auto_ptr<protocol::ClientMessage> clientResponse = callFuture.get();
 
                 if (protocol::EXCEPTION == clientResponse->getMessageType()) {
                     protocol::codec::ErrorCodec errorResponse = protocol::codec::ErrorCodec::decode(*clientResponse);
@@ -291,14 +290,14 @@ namespace hazelcast {
                         case protocol::CREDENTIALS_FAILED:
                         {
                             throw exception::AuthenticationException("ConnectionManager::authenticate",
-                                                                               "Invalid credentials!");
+                                                                     "Invalid credentials!");
                         }
                         case protocol::SERIALIZATION_VERSION_MISMATCH:
                         {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[100];
                             util::snprintf(msg, 100, "Serialization version does not match the server side. client serailization version:%d",
-                                    serializationVersion);
+                                           serializationVersion);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                         default:
@@ -306,7 +305,7 @@ namespace hazelcast {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[70];
                             util::snprintf(msg, 70, "Authentication status code not supported. status:%d",
-                                    resultParameters.status);
+                                           resultParameters.status);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                     }
@@ -360,12 +359,12 @@ namespace hazelcast {
                 }
             }
 
-            std::auto_ptr<Connection> ConnectionManager::connectAsOwner(const Address &address) {
+            boost::shared_ptr<Connection> ConnectionManager::connectAsOwner(const Address &address) {
                 return connectTo(translateAddress(address), true);
             }
 
-            std::auto_ptr<Connection> ConnectionManager::connectTo(const Address &address, bool ownerConnection) {
-                std::auto_ptr<connection::Connection> conn(
+            boost::shared_ptr<Connection> ConnectionManager::connectTo(const Address &address, bool ownerConnection) {
+                boost::shared_ptr<Connection> conn(
                         new Connection(address, clientContext, inSelector, outSelector, socketFactory, ownerConnection));
 
                 checkLive();
@@ -374,7 +373,7 @@ namespace hazelcast {
                     socketInterceptor->onConnect(conn->getSocket());
                 }
 
-                authenticate(conn.get());
+                authenticate(conn);
                 return conn;
             }
 
@@ -404,7 +403,7 @@ namespace hazelcast {
                 return ++callIdGenerator;
             }
 
-            void ConnectionManager::processSuccessfulAuthenticationResult(Connection *connection,
+            void ConnectionManager::processSuccessfulAuthenticationResult(boost::shared_ptr<Connection>& connection,
                                                                           std::auto_ptr<Address> addr,
                                                                           std::auto_ptr<std::string> uuid,
                                                                           std::auto_ptr<std::string> ownerUuid) {

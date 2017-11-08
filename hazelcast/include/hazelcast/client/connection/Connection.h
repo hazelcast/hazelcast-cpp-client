@@ -78,17 +78,11 @@ namespace hazelcast {
 
                 Socket& getSocket();
 
-                std::auto_ptr<protocol::ClientMessage> sendAndReceive(protocol::ClientMessage &clientMessage);
-
                 ReadHandler& getReadHandler();
 
                 WriteHandler& getWriteHandler();
 
                 void setAsOwnerConnection(bool isOwnerConnection);
-
-                void writeBlocking(protocol::ClientMessage &packet);
-
-                std::auto_ptr<protocol::ClientMessage> readBlocking();
 
                 bool isHeartBeating();
 

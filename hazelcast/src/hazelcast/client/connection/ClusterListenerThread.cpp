@@ -26,6 +26,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -37,6 +38,32 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
+            class MembershipEventHandler
+                    : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+            public:
+                MembershipEventHandler(ClusterListenerThread *clusterListenerThread) : clusterListenerThread(
+                        clusterListenerThread) {
+
+                }
+
+                void handleMember(const Member &member, const int32_t &eventType) {
+                    clusterListenerThread->handleMember(member, eventType);
+                }
+
+                void handleMemberList(const std::vector<Member> &initialMembers) {
+                    clusterListenerThread->handleMemberList(initialMembers);
+                }
+
+                void handleMemberAttributeChange(const std::string &uuid, const std::string &key,
+                                                 const int32_t &operationType,
+                                                 std::auto_ptr<std::string> value) {
+                    clusterListenerThread->handleMemberAttributeChange(uuid, key, operationType, value);
+                }
+
+            private:
+                ClusterListenerThread *clusterListenerThread;
+            };
+
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
                     : startLatch(1), clientContext(clientContext), deletingConnection(false),
                       workerThread((util::Thread *)NULL) {
@@ -78,11 +105,9 @@ namespace hazelcast {
                         }
 
                         isInitialMembersLoaded = false;
-                        isRegistrationIdReceived = false;
-                        loadInitialMemberList();
+                        loadInitialMemberList(conn);
                         clientContext.getServerListenerService().triggerFailedListeners();
                         startLatch.countDown();
-                        listenMembershipEvents();
                         currentThread->interruptibleSleep(1);
                     } catch (std::exception &e) {
                         if (lifecycleService.isRunning()) {
@@ -118,9 +143,9 @@ namespace hazelcast {
                 }
                 util::Thread *worker = workerThread;
                 if (worker) {
-                    workerThread = (util::Thread *) NULL;
                     worker->cancel();
                     worker->join();
+                    workerThread = (util::Thread *) NULL;
                 }
             }
 
@@ -142,39 +167,20 @@ namespace hazelcast {
                 return addresses;
             }
 
-            void ClusterListenerThread::loadInitialMemberList() {
+            void ClusterListenerThread::loadInitialMemberList(boost::shared_ptr<Connection> connection) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ClientAddMembershipListenerCodec::RequestParameters::encode(false);
 
-                request->setCorrelationId(clientContext.getConnectionManager().getNextCallId());
+                spi::InvocationService &invocationService = clientContext.getInvocationService();
+                connection::CallFuture future = invocationService.invokeOnConnection(request, new MembershipEventHandler(this), connection);
 
-                conn->writeBlocking(*request);
-
-                std::auto_ptr<protocol::ClientMessage> response;
-
-                do {
-                    response = conn->readBlocking();
-                    if (protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters::TYPE ==
-                        response->getMessageType()) {
-                        protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters result = protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters::decode(
-                                *response);
-                        registrationId = result.response;
-                        isRegistrationIdReceived = true;
-                    } else {
-                        handle(response);
-                    }
-                } while (!isInitialMembersLoaded || !isRegistrationIdReceived);
-            }
-
-            void ClusterListenerThread::listenMembershipEvents() {
-                while (clientContext.getLifecycleService().isRunning()) {
-                    std::auto_ptr<protocol::ClientMessage> clientMessage = conn->readBlocking();
-                    if (!clientContext.getLifecycleService().isRunning()) {
-                        break;
-                    }
-
-                    handle(clientMessage);
-                }
+                std::auto_ptr<protocol::ClientMessage> response = future.get();
+                protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters result =
+                        protocol::codec::ClientAddMembershipListenerCodec::ResponseParameters::decode(*response);
+                do{
+                    util::Thread *worker = workerThread;
+                    worker->interruptibleSleep(1);
+                } while (!isInitialMembersLoaded);
             }
 
             void ClusterListenerThread::updateMembersRef() {
