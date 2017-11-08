@@ -37,7 +37,7 @@
 namespace hazelcast {
     namespace client {
         namespace serialization{
-            class SerializerBase;
+            class StreamSerializer;
         }
 
         /**
@@ -73,7 +73,7 @@ namespace hazelcast {
              *
              * @return vector of registered custom serializers
              */
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > const &getSerializers() const;
+            std::vector<boost::shared_ptr<serialization::StreamSerializer> > const &getSerializers() const;
 
             /**
              * One can implement custom serializers other than Portable and IdentifiedDataSerializable
@@ -81,7 +81,7 @@ namespace hazelcast {
              *
              * @param serializer custom serializer to be registered
              */
-            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer);
+            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer);
 
             /**
              * @param factoryId               factory ID of DataSerializableFactory to be registered
@@ -108,7 +108,7 @@ namespace hazelcast {
 
         private:
             int version;
-            std::vector<boost::shared_ptr<serialization::SerializerBase> > serializers;
+            std::vector<boost::shared_ptr<serialization::StreamSerializer> > serializers;
             std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataSerializableFactories;
             std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
         };

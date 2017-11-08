@@ -38,17 +38,19 @@ namespace hazelcast {
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API DataSerializer : public SerializerBase {
+                class HAZELCAST_API DataSerializer : public StreamSerializer {
                 public:
                     DataSerializer(const SerializationConfig &serializationConfig);
 
                     ~DataSerializer();
 
-                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object);
-
                     virtual int32_t getHazelcastTypeId() const;
 
                     std::auto_ptr<IdentifiedDataSerializable> read(ObjectDataInput &in, std::auto_ptr<IdentifiedDataSerializable> object);
+
+                    virtual void write(ObjectDataOutput &out, const void *object);
+
+                    virtual void *read(ObjectDataInput &in);
 
                 private:
                     void checkIfIdentifiedDataSerializable(ObjectDataInput &in) const;

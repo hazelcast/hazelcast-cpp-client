@@ -35,8 +35,8 @@ namespace hazelcast {
                           serializationConfig(serializationConfig) {
                     registerConstantSerializers();
 
-                    std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
-                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
+                    std::vector<boost::shared_ptr<StreamSerializer> > const& serializers = serializationConfig.getSerializers();
+                    std::vector<boost::shared_ptr<StreamSerializer> >::const_iterator it;
                     SerializerHolder& serializerHolder = getSerializerHolder();
                     for (it = serializers.begin(); it < serializers.end(); ++it) {
                         serializerHolder.registerSerializer(*it);
@@ -47,7 +47,7 @@ namespace hazelcast {
                     return portableContext.getSerializerHolder();
                 }
 
-                bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
+                bool SerializationService::registerSerializer(boost::shared_ptr<StreamSerializer> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
                 }
 
@@ -57,366 +57,6 @@ namespace hazelcast {
 
                 void SerializationService::writeHash(DataOutput &out) {
                     out.writeInt(0);
-                }
-
-                template<>
-                Data SerializationService::toData<byte>(const byte  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BYTE);
-
-                    output.writeByte(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<bool>(const bool  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BOOLEAN);
-
-                    output.writeBoolean(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<char>(const char  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR);
-
-                    output.writeChar(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<int16_t>(const int16_t  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT);
-
-                    output.writeShort(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<int32_t>(const int32_t  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER);
-
-                    output.writeInt(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<int64_t>(const int64_t *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG);
-
-                    output.writeLong(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<float>(const float  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT);
-
-                    output.writeFloat(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<double>(const double  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE);
-
-                    output.writeDouble(*object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<char> >(const std::vector<char> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_CHAR_ARRAY);
-
-                    output.writeCharArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BOOLEAN_ARRAY);
-
-                    output.writeBooleanArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<byte> >(const std::vector<byte> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_BYTE_ARRAY);
-
-                    output.writeByteArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_SHORT_ARRAY);
-
-                    output.writeShortArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<int32_t> >(const std::vector<int32_t> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_INTEGER_ARRAY);
-
-                    output.writeIntArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<int64_t> >(const std::vector<int64_t> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_LONG_ARRAY);
-
-                    output.writeLongArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_FLOAT_ARRAY);
-
-                    output.writeFloatArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<double> >(const std::vector<double> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_DOUBLE_ARRAY);
-
-                    output.writeDoubleArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::string>(const std::string  *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_STRING);
-
-                    output.writeUTF(object);
-
-                    Data data(output.toByteArray());
-                    return data;
-                }
-
-                template<>
-                Data SerializationService::toData<std::vector<std::string> >(const std::vector<std::string> *object) {
-                    if (NULL == object) {
-                        return Data();
-                    }
-
-                    DataOutput output;
-
-                    // write partition hash
-                    writeHash(output);
-
-                    // write type
-                    output.writeInt(SerializationConstants::CONSTANT_TYPE_STRING_ARRAY);
-
-                    output.writeUTFArray(object);
-
-                    Data data(output.toByteArray());
-                    return data;
                 }
 
                 template<>
@@ -464,29 +104,29 @@ namespace hazelcast {
                 }
 
                 void SerializationService::registerConstantSerializers() {
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new NullSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new DataSerializer(serializationConfig)));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new PortableSerializer(portableContext)));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new NullSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new DataSerializer(serializationConfig)));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new PortableSerializer(portableContext)));
                     //primitives and String
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ByteSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::BooleanSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::CharSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ShortSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::IntegerSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::LongSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::FloatSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::DoubleSerializer));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::StringSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::ByteSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::BooleanSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::CharSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::ShortSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::IntegerSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::LongSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::FloatSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::DoubleSerializer));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::StringSerializer));
                     //Arrays of primitives and String
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new TheByteArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new BooleanArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new CharArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new ShortArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new IntegerArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new LongArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new FloatArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new DoubleArraySerializer()));
-                    registerSerializer(boost::shared_ptr<SerializerBase>(new StringArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new TheByteArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new BooleanArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new CharArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new ShortArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new IntegerArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new LongArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new FloatArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new DoubleArraySerializer()));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new StringArraySerializer()));
                 }
             }
         }

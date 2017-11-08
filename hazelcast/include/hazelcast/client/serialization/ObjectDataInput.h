@@ -213,7 +213,7 @@ namespace hazelcast {
 
                 template<typename T>
                 std::auto_ptr<T> readObject(int32_t typeId) {
-                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
+                    boost::shared_ptr<StreamSerializer> serializer = serializerHolder.serializerFor(typeId);
                     if (NULL == serializer.get()) {
                         const std::string message = "No serializer found for serializerId :"+
                                                     util::IOUtil::to_string(typeId) + ", typename :" +
@@ -242,8 +242,8 @@ namespace hazelcast {
                                                                                                            reinterpret_cast<Portable *>(new T))).release()));
                         }
                         default: {
-                            serialization::StreamSerializer<T> *streamSerializer =
-                                    reinterpret_cast<serialization::StreamSerializer<T> *>(serializer.get());
+                            serialization::StreamSerializer *streamSerializer =
+                                    reinterpret_cast<serialization::StreamSerializer *>(serializer.get());
                             return std::auto_ptr<T>(reinterpret_cast<T *>(streamSerializer->read(*this)));
                         }
                     }

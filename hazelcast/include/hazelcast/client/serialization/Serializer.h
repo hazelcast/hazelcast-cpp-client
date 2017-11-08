@@ -32,18 +32,22 @@ namespace hazelcast {
             class ObjectDataInput;
 
             /**
-             * Internal Base class for Serializers
+             * Implement this interface and register to the SerializationConfig. See examples folder for usage examples.
+             *
+             * Important note:
+             * you need to implement as free function in same namespace with your class
+             *            int32_t getHazelcastTypeId(const MyClass*);
+             *
+             * which should return same id with its serializer.             *
+             *
              */
-            class HAZELCAST_API SerializerBase {
+            class StreamSerializer {
             public:
-                /**
-                 * Destructor
-                */
-                virtual ~SerializerBase();
+                virtual ~StreamSerializer();
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
-                 * for your classes. Also not that for your serialized classes you need to implement as free function
+                 * for your classes. Also note that for your serialized classes you need to implement as free function
                  * in same namespace with your class
                  *
                  *      int32_t getHazelcastTypeId(const MyClass*);
@@ -51,18 +55,14 @@ namespace hazelcast {
                  *  which should return same id with its serializer.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
-            };
 
-            template <typename T>
-            class StreamSerializer : public SerializerBase {
-            public:
                 /**
                  *  This method writes object to ObjectDataOutput
                  *
                  *  @param out    ObjectDataOutput stream that object will be written to
                  *  @param object that will be written to out
                  */
-                virtual void write(ObjectDataOutput &out, const T &object) = 0;
+                virtual void write(ObjectDataOutput &out, const void *object) = 0;
 
                 /**
                  * The factory method to construct the custom objects
@@ -76,61 +76,10 @@ namespace hazelcast {
             };
 
             /**
-             * Base class for custom serialization. If your all classes that needs to be serialized inherited from same
-             * class you can use an implementation like following
-             *
-
-                    class  MyCustomSerializer : public serialization::Serializer<ExampleBaseClass> {
-                         public:
-
-                         void write(serialization::ObjectDataOutput & out, const ExampleBaseClass& object);
-
-                         void read(serialization::ObjectDataInput & in, ExampleBaseClass& object);
-
-                         int32_t getHazelcastTypeId() const;
-
-                     };
-                    }
-
-             *
-             * Or if they are not inherited from same base class you can use a serializer class like following
-             * with templates.
-             *
-
-                    template<typename T>
-                    class MyCustomSerializer : public serialization::Serializer<T> {
-                    public:
-
-                       void write(serialization::ObjectDataOutput & out, const T& object) {
-                            //.....
-                       }
-
-                       void read(serialization::ObjectDataInput & in, T& object) {
-                           //.....
-                       }
-
-                       int32_t getHazelcastTypeId() const {
-                           //..
-                       }
-                    };
-
-             *
-             * Along with serializer following function should be provided with same namespace that ExampleBaseClass
-             * belongs to
-             *
-             *     int32_t getHazelcastTypeId(const MyClass*);
-             *
-             *  which should return same id with its serializer.
-             *
-             * User than can register serializer via SerializationConfig as follows
-             *
-
-                   clientConfig.getSerializationConfig().registerSerializer(
-                   boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
-
+             * @deprecated Please use StreamSerializer for custom Serialization
              */
             template <typename T>
-            class Serializer : public StreamSerializer<T> {
+            class Serializer : public StreamSerializer {
             public:
                 /**
                  * Destructor
@@ -162,6 +111,10 @@ namespace hazelcast {
                     std::auto_ptr<T> object(new T);
                     read(in, *object);
                     return object.release();
+                }
+
+                virtual void write(ObjectDataOutput &out, const void *object) {
+                    write(out, *(static_cast<const T *>(object)));
                 }
             };
 

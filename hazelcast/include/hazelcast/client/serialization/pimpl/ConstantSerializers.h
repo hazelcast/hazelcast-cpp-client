@@ -35,211 +35,175 @@ namespace hazelcast {
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API NullSerializer : public StreamSerializer<byte> {
+                class HAZELCAST_API NullSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const byte &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ByteSerializer : public Serializer<byte> {
+                class HAZELCAST_API ByteSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const byte &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, byte &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API BooleanSerializer : public Serializer<bool> {
+                class HAZELCAST_API BooleanSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const bool &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void *create(ObjectDataInput &in);
-
-                    virtual void read(ObjectDataInput &in, bool &object);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API CharSerializer : public Serializer<char> {
+                class HAZELCAST_API CharSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const char &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, char &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ShortSerializer : public Serializer<int16_t> {
+                class HAZELCAST_API ShortSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const int16_t &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, int16_t &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API IntegerSerializer : public Serializer<int32_t> {
+                class HAZELCAST_API IntegerSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const int32_t &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, int32_t &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API LongSerializer : public Serializer<int64_t> {
+                class HAZELCAST_API LongSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const int64_t &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, int64_t &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API FloatSerializer : public Serializer<float> {
+                class HAZELCAST_API FloatSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const float &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, float &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API DoubleSerializer : public Serializer<double> {
+                class HAZELCAST_API DoubleSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const double &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, double &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API StringSerializer : public Serializer<std::string> {
+                class HAZELCAST_API StringSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::string &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::string &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API TheByteArraySerializer : public Serializer<std::vector<byte> > {
+                class HAZELCAST_API TheByteArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<byte> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<byte> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API BooleanArraySerializer : public Serializer<std::vector<bool> > {
+                class HAZELCAST_API BooleanArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<bool> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<bool> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API CharArraySerializer : public Serializer<std::vector<char> > {
+                class HAZELCAST_API CharArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<char> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<char> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ShortArraySerializer : public Serializer<std::vector<int16_t> > {
+                class HAZELCAST_API ShortArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<int16_t> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<int16_t> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API IntegerArraySerializer : public Serializer<std::vector<int32_t> > {
+                class HAZELCAST_API IntegerArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<int32_t> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<int32_t> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API LongArraySerializer : public Serializer<std::vector<int64_t> > {
+                class HAZELCAST_API LongArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<int64_t> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<int64_t> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API FloatArraySerializer : public Serializer<std::vector<float> > {
+                class HAZELCAST_API FloatArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<float> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<float> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API DoubleArraySerializer : public Serializer<std::vector<double > > {
+                class HAZELCAST_API DoubleArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<double> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<double> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API StringArraySerializer : public Serializer<std::vector<std::string> > {
+                class HAZELCAST_API StringArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
-                    virtual void write(ObjectDataOutput &out, const std::vector<std::string> &object);
+                    virtual void write(ObjectDataOutput &out, const void *object);
 
-                    virtual void read(ObjectDataInput &in, std::vector<std::string> &object);
-
-                    virtual void *create(ObjectDataInput &in);
+                    virtual void *read(ObjectDataInput &in);
                 };
             }
         }

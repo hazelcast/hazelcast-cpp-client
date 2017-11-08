@@ -77,14 +77,14 @@ namespace hazelcast {
 
             class MixedMapTest : public ClientTestSupport {
             protected:
-                class BaseCustomSerializer : public serialization::StreamSerializer<BaseCustom> {
+                class BaseCustomSerializer : public serialization::StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const {
                         return 3;
                     }
 
-                    virtual void write(serialization::ObjectDataOutput &out, const BaseCustom &object) {
-                        out.writeInt(object.getValue());
+                    virtual void write(serialization::ObjectDataOutput &out, const void *object) {
+                        out.writeInt(static_cast<const BaseCustom *>(object)->getValue());
                     }
 
                     virtual void *read(serialization::ObjectDataInput &in) {
@@ -253,13 +253,13 @@ namespace hazelcast {
                             new PolymorphicPortableFactory));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
+                            boost::shared_ptr<serialization::StreamSerializer>(new BaseCustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
+                            boost::shared_ptr<serialization::StreamSerializer>(new Derived1CustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
+                            boost::shared_ptr<serialization::StreamSerializer>(new Derived2CustomSerializer));
 
                     client2 = new HazelcastClient(config);
                     imap = new IMap<int, BaseDataSerializable>(client2->getMap<int, BaseDataSerializable>("MyMap"));

@@ -23,7 +23,7 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            SerializerBase::~SerializerBase() {
+            StreamSerializer::~StreamSerializer() {
             }
         }
     }

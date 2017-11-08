@@ -178,49 +178,7 @@ namespace hazelcast {
                 void writeData(const pimpl::Data *value);
 
                 /**
-                * @param object Portable object to be written
-                * @see Portable
-                * @throws IOException
-                */
-                template <typename T>
-                void writeObject(const Portable *object) {
-                    if (isEmpty) return;
-
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE);
-
-                        writeInt(object->getFactoryId());
-                        writeInt(object->getClassId());
-
-                        boost::shared_ptr<serialization::pimpl::PortableSerializer> serializer = boost::static_pointer_cast<serialization::pimpl::PortableSerializer>(
-                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE));
-                        serializer->write(*this, *object);
-                    }
-                }
-
-                /**
-                * @param object IdentifiedDataSerializable object to be written
-                * @see IdentifiedDataSerializable
-                * @throws IOException
-                */
-                template<typename T>
-                void writeObject(const IdentifiedDataSerializable *object) {
-                    if (isEmpty) return;
-
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DATA);
-                        boost::shared_ptr<serialization::pimpl::DataSerializer> serializer = boost::static_pointer_cast<serialization::pimpl::DataSerializer>(
-                                serializerHolder->serializerFor(pimpl::SerializationConstants::CONSTANT_TYPE_DATA));
-                        serializer->write(*this, *object);
-                    }
-                }
-
-                /**
-                * @param object custom serializable object to be written
+                * @param object serializable object to be written
                 * @see Serializer
                 * @throws IOException
                 */
@@ -235,7 +193,7 @@ namespace hazelcast {
                         int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
-                        boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
+                        boost::shared_ptr<StreamSerializer> serializer = serializerHolder->serializerFor(type);
 
                         if (NULL == serializer.get()) {
                             const std::string message = "No serializer found for serializerId :"+
@@ -244,99 +202,9 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
                         }
 
-                        Serializer<T> *s = static_cast<Serializer<T> * >(serializer.get());
+                        boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(serializer);
 
-                        s->write(*this, *object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const byte *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_BYTE);
-                        writeByte(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const bool *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_BOOLEAN);
-                        writeBoolean(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const char *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_CHAR);
-                        writeChar(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const int16_t *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_SHORT);
-                        writeShort(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const int32_t *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_INTEGER);
-                        writeInt(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const int64_t  *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_LONG);
-                        writeLong(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const float *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_FLOAT);
-                        writeFloat(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const double *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_DOUBLE);
-                        writeDouble(*object);
-                    }
-                }
-
-                template <typename T>
-                void writeObject(const std::string *object) {
-                    if (NULL == object) {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                    } else {
-                        writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_STRING);
-                        writeUTF(object);
+                        streamSerializer->write(*this, object);
                     }
                 }
 

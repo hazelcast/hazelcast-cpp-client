@@ -45,16 +45,11 @@ namespace hazelcast {
                         object = dsfIterator->second->create(classId);
                     }
 
+                    assert(object.get() != (IdentifiedDataSerializable *) NULL);
+
                     object->readData(in);
 
                     return object;
-                }
-
-                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) {
-                    out.writeBoolean(true);
-                    out.writeInt(object.getFactoryId());
-                    out.writeInt(object.getClassId());
-                    object.writeData(out);
                 }
 
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
@@ -66,6 +61,18 @@ namespace hazelcast {
 
                 int32_t DataSerializer::getHazelcastTypeId() const {
                     return SerializationConstants::CONSTANT_TYPE_DATA;
+                }
+
+                void DataSerializer::write(ObjectDataOutput &out, const void *object) {
+                    out.writeBoolean(true);
+                    const IdentifiedDataSerializable *dataSerializable = static_cast<const IdentifiedDataSerializable *>(object);
+                    out.writeInt(dataSerializable->getFactoryId());
+                    out.writeInt(dataSerializable->getClassId());
+                    dataSerializable->writeData(out);
+                }
+
+                void *DataSerializer::read(ObjectDataInput &in) {
+                    return read(in, std::auto_ptr<IdentifiedDataSerializable>()).release();
                 }
             }
         }

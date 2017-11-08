@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class HAZELCAST_API PortableSerializer : public SerializerBase {
+                class HAZELCAST_API PortableSerializer : public StreamSerializer {
                 public:
 
                     PortableSerializer(PortableContext& portableContext);
@@ -58,10 +58,13 @@ namespace hazelcast {
                     std::auto_ptr<Portable>
                     read(ObjectDataInput &in, std::auto_ptr<Portable> portable, int32_t factoryId, int32_t classId);
 
-                    void write(ObjectDataOutput& dataOutput, const Portable& p);
-
                     virtual int32_t getHazelcastTypeId() const;
 
+                    virtual void write(ObjectDataOutput &out, const void *object);
+
+                    virtual void *read(ObjectDataInput &in);
+
+                    void writeInternal(ObjectDataOutput &out, const Portable *p) const;
                 private:
                     PortableContext& context;
 

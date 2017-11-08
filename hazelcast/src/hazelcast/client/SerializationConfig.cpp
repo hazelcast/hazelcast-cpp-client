@@ -35,13 +35,13 @@ namespace hazelcast {
             return *this;
         }
 
-        std::vector<boost::shared_ptr<serialization::SerializerBase> > const &
+        std::vector<boost::shared_ptr<serialization::StreamSerializer> > const &
         SerializationConfig::getSerializers() const {
             return serializers;
         }
 
         SerializationConfig &
-        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer) {
+        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer) {
             serializers.push_back(serializer);
             return *this;
         }

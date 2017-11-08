@@ -59,17 +59,9 @@ namespace hazelcast {
                         portableInstance = portable;
                     }
 
+                    assert(portableInstance.get() != (Portable *) NULL);
+
                     return read(in, portableInstance, factoryId, classId);
-                }
-
-                void PortableSerializer::write(ObjectDataOutput& out, const Portable& p) {
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
-                    out.writeInt(cd->getVersion());
-
-                    DefaultPortableWriter dpw(context, cd, out);
-                    PortableWriter portableWriter(&dpw);
-                    p.writePortable(portableWriter);
-                    portableWriter.end();
                 }
 
                 PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
@@ -124,6 +116,32 @@ namespace hazelcast {
                     return SerializationConstants::CONSTANT_TYPE_PORTABLE;
                 }
 
+                void PortableSerializer::write(ObjectDataOutput &out, const void *object) {
+                    const Portable *p = static_cast<const Portable *>(object);
+
+                    if (p->getClassId() == 0) {
+                        throw exception::IllegalArgumentException("Portable class ID cannot be zero!");
+                    }
+
+                    out.writeInt(p->getFactoryId());
+                    out.writeInt(p->getClassId());
+
+                    writeInternal(out, p);
+                }
+
+                void PortableSerializer::writeInternal(ObjectDataOutput &out, const Portable *p) const {
+                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(*p);
+                    out.writeInt(cd->getVersion());
+
+                    DefaultPortableWriter dpw(context, cd, out);
+                    PortableWriter portableWriter(&dpw);
+                    p->writePortable(portableWriter);
+                    portableWriter.end();
+                }
+
+                void *PortableSerializer::read(ObjectDataInput &in) {
+                    return read(in, std::auto_ptr<Portable>()).release();
+                }
             }
         }
     }
