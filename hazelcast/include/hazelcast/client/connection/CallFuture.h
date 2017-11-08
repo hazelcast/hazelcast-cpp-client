@@ -20,7 +20,7 @@
 #define HAZELCAST_CallFuture
 
 #include "hazelcast/util/HazelcastDll.h"
-
+#include "hazelcast/client/Address.h"
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
 
@@ -35,10 +35,6 @@ namespace hazelcast {
             class ClientMessage;
         }
 
-        namespace spi{
-            class InvocationService;
-        }
-
         namespace connection {
             class CallPromise;
 
@@ -48,7 +44,7 @@ namespace hazelcast {
             public:
                 CallFuture();
 
-                CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout, spi::InvocationService* invocationService);
+                CallFuture(boost::shared_ptr<CallPromise> promise, boost::shared_ptr<Connection> connection, int heartBeatTimeout);
 
                 CallFuture(const CallFuture &rhs);
 
@@ -67,11 +63,14 @@ namespace hazelcast {
 
                 int64_t getCallId() const;
 
+                /**
+                 * Call to this method before a successful return from get/waitfor is invalid
+                 * @return connection that response came from
+                 */
                 const Connection &getConnection() const;
             private:
                 boost::shared_ptr<CallPromise> promise;
                 boost::shared_ptr<Connection> connection;
-                spi::InvocationService* invocationService;
                 int heartBeatTimeout;
             };
         }

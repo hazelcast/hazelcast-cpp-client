@@ -124,6 +124,14 @@ namespace hazelcast {
                 return doSend(request, std::auto_ptr<client::impl::BaseEventHandler>(NULL), connection, -1);
             }
 
+            connection::CallFuture InvocationService::invokeOnConnection(
+                    std::auto_ptr<protocol::ClientMessage> request,
+                    client::impl::BaseEventHandler *handler,
+                    boost::shared_ptr<connection::Connection> connection) {
+                std::auto_ptr<client::impl::BaseEventHandler> managedEventHandler(handler);
+                return doSend(request, managedEventHandler, connection, -1);
+            }
+
             bool InvocationService::isRedoOperation() const {
                 return redoOperation;
             }
@@ -161,7 +169,7 @@ namespace hazelcast {
                 promise->setEventHandler(eventHandler);
 
                 boost::shared_ptr<connection::Connection> conn = registerAndEnqueue(connection, promise);
-                return connection::CallFuture(promise, conn, heartbeatTimeout, this);
+                return connection::CallFuture(promise, conn, heartbeatTimeout);
             }
 
             bool InvocationService::isAllowedToSentRequest(connection::Connection &connection,

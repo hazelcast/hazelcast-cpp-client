@@ -52,18 +52,18 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API ClusterListenerThread : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+            class HAZELCAST_API ClusterListenerThread {
                 friend class spi::ClusterService;
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
 
                 void stop();
 
-                virtual void handleMember(const Member &member, const int32_t &eventType);
+                void handleMember(const Member &member, const int32_t &eventType);
 
-                virtual void handleMemberList(const std::vector<Member> &initialMembers);
+                void handleMemberList(const std::vector<Member> &initialMembers);
 
-                virtual void handleMemberAttributeChange(const std::string &uuid, const std::string &key,
+                void handleMemberAttributeChange(const std::string &uuid, const std::string &key,
                                                          const int32_t &operationType,
                                                          std::auto_ptr<std::string> value);
 
@@ -86,13 +86,9 @@ namespace hazelcast {
                 util::Atomic<util::Thread *> workerThread;
                 bool isInitialMembersLoaded;
 
-                bool isRegistrationIdReceived;
-
                 int awsMemberPort;
 
-                void loadInitialMemberList();
-
-                void listenMembershipEvents();
+                void loadInitialMemberList(boost::shared_ptr<Connection>);
 
                 void updateMembersRef();
 

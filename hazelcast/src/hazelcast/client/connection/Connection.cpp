@@ -137,47 +137,6 @@ namespace hazelcast {
                 socket->setRemoteEndpoint(remoteEndpoint);
             }
 
-            std::auto_ptr<protocol::ClientMessage> Connection::sendAndReceive(protocol::ClientMessage &clientMessage) {
-                writeBlocking(clientMessage);
-                return readBlocking();
-            }
-
-            void Connection::writeBlocking(protocol::ClientMessage &message) {
-                message.setFlags(protocol::ClientMessage::BEGIN_AND_END_FLAGS);
-                int32_t numWritten = 0;
-                int32_t frameLen = message.getFrameLength();
-                while (numWritten < frameLen) {
-                    numWritten += message.writeTo(*socket, numWritten, frameLen);
-                }
-            }
-
-            std::auto_ptr<protocol::ClientMessage> Connection::readBlocking() {
-                responseMessage.reset();
-                receiveByteBuffer.clear();
-                messageBuilder.reset();
-
-                do {
-                    int32_t numRead = 0;
-                    do {
-                        numRead += receiveByteBuffer.readFrom(*socket,
-                                protocol::ClientMessage::VERSION_FIELD_OFFSET - numRead, MSG_WAITALL);
-                    } while (numRead < protocol::ClientMessage::VERSION_FIELD_OFFSET); // make sure that we can read the length
-
-                    wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
-                    int32_t size = wrapperMessage.getFrameLength();
-
-                    receiveByteBuffer.readFrom(*socket, size - numRead, MSG_WAITALL);
-
-                    receiveByteBuffer.flip();
-
-                    messageBuilder.onData(receiveByteBuffer);
-
-                    receiveByteBuffer.compact();
-                } while (NULL == responseMessage.get());
-
-                return responseMessage;
-            }
-
             ReadHandler& Connection::getReadHandler() {
                 return readHandler;
             }

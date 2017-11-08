@@ -145,14 +145,14 @@ namespace hazelcast {
                 * @param ownerConnection
                 * @return Return the newly created connection.
                 */
-                std::auto_ptr<Connection> connectTo(const Address &address, bool ownerConnection);
+                boost::shared_ptr<Connection> connectTo(const Address &address, bool ownerConnection);
 
                 /**
                  * Connects to the translated ip address (if translation is needed, such as when aws is used)
                 * @param address
                 * @return Return the newly created connection.
                 */
-                std::auto_ptr<Connection> connectAsOwner(const Address &address);
+                boost::shared_ptr<Connection> connectAsOwner(const Address &address);
 
                 /**
                 * @param address
@@ -188,11 +188,11 @@ namespace hazelcast {
 
                 boost::shared_ptr<Connection> getRandomConnection();
 
-                void authenticate(Connection *connection);
+                void authenticate(boost::shared_ptr<Connection>& connection);
 
                 void checkLive();
 
-                void processSuccessfulAuthenticationResult(Connection *connection, std::auto_ptr<Address> addr,
+                void processSuccessfulAuthenticationResult(boost::shared_ptr<Connection>&, std::auto_ptr<Address> addr,
                                                            std::auto_ptr<std::string> uuid,
                                                            std::auto_ptr<std::string> ownerUuid);
 
