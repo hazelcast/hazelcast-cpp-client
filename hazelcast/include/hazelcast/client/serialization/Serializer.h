@@ -41,9 +41,9 @@ namespace hazelcast {
              * which should return same id with its serializer.             *
              *
              */
-            class StreamSerializer {
+            class HAZELCAST_API SerializerBase {
             public:
-                virtual ~StreamSerializer();
+                virtual ~SerializerBase();
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
@@ -79,7 +79,7 @@ namespace hazelcast {
              * @deprecated Please use StreamSerializer for custom Serialization
              */
             template <typename T>
-            class Serializer : public StreamSerializer {
+            class Serializer : public SerializerBase {
             public:
                 /**
                  * Destructor

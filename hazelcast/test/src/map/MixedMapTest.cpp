@@ -77,7 +77,7 @@ namespace hazelcast {
 
             class MixedMapTest : public ClientTestSupport {
             protected:
-                class BaseCustomSerializer : public serialization::StreamSerializer {
+                class BaseCustomSerializer : public serialization::SerializerBase {
                 public:
                     virtual int32_t getHazelcastTypeId() const {
                         return 3;
@@ -253,13 +253,13 @@ namespace hazelcast {
                             new PolymorphicPortableFactory));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::StreamSerializer>(new BaseCustomSerializer));
+                            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::StreamSerializer>(new Derived1CustomSerializer));
+                            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::StreamSerializer>(new Derived2CustomSerializer));
+                            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
 
                     client2 = new HazelcastClient(config);
                     imap = new IMap<int, BaseDataSerializable>(client2->getMap<int, BaseDataSerializable>("MyMap"));

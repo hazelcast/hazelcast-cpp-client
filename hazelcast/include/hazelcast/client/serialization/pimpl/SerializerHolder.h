@@ -31,7 +31,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class StreamSerializer;
+            class SerializerBase;
 
             namespace pimpl {
                 class HAZELCAST_API SerializerHolder {
@@ -39,12 +39,12 @@ namespace hazelcast {
                 public:
                     SerializerHolder();
 
-                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
+                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
 
-                    boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
+                    boost::shared_ptr<SerializerBase> serializerFor(int typeId);
 
                 private:
-                    hazelcast::util::SynchronizedMap<int, StreamSerializer> serializers;
+                    hazelcast::util::SynchronizedMap<int, SerializerBase> serializers;
                 };
             }
         }

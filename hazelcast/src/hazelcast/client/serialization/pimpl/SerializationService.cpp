@@ -35,8 +35,8 @@ namespace hazelcast {
                           serializationConfig(serializationConfig) {
                     registerConstantSerializers();
 
-                    std::vector<boost::shared_ptr<StreamSerializer> > const& serializers = serializationConfig.getSerializers();
-                    std::vector<boost::shared_ptr<StreamSerializer> >::const_iterator it;
+                    std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
+                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
                     SerializerHolder& serializerHolder = getSerializerHolder();
                     for (it = serializers.begin(); it < serializers.end(); ++it) {
                         serializerHolder.registerSerializer(*it);
@@ -47,7 +47,7 @@ namespace hazelcast {
                     return portableContext.getSerializerHolder();
                 }
 
-                bool SerializationService::registerSerializer(boost::shared_ptr<StreamSerializer> serializer) {
+                bool SerializationService::registerSerializer(boost::shared_ptr<SerializerBase> serializer) {
                     return getSerializerHolder().registerSerializer(serializer);
                 }
 
@@ -104,29 +104,29 @@ namespace hazelcast {
                 }
 
                 void SerializationService::registerConstantSerializers() {
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new NullSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new DataSerializer(serializationConfig)));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new PortableSerializer(portableContext)));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new NullSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new DataSerializer(serializationConfig)));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new PortableSerializer(portableContext)));
                     //primitives and String
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::ByteSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::BooleanSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::CharSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::ShortSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::IntegerSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::LongSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::FloatSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::DoubleSerializer));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::StringSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ByteSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::BooleanSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::CharSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::ShortSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::IntegerSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::LongSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::FloatSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::DoubleSerializer));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new pimpl::StringSerializer));
                     //Arrays of primitives and String
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new TheByteArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new BooleanArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new CharArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new ShortArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new IntegerArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new LongArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new FloatArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new DoubleArraySerializer()));
-                    registerSerializer(boost::shared_ptr<StreamSerializer>(new StringArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new TheByteArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new BooleanArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new CharArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new ShortArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new IntegerArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new LongArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new FloatArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new DoubleArraySerializer()));
+                    registerSerializer(boost::shared_ptr<SerializerBase>(new StringArraySerializer()));
                 }
             }
         }

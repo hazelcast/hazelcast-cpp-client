@@ -213,7 +213,7 @@ namespace hazelcast {
 
                 template<typename T>
                 std::auto_ptr<T> readObject(int32_t typeId) {
-                    boost::shared_ptr<StreamSerializer> serializer = serializerHolder.serializerFor(typeId);
+                    boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
                     if (NULL == serializer.get()) {
                         const std::string message = "No serializer found for serializerId :"+
                                                     util::IOUtil::to_string(typeId) + ", typename :" +
@@ -228,23 +228,21 @@ namespace hazelcast {
                     switch (typeId) {
                         case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
                             serialization::pimpl::DataSerializer *dataSerializer =
-                                    reinterpret_cast<serialization::pimpl::DataSerializer *>(serializer.get());
+                                    static_cast<serialization::pimpl::DataSerializer *>(serializer.get());
                             return std::auto_ptr<T>(reinterpret_cast<T *>(dataSerializer->read(*this,
                                                                                                std::auto_ptr<IdentifiedDataSerializable>(
                                                                                                        reinterpret_cast<IdentifiedDataSerializable *>(new T))).release()));
                         }
                         case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
                             serialization::pimpl::PortableSerializer *portableSerializer =
-                                    reinterpret_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
+                                    static_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
 
                             return std::auto_ptr<T>(reinterpret_cast<T *>(portableSerializer->read(*this,
                                                                                                    std::auto_ptr<Portable>(
                                                                                                            reinterpret_cast<Portable *>(new T))).release()));
                         }
                         default: {
-                            serialization::StreamSerializer *streamSerializer =
-                                    reinterpret_cast<serialization::StreamSerializer *>(serializer.get());
-                            return std::auto_ptr<T>(reinterpret_cast<T *>(streamSerializer->read(*this)));
+                            return std::auto_ptr<T>(reinterpret_cast<T *>(serializer->read(*this)));
                         }
                     }
                     #ifdef __clang__

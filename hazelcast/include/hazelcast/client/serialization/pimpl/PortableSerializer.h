@@ -48,7 +48,7 @@ namespace hazelcast {
 
                 class PortableContext;
 
-                class HAZELCAST_API PortableSerializer : public StreamSerializer {
+                class HAZELCAST_API PortableSerializer : public SerializerBase {
                 public:
 
                     PortableSerializer(PortableContext& portableContext);

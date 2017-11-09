@@ -38,7 +38,7 @@ namespace hazelcast {
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API DataSerializer : public StreamSerializer {
+                class HAZELCAST_API DataSerializer : public SerializerBase {
                 public:
                     DataSerializer(const SerializationConfig &serializationConfig);
 

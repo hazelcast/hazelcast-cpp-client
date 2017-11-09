@@ -193,7 +193,7 @@ namespace hazelcast {
                         int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
-                        boost::shared_ptr<StreamSerializer> serializer = serializerHolder->serializerFor(type);
+                        boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
 
                         if (NULL == serializer.get()) {
                             const std::string message = "No serializer found for serializerId :"+
@@ -202,7 +202,7 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
                         }
 
-                        boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(serializer);
+                        boost::shared_ptr<SerializerBase> streamSerializer = boost::static_pointer_cast<SerializerBase>(serializer);
 
                         streamSerializer->write(*this, object);
                     }
