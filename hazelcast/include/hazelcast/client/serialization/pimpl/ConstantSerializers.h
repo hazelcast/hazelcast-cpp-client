@@ -35,7 +35,7 @@ namespace hazelcast {
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API NullSerializer : public SerializerBase {
+                class HAZELCAST_API NullSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -44,7 +44,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ByteSerializer : public SerializerBase {
+                class HAZELCAST_API ByteSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -53,7 +53,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API BooleanSerializer : public SerializerBase {
+                class HAZELCAST_API BooleanSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -62,7 +62,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API CharSerializer : public SerializerBase {
+                class HAZELCAST_API CharSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -71,7 +71,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ShortSerializer : public SerializerBase {
+                class HAZELCAST_API ShortSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -80,7 +80,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API IntegerSerializer : public SerializerBase {
+                class HAZELCAST_API IntegerSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -89,7 +89,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API LongSerializer : public SerializerBase {
+                class HAZELCAST_API LongSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -98,7 +98,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API FloatSerializer : public SerializerBase {
+                class HAZELCAST_API FloatSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -107,7 +107,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API DoubleSerializer : public SerializerBase {
+                class HAZELCAST_API DoubleSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -116,7 +116,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API StringSerializer : public SerializerBase {
+                class HAZELCAST_API StringSerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -125,7 +125,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API TheByteArraySerializer : public SerializerBase {
+                class HAZELCAST_API TheByteArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -134,7 +134,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API BooleanArraySerializer : public SerializerBase {
+                class HAZELCAST_API BooleanArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -143,7 +143,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API CharArraySerializer : public SerializerBase {
+                class HAZELCAST_API CharArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -152,7 +152,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API ShortArraySerializer : public SerializerBase {
+                class HAZELCAST_API ShortArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -161,7 +161,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API IntegerArraySerializer : public SerializerBase {
+                class HAZELCAST_API IntegerArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -170,7 +170,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API LongArraySerializer : public SerializerBase {
+                class HAZELCAST_API LongArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -179,7 +179,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API FloatArraySerializer : public SerializerBase {
+                class HAZELCAST_API FloatArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -188,7 +188,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API DoubleArraySerializer : public SerializerBase {
+                class HAZELCAST_API DoubleArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 
@@ -197,7 +197,7 @@ namespace hazelcast {
                     virtual void *read(ObjectDataInput &in);
                 };
 
-                class HAZELCAST_API StringArraySerializer : public SerializerBase {
+                class HAZELCAST_API StringArraySerializer : public StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const;
 

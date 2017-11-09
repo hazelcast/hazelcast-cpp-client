@@ -137,24 +137,6 @@ namespace hazelcast {
                     return dataInput.readShortArray();
                 }
 
-                std::auto_ptr<Portable> PortableReaderBase::getPortableInstance(char const *fieldName,
-                                                                                std::auto_ptr<Portable> portableInstance) {
-                    setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
-
-                    bool isNull = dataInput.readBoolean();
-                    int32_t factoryId = dataInput.readInt();
-                    int32_t classId = dataInput.readInt();
-
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
-
-                    if (isNull) {
-                        portableInstance.reset();
-                        return portableInstance;
-                    } else {
-                        return read(dataInput, portableInstance, factoryId, classId);
-                    }
-                }
-
                 void PortableReaderBase::setPosition(char const *fieldName, FieldType const& fieldType) {
                     dataInput.position(readPosition(fieldName, fieldType));
                 }
@@ -191,23 +173,6 @@ namespace hazelcast {
                     }
                     raw = true;
                     return dataInput;
-                }
-
-                std::auto_ptr<Portable>
-                PortableReaderBase::read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object) const {
-                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
-                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
-
-                    return serializer->read(dataInput, object);
-                }
-
-                std::auto_ptr<Portable>
-                PortableReaderBase::read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object, int32_t factoryId,
-                                         int32_t classId) const {
-                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
-                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
-
-                    return serializer->read(dataInput, object, factoryId, classId);
                 }
 
                 void PortableReaderBase::end() {

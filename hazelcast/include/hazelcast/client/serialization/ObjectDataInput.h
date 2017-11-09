@@ -221,33 +221,23 @@ namespace hazelcast {
                         throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
                     }
 
-                    #ifdef __clang__
-                    #pragma clang diagnostic push
-                    #pragma clang diagnostic ignored "-Wreinterpret-base-class"
-                    #endif
                     switch (typeId) {
                         case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
                             serialization::pimpl::DataSerializer *dataSerializer =
                                     static_cast<serialization::pimpl::DataSerializer *>(serializer.get());
-                            return std::auto_ptr<T>(reinterpret_cast<T *>(dataSerializer->read(*this,
-                                                                                               std::auto_ptr<IdentifiedDataSerializable>(
-                                                                                                       reinterpret_cast<IdentifiedDataSerializable *>(new T))).release()));
+                            return dataSerializer->readObject<T>(*this);
                         }
                         case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
                             serialization::pimpl::PortableSerializer *portableSerializer =
                                     static_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
 
-                            return std::auto_ptr<T>(reinterpret_cast<T *>(portableSerializer->read(*this,
-                                                                                                   std::auto_ptr<Portable>(
-                                                                                                           reinterpret_cast<Portable *>(new T))).release()));
+                            return portableSerializer->readObject<T>(*this);
                         }
                         default: {
-                            return std::auto_ptr<T>(reinterpret_cast<T *>(serializer->read(*this)));
+                            boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(serializer);
+                            return std::auto_ptr<T>(reinterpret_cast<T *>(streamSerializer->read(*this)));
                         }
                     }
-                    #ifdef __clang__
-                    #pragma clang diagnostic pop
-                    #endif
                 }
 
                 /**

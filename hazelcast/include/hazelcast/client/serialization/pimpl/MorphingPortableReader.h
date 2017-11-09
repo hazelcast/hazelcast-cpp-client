@@ -87,12 +87,8 @@ namespace hazelcast {
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
-                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
-
-                        return boost::shared_ptr<T>(static_cast<T *>(getPortableInstance(fieldName,
-                                                                                         std::auto_ptr<Portable>(
-                                                                                                 new T)).release()));
-                    };
+                        return getPortableInstance<T>(fieldName);
+                    }
 
                     template<typename T>
                     std::vector<T> readPortableArray(const char *fieldName) {
@@ -116,16 +112,13 @@ namespace hazelcast {
                                 int32_t start = dataInput.readInt();
                                 dataInput.position(start);
 
-                                std::auto_ptr<Portable> instance = read(dataInput, std::auto_ptr<Portable>(new T),
-                                                                        factoryId, classId);
-                                portables.push_back(*(static_cast<T *>(instance.get())));
+                                portables.push_back(*read<T>(dataInput, factoryId, classId));
                             }
                         }
 
                         return portables;
                     }
                 };
-
             }
         }
     }

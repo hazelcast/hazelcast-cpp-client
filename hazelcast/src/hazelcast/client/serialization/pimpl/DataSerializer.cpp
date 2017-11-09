@@ -17,9 +17,6 @@
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
-#include "hazelcast/client/serialization/DataSerializableFactory.h"
-#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,26 +27,6 @@ namespace hazelcast {
                 }
 
                 DataSerializer::~DataSerializer() {
-                }
-
-                std::auto_ptr<IdentifiedDataSerializable> DataSerializer::read(ObjectDataInput &in, std::auto_ptr<IdentifiedDataSerializable> object) {
-                    checkIfIdentifiedDataSerializable(in);
-                    int32_t factoryId = in.readInt();
-                    int32_t classId = in.readInt();
-
-                    const std::map<int32_t, boost::shared_ptr<DataSerializableFactory> > &dataSerializableFactories =
-                            serializationConfig.getDataSerializableFactories();
-                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator =
-                            dataSerializableFactories.find(factoryId);
-                    if (dsfIterator != dataSerializableFactories.end()) {
-                        object = dsfIterator->second->create(classId);
-                    }
-
-                    assert(object.get() != (IdentifiedDataSerializable *) NULL);
-
-                    object->readData(in);
-
-                    return object;
                 }
 
                 void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
@@ -72,7 +49,13 @@ namespace hazelcast {
                 }
 
                 void *DataSerializer::read(ObjectDataInput &in) {
-                    return read(in, std::auto_ptr<IdentifiedDataSerializable>()).release();
+                    // should not be called
+                    assert(0);
+                    return NULL;
+                }
+
+                int32_t DataSerializer::readInt(ObjectDataInput &in) const {
+                    return in.readInt();
                 }
             }
         }

@@ -314,8 +314,7 @@ After you implement your serializer, you can register it using `SerializationCon
 
 ```
 clientConfig.getSerializationConfig().
-registerSerializer(boost::shared_ptr<hazelcast::client::
-serialization::SerializerBase>(new MyCustomSerializer());
+registerSerializer(boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
 ```
 
 # Raw Pointer API

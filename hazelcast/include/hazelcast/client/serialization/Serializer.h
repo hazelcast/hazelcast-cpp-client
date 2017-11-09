@@ -31,16 +31,6 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
-            /**
-             * Implement this interface and register to the SerializationConfig. See examples folder for usage examples.
-             *
-             * Important note:
-             * you need to implement as free function in same namespace with your class
-             *            int32_t getHazelcastTypeId(const MyClass*);
-             *
-             * which should return same id with its serializer.             *
-             *
-             */
             class HAZELCAST_API SerializerBase {
             public:
                 virtual ~SerializerBase();
@@ -55,7 +45,21 @@ namespace hazelcast {
                  *  which should return same id with its serializer.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
+            };
 
+            /**
+             * Implement this interface and register to the SerializationConfig. See examples folder for usage examples.
+             *
+             * Important note:
+             * you need to implement as free function in same namespace with your class
+             *            int32_t getHazelcastTypeId(const MyClass*);
+             *
+             * which should return same id with its serializer.
+             *
+             *
+             */
+            class HAZELCAST_API StreamSerializer : public SerializerBase {
+            public:
                 /**
                  *  This method writes object to ObjectDataOutput
                  *
@@ -79,7 +83,7 @@ namespace hazelcast {
              * @deprecated Please use StreamSerializer for custom Serialization
              */
             template <typename T>
-            class Serializer : public SerializerBase {
+            class Serializer : public StreamSerializer {
             public:
                 /**
                  * Destructor

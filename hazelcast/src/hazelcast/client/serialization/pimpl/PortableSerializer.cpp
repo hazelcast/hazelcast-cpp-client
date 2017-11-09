@@ -27,8 +27,7 @@
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/PortableReader.h"
-#include "hazelcast/client/serialization/PortableFactory.h"
-#include "hazelcast/client/SerializationConfig.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -48,20 +47,6 @@ namespace hazelcast {
                     portable->readPortable(reader);
                     reader.end();
                     return portable;
-                }
-
-                std::auto_ptr<Portable> PortableSerializer::read(ObjectDataInput &in, std::auto_ptr<Portable> portable) {
-                    int32_t factoryId = in.readInt();
-                    int32_t classId = in.readInt();
-
-                    std::auto_ptr<Portable> portableInstance = createNewPortableInstance(factoryId, classId);
-                    if (NULL == portableInstance.get()) {
-                        portableInstance = portable;
-                    }
-
-                    assert(portableInstance.get() != (Portable *) NULL);
-
-                    return read(in, portableInstance, factoryId, classId);
                 }
 
                 PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
@@ -140,7 +125,13 @@ namespace hazelcast {
                 }
 
                 void *PortableSerializer::read(ObjectDataInput &in) {
-                    return read(in, std::auto_ptr<Portable>()).release();
+                    // should not be called
+                    assert(0);
+                    return NULL;
+                }
+
+                int32_t PortableSerializer::readInt(ObjectDataInput &in) const {
+                    return in.readInt();
                 }
             }
         }

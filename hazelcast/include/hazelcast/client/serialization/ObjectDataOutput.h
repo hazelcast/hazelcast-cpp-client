@@ -202,7 +202,8 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
                         }
 
-                        boost::shared_ptr<SerializerBase> streamSerializer = boost::static_pointer_cast<SerializerBase>(serializer);
+                        boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
+                                serializer);
 
                         streamSerializer->write(*this, object);
                     }

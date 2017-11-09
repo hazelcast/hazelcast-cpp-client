@@ -82,7 +82,7 @@ namespace hazelcast {
                     *
                     *  return false if a serializer is already given corresponding to serializerId
                     */
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
 
                     template<typename T>
                     inline Data toData(const T *object) {
@@ -108,7 +108,8 @@ namespace hazelcast {
                                 throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
                             }
 
-                            boost::shared_ptr<SerializerBase> streamSerializer = boost::static_pointer_cast<SerializerBase>(serializer);
+                            boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
+                                    serializer);
 
                             streamSerializer->write(dataOutput, object);
                         }

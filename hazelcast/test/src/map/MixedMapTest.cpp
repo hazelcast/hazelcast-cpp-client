@@ -77,7 +77,7 @@ namespace hazelcast {
 
             class MixedMapTest : public ClientTestSupport {
             protected:
-                class BaseCustomSerializer : public serialization::SerializerBase {
+                class BaseCustomSerializer : public serialization::StreamSerializer {
                 public:
                     virtual int32_t getHazelcastTypeId() const {
                         return 3;

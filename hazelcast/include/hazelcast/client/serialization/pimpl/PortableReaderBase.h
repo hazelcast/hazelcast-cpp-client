@@ -85,19 +85,36 @@ namespace hazelcast {
                     void end();
 
                 protected:
-                    std::auto_ptr<Portable> getPortableInstance(char const *fieldName,
-                            std::auto_ptr<Portable> portableInstance);
-
                     void setPosition(char const * , FieldType const& fieldType);
 
                     void checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const;
 
-                    std::auto_ptr<Portable> read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object) const;
-
-                    std::auto_ptr<Portable> read(ObjectDataInput &dataInput, std::auto_ptr<Portable> object,
-                                                 int32_t factoryId, int32_t classId) const;
-
                     int readPosition(const char *, FieldType const& fieldType);
+
+                    template <typename T>
+                    boost::shared_ptr<T> getPortableInstance(char const *fieldName) {
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
+
+                        bool isNull = dataInput.readBoolean();
+                        int32_t factoryId = dataInput.readInt();
+                        int32_t classId = dataInput.readInt();
+
+                        checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+
+                        if (isNull) {
+                            return boost::shared_ptr<T>();
+                        } else {
+                            return read<T>(dataInput, factoryId, classId);
+                        }
+                    }
+
+                    template <typename T>
+                    boost::shared_ptr<T> read(ObjectDataInput &dataInput, int32_t factoryId, int32_t classId) const {
+                        boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                                serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+
+                        return boost::shared_ptr<T>(serializer->read<T>(dataInput, factoryId, classId));
+                    }
 
                     boost::shared_ptr<ClassDefinition> cd;
                     ObjectDataInput &dataInput;
