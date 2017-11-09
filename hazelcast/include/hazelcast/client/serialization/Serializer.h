@@ -85,10 +85,6 @@ namespace hazelcast {
             template <typename T>
             class Serializer : public StreamSerializer {
             public:
-                /**
-                 * Destructor
-                 */
-                virtual ~Serializer() {}
 
                 /**
                  *  This method writes object to ObjectDataOutput

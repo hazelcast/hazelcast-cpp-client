@@ -181,8 +181,6 @@ namespace hazelcast {
 
                     bool isNullData(const Data &data);
 
-                    void writeHash(DataOutput &out);
-
                     template<typename T>
                     void writeHash(const PartitionAwareMarker *obj, DataOutput &out) {
                         typedef typename T::KEY_TYPE PK_TYPE;

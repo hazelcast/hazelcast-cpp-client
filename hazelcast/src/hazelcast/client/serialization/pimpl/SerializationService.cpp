@@ -36,10 +36,9 @@ namespace hazelcast {
                     registerConstantSerializers();
 
                     std::vector<boost::shared_ptr<SerializerBase> > const& serializers = serializationConfig.getSerializers();
-                    std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it;
-                    SerializerHolder& serializerHolder = getSerializerHolder();
-                    for (it = serializers.begin(); it < serializers.end(); ++it) {
-                        serializerHolder.registerSerializer(*it);
+                    for (std::vector<boost::shared_ptr<SerializerBase> >::const_iterator it = serializers.begin();
+                         it < serializers.end(); ++it) {
+                        registerSerializer(boost::static_pointer_cast<StreamSerializer>(*it));
                     }
                 }
 
@@ -53,10 +52,6 @@ namespace hazelcast {
 
                 bool SerializationService::isNullData(const Data &data) {
                     return data.dataSize() == 0 && data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
-                }
-
-                void SerializationService::writeHash(DataOutput &out) {
-                    out.writeInt(0);
                 }
 
                 template<>
