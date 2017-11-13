@@ -23,7 +23,7 @@
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/map/MixedMapProxy.h"
+#include "hazelcast/client/MixedMap.h"
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
@@ -504,12 +504,7 @@ namespace hazelcast {
                 return IMap<K, V>(proxy);
             }
 
-            map::MixedMapProxy getMixedMap(const std::string &name) {
-                map::impl::MixedMapProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService("hz:impl:mapService", name, factory);
-                return *boost::static_pointer_cast<map::MixedMapProxy>(proxy);
-            }
+            MixedMap getMixedMap(const std::string &name);
 
             /**
             * Returns the distributed multimap instance with the specified name.

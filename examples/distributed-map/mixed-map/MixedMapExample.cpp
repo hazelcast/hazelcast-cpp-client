@@ -21,7 +21,7 @@ int main() {
     ClientConfig config;
     HazelcastClient client(config);
 
-    map::MixedMapProxy mixedMapProxy = client.getMixedMap("MyMap");
+    MixedMap mixedMapProxy = client.getMixedMap("MyMap");
 
     mixedMapProxy.put<int, int>(3, 5);
     mixedMapProxy.put<int, std::string>(10, "MyStringValue");

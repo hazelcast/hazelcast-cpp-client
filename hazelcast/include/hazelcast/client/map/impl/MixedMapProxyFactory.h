@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 #define HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 
-#include "hazelcast/client/map/MixedMapProxy.h"
+#include "hazelcast/client/MixedMap.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -49,7 +49,7 @@ namespace hazelcast {
                         }
 */
 
-                        return boost::shared_ptr<spi::ClientProxy>(new map::MixedMapProxy(name, clientContext));
+                        return boost::shared_ptr<spi::ClientProxy>(new MixedMap(name, clientContext));
                     }
                 private:
                     spi::ClientContext *clientContext;

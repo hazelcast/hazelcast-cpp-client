@@ -95,6 +95,13 @@ namespace hazelcast {
             lifecycleService.shutdown();
         }
 
+        MixedMap HazelcastClient::getMixedMap(const std::string &name) {
+            map::impl::MixedMapProxyFactory factory(&clientContext);
+            boost::shared_ptr<spi::ClientProxy> proxy =
+                    getDistributedObjectForService("hz:impl:mapService", name, factory);
+            return *boost::static_pointer_cast<MixedMap>(proxy);
+        }
+
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
             return getDistributedObject< IdGenerator >(instanceName);
         }

@@ -34,15 +34,14 @@ namespace hazelcast {
                                                                                           ss(&serializationService) {
             }
 
-            TypedData(const TypedData &rhs) : ss(rhs.ss) {
-                if (rhs.data.get()) {
-                    data = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.data));
-                }
+            TypedData(const TypedData &rhs) {
+                this->operator=(rhs);
             }
 
             TypedData &operator=(const TypedData& rhs) {
                 if (rhs.data.get()) {
-                    data = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.data));
+                    data.reset(new serialization::pimpl::Data(
+                            std::auto_ptr<std::vector<byte> >(new std::vector<byte>(rhs.data->toByteArray()))));
                 } else {
                     data.reset();
                 }

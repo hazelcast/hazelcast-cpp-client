@@ -93,26 +93,7 @@ namespace hazelcast {
 
                         writeHash<T>(object, output);
 
-                        if (NULL == object) {
-                            dataOutput.writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
-                        } else {
-                            int32_t type = getHazelcastTypeId(object);
-                            dataOutput.writeInt(type);
-
-                            boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(type);
-
-                            if (NULL == serializer.get()) {
-                                const std::string message = "No serializer found for serializerId :"+
-                                                            util::IOUtil::to_string(type) + ", typename :" +
-                                                            typeid(T).name();
-                                throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
-                            }
-
-                            boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
-                                    serializer);
-
-                            streamSerializer->write(dataOutput, object);
-                        }
+                        dataOutput.writeObject<T>(object);
 
                         Data data(output.toByteArray());
                         return data;
