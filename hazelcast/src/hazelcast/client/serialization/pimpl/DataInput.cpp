@@ -18,6 +18,7 @@
 
 #include <string.h>
 #include <memory>
+#include <boost/foreach.hpp>
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Bits.h"
@@ -203,12 +204,18 @@ namespace hazelcast {
                     std::auto_ptr<std::vector<std::string> > values(
                             new std::vector<std::string>());
                     for (int32_t i = 0; i < len; ++i) {
-                        values->push_back(*readUTF());
+                        std::auto_ptr<std::string> value = readUTF();
+                        // handle null pointer possibility
+                        if ((std::string *)NULL == value.get()) {
+                            values->push_back(std::string(""));
+                        } else {
+                            values->push_back(*value);
+                        }
                     }
                     return values;
                 }
 
-                std::auto_ptr<std::vector<std::string *> > DataInput::readStringArray() {
+                std::auto_ptr<std::vector<std::string *> > DataInput::readUTFPointerArray() {
                     int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
                         return std::auto_ptr<std::vector<std::string *> >();
@@ -216,8 +223,17 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<std::string *> > values(
                             new std::vector<std::string *>());
-                    for (int32_t i = 0; i < len; ++i) {
-                        values->push_back(readUTF().release());
+                    try {
+                        for (int32_t i = 0; i < len; ++i) {
+                            values->push_back(readUTF().release());
+                        }
+                    } catch (exception::IException &e) {
+                        // clean resources to avoid any leaks
+                        typedef std::vector<std::string *> STRING_ARRAY;
+                        BOOST_FOREACH(STRING_ARRAY::value_type value , *values) {
+                                        delete value;
+                                    }
+                        throw;
                     }
                     return values;
                 }

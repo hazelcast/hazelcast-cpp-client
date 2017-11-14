@@ -60,15 +60,6 @@ namespace hazelcast {
             return proxy::IMapImpl::removeEntryListener(registrationId);
         }
 
-        EntryView<TypedData, TypedData> MixedMap::getEntryView(const TypedData &key) {
-            std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(*key.getData());
-            TypedData value(std::auto_ptr<serialization::pimpl::Data>(
-                    new serialization::pimpl::Data(dataEntryView->getValue())),
-                            context->getSerializationService());
-            EntryView<TypedData, TypedData> view(key, value, *dataEntryView);
-            return view;
-        }
-
         void MixedMap::evictAll() {
             proxy::IMapImpl::evictAll();
         }

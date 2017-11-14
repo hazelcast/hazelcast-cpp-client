@@ -91,7 +91,7 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<std::string> > readUTFArray();
 
-                    std::auto_ptr<std::vector<std::string *> > readStringArray();
+                    std::auto_ptr<std::vector<std::string *> > readUTFPointerArray();
 
                     int position();
 

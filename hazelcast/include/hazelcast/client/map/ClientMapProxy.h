@@ -968,7 +968,7 @@ namespace hazelcast {
 
                 template<typename ResultType, typename EntryProcessor>
                 std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
-                    EntryVector entries = executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
+                    EntryVector entries = executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     std::map<K, boost::shared_ptr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
@@ -1263,7 +1263,7 @@ namespace hazelcast {
                     return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(response).response;
                 }
 
-                template<typename ResultType, typename EntryProcessor>
+                template<typename EntryProcessor>
                 EntryVector executeOnKeysInternal(const std::set<K> &keys, EntryProcessor &entryProcessor) {
                     if (keys.empty()) {
                         return EntryVector();

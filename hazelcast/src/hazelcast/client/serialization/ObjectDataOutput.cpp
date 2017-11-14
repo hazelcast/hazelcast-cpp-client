@@ -153,20 +153,6 @@ namespace hazelcast {
                 }
             }
 
-            void ObjectDataOutput::writeStringArray(const std::vector<std::string> *strings) {
-                if (isEmpty) return;
-
-                int32_t len = NULL != strings ? (int32_t) strings->size() : util::Bits::NULL_ARRAY;
-
-                writeInt(len);
-
-                if (len > 0) {
-                    for (std::vector<std::string>::const_iterator it = strings->begin(); it != strings->end(); ++it) {
-                        writeUTF(&(*it));
-                    }
-                }
-            }
-
             void ObjectDataOutput::writeData(const pimpl::Data *data) {
                 if (NULL == data || 0 == data->dataSize()) {
                     writeInt(util::Bits::NULL_ARRAY);
@@ -186,6 +172,18 @@ namespace hazelcast {
 
             pimpl::DataOutput *ObjectDataOutput::getDataOutput() const {
                 return dataOutput;
+            }
+
+            template <>
+            void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
+                                                 boost::shared_ptr<StreamSerializer> &streamSerializer) {
+                std::vector<std::string> *stringVector = const_cast<std::vector<std::string> *>(object);
+                std::auto_ptr<std::vector<std::string *> > result(new std::vector<std::string *>());
+                for (std::vector<std::string>::iterator it = stringVector->begin();it != stringVector->end(); ++it) {
+                    result->push_back(&(*it));
+                }
+
+                streamSerializer->write(*this, result.get());
             }
         }
     }

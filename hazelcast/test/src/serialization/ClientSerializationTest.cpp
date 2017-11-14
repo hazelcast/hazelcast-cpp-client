@@ -41,7 +41,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             static const unsigned int LARGE_ARRAY_SIZE =
-                    5 * 1024 * 1024;   // 5 MB. Previously it was 10 MB but then the
+                    1 * 1024 * 1024;   // 1 MB. Previously it was 10 MB but then the
             // test fails when using Windows 32-bit DLL
             // library with std::bad_alloc with 10 MB
 

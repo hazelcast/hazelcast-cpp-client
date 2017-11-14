@@ -170,8 +170,6 @@ namespace hazelcast {
                  */
                 void writeUTFArray(const std::vector<std::string *> *strings);
 
-                void writeStringArray(const std::vector<std::string> *strings);
-
                 /**
                 * @param value the data value to be written
                 */
@@ -183,13 +181,12 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template <typename T>
-                void writeObject(const void *serializable) {
+                void writeObject(const T *object) {
                     if (isEmpty) return;
 
-                    if (NULL == serializable) {
+                    if (NULL == object) {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
-                        const T *object = static_cast<const T *>(serializable);
                         int32_t type = getHazelcastTypeId(object);
                         writeInt(type);
 
@@ -205,7 +202,7 @@ namespace hazelcast {
                         boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
                                 serializer);
 
-                        streamSerializer->write(*this, object);
+                        writeInternal<T>(object, streamSerializer);
                     }
                 }
 
@@ -224,7 +221,24 @@ namespace hazelcast {
                 ObjectDataOutput(const ObjectDataOutput&);
 
                 void operator=(const ObjectDataOutput&);
+
+                /**
+                 * This method is written for backward compatibility of std::vector<std::string> type handling.
+                 * @tparam T The type
+                 * @param out The data output
+                 * @param object The object to be written
+                 * @param streamSerializer The serializer to be used
+                 */
+                template <typename T>
+                void writeInternal(const T *object,
+                                   boost::shared_ptr<StreamSerializer> &streamSerializer) {
+                    streamSerializer->write(*this, object);
+                }
             };
+
+            template <>
+            void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
+                               boost::shared_ptr<StreamSerializer> &streamSerializer);
         }
     }
 }

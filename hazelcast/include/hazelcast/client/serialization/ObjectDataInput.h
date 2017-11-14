@@ -197,7 +197,7 @@ namespace hazelcast {
                 * @return the array of strings
                 * @throws IOException if it reaches end of file before finish reading
                 */
-                std::auto_ptr<std::vector<std::string *> > readStringArray();
+                std::auto_ptr<std::vector<std::string *> > readUTFPointerArray();
 
                 /**
                 * Object can be Portable, IdentifiedDataSerializable or custom serializable
@@ -235,7 +235,8 @@ namespace hazelcast {
                         }
                         default: {
                             boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(serializer);
-                            return std::auto_ptr<T>(reinterpret_cast<T *>(streamSerializer->read(*this)));
+                            return std::auto_ptr<T>(getBackwardCompatiblePointer<T>(streamSerializer->read(*this),
+                                                                                    (T *) NULL));
                         }
                     }
                 }
@@ -265,7 +266,19 @@ namespace hazelcast {
 
                 void operator=(const ObjectDataInput&);
 
+                template <typename T>
+                T *getBackwardCompatiblePointer(void *actualData, const T *typePointer) const {
+                    return reinterpret_cast<T *>(actualData);
+                }
             };
+
+            /**
+             * This method is needed for handling backward compatibility with the originally designed api where it
+             * assumed that the string in array can not be nullable.
+             */
+            template <>
+            std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData,
+                                         const std::vector<std::string> *typePointer) const;
 
         }
     }

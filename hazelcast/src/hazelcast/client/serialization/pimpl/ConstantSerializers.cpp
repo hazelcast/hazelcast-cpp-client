@@ -245,11 +245,11 @@ namespace hazelcast {
                 }
 
                 void StringArraySerializer::write(ObjectDataOutput &out, const void *object) {
-                    out.writeStringArray(static_cast<const std::vector<std::string> *>(object));
+                    out.writeUTFArray(static_cast<const std::vector<std::string *> *>(object));
                 }
 
                 void *StringArraySerializer::read(ObjectDataInput &in) {
-                    return in.readUTFArray().release();
+                    return in.readUTFPointerArray().release();
                 }
             }
         }

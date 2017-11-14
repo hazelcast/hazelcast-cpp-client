@@ -556,7 +556,15 @@ namespace hazelcast {
             * @return <tt>EntryView</tt> of the specified key
             * @see EntryView
             */
-            EntryView <TypedData, TypedData> getEntryView(const TypedData &key);
+            template <typename K>
+            EntryView<TypedData, TypedData> getEntryView(const K &key) {
+                std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(toData(key));
+                TypedData value(std::auto_ptr<serialization::pimpl::Data>(
+                        new serialization::pimpl::Data(dataEntryView->getValue())),
+                                context->getSerializationService());
+                EntryView<TypedData, TypedData> view(key, value, *dataEntryView);
+                return view;
+            }
 
             /**
             * Evicts the specified key from this map. If
@@ -865,33 +873,34 @@ namespace hazelcast {
             * @param key of entry that entryProcessor will be applied on
             * @return result of entry process.
             */
-            template<typename K, typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+            template<typename K, typename EntryProcessor>
+            TypedData executeOnKey(const K &key, EntryProcessor &entryProcessor) {
                 serialization::pimpl::Data keyData = toData(key);
                 serialization::pimpl::Data processorData = toData(entryProcessor);
 
                 std::auto_ptr<serialization::pimpl::Data> response = executeOnKeyInternal(keyData, processorData);
 
-                return boost::shared_ptr<ResultType>(toObject<ResultType>(response));
+                return TypedData(response, getSerializationService());
             }
 
             template<typename K, typename ResultType, typename EntryProcessor>
-            Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+            Future<TypedData> submitToKey(const K &key, EntryProcessor &entryProcessor) {
                 serialization::pimpl::Data keyData = toData(key);
                 serialization::pimpl::Data processorData = toData(entryProcessor);
 
                 return submitToKeyInternal<ResultType>(keyData, processorData);
             }
 
-            template<typename K, typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
-                EntryVector entries = executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
+            template<typename K, typename EntryProcessor>
+            std::map<K, TypedData> executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                EntryVector entries = executeOnKeysInternal<K, EntryProcessor>(keys, entryProcessor);
 
-                std::map<K, boost::shared_ptr<ResultType> > result;
+                std::map<K, TypedData> result;
+                serialization::pimpl::SerializationService &serializationService = getSerializationService();
                 for (size_t i = 0; i < entries.size(); ++i) {
                     std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
-                    std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
-                    result[*keyObj] = resObj;
+                    result[*keyObj] = TypedData(std::auto_ptr<serialization::pimpl::Data>(
+                            new serialization::pimpl::Data(entries[i].second)), serializationService);
                 }
                 return result;
             }
@@ -1047,13 +1056,6 @@ namespace hazelcast {
             template <typename K>
             EntryVector getAllInternal(
                     const std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > &partitionToKeyData) {
-
-                /**
-                 * This map is needed so that we do not deserialize the response data keys but just use
-                 * the keys at the original request
-                 */
-                std::map<boost::shared_ptr<serialization::pimpl::Data>, const K *> dataKeyPairMap;
-
                 std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
 
                 for (typename std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > >::const_iterator
@@ -1068,8 +1070,6 @@ namespace hazelcast {
                         //TODO  using shared pointers of data.
                         std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>((*keyIt).second->toByteArray()));
                         partitionKeys[it->first].push_back(serialization::pimpl::Data(bytes));
-
-                        dataKeyPairMap[(*keyIt).second] = (*keyIt).first;
                     }
                 }
                 EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
