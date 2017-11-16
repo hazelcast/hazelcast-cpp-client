@@ -77,7 +77,7 @@ then
 fi
 
 echo "Starting the java test server"
-mvn exec:java -Dexec.mainClass="CppClientListener" &
+mvn exec:java -Dhazelcast.phone.home.enabled=false -Dexec.mainClass="CppClientListener" &
 serverPid=$!
 
 echo "Spawned server with pid ${serverPid}"
