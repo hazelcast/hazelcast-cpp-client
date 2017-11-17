@@ -51,15 +51,17 @@ namespace hazelcast {
         }
 
         bool operator<(const TypedData &lhs, const TypedData &rhs) {
-            if (lhs.data.get() == NULL) {
+            const serialization::pimpl::Data *lhsData = lhs.getData();
+            const serialization::pimpl::Data *rhsData = rhs.getData();
+            if (lhsData == NULL) {
                 return true;
             }
 
-            if (rhs.data.get() == NULL) {
+            if (rhsData == NULL) {
                 return false;
             }
 
-            return *lhs.data < *rhs.data;
+            return *lhsData < *rhsData;
         }
     }
 }

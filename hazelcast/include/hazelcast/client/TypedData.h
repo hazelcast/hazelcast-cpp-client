@@ -51,8 +51,6 @@ namespace hazelcast {
 
             const serialization::pimpl::Data *getData() const;
 
-            friend bool operator<(const TypedData &lhs, const TypedData &rhs);
-
         private:
             std::auto_ptr<serialization::pimpl::Data> data;
             serialization::pimpl::SerializationService *ss;
