@@ -227,7 +227,7 @@ namespace hazelcast {
                         for (int32_t i = 0; i < len; ++i) {
                             values->push_back(readUTF().release());
                         }
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         // clean resources to avoid any leaks
                         typedef std::vector<std::string *> STRING_ARRAY;
                         BOOST_FOREACH(STRING_ARRAY::value_type value , *values) {

@@ -538,7 +538,7 @@ namespace hazelcast {
             *                     contain the value.
             */
             template <typename K>
-            std::string addEntryListener(MixedEntryListener &listener, const K &key, bool includeValue) {
+            std::string addEntryListener(const K &key, MixedEntryListener &listener, bool includeValue) {
                 serialization::pimpl::Data keyData = toData(key);
                 client::impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new client::impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
@@ -557,12 +557,19 @@ namespace hazelcast {
             * @see EntryView
             */
             template <typename K>
-            EntryView<TypedData, TypedData> getEntryView(const K &key) {
-                std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(toData(key));
+            std::auto_ptr<EntryView<TypedData, TypedData> > getEntryView(const K &key) {
+                std::auto_ptr<serialization::pimpl::Data>keyData(new serialization::pimpl::Data(toData(key)));
+                std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(*keyData);
+                if ((map::DataEntryView *)NULL == dataEntryView.get()) {
+                    return std::auto_ptr<EntryView<TypedData, TypedData> >();
+                }
                 TypedData value(std::auto_ptr<serialization::pimpl::Data>(
-                        new serialization::pimpl::Data(dataEntryView->getValue())),
+                        new serialization::pimpl::Data(std::auto_ptr<std::vector<byte> >(
+                                new std::vector<byte>(dataEntryView->getValue().toByteArray())))),
                                 context->getSerializationService());
-                EntryView<TypedData, TypedData> view(key, value, *dataEntryView);
+                const TypedData &keyTypedData = TypedData(keyData, context->getSerializationService());
+                std::auto_ptr<EntryView<TypedData, TypedData> > view(new EntryView<TypedData, TypedData>(
+                        keyTypedData, value, *dataEntryView));
                 return view;
             }
 
@@ -883,12 +890,12 @@ namespace hazelcast {
                 return TypedData(response, getSerializationService());
             }
 
-            template<typename K, typename ResultType, typename EntryProcessor>
+            template<typename K, typename EntryProcessor>
             Future<TypedData> submitToKey(const K &key, EntryProcessor &entryProcessor) {
                 serialization::pimpl::Data keyData = toData(key);
                 serialization::pimpl::Data processorData = toData(entryProcessor);
 
-                return submitToKeyInternal<ResultType>(keyData, processorData);
+                return submitToKeyInternal<TypedData>(keyData, processorData);
             }
 
             template<typename K, typename EntryProcessor>
@@ -1056,6 +1063,7 @@ namespace hazelcast {
             template <typename K>
             EntryVector getAllInternal(
                     const std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > &partitionToKeyData) {
+
                 std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
 
                 for (typename std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > >::const_iterator

@@ -233,6 +233,7 @@ namespace hazelcast {
          */
         template<>
         class Future<TypedData> {
+        public:
             typedef std::auto_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
 
             /**

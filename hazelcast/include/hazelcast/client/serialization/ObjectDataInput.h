@@ -35,6 +35,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/TypeIDS.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
@@ -277,7 +278,7 @@ namespace hazelcast {
              * assumed that the string in array can not be nullable.
              */
             template <>
-            std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData,
+            HAZELCAST_API std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData,
                                          const std::vector<std::string> *typePointer) const;
 
         }

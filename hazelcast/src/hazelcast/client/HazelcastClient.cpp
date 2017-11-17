@@ -57,7 +57,7 @@ namespace hazelcast {
                 if (!lifecycleService.start()) {
                     throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
                 }
-            } catch (exception::IException &e) {
+            } catch (exception::IException &) {
                 lifecycleService.shutdown();
                 throw;
             }

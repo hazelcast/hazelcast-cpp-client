@@ -420,8 +420,14 @@ class EmployeeEntryComparator implements IdentifiedDataSerializable, Comparator<
 
     @Override
     public int compare(Map.Entry<Integer, Employee> lhs, Map.Entry<Integer, Employee> rhs) {
-        Employee lv = lhs.getValue();
-        Employee rv = rhs.getValue();
+        Employee lv;
+        Employee rv;
+        try {
+            lv = lhs.getValue();
+            rv = rhs.getValue();
+        } catch (ClassCastException e) {
+            return -1;
+        }
 
         if (null == lv && null == rv) {
             // order by key

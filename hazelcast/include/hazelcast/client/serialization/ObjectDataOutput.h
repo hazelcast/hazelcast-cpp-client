@@ -237,7 +237,7 @@ namespace hazelcast {
             };
 
             template <>
-            void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
+            HAZELCAST_API void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
                                boost::shared_ptr<StreamSerializer> &streamSerializer);
         }
     }

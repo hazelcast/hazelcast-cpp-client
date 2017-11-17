@@ -22,54 +22,49 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/HazelcastDll.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         class HAZELCAST_API TypedData {
         public:
-            TypedData() : ss(NULL) {
-            }
+            TypedData();
 
             TypedData(std::auto_ptr<serialization::pimpl::Data> data,
-                      serialization::pimpl::SerializationService &serializationService) : data(data),
-                                                                                          ss(&serializationService) {
-            }
+                      serialization::pimpl::SerializationService &serializationService);
 
-            TypedData(const TypedData &rhs) {
-                this->operator=(rhs);
-            }
+            TypedData(const TypedData &rhs);
 
-            TypedData &operator=(const TypedData& rhs) {
-                if (rhs.data.get()) {
-                    data.reset(new serialization::pimpl::Data(
-                            std::auto_ptr<std::vector<byte> >(new std::vector<byte>(rhs.data->toByteArray()))));
-                } else {
-                    data.reset();
-                }
-                ss = rhs.ss;
-                return *this;
-            }
+            TypedData &operator=(const TypedData& rhs);
 
-            virtual ~TypedData() { }
+            virtual ~TypedData();
 
-            const serialization::pimpl::ObjectType getType() const {
-                return ss->getObjectType(data.get());
-            }
+            const serialization::pimpl::ObjectType getType() const;
 
             template <typename T>
-            std::auto_ptr<T> get() {
+            std::auto_ptr<T> get() const {
                 return ss->toObject<T>(data.get());
             }
 
-            const serialization::pimpl::Data *getData() const {
-                return data.get();
-            }
+            const serialization::pimpl::Data *getData() const;
+
+            friend bool operator<(const TypedData &lhs, const TypedData &rhs);
 
         private:
             std::auto_ptr<serialization::pimpl::Data> data;
             serialization::pimpl::SerializationService *ss;
         };
+
+        bool HAZELCAST_API operator<(const TypedData &lhs, const TypedData &rhs);
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CLIENT_TYPEDDATA_H_
 

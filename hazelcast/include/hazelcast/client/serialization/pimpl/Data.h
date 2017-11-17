@@ -79,12 +79,16 @@ namespace hazelcast {
 
                     int32_t getType() const;
 
+                    friend bool operator<(const Data &lhs, const Data &rhs);
+
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;
                     mutable int cachedHashValue;
 
                     inline int calculateHash() const;
                 };
+
+                bool HAZELCAST_API operator<(const Data &lhs, const Data &rhs);
             }
         }
     }
