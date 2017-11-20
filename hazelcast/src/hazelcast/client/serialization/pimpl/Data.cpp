@@ -116,7 +116,11 @@ namespace hazelcast {
                 }
 
                 int Data::calculateHash() const {
-                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int)dataSize());
+                    size_t size = dataSize();
+                    if (size == 0) {
+                        return 0;
+                    }
+                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int) size);
                 }
 
                 bool operator<(const Data &lhs, const Data &rhs) {
