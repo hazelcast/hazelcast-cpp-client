@@ -163,15 +163,15 @@ class Employee implements Portable {
         doubleArray = reader.readDoubleArray("dd");;
 
         ObjectDataInput in = reader.getRawDataInput();
-        by = in.readObject();
-        c = in.readObject();
-        bool = in.readObject();
-        s = in.readObject();
-        i = in.readObject();
-        f = in.readObject();
-        d = in.readObject();
-        str = in.readObject();
-        utfStr = in.readObject();
+        by = (Byte) in.readObject();
+        c = (Character) in.readObject();
+        bool = (Boolean) in.readObject();
+        s = (Short) in.readObject();
+        i = (Integer) in.readObject();
+        f = (Float) in.readObject();
+        d = (Double) in.readObject();
+        str = (String) in.readObject();
+        utfStr = (String) in.readObject();
     }
 
     public int getAge() {
