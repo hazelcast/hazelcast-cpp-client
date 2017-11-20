@@ -40,12 +40,16 @@ namespace hazelcast {
                     return SerializationConstants::CONSTANT_TYPE_DATA;
                 }
 
-                void DataSerializer::write(ObjectDataOutput &out, const void *object) {
+                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable *dataSerializable) {
                     out.writeBoolean(true);
-                    const IdentifiedDataSerializable *dataSerializable = static_cast<const IdentifiedDataSerializable *>(object);
                     out.writeInt(dataSerializable->getFactoryId());
                     out.writeInt(dataSerializable->getClassId());
                     dataSerializable->writeData(out);
+                }
+
+                void DataSerializer::write(ObjectDataOutput &out, const void *object) {
+                    // should not be called
+                    assert(0);
                 }
 
                 void *DataSerializer::read(ObjectDataInput &in) {

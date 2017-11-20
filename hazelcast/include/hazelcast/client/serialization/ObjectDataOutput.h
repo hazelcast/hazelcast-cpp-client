@@ -232,7 +232,23 @@ namespace hazelcast {
                 template <typename T>
                 void writeInternal(const T *object,
                                    boost::shared_ptr<StreamSerializer> &streamSerializer) {
-                    streamSerializer->write(*this, object);
+                    int32_t typeId = streamSerializer->getHazelcastTypeId();
+                    switch (typeId) {
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
+                            serialization::pimpl::DataSerializer *dataSerializer =
+                                    static_cast<serialization::pimpl::DataSerializer *>(streamSerializer.get());
+                            return dataSerializer->write(*this, object);
+                        }
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
+                            serialization::pimpl::PortableSerializer *portableSerializer =
+                                    static_cast<serialization::pimpl::PortableSerializer *>(streamSerializer.get());
+
+                            return portableSerializer->write(*this, object);
+                        }
+                        default: {
+                            streamSerializer->write(*this, object);
+                        }
+                    }
                 }
             };
 

@@ -74,5 +74,4 @@ namespace hazelcast {
     }
 }
 
-
 #endif //HAZELCAST_TypeIDS

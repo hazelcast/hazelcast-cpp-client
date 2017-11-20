@@ -31,6 +31,9 @@ namespace hazelcast {
 
             class ObjectDataInput;
 
+            /**
+             * This is an internal class !!!! Do not use.
+             */
             class HAZELCAST_API SerializerBase {
             public:
                 virtual ~SerializerBase();

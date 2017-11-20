@@ -90,12 +90,14 @@ namespace hazelcast {
                 }
 
                 bool Data::hasPartitionHash() const {
-                    size_t length = data->size();
-                    return data.get() != NULL && length >= Data::DATA_OVERHEAD &&
+                    if (data.get() == NULL) {
+                        return false;
+                    }
+                    return data->size() >= Data::DATA_OVERHEAD &&
                             *reinterpret_cast<int *>(&((*data)[PARTITION_HASH_OFFSET])) != 0;
                 }
 
-                std::vector<byte>  &Data::toByteArray() const {
+                std::vector<byte> &Data::toByteArray() const {
                     return *data;
                 }
 

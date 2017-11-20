@@ -78,6 +78,8 @@ namespace hazelcast {
                         #endif
                     }
 
+                    virtual void write(ObjectDataOutput &out, const IdentifiedDataSerializable *object);
+
                     virtual void write(ObjectDataOutput &out, const void *object);
 
                     virtual void *read(ObjectDataInput &in);

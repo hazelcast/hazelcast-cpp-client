@@ -16,9 +16,6 @@
 //
 // Created by sancar koyunlu on 6/28/13.
 
-
-
-
 #ifndef HAZELCAST_Portable
 #define HAZELCAST_Portable
 
@@ -55,7 +52,6 @@ namespace hazelcast {
                 * Destructor
                 */
                 virtual ~Portable(){
-
                 }
 
                 /**
@@ -83,10 +79,7 @@ namespace hazelcast {
             };
         }
     }
-
-
 }
-
 
 #endif //HAZELCAST_Portable
 
