@@ -40,7 +40,6 @@ namespace hazelcast {
         class ItemListener {
         public:
             virtual ~ItemListener() {
-
             }
 
             /**
@@ -57,6 +56,8 @@ namespace hazelcast {
             */
             virtual void itemRemoved(const ItemEvent<E>& item) = 0;
         };
+
+        class HAZELCAST_API MixedItemListener : public ItemListener<TypedData> {};
     }
 }
 

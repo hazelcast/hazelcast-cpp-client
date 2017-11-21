@@ -68,8 +68,41 @@ namespace hazelcast {
 
         };
 
+        class HAZELCAST_API ItemEventBase {
+        public:
+            ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType);
+
+            virtual ~ItemEventBase();
+
+            /**
+             * Returns the member fired this event.
+             *
+             * @return the member fired this event.
+             */
+            Member getMember() const;
+
+            /**
+             * Return the event type
+             *
+             * @return event type ItemEventType
+             */
+            ItemEventType getEventType() const;
+
+            /**
+             * Returns the name of the collection for this event.
+             *
+             * @return name of the collection.
+             */
+            std::string getName() const;
+
+        private:
+            std::string name;
+            Member member;
+            ItemEventType eventType;
+        };
+
         /**
-         * ItemEvent
+         *
          *
          * @param E type of item.
          * @see Queue#addItemListener
@@ -77,19 +110,15 @@ namespace hazelcast {
          * @see Set#addItemListener
          */
         template <typename E>
-        class ItemEvent {
+        class ItemEvent : public ItemEventBase {
         public:
             /**
              * constructor
              */
             ItemEvent(const std::string &name, ItemEventType eventType, const E &item, const Member &member)
-            : name(name)
-            , member(member)
-            , eventType(eventType)
+            : ItemEventBase(name, member, eventType)
             , item(item) {
-
             };
-
 
             /**
              * @returns the item.
@@ -98,39 +127,8 @@ namespace hazelcast {
                 return item;
             };
 
-            /**
-             * Returns the member fired this event.
-             *
-             * @return the member fired this event.
-             */
-            Member getMember() const {
-                return member;
-            };
-
-            /**
-             * Return the event type
-             *
-             * @return event type ItemEventType
-             */
-            ItemEventType getEventType() const {
-                return eventType;
-            };
-
-            /**
-             * Returns the name of the collection for this event.
-             *
-             * @return name of the collection.
-             */
-            std::string getName() const {
-                return name;
-            };
-
         private:
-            std::string name;
-            Member member;
-            ItemEventType eventType;
             E item;
-
         };
     }
 }

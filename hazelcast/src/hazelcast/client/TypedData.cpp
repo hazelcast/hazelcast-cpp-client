@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
