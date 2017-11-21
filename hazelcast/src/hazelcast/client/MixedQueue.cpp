@@ -48,15 +48,16 @@ namespace hazelcast {
             return drainTo(elements, -1);
         }
 
-        size_t MixedQueue::drainTo(std::vector<TypedData> &elements, size_t maxElements) {
+        size_t MixedQueue::drainTo(std::vector<TypedData> &elements, int64_t maxElements) {
             typedef std::vector<serialization::pimpl::Data> DATA_VECTOR;
             serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
-            size_t startSize = elements.size();
+            size_t numElements = 0;
             BOOST_FOREACH(const DATA_VECTOR::value_type data , proxy::IQueueImpl::drainToData(maxElements)) {
                             elements.push_back(TypedData(std::auto_ptr<serialization::pimpl::Data>(
                                     new serialization::pimpl::Data(data)), serializationService));
+                            ++numElements;
                         }
-            return elements.size() - startSize;
+            return numElements;
         }
 
         TypedData MixedQueue::poll() {

@@ -151,7 +151,7 @@ namespace hazelcast {
             * @param elements vector that elements will be drained to.
             * @return number of elements drained.
             */
-            size_t drainTo(std::vector<TypedData> &elements, size_t maxElements);
+            size_t drainTo(std::vector<TypedData> &elements, int64_t maxElements);
 
             /**
             * Returns immediately without waiting.
