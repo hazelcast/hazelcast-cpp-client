@@ -29,6 +29,7 @@
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/IList.h"
+#include "hazelcast/client/MixedList.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
@@ -562,6 +563,17 @@ namespace hazelcast {
             template<typename E>
             IList<E> getList(const std::string& name) {
                 return getDistributedObject<IList<E> >(name);
+            }
+
+            /**
+            * Returns the distributed list instance with the specified name.
+            * List is ordered set of entries. similar to std::vector
+            *
+            * @param name name of the distributed list
+            * @return distributed list instance with the specified name
+            */
+            MixedList getMixedList(const std::string& name) {
+                return getDistributedObject<MixedList>(name);
             }
 
             /**

@@ -40,5 +40,26 @@ namespace hazelcast {
                     break;
             }
         }
+
+        ItemEventBase::ItemEventBase(const std::string &name, const Member &member, const ItemEventType &eventType) : name(name),
+                                                                                                       member(member),
+                                                                                                       eventType(
+                                                                                                               eventType) {}
+
+        Member ItemEventBase::getMember() const {
+            return member;
+        }
+
+        ItemEventType ItemEventBase::getEventType() const {
+            return eventType;
+        }
+
+        std::string ItemEventBase::getName() const {
+            return name;
+        }
+
+        ItemEventBase::~ItemEventBase() {
+        }
+
     }
 }

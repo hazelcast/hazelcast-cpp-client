@@ -18,9 +18,8 @@
 
 #include <memory>
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,6 +28,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
         class HAZELCAST_API TypedData {
         public:
             TypedData();

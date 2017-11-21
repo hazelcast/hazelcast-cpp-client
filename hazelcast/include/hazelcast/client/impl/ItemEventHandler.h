@@ -64,6 +64,35 @@ namespace hazelcast {
                 ItemListener<E> &listener;
                 bool includeValue;
             };
+
+            template<typename BaseType>
+            class MixedItemEventHandler : public BaseType {
+            public:
+                MixedItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                                 serialization::pimpl::SerializationService &serializationService,
+                                      MixedItemListener &listener)
+                        : instanceName(instanceName), clusterService(clusterService),
+                          serializationService(serializationService), listener(listener) {
+                }
+
+                virtual void handleItem(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
+                                        const int32_t &eventType) {
+                    std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                    ItemEventType type((ItemEventType::Type) eventType);
+                    ItemEvent<TypedData> itemEvent(instanceName, type, TypedData(item, serializationService), *member);
+                    if (type == ItemEventType::ADDED) {
+                        listener.itemAdded(itemEvent);
+                    } else if (type == ItemEventType::REMOVED) {
+                        listener.itemRemoved(itemEvent);
+                    }
+                }
+
+            private:
+                const std::string &instanceName;
+                spi::ClusterService &clusterService;
+                serialization::pimpl::SerializationService &serializationService;
+                MixedItemListener &listener;
+            };
         }
     }
 }
