@@ -72,7 +72,7 @@ namespace hazelcast {
                         #pragma clang diagnostic ignored "-Wreinterpret-base-class"
                         #endif
 
-                        if (NULL == portableInstance.get()) {
+                        if ((Portable *)NULL == portableInstance.get()) {
                             portableInstance.reset(reinterpret_cast<Portable *>(new T));
                         }
 
