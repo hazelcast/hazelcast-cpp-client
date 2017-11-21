@@ -28,6 +28,7 @@
 #include "hazelcast/client/MixedMultiMap.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
+#include "hazelcast/client/MixedSet.h"
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/MixedList.h"
 #include "hazelcast/client/ITopic.h"
@@ -551,6 +552,17 @@ namespace hazelcast {
             template<typename E>
             ISet<E> getSet(const std::string& name) {
                 return getDistributedObject<ISet<E> >(name);
+            }
+
+            /**
+            * Returns the distributed set instance with the specified name and entry type E.
+            * Set is ordered unique set of entries. similar to std::set
+            *
+            * @param name name of the distributed set
+            * @return distributed set instance with the specified name
+            */
+            MixedSet getMixedSet(const std::string& name) {
+                return getDistributedObject<MixedSet>(name);
             }
 
             /**
