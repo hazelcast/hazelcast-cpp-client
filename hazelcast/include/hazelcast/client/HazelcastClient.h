@@ -25,6 +25,7 @@
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MixedMap.h"
 #include "hazelcast/client/MultiMap.h"
+#include "hazelcast/client/MixedMultiMap.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/IList.h"
@@ -515,6 +516,16 @@ namespace hazelcast {
             template<typename K, typename V>
             MultiMap<K, V> getMultiMap(const std::string& name) {
                 return getDistributedObject<MultiMap<K, V> >(name);
+            }
+
+            /**
+            * Returns the distributed multimap instance with the specified name.
+            *
+            * @param name name of the distributed multimap
+            * @return distributed multimap instance with the specified name
+            */
+            MixedMultiMap getMixedMultiMap(const std::string& name) {
+                return getDistributedObject<MixedMultiMap>(name);
             }
 
             /**
