@@ -40,9 +40,11 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/PartitionAware.h"
+
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <list>
+#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -55,26 +57,39 @@ namespace hazelcast {
 
         namespace serialization {
             namespace pimpl {
+                struct HAZELCAST_API ObjectType {
+                    ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
+
+                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId) : typeId(typeId), factoryId(factoryId),
+                                                                                     classId(classId) {}
+
+                    int32_t typeId;
+                    int32_t factoryId;
+                    int32_t classId;
+
+                    friend std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
+                        os << "typeId: " << type.typeId << " factoryId: " << type.factoryId << " classId: "
+                           << type.classId;
+                        return os;
+                    }
+                };
+
                 class HAZELCAST_API SerializationService {
                 public:
-
                     SerializationService(const SerializationConfig& serializationConfig);
 
                     /**
                     *
                     *  return false if a serializer is already given corresponding to serializerId
                     */
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
 
                     template<typename T>
                     inline Data toData(const T *object) {
-                        if (NULL == object) {
-                            return Data();
-                        }
-
                         DataOutput output;
 
-                        ObjectDataOutput dataOutput(output, portableContext);
+                        SerializerHolder &serializerHolder = getSerializerHolder();
+                        ObjectDataOutput dataOutput(output, &serializerHolder);
 
                         writeHash<T>(object, output);
 
@@ -106,12 +121,15 @@ namespace hazelcast {
                             return std::auto_ptr<T>();
                         }
 
-                        // Constant 4 is Data::TYPE_OFFSET. Windows DLL export does not
+                        int32_t typeId = data.getType();
+                        
+                        // Constant 8 is Data::DATA_OFFSET. Windows DLL export does not
                         // let usage of static member.
-                        DataInput dataInput(data.toByteArray(), 4);
+                        DataInput dataInput(data.toByteArray(), 8);
 
-                        ObjectDataInput objectDataInput(dataInput, portableContext);
-                        return objectDataInput.readObject<T>();
+                        SerializerHolder &serializerHolder = getSerializerHolder();
+                        ObjectDataInput objectDataInput(dataInput, serializerHolder);
+                        return objectDataInput.readObject<T>(typeId);
                     }
 
                     template<typename T>
@@ -126,20 +144,23 @@ namespace hazelcast {
 
                     const byte getVersion() const;
 
-                private:
+                    ObjectType getObjectType(const Data *data);
+
+                    /**
+                     * This method is public only for testing purposes
+                     * @return The serializer holder.
+                     */
                     SerializerHolder &getSerializerHolder();
+                private:
 
                     SerializationService(const SerializationService &);
 
                     SerializationService &operator = (const SerializationService &);
 
-                    SerializationConstants constants;
                     PortableContext portableContext;
                     const SerializationConfig& serializationConfig;
 
                     bool isNullData(const Data &data);
-
-                    void writeHash(DataOutput &out);
 
                     template<typename T>
                     void writeHash(const PartitionAwareMarker *obj, DataOutput &out) {
@@ -156,114 +177,9 @@ namespace hazelcast {
                     void writeHash(const void *obj, DataOutput &out) {
                         out.writeInt(0);
                     }
+
+                    void registerConstantSerializers();
                 };
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<byte>(const byte  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<bool>(const bool  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<char>(const char  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<int16_t>(const int16_t  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<int32_t>(const int32_t  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<int64_t >(const int64_t  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<float>(const float  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<double>(const double  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<char> >(const std::vector<char> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<bool> >(const std::vector<bool> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<byte> >(const std::vector<byte> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<int16_t> >(const std::vector<int16_t> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<int32_t> >(const std::vector<int32_t> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<int64_t > >(const std::vector<int64_t > *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<float> >(const std::vector<float> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<double> >(const std::vector<double> *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::string>(const std::string  *object);
-
-                template<>
-                HAZELCAST_API Data SerializationService::toData<std::vector<std::string> >(const std::vector<std::string> *object);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<byte> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<bool> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<char> SerializationService::toObject(const Data &data) ;
-
-                template<>
-                HAZELCAST_API std::auto_ptr<int16_t> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<int32_t> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<int64_t > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<float> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<double> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<char> > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<bool> > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<byte> > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<int16_t> >  SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<int32_t> > SerializationService::toObject(const Data &data);
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<int64_t > > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr< std::vector<float> >  SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<double> > SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::string> SerializationService::toObject(const Data &data);
-
-                template<>
-                HAZELCAST_API std::auto_ptr<std::vector<std::string> > SerializationService::toObject(const Data &data);
 
                 template<>
                 HAZELCAST_API std::auto_ptr<Data> SerializationService::toObject(const Data *data);

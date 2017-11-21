@@ -30,6 +30,8 @@
 #include <map>
 #include <vector>
 #include <memory>
+#include <stdint.h>
+#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,9 +40,12 @@
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
 
             class ClassDefinition;
+            class ObjectDataInput;
 
             namespace pimpl {
 
@@ -53,7 +58,7 @@ namespace hazelcast {
                 class HAZELCAST_API PortableContext {
                 public:
 
-                    PortableContext(int version,const SerializationConstants& constants);
+                    PortableContext(const SerializationConfig &serializationConfig);
 
                     int getClassVersion(int factoryId, int classId);
 
@@ -67,12 +72,12 @@ namespace hazelcast {
 
                     int getVersion();
 
-                    boost::shared_ptr<ClassDefinition> readClassDefinition(DataInput &input, int id, int classId, int version);
+                    boost::shared_ptr<ClassDefinition> readClassDefinition(ObjectDataInput &input, int id, int classId,
+                                                                           int version);
 
                     SerializerHolder &getSerializerHolder();
 
-
-                    SerializationConstants const& getConstants() const;
+                    const SerializationConfig &getSerializationConfig() const;
 
                 private:
 
@@ -82,10 +87,9 @@ namespace hazelcast {
 
                     void operator = (const PortableContext &);
 
-                    int contextVersion;
                     util::SynchronizedMap<int, ClassDefinitionContext> classDefContextMap;
                     SerializerHolder serializerHolder;
-                    const SerializationConstants& constants;
+                    const SerializationConfig &serializationConfig;
                 };
             }
         }

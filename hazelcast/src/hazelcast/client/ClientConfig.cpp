@@ -24,7 +24,6 @@ namespace hazelcast {
 
         ClientConfig::ClientConfig()
         : loadBalancer(NULL)
-        , defaultLoadBalancer(new impl::RoundRobinLB)
         , smart(true)
         , redoOperation(false)
         , connectionAttemptLimit(2)
@@ -97,7 +96,7 @@ namespace hazelcast {
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
-                return defaultLoadBalancer.get();
+                return &defaultLoadBalancer;
             return loadBalancer;
         }
 

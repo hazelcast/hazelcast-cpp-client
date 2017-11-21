@@ -67,6 +67,9 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request;
                 std::auto_ptr<impl::BaseEventHandler> eventHandler;
                 util::AtomicInt resendCount;
+
+                CallPromise(const CallPromise &rhs);
+                void operator=(const CallPromise &rhs);
             };
         }
     }

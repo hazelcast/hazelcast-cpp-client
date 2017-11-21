@@ -20,6 +20,7 @@
 //  Created by sancar koyunlu on 1/3/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include <boost/foreach.hpp>
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -28,11 +29,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::PortableContext& context)
+            ObjectDataInput::ObjectDataInput(pimpl::DataInput& dataInput, pimpl::SerializerHolder &serializerHolder)
             : dataInput(dataInput)
-            , portableContext(context)
-            , serializerHolder(context.getSerializerHolder()) {
-
+            , serializerHolder(serializerHolder) {
             }
 
             void ObjectDataInput::readFully(std::vector<byte>& bytes) {
@@ -127,60 +126,25 @@ namespace hazelcast {
                 return dataInput.readUTFArray();
             }
 
-            void ObjectDataInput::readPortable(Portable * object) {
-                int factoryId = readInt();
-                int classId = readInt();
-                serializerHolder.getPortableSerializer().read(dataInput, *object, factoryId, classId);
-            }
-
-            void ObjectDataInput::readDataSerializable(IdentifiedDataSerializable * object) {
-                ObjectDataInput input(dataInput, portableContext);
-                serializerHolder.getDataSerializer().read(input, *object);
+            std::auto_ptr<std::vector<std::string *> > ObjectDataInput::readUTFPointerArray() {
+                return dataInput.readUTFPointerArray();
             }
 
             template <>
-            void ObjectDataInput::readInternal(int typeId, byte *object) {
-                *object = readByte();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, bool *object) {
-                *object = readBoolean();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, char *object) {
-                *object = readChar();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int16_t *object) {
-                *object = readShort();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int32_t *object) {
-                *object = readInt();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, int64_t *object) {
-                *object = readLong();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, float *object) {
-                *object = readFloat();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, double *object) {
-                *object = readDouble();
-            }
-
-            template <>
-            void ObjectDataInput::readInternal(int typeId, std::string *object) {
-                *object = *readUTF();
+            std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData, 
+                                                                                    const std::vector<std::string> *typePointer) const {
+                std::auto_ptr<std::vector<std::string> > result(new std::vector<std::string>());
+                typedef std::vector<std::string *> STRING_PONTER_ARRAY;
+                std::vector<std::string *> *data = reinterpret_cast<std::vector<std::string *> *>(actualData);
+                // it is guaranteed that the data will not be null
+                BOOST_FOREACH(STRING_PONTER_ARRAY::value_type value , *data) {
+                                if ((std::string *) NULL == value) {
+                                    result->push_back("");
+                                } else {
+                                    result->push_back(*value);
+                                }
+                            }
+                return result.release();
             }
         }
     }

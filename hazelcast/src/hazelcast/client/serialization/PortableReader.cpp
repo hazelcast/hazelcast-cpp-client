@@ -22,16 +22,14 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            PortableReader::PortableReader(pimpl::PortableContext& context, pimpl::DataInput& input, boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
+            PortableReader::PortableReader(pimpl::PortableContext& context, ObjectDataInput& input, boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader)
             : isDefaultReader(isDefaultReader) {
                 if (isDefaultReader) {
                     defaultPortableReader.reset(new pimpl::DefaultPortableReader(context, input, cd));
                 } else {
                     morphingPortableReader.reset(new pimpl::MorphingPortableReader(context, input, cd));
                 }
-
             }
-
 
             PortableReader::PortableReader(const PortableReader& reader)
             : isDefaultReader(reader.isDefaultReader)

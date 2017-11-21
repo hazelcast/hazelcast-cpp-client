@@ -17,15 +17,10 @@
 // Created by sancar koyunlu on 7/31/13.
 
 
-
-
-
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
-#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,29 +31,20 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializerBase;
+            class StreamSerializer;
 
             namespace pimpl {
-                class PortableContext;
-
                 class HAZELCAST_API SerializerHolder {
 
                 public:
-                    SerializerHolder(PortableContext &context);
+                    SerializerHolder();
 
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
 
-                    boost::shared_ptr<SerializerBase> serializerFor(int typeId);
-
-                    PortableSerializer &getPortableSerializer();
-
-                    DataSerializer &getDataSerializer();
+                    boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
 
                 private:
-                    hazelcast::util::SynchronizedMap<int, SerializerBase> serializers;
-                    PortableSerializer portableSerializer;
-                    DataSerializer dataSerializer;
-
+                    hazelcast::util::SynchronizedMap<int, StreamSerializer> serializers;
                 };
             }
         }

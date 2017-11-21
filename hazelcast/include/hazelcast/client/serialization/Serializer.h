@@ -20,6 +20,7 @@
 #define HAZELCAST_TYPE_SERIALIZER
 
 #include <stdint.h>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -31,18 +32,15 @@ namespace hazelcast {
             class ObjectDataInput;
 
             /**
-             * Internal Base class for Serializers
+             * This is an internal class !!!! Do not use.
              */
             class HAZELCAST_API SerializerBase {
             public:
-                /**
-                 * Destructor
-                */
                 virtual ~SerializerBase();
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
-                 * for your classes. Also not that for your serialized classes you need to implement as free function
+                 * for your classes. Also note that for your serialized classes you need to implement as free function
                  * in same namespace with your class
                  *
                  *      int32_t getHazelcastTypeId(const MyClass*);
@@ -53,66 +51,43 @@ namespace hazelcast {
             };
 
             /**
-             * Base class for custom serialization. If your all classes that needs to be serialized inherited from same
-             * class you can use an implementation like following
+             * Implement this interface and register to the SerializationConfig. See examples folder for usage examples.
              *
-
-                    class  MyCustomSerializer : public serialization::Serializer<ExampleBaseClass> {
-                         public:
-
-                         void write(serialization::ObjectDataOutput & out, const ExampleBaseClass& object);
-
-                         void read(serialization::ObjectDataInput & in, ExampleBaseClass& object);
-
-                         int32_t getHazelcastTypeId() const;
-
-                     };
-                    }
-
+             * Important note:
+             * you need to implement as free function in same namespace with your class
+             *            int32_t getHazelcastTypeId(const MyClass*);
              *
-             * Or if they are not inherited from same base class you can use a serializer class like following
-             * with templates.
+             * which should return same id with its serializer.
              *
-
-                    template<typename T>
-                    class MyCustomSerializer : public serialization::Serializer<T> {
-                    public:
-
-                       void write(serialization::ObjectDataOutput & out, const T& object) {
-                            //.....
-                       }
-
-                       void read(serialization::ObjectDataInput & in, T& object) {
-                           //.....
-                       }
-
-                       int32_t getHazelcastTypeId() const {
-                           //..
-                       }
-                    };
-
              *
-             * Along with serializer following function should be provided with same namespace that ExampleBaseClass
-             * belongs to
-             *
-             *     int32_t getHazelcastTypeId(const MyClass*);
-             *
-             *  which should return same id with its serializer.
-             *
-             * User than can register serializer via SerializationConfig as follows
-             *
-
-                   clientConfig.getSerializationConfig().registerSerializer(
-                   boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
-
              */
-            template <typename Serializable>
-            class Serializer : public SerializerBase {
+            class HAZELCAST_API StreamSerializer : public SerializerBase {
             public:
                 /**
-                 * Destructor
+                 *  This method writes object to ObjectDataOutput
+                 *
+                 *  @param out    ObjectDataOutput stream that object will be written to
+                 *  @param object that will be written to out
                  */
-                virtual ~Serializer() {}
+                virtual void write(ObjectDataOutput &out, const void *object) = 0;
+
+                /**
+                 * The factory method to construct the custom objects
+                 * Override this method if you want to provide a factory for the custom object.
+                 * The memory should be managed correctly to avoid any leaks.
+                 *
+                 * @param in The input stream to be read.
+                 * @return The constructed object.
+                 */
+                virtual void *read(ObjectDataInput &in) = 0;
+            };
+
+            /**
+             * @deprecated Please use StreamSerializer for custom Serialization
+             */
+            template <typename T>
+            class Serializer : public StreamSerializer {
+            public:
 
                 /**
                  *  This method writes object to ObjectDataOutput
@@ -120,15 +95,30 @@ namespace hazelcast {
                  *  @param out    ObjectDataOutput stream that object will be written to
                  *  @param object that will be written to out
                  */
-                virtual void write(ObjectDataOutput &out, const Serializable &object) = 0;
+                virtual void write(ObjectDataOutput &out, const T &object) = 0;
 
                 /**
                  *  Reads object from objectDataInputStream
                  *
                  *  @param in ObjectDataInput stream that object will read from
-                 *  @param object read object
+                 *  @param object read object from input data
                  */
-                virtual void read(ObjectDataInput &in, Serializable &object) = 0;
+                virtual void read(ObjectDataInput &in, T &object) = 0;
+
+                /**
+                 * This is an internal method for backward compatibility.
+                 * @param in ObjectDataInput stream that object will read from
+                 * @return read object from input data
+                 */
+                virtual void *read(ObjectDataInput &in) {
+                    std::auto_ptr<T> object(new T);
+                    read(in, *object);
+                    return object.release();
+                }
+
+                virtual void write(ObjectDataOutput &out, const void *object) {
+                    write(out, *(static_cast<const T *>(object)));
+                }
             };
 
         }

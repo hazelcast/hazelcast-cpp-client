@@ -23,7 +23,8 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/SerializationConfig.h"
 
 using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
@@ -38,10 +39,9 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(int version, const SerializationConstants& constants)
-                : contextVersion(version), serializerHolder(*this) , constants(constants){
+                PortableContext::PortableContext(const SerializationConfig &serializationConfig) :
+                        serializationConfig(serializationConfig) {
                 }
-
 
                 int PortableContext::getClassVersion(int factoryId, int classId) {
                     return getClassDefinitionContext(factoryId).getClassVersion(classId);
@@ -55,7 +55,7 @@ namespace hazelcast {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput& in, int factoryId, int classId, int version) {
+                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(ObjectDataInput& in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -71,12 +71,12 @@ namespace hazelcast {
                         in.position(pos);
 
                         short len = in.readShort();
-                        vector<char> chars(len);
+                        vector<byte> chars(len);
                         in.readFully(chars);
                         chars.push_back('\0');
 
                         FieldType type(in.readByte());
-                        std::string name(&(chars[0]));
+                        std::string name((char *)&(chars[0]));
                         int fieldFactoryId = 0;
                         int fieldClassId = 0;
                         if (type == FieldTypes::TYPE_PORTABLE) {
@@ -124,7 +124,7 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
-                    int portableVersion = PortableVersionHelper::getVersion(&portable, contextVersion);
+                    int portableVersion = PortableVersionHelper::getVersion(&portable, serializationConfig.getPortableVersion());
                     boost::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
                     if (cd.get() == NULL) {
                         ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(), portableVersion);
@@ -137,16 +137,11 @@ namespace hazelcast {
                 }
 
                 int PortableContext::getVersion() {
-                    return contextVersion;
+                    return serializationConfig.getPortableVersion();
                 }
 
                 SerializerHolder& PortableContext::getSerializerHolder() {
                     return serializerHolder;
-                }
-
-
-                SerializationConstants const& PortableContext::getConstants() const {
-                    return constants;
                 }
 
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
@@ -159,6 +154,10 @@ namespace hazelcast {
                         }
                     }
                     return *value;
+                }
+
+                const SerializationConfig &PortableContext::getSerializationConfig() const {
+                    return serializationConfig;
                 }
 
             }

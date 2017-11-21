@@ -49,9 +49,9 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PartitionAwareInt : public PartitionAware<int>, public serialization::IdentifiedDataSerializable {
+            class PartitionAwareInt : public serialization::IdentifiedDataSerializable, public PartitionAware<int> {
             public:
-                PartitionAwareInt() {}
+                PartitionAwareInt() : partitionKey(0), actualKey(0) {}
 
                 PartitionAwareInt(int partitionKey, int actualKey)
                         : partitionKey(partitionKey), actualKey(actualKey) {}

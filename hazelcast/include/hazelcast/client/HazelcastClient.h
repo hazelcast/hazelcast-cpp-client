@@ -18,10 +18,12 @@
 
 #include <memory>
 
+#include "hazelcast/client/map/impl/MixedMapProxyFactory.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
+#include "hazelcast/client/MixedMap.h"
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
@@ -465,7 +467,7 @@ namespace hazelcast {
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with
             */
-            HazelcastClient(ClientConfig&);
+            HazelcastClient(ClientConfig &config);
 
             /**
             * Destructor
@@ -485,7 +487,6 @@ namespace hazelcast {
             }
 
             /**
-            * @deprecated "Please use api::IMap<K, V> getMap(const char *name)."
             *
             * Returns the distributed map instance with the specified name.
             *
@@ -502,6 +503,8 @@ namespace hazelcast {
 
                 return IMap<K, V>(proxy);
             }
+
+            MixedMap getMixedMap(const std::string &name);
 
             /**
             * Returns the distributed multimap instance with the specified name.

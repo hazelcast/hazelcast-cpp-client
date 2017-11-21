@@ -819,7 +819,7 @@ namespace hazelcast {
 
                 template<typename ResultType, typename EntryProcessor>
                 std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
-                    EntryVector results = mapProxy.template executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
+                    EntryVector results = mapProxy.template executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
                             new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));

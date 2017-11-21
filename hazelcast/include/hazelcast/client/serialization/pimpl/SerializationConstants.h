@@ -40,39 +40,34 @@ namespace hazelcast {
             namespace pimpl {
                 class HAZELCAST_API SerializationConstants {
                 public:
-                    SerializationConstants();
-
-                    static int32_t const CONSTANT_TYPE_NULL = 0;
-                    static int32_t const CONSTANT_TYPE_PORTABLE = -1;
-                    static int32_t const CONSTANT_TYPE_DATA = -2;
-                    static int32_t const CONSTANT_TYPE_BYTE = -3;
-                    static int32_t const CONSTANT_TYPE_BOOLEAN = -4;
-                    static int32_t const CONSTANT_TYPE_CHAR = -5;
-                    static int32_t const CONSTANT_TYPE_SHORT = -6;
-                    static int32_t const CONSTANT_TYPE_INTEGER = -7;
-                    static int32_t const CONSTANT_TYPE_LONG = -8;
-                    static int32_t const CONSTANT_TYPE_FLOAT = -9;
-                    static int32_t const CONSTANT_TYPE_DOUBLE = -10;
-                    static int32_t const CONSTANT_TYPE_STRING = -11;
-                    static int32_t const CONSTANT_TYPE_BYTE_ARRAY = -12;
-                    static int32_t const CONSTANT_TYPE_BOOLEAN_ARRAY = -13;
-                    static int32_t const CONSTANT_TYPE_CHAR_ARRAY = -14;
-                    static int32_t const CONSTANT_TYPE_SHORT_ARRAY = -15;
-                    static int32_t const CONSTANT_TYPE_INTEGER_ARRAY = -16;
-                    static int32_t const CONSTANT_TYPE_LONG_ARRAY = -17;
-                    static int32_t const CONSTANT_TYPE_FLOAT_ARRAY = -18;
-                    static int32_t const CONSTANT_TYPE_DOUBLE_ARRAY = -19;
-                    static int32_t const CONSTANT_TYPE_STRING_ARRAY = -20;
+                    enum Types {
+                        CONSTANT_TYPE_NULL = 0,
+                        CONSTANT_TYPE_PORTABLE = -1,
+                        CONSTANT_TYPE_DATA = -2,
+                        CONSTANT_TYPE_BYTE = -3,
+                        CONSTANT_TYPE_BOOLEAN = -4,
+                        CONSTANT_TYPE_CHAR = -5,
+                        CONSTANT_TYPE_SHORT = -6,
+                        CONSTANT_TYPE_INTEGER = -7,
+                        CONSTANT_TYPE_LONG = -8,
+                        CONSTANT_TYPE_FLOAT = -9,
+                        CONSTANT_TYPE_DOUBLE = -10,
+                        CONSTANT_TYPE_STRING = -11,
+                        CONSTANT_TYPE_BYTE_ARRAY = -12,
+                        CONSTANT_TYPE_BOOLEAN_ARRAY = -13,
+                        CONSTANT_TYPE_CHAR_ARRAY = -14,
+                        CONSTANT_TYPE_SHORT_ARRAY = -15,
+                        CONSTANT_TYPE_INTEGER_ARRAY = -16,
+                        CONSTANT_TYPE_LONG_ARRAY = -17,
+                        CONSTANT_TYPE_FLOAT_ARRAY = -18,
+                        CONSTANT_TYPE_DOUBLE_ARRAY = -19,
+                        CONSTANT_TYPE_STRING_ARRAY = -20
+                    };
                     // ------------------------------------------------------------
 
-                    void checkClassType(int32_t expectedType, int32_t currentType) const;
-
+                    static void checkClassType(int32_t expectedType, int32_t currentType);
                 private:
-                    const int32_t size;
-                    std::vector<std::string> typeIdNameVector;
-
-                    int idToIndex(int32_t id) const;
-                    std::string typeIdToName(int32_t typeId) const;
+                    static std::string typeIdToName(int32_t typeId);
                 };
             }
         }

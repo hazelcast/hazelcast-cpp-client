@@ -20,28 +20,76 @@
 #ifndef HAZELCAST_DATA_SERIALIZER
 #define HAZELCAST_DATA_SERIALIZER
 
+#include <memory>
+#include <stdint.h>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/Serializer.h"
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/DataSerializableFactory.h"
+#include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
     namespace client {
+        class SerializationConfig;
+
         namespace serialization {
-            class IdentifiedDataSerializable;
 
             class ObjectDataOutput;
 
             class ObjectDataInput;
 
             namespace pimpl {
-                class HAZELCAST_API DataSerializer {
+                class HAZELCAST_API DataSerializer : public StreamSerializer {
                 public:
-                    DataSerializer();
+                    DataSerializer(const SerializationConfig &serializationConfig);
 
                     ~DataSerializer();
 
-                    void write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const;
+                    virtual int32_t getHazelcastTypeId() const;
 
-                    void read(ObjectDataInput &in, IdentifiedDataSerializable &object) const;
+                    template <typename T>
+                    std::auto_ptr<T> readObject(ObjectDataInput &in) {
+                        checkIfIdentifiedDataSerializable(in);
+                        int32_t factoryId = readInt(in);
+                        int32_t classId = readInt(in);
 
+                        const std::map<int32_t, boost::shared_ptr<DataSerializableFactory> > &dataSerializableFactories =
+                                serializationConfig.getDataSerializableFactories();
+                        std::map<int, boost::shared_ptr<hazelcast::client::serialization::DataSerializableFactory> >::const_iterator dsfIterator =
+                                dataSerializableFactories.find(factoryId);
+                        std::auto_ptr<IdentifiedDataSerializable> object;
+
+                        #ifdef __clang__
+                        #pragma clang diagnostic push
+                        #pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                        #endif
+                        if (dsfIterator != dataSerializableFactories.end()) {
+                            object = dsfIterator->second->create(classId);
+                        } else {
+                            object.reset(reinterpret_cast<IdentifiedDataSerializable *>(new T));
+                        }
+
+                        object->readData(in);
+
+                        return std::auto_ptr<T>(reinterpret_cast<T *>(object.release()));
+                        #ifdef __clang__
+                        #pragma clang diagnostic pop
+                        #endif
+                    }
+
+                    virtual void write(ObjectDataOutput &out, const IdentifiedDataSerializable *object);
+
+                    virtual void write(ObjectDataOutput &out, const void *object);
+
+                    virtual void *read(ObjectDataInput &in);
+
+                private:
+                    void checkIfIdentifiedDataSerializable(ObjectDataInput &in) const;
+
+                    const SerializationConfig &serializationConfig;
+
+                    int32_t readInt(ObjectDataInput &in) const;
                 };
             }
         }

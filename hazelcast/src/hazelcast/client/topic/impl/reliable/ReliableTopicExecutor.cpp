@@ -47,7 +47,11 @@ namespace hazelcast {
                         m.sequence = -1;
                         execute(m);
 
-                        runnerThread->cancel();
+                        /**
+                         * The following line is commented out due to bug
+                         * https://github.com/hazelcast/hazelcast-cpp-client/issues/339
+                         */
+                        //runnerThread->cancel();
                         runnerThread->join();
                         runnerThread.reset();
                     }

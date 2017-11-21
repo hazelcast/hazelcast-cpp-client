@@ -50,9 +50,28 @@ namespace hazelcast {
             int32_t HAZELCAST_API getHazelcastTypeId(const double *object);
 
             int32_t HAZELCAST_API getHazelcastTypeId(const std::string *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<char> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<bool> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<byte> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int16_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int32_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int64_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<float> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<double> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string *> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string> *object);
         }
     }
 }
-
 
 #endif //HAZELCAST_TypeIDS

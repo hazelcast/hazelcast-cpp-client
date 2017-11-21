@@ -21,9 +21,13 @@
 #ifndef HAZELCAST_SerializationConfig
 #define HAZELCAST_SerializationConfig
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <map>
+
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/DataSerializableFactory.h"
+#include "hazelcast/client/serialization/PortableFactory.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -79,9 +83,34 @@ namespace hazelcast {
              */
             SerializationConfig& registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer);
 
+            /**
+             * @param factoryId               factory ID of DataSerializableFactory to be registered
+             * @param dataSerializableFactory DataSerializableFactory object to be registered
+             * @return configured {@link SerializerConfig} for chaining
+             * @see DataSerializableFactory
+             */
+            SerializationConfig &addDataSerializableFactory(int32_t factoryId,
+                                                            boost::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory);
+
+            /**
+             * @param factoryId       factory ID of portableFactory to be registered
+             * @param portableFactory portableFactory object to be registered
+             * @return configured {@link SerializerConfig} for chaining
+             * @see PortableFactory
+             */
+            SerializationConfig &
+            addPortableFactory(int32_t factoryId, boost::shared_ptr<serialization::PortableFactory> portableFactory);
+
+            const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &
+            getDataSerializableFactories() const;
+
+            const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &getPortableFactories() const;
+
         private:
             int version;
             std::vector<boost::shared_ptr<serialization::SerializerBase> > serializers;
+            std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataSerializableFactories;
+            std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
         };
     }
 }

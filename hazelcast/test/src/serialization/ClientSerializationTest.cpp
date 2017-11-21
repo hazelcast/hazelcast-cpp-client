@@ -41,7 +41,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             static const unsigned int LARGE_ARRAY_SIZE =
-                    5 * 1024 * 1024;   // 5 MB. Previously it was 10 MB but then the
+                    1 * 1024 * 1024;   // 1 MB. Previously it was 10 MB but then the
             // test fails when using Windows 32-bit DLL
             // library with std::bad_alloc with 10 MB
 
@@ -50,9 +50,9 @@ namespace hazelcast {
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                boost::shared_ptr<serialization::SerializerBase> serializer1(
+                boost::shared_ptr<serialization::StreamSerializer> serializer1(
                         new TestCustomSerializerX<TestCustomXSerializable>());
-                boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
+                boost::shared_ptr<serialization::StreamSerializer> serializer2(new TestCustomPersonSerializer());
 
                 serializationService.registerSerializer(serializer1);
                 serializationService.registerSerializer(serializer2);
@@ -491,7 +491,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(
+                boost::shared_ptr<serialization::StreamSerializer> serializer(
                         new TestCustomSerializerX<TestCustomXSerializable>());
 
                 ss.registerSerializer(serializer);
@@ -508,7 +508,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomPersonSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(new TestCustomPersonSerializer());
+                boost::shared_ptr<serialization::StreamSerializer> serializer(new TestCustomPersonSerializer());
 
                 ss.registerSerializer(serializer);
 
@@ -549,11 +549,12 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
-                serialization::pimpl::SerializationConstants constants;
-                serialization::pimpl::PortableContext context(1, constants);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput out(dataOutput, context);
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
                 byte by = 2;
                 bool boolean = true;
@@ -620,7 +621,7 @@ namespace hazelcast {
 
                 std::auto_ptr<std::vector<byte> > buffer = dataOutput.toByteArray();
                 serialization::pimpl::DataInput dataInput(*buffer);
-                serialization::ObjectDataInput in(dataInput, context);
+                serialization::ObjectDataInput in(dataInput, serializationService.getSerializerHolder());
 
                 ASSERT_EQ(by, in.readByte());
                 ASSERT_EQ(c, in.readChar());
@@ -662,11 +663,12 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
                 std::string utfStr = "xyzä123";
 
-                serialization::pimpl::SerializationConstants constants;
-                serialization::pimpl::PortableContext context(1, constants);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput out(dataOutput, context);
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
 
                 out.writeUTF(&utfStr);

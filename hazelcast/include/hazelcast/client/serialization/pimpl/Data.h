@@ -85,6 +85,8 @@ namespace hazelcast {
 
                     inline int calculateHash() const;
                 };
+
+                bool HAZELCAST_API operator<(const Data &lhs, const Data &rhs);
             }
         }
     }

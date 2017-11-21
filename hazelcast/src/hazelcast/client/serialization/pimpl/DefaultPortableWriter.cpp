@@ -32,11 +32,11 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, DataOutput& dataOutput)
+                DefaultPortableWriter::DefaultPortableWriter(PortableContext& portableContext, boost::shared_ptr<ClassDefinition> cd, ObjectDataOutput &output)
                 : raw(false)
                 , serializerHolder(portableContext.getSerializerHolder())
-                , dataOutput(dataOutput)
-                , objectDataOutput(dataOutput, portableContext)
+                , dataOutput(*output.getDataOutput())
+                , objectDataOutput(output)
                 , begin(dataOutput.position())
                 , cd(cd) {
                     // room for final offset
@@ -187,7 +187,9 @@ namespace hazelcast {
                 }
 
                 void DefaultPortableWriter::write(const Portable& p) {
-                    serializerHolder.getPortableSerializer().write(dataOutput, p);
+                    boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                            serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+                    serializer->writeInternal(objectDataOutput, &p);
                 }
 
 

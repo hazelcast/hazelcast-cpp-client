@@ -116,8 +116,7 @@ namespace hazelcast {
                             tryToPutNearCache(key, value);
                         }
                         return value;
-                    } catch (exception::IException &e) {
-                        (void) e;
+                    } catch (exception::IException &) {
                         resetToUnmarkedState(key);
                         throw;
                     }
@@ -144,7 +143,7 @@ namespace hazelcast {
                         ClientMapProxy<K, V>::removeAllInternal(predicateData);
 
                         nearCache->clear();
-                    } catch (exception::IException &e) {
+                    } catch (exception::IException &) {
                         nearCache->clear();
                         throw;
                     }

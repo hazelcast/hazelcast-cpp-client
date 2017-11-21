@@ -34,11 +34,11 @@ namespace hazelcast {
     namespace client {
         HazelcastClient::HazelcastClient(ClientConfig &config)
         : clientConfig(config)
-        , clientProperties(config)
+        , clientProperties(clientConfig)
         , shutdownLatch(1)
         , clientContext(*this)
         , lifecycleService(clientContext, clientConfig, shutdownLatch)
-        , serializationService(config.getSerializationConfig())
+        , serializationService(clientConfig.getSerializationConfig())
         , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
         , nearCacheManager(serializationService)
         , clusterService(clientContext)
@@ -57,7 +57,7 @@ namespace hazelcast {
                 if (!lifecycleService.start()) {
                     throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
                 }
-            } catch (exception::IException &e) {
+            } catch (exception::IException &) {
                 lifecycleService.shutdown();
                 throw;
             }
@@ -93,6 +93,13 @@ namespace hazelcast {
 
         void HazelcastClient::shutdown() {
             lifecycleService.shutdown();
+        }
+
+        MixedMap HazelcastClient::getMixedMap(const std::string &name) {
+            map::impl::MixedMapProxyFactory factory(&clientContext);
+            boost::shared_ptr<spi::ClientProxy> proxy =
+                    getDistributedObjectForService("hz:impl:mapService", name, factory);
+            return *boost::static_pointer_cast<MixedMap>(proxy);
         }
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {

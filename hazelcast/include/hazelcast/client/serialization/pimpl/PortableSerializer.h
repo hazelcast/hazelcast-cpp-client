@@ -24,12 +24,10 @@
 #ifndef HAZELCAST_PORTABLE_SERIALIZER
 #define HAZELCAST_PORTABLE_SERIALIZER
 
-#include "hazelcast/util/HazelcastDll.h"
-#include <vector>
-#include <map>
 #include <memory>
-#include <boost/shared_ptr.hpp>
 
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/Serializer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,28 +44,66 @@ namespace hazelcast {
 
             class PortableReader;
 
-            namespace pimpl {
-                class DataOutput;
+            class ObjectDataInput;
 
-                class DataInput;
+            namespace pimpl {
 
                 class PortableContext;
 
-                class HAZELCAST_API PortableSerializer {
+                class HAZELCAST_API PortableSerializer : public StreamSerializer {
                 public:
 
                     PortableSerializer(PortableContext& portableContext);
 
-                    void write(DataOutput& dataOutput, const Portable& p) const;
+                    template <typename T>
+                    std::auto_ptr<T> readObject(ObjectDataInput &in) {
+                        int32_t factoryId = readInt(in);
+                        int32_t classId = readInt(in);
 
-                    void read(DataInput &in, Portable &p, int factoryId, int classId) const;
+                        return read<T>(in, factoryId, classId);
+                    }
 
+                    template <typename T>
+                    std::auto_ptr<T> read(ObjectDataInput &in, int32_t factoryId, int32_t classId) {
+                        std::auto_ptr<Portable> portableInstance = createNewPortableInstance(factoryId, classId);
+
+                        #ifdef __clang__
+                        #pragma clang diagnostic push
+                        #pragma clang diagnostic ignored "-Wreinterpret-base-class"
+                        #endif
+
+                        if (NULL == portableInstance.get()) {
+                            portableInstance.reset(reinterpret_cast<Portable *>(new T));
+                        }
+
+                        std::auto_ptr<Portable> object = read(in, portableInstance, factoryId, classId);
+                        return std::auto_ptr<T>(reinterpret_cast<T *>(object.release()));
+
+                        #ifdef __clang__
+                        #pragma clang diagnostic pop
+                        #endif
+                    }
+
+                    virtual int32_t getHazelcastTypeId() const;
+
+                    virtual void write(ObjectDataOutput &out, const void *object);
+
+                    virtual void *read(ObjectDataInput &in);
+
+                    void writeInternal(ObjectDataOutput &out, const Portable *p) const;
                 private:
                     PortableContext& context;
 
                     int findPortableVersion(int factoryId, int classId, const Portable& portable) const;
 
-                    PortableReader createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+                    PortableReader createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const;
+
+                    std::auto_ptr<Portable> createNewPortableInstance(int32_t factoryId, int32_t classId);
+
+                    int32_t readInt(ObjectDataInput &in) const;
+
+                    std::auto_ptr<Portable>
+                    read(ObjectDataInput &in, std::auto_ptr<Portable> portable, int32_t factoryId, int32_t classId);
                 };
 
             }

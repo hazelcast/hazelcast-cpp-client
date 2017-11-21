@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 public:
                     PortableReaderBase(PortableContext &portableContext,
-                            DataInput &input,
+                                       ObjectDataInput &input,
                             boost::shared_ptr<ClassDefinition> cd);
 
                     virtual ~PortableReaderBase();
@@ -85,28 +85,45 @@ namespace hazelcast {
                     void end();
 
                 protected:
-                    void getPortableInstance(char const *fieldName,
-                            Portable * &portableInstance);
-
-                    void getPortableInstancesArray(char const *fieldName,
-                            std::vector<Portable *> &portableInstances);
-
                     void setPosition(char const * , FieldType const& fieldType);
-
-                    boost::shared_ptr<ClassDefinition> cd;
-                    DataInput &dataInput;
-                private:
-                    SerializerHolder &serializerHolder;
-                    int finalPosition;
-                    ObjectDataInput objectDataInput;
-                    int offset;
-                    bool raw;
 
                     void checkFactoryAndClass(FieldDefinition fd, int factoryId, int classId) const;
 
-                    void read(DataInput &dataInput, Portable &object, int factoryId, int classId) const;
-
                     int readPosition(const char *, FieldType const& fieldType);
+
+                    template <typename T>
+                    boost::shared_ptr<T> getPortableInstance(char const *fieldName) {
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
+
+                        bool isNull = dataInput.readBoolean();
+                        int32_t factoryId = dataInput.readInt();
+                        int32_t classId = dataInput.readInt();
+
+                        checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+
+                        if (isNull) {
+                            return boost::shared_ptr<T>();
+                        } else {
+                            return read<T>(dataInput, factoryId, classId);
+                        }
+                    }
+
+                    template <typename T>
+                    boost::shared_ptr<T> read(ObjectDataInput &dataInput, int32_t factoryId, int32_t classId) const {
+                        boost::shared_ptr<PortableSerializer> serializer = boost::static_pointer_cast<PortableSerializer>(
+                                serializerHolder.serializerFor(SerializationConstants::CONSTANT_TYPE_PORTABLE));
+
+                        return boost::shared_ptr<T>(serializer->read<T>(dataInput, factoryId, classId));
+                    }
+
+                    boost::shared_ptr<ClassDefinition> cd;
+                    ObjectDataInput &dataInput;
+                private:
+                    SerializerHolder &serializerHolder;
+                    int finalPosition;
+                    int offset;
+                    bool raw;
+
                 };
             }
         }

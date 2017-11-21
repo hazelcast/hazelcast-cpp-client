@@ -55,7 +55,7 @@ namespace hazelcast {
                 /**
                 * Internal Api constructor
                 */
-                PortableReader(pimpl::PortableContext& context, pimpl::DataInput& dataInput,
+                PortableReader(pimpl::PortableContext& context, ObjectDataInput& dataInput,
                                 boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader);
 
                 PortableReader(const PortableReader & reader);

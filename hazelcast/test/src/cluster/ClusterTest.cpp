@@ -355,7 +355,7 @@ namespace hazelcast {
                 int64_t startTimeMillis = util::currentTimeMillis();
                 try {
                     HazelcastClient client(clientConfig);
-                } catch (exception::IllegalStateException &e) {
+                } catch (exception::IllegalStateException &) {
                     // this is expected
                 }
                 ASSERT_GE(util::currentTimeMillis() - startTimeMillis, 3 * 900);
