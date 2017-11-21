@@ -17,11 +17,13 @@
 // Created by sancar koyunlu on 01/10/14.
 //
 
+#include <boost/foreach.hpp>
+
+#include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 #include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-
 #include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/PartitionService.h"
@@ -88,6 +90,33 @@ namespace hazelcast {
                 connection::CallFuture future = context->getInvocationService().invokeOnConnection(request, conn);
                 return future.get();
             }
+
+            std::vector<hazelcast::client::TypedData>
+            ProxyImpl::toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values) const {
+                std::vector<hazelcast::client::TypedData> result;
+                typedef std::vector<serialization::pimpl::Data> VALUES;
+                BOOST_FOREACH(const VALUES::value_type &value , values) {
+                    result.push_back(TypedData(
+                            std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(value)),
+                            context->getSerializationService()));
+                }
+                return result;
+            }
+
+            std::vector<std::pair<TypedData, TypedData> > ProxyImpl::toTypedDataEntrySet(
+                    const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &dataEntrySet) {
+                typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > ENTRIES_DATA;
+                std::vector<std::pair<TypedData, TypedData> > result;
+                BOOST_FOREACH(const ENTRIES_DATA::value_type &value , dataEntrySet) {
+                                serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
+                                TypedData keyData(std::auto_ptr<serialization::pimpl::Data>(
+                                        new serialization::pimpl::Data(value.first)), serializationService);
+                                TypedData valueData(std::auto_ptr<serialization::pimpl::Data>(
+                                        new serialization::pimpl::Data(value.second)), serializationService);
+                                result.push_back(std::make_pair(keyData, valueData));
+                            }
+                return result;
+            }            
         }
     }
 }
