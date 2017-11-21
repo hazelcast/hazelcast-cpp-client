@@ -27,6 +27,7 @@
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/MixedMultiMap.h"
 #include "hazelcast/client/IQueue.h"
+#include "hazelcast/client/MixedQueue.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/IList.h"
 #include "hazelcast/client/MixedList.h"
@@ -538,6 +539,16 @@ namespace hazelcast {
             template<typename E>
             IQueue<E> getQueue(const std::string& name) {
                 return getDistributedObject<IQueue<E> >(name);
+            }
+
+            /**
+            * Returns the distributed queue instance with the specified name and entry type E.
+            *
+            * @param name name of the distributed queue
+            * @return distributed queue instance with the specified name
+            */
+            MixedQueue getMixedQueue(const std::string& name) {
+                return getDistributedObject<MixedQueue>(name);
             }
 
             /**
