@@ -13,5 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(custom-polymorphic main.cpp)
+add_executable(customPolymorphic main.cpp)
 
