@@ -26,7 +26,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class PolymorphicDataSerializableRingBufferTest : public ClientTestSupport {
+            class PolymorphicDataSerializableRingbufferTest : public ClientTestSupport {
             protected:
                 class BaseDataSerializable : public serialization::IdentifiedDataSerializable {
                 public:
@@ -114,14 +114,14 @@ namespace hazelcast {
                 static const int64_t CAPACITY;
             };
 
-            const int64_t PolymorphicDataSerializableRingBufferTest::CAPACITY = 10;
+            const int64_t PolymorphicDataSerializableRingbufferTest::CAPACITY = 10;
 
-            HazelcastServer *PolymorphicDataSerializableRingBufferTest::instance = NULL;
-            ClientConfig *PolymorphicDataSerializableRingBufferTest::clientConfig = NULL;
-            HazelcastClient *PolymorphicDataSerializableRingBufferTest::client = NULL;
-            boost::shared_ptr<Ringbuffer<PolymorphicDataSerializableRingBufferTest::BaseDataSerializable> > PolymorphicDataSerializableRingBufferTest::rb;
+            HazelcastServer *PolymorphicDataSerializableRingbufferTest::instance = NULL;
+            ClientConfig *PolymorphicDataSerializableRingbufferTest::clientConfig = NULL;
+            HazelcastClient *PolymorphicDataSerializableRingbufferTest::client = NULL;
+            boost::shared_ptr<Ringbuffer<PolymorphicDataSerializableRingbufferTest::BaseDataSerializable> > PolymorphicDataSerializableRingbufferTest::rb;
 
-            TEST_F(PolymorphicDataSerializableRingBufferTest, testPolymorhism) {
+            TEST_F(PolymorphicDataSerializableRingbufferTest, testPolymorhism) {
                 BaseDataSerializable base;
                 Derived1DataSerializable derived1;
                 Derived2DataSerializable derived2;
