@@ -118,6 +118,10 @@ namespace hazelcast {
             return getDistributedObject< ISemaphore >(instanceName);
         }
 
+        MixedRingbuffer HazelcastClient::getMixedRingbuffer(const std::string &instanceName) {
+            return getDistributedObject<MixedRingbuffer>(instanceName);
+        }
+
         ILock HazelcastClient::getILock(const std::string &instanceName) {
             return getDistributedObject< ILock >(instanceName);
         }

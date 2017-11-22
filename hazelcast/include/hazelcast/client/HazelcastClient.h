@@ -45,6 +45,7 @@
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/MixedRingbuffer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -688,6 +689,14 @@ namespace hazelcast {
             boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
                 return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
             }
+
+            /**
+             * Returns the distributed Ringbuffer instance with the specified name.
+             *
+             * @param instanceName name of the distributed Ringbuffer
+             * @return distributed RingBuffer instance with the specified name
+             */
+            MixedRingbuffer getMixedRingbuffer(const std::string& instanceName);
 
             /**
             * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
