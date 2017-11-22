@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 add_executable(mixedMapExample MixedMapExample.cpp)
-add_subdirectory(dataserializable-polymorphic)
+add_subdirectory(data-polymorphic)
 add_subdirectory(portable-polymorphic)
 add_subdirectory(custom-polymorphic)

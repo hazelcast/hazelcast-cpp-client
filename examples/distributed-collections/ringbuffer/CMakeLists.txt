@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(ringbufferexample ./RingbufferExample.cpp)
-add_executable(customPolymorphicRingBuffer ./CustomPolymorphicRingBuffer.cpp)
-add_executable(dataSerializablePolymorphicRingbuffer ./DataSerializablePolymorphicRingbuffer.cpp)
+add_executable(ringbufferExample ./RingbufferExample.cpp)
+add_executable(customPolymorphicRb CustomPolymorphicRb.cpp)
+add_executable(dataPolymorphicRb DataPolymorphicRb.cpp)
 
