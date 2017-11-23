@@ -773,7 +773,6 @@ namespace hazelcast {
             ClientProperties clientProperties;
             util::CountDownLatch shutdownLatch;
             spi::ClientContext clientContext;
-            spi::LifecycleService lifecycleService;
             serialization::pimpl::SerializationService serializationService;
             std::auto_ptr<connection::ConnectionManager> connectionManager;
             internal::nearcache::NearCacheManager nearCacheManager;
@@ -782,6 +781,7 @@ namespace hazelcast {
             spi::InvocationService invocationService;
             spi::ServerListenerService serverListenerService;
             Cluster cluster;
+            spi::LifecycleService lifecycleService;
             spi::ProxyManager proxyManager;
 
             HazelcastClient(const HazelcastClient& rhs);

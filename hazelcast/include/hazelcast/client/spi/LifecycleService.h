@@ -39,6 +39,10 @@ namespace hazelcast {
 
         class ClientConfig;
 
+        class LoadBalancer;
+
+        class Cluster;
+
         namespace spi {
 
             class ClientContext;
@@ -46,8 +50,8 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig,
-                                 util::CountDownLatch &shutdownLatch);
+                LifecycleService(ClientContext &clientContext, const std::set<LifecycleListener *> &lifecycleListeners,
+                                 util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer, Cluster &cluster);
 
                 virtual ~LifecycleService();
 
@@ -70,6 +74,8 @@ namespace hazelcast {
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
                 util::CountDownLatch &shutdownLatch;
+                LoadBalancer *loadBalancer;
+                Cluster &cluster;
             };
 
         }

@@ -37,7 +37,6 @@ namespace hazelcast {
         , clientProperties(clientConfig)
         , shutdownLatch(1)
         , clientContext(*this)
-        , lifecycleService(clientContext, clientConfig, shutdownLatch)
         , serializationService(clientConfig.getSerializationConfig())
         , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
         , nearCacheManager(serializationService)
@@ -46,12 +45,13 @@ namespace hazelcast {
         , invocationService(clientContext)
         , serverListenerService(clientContext)
         , cluster(clusterService)
+        , lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
+                           clientConfig.getLoadBalancer(), cluster)
         , proxyManager(clientContext)
         , TOPIC_RB_PREFIX("_hz_rb_") {
             std::stringstream prefix;
             (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
             util::ILogger::getLogger().setPrefix(prefix.str());
-            LoadBalancer *loadBalancer = clientConfig.getLoadBalancer();
 
             try {
                 if (!lifecycleService.start()) {
@@ -61,7 +61,6 @@ namespace hazelcast {
                 lifecycleService.shutdown();
                 throw;
             }
-            loadBalancer->init(cluster);
         }
 
         HazelcastClient::~HazelcastClient() {

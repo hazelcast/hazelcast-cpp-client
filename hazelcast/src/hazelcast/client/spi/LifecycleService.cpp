@@ -31,11 +31,13 @@ namespace hazelcast {
     namespace client {
         namespace spi {
 
-            LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig,
-                                               util::CountDownLatch &shutdownLatch)
-            :clientContext(clientContext)
-            , active(true), shutdownLatch(shutdownLatch) {
-                std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
+            LifecycleService::LifecycleService(ClientContext &clientContext,
+                                               const std::set<LifecycleListener *> &lifecycleListeners,
+                                               util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer,
+                                               Cluster &cluster) : clientContext(clientContext), active(true),
+                                                                   shutdownLatch(shutdownLatch),
+                                                                   loadBalancer(loadBalancer),
+                                                                   cluster(cluster) {
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
             }
 
@@ -53,6 +55,8 @@ namespace hazelcast {
                 if (!clientContext.getClusterService().start()) {
                     return false;
                 }
+
+                loadBalancer->init(cluster);
 
                 if (!clientContext.getPartitionService().start()) {
                     return false;
