@@ -193,9 +193,9 @@ namespace hazelcast {
             return stats;
         }
 
-        TypedData MixedMap::getInternal(serialization::pimpl::Data &keyData) {
+        boost::shared_ptr<TypedData> MixedMap::getInternal(serialization::pimpl::Data &keyData) {
             std::auto_ptr<serialization::pimpl::Data> valueData = proxy::IMapImpl::getData(keyData);
-            return TypedData(valueData, context->getSerializationService());
+            return boost::shared_ptr<TypedData>(new TypedData(valueData, context->getSerializationService()));
         }
 
         bool MixedMap::containsKeyInternal(const serialization::pimpl::Data &keyData) {

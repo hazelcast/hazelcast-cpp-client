@@ -61,6 +61,8 @@ namespace hazelcast {
                     return localMapStats;
                 }
             protected:
+                typedef std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> MARKER_MAP;
+
                 //@override
                 void onInitialize() {
                     ClientMapProxy<K, V>::onInitialize();
@@ -222,7 +224,7 @@ namespace hazelcast {
                 virtual EntryVector
                 getAllInternal(const std::map<int, std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR> > &pIdToKeyData,
                                std::map<K, V> &result) {
-                    std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> markers;
+                    MARKER_MAP markers;
                     try {
                         for (typename std::map<int, std::vector<typename ClientMapProxy<K, V>::KEY_DATA_PAIR> >::const_iterator
                                      it = pIdToKeyData.begin(); it != pIdToKeyData.end(); ++it) {
@@ -364,8 +366,8 @@ namespace hazelcast {
                     keyStateMarker->forceUnmark(*key);
                 }
 
-                void unmarkRemainingMarkedKeys(std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> &markers) {
-                    for (std::map<boost::shared_ptr<serialization::pimpl::Data>, bool>::const_iterator it = markers.begin();
+                void unmarkRemainingMarkedKeys(MARKER_MAP &markers) {
+                    for (MARKER_MAP::const_iterator it = markers.begin();
                          it != markers.end(); ++it) {
                         if (it->second) {
                             keyStateMarker->forceUnmark(*it->first);

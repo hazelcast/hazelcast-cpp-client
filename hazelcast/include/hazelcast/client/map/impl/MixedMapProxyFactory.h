@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 #define HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 
+#include <hazelcast/client/NearCachedMixedMap.h>
 #include "hazelcast/client/MixedMap.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -38,18 +39,17 @@ namespace hazelcast {
 
                     //@Override
                     boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-/*
-                        const config::NearCacheConfig<K, V> *nearCacheConfig = clientContext->getClientConfig().template getNearCacheConfig<K, V>(name);
+                        const boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig =
+                                clientContext->getClientConfig().getMixedNearCacheConfig(name);
                         spi::ClientProxy *proxy;
                         if (nearCacheConfig != NULL) {
                             //TODO checkNearCacheConfig(nearCacheConfig, true);
-                            proxy = new map::NearCachedClientMapProxy<K, V>(name, clientContext, *nearCacheConfig);
+                            proxy = new NearCachedMixedMap(name, clientContext, *nearCacheConfig);
                         } else {
-                            proxy = new map::ClientMapProxy<K, V>(name, clientContext);
+                            proxy = new MixedMap(name, clientContext);
                         }
-*/
 
-                        return boost::shared_ptr<spi::ClientProxy>(new MixedMap(name, clientContext));
+                        return boost::shared_ptr<spi::ClientProxy>(proxy);
                     }
                 private:
                     spi::ClientContext *clientContext;

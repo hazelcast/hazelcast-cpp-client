@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <climits>
 #include <assert.h>
+#include <boost/foreach.hpp>
 
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/monitor/LocalMapStats.h"
@@ -58,6 +59,8 @@ namespace hazelcast {
         */
         class HAZELCAST_API MixedMap : public proxy::IMapImpl {
         public:
+            typedef std::map<int, std::vector<boost::shared_ptr<serialization::pimpl::Data> > > PID_TO_KEY_MAP;
+
             MixedMap(const std::string &instanceName, spi::ClientContext *context);
 
             /**
@@ -93,7 +96,9 @@ namespace hazelcast {
             template <typename K>
             TypedData get(const K &key) {
                 serialization::pimpl::Data keyData = toData(key);
-                return getInternal(keyData);
+                boost::shared_ptr<TypedData> value = getInternal(keyData);
+                TypedData result = *value;
+                return result;
             }
 
             /**
@@ -615,26 +620,17 @@ namespace hazelcast {
                     return std::vector<std::pair<TypedData, TypedData> >();
                 }
 
-                std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > partitionToKeyData;
-                // group the request per parition id
-                for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end(); ++it) {
-                    serialization::pimpl::Data keyData = toData<K>(*it);
+                PID_TO_KEY_MAP partitionToKeyData;
 
-                    int partitionId = getPartitionId(keyData);
+                BOOST_FOREACH(const K &key , keys) {
+                                serialization::pimpl::Data keyData = toData<K>(key);
 
-                    partitionToKeyData[partitionId].push_back(std::make_pair(&(*it), toShared(keyData)));
-                }
+                                int partitionId = getPartitionId(keyData);
 
-                std::vector<std::pair<TypedData, TypedData> > result;
-                EntryVector entries = getAllInternal<K>(partitionToKeyData);
-                for (EntryVector::iterator it = entries.begin();it != entries.end(); ++it) {
-                    std::auto_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(it->first));
-                    std::auto_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(it->second));
-                    result.push_back(std::make_pair<TypedData, TypedData>(
-                            TypedData(keyData, context->getSerializationService()),
-                            TypedData(valueData, context->getSerializationService())));
-                }
-                return result;
+                                partitionToKeyData[partitionId].push_back(toShared(keyData));
+                            }
+
+                return toTypedDataEntrySet(getAllInternal(partitionToKeyData));
             }
 
             /**
@@ -1019,7 +1015,7 @@ namespace hazelcast {
 
             virtual monitor::LocalMapStats &getLocalMapStats();
         protected:
-            virtual TypedData getInternal(serialization::pimpl::Data &keyData);
+            virtual boost::shared_ptr<TypedData> getInternal(serialization::pimpl::Data &keyData);
 
             virtual bool containsKeyInternal(const serialization::pimpl::Data &keyData);
 
@@ -1060,29 +1056,16 @@ namespace hazelcast {
 
             virtual bool evictInternal(const serialization::pimpl::Data &keyData);
 
-            template <typename K>
-            EntryVector getAllInternal(
-                    const std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > > &partitionToKeyData) {
-
-                std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
-
-                for (typename std::map<int, std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > > >::const_iterator
-                             it = partitionToKeyData.begin();it != partitionToKeyData.end();++it) {
-                    for (typename std::vector<std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > >::const_iterator
-                                 keyIt = it->second.begin();keyIt != it->second.end();++keyIt) {
-                        // Deep copiy the data bytes. This is needed since IMapImpl::getAllData
-                        // implicitely changes the internal pointer of Data object which is needed later by the
-                        // caller of this method.
-                        //TODO: When Data object is made as non-copiable and the map codecs are generated to use
-                        //TODO  shared pointers rather than the Data object, then this duplication can be eliminated
-                        //TODO  using shared pointers of data.
-                        std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>((*keyIt).second->toByteArray()));
-                        partitionKeys[it->first].push_back(serialization::pimpl::Data(bytes));
-                    }
-                }
-                EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
-
-                return allData;
+            EntryVector getAllInternal(const PID_TO_KEY_MAP &partitionToKeyData) {
+                std::map<int, std::vector<serialization::pimpl::Data> > datas;
+                BOOST_FOREACH(const PID_TO_KEY_MAP::value_type &entry , partitionToKeyData) {
+                                BOOST_FOREACH(
+                                        const std::vector<boost::shared_ptr<serialization::pimpl::Data> >::value_type &data,
+                                        entry.second) {
+                                                datas[entry.first].push_back(*data);
+                                            }
+                            }
+                return proxy::IMapImpl::getAllData(datas);
             }
 
             virtual std::auto_ptr<serialization::pimpl::Data>

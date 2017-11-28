@@ -358,6 +358,20 @@ namespace hazelcast {
             }
 
             /**
+             * Helper method to add a new NearCacheConfig
+             *
+             * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * @see com.hazelcast.config.NearCacheConfig
+             *
+             * Memory ownership of the config is passed to the client config
+             */
+            ClientConfig &addMixedNearCacheConfig(const boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig) {
+                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+                return *this;
+            }
+
+            /**
              * Gets the {@link NearCacheConfig} configured for the map / cache with name
              *
              * @param name name of the map / cache
@@ -365,15 +379,17 @@ namespace hazelcast {
              * @see com.hazelcast.config.NearCacheConfig
              */
             template <typename K, typename V>
-            const config::NearCacheConfig<K, V> *getNearCacheConfig(const std::string &name) {
+            const boost::shared_ptr<config::NearCacheConfig<K, V> > getNearCacheConfig(const std::string &name) {
                 boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = lookupByPattern(name);
                 if (nearCacheConfig.get() == NULL) {
                     nearCacheConfig = nearCacheConfigMap.get("default");
                 }
                 // not needed for c++ client since it is always native memory
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
-                return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig).get();
+                return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig);
             }
+
+            const boost::shared_ptr<config::MixedNearCacheConfig> getMixedNearCacheConfig(const std::string &name);
 
             /**
              * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}

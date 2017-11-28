@@ -116,7 +116,11 @@ namespace hazelcast {
                                 result.push_back(std::make_pair(keyData, valueData));
                             }
                 return result;
-            }            
+            }
+
+            boost::shared_ptr<serialization::pimpl::Data> ProxyImpl::toShared(const serialization::pimpl::Data &data) {
+                return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+            }
         }
     }
 }

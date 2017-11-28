@@ -33,7 +33,6 @@
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -48,8 +47,75 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace mixedmap {
-                class MixedMapAPITest : public ClientTestSupport {
+                class MapClientConfig : public ClientConfig {
+                public:
+                    MapClientConfig() {
+                    }
+
+                    virtual ~MapClientConfig() {
+                    }
+
+                    /**
+                     * @return true if expiry at the server side should be seen by the client
+                     */
+                    virtual bool shouldExpireWhenTLLExpiresAtServer() {
+                        return true;
+                    }
+                };
+
+                class NearCachedDataMapClientConfig : public MapClientConfig {
+                public:
+                    NearCachedDataMapClientConfig() {
+                        boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig(
+                                new config::MixedNearCacheConfig("MixedMapTestMap"));
+                        addMixedNearCacheConfig(nearCacheConfig);
+                    }
+
+                    /**
+                     * @return true if expiry at the server side should be seen by the client
+                     */
+                    virtual bool shouldExpireWhenTLLExpiresAtServer() {
+                        return false;
+                    }
+                };
+
+                class MixedMapAPITest : public ClientTestSupport, public ::testing::WithParamInterface<MapClientConfig *> {
+                public:
+                    MixedMapAPITest() : clientConfig(GetParam()) {
+                        #ifdef HZ_BUILD_WITH_SSL
+                        config::SSLConfig sslConfig;
+                        sslConfig.setEnabled(true).setProtocol(config::tlsv1).addVerifyFile(getCAFilePath());
+                        clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
+                        #endif // HZ_BUILD_WITH_SSL
+
+                        client.reset(new HazelcastClient(*clientConfig));
+
+                        imap = client->getMixedMap("MixedMapTestMap");
+                    }
+
+                    static void SetUpTestCase() {
+                        #ifdef HZ_BUILD_WITH_SSL
+                        instance = new HazelcastServer(*g_srvFactory, true);
+                        instance2 = new HazelcastServer(*g_srvFactory, true);
+                        #else
+                        instance = new HazelcastServer(*g_srvFactory);
+                        instance2 = new HazelcastServer(*g_srvFactory);
+                        #endif
+                    }
+
+                    static void TearDownTestCase() {
+                        delete instance2;
+                        delete instance;
+
+                        instance2 = NULL;
+                        instance = NULL;
+                    }
+
                 protected:
+                    virtual void TearDown() {
+                        imap->destroy();
+                    }
+
                     class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
                     public:
                         MapGetInterceptor(const std::string &prefix) : prefix(
@@ -96,49 +162,6 @@ namespace hazelcast {
                         }
                     };
 
-                    virtual void SetUp() {
-                        if (imap) {
-                            imap->destroy();
-                        }
-                        delete imap;
-                        const ::testing::TestInfo* const testInfo =
-                                ::testing::UnitTest::GetInstance()->current_test_info();
-                        imap = new MixedMap(client->getMixedMap(testInfo->name()));
-                    }
-
-                    static void SetUpTestCase() {
-                        #ifdef HZ_BUILD_WITH_SSL
-                        instance = new HazelcastServer(*g_srvFactory, true);
-                        instance2 = new HazelcastServer(*g_srvFactory, true);
-                        #else
-                        instance = new HazelcastServer(*g_srvFactory);
-                        instance2 = new HazelcastServer(*g_srvFactory);
-                        #endif
-
-                        clientConfig = getConfig().release();
-                        #ifdef HZ_BUILD_WITH_SSL
-                        config::SSLConfig sslConfig;
-                        sslConfig.setEnabled(true).setProtocol(config::tlsv1).addVerifyFile(getCAFilePath());
-                        clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
-                        #endif // HZ_BUILD_WITH_SSL
-                        client = new HazelcastClient(*clientConfig);
-                        imap = new MixedMap(client->getMixedMap("MixedMapAPITest"));
-                    }
-
-                    static void TearDownTestCase() {
-                        delete imap;
-                        delete client;
-                        delete clientConfig;
-                        delete instance2;
-                        delete instance;
-
-                        imap = NULL;
-                        client = NULL;
-                        clientConfig = NULL;
-                        instance2 = NULL;
-                        instance = NULL;
-                    }
-
                     void fillMap() {
                         for (int i = 0; i < 10; i++) {
                             std::string key = "key";
@@ -151,16 +174,17 @@ namespace hazelcast {
 
                     static HazelcastServer *instance;
                     static HazelcastServer *instance2;
-                    static ClientConfig *clientConfig;
-                    static HazelcastClient *client;
-                    static MixedMap *imap;
+                    MapClientConfig *clientConfig;
+                    std::auto_ptr<HazelcastClient> client;
+                    MixedMap *imap;
                 };
+
+                INSTANTIATE_TEST_CASE_P(MixedMapAPITestInstance,
+                                        MixedMapAPITest,
+                                        ::testing::Values(new MapClientConfig(), new NearCachedDataMapClientConfig()));
 
                 HazelcastServer *MixedMapAPITest::instance = NULL;
                 HazelcastServer *MixedMapAPITest::instance2 = NULL;
-                ClientConfig *MixedMapAPITest::clientConfig = NULL;
-                HazelcastClient *MixedMapAPITest::client = NULL;
-                MixedMap *MixedMapAPITest::imap = NULL;
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
@@ -384,16 +408,37 @@ namespace hazelcast {
                     util::CountDownLatch &latch;
                 };
 
-                class SampleEntryListenerForPortableKey : public EntryAdapter<Employee, int> {
+                class SampleEntryListenerForPortableKey : public MixedEntryListener {
                 public:
                     SampleEntryListenerForPortableKey(util::CountDownLatch &latch, util::AtomicInt &atomicInteger)
                             : latch(latch), atomicInteger(atomicInteger) {
 
                     }
 
-                    void entryAdded(const EntryEvent<Employee, int> &event) {
+                    virtual void entryAdded(const MixedEntryEvent &event) {
                         ++atomicInteger;
                         latch.countDown();
+                    }
+
+                    virtual void entryRemoved(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryUpdated(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryEvicted(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryExpired(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void entryMerged(const MixedEntryEvent &event) {
+                    }
+
+                    virtual void mapEvicted(const MapEvent &event) {
+                    }
+
+                    virtual void mapCleared(const MapEvent &event) {
                     }
 
                 private:
@@ -503,7 +548,7 @@ namespace hazelcast {
                     }
                 };
 
-                TEST_F(MixedMapAPITest, testIssue537) {
+                TEST_P(MixedMapAPITest, testIssue537) {
                     util::CountDownLatch latch(2);
                     util::CountDownLatch nullLatch(1);
                     MyListener myListener(latch, nullLatch);
@@ -520,7 +565,7 @@ namespace hazelcast {
                     ASSERT_EQ(1, imap->size());
                 }
 
-                TEST_F(MixedMapAPITest, testContains) {
+                TEST_P(MixedMapAPITest, testContains) {
                     fillMap();
 
                     ASSERT_FALSE(imap->containsKey<std::string>("key10"));
@@ -531,7 +576,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testGet) {
+                TEST_P(MixedMapAPITest, testGet) {
                     fillMap();
                     for (int i = 0; i < 10; i++) {
                         std::string key = "key";
@@ -544,7 +589,7 @@ namespace hazelcast {
                     }
                 }
 
-                TEST_F(MixedMapAPITest, testRemoveAndDelete) {
+                TEST_P(MixedMapAPITest, testRemoveAndDelete) {
                     fillMap();
                     std::auto_ptr<std::string> temp = imap->remove<std::string>("key10").get<std::string>();
                     ASSERT_EQ(temp.get(), (std::string *) NULL);
@@ -561,7 +606,7 @@ namespace hazelcast {
                     ASSERT_EQ(imap->size(), 0);
                 }
 
-                TEST_F(MixedMapAPITest, testRemoveIfSame) {
+                TEST_P(MixedMapAPITest, testRemoveIfSame) {
                     fillMap();
 
                     ASSERT_FALSE((imap->remove<std::string, std::string>("key2", "value")));
@@ -572,7 +617,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testRemoveAll) {
+                TEST_P(MixedMapAPITest, testRemoveAll) {
                     fillMap();
 
                     imap->removeAll(
@@ -590,7 +635,7 @@ namespace hazelcast {
                 }
 
 
-                TEST_F(MixedMapAPITest, testGetAllPutAll) {
+                TEST_P(MixedMapAPITest, testGetAllPutAll) {
                     std::map<std::string, std::string> mapTemp;
 
                     for (int i = 0; i < 100; i++) {
@@ -627,7 +672,7 @@ namespace hazelcast {
                     ASSERT_NE(*key1, *entry.first.get<std::string>());
                 }
 
-                TEST_F(MixedMapAPITest, testTryPutRemove) {
+                TEST_P(MixedMapAPITest, testTryPutRemove) {
                     ASSERT_TRUE((imap->tryPut<std::string, std::string>("key1", "value1", 1 * 1000)));
                     ASSERT_TRUE((imap->tryPut<std::string, std::string>("key2", "value2", 1 * 1000)));
                     imap->lock<std::string>("key1");
@@ -645,7 +690,7 @@ namespace hazelcast {
                     imap->forceUnlock<std::string>("key2");
                 }
 
-                TEST_F(MixedMapAPITest, testGetEntryViewForNonExistentData) {
+                TEST_P(MixedMapAPITest, testGetEntryViewForNonExistentData) {
                     std::auto_ptr<EntryView<TypedData, TypedData> > view = imap->getEntryView<std::string>("non-existent");
 
                     ASSERT_EQ((EntryView<TypedData, TypedData> *)NULL, view.get());
@@ -660,7 +705,7 @@ namespace hazelcast {
                     ASSERT_EQ((EntryView<TypedData, TypedData> *)NULL, view.get());
                 }
 
-                TEST_F(MixedMapAPITest, testPutTtl) {
+                TEST_P(MixedMapAPITest, testPutTtl) {
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -672,14 +717,21 @@ namespace hazelcast {
                     util::sleep(2);
                     // trigger eviction
                     std::auto_ptr<std::string> temp2 = imap->get<std::string>("key1").get<std::string>();
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
-                    ASSERT_TRUE(evict.await(20));
+
+                    // When ttl expires at server, the server does not send near cache invalidation
+                    if (clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
+                        ASSERT_NULL_EVENTUALLY(imap->get<std::string>("key1").get<std::string>().get(), std::string);
+                        ASSERT_TRUE(evict.await(10));
+                    } else {
+                        temp = imap->get<std::string>("key1").get<std::string>();
+                        ASSERT_EQ(*temp, "value1");
+                    }
 
                     ASSERT_TRUE(imap->removeEntryListener(id));
                 }
 
-                TEST_F(MixedMapAPITest, testPutConfigTtl) {
-                    MixedMap map = client->getMixedMap("OneSecondTtlMap");
+                TEST_P(MixedMapAPITest, testPutConfigTtl) {
+                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -697,13 +749,13 @@ namespace hazelcast {
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
 
-                TEST_F(MixedMapAPITest, testPutIfAbsent) {
+                TEST_P(MixedMapAPITest, testPutIfAbsent) {
                     std::auto_ptr<std::string> o = imap->putIfAbsent<std::string, std::string>("key1", "value1").get<std::string>();
                     ASSERT_EQ(o.get(), (std::string *) NULL);
                     ASSERT_EQ("value1", *(imap->putIfAbsent<std::string, std::string>("key1", "value3").get<std::string>()));
                 }
 
-                TEST_F(MixedMapAPITest, testPutIfAbsentTtl) {
+                TEST_P(MixedMapAPITest, testPutIfAbsentTtl) {
                     ASSERT_EQ((std::string *) NULL, (imap->putIfAbsent<std::string, std::string>("key1", "value1", 1000).get<std::string>().get()));
                     ASSERT_EQ("value1", *(imap->putIfAbsent<std::string, std::string>("key1", "value3", 1000).get<std::string>()));
 
@@ -711,7 +763,7 @@ namespace hazelcast {
                     ASSERT_EQ("value3", *(imap->putIfAbsent<std::string, std::string>("key1", "value4", 1000).get<std::string>()));
                 }
 
-                TEST_F(MixedMapAPITest, testSet) {
+                TEST_P(MixedMapAPITest, testSet) {
                     imap->set<std::string, std::string>("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
 
@@ -720,12 +772,17 @@ namespace hazelcast {
 
                     imap->set<std::string, std::string>("key1", "value3", 1000);
                     ASSERT_EQ("value3", *(imap->get<std::string>("key1").get<std::string>()));
-
-                    ASSERT_NULL_EVENTUALLY(imap->get<std::string>("key1").get<std::string>().get(), std::string);
+                    // When ttl expires at server, the server does not send near cache invalidation
+                    if (clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
+                        ASSERT_NULL_EVENTUALLY(imap->get<std::string>("key1").get<std::string>().get(), std::string);
+                    } else {
+                        util::sleep(2);
+                        ASSERT_EQ("value3", *(imap->get<std::string>("key1").get<std::string>()));
+                    }
                 }
 
-                TEST_F(MixedMapAPITest, testSetTtl) {
-                    MixedMap map = client->getMixedMap("OneSecondTtlMap");
+                TEST_P(MixedMapAPITest, testSetTtl) {
+                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -743,8 +800,8 @@ namespace hazelcast {
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
 
-                TEST_F(MixedMapAPITest, testSetConfigTtl) {
-                    MixedMap map = client->getMixedMap("OneSecondTtlMap");
+                TEST_P(MixedMapAPITest, testSetConfigTtl) {
+                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -762,7 +819,7 @@ namespace hazelcast {
                     ASSERT_TRUE(map.removeEntryListener(id));
                 }
 
-                TEST_F(MixedMapAPITest, testLock) {
+                TEST_P(MixedMapAPITest, testLock) {
                     imap->put<std::string, std::string>("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
                     imap->lock<std::string>("key1");
@@ -774,7 +831,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testLockTtl) {
+                TEST_P(MixedMapAPITest, testLockTtl) {
                     imap->put<std::string, std::string>("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
                     imap->lock<std::string>("key1", 2 * 1000);
@@ -787,7 +844,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testLockTtl2) {
+                TEST_P(MixedMapAPITest, testLockTtl2) {
                     imap->lock<std::string>("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
                     util::Thread t1(testLockTTL2Thread, &latch, imap);
@@ -796,7 +853,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testTryLock) {
+                TEST_P(MixedMapAPITest, testTryLock) {
 
                     ASSERT_TRUE(imap->tryLock<std::string>("key1", 2 * 1000));
                     util::CountDownLatch latch(1);
@@ -817,7 +874,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testForceUnlock) {
+                TEST_P(MixedMapAPITest, testForceUnlock) {
                     imap->lock<std::string>("key1");
                     util::CountDownLatch latch(1);
                     util::Thread t2(testMapForceUnlockThread, &latch, imap);
@@ -827,7 +884,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testValues) {
+                TEST_P(MixedMapAPITest, testValues) {
 
                     fillMap();
                     query::SqlPredicate predicate("this == value1");
@@ -838,7 +895,7 @@ namespace hazelcast {
                 }
 
 /*
-                TEST_F(MixedMapAPITest, testValuesWithPredicate) {
+                TEST_P(MixedMapAPITest, testValuesWithPredicate) {
                     const int numItems = 20;
                     for (int i = 0; i < numItems; ++i) {
                         imap->put<int, int>(i, 2 * i);
@@ -1213,7 +1270,7 @@ namespace hazelcast {
 */
 
 /*
-                TEST_F(MixedMapAPITest, testValuesWithPagingPredicate) {
+                TEST_P(MixedMapAPITest, testValuesWithPagingPredicate) {
                     int predSize = 5;
                     const int totalEntries = 25;
 
@@ -1365,7 +1422,7 @@ namespace hazelcast {
 */
 
 /*
-                TEST_F(MixedMapAPITest, testKeySetWithPredicate) {
+                TEST_P(MixedMapAPITest, testKeySetWithPredicate) {
                     const int numItems = 20;
                     for (int i = 0; i < numItems; ++i) {
                         imap->put<int, int>(i, 2 * i);
@@ -1719,7 +1776,7 @@ namespace hazelcast {
                     ASSERT_EQ("key_22_test", actualStrs[1]);
                 }
 
-                TEST_F(MixedMapAPITest, testKeySetWithPagingPredicate) {
+                TEST_P(MixedMapAPITest, testKeySetWithPagingPredicate) {
                     int predSize = 5;
                     const int totalEntries = 25;
 
@@ -1876,7 +1933,7 @@ namespace hazelcast {
                     ASSERT_EQ(6, *result->get(1));
                 }
 
-                TEST_F(MixedMapAPITest, testEntrySetWithPredicate) {
+                TEST_P(MixedMapAPITest, testEntrySetWithPredicate) {
                     const int numItems = 20;
                     std::vector<std::pair<int, int> > expected(numItems);
                     for (int i = 0; i < numItems; ++i) {
@@ -2181,7 +2238,7 @@ namespace hazelcast {
                     ASSERT_EQ(expectedStrEntries[13], strEntry);
                 }
 
-                TEST_F(MixedMapAPITest, testEntrySetWithPagingPredicate) {
+                TEST_P(MixedMapAPITest, testEntrySetWithPagingPredicate) {
                     int predSize = 5;
                     const int totalEntries = 25;
 
@@ -2347,7 +2404,7 @@ namespace hazelcast {
                 }
 
 */
-                TEST_F(MixedMapAPITest, testReplace) {
+                TEST_P(MixedMapAPITest, testReplace) {
                     std::auto_ptr<std::string> temp = imap->replace<std::string, std::string>("key1", "value").get<std::string>();
                     ASSERT_EQ((std::string *) NULL, temp.get());
 
@@ -2365,24 +2422,22 @@ namespace hazelcast {
                     ASSERT_EQ("value3", (*(imap->get<std::string>("key1").get<std::string>())));
                 }
 
-                TEST_F(MixedMapAPITest, testPredicateListenerWithPortableKey) {
-                    IMap<Employee, int> map = client->getMap<Employee, int>("tradeMap");
-                    hazelcast::client::adaptor::RawPointerMap<Employee, int> tradeMap(map);
+                TEST_P(MixedMapAPITest, testPredicateListenerWithPortableKey) {
                     util::CountDownLatch countDownLatch(1);
                     util::AtomicInt atomicInteger(0);
                     SampleEntryListenerForPortableKey listener(countDownLatch, atomicInteger);
                     Employee key("a", 1);
-                    std::string id = tradeMap.addEntryListener(listener, key, true);
+                    std::string id = imap->addEntryListener(key, listener, true);
                     Employee key2("a", 2);
-                    tradeMap.put(key2, 1);
-                    tradeMap.put(key, 3);
+                    imap->put<Employee, int>(key2, 1);
+                    imap->put<Employee, int>(key, 3);
                     ASSERT_TRUE(countDownLatch.await(5));
                     ASSERT_EQ(1, (int) atomicInteger);
 
-                    ASSERT_TRUE(tradeMap.removeEntryListener(id));
+                    ASSERT_TRUE(imap->removeEntryListener(id));
                 }
 
-                TEST_F(MixedMapAPITest, testListener) {
+                TEST_P(MixedMapAPITest, testListener) {
                     util::CountDownLatch latch1Add(5);
                     util::CountDownLatch latch1Remove(2);
                     util::CountDownLatch dummy(10);
@@ -2416,7 +2471,7 @@ namespace hazelcast {
 
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithTruePredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithTruePredicate) {
                     util::CountDownLatch latchAdd(3);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2448,7 +2503,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithFalsePredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithFalsePredicate) {
                     util::CountDownLatch latchAdd(3);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2480,7 +2535,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithEqualPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithEqualPredicate) {
                     util::CountDownLatch latchAdd(1);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2517,7 +2572,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithNotEqualPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithNotEqualPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2554,7 +2609,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithGreaterLessPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithGreaterLessPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2590,7 +2645,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithBetweenPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithBetweenPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2626,7 +2681,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithSqlPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithSqlPredicate) {
                     util::CountDownLatch latchAdd(1);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2663,7 +2718,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithRegExPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithRegExPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2701,7 +2756,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithInstanceOfPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithInstanceOfPredicate) {
                     util::CountDownLatch latchAdd(3);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2736,7 +2791,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithNotPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithNotPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2777,7 +2832,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithAndPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithAndPredicate) {
                     util::CountDownLatch latchAdd(1);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2823,7 +2878,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testListenerWithOrPredicate) {
+                TEST_P(MixedMapAPITest, testListenerWithOrPredicate) {
                     util::CountDownLatch latchAdd(2);
                     util::CountDownLatch latchRemove(1);
                     util::CountDownLatch latchEvict(1);
@@ -2867,7 +2922,7 @@ namespace hazelcast {
                     ASSERT_TRUE(imap->removeEntryListener(listenerId));
                 }
 
-                TEST_F(MixedMapAPITest, testClearEvent) {
+                TEST_P(MixedMapAPITest, testClearEvent) {
                     util::CountDownLatch latch(1);
                     ClearListener clearListener(latch);
                     std::string listenerId = imap->addEntryListener(clearListener, false);
@@ -2877,7 +2932,7 @@ namespace hazelcast {
                     imap->removeEntryListener(listenerId);
                 }
 
-                TEST_F(MixedMapAPITest, testEvictAllEvent) {
+                TEST_P(MixedMapAPITest, testEvictAllEvent) {
                     util::CountDownLatch latch(1);
                     EvictListener evictListener(latch);
                     std::string listenerId = imap->addEntryListener(evictListener, false);
@@ -2887,7 +2942,7 @@ namespace hazelcast {
                     imap->removeEntryListener(listenerId);
                 }
 
-                TEST_F(MixedMapAPITest, testBasicPredicate) {
+                TEST_P(MixedMapAPITest, testBasicPredicate) {
                     fillMap();
 
                     query::SqlPredicate predicate("this = 'value1'");
@@ -2914,7 +2969,7 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *actualVal);
                 }
 
-                TEST_F(MixedMapAPITest, testKeySetAndValuesWithPredicates) {
+                TEST_P(MixedMapAPITest, testKeySetAndValuesWithPredicates) {
                     Employee emp1("abc-123-xvz", 34);
                     Employee emp2("abc-123-xvz", 20);
 
@@ -2933,7 +2988,7 @@ namespace hazelcast {
                     ASSERT_EQ(2, (int) imap->values().size());
                 }
 
-                TEST_F(MixedMapAPITest, testMapWithPortable) {
+                TEST_P(MixedMapAPITest, testMapWithPortable) {
                     std::auto_ptr<Employee> n1 = imap->get<int>(1).get<Employee>();
                     ASSERT_EQ(n1.get(), (Employee *) NULL);
                     Employee employee("sancar", 24);
@@ -2949,7 +3004,7 @@ namespace hazelcast {
                     imap->addIndex("n", false);
                 }
 
-                TEST_F(MixedMapAPITest, testMapStoreRelatedRequests) {
+                TEST_P(MixedMapAPITest, testMapStoreRelatedRequests) {
                     imap->putTransient<std::string, std::string>("ali", "veli", 1100);
                     imap->flush();
                     ASSERT_EQ(1, imap->size());
@@ -2958,7 +3013,7 @@ namespace hazelcast {
                     ASSERT_EQ((std::string *) NULL, imap->get<std::string>("ali").get<std::string>().get());
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnKey) {
+                TEST_P(MixedMapAPITest, testExecuteOnKey) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
 
@@ -2973,7 +3028,7 @@ namespace hazelcast {
                     ASSERT_EQ(4 * processor.getMultiplier(), *result);
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnNonExistentKey) {
+                TEST_P(MixedMapAPITest, testExecuteOnNonExistentKey) {
                     EntryMultiplier processor(4);
 
                     std::auto_ptr<int> result = imap->executeOnKey<int, EntryMultiplier>(17, processor).get<int>();
@@ -2982,7 +3037,7 @@ namespace hazelcast {
                     ASSERT_EQ(-1, *result);
                 }
 
-                TEST_F(MixedMapAPITest, testSubmitToKey) {
+                TEST_P(MixedMapAPITest, testSubmitToKey) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
 
@@ -3012,7 +3067,7 @@ namespace hazelcast {
                     ASSERT_FALSE(future.valid());
                 }
 
-                TEST_F(MixedMapAPITest, testSubmitToKeyMultipleAsyncCalls) {
+                TEST_P(MixedMapAPITest, testSubmitToKeyMultipleAsyncCalls) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
 
@@ -3052,7 +3107,7 @@ namespace hazelcast {
                     }
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnKeys) {
+                TEST_P(MixedMapAPITest, testExecuteOnKeys) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3079,7 +3134,7 @@ namespace hazelcast {
                     ASSERT_EQ(5 * processor.getMultiplier(), *result[5].get<int>());
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnEntries) {
+                TEST_P(MixedMapAPITest, testExecuteOnEntries) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3101,7 +3156,7 @@ namespace hazelcast {
                     }
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnEntriesWithTruePredicate) {
+                TEST_P(MixedMapAPITest, testExecuteOnEntriesWithTruePredicate) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3124,7 +3179,7 @@ namespace hazelcast {
                     }
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnEntriesWithFalsePredicate) {
+                TEST_P(MixedMapAPITest, testExecuteOnEntriesWithFalsePredicate) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3141,7 +3196,7 @@ namespace hazelcast {
                     ASSERT_EQ(0, (int) result.size());
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnEntriesWithAndPredicate) {
+                TEST_P(MixedMapAPITest, testExecuteOnEntriesWithAndPredicate) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3168,7 +3223,7 @@ namespace hazelcast {
                     ASSERT_EQ(5 * processor.getMultiplier(), *result.begin()->second.get<int>());
                 }
 
-                TEST_F(MixedMapAPITest, testExecuteOnEntriesWithOrPredicate) {
+                TEST_P(MixedMapAPITest, testExecuteOnEntriesWithOrPredicate) {
                     Employee empl1("ahmet", 35);
                     Employee empl2("mehmet", 21);
                     Employee empl3("deniz", 25);
@@ -3204,7 +3259,7 @@ namespace hazelcast {
                     }
                 }
 
-                TEST_F(MixedMapAPITest, testAddInterceptor) {
+                TEST_P(MixedMapAPITest, testAddInterceptor) {
                     std::string prefix("My Prefix");
                     MapGetInterceptor interceptor(prefix);
                     imap->addInterceptor<MapGetInterceptor>(interceptor);
@@ -3221,7 +3276,7 @@ namespace hazelcast {
                     ASSERT_EQ(prefix + "value1", *val);
                 }
 
-                TEST_F(MixedMapAPITest, testReadUTFWrittenByJava) {
+                TEST_P(MixedMapAPITest, testReadUTFWrittenByJava) {
                     std::string value = "xyzä123 イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム";
                     std::string key = "myutfkey";
                     imap->put<std::string, std::string>(key, value);

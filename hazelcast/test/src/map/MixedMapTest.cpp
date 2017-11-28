@@ -242,7 +242,7 @@ namespace hazelcast {
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
-                    mixedMap = new MixedMap(client->getMixedMap("MyMap"));
+                    mixedMap = client->getMixedMap("MyMap");
 
                     ClientConfig config;
                     SerializationConfig &serializationConfig = config.getSerializationConfig();
@@ -271,7 +271,7 @@ namespace hazelcast {
                 }
 
                 static void TearDownTestCase() {
-                    delete mixedMap;
+                    //delete mixedMap;
                     delete rawPointerMap;
                     delete imap;
                     delete rawPointerMapPortable;

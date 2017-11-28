@@ -205,5 +205,9 @@ namespace hazelcast {
             this->networkConfig = networkConfig;
             return *this;
         }
+
+        const boost::shared_ptr<config::MixedNearCacheConfig> ClientConfig::getMixedNearCacheConfig(const std::string &name) {
+            return getNearCacheConfig<TypedData, TypedData>(name);
+        }
     }
 }

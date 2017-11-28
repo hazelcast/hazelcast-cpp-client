@@ -108,6 +108,11 @@ namespace hazelcast {
                     return Bits::readIntB(*data, Data::TYPE_OFFSET);
                 }
 
+                Data Data::clone() const {
+                    std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>(*data));
+                    return Data(bytes);
+                }
+
                 int Data::hash() const {
                     if (cachedHashValue > 0) {
                         return cachedHashValue;

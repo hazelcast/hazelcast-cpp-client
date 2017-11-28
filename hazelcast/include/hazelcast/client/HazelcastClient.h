@@ -509,7 +509,7 @@ namespace hazelcast {
                 return IMap<K, V>(proxy);
             }
 
-            MixedMap getMixedMap(const std::string &name);
+            MixedMap *getMixedMap(const std::string &name);
 
             /**
             * Returns the distributed multimap instance with the specified name.

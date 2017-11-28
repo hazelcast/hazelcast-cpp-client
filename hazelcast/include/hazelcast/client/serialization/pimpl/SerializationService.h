@@ -54,6 +54,7 @@
 namespace hazelcast {
     namespace client {
         class SerializationConfig;
+        class TypedData;
 
         namespace serialization {
             namespace pimpl {
@@ -181,8 +182,8 @@ namespace hazelcast {
                     void registerConstantSerializers();
                 };
 
-                template<>
-                HAZELCAST_API std::auto_ptr<Data> SerializationService::toObject(const Data *data);
+                template <>
+                Data SerializationService::toData(const TypedData *object);
             }
         }
     }

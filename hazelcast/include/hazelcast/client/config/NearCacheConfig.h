@@ -25,6 +25,8 @@
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
 #include "hazelcast/client/config/NearCacheConfigBase.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/TypedData.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -341,6 +343,8 @@ namespace hazelcast {
                                                                                               "Max-size cannot be negative!");
                 }
             };
+
+            typedef NearCacheConfig<TypedData, TypedData> MixedNearCacheConfig;
 
             template<typename K, typename V>
             const int32_t NearCacheConfig<K, V>::DEFAULT_TTL_SECONDS = 0;
