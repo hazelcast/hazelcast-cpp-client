@@ -21,12 +21,13 @@
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
 
 namespace hazelcast {
-    namespace serialization {
-        namespace pimpl {
-            class Data;
-        }
-    }
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+
         namespace adaptor {
             template <typename K, typename V>
             class RawPointerTransactionalMap;

@@ -794,7 +794,7 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                std::auto_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = serializationService->toData<K>(&key);
                     serialization::pimpl::Data processorData = serializationService->toData<EntryProcessor>(&entryProcessor);
 
@@ -813,12 +813,12 @@ namespace hazelcast {
                  * @return Future from which the result of the operation can be retrieved.
                  */
                 template<typename ResultType, typename EntryProcessor>
-                Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                Future<ResultType> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     return map.template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector results = mapProxy.template executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
@@ -840,7 +840,7 @@ namespace hazelcast {
                 * @return Returns an array of (Key, Result) pairs.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
@@ -862,7 +862,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
