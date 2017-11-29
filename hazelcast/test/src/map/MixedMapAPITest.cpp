@@ -92,7 +92,7 @@ namespace hazelcast {
 
                         client.reset(new HazelcastClient(*clientConfig));
 
-                        imap = new mixedtype::IMap(client->getMixedMap("MixedMapTestMap"));
+                        imap = new mixedtype::IMap(client->toMixedType().getMap("MixedMapTestMap"));
                     }
 
                     static void SetUpTestCase() {
@@ -733,7 +733,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testPutConfigTtl) {
-                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->toMixedType().getMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -784,7 +784,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testSetTtl) {
-                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->toMixedType().getMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -803,7 +803,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testSetConfigTtl) {
-                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->toMixedType().getMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);

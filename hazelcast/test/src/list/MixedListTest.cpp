@@ -71,7 +71,7 @@ namespace hazelcast {
                     #endif // HZ_BUILD_WITH_SSL
 
                     client = new HazelcastClient(*clientConfig);
-                    list = new mixedtype::IList(client->getMixedList("MyMixedList"));
+                    list = new mixedtype::IList(client->toMixedType().getList("MyMixedList"));
                 }
 
                 static void TearDownTestCase() {

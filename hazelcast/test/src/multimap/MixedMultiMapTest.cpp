@@ -131,7 +131,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    mm = new mixedtype::MultiMap(client->getMixedMultiMap("MixedMultimapTestMap"));
+                    mm = new mixedtype::MultiMap(client->toMixedType().getMultiMap("MixedMultimapTestMap"));
                 }
 
                 static void TearDownTestCase() {

@@ -65,6 +65,42 @@ namespace hazelcast {
                 };
             }
         }
+        namespace mixedtype {
+            namespace topic {
+                namespace impl {
+                    class TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
+                    public:
+                        TopicEventHandlerImpl(const std::string &instanceName, spi::ClusterService &clusterService,
+                                              serialization::pimpl::SerializationService &serializationService,
+                                              MessageListener &messageListener)
+                                :instanceName(instanceName)
+                                , clusterService(clusterService)
+                                , serializationService(serializationService)
+                                , listener(messageListener) {
+                        }
+
+                        virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                                                 const std::string &uuid) {
+                            std::auto_ptr<Member> member = clusterService.getMember(uuid);
+
+                            std::auto_ptr<TypedData> object(new TypedData(
+                                    std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(item)),
+                                    serializationService));
+
+                            std::auto_ptr<client::topic::Message<TypedData> > listenerMsg(
+                                    new impl::MessageImpl(instanceName, object, publishTime, member));
+                            listener.onMessage(listenerMsg);
+                        }
+                    private:
+                        const std::string &instanceName;
+                        spi::ClusterService &clusterService;
+                        serialization::pimpl::SerializationService &serializationService;
+                        MessageListener &listener;
+                    };
+
+                }
+            }
+        }
     }
 }
 

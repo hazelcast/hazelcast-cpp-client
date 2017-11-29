@@ -58,9 +58,9 @@ namespace hazelcast {
              *
              */
             class HAZELCAST_API Ringbuffer : public proxy::ProxyImpl {
-            public:
-                Ringbuffer(const std::string &objectName, spi::ClientContext *context);
+                friend class client::HazelcastClient;
 
+            public:
                 virtual ~Ringbuffer();
 
                 /**
@@ -173,6 +173,8 @@ namespace hazelcast {
                 TypedData readOne(int64_t sequence);
 
             private:
+                Ringbuffer(const std::string &objectName, spi::ClientContext *context);
+
                 /**
                  * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
                  * but there is 0 remaining capacity.

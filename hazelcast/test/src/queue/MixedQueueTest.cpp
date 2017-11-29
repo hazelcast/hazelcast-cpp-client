@@ -39,7 +39,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    q = new mixedtype::IQueue(client->getMixedQueue("MyQueue"));
+                    q = new mixedtype::IQueue(client->toMixedType().getQueue("MyQueue"));
                 }
 
                 static void TearDownTestCase() {

@@ -20,8 +20,9 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     HazelcastClient client(config);
+    mixedtype::HazelcastClient hazelcastClient = client.toMixedType();
 
-    mixedtype::IMap map = client.getMixedMap("MyMap");
+    mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 
     map.put<int, int>(3, 5);
     map.put<int, std::string>(10, "MyStringValue");

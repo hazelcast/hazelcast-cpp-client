@@ -29,6 +29,10 @@
 namespace hazelcast {
     namespace client {
         namespace mixedtype {
+            namespace impl {
+               class HazelcastClientImpl;
+            }
+
             /**
             * Concurrent, distributed, observable and queryable map client.
             *
@@ -41,7 +45,7 @@ namespace hazelcast {
             *
             */
             class HAZELCAST_API IMap {
-                friend class client::HazelcastClient;
+                friend class impl::HazelcastClientImpl;
             public:
                 /**
                 * check if this map contains key.

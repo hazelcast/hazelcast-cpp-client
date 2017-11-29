@@ -244,7 +244,7 @@ namespace hazelcast {
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
-                    mixedMap = new mixedtype::IMap(client->getMixedMap("MyMap"));
+                    mixedMap = new mixedtype::IMap(client->toMixedType().getMap("MyMap"));
 
                     ClientConfig config;
                     SerializationConfig &serializationConfig = config.getSerializationConfig();

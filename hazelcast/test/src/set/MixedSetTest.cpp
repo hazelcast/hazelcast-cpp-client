@@ -56,7 +56,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    set = new mixedtype::ISet(client->getMixedSet("MySet"));
+                    set = new mixedtype::ISet(client->toMixedType().getSet("MySet"));
                 }
 
                 static void TearDownTestCase() {
@@ -85,13 +85,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static mixedtype::ISet *set;
+                static  mixedtype::ISet *set;
             };
 
             HazelcastServer *MixedSetTest::instance = NULL;
             ClientConfig *MixedSetTest::clientConfig = NULL;
             HazelcastClient *MixedSetTest::client = NULL;
-            mixedtype::ISet *MixedSetTest::set = NULL;
+             mixedtype::ISet *MixedSetTest::set = NULL;
 
             TEST_F(MixedSetTest, testAddAll) {
                 std::vector<std::string> l;

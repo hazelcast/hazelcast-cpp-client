@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/mixedtype/IMap.h"
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -61,6 +61,7 @@ namespace hazelcast {
                 lifecycleService.shutdown();
                 throw;
             }
+            mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
         }
 
         HazelcastClient::~HazelcastClient() {
@@ -94,13 +95,6 @@ namespace hazelcast {
             lifecycleService.shutdown();
         }
 
-        mixedtype::IMap HazelcastClient::getMixedMap(const std::string &name) {
-            map::impl::MapMixedTypeProxyFactory factory(&clientContext);
-            boost::shared_ptr<spi::ClientProxy> proxy =
-                    getDistributedObjectForService("hz:impl:mapService", name, factory);
-            return mixedtype::IMap(boost::static_pointer_cast<mixedtype::ClientMapProxy>(proxy));
-        }
-
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
             return getDistributedObject< IdGenerator >(instanceName);
         }
@@ -115,10 +109,6 @@ namespace hazelcast {
 
         ISemaphore HazelcastClient::getISemaphore(const std::string &instanceName) {
             return getDistributedObject< ISemaphore >(instanceName);
-        }
-
-        mixedtype::Ringbuffer HazelcastClient::getMixedRingbuffer(const std::string &instanceName) {
-            return getDistributedObject<mixedtype::Ringbuffer>(instanceName);
         }
 
         ILock HazelcastClient::getILock(const std::string &instanceName) {
@@ -147,6 +137,10 @@ namespace hazelcast {
                 const std::string &name,
                 spi::ClientProxyFactory &factory) {
             return proxyManager.getOrCreateProxy(serviceName, name, factory);
+        }
+
+        mixedtype::HazelcastClient &HazelcastClient::toMixedType() const {
+            return *mixedTypeSupportAdaptor;
         }
     }
 }

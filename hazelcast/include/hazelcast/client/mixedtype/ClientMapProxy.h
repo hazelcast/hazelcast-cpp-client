@@ -55,7 +55,8 @@ namespace hazelcast {
             *
             *      ClientConfig clientConfig;
             *      HazelcastClient client(clientConfig);
-            *      MixedMap map = client.getMixedMap("aKey");
+            *      mixedtype::HazelcastClient hazelcastClient = client.toMixedType();
+            *      mixedtype::IMap map = hazelcastClient.getMap("aKey");
             *
             */
             class HAZELCAST_API ClientMapProxy : public proxy::IMapImpl {

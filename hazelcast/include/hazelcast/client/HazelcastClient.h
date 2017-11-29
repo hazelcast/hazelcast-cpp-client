@@ -17,22 +17,14 @@
 #define HAZELCAST_CLIENT
 
 #include <memory>
-
-#include "hazelcast/client/mixedtype/IMap.h"
-#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/mixedtype/ClientMapProxy.h"
-#include "MultiMap.h"
-#include "hazelcast/client/mixedtype/MultiMap.h"
+#include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/ISet.h"
-#include "hazelcast/client/mixedtype/ISet.h"
 #include "hazelcast/client/IList.h"
-#include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
@@ -46,7 +38,7 @@
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/mixedtype/Ringbuffer.h"
+#include "hazelcast/client/mixedtype/HazelcastClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -466,6 +458,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API HazelcastClient {
             friend class spi::ClientContext;
+            friend class mixedtype::impl::HazelcastClientImpl;
 
         public:
             /**
@@ -510,8 +503,6 @@ namespace hazelcast {
                 return IMap<K, V>(proxy);
             }
 
-            mixedtype::IMap getMixedMap(const std::string &name);
-
             /**
             * Returns the distributed multimap instance with the specified name.
             *
@@ -524,16 +515,6 @@ namespace hazelcast {
             }
 
             /**
-            * Returns the distributed multimap instance with the specified name.
-            *
-            * @param name name of the distributed multimap
-            * @return distributed multimap instance with the specified name
-            */
-            mixedtype::MultiMap getMixedMultiMap(const std::string& name) {
-                return getDistributedObject<mixedtype::MultiMap>(name);
-            }
-
-            /**
             * Returns the distributed queue instance with the specified name and entry type E.
             *
             * @param name name of the distributed queue
@@ -542,16 +523,6 @@ namespace hazelcast {
             template<typename E>
             IQueue<E> getQueue(const std::string& name) {
                 return getDistributedObject<IQueue<E> >(name);
-            }
-
-            /**
-            * Returns the distributed queue instance with the specified name and entry type E.
-            *
-            * @param name name of the distributed queue
-            * @return distributed queue instance with the specified name
-            */
-            mixedtype::IQueue getMixedQueue(const std::string& name) {
-                return getDistributedObject<mixedtype::IQueue>(name);
             }
 
             /**
@@ -568,17 +539,6 @@ namespace hazelcast {
             }
 
             /**
-            * Returns the distributed set instance with the specified name and entry type E.
-            * Set is ordered unique set of entries. similar to std::set
-            *
-            * @param name name of the distributed set
-            * @return distributed set instance with the specified name
-            */
-            mixedtype::ISet getMixedSet(const std::string& name) {
-                return getDistributedObject<mixedtype::ISet>(name);
-            }
-
-            /**
             * Returns the distributed list instance with the specified name.
             * List is ordered set of entries. similar to std::vector
             *
@@ -588,17 +548,6 @@ namespace hazelcast {
             template<typename E>
             IList<E> getList(const std::string& name) {
                 return getDistributedObject<IList<E> >(name);
-            }
-
-            /**
-            * Returns the distributed list instance with the specified name.
-            * List is ordered set of entries. similar to std::vector
-            *
-            * @param name name of the distributed list
-            * @return distributed list instance with the specified name
-            */
-            mixedtype::IList getMixedList(const std::string& name) {
-                return getDistributedObject<mixedtype::IList>(name);
             }
 
             /**
@@ -692,14 +641,6 @@ namespace hazelcast {
             }
 
             /**
-             * Returns the distributed Ringbuffer instance with the specified name.
-             *
-             * @param instanceName name of the distributed Ringbuffer
-             * @return distributed RingBuffer instance with the specified name
-             */
-            mixedtype::Ringbuffer getMixedRingbuffer(const std::string& instanceName);
-
-            /**
             * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed
             * implementation of <tt>java.util.concurrent.Semaphore</tt>.
             *
@@ -762,6 +703,13 @@ namespace hazelcast {
             */
             void shutdown();
 
+            /**
+             * Adopts the current map to the mixed type support interface. You can use the mixedtype::HazelcastClient
+             * interface to get data structures that support manipulating unrelated mixed data types.
+             * @return The mixed type supporting HazelcastClient.
+             */
+            mixedtype::HazelcastClient &toMixedType() const;
+
             internal::nearcache::NearCacheManager &getNearCacheManager();
 
             serialization::pimpl::SerializationService &getSerializationService();
@@ -784,6 +732,7 @@ namespace hazelcast {
             Cluster cluster;
             spi::LifecycleService lifecycleService;
             spi::ProxyManager proxyManager;
+            std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
 
             HazelcastClient(const HazelcastClient& rhs);
 

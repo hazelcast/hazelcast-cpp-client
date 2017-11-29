@@ -36,7 +36,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    rb.reset(new mixedtype::Ringbuffer(client->getMixedRingbuffer("rb-1")));
+                    rb.reset(new mixedtype::Ringbuffer(client->toMixedType().getRingbuffer("rb-1")));
                 }
 
                 static void TearDownTestCase() {
