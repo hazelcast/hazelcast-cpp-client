@@ -21,9 +21,10 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/pimpl/PortableVersionHelper.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/SerializationConfig.h"
 
 namespace hazelcast {
@@ -54,12 +55,7 @@ namespace hazelcast {
                     return data.dataSize() == 0 && data.getType() == SerializationConstants::CONSTANT_TYPE_NULL;
                 }
 
-                template<>
-                std::auto_ptr<Data> SerializationService::toObject(const Data *data) {
-                    return std::auto_ptr<Data>((Data *) data);
-                }
-
-                const byte SerializationService::getVersion() const {
+               const byte SerializationService::getVersion() const {
                     return 1;
                 }
 
@@ -123,6 +119,22 @@ namespace hazelcast {
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new DoubleArraySerializer()));
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new StringArraySerializer()));
                 }
+
+                template <>
+                Data SerializationService::toData(const TypedData *object) {
+                    if (!object) {
+                        return Data();
+                    }
+
+                    const Data *data = object->getData();
+                    if ((Data *)NULL == data) {
+                        return Data();
+                    }
+
+                    return Data(std::auto_ptr<std::vector<byte> >(
+                            new std::vector<byte>(data->toByteArray())));
+                }
+
             }
         }
     }

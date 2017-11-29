@@ -16,14 +16,15 @@
 //
 // Created by sancar koyunlu on 9/13/13.
 
-#include "hazelcast/client/MixedSet.h"
+#include "hazelcast/client/mixedtype/ISet.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ISet.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServerFactory.h"
+
+using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
     namespace client {
@@ -55,7 +56,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    set = new MixedSet(client->getMixedSet("MySet"));
+                    set = new mixedtype::ISet(client->toMixedType().getSet("MySet"));
                 }
 
                 static void TearDownTestCase() {
@@ -84,13 +85,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static MixedSet *set;
+                static  mixedtype::ISet *set;
             };
 
             HazelcastServer *MixedSetTest::instance = NULL;
             ClientConfig *MixedSetTest::clientConfig = NULL;
             HazelcastClient *MixedSetTest::client = NULL;
-            MixedSet *MixedSetTest::set = NULL;
+             mixedtype::ISet *MixedSetTest::set = NULL;
 
             TEST_F(MixedSetTest, testAddAll) {
                 std::vector<std::string> l;

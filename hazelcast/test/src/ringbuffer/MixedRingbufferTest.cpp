@@ -22,6 +22,8 @@
 #include "../HazelcastServer.h"
 #include "../serialization/Employee.h"
 
+using namespace hazelcast::client::mixedtype;
+
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -34,7 +36,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    rb.reset(new MixedRingbuffer(client->getMixedRingbuffer("rb-1")));
+                    rb.reset(new mixedtype::Ringbuffer(client->toMixedType().getRingbuffer("rb-1")));
                 }
 
                 static void TearDownTestCase() {
@@ -50,7 +52,7 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static boost::shared_ptr<MixedRingbuffer> rb;
+                static boost::shared_ptr<mixedtype::Ringbuffer> rb;
 
                 static const int64_t CAPACITY;
             };
@@ -60,7 +62,7 @@ namespace hazelcast {
             HazelcastServer *MixedRingbufferTest::instance = NULL;
             ClientConfig *MixedRingbufferTest::clientConfig = NULL;
             HazelcastClient *MixedRingbufferTest::client = NULL;
-            boost::shared_ptr<MixedRingbuffer > MixedRingbufferTest::rb = boost::shared_ptr<MixedRingbuffer >();
+            boost::shared_ptr<mixedtype::Ringbuffer> MixedRingbufferTest::rb = boost::shared_ptr< mixedtype::Ringbuffer>();
 
             TEST_F(MixedRingbufferTest, testAPI) {
                 ASSERT_EQ(CAPACITY, rb->capacity());

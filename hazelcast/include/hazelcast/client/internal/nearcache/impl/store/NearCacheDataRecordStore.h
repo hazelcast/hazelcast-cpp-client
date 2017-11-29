@@ -106,7 +106,7 @@ namespace hazelcast {
                                     ANCRS::nearCacheStats.incrementMisses();
                                     return NearCache<K, V>::NULL_OBJECT;
                                 }
-                                return ANCRS::dataToValue(value);
+                                return ANCRS::dataToValue(value, (V *)NULL);
                             }
 
                             //@Override

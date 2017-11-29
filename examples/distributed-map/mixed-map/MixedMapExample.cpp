@@ -20,16 +20,17 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     HazelcastClient client(config);
+    mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
 
-    MixedMap mixedMapProxy = client.getMixedMap("MyMap");
+    mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 
-    mixedMapProxy.put<int, int>(3, 5);
-    mixedMapProxy.put<int, std::string>(10, "MyStringValue");
-    TypedData result = mixedMapProxy.get<int>(3);
+    map.put<int, int>(3, 5);
+    map.put<int, std::string>(10, "MyStringValue");
+    TypedData result = map.get<int>(3);
     std::cout << "Got result for key 3. Object type:" << result.getType() << " value:" << *result.get<int>()
               << std::endl;
 
-    result = mixedMapProxy.get<int>(10);
+    result = map.get<int>(10);
     std::cout << "Got result for key 10. Object type:" << result.getType() << " value:" << *result.get<int>()
               << std::endl;
 

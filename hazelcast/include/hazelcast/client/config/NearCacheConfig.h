@@ -25,6 +25,8 @@
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
 #include "hazelcast/client/config/NearCacheConfigBase.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/TypedData.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -121,6 +123,9 @@ namespace hazelcast {
                     if (config.evictionConfig.get() != NULL) {
                         this->evictionConfig = config.evictionConfig;
                     }
+                }
+
+                virtual ~NearCacheConfig() {
                 }
 
                 /**
@@ -243,7 +248,7 @@ namespace hazelcast {
                  * @param inMemoryFormat The data type used to store entries.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
+                virtual NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
                     this->inMemoryFormat = inMemoryFormat;
                     return *this;
                 }
@@ -350,6 +355,28 @@ namespace hazelcast {
 
             template<typename K, typename V>
             const InMemoryFormat NearCacheConfig<K, V>::DEFAULT_MEMORY_FORMAT = BINARY;
+
+        }
+
+        namespace mixedtype {
+            namespace config {
+                class HAZELCAST_API MixedNearCacheConfig : public client::config::NearCacheConfig<TypedData, TypedData> {
+                public:
+                    MixedNearCacheConfig(const char *cacheName)
+                            : client::config::NearCacheConfig<TypedData, TypedData>(cacheName) {
+                    }
+
+                    virtual MixedNearCacheConfig &setInMemoryFormat(const client::config::InMemoryFormat &inMemoryFormat) {
+                        if (client::config::OBJECT == inMemoryFormat) {
+                            throw exception::IllegalArgumentException(
+                                    "MixedNearCacheConfig does not allow setting the in memory format different from BINARY.");
+                        }
+
+                        client::config::NearCacheConfig<TypedData, TypedData>::setInMemoryFormat(inMemoryFormat);
+                        return *this;
+                    }
+                };
+            }
         }
     }
 }

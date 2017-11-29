@@ -22,6 +22,7 @@
 #include <memory>
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/Member.h"
+#include "hazelcast/client/TypedData.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,7 +36,8 @@ namespace hazelcast {
                 template <typename E>
                 class MessageImpl : public Message<E> {
                 public:
-                    MessageImpl(std::string topicName, std::auto_ptr<E> message, int64_t publishTime, std::auto_ptr<Member> member)
+                    MessageImpl(std::string topicName, std::auto_ptr<E> message, int64_t publishTime,
+                                std::auto_ptr<Member> member)
                             : messageObject(message)
                             , publishTime(publishTime)
                             , publishingMember(member)
@@ -73,6 +75,54 @@ namespace hazelcast {
                     std::auto_ptr<Member> publishingMember;
                     std::string name;
                 };
+            }
+        }
+
+        namespace mixedtype {
+            namespace topic {
+                namespace impl {
+                    class HAZELCAST_API MessageImpl : public client::topic::Message<TypedData> {
+                    public:
+                        MessageImpl(std::string topicName, std::auto_ptr<TypedData> message, int64_t publishTime,
+                                    std::auto_ptr<Member> member)
+                                : messageObject(message)
+                                , publishTime(publishTime)
+                                , publishingMember(member)
+                                , name(topicName) {
+                        }
+
+                        virtual ~MessageImpl() { }
+
+                        const TypedData *getMessageObject() const {
+                            return messageObject.get();
+                        }
+
+                        virtual std::auto_ptr<TypedData> releaseMessageObject() {
+                            return messageObject;
+                        }
+
+                        int64_t getPublishTime() const {
+                            return publishTime;
+                        }
+
+                        const Member *getPublishingMember() const {
+                            return publishingMember.get();
+                        }
+
+                        const std::string &getSource() const {
+                            return name;
+                        }
+
+                        std::string getName() {
+                            return name;
+                        }
+                    private:
+                        std::auto_ptr<TypedData> messageObject;
+                        int64_t publishTime;
+                        std::auto_ptr<Member> publishingMember;
+                        std::string name;
+                    };
+                }
             }
         }
     }

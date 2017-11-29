@@ -300,115 +300,117 @@ namespace hazelcast {
 
         };
 
-        class HAZELCAST_API MixedEntryEvent {
-        public:
-            /**
-             * Constructor
-             */
-            MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
-                       TypedData key, TypedData value)
-                    : name(name)
-                    , member(member)
-                    , eventType(eventType)
-                    , key(key)
-                    , value(value) {
-            }
+        namespace mixedtype {
+            class HAZELCAST_API MixedEntryEvent {
+            public:
+                /**
+                 * Constructor
+                 */
+                MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                                TypedData key, TypedData value)
+                        : name(name)
+                        , member(member)
+                        , eventType(eventType)
+                        , key(key)
+                        , value(value) {
+                }
 
-            /**
-             * Constructor
-             */
-            MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
-                       TypedData key, TypedData value,
-                       TypedData oldValue, TypedData mergingValue)
-                    : name(name)
-                    , member(member)
-                    , eventType(eventType)
-                    , key(key)
-                    , value(value)
-                    , oldValue(new TypedData(oldValue))
-                    , mergingValue(new TypedData(mergingValue)) {
-            }
+                /**
+                 * Constructor
+                 */
+                MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                                TypedData key, TypedData value,
+                                TypedData oldValue, TypedData mergingValue)
+                        : name(name)
+                        , member(member)
+                        , eventType(eventType)
+                        , key(key)
+                        , value(value)
+                        , oldValue(new TypedData(oldValue))
+                        , mergingValue(new TypedData(mergingValue)) {
+                }
 
-            /**
-             *
-             * Returns the key of the entry event
-             *
-             * @return the key
-             */
-            const TypedData &getKey() const {
-                return key;
-            }
+                /**
+                 *
+                 * Returns the key of the entry event
+                 *
+                 * @return the key
+                 */
+                const TypedData &getKey() const {
+                    return key;
+                }
 
-            /**
-             *
-             * Returns the old value of the entry event
-             *
-             * @return The older value for the entry
-             */
-            const TypedData *getOldValue() const {
-                return oldValue.get();
-            }
+                /**
+                 *
+                 * Returns the old value of the entry event
+                 *
+                 * @return The older value for the entry
+                 */
+                const TypedData *getOldValue() const {
+                    return oldValue.get();
+                }
 
-            /**
-             *
-             * Returns the value of the entry event
-             *
-             * @return The value of for the entry
-             */
-            const TypedData &getValue() const {
-                return value;
-            }
+                /**
+                 *
+                 * Returns the value of the entry event
+                 *
+                 * @return The value of for the entry
+                 */
+                const TypedData &getValue() const {
+                    return value;
+                }
 
-            /**
-            * Returns the incoming merging value of the entry event.
-            *
-            * @return The merging value
-            */
-            const TypedData *getMergingValue() const {
-                return mergingValue.get();
-            }
+                /**
+                * Returns the incoming merging value of the entry event.
+                *
+                * @return The merging value
+                */
+                const TypedData *getMergingValue() const {
+                    return mergingValue.get();
+                }
 
-            /**
-             * Returns the member fired this event.
-             *
-             * @return the member fired this event.
-             */
-            const Member &getMember() const {
-                return member;
+                /**
+                 * Returns the member fired this event.
+                 *
+                 * @return the member fired this event.
+                 */
+                const Member &getMember() const {
+                    return member;
+                };
+
+                /**
+                 * Return the event type
+                 *
+                 * @return event type
+                 */
+                EntryEventType getEventType() const {
+                    return eventType;
+                };
+
+                /**
+                 * Returns the name of the map for this event.
+                 *
+                 * @return name of the map.
+                 */
+                const std::string &getName() const {
+                    return name;
+                };
+
+                std::ostream &operator<< (std::ostream &out) const {
+                    out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
+                        ", member=" << member << ", name='" << name;
+                    return out;
+                }
+            private:
+                std::string name;
+                Member member;
+                EntryEventType eventType;
+                TypedData key;
+                TypedData value;
+                std::auto_ptr<TypedData> oldValue;
+                std::auto_ptr<TypedData> mergingValue;
             };
-
-            /**
-             * Return the event type
-             *
-             * @return event type
-             */
-            EntryEventType getEventType() const {
-                return eventType;
-            };
-
-            /**
-             * Returns the name of the map for this event.
-             *
-             * @return name of the map.
-             */
-            const std::string &getName() const {
-                return name;
-            };
-
-            std::ostream &operator<< (std::ostream &out) const {
-                out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
-                    ", member=" << member << ", name='" << name;
-                return out;
-            }
-        private:
-            std::string name;
-            Member member;
-            EntryEventType eventType;
-            TypedData key;
-            TypedData value;
-            std::auto_ptr<TypedData> oldValue;
-            std::auto_ptr<TypedData> mergingValue;
-        };
+        }
     }
 }
 

@@ -226,6 +226,8 @@ namespace hazelcast {
                     return (T)CODEC::decode(*response).response;
                 }
 
+                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
+
                 spi::ClientContext *context;
             public:
                 /**
@@ -233,6 +235,18 @@ namespace hazelcast {
                 * Clears and releases all resources for this object.
                 */
                 virtual void destroy();
+
+                template <typename T>
+                TypedData toTypedData(const T &key) {
+                    return TypedData(toHeapData<T>(key), context->getSerializationService());
+                }
+
+            private:
+                template <typename T>
+                std::auto_ptr<serialization::pimpl::Data> toHeapData(const T *key) {
+                    serialization::pimpl::Data data = context->getSerializationService().toData<T>(&key);
+                    return std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+                }
             };
         }
     }

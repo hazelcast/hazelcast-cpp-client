@@ -79,6 +79,7 @@ namespace hazelcast {
 
                     int32_t getType() const;
 
+                    Data clone() const;
                 private:
                     mutable std::auto_ptr<std::vector<byte> > data;
                     mutable int cachedHashValue;

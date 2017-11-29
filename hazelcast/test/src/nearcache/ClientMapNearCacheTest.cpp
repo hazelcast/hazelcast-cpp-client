@@ -32,8 +32,7 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<bool> {
+            class ClientMapNearCacheTest : public ClientTestSupport {
             public:
                 virtual void TearDown() {
                     g_srvFactory->shutdownAll();
@@ -92,7 +91,7 @@ namespace hazelcast {
 
             const std::string ClientMapNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
 
-            TEST_P(ClientMapNearCacheTest, testGetAllChecksNearCacheFirst) {
+            TEST_F(ClientMapNearCacheTest, testGetAllChecksNearCacheFirst) {
                 IMap<int, int> map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 std::set<int> keys;
@@ -114,7 +113,7 @@ namespace hazelcast {
                 ASSERT_EQ(size, stats->getHits());
             }
 
-            TEST_P(ClientMapNearCacheTest, testGetAllPopulatesNearCache) {
+            TEST_F(ClientMapNearCacheTest, testGetAllPopulatesNearCache) {
                 IMap<int, int> map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 std::set<int> keys;
@@ -134,7 +133,7 @@ namespace hazelcast {
                 assertThatOwnedEntryCountEquals(map, size);
             }
 
-            TEST_P(ClientMapNearCacheTest, testRemoveAllNearCache) {
+            TEST_F(ClientMapNearCacheTest, testRemoveAllNearCache) {
                 IMap<int, int> map = getNearCachedMapFromClient(newNearCacheConfig());
 
                 std::set<int> keys;
@@ -153,9 +152,6 @@ namespace hazelcast {
 
                 assertThatOwnedEntryCountEquals(map, 0);
             }
-
-            INSTANTIATE_TEST_CASE_P(ClientMapNearCacheTestInstance, ClientMapNearCacheTest,
-                                    ::testing::Values(true, false));
         }
     }
 }

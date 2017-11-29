@@ -80,6 +80,8 @@ namespace hazelcast {
                         return false;
                     }
                 };
+
+                typedef DataStructureAdapter<serialization::pimpl::Data, serialization::pimpl::Data> MixedDataStructureAdapter;
             }
         }
     }

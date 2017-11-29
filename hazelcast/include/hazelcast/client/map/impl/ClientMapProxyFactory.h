@@ -38,7 +38,8 @@ namespace hazelcast {
 
                     //@Override
                     boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-                        const config::NearCacheConfig<K, V> *nearCacheConfig = clientContext->getClientConfig().template getNearCacheConfig<K, V>(name);
+                        const boost::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig =
+                                clientContext->getClientConfig().template getNearCacheConfig<K, V>(name);
                         spi::ClientProxy *proxy;
                         if (nearCacheConfig != NULL) {
                             //TODO checkNearCacheConfig(nearCacheConfig, true);
