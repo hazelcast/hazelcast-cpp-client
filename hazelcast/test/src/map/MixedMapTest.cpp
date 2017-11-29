@@ -24,6 +24,8 @@
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 
+using namespace hazelcast::client::mixedtype;
+
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -242,7 +244,7 @@ namespace hazelcast {
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
-                    mixedMap = client->getMixedMap("MyMap");
+                    mixedMap = new mixedtype::IMap(client->getMixedMap("MyMap"));
 
                     ClientConfig config;
                     SerializationConfig &serializationConfig = config.getSerializationConfig();
@@ -302,7 +304,7 @@ namespace hazelcast {
                 static HazelcastServer *instance2;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static MixedMap *mixedMap;
+                static mixedtype::IMap *mixedMap;
                 static HazelcastClient *client2;
                 static IMap<int, BaseDataSerializable> *imap;
                 static adaptor::RawPointerMap<int, BaseDataSerializable> *rawPointerMap;
@@ -316,7 +318,7 @@ namespace hazelcast {
             HazelcastServer *MixedMapTest::instance2 = NULL;
             ClientConfig *MixedMapTest::clientConfig = NULL;
             HazelcastClient *MixedMapTest::client = NULL;
-            MixedMap *MixedMapTest::mixedMap = NULL;
+            mixedtype::IMap *MixedMapTest::mixedMap = NULL;
             HazelcastClient *MixedMapTest::client2 = NULL;
             IMap<int, MixedMapTest::BaseDataSerializable> * MixedMapTest::imap = NULL;
             adaptor::RawPointerMap<int, MixedMapTest::BaseDataSerializable> *MixedMapTest::rawPointerMap = NULL;

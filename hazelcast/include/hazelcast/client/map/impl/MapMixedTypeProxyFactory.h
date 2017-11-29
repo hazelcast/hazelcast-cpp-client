@@ -16,8 +16,8 @@
 #ifndef HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 #define HAZELCAST_CLIENT_MAP_IMPL_MIXEDMAPPROXYFACTORY_H_
 
-#include <hazelcast/client/NearCachedMixedMap.h>
-#include "hazelcast/client/MixedMap.h"
+#include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
+#include "hazelcast/client/mixedtype/ClientMapProxy.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -32,21 +32,21 @@ namespace hazelcast {
     namespace client {
         namespace map {
             namespace impl {
-                class HAZELCAST_API MixedMapProxyFactory : public spi::ClientProxyFactory {
+                class HAZELCAST_API MapMixedTypeProxyFactory : public spi::ClientProxyFactory {
                 public:
-                    MixedMapProxyFactory(spi::ClientContext *context) : clientContext(context) {
+                    MapMixedTypeProxyFactory(spi::ClientContext *context) : clientContext(context) {
                     }
 
                     //@Override
                     boost::shared_ptr<spi::ClientProxy> create(const std::string &name) {
-                        const boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig =
+                        const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig =
                                 clientContext->getClientConfig().getMixedNearCacheConfig(name);
                         spi::ClientProxy *proxy;
                         if (nearCacheConfig != NULL) {
                             //TODO checkNearCacheConfig(nearCacheConfig, true);
-                            proxy = new NearCachedMixedMap(name, clientContext, *nearCacheConfig);
+                            proxy = new mixedtype::NearCachedClientMapProxy(name, clientContext, *nearCacheConfig);
                         } else {
-                            proxy = new MixedMap(name, clientContext);
+                            proxy = new mixedtype::ClientMapProxy(name, clientContext);
                         }
 
                         return boost::shared_ptr<spi::ClientProxy>(proxy);

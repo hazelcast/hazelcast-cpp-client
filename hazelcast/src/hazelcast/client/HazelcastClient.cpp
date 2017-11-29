@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/HazelcastClient.h"
-
+#include "hazelcast/client/mixedtype/IMap.h"
 #include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
@@ -94,11 +94,11 @@ namespace hazelcast {
             lifecycleService.shutdown();
         }
 
-        MixedMap *HazelcastClient::getMixedMap(const std::string &name) {
-            map::impl::MixedMapProxyFactory factory(&clientContext);
+        mixedtype::IMap HazelcastClient::getMixedMap(const std::string &name) {
+            map::impl::MapMixedTypeProxyFactory factory(&clientContext);
             boost::shared_ptr<spi::ClientProxy> proxy =
                     getDistributedObjectForService("hz:impl:mapService", name, factory);
-            return boost::static_pointer_cast<MixedMap>(proxy).get();
+            return mixedtype::IMap(boost::static_pointer_cast<mixedtype::ClientMapProxy>(proxy));
         }
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
@@ -117,8 +117,8 @@ namespace hazelcast {
             return getDistributedObject< ISemaphore >(instanceName);
         }
 
-        MixedRingbuffer HazelcastClient::getMixedRingbuffer(const std::string &instanceName) {
-            return getDistributedObject<MixedRingbuffer>(instanceName);
+        mixedtype::Ringbuffer HazelcastClient::getMixedRingbuffer(const std::string &instanceName) {
+            return getDistributedObject<mixedtype::Ringbuffer>(instanceName);
         }
 
         ILock HazelcastClient::getILock(const std::string &instanceName) {

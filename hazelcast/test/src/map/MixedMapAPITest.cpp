@@ -43,6 +43,8 @@
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
+using namespace hazelcast::client::mixedtype;
+
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -66,8 +68,8 @@ namespace hazelcast {
                 class NearCachedDataMapClientConfig : public MapClientConfig {
                 public:
                     NearCachedDataMapClientConfig() {
-                        boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig(
-                                new config::MixedNearCacheConfig("MixedMapTestMap"));
+                        boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(
+                                new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
                         addMixedNearCacheConfig(nearCacheConfig);
                     }
 
@@ -90,7 +92,7 @@ namespace hazelcast {
 
                         client.reset(new HazelcastClient(*clientConfig));
 
-                        imap = client->getMixedMap("MixedMapTestMap");
+                        imap = new mixedtype::IMap(client->getMixedMap("MixedMapTestMap"));
                     }
 
                     static void SetUpTestCase() {
@@ -176,7 +178,7 @@ namespace hazelcast {
                     static HazelcastServer *instance2;
                     MapClientConfig *clientConfig;
                     std::auto_ptr<HazelcastClient> client;
-                    MixedMap *imap;
+                    mixedtype::IMap *imap;
                 };
 
                 INSTANTIATE_TEST_CASE_P(MixedMapAPITestInstance,
@@ -188,7 +190,7 @@ namespace hazelcast {
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     bool result = imap->tryPut<std::string, std::string>("key1", "value3", 1 * 1000);
                     if (!result) {
                         latch->countDown();
@@ -197,7 +199,7 @@ namespace hazelcast {
 
                 void tryRemoveThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     bool result = imap->tryRemove<std::string>("key2", 1 * 1000);
                     if (!result) {
                         latch->countDown();
@@ -206,21 +208,21 @@ namespace hazelcast {
 
                 void testLockThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     imap->tryPut<std::string, std::string>("key1", "value2", 1);
                     latch->countDown();
                 }
 
                 void testLockTTLThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     imap->tryPut<std::string, std::string>("key1", "value2", 5 * 1000);
                     latch->countDown();
                 }
 
                 void testLockTTL2Thread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     if (!imap->tryLock<std::string>("key1")) {
                         latch->countDown();
                     }
@@ -231,7 +233,7 @@ namespace hazelcast {
 
                 void testMapTryLockThread1(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     if (!imap->tryLock<std::string>("key1", 2)) {
                         latch->countDown();
                     }
@@ -239,7 +241,7 @@ namespace hazelcast {
 
                 void testMapTryLockThread2(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     if (imap->tryLock<std::string>("key1", 20 * 1000)) {
                         latch->countDown();
                     }
@@ -247,7 +249,7 @@ namespace hazelcast {
 
                 void testMapForceUnlockThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    MixedMap *imap = (MixedMap *) args.arg1;
+                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
                     imap->forceUnlock<std::string>("key1");
                     latch->countDown();
                 }
@@ -731,7 +733,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testPutConfigTtl) {
-                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -782,7 +784,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testSetTtl) {
-                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
@@ -801,7 +803,7 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testSetConfigTtl) {
-                    MixedMap map = *client->getMixedMap("OneSecondTtlMap");
+                    mixedtype::IMap map = client->getMixedMap("OneSecondTtlMap");
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);

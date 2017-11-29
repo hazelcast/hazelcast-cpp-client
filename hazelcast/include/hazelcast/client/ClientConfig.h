@@ -366,7 +366,7 @@ namespace hazelcast {
              *
              * Memory ownership of the config is passed to the client config
              */
-            ClientConfig &addMixedNearCacheConfig(const boost::shared_ptr<config::MixedNearCacheConfig> nearCacheConfig) {
+            ClientConfig &addMixedNearCacheConfig(const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig) {
                 nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
                 return *this;
             }
@@ -389,7 +389,7 @@ namespace hazelcast {
                 return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig);
             }
 
-            const boost::shared_ptr<config::MixedNearCacheConfig> getMixedNearCacheConfig(const std::string &name);
+            const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> getMixedNearCacheConfig(const std::string &name);
 
             /**
              * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}

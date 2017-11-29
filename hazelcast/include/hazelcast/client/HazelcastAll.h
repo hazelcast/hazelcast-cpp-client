@@ -64,6 +64,9 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/client/PartitionAware.h"
+#include "hazelcast/client/mixedtype/IList.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
+#include "hazelcast/client/mixedtype/Ringbuffer.h"
 
 #endif //HAZELCAST_HazelcastAll
 

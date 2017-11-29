@@ -206,8 +206,9 @@ namespace hazelcast {
             return *this;
         }
 
-        const boost::shared_ptr<config::MixedNearCacheConfig> ClientConfig::getMixedNearCacheConfig(const std::string &name) {
-            return getNearCacheConfig<TypedData, TypedData>(name);
+        const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> ClientConfig::getMixedNearCacheConfig(const std::string &name) {
+            return boost::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
+                    getNearCacheConfig<TypedData, TypedData>(name));
         }
     }
 }

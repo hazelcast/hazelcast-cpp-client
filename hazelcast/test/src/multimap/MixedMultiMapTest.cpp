@@ -20,10 +20,12 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/MixedMultiMap.h"
+#include "hazelcast/client/mixedtype/MultiMap.h"
 
 #include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
+
+using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
     namespace client {
@@ -69,7 +71,7 @@ namespace hazelcast {
                 };
 
                 static void lockTtlThread(util::ThreadArgs& args) {
-                    MixedMultiMap *map = (MixedMultiMap *)args.arg0;
+                    mixedtype::MultiMap *map = ( mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
 
                     if (!map->tryLock<std::string>("key1")) {
@@ -82,14 +84,14 @@ namespace hazelcast {
                 }
 
                 static void forceUnlockThread(util::ThreadArgs& args) {
-                    MixedMultiMap *mm = (MixedMultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     mm->forceUnlock<std::string>("key1");
                     latch->countDown();
                 }
 
                 static void lockThread(util::ThreadArgs& args) {
-                    MixedMultiMap *mm = (MixedMultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     if (!mm->tryLock<std::string>("key1")) {
                         latch->countDown();
@@ -97,7 +99,7 @@ namespace hazelcast {
                 }
 
                 static void tryLockThread(util::ThreadArgs& args) {
-                    MixedMultiMap *mm = (MixedMultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     try {
                         if (!mm->tryLock<std::string>("key1", 2)) {
@@ -109,7 +111,7 @@ namespace hazelcast {
                 }
 
                 static void tryLockThread2(util::ThreadArgs& args) {
-                    MixedMultiMap *mm = (MixedMultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     try {
                         if (mm->tryLock<std::string>("key1", 20 * 1000)) {
@@ -129,7 +131,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    mm = new MixedMultiMap(client->getMixedMultiMap("MixedMultimapTestMap"));
+                    mm = new mixedtype::MultiMap(client->getMixedMultiMap("MixedMultimapTestMap"));
                 }
 
                 static void TearDownTestCase() {
@@ -147,13 +149,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static MixedMultiMap *mm;
+                static mixedtype::MultiMap *mm;
             };
 
             HazelcastServer *MixedMultiMapTest::instance = NULL;
             ClientConfig *MixedMultiMapTest::clientConfig = NULL;
             HazelcastClient *MixedMultiMapTest::client = NULL;
-            MixedMultiMap *MixedMultiMapTest::mm = NULL;
+            mixedtype::MultiMap *MixedMultiMapTest::mm = NULL;
 
             TEST_F(MixedMultiMapTest, testPutGetRemove) {
                 ASSERT_TRUE((mm->put<std::string, std::string>("key1", "value1")));
@@ -306,4 +308,3 @@ namespace hazelcast {
         }
     }
 }
-

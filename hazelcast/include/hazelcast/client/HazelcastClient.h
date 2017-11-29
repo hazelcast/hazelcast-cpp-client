@@ -18,20 +18,21 @@
 
 #include <memory>
 
-#include "hazelcast/client/map/impl/MixedMapProxyFactory.h"
+#include "hazelcast/client/mixedtype/IMap.h"
+#include "hazelcast/client/map/impl/MapMixedTypeProxyFactory.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/MixedMap.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/MixedMultiMap.h"
+#include "hazelcast/client/mixedtype/ClientMapProxy.h"
+#include "MultiMap.h"
+#include "hazelcast/client/mixedtype/MultiMap.h"
 #include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/MixedQueue.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/ISet.h"
-#include "hazelcast/client/MixedSet.h"
+#include "hazelcast/client/mixedtype/ISet.h"
 #include "hazelcast/client/IList.h"
-#include "hazelcast/client/MixedList.h"
+#include "hazelcast/client/mixedtype/IList.h"
 #include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/TransactionContext.h"
@@ -45,7 +46,7 @@
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/MixedRingbuffer.h"
+#include "hazelcast/client/mixedtype/Ringbuffer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -509,7 +510,7 @@ namespace hazelcast {
                 return IMap<K, V>(proxy);
             }
 
-            MixedMap *getMixedMap(const std::string &name);
+            mixedtype::IMap getMixedMap(const std::string &name);
 
             /**
             * Returns the distributed multimap instance with the specified name.
@@ -528,8 +529,8 @@ namespace hazelcast {
             * @param name name of the distributed multimap
             * @return distributed multimap instance with the specified name
             */
-            MixedMultiMap getMixedMultiMap(const std::string& name) {
-                return getDistributedObject<MixedMultiMap>(name);
+            mixedtype::MultiMap getMixedMultiMap(const std::string& name) {
+                return getDistributedObject<mixedtype::MultiMap>(name);
             }
 
             /**
@@ -549,8 +550,8 @@ namespace hazelcast {
             * @param name name of the distributed queue
             * @return distributed queue instance with the specified name
             */
-            MixedQueue getMixedQueue(const std::string& name) {
-                return getDistributedObject<MixedQueue>(name);
+            mixedtype::IQueue getMixedQueue(const std::string& name) {
+                return getDistributedObject<mixedtype::IQueue>(name);
             }
 
             /**
@@ -573,8 +574,8 @@ namespace hazelcast {
             * @param name name of the distributed set
             * @return distributed set instance with the specified name
             */
-            MixedSet getMixedSet(const std::string& name) {
-                return getDistributedObject<MixedSet>(name);
+            mixedtype::ISet getMixedSet(const std::string& name) {
+                return getDistributedObject<mixedtype::ISet>(name);
             }
 
             /**
@@ -596,8 +597,8 @@ namespace hazelcast {
             * @param name name of the distributed list
             * @return distributed list instance with the specified name
             */
-            MixedList getMixedList(const std::string& name) {
-                return getDistributedObject<MixedList>(name);
+            mixedtype::IList getMixedList(const std::string& name) {
+                return getDistributedObject<mixedtype::IList>(name);
             }
 
             /**
@@ -696,7 +697,7 @@ namespace hazelcast {
              * @param instanceName name of the distributed Ringbuffer
              * @return distributed RingBuffer instance with the specified name
              */
-            MixedRingbuffer getMixedRingbuffer(const std::string& instanceName);
+            mixedtype::Ringbuffer getMixedRingbuffer(const std::string& instanceName);
 
             /**
             * Creates cluster-wide semaphore. Hazelcast ISemaphore is distributed

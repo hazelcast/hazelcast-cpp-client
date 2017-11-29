@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/MixedQueue.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ItemListener.h"
@@ -23,6 +23,8 @@
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
+
+using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
     namespace client {
@@ -37,7 +39,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     clientConfig = new ClientConfig();
                     client = new HazelcastClient(*clientConfig);
-                    q = new MixedQueue(client->getMixedQueue("MyQueue"));
+                    q = new mixedtype::IQueue(client->getMixedQueue("MyQueue"));
                 }
 
                 static void TearDownTestCase() {
@@ -53,7 +55,7 @@ namespace hazelcast {
                 }
 
                 static void testOfferPollThread2(util::ThreadArgs &args) {
-                    MixedQueue *q = (MixedQueue *) args.arg0;
+                    mixedtype::IQueue *q = (mixedtype::IQueue *) args.arg0;
                     util::sleep(2);
                     q->offer<std::string>("item1");
                     util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
@@ -62,13 +64,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static MixedQueue *q;
+                static mixedtype::IQueue *q;
             };
             
             HazelcastServer *MixedQueueTest::instance = NULL;
             ClientConfig *MixedQueueTest::clientConfig = NULL;
             HazelcastClient *MixedQueueTest::client = NULL;
-            MixedQueue *MixedQueueTest::q = NULL;
+            mixedtype::IQueue *MixedQueueTest::q = NULL;
 
             class QueueTestItemListener : public MixedItemListener {
             public:

@@ -18,11 +18,13 @@
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/MixedList.h"
+#include "hazelcast/client/mixedtype/IList.h"
 
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
+
+using namespace hazelcast::client::mixedtype;
 
 namespace hazelcast {
     namespace client {
@@ -69,7 +71,7 @@ namespace hazelcast {
                     #endif // HZ_BUILD_WITH_SSL
 
                     client = new HazelcastClient(*clientConfig);
-                    list = new MixedList(client->getMixedList("MyMixedList"));
+                    list = new mixedtype::IList(client->getMixedList("MyMixedList"));
                 }
 
                 static void TearDownTestCase() {
@@ -87,13 +89,13 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static MixedList *list;
+                static mixedtype::IList *list;
             };
 
             HazelcastServer *MixedListTest::instance = NULL;
             ClientConfig *MixedListTest::clientConfig = NULL;
             HazelcastClient *MixedListTest::client = NULL;
-            MixedList *MixedListTest::list = NULL;
+            mixedtype::IList *MixedListTest::list = NULL;
 
             TEST_F(MixedListTest, testAddAll) {
                 std::vector<std::string> l;
