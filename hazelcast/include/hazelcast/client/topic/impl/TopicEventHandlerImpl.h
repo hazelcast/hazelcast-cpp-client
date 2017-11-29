@@ -68,7 +68,7 @@ namespace hazelcast {
         namespace mixedtype {
             namespace topic {
                 namespace impl {
-                    class TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
+                    class HAZELCAST_API TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
                     public:
                         TopicEventHandlerImpl(const std::string &instanceName, spi::ClusterService &clusterService,
                                               serialization::pimpl::SerializationService &serializationService,

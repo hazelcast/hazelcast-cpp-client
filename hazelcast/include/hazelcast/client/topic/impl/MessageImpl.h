@@ -81,7 +81,7 @@ namespace hazelcast {
         namespace mixedtype {
             namespace topic {
                 namespace impl {
-                    class MessageImpl : public client::topic::Message<TypedData> {
+                    class HAZELCAST_API MessageImpl : public client::topic::Message<TypedData> {
                     public:
                         MessageImpl(std::string topicName, std::auto_ptr<TypedData> message, int64_t publishTime,
                                     std::auto_ptr<Member> member)

@@ -64,7 +64,7 @@ namespace hazelcast {
                  *
                  * @param message the message that is received for the added topic
                  */
-                class MessageListener {
+                class HAZELCAST_API MessageListener {
                 public:
                     virtual ~MessageListener() {}
 

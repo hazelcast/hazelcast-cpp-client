@@ -46,7 +46,7 @@ namespace hazelcast {
             * and process m1, m2, m3...mn in order.
             *
             */
-            class ITopic : public proxy::ITopicImpl {
+            class HAZELCAST_API ITopic : public proxy::ITopicImpl {
                 friend class client::HazelcastClient;
 
             public:
