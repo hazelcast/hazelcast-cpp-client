@@ -1111,7 +1111,6 @@ namespace hazelcast {
                 virtual void
                 putAllInternal(const std::map<int, EntryVector> &entries);
 
-                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
             private:
                 monitor::impl::LocalMapStatsImpl stats;
             };

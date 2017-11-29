@@ -290,10 +290,6 @@ namespace hazelcast {
                 proxy::IMapImpl::putAllData(entries);
             }
 
-            boost::shared_ptr<serialization::pimpl::Data>
-            ClientMapProxy::toShared(const serialization::pimpl::Data &data) {
-                return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
-            }
         }
     }
 }
