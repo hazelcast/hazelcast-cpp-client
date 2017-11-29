@@ -20,7 +20,7 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
     HazelcastClient client(config);
-    mixedtype::HazelcastClient hazelcastClient = client.toMixedType();
+    mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
 
     mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 

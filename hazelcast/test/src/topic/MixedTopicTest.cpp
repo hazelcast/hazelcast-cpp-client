@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ClientTopicTest.h"
+#include <HazelcastServer.h>
+#include "ClientTestSupport.h"
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -23,34 +25,46 @@ namespace hazelcast {
         class HazelcastClient;
 
         namespace test {
-            ClientTopicTest::ClientTopicTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , topic(client->getTopic<std::string>("ClientTopicTest")) {
+            class MixedTopicTest : public ClientTestSupport {
+            public:
+                MixedTopicTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                mixedtype::ITopic topic;
+            };
+
+
+            MixedTopicTest::MixedTopicTest()
+                    : instance(*g_srvFactory), client(getNewClient()),
+                      topic(client->toMixedType().getTopic("MixedTopicTest")) {
             }
 
-            class MyMessageListener : public topic::MessageListener<std::string> {
+            class MyMessageListener : public mixedtype::topic::MessageListener {
             public:
                 MyMessageListener(util::CountDownLatch &latch)
-                :latch(latch) {
+                        : latch(latch) {
                 }
 
-                void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
+                virtual void onMessage(std::auto_ptr<topic::Message<TypedData> > message) {
                     latch.countDown();
                 }
+
             private:
                 util::CountDownLatch &latch;
             };
 
-            TEST_F(ClientTopicTest, testTopicListeners) {
+            TEST_F(MixedTopicTest, testTopicListeners) {
                 util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
                 std::string id = topic.addMessageListener(listener);
 
                 for (int i = 0; i < 10; i++) {
-                    topic.publish(std::string("naber") + util::IOUtil::to_string(i));
+                    topic.publish<std::string>(std::string("naber") + util::IOUtil::to_string(i));
                 }
-                ASSERT_TRUE(latch.await(20 ));
+                ASSERT_TRUE(latch.await(20));
                 topic.removeMessageListener(id);
             }
         }
