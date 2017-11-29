@@ -71,7 +71,7 @@ namespace hazelcast {
                 };
 
                 static void lockTtlThread(util::ThreadArgs& args) {
-                    mixedtype::MultiMap *map = ( mixedtype::MultiMap *)args.arg0;
+                    mixedtype::MultiMap *map = (mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
 
                     if (!map->tryLock<std::string>("key1")) {
@@ -84,14 +84,14 @@ namespace hazelcast {
                 }
 
                 static void forceUnlockThread(util::ThreadArgs& args) {
-                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = (mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     mm->forceUnlock<std::string>("key1");
                     latch->countDown();
                 }
 
                 static void lockThread(util::ThreadArgs& args) {
-                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = (mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     if (!mm->tryLock<std::string>("key1")) {
                         latch->countDown();
@@ -99,7 +99,7 @@ namespace hazelcast {
                 }
 
                 static void tryLockThread(util::ThreadArgs& args) {
-                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = (mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     try {
                         if (!mm->tryLock<std::string>("key1", 2)) {
@@ -111,7 +111,7 @@ namespace hazelcast {
                 }
 
                 static void tryLockThread2(util::ThreadArgs& args) {
-                    mixedtype::MultiMap *mm = ( mixedtype::MultiMap *)args.arg0;
+                    mixedtype::MultiMap *mm = (mixedtype::MultiMap *)args.arg0;
                     util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
                     try {
                         if (mm->tryLock<std::string>("key1", 20 * 1000)) {

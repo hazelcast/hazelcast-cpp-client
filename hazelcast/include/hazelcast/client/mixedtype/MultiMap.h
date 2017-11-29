@@ -33,7 +33,7 @@ namespace hazelcast {
             *
             * @see IMap
             */
-            class MultiMap : public proxy::MultiMapImpl {
+            class HAZELCAST_API MultiMap : public proxy::MultiMapImpl {
                 friend class client::HazelcastClient;
 
             public:
