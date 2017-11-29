@@ -19,6 +19,7 @@
 #include <string>
 #include <stdint.h>
 #include <boost/shared_ptr.hpp>
+#include <ostream>
 
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
 #include "hazelcast/util/Preconditions.h"
@@ -155,25 +156,27 @@ namespace hazelcast {
                     } else {
                         assert(0);
                     }
-		    return internal::eviction::NONE;
+		            return internal::eviction::NONE;
                 }
 
-                std::ostream &operator<<(std::ostream &out) {
-                    out << "EvictionConfig{"
-                    << "size=" << getSize()
-                    << ", maxSizePolicy=" << getMaximumSizePolicy()
-                    << ", evictionPolicy=" << getEvictionPolicy()
-                    << ", comparator=" << getComparator()
-                    << '}';
-
-                    return out;
-                }
             protected:
                 int32_t size;
                 MaxSizePolicy maxSizePolicy;
                 EvictionPolicy evictionPolicy;
                 boost::shared_ptr<internal::eviction::EvictionPolicyComparator<K, V> > comparator;
             };
+
+            template <typename K, typename V>
+            std::ostream &operator<<(std::ostream &out, const EvictionConfig<K, V> &config) {
+                out << "EvictionConfig{"
+                    << "size=" << config.getSize()
+                    << ", maxSizePolicy=" << config.getMaximumSizePolicy()
+                    << ", evictionPolicy=" << config.getEvictionPolicy()
+                    << ", comparator=" << config.getComparator()
+                    << '}';
+
+                return out;
+            }
 
             /**
              * Default maximum entry count.

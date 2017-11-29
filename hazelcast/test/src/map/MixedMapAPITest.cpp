@@ -190,7 +190,7 @@ namespace hazelcast {
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     bool result = imap->tryPut<std::string, std::string>("key1", "value3", 1 * 1000);
                     if (!result) {
                         latch->countDown();
@@ -199,7 +199,7 @@ namespace hazelcast {
 
                 void tryRemoveThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     bool result = imap->tryRemove<std::string>("key2", 1 * 1000);
                     if (!result) {
                         latch->countDown();
@@ -208,21 +208,21 @@ namespace hazelcast {
 
                 void testLockThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     imap->tryPut<std::string, std::string>("key1", "value2", 1);
                     latch->countDown();
                 }
 
                 void testLockTTLThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     imap->tryPut<std::string, std::string>("key1", "value2", 5 * 1000);
                     latch->countDown();
                 }
 
                 void testLockTTL2Thread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     if (!imap->tryLock<std::string>("key1")) {
                         latch->countDown();
                     }
@@ -233,7 +233,7 @@ namespace hazelcast {
 
                 void testMapTryLockThread1(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     if (!imap->tryLock<std::string>("key1", 2)) {
                         latch->countDown();
                     }
@@ -241,7 +241,7 @@ namespace hazelcast {
 
                 void testMapTryLockThread2(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     if (imap->tryLock<std::string>("key1", 20 * 1000)) {
                         latch->countDown();
                     }
@@ -249,7 +249,7 @@ namespace hazelcast {
 
                 void testMapForceUnlockThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
-                    ClientMapProxy *imap = (ClientMapProxy *) args.arg1;
+                    mixedtype::IMap *imap = (mixedtype::IMap *) args.arg1;
                     imap->forceUnlock<std::string>("key1");
                     latch->countDown();
                 }
