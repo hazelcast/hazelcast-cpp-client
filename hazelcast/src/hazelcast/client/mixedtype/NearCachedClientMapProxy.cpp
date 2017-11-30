@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <boost/foreach.hpp>
+
 #include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/map/impl/nearcache/InvalidationAwareWrapper.h"
