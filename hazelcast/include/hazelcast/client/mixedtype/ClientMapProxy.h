@@ -23,7 +23,6 @@
 #include <stdexcept>
 #include <climits>
 #include <assert.h>
-#include <boost/foreach.hpp>
 
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/monitor/LocalMapStats.h"
@@ -624,13 +623,14 @@ namespace hazelcast {
 
                     PID_TO_KEY_MAP partitionToKeyData;
 
-                    BOOST_FOREACH(const K &key , keys) {
-                                    serialization::pimpl::Data keyData = toData<K>(key);
+                    for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end();++it) {
+                        const K  &key = *it;
+                        serialization::pimpl::Data keyData = toData<K>(key);
 
-                                    int partitionId = getPartitionId(keyData);
+                        int partitionId = getPartitionId(keyData);
 
-                                    partitionToKeyData[partitionId].push_back(toShared(keyData));
-                                }
+                        partitionToKeyData[partitionId].push_back(toShared(keyData));
+                    }
 
                     return toTypedDataEntrySet(getAllInternal(partitionToKeyData));
                 }
@@ -1060,13 +1060,14 @@ namespace hazelcast {
 
                 EntryVector getAllInternal(const PID_TO_KEY_MAP &partitionToKeyData) {
                     std::map<int, std::vector<serialization::pimpl::Data> > datas;
-                    BOOST_FOREACH(const PID_TO_KEY_MAP::value_type &entry , partitionToKeyData) {
-                                    BOOST_FOREACH(
-                                            const std::vector<boost::shared_ptr<serialization::pimpl::Data> >::value_type &data,
-                                            entry.second) {
-                                                    datas[entry.first].push_back(*data);
-                                                }
-                                }
+                    for (PID_TO_KEY_MAP::const_iterator it = partitionToKeyData.begin();
+                         it != partitionToKeyData.end(); ++it) {
+                        const std::vector<boost::shared_ptr<serialization::pimpl::Data> > &valueDatas = it->second;
+                        for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator valueIt = valueDatas.begin();
+                             valueIt != valueDatas.end(); ++valueIt) {
+                            datas[it->first].push_back(*(*valueIt));
+                        }
+                    }
                     return proxy::IMapImpl::getAllData(datas);
                 }
 
