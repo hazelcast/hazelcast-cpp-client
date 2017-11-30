@@ -949,7 +949,7 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                boost::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -959,7 +959,7 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                Future<ResultType> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -967,7 +967,7 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     std::map<K, boost::shared_ptr<ResultType> > result;
@@ -993,7 +993,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
                     std::map<K, boost::shared_ptr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
@@ -1006,7 +1006,7 @@ namespace hazelcast {
 
                 /**
                 * @deprecated This API is deprecated in favor of
-                * @sa{executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate)}
+                * @sa{executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate)}
                 *
                 * Applies the user defined EntryProcessor to the all entries in the map.
                 * Returns the results mapped by each key in the map.
@@ -1022,7 +1022,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
+                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
                                                                              const serialization::IdentifiedDataSerializable &predicate) {
                     const query::Predicate *p = (const query::Predicate *) (&predicate);
                     return executeOnEntries<ResultType, EntryProcessor>(entryProcessor, *p);
@@ -1044,7 +1044,7 @@ namespace hazelcast {
                 */
                 template<typename ResultType, typename EntryProcessor>
                 std::map<K, boost::shared_ptr<ResultType> >
-                executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor,
                                                                                                 predicate);
                     std::map<K, boost::shared_ptr<ResultType> > result;
@@ -1264,7 +1264,7 @@ namespace hazelcast {
                 }
 
                 template<typename EntryProcessor>
-                EntryVector executeOnKeysInternal(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                EntryVector executeOnKeysInternal(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     if (keys.empty()) {
                         return EntryVector();
                     }

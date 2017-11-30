@@ -746,7 +746,7 @@ namespace hazelcast {
             * @return result of entry process.
             */
             template<typename ResultType, typename EntryProcessor>
-            boost::shared_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+            boost::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -764,7 +764,7 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, boost::shared_ptr<ResultType> >
-            executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+            executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnKeys<ResultType, EntryProcessor>(keys, entryProcessor);
             }
 
@@ -778,7 +778,7 @@ namespace hazelcast {
              * @return Future from which the result of the operation can be retrieved.
              */
             template<typename ResultType, typename EntryProcessor>
-            Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+            Future<ResultType> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                 return mapImpl->template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
             }
 
@@ -796,7 +796,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor);
             }
 
@@ -818,7 +818,7 @@ namespace hazelcast {
             * @param entryProcessor that will be applied
             */
             template<typename ResultType, typename EntryProcessor>
-            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(EntryProcessor &entryProcessor,
+            std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
                                                                          const serialization::IdentifiedDataSerializable &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
@@ -839,7 +839,7 @@ namespace hazelcast {
             */
             template<typename ResultType, typename EntryProcessor>
             std::map<K, boost::shared_ptr<ResultType> >
-            executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+            executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                 return mapImpl->template executeOnEntries<ResultType, EntryProcessor>(entryProcessor, predicate);
             }
 

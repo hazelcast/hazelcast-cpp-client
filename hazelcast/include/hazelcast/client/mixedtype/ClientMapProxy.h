@@ -879,7 +879,7 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename K, typename EntryProcessor>
-                TypedData executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                TypedData executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -889,7 +889,7 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename EntryProcessor>
-                Future<TypedData> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                Future<TypedData> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
@@ -897,7 +897,7 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename EntryProcessor>
-                std::map<K, TypedData> executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                std::map<K, TypedData> executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<K, EntryProcessor>(keys, entryProcessor);
 
                     std::map<K, TypedData> result;
@@ -923,7 +923,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename EntryProcessor>
-                std::map<TypedData, TypedData > executeOnEntries(EntryProcessor &entryProcessor) {
+                std::map<TypedData, TypedData > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
                     std::map<TypedData, TypedData> result;
                     for (size_t i = 0; i < entries.size(); ++i) {
@@ -951,7 +951,7 @@ namespace hazelcast {
                 */
                 template<typename EntryProcessor>
                 std::map<TypedData, TypedData>
-                executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor,
                                                                                                 predicate);
                     std::map<TypedData, TypedData> result;
@@ -1094,7 +1094,7 @@ namespace hazelcast {
                 static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response);
 
                 template<typename K, typename EntryProcessor>
-                EntryVector executeOnKeysInternal(const std::set<K> &keys, EntryProcessor &entryProcessor) {
+                EntryVector executeOnKeysInternal(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     if (keys.empty()) {
                         return EntryVector();
                     }
