@@ -321,11 +321,11 @@ registerSerializer(boost::shared_ptr<hazelcast::client::serialization::StreamSer
 ```
 
 ## Polymorphic Types Serialization
-The client library can handle polymorphic objects such that you can use a base class type structure such as IMap, and put and get derived types. This support exists for IdentifiedDataSerializable, Portable and Custom objects.
+The client library can handle polymorphic objects such that you can use a base class type structure, such as IMap, you can put and get derived types. This support exists for IdentifiedDataSerializable, Portable and Custom objects.
 
 You can find the polymorphic usage examples at examples/distributed-map/mixed-map folder.
 
-For IdentifiedDataSerializable objects, you need to register a factory implementation of type serialization::DataSerializableFactory. E.g.:
+For IdentifiedDataSerializable objects, you need to register a factory implementation of type serialization::DataSerializableFactory. See the below example:
 ```
 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
 public:
@@ -436,13 +436,13 @@ value = vals->get(0);
 Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.
 
 # Mixed Object Types Supporting HazelcastClient
-Sometimes, you may need to use Hazelcast data structures with objects of different types. E.g. you may want to put int, string,identifieddataserializable, etc... objects into the same Hazelcast IMap data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
+Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put int, string, identifieddataserializable, etc. objects into the same Hazelcast IMap data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
 ```
     ClientConfig config;
     HazelcastClient client(config);
     mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
 ``` 
-The mixedtype::HazelcastClient interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. E.g. The interface allows you to provide the key and value type differently for each map.put call. An example usage:
+The mixedtype::HazelcastClient interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each map.put call. An example usage is shown below:
 ```
     mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 
@@ -452,14 +452,14 @@ The mixedtype::HazelcastClient interface is designed to provide you the data str
     TypedData result = map.get<int>(3);
 ``` 
 
-As you can see in the above code snippet, we are putting int, string and MyCustomObject to the same map. Both the key and value can be different type for each map.put call.
+As you can see in the above code snippet, we are putting int, string and MyCustomObject to the same map. Both the key and value can be of different type for each map.put call.
 
-If you want to use mixed type map with near cache, then you should use the MixedNearCacheConfig class and add config to the ClientConfig using the addMixedNearCacheConfig method. e.g.:
+If you want to use mixed type map with near cache, then you should use the MixedNearCacheConfig class and add config to the ClientConfig using the addMixedNearCacheConfig method. See the below example:
 ```
    boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
    clientConfig.addMixedNearCacheConfig(nearCacheConfig);
 ```
-Mixed type support for near cache only exist when the in-memory format is BINARY. The OBJECT in-memory format is not supported for MixedNearCacheConfig;
+Mixed type support for near cache only exists when the in-memory format is BINARY. The OBJECT in-memory format is not supported for MixedNearCacheConfig;
 
 The mixed type API uses the TypedData class at the user interface.
 
