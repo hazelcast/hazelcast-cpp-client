@@ -26,6 +26,7 @@
 #include <map>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/DataSerializableFactory.h"
 #include "hazelcast/client/serialization/PortableFactory.h"
 
@@ -76,12 +77,23 @@ namespace hazelcast {
             std::vector<boost::shared_ptr<serialization::SerializerBase> > const &getSerializers() const;
 
             /**
+             * @deprecated Please use registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer)
+             *
              * One can implement custom serializers other than Portable and IdentifiedDataSerializable
              * to be used in serialization of user objects. For details @see Serializer
              *
              * @param serializer custom serializer to be registered
              */
             SerializationConfig& registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer);
+
+
+            /**
+             * One can implement custom serializers other than Portable and IdentifiedDataSerializable
+             * to be used in serialization of user objects. For details @see Serializer
+             *
+             * @param serializer custom serializer to be registered
+             */
+            SerializationConfig& registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer);
 
             /**
              * @param factoryId               factory ID of DataSerializableFactory to be registered

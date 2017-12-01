@@ -19,7 +19,10 @@
   * [Windows  Client](#windows-client)
 * [Serialization Support](#serialization-support)
   * [Custom Serialization](#custom-serialization) 
+  * [Polymorphic Types Serialization](#polymorphic-types-serialization) 
 * [Raw Pointer API](#raw-pointer-api)
+* [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastClient)
+  * [TypedData API](#typeddata-api) 
 * [Query API](#query-api)
 * [Ringbuffer](#ringbuffer)
 * [Reliable Topic](#reliable-topic)
@@ -314,7 +317,54 @@ After you implement your serializer, you can register it using `SerializationCon
 
 ```
 clientConfig.getSerializationConfig().
-registerSerializer(boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new MyCustomSerializer());
+registerSerializer(boost::shared_ptr<hazelcast::client::serialization::StreamSerializer>(new MyCustomSerializer());
+```
+
+## Polymorphic Types Serialization
+The client library can handle polymorphic objects such that you can use a base class type structure such as IMap, and put and get derived types. This support exists for IdentifiedDataSerializable, Portable and Custom objects.
+
+You can find the polymorphic usage examples at examples/distributed-map/mixed-map folder.
+
+For IdentifiedDataSerializable objects, you need to register a factory implementation of type serialization::DataSerializableFactory. E.g.:
+```
+class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
+public:
+    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
+        switch (typeId) {
+            case 10:
+                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
+            case 11:
+                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
+            case 12:
+                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
+            default:
+                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+        }
+    }
+    serializationConfig.addDataSerializableFactory(666,
+                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                           new PolymorphicDataSerializableFactory()));    
+};
+
+    // Register the factory 
+    serializationConfig.addDataSerializableFactory(666,
+                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                           new PolymorphicDataSerializableFactory()));
+```
+
+Similarly for Portable types you need to register a factory of type serialization::PortableFactory.
+```
+    serializationConfig.addPortableFactory(666, boost::shared_ptr<serialization::PortableFactory>(
+                                                           new PolymorphicPortableFactory));
+```
+
+If you want to use custom objects which are polymorphic, you need to register both the derived and base object serializers like this:
+```
+    serializationConfig.registerSerializer(
+            boost::shared_ptr<serialization::StreamSerializer>(new BaseCustomSerializer));
+
+    serializationConfig.registerSerializer(
+            boost::shared_ptr<serialization::StreamSerializer>(new Derived1CustomSerializer));
 ```
 
 # Raw Pointer API
@@ -384,6 +434,58 @@ value = vals->get(0);
 ```
 
 Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.
+
+# Mixed Object Types Supporting HazelcastClient
+Sometimes, you may need to use Hazelcast data structures with objects of different types. E.g. you may want to put int, string,identifieddataserializable, etc... objects into the same Hazelcast IMap data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
+```
+    ClientConfig config;
+    HazelcastClient client(config);
+    mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
+``` 
+The mixedtype::HazelcastClient interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. E.g. The interface allows you to provide the key and value type differently for each map.put call. An example usage:
+```
+    mixedtype::IMap map = hazelcastClient.getMap("MyMap");
+
+    map.put<int, int>(3, 5);
+    map.put<string, std::string>("string key1", "MyStringValue");
+    map.put<int, MyCustomObject>("string key1", myCustomInstance);
+    TypedData result = map.get<int>(3);
+``` 
+
+As you can see in the above code snippet, we are putting int, string and MyCustomObject to the same map. Both the key and value can be different type for each map.put call.
+
+If you want to use mixed type map with near cache, then you should use the MixedNearCacheConfig class and add config to the ClientConfig using the addMixedNearCacheConfig method. e.g.:
+```
+   boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
+   clientConfig.addMixedNearCacheConfig(nearCacheConfig);
+```
+Mixed type support for near cache only exist when the in-memory format is BINARY. The OBJECT in-memory format is not supported for MixedNearCacheConfig;
+
+The mixed type API uses the TypedData class at the user interface.
+
+## TypedData API
+The TypedData class is a wrapper class for the serialized binary data. It presents the following user APIs:
+```
+            /**
+             *
+             * @return The type of the underlying object for this binary.
+             */
+            const serialization::pimpl::ObjectType getType() const;
+
+            /**
+             * Deserializes the underlying binary data and produces the object of type T.
+             *
+             * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
+             * the getType API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
+             *
+             * @tparam T The type to be used for deserialization
+             * @return The object instance of type T.
+             */
+            template <typename T>
+            std::auto_ptr<T> get() const;
+```
+
+TypedData does late deserialization of the data only when the get method is called.
 
 # Query API
 

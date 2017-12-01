@@ -33,6 +33,10 @@ namespace hazelcast {
                 class Data;
             }
         }
+        /**
+         * TypedData class is a wrapper class for the serialized binary data. It does late deserialization of the data
+         * only when the get method is called.
+         */
         class HAZELCAST_API TypedData {
         public:
             TypedData();
@@ -46,13 +50,30 @@ namespace hazelcast {
 
             virtual ~TypedData();
 
+            /**
+             *
+             * @return The type of the underlying object for this binary.
+             */
             const serialization::pimpl::ObjectType getType() const;
 
+            /**
+             * Deserializes the underlying binary data and produces the object of type T.
+             *
+             * <b>CAUTION</b>: The type that you provide should be compatible with what object type is returned with
+             * the getType API, otherwise you will either get an exception of incorrectly try deserialize the binary data.
+             *
+             * @tparam T The type to be used for deserialization
+             * @return The object instance of type T.
+             */
             template <typename T>
             std::auto_ptr<T> get() const {
                 return ss->toObject<T>(data.get());
             }
 
+            /**
+             * Internal API
+             * @return The pointer to the internal binary data.
+             */
             const serialization::pimpl::Data *getData() const;
 
         private:
