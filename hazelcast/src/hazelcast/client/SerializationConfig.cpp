@@ -46,6 +46,12 @@ namespace hazelcast {
             return *this;
         }
 
+        SerializationConfig &
+        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer) {
+            serializers.push_back(serializer);
+            return *this;
+        }
+
         SerializationConfig &SerializationConfig::addDataSerializableFactory(int32_t factoryId,
                                                                              boost::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory) {
             dataSerializableFactories[factoryId] = dataSerializableFactory;
