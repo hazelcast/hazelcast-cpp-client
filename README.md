@@ -21,7 +21,7 @@
   * [Custom Serialization](#custom-serialization) 
   * [Polymorphic Types Serialization](#polymorphic-types-serialization) 
 * [Raw Pointer API](#raw-pointer-api)
-* [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastClient)
+* [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastclient)
   * [TypedData API](#typeddata-api) 
 * [Query API](#query-api)
 * [Ringbuffer](#ringbuffer)
@@ -183,10 +183,10 @@ You can use Native C++ Client to connect to Hazelcast cluster members and perfor
 
 The features of C++ Clients are listed below:
 
-- Access to distributed data structures (IMap, IQueue, MultiMap, ITopic, etc.).
-- Access to transactional distributed data structures (TransactionalMap, TransactionalQueue, etc.).
+- Access to distributed data structures (`IMap`, `IQueue`, `MultiMap`, `ITopic`, etc.).
+- Access to transactional distributed data structures (`TransactionalMap`, `TransactionalQueue`, etc.).
 - Ability to add cluster listeners to a cluster and entry/item listeners to distributed data structures.
-- Distributed synchronization mechanisms with ILock, ISemaphore and ICountDownLatch.
+- Distributed synchronization mechanisms with `ILock`, `ISemaphore` and `ICountDownLatch`.
 
 
 # Setting Up the Client
@@ -321,11 +321,11 @@ registerSerializer(boost::shared_ptr<hazelcast::client::serialization::StreamSer
 ```
 
 ## Polymorphic Types Serialization
-The client library can handle polymorphic objects such that you can use a base class type structure, such as IMap, you can put and get derived types. This support exists for IdentifiedDataSerializable, Portable and Custom objects.
+The client library can handle polymorphic objects such that you can use a base class type structure, such as `IMap`, you can put and get derived types. This support exists for `IdentifiedDataSerializable`, `Portable` and custom objects.
 
 You can find the polymorphic usage examples at examples/distributed-map/mixed-map folder.
 
-For IdentifiedDataSerializable objects, you need to register a factory implementation of type serialization::DataSerializableFactory. See the below example:
+For `IdentifiedDataSerializable` objects, you need to register a factory implementation of type `serialization::DataSerializableFactory`. See the below example:
 ```
 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
 public:
@@ -352,7 +352,7 @@ public:
                                                            new PolymorphicDataSerializableFactory()));
 ```
 
-Similarly for Portable types you need to register a factory of type serialization::PortableFactory.
+Similarly for `Portable` types you need to register a factory of type `serialization::PortableFactory`.
 ```
     serializationConfig.addPortableFactory(666, boost::shared_ptr<serialization::PortableFactory>(
                                                            new PolymorphicPortableFactory));
@@ -436,7 +436,7 @@ value = vals->get(0);
 Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.
 
 # Mixed Object Types Supporting HazelcastClient
-Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put int, string, identifieddataserializable, etc. objects into the same Hazelcast IMap data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
+Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
 ```
     ClientConfig config;
     HazelcastClient client(config);
@@ -452,7 +452,7 @@ The mixedtype::HazelcastClient interface is designed to provide you the data str
     TypedData result = map.get<int>(3);
 ``` 
 
-As you can see in the above code snippet, we are putting int, string and MyCustomObject to the same map. Both the key and value can be of different type for each map.put call.
+As you can see in the above code snippet, we are putting `int`, `string` and MyCustomObject to the same map. Both the key and value can be of different type for each map.put call.
 
 If you want to use mixed type map with near cache, then you should use the MixedNearCacheConfig class and add config to the ClientConfig using the addMixedNearCacheConfig method. See the below example:
 ```
@@ -486,6 +486,17 @@ The TypedData class is a wrapper class for the serialized binary data. It presen
 ```
 
 TypedData does late deserialization of the data only when the get method is called.
+
+This TypedData allows you to retrieve the data type of the underlying binary to be used when being deserialized. This class represents the type of a Hazelcast serializable object. The fields can take the following values:
+1. <b>Primitive types</b>: factoryId=-1, classId=-1, typeId is the type id for that primitive as listed in
+@link SerializationConstants
+2. <b>Array of primitives</b>: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
+@link SerializationConstants
+3. <b>IdentifiedDataSerializable</b>: factory, class and type ids are non-negative values as registered by
+the DataSerializableFactory.
+4. <b>Portable</b>: factory, class and type ids are non-negative values as registered by the PortableFactory.
+5. <b>Custom serialized objects</b>: factoryId=-1, classId=-1, typeId is the non-negative type id as 
+registered for the custom object. 
 
 # Query API
 
@@ -530,23 +541,23 @@ This example query returns the values between 5 and 10, inclusive. You can find 
 
 # Ringbuffer
 
-You can benefit from Hazelcast Ringbuffer using the C++ client library. You can start by obtaining the Ringbuffer using the `HazelcastClient` as usual, as shown below:
+You can benefit from Hazelcast `Ringbuffer` using the C++ client library. You can start by obtaining the `Ringbuffer` using the `HazelcastClient` as usual, as shown below:
 
 ```
 boost::shared_ptr<hazelcast::client::Ringbuffer<std::string> > rb = client.getRingbuffer<std::string>("myringbuffer");
 ```
 
-Ringbuffer interface allows you to add a new item to the Ringbuffer or read an entry at a sequence number.
+`Ringbuffer` interface allows you to add a new item to the `Ringbuffer` or read an entry at a sequence number.
 
-You can query the Ringbuffer capacity which is configured at the server side.
+You can query the `Ringbuffer` capacity which is configured at the server side.
 
 # Reliable Topic
 
 You can use Reliable Topic if you do not want to miss any messages during failures. Hazelcast Reliable Topic provides a very similar interface to Topic structure but it has several configuration options.
 
-Reliable Topic implementation depends on the Ringbuffer data structure. The data is kept in the Hazelcast cluster's Ringbuffer structure. These Ringbuffer structures' names start with "\_hz\_rb\_".
+Reliable Topic implementation depends on the `Ringbuffer` data structure. The data is kept in the Hazelcast cluster's `Ringbuffer` structure. These `Ringbuffer` structures' names start with "\_hz\_rb\_".
  
-Reliable Topic also supports batch reads from the Ringbuffer. You can optimize the internal working of listener using the method `ReliableTopicConfig::setReadBatchSize`.
+Reliable Topic also supports batch reads from the `Ringbuffer`. You can optimize the internal working of listener using the method `ReliableTopicConfig::setReadBatchSize`.
 
 # Map Near Cache
 Map can be configured to work with near cache enabled. Near cache allows local caching of entries fetched from the cluster at the client side. The local cache is updated when the client does a get request for a map entry. The locally cached entries are updated automatically as any change occurs in the map data in the cluster. Special internal event listeners are utilized for this purpose.
