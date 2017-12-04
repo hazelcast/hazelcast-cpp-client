@@ -436,13 +436,13 @@ value = vals->get(0);
 Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.
 
 # Mixed Object Types Supporting HazelcastClient
-Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted HazelcastClient. You can adopt the client in this way:
+Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted `HazelcastClient`. You can adopt the client in this way:
 ```
     ClientConfig config;
     HazelcastClient client(config);
     mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
 ``` 
-The mixedtype::HazelcastClient interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each map.put call. An example usage is shown below:
+The `mixedtype::HazelcastClient` interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each map.put call. An example usage is shown below:
 ```
     mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 
@@ -488,14 +488,14 @@ The TypedData class is a wrapper class for the serialized binary data. It presen
 TypedData does late deserialization of the data only when the get method is called.
 
 This TypedData allows you to retrieve the data type of the underlying binary to be used when being deserialized. This class represents the type of a Hazelcast serializable object. The fields can take the following values:
-1. <b>Primitive types</b>: factoryId=-1, classId=-1, typeId is the type id for that primitive as listed in
-@link SerializationConstants
-2. <b>Array of primitives</b>: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
-@link SerializationConstants
-3. <b>IdentifiedDataSerializable</b>: factory, class and type ids are non-negative values as registered by
-the DataSerializableFactory.
-4. <b>Portable</b>: factory, class and type ids are non-negative values as registered by the PortableFactory.
-5. <b>Custom serialized objects</b>: factoryId=-1, classId=-1, typeId is the non-negative type id as 
+1. <b>Primitive types</b>: `factoryId=-1`, `classId=-1`, `typeId` is the type ID for that primitive as listed in
+`SerializationConstants`
+2. <b>Array of primitives</b>: `factoryId=-1`, `classId=-1`, `typeId` is the type ID for that array as listed in
+`SerializationConstants`
+3. <b>IdentifiedDataSerializable</b>: `factoryId`, `classId` and `typeId` are non-negative values as registered by
+the `DataSerializableFactory`.
+4. <b>Portable</b>: `factoryId`, `classId` and `typeId` are non-negative values as registered by the `PortableFactory`.
+5. <b>Custom serialized objects</b>: `factoryId=-1`, `classId=-1`, `typeId` is the non-negative type ID as 
 registered for the custom object. 
 
 # Query API
