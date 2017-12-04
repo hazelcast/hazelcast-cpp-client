@@ -58,6 +58,20 @@ namespace hazelcast {
 
         namespace serialization {
             namespace pimpl {
+                /**
+                 * This class represents the type of a Hazelcast serializable object. The fields can take the following
+                 * values:
+                 * 1. Primitive types: factoryId=-1, classId=-1, typeId is the type id for that primitive as listed in
+                 * @link SerializationConstants
+                 * 2. Array of primitives: factoryId=-1, classId=-1, typeId is the type id for that array as listed in
+                 * @link SerializationConstants
+                 * 3. IdentifiedDataSerializable: factory, class and type ids are non-negative values as registered by
+                 * the DataSerializableFactory.
+                 * 4. Portable: factory, class and type ids are non-negative values as registered by the PortableFactory.
+                 * 5. Custom serialized objects: factoryId=-1, classId=-1, typeId is the non-negative type id as
+                 * registered for the custom object.
+                 *
+                 */
                 struct HAZELCAST_API ObjectType {
                     ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
 
