@@ -41,8 +41,7 @@ namespace hazelcast {
             private:
                 void initializeWithRetry(boost::shared_ptr<ClientProxy> clientProxy);
 
-                //TODO: Change ClientProxy to ClientProxyFuture as in java
-                util::SynchronizedMap<DefaultObjectNamespace, ClientProxy> proxies;
+                util::SynchronizedMap<DefaultObjectNamespace, util::Future<boost::shared_ptr<ClientProxy> > > proxies;
             };
 
         }
