@@ -17,10 +17,13 @@
 #ifndef HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
 #define HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
 
+#include <string>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/spi/ObjectNamespace.h"
 #include "hazelcast/client/spi/DefaultObjectNamespace.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/util/Future.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,6 +33,10 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
+            class ClientContext;
+            class ClientProxy;
+            class ClientProxyFactory;
+
             class HAZELCAST_API ProxyManager {
             public:
                 ProxyManager(ClientContext &context);
@@ -43,7 +50,6 @@ namespace hazelcast {
 
                 util::SynchronizedMap<DefaultObjectNamespace, util::Future<boost::shared_ptr<ClientProxy> > > proxies;
             };
-
         }
     }
 }
@@ -53,4 +59,3 @@ namespace hazelcast {
 #endif
 
 #endif //HAZELCAST_CLIENT_SPI_PROXYMANAGER_H_
-

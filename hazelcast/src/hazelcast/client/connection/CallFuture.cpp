@@ -19,6 +19,7 @@
 
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/connection/Connection.h"

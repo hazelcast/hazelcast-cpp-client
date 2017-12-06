@@ -24,6 +24,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/CallPromise.h"
 #include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

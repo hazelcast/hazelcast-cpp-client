@@ -91,4 +91,4 @@ namespace hazelcast {
     }
 }
 
-#endif
+#endif // HAZELCAST_CLIENT_CONTEXT

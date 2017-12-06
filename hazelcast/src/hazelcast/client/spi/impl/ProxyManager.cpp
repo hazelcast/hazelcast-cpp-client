@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/exception/IllegalArgumentException.h>
-#include <hazelcast/util/Preconditions.h>
-#include <hazelcast/client/Future.h>
+#include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/spi/ClientProxyFactory.h"
-#include "hazelcast/client/exception/IException.h"
-#include "hazelcast/client/spi/ProxyManager.h"
 
 namespace hazelcast {
     namespace client {
