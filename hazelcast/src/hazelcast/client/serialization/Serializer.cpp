@@ -25,6 +25,9 @@ namespace hazelcast {
         namespace serialization {
             SerializerBase::~SerializerBase() {
             }
+
+            void SerializerBase::destroy() {
+            }
         }
     }
 }

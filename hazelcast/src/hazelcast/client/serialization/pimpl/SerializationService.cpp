@@ -120,6 +120,10 @@ namespace hazelcast {
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new StringArraySerializer()));
                 }
 
+                void SerializationService::dispose() {
+                    getSerializerHolder().dispose();
+                }
+
                 template <>
                 Data SerializationService::toData(const TypedData *object) {
                     if (!object) {

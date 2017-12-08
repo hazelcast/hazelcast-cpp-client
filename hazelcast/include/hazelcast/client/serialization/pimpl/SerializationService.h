@@ -39,6 +39,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/util/Disposable.h"
 #include "hazelcast/client/PartitionAware.h"
 
 #include <boost/shared_ptr.hpp>
@@ -89,7 +90,7 @@ namespace hazelcast {
                     }
                 };
 
-                class HAZELCAST_API SerializationService {
+                class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
                     SerializationService(const SerializationConfig& serializationConfig);
 
@@ -166,6 +167,11 @@ namespace hazelcast {
                      * @return The serializer holder.
                      */
                     SerializerHolder &getSerializerHolder();
+
+                    /**
+                     * @link Disposable interface implementation
+                     */
+                    void dispose();
                 private:
 
                     SerializationService(const SerializationService &);

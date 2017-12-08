@@ -73,6 +73,16 @@ namespace hazelcast {
         SerializationConfig::getPortableFactories() const {
             return portableFactories;
         }
+
+        SerializationConfig &
+        SerializationConfig::setGlobalSerializer(const boost::shared_ptr<serialization::StreamSerializer> &serializer) {
+            globalSerializer = serializer;
+            return *this;
+        }
+
+        const boost::shared_ptr<serialization::StreamSerializer> &SerializationConfig::getGlobalSerializer() const {
+            return globalSerializer;
+        }
     }
 }
 

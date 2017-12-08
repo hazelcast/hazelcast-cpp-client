@@ -45,9 +45,14 @@ namespace hazelcast {
                  *
                  *      int32_t getHazelcastTypeId(const MyClass*);
                  *
-                 *  which should return same id with its serializer.
+                 *  which should return same id with its serializer. User type ids always needs to be non-negative.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
+
+                /**
+                 * Called when instance is shutting down. It can be used to clear used resources.
+                 */
+                virtual void destroy();
             };
 
             /**

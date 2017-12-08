@@ -20,6 +20,8 @@
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
+#include "hazelcast/util/Disposable.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -34,17 +36,24 @@ namespace hazelcast {
             class StreamSerializer;
 
             namespace pimpl {
-                class HAZELCAST_API SerializerHolder {
+                class HAZELCAST_API SerializerHolder : public util::Disposable {
 
                 public:
-                    SerializerHolder();
+                    SerializerHolder(const boost::shared_ptr<StreamSerializer> &globalSerializer);
 
-                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
+                    bool registerSerializer(const boost::shared_ptr<StreamSerializer> &serializer);
 
                     boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
 
+                    virtual void dispose();
+
                 private:
+                    boost::shared_ptr<StreamSerializer> lookupGlobalSerializer(int typeId);
+
                     hazelcast::util::SynchronizedMap<int, StreamSerializer> serializers;
+                    util::AtomicBoolean active;
+                    const boost::shared_ptr<StreamSerializer> globalSerializer;
+
                 };
             }
         }

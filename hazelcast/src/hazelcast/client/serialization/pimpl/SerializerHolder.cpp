@@ -16,6 +16,11 @@
 //
 // Created by sancar koyunlu on 7/31/13.
 
+#include <boost/foreach.hpp>
+#include <sstream>
+
+#include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/SerializationConfig.h"
@@ -24,17 +29,59 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                SerializerHolder::SerializerHolder() {
+                SerializerHolder::SerializerHolder(const boost::shared_ptr<StreamSerializer> &globalSerializer)
+                        : active(true), globalSerializer(globalSerializer) {
                 }
 
-                bool SerializerHolder::registerSerializer(boost::shared_ptr<StreamSerializer> serializer) {
-                    boost::shared_ptr<SerializerBase> available = serializers.putIfAbsent(serializer->getHazelcastTypeId(), serializer);
+                bool SerializerHolder::registerSerializer(const boost::shared_ptr<StreamSerializer> &serializer) {
+                    boost::shared_ptr<SerializerBase> available = serializers.putIfAbsent(
+                            serializer->getHazelcastTypeId(), serializer);
                     return available.get() == NULL;
                 }
 
                 boost::shared_ptr<StreamSerializer> SerializerHolder::serializerFor(int typeId) {
-                    return serializers.get(typeId);
+                    boost::shared_ptr<StreamSerializer> serializer = serializers.get(typeId);
+
+                    if (!serializer.get()) {
+                        return serializer;
+                    }
+
+                    lookupGlobalSerializer(typeId);
+
+                    if (!serializer.get()) {
+                        if (active) {
+                            std::ostringstream out;
+                            out << "There is no suitable serializer for " << typeId;
+                            throw exception::HazelcastSerializationException("SerializerHolder::registerSerializer",
+                                                                             out.str());
+                        }
+                        throw exception::HazelcastInstanceNotActiveException("SerializerHolder::registerSerializer");
+                    }
+                    return serializer;
+
                 }
+
+                void SerializerHolder::dispose() {
+                    active = false;
+
+                    BOOST_FOREACH(boost::shared_ptr<StreamSerializer> serializer, serializers.values()) {
+                                    serializer->destroy();
+                                }
+
+                    serializers.clear();
+                }
+
+                boost::shared_ptr<StreamSerializer> SerializerHolder::lookupGlobalSerializer(int typeId) {
+                    if (globalSerializer.get()) {
+                        return boost::shared_ptr<StreamSerializer>();
+                    }
+
+                    std::ostringstream out;
+                    out << "Registering global serializer for: " << typeId;
+                    util::ILogger::getLogger().finest(out.str());
+                    return serializers.putIfAbsent(typeId, globalSerializer);
+                }
+
             }
         }
     }

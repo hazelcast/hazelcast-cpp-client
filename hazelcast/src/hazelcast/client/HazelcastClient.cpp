@@ -93,6 +93,8 @@ namespace hazelcast {
 
         void HazelcastClient::shutdown() {
             lifecycleService.shutdown();
+
+            serializationService.dispose();
         }
 
         IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
