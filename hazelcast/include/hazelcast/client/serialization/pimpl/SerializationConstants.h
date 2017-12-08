@@ -61,7 +61,8 @@ namespace hazelcast {
                         CONSTANT_TYPE_LONG_ARRAY = -17,
                         CONSTANT_TYPE_FLOAT_ARRAY = -18,
                         CONSTANT_TYPE_DOUBLE_ARRAY = -19,
-                        CONSTANT_TYPE_STRING_ARRAY = -20
+                        CONSTANT_TYPE_STRING_ARRAY = -20,
+                        CONSTANT_TYPE_VOID_POINTER = INT32_MIN
                     };
                     // ------------------------------------------------------------
 

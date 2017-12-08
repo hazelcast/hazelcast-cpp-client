@@ -188,7 +188,6 @@ namespace hazelcast {
                         writeInt(pimpl::SerializationConstants::CONSTANT_TYPE_NULL);
                     } else {
                         int32_t type = getHazelcastTypeId(object);
-                        writeInt(type);
 
                         boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
 
@@ -201,6 +200,8 @@ namespace hazelcast {
 
                         boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
                                 serializer);
+
+                        writeInt(streamSerializer->getHazelcastTypeId());
 
                         writeInternal<T>(object, streamSerializer);
                     }

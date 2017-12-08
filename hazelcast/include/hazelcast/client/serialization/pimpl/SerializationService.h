@@ -74,21 +74,18 @@ namespace hazelcast {
                  *
                  */
                 struct HAZELCAST_API ObjectType {
-                    ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
+                    ObjectType();
 
-                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId) : typeId(typeId), factoryId(factoryId),
-                                                                                     classId(classId) {}
+                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId);
 
                     int32_t typeId;
                     int32_t factoryId;
                     int32_t classId;
 
-                    friend std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
-                        os << "typeId: " << type.typeId << " factoryId: " << type.factoryId << " classId: "
-                           << type.classId;
-                        return os;
-                    }
+                    friend std::ostream &operator<<(std::ostream &os, const ObjectType &type);
                 };
+
+                std::ostream &operator<<(std::ostream &os, const ObjectType &type);
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
