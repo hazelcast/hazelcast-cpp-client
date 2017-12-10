@@ -17,6 +17,7 @@
 // Created by sancar koyunlu on 8/27/13.
 
 #include <stdint.h>
+#include <gtest/gtest.h>
 
 #include "customSerialization/TestCustomSerializerX.h"
 #include "customSerialization/TestCustomXSerializable.h"
@@ -31,19 +32,48 @@
 #include "serialization/ObjectCarryingPortable.h"
 #include "serialization/TestInnerPortable.h"
 #include "serialization/TestMainPortable.h"
+#include "TestNamedPortableV3.h"
+
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "serialization/ClientSerializationTest.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "TestNamedPortableV3.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            static const unsigned int LARGE_ARRAY_SIZE =
+            class ClientSerializationTest : public ::testing::Test {
+            protected:
+                class NonSerializableObject {};
+
+                class DummyGlobalSerializer : public serialization::StreamSerializer {
+                public:
+                    virtual int32_t getHazelcastTypeId() const {
+                        return 123;
+                    }
+
+                    virtual void write(serialization::ObjectDataOutput &out, const void *object) {
+                        std::string value("Dummy string");
+                        out.writeUTF(&value);
+                    }
+
+                    virtual void *read(serialization::ObjectDataInput &in) {
+                        return in.readUTF().release();
+                    }
+                };
+
+                template<typename T>
+                T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {
+                    serialization::pimpl::Data data = ss.toData<T>(&value);
+                    return *(ss.toObject<T>(data));
+                }
+
+                static const unsigned int LARGE_ARRAY_SIZE;
+            };
+
+            const unsigned int ClientSerializationTest::LARGE_ARRAY_SIZE =
                     1 * 1024 * 1024;   // 1 MB. Previously it was 10 MB but then the
-            // test fails when using Windows 32-bit DLL
-            // library with std::bad_alloc with 10 MB
+                                        // test fails when using Windows 32-bit DLL
+                                        // library with std::bad_alloc with 10 MB
 
             TEST_F(ClientSerializationTest, testCustomSerialization) {
                 SerializationConfig serializationConfig;
@@ -675,6 +705,22 @@ namespace hazelcast {
                 std::auto_ptr<std::vector<byte> > byteArray = out.toByteArray();
                 int strLen = util::Bits::readIntB(*byteArray, 0);
                 ASSERT_EQ(7, strLen);
+            }
+
+            TEST_F(ClientSerializationTest, testGlobalSerializer) {
+                SerializationConfig serializationConfig;
+
+                serializationConfig.setGlobalSerializer(
+                        boost::shared_ptr<serialization::StreamSerializer>(new DummyGlobalSerializer()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                
+                NonSerializableObject obj;
+
+                serialization::pimpl::Data data = serializationService.toData<NonSerializableObject>(&obj);
+
+                std::auto_ptr<std::string> deserializedValue = serializationService.toObject<std::string>(data);
+                ASSERT_NE((std::string *) NULL, deserializedValue.get());
+                ASSERT_EQ("Dummy string", *deserializedValue);
             }
         }
     }

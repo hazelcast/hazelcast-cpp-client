@@ -27,11 +27,14 @@ namespace hazelcast {
          */
         class HAZELCAST_API Disposable {
         public:
-                /**
-                 * Disposes this object and releases any data and/or resources associated
-                 * with it. If this object is already disposed then invoking this
-                 * method has no effect.
-                 */
+            virtual ~Disposable() {
+            }
+
+            /**
+             * Disposes this object and releases any data and/or resources associated
+             * with it. If this object is already disposed then invoking this
+             * method has no effect.
+             */
                 virtual void dispose() = 0;
         };
     }

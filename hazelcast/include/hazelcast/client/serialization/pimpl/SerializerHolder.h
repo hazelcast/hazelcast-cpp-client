@@ -45,7 +45,7 @@ namespace hazelcast {
 
                     boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
 
-                    virtual void dispose();
+                    void dispose();
 
                 private:
                     boost::shared_ptr<StreamSerializer> lookupGlobalSerializer(int typeId);

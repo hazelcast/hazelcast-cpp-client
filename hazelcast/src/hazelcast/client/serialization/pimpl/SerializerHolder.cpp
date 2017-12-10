@@ -42,11 +42,11 @@ namespace hazelcast {
                 boost::shared_ptr<StreamSerializer> SerializerHolder::serializerFor(int typeId) {
                     boost::shared_ptr<StreamSerializer> serializer = serializers.get(typeId);
 
-                    if (!serializer.get()) {
+                    if (serializer.get()) {
                         return serializer;
                     }
 
-                    lookupGlobalSerializer(typeId);
+                    serializer = lookupGlobalSerializer(typeId);
 
                     if (!serializer.get()) {
                         if (active) {
@@ -58,7 +58,6 @@ namespace hazelcast {
                         throw exception::HazelcastInstanceNotActiveException("SerializerHolder::registerSerializer");
                     }
                     return serializer;
-
                 }
 
                 void SerializerHolder::dispose() {
@@ -72,14 +71,15 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<StreamSerializer> SerializerHolder::lookupGlobalSerializer(int typeId) {
-                    if (globalSerializer.get()) {
+                    if (!globalSerializer.get()) {
                         return boost::shared_ptr<StreamSerializer>();
                     }
 
                     std::ostringstream out;
                     out << "Registering global serializer for: " << typeId;
                     util::ILogger::getLogger().finest(out.str());
-                    return serializers.putIfAbsent(typeId, globalSerializer);
+                    serializers.putIfAbsent(typeId, globalSerializer);
+                    return globalSerializer;
                 }
 
             }

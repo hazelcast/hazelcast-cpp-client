@@ -45,7 +45,6 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <list>
-#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -85,7 +84,7 @@ namespace hazelcast {
                     friend std::ostream &operator<<(std::ostream &os, const ObjectType &type);
                 };
 
-                std::ostream &operator<<(std::ostream &os, const ObjectType &type);
+                std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ObjectType &type);
 
                 class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
