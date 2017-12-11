@@ -81,7 +81,6 @@ namespace hazelcast {
                     int32_t factoryId;
                     int32_t classId;
 
-                    friend std::ostream &operator<<(std::ostream &os, const ObjectType &type);
                 };
 
                 std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ObjectType &type);
