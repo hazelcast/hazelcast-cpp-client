@@ -118,11 +118,27 @@ namespace hazelcast {
 
             const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &getPortableFactories() const;
 
+            /**
+             * If no other serializer exists for a received binary data type id, then this registered serializer will
+             * be utilized.
+             * @param serializer The global serializer that needs to be registered.
+             * @return The serialization configuration reference.
+             */
+            SerializationConfig &
+            setGlobalSerializer(const boost::shared_ptr<serialization::StreamSerializer> &serializer);
+
+            /**
+             *
+             * @return The configured global serializer.
+             */
+            const boost::shared_ptr<serialization::StreamSerializer> &getGlobalSerializer() const;
+
         private:
             int version;
             std::vector<boost::shared_ptr<serialization::SerializerBase> > serializers;
             std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > dataSerializableFactories;
             std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > portableFactories;
+            boost::shared_ptr<serialization::StreamSerializer> globalSerializer;
         };
     }
 }

@@ -39,12 +39,12 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/util/Disposable.h"
 #include "hazelcast/client/PartitionAware.h"
 
 #include <boost/shared_ptr.hpp>
 #include <string>
 #include <list>
-#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -73,23 +73,19 @@ namespace hazelcast {
                  *
                  */
                 struct HAZELCAST_API ObjectType {
-                    ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
+                    ObjectType();
 
-                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId) : typeId(typeId), factoryId(factoryId),
-                                                                                     classId(classId) {}
+                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId);
 
                     int32_t typeId;
                     int32_t factoryId;
                     int32_t classId;
 
-                    friend std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
-                        os << "typeId: " << type.typeId << " factoryId: " << type.factoryId << " classId: "
-                           << type.classId;
-                        return os;
-                    }
                 };
 
-                class HAZELCAST_API SerializationService {
+                std::ostream HAZELCAST_API &operator<<(std::ostream &os, const ObjectType &type);
+
+                class HAZELCAST_API SerializationService : public util::Disposable {
                 public:
                     SerializationService(const SerializationConfig& serializationConfig);
 
@@ -166,6 +162,11 @@ namespace hazelcast {
                      * @return The serializer holder.
                      */
                     SerializerHolder &getSerializerHolder();
+
+                    /**
+                     * @link Disposable interface implementation
+                     */
+                    void dispose();
                 private:
 
                     SerializationService(const SerializationService &);

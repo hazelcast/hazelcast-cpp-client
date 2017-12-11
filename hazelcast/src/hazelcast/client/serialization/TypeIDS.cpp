@@ -106,6 +106,10 @@ namespace hazelcast {
             int32_t getHazelcastTypeId(const std::vector<std::string> *object) {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_STRING_ARRAY;
             }
+
+            int32_t getHazelcastTypeId(const void *object) {
+                return pimpl::SerializationConstants::CONSTANT_TYPE_VOID_POINTER;
+            }
         }
     }
 }
