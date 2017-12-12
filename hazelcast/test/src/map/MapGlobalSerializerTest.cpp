@@ -15,12 +15,9 @@
  */
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 #include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
 
