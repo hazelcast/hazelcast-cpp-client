@@ -369,7 +369,7 @@ If you want to use custom objects which are polymorphic, you need to register bo
 ```
 
 ## Global Serializer
-Sometimes you may want to use your own serialization for some objects and you may not want to define the Hazelcast serialization for that object or you just do not want to define the getHazelcastTypeId free function for that object, then you can use the global serializer configuration for this purpose. You set the global serializer and you manage how you serialize and deserialize the objects. Here is how you register a global serializer:
+Sometimes you may want to use your own serialization for some objects and do not want to define the Hazelcast serialization for those objects. Or, you may not want to define the getHazelcastTypeId free function for those objects. In these cases, you can use the global serializer configuration for this purpose. You set the global serializer and manage how you serialize and deserialize the objects. Here is how you register a global serializer:
 ```
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
