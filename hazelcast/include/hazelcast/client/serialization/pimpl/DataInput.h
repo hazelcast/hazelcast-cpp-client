@@ -29,6 +29,7 @@
 #include <string>
 #include <memory>
 #include <stdint.h>
+#include <sstream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -119,16 +120,21 @@ namespace hazelcast {
                             return std::auto_ptr<std::vector<T> > (NULL);
                         }
 
-                        if (len > 0) {
-                            checkAvailable((size_t)len * getSize((T *)NULL));
-                            std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
-                            for (int32_t i = 0; i < len; i++) {
-                                (*values)[i] = read<T>();
-                            }
-                            return values;
+                        if (len == 0) {
+                            return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
                         }
 
-                        return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
+                        if (len < 0) {
+                            std::ostringstream out;
+                            out << "Incorrect negative array size found in the byte stream. The size is: " << len;
+                            throw exception::HazelcastSerializationException("DataInput::readArray", out.str());
+                        }
+
+                        std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
+                        for (int32_t i = 0; i < len; i++) {
+                            (*values)[i] = read<T>();
+                        }
+                        return values;
                     }
 
                     int getNumBytesForUtf8Char(const byte *start) const;
@@ -154,6 +160,22 @@ namespace hazelcast {
                     int getSize(float *dummy);
 
                     int getSize(double *dummy);
+
+                    char readCharUnchecked();
+
+                    int16_t readShortUnchecked();
+
+                    int32_t readIntUnchecked();
+
+                    int64_t readLongUnchecked();
+
+                    byte readByteUnchecked();
+
+                    bool readBooleanUnchecked();
+
+                    float readFloatUnchecked();
+
+                    double readDoubleUnchecked();
                 };
 
                 template <>

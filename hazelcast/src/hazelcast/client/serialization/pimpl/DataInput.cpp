@@ -24,8 +24,6 @@
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/client/exception/IOException.h"
-#include "hazelcast/client/exception/UTFDataFormatException.h"
 
 namespace hazelcast {
     namespace client {
@@ -62,72 +60,92 @@ namespace hazelcast {
                 }
 
                 bool DataInput::readBoolean() {
-                    return readByte() != 0;
+                    checkAvailable(1);
+                    return readBooleanUnchecked();
                 }
+
+                bool DataInput::readBooleanUnchecked() { return readByteUnchecked() != 0; }
 
                 byte DataInput::readByte() {
                     checkAvailable(1);
-                    return buffer[pos++];
+                    return readByteUnchecked();
                 }
 
+                byte DataInput::readByteUnchecked() { return buffer[pos++]; }
+
                 int16_t DataInput::readShort() {
-                    byte a = readByte();
-                    byte b = readByte();
-                    return (int16_t)((0xff00 & (a << 8)) |
-                            (0x00ff & b));
+                    checkAvailable(util::Bits::SHORT_SIZE_IN_BYTES);
+                    return readShortUnchecked();
+                }
+
+                int16_t DataInput::readShortUnchecked() {
+                    int16_t result;
+                    util::Bits::bigEndianToNative2(&buffer[pos], &result);
+                    pos += util::Bits::SHORT_SIZE_IN_BYTES;
+                    return result;
                 }
 
                 char DataInput::readChar() {
-                    readByte();
-                    byte b = readByte();
+                    checkAvailable(util::Bits::CHAR_SIZE_IN_BYTES);
+                    return readCharUnchecked();
+                }
+
+                char DataInput::readCharUnchecked() {
+                    // skip the first byte
+                    byte b = buffer[pos + 1];
+                    pos += util::Bits::CHAR_SIZE_IN_BYTES;
                     return b;
                 }
 
                 int32_t DataInput::readInt() {
-                    byte a = readByte();
-                    byte b = readByte();
-                    byte c = readByte();
-                    byte d = readByte();
-                    return (0xff000000 & (a << 24)) |
-                            (0x00ff0000 & (b << 16)) |
-                            (0x0000ff00 & (c << 8)) |
-                            (0x000000ff & d);
+                    checkAvailable(util::Bits::INT_SIZE_IN_BYTES);
+                    return readIntUnchecked();
+                }
+
+                int32_t DataInput::readIntUnchecked() {
+                    int32_t result;
+                    util::Bits::bigEndianToNative4(&buffer[pos], &result);
+                    pos += util::Bits::INT_SIZE_IN_BYTES;
+                    return result;
                 }
 
                 int64_t DataInput::readLong() {
-                    byte a = readByte();
-                    byte b = readByte();
-                    byte c = readByte();
-                    byte d = readByte();
-                    byte e = readByte();
-                    byte f = readByte();
-                    byte g = readByte();
-                    byte h = readByte();
-                    return (0xff00000000000000LL & ((int64_t) (a) << 56)) |
-                            (0x00ff000000000000LL & ((int64_t) (b) << 48)) |
-                            (0x0000ff0000000000LL & ((int64_t) (c) << 40)) |
-                            (0x000000ff00000000LL & ((int64_t) (d) << 32)) |
-                            (0x00000000ff000000LL & (e << 24)) |
-                            (0x0000000000ff0000LL & (f << 16)) |
-                            (0x000000000000ff00LL & (g << 8)) |
-                            (0x00000000000000ffLL & h);
+                    checkAvailable(util::Bits::LONG_SIZE_IN_BYTES);
+                    return readLongUnchecked();
+                }
+
+                int64_t DataInput::readLongUnchecked() {
+                    int64_t result;
+                    util::Bits::bigEndianToNative8(&buffer[pos], &result);
+                    pos += util::Bits::LONG_SIZE_IN_BYTES;
+                    return result;
                 }
 
                 float DataInput::readFloat() {
+                    checkAvailable(util::Bits::FLOAT_SIZE_IN_BYTES);
+                    return readFloatUnchecked();
+                }
+
+                float DataInput::readFloatUnchecked() {
                     union {
                         int32_t i;
                         float f;
                     } u;
-                    u.i = readInt();
+                    u.i = readIntUnchecked();
                     return u.f;
                 }
 
                 double DataInput::readDouble() {
+                    checkAvailable(util::Bits::DOUBLE_SIZE_IN_BYTES);
+                    return readDoubleUnchecked();
+                }
+
+                double DataInput::readDoubleUnchecked() {
                     union {
                         double d;
                         int64_t l;
                     } u;
-                    u.l = readLong();
+                    u.l = readLongUnchecked();
                     return u.d;
                 }
 
@@ -282,42 +300,42 @@ namespace hazelcast {
 
                 template <>
                 byte DataInput::read() {
-                    return readByte();
+                    return readByteUnchecked();
                 }
 
                 template <>
                 char DataInput::read() {
-                    return readChar();
+                    return readCharUnchecked();
                 }
 
                 template <>
                 bool DataInput::read() {
-                    return readBoolean();
+                    return readBooleanUnchecked();
                 }
 
                 template <>
                 int16_t DataInput::read() {
-                    return readShort();
+                    return readShortUnchecked();
                 }
 
                 template <>
                 int32_t DataInput::read() {
-                    return readInt();
+                    return readIntUnchecked();
                 }
 
                 template <>
                 int64_t DataInput::read() {
-                    return readLong();
+                    return readLongUnchecked();
                 }
 
                 template <>
                 float DataInput::read() {
-                    return readFloat();
+                    return readFloatUnchecked();
                 }
 
                 template <>
                 double DataInput::read() {
-                    return readDouble();
+                    return readDoubleUnchecked();
                 }
 
                 int DataInput::getNumBytesForUtf8Char(const byte *start) const {
