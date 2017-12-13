@@ -291,8 +291,16 @@ namespace hazelcast {
 
             template<>
             serialization::pimpl::Data ClientMessage::get() {
-                return serialization::pimpl::Data(
-                        std::auto_ptr<std::vector<byte> >(new std::vector<byte>(getArray<byte>())));
+                int32_t len = getInt32();
+
+                checkAvailable(len);
+
+                std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(
+                        new std::vector<byte>(buffer, buffer + len));
+
+                index += len;
+
+                return serialization::pimpl::Data(bytes);
             }
 
             template<>
