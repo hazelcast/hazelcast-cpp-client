@@ -123,9 +123,9 @@ namespace hazelcast {
                     int32_t result;
                     byte *target = (byte *) &result;
                     util::Bits::nativeToBigEndian4(&v, &result);
-                    (*outputStream)[index++] = *target++;
-                    (*outputStream)[index++] = *target++;
-                    (*outputStream)[index++] = *target++;
+                    (*outputStream)[index++] = *(target++);
+                    (*outputStream)[index++] = *(target++);
+                    (*outputStream)[index++] = *(target++);
                     (*outputStream)[index] = *target;
                 }
 
