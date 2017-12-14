@@ -366,7 +366,7 @@ namespace hazelcast {
 
             int32_t ClientMessage::calculateDataSize(const std::string &param) {
                 return INT32_SIZE +  // bytes for the length field
-                       param.length();
+                       (int32_t) param.length();
             }
 
             int32_t ClientMessage::calculateDataSize(const std::string *param) {
