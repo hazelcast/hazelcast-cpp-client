@@ -295,9 +295,9 @@ namespace hazelcast {
 
                 checkAvailable(len);
 
-                std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(
-                        new std::vector<byte>(buffer, buffer + len));
-
+                byte *start = ix();
+                std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(new std::vector<byte>(start,
+                                                                                                                  start + len));
                 index += len;
 
                 return serialization::pimpl::Data(bytes);
