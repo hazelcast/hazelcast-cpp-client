@@ -74,8 +74,11 @@ message(STATUS "Preparing hazelcast client ..... ")
 #detect endianness
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if (${IS_BIG_ENDIAN})
+	message(STATUS "Current system is a BIG-ENDIAN system")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BIG_ENDIAN")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BIG_ENDIAN")
+else()
+	message(STATUS "Current system is a LITTLE-ENDIAN system")
 ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")

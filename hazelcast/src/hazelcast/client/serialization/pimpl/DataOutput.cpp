@@ -70,7 +70,7 @@ namespace hazelcast {
                     int16_t value = (int16_t) v;
                     int16_t result;
                     byte *target = (byte *) &result;
-                    util::Bits::nativeToBigEndian2(&value, &result);
+                    util::Bits::nativeToBigEndian2(&value, target);
                     outputStream->insert(outputStream->end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
                 }
 
@@ -82,14 +82,14 @@ namespace hazelcast {
                 void DataOutput::writeInt(int32_t v) {
                     int32_t result;
                     byte *target = (byte *) &result;
-                    util::Bits::nativeToBigEndian4(&v, &result);
+                    util::Bits::nativeToBigEndian4(&v, target);
                     outputStream->insert(outputStream->end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
                 }
 
                 void DataOutput::writeLong(int64_t l) {
                     int64_t result;
                     byte *target = (byte *) &result;
-                    util::Bits::nativeToBigEndian8(&l, &result);
+                    util::Bits::nativeToBigEndian8(&l, target);
                     outputStream->insert(outputStream->end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
                 }
 
