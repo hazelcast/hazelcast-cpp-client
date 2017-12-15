@@ -178,7 +178,7 @@ namespace hazelcast {
                     bytes.push_back(0x34);
                     bytes.push_back(0x56);
                     bytes.push_back(0x78);
-                    bytes.push_back(0x9A);
+                    bytes.push_back(0x1A);
                     bytes.push_back(0xBC);
                     bytes.push_back(0xDE);
                     bytes.push_back(0xEF);
@@ -187,7 +187,7 @@ namespace hazelcast {
                     ASSERT_NE((std::vector<int32_t> *) NULL, array.get());
                     ASSERT_EQ(2U, array->size());
                     ASSERT_EQ(INT32_C(0x12345678), (*array)[0]);
-                    ASSERT_EQ(INT32_C(0x9ABCDEEF), (*array)[1]);
+                    ASSERT_EQ(INT32_C(0x1ABCDEEF), (*array)[1]);
                 }
 
                 TEST_F(DataInputTest, testReadLongArray) {
@@ -204,7 +204,7 @@ namespace hazelcast {
                     bytes.push_back(0xBC);
                     bytes.push_back(0xDE);
                     bytes.push_back(0xEF);
-                    bytes.push_back(0xA1);
+                    bytes.push_back(0x11);
                     bytes.push_back(0xA2);
                     bytes.push_back(0xA3);
                     bytes.push_back(0xA4);
@@ -217,7 +217,7 @@ namespace hazelcast {
                     ASSERT_NE((std::vector<int64_t> *) NULL, array.get());
                     ASSERT_EQ(2U, array->size());
                     ASSERT_EQ(INT64_C(0x123456789ABCDEEF), (*array)[0]);
-                    ASSERT_EQ(INT64_C(0xA1A2A3A4A5A6A7A8), (*array)[1]);
+                    ASSERT_EQ(INT64_C(0x11A2A3A4A5A6A7A8), (*array)[1]);
                 }
             }
         }
