@@ -69,7 +69,7 @@ namespace hazelcast {
                     bytes.push_back(0x56);
                     bytes.push_back(0x78);
                     serialization::pimpl::DataOutput dataOutput;
-                    dataOutput.writeInt(0x12345678);
+                    dataOutput.writeInt(INT32_C(0x12345678));
                     ASSERT_EQ(bytes, *dataOutput.toByteArray());
                 }
 
@@ -84,7 +84,7 @@ namespace hazelcast {
                     bytes.push_back(0x9B);
                     bytes.push_back(0x9C);
                     serialization::pimpl::DataOutput dataOutput;
-                    dataOutput.writeLong(0x12345678909A9B9C);
+                    dataOutput.writeLong(INT64_C(0x12345678909A9B9C));
                     ASSERT_EQ(bytes, *dataOutput.toByteArray());
                 }
 
@@ -182,12 +182,12 @@ namespace hazelcast {
                     bytes.push_back(0x34);
                     bytes.push_back(0x56);
                     bytes.push_back(0x78);
-                    actualValues.push_back(0x12345678);
+                    actualValues.push_back(INT32_C(0x12345678));
                     bytes.push_back(0x9A);
                     bytes.push_back(0xBC);
                     bytes.push_back(0xDE);
                     bytes.push_back(0xEF);
-                    actualValues.push_back(0x9ABCDEEF);
+                    actualValues.push_back(INT32_C(0x9ABCDEEF));
                     serialization::pimpl::DataOutput dataOutput;
                     dataOutput.writeIntArray(&actualValues);
                     ASSERT_EQ(bytes, *dataOutput.toByteArray());
@@ -216,8 +216,8 @@ namespace hazelcast {
                     bytes.push_back(0xA7);
                     bytes.push_back(0xA8);
                     std::vector<int64_t> actualValues;
-                    actualValues.push_back(0x123456789ABCDEEF);
-                    actualValues.push_back(0xA1A2A3A4A5A6A7A8);
+                    actualValues.push_back(INT64_C(0x123456789ABCDEEF));
+                    actualValues.push_back(INT64_C(0xA1A2A3A4A5A6A7A8));
                     serialization::pimpl::DataOutput dataOutput;
                     dataOutput.writeLongArray(&actualValues);
                     ASSERT_EQ(bytes, *dataOutput.toByteArray());
