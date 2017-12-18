@@ -38,8 +38,8 @@ namespace hazelcast {
                     bytes.push_back(0x00);
                     bytes.push_back(0x10);
                     serialization::pimpl::DataInput dataInput(bytes);
-                    ASSERT_EQ(false, dataInput.readBoolean());
-                    ASSERT_EQ(true, dataInput.readBoolean());
+                    ASSERT_FALSE(dataInput.readBoolean());
+                    ASSERT_TRUE(dataInput.readBoolean());
                 }
 
                 TEST_F(DataInputTest, testReadChar) {
@@ -128,8 +128,8 @@ namespace hazelcast {
                     std::auto_ptr<std::vector<bool> > booleanArray = dataInput.readBooleanArray();
                     ASSERT_NE((std::vector<bool> *) NULL, booleanArray.get());
                     ASSERT_EQ(2U, booleanArray->size());
-                    ASSERT_EQ(false, (*booleanArray)[0]);
-                    ASSERT_EQ(true, (*booleanArray)[1]);
+                    ASSERT_FALSE((*booleanArray)[0]);
+                    ASSERT_TRUE((*booleanArray)[1]);
                 }
 
                 TEST_F(DataInputTest, testReadCharArray) {
