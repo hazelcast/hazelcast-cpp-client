@@ -291,8 +291,16 @@ namespace hazelcast {
 
             template<>
             serialization::pimpl::Data ClientMessage::get() {
-                return serialization::pimpl::Data(
-                        std::auto_ptr<std::vector<byte> >(new std::vector<byte>(getArray<byte>())));
+                int32_t len = getInt32();
+
+                checkAvailable(len);
+
+                byte *start = ix();
+                std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(new std::vector<byte>(start,
+                                                                                                                  start + len));
+                index += len;
+
+                return serialization::pimpl::Data(bytes);
             }
 
             template<>
@@ -358,7 +366,7 @@ namespace hazelcast {
 
             int32_t ClientMessage::calculateDataSize(const std::string &param) {
                 return INT32_SIZE +  // bytes for the length field
-                       param.length();
+                       (int32_t) param.length();
             }
 
             int32_t ClientMessage::calculateDataSize(const std::string *param) {

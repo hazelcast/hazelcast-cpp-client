@@ -232,19 +232,19 @@ namespace hazelcast {
             }
 
             inline bool checkWriteAvailable(int32_t requestedBytes) const {
-                bool result = false;
-                if (!readOnly) {
-                    return checkAvailable(requestedBytes);
+                if (readOnly) {
+                    return false;
                 }
-                return result;
+
+                return checkAvailable(requestedBytes);
             }
 
             inline bool checkReadAvailable(int32_t requestedBytes) const {
-                bool result = false;
-                if (readOnly) {
-                    return checkAvailable(requestedBytes);
+                if (!readOnly) {
+                    return false;
                 }
-                return result;
+
+                return checkAvailable(requestedBytes);
             }
 
             inline bool checkAvailable(int32_t requestedBytes) const {

@@ -70,6 +70,8 @@ namespace hazelcast {
             int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string *> *object);
 
             int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const void *object);
         }
     }
 }

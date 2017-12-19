@@ -119,8 +119,7 @@ namespace hazelcast {
                 util::Thread *worker = workerThread;
                 if (worker) {
                     workerThread = (util::Thread *) NULL;
-                    worker->cancel();
-                    worker->join();
+                    delete worker;
                 }
             }
 

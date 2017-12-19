@@ -40,24 +40,31 @@ namespace hazelcast {
 
                 /**
                  * unique type id for this serializer. It will be used to decide which serializer needs to be used
-                 * for your classes. Also note that for your serialized classes you need to implement as free function
-                 * in same namespace with your class
+                 * for your classes. Also note that for your serialized classes you need to implement the following
+                 * free function in same namespace with your class (except when you want to use the global serializer
+                 * for your class)
                  *
                  *      int32_t getHazelcastTypeId(const MyClass*);
                  *
-                 *  which should return same id with its serializer.
+                 *  which should return same id with its serializer. User type ids always needs to be non-negative.
                  */
                 virtual int32_t getHazelcastTypeId() const = 0;
+
+                /**
+                 * Called when instance is shutting down. It can be used to clear used resources.
+                 */
+                virtual void destroy();
             };
 
             /**
              * Implement this interface and register to the SerializationConfig. See examples folder for usage examples.
              *
              * Important note:
-             * you need to implement as free function in same namespace with your class
+             * Except for the global serializer implementation, you need to implement the following free function in
+             * same namespace with your class
              *            int32_t getHazelcastTypeId(const MyClass*);
              *
-             * which should return same id with its serializer.
+             * which should return same id with its serializer's getHazelcastTypeId() method.
              *
              *
              */

@@ -19,12 +19,15 @@
 #ifndef HAZELCAST_DataOutput
 #define HAZELCAST_DataOutput
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/ByteBuffer.h"
 #include <memory>
 #include <vector>
 #include <string>
 #include <stdint.h>
+
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/util/Bits.h"
+#include "hazelcast/client/exception/HazelcastSerializationException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,7 +44,11 @@ namespace hazelcast {
 
                     virtual ~DataOutput();
 
-                    std::auto_ptr< std::vector<byte> > toByteArray();
+                    /**
+                     *
+                     * @return a deep copy of the bytes by constructing a new byte array.
+                     */
+                    std::auto_ptr<std::vector<byte> > toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 
@@ -103,7 +110,51 @@ namespace hazelcast {
                     DataOutput &operator = (const DataOutput &rhs);
 
                     int getUTF8CharCount(const std::string &str);
+                    
+                    template <typename T>
+                    void write(const T &value) {
+                        throw exception::HazelcastSerializationException("DataOutput::write", "Unsupported type");
+                    }
+                    
+                    template <typename T>
+                    void writeArray(const std::vector<T> *data) {
+                        int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
+                        writeInt(len);
+
+                        if (len > 0) {
+                            for (int32_t i = 0; i < len; ++i) {
+                                write<T>((*data)[i]);
+                            }
+                        }
+                    }
                 };
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const byte &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const char &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const bool &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const int16_t &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const int32_t &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const int64_t &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const float &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const double &value);
+
+                template <>
+                HAZELCAST_API void DataOutput::write(const std::string &value);
             }
         }
     }

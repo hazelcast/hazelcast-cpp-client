@@ -16,13 +16,8 @@
 //
 // Created by sancar koyunlu on 8/7/13.
 
-
-
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/IOUtil.h"
-#include "hazelcast/util/Bits.h"
-
-#include <algorithm>
 
 namespace hazelcast {
     namespace client {
@@ -72,8 +67,11 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeShort(int32_t v) {
-                    writeByte((byte)(v >> 8));
-                    writeByte((byte)v);
+                    int16_t value = (int16_t) v;
+                    int16_t result;
+                    byte *target = (byte *) &result;
+                    util::Bits::nativeToBigEndian2(&value, target);
+                    outputStream->insert(outputStream->end(), target, target + util::Bits::SHORT_SIZE_IN_BYTES);
                 }
 
                 void DataOutput::writeChar(int32_t i) {
@@ -82,21 +80,17 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeInt(int32_t v) {
-                    writeByte((byte)(v >> 24));
-                    writeByte((byte)(v >> 16));
-                    writeByte((byte)(v >> 8));
-                    writeByte((byte)v);
+                    int32_t result;
+                    byte *target = (byte *) &result;
+                    util::Bits::nativeToBigEndian4(&v, target);
+                    outputStream->insert(outputStream->end(), target, target + util::Bits::INT_SIZE_IN_BYTES);
                 }
 
                 void DataOutput::writeLong(int64_t l) {
-                    writeByte((byte)(l >> 56));
-                    writeByte((byte)(l >> 48));
-                    writeByte((byte)(l >> 40));
-                    writeByte((byte)(l >> 32));
-                    writeByte((byte)(l >> 24));
-                    writeByte((byte)(l >> 16));
-                    writeByte((byte)(l >> 8));
-                    writeByte((byte)l);
+                    int64_t result;
+                    byte *target = (byte *) &result;
+                    util::Bits::nativeToBigEndian8(&l, target);
+                    outputStream->insert(outputStream->end(), target, target + util::Bits::LONG_SIZE_IN_BYTES);
                 }
 
                 void DataOutput::writeFloat(float x) {
@@ -126,10 +120,13 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeInt(int index, int32_t v) {
-                    writeByte(index++, (v >> 24));
-                    writeByte(index++, (v >> 16));
-                    writeByte(index++, (v >> 8));
-                    writeByte(index, v);
+                    int32_t result;
+                    byte *target = (byte *) &result;
+                    util::Bits::nativeToBigEndian4(&v, &result);
+                    (*outputStream)[index++] = *(target++);
+                    (*outputStream)[index++] = *(target++);
+                    (*outputStream)[index++] = *(target++);
+                    (*outputStream)[index] = *target;
                 }
 
                 void DataOutput::writeBytes(const byte *bytes, size_t len) {
@@ -137,91 +134,39 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeByteArray(const std::vector<byte> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        outputStream->insert(outputStream->end(), data->begin(), data->end());
-                    }
+                    writeArray<byte>(data);
                 }
 
                 void DataOutput::writeCharArray(const std::vector<char> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeChar((*data)[i]);
-                        }
-                    }
+                    writeArray<char>(data);
                 }
 
                 void DataOutput::writeBooleanArray(const std::vector<bool> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeBoolean((*data)[i]);
-                        }
-                    }
+                    writeArray<bool>(data);
                 }
 
                 void DataOutput::writeShortArray(const std::vector<int16_t> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeShort((*data)[i]);
-                        }
-                    }
+                    writeArray<int16_t>(data);
                 }
 
                 void DataOutput::writeIntArray(const std::vector<int32_t> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeInt((*data)[i]);
-                        }
-                    }
+                    writeArray<int32_t>(data);
                 }
 
                 void DataOutput::writeLongArray(const std::vector<int64_t> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeLong((*data)[i]);
-                        }
-                    }
+                    writeArray<int64_t>(data);
                 }
 
                 void DataOutput::writeFloatArray(const std::vector<float> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeFloat((*data)[i]);
-                        }
-                    }
+                    writeArray<float>(data);
                 }
 
                 void DataOutput::writeDoubleArray(const std::vector<double> *data) {
-                    int32_t len = (NULL == data ? util::Bits::NULL_ARRAY : (int32_t) data->size());
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeDouble((*data)[i]);
-                        }
-                    }
+                    writeArray<double>(data);
                 }
 
                 void DataOutput::writeUTFArray(const std::vector<std::string> *data) {
-                    int32_t len = (NULL != data) ? (int32_t)data->size() : util::Bits::NULL_ARRAY;
-                    writeInt(len);
-                    if (len > 0) {
-                        for (int32_t i = 0; i < len; ++i) {
-                            writeUTF(&((*data)[i]));
-                        }
-                    }
+                    writeArray<std::string>(data);
                 }
 
                 void DataOutput::writeZeroBytes(int numberOfBytes) {
@@ -248,8 +193,52 @@ namespace hazelcast {
 
                     return size;
                 }
-            }
 
+                template<>
+                void DataOutput::write(const byte &value) {
+                    writeByte(value);
+                }
+
+                template<>
+                void DataOutput::write(const char &value) {
+                    writeChar(value);
+                }
+
+                template<>
+                void DataOutput::write(const bool &value) {
+                    writeBoolean(value);
+                }
+
+                template<>
+                void DataOutput::write(const int16_t &value) {
+                    writeShort(value);
+                }
+
+                template<>
+                void DataOutput::write(const int32_t &value) {
+                    writeInt(value);
+                }
+
+                template<>
+                void DataOutput::write(const int64_t &value) {
+                    writeLong(value);
+                }
+
+                template<>
+                void DataOutput::write(const float &value) {
+                    writeFloat(value);
+                }
+
+                template<>
+                void DataOutput::write(const double &value) {
+                    writeDouble(value);
+                }
+
+                template<>
+                void DataOutput::write(const std::string &value) {
+                    writeUTF(&value);
+                }
+            }
         }
     }
 }

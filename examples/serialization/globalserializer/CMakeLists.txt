@@ -13,7 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(identified-data-serializable)
-add_subdirectory(portable)
-add_subdirectory(custom)
-add_subdirectory(globalserializer)
+add_executable(globalSerializerExample ./main.cpp)

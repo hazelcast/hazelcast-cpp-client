@@ -20,6 +20,7 @@
 * [Serialization Support](#serialization-support)
   * [Custom Serialization](#custom-serialization) 
   * [Polymorphic Types Serialization](#polymorphic-types-serialization) 
+  * [Global Serializer](#global-serializer) 
 * [Raw Pointer API](#raw-pointer-api)
 * [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastclient)
   * [TypedData API](#typeddata-api) 
@@ -366,6 +367,19 @@ If you want to use custom objects which are polymorphic, you need to register bo
     serializationConfig.registerSerializer(
             boost::shared_ptr<serialization::StreamSerializer>(new Derived1CustomSerializer));
 ```
+
+## Global Serializer
+Sometimes you may want to use your own serialization for some objects and do not want to define the Hazelcast serialization for those objects. Or, you may not want to define the getHazelcastTypeId free function for those objects. In these cases, you can use the global serializer configuration for this purpose. You set the global serializer and manage how you serialize and deserialize the objects. Here is how you register a global serializer:
+```
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::SerializationConfig serializationConfig;
+    serializationConfig.setGlobalSerializer(boost::shared_ptr<hazelcast::client::serialization::StreamSerializer>(
+            new MyGlobalSerializer()));
+    config.setSerializationConfig(serializationConfig);
+    hazelcast::client::HazelcastClient hz(config);
+```
+
+MyGlobalSerializer is your implementation of StreamSerializer interface. You do not need to write the getHazelcastTypeId function for your objects which are handled by MyGlobalSerializer class.
 
 # Raw Pointer API
 
