@@ -71,7 +71,7 @@ namespace hazelcast {
 				isInterrupted = false;
 				throw thread_interrupted();
 			}
-            bool wokenUpbyInterruption = condition.waitFor(mutex, seconds);
+            bool wokenUpbyInterruption = condition.waitFor(mutex, seconds * 1000);
             if(wokenUpbyInterruption && isInterrupted){
 				isInterrupted = false;
                 throw thread_interrupted();
