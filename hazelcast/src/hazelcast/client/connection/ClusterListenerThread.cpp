@@ -57,7 +57,7 @@ namespace hazelcast {
                 spi::LifecycleService &lifecycleService = clientContext.getLifecycleService();
                 while (lifecycleService.isRunning()) {
                     try {
-                        if (conn.get() == NULL) {
+                        if (conn.get() == NULL || !conn->live) {
                             try {
                                 conn = clientContext.getClusterService().connectToOne(previousConnectionAddrPtr);
                                 previousConnectionAddr = conn->getRemoteEndpoint();
@@ -94,7 +94,6 @@ namespace hazelcast {
                         if (deletingConnection.compareAndSet(false, true)) {
                             if (conn.get()) {
                                 util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
-                                conn.reset();
                                 lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                             }
                             deletingConnection = false;
@@ -111,7 +110,6 @@ namespace hazelcast {
                 if (deletingConnection.compareAndSet(false, true)) {
                     if (conn.get()) {
                         util::IOUtil::closeResource(conn.get(), "Cluster listener thread is stopping");
-                        conn.reset();
                         clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                     }
                     deletingConnection = false;
