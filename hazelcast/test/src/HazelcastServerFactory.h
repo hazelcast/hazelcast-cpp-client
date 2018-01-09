@@ -17,16 +17,18 @@
 // Created by sancar koyunlu on 8/26/13.
 
 
-#ifndef HAZELCAST_HazelcastServerFactory
-#define HAZELCAST_HazelcastServerFactory
+#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
+#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/connection/OutputSocketStream.h"
-#include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include "RemoteController.h"
+#include "remotecontroller_types.h"
+
+using namespace std;
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
 
 namespace hazelcast {
     namespace util {
@@ -35,20 +37,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HazelcastServer;
-
             class HazelcastServerFactory {
-                friend class HazelcastServer;
-
-                enum {
-                    OK = 5678,
-                    FAIL = -1,
-                    END = 1,
-                    START = 2,
-                    SHUTDOWN = 3,
-                    SHUTDOWN_ALL = 4,
-                    START_SSL = 5
-                };
             public:
                 HazelcastServerFactory(const char* hostAddress);
 
@@ -56,25 +45,20 @@ namespace hazelcast {
 
                 void shutdownAll();
 
-                int getInstanceId(int retryNumber = 0, bool useSSL = false);
+                void startServer(Member &member);
+
+                void shutdownServer(Member &member);
 
                 ~HazelcastServerFactory();
 
             private:
-                void checkConnection();
-
-                Address address;
-                internal::socket::TcpSocket socket;
-                connection::OutputSocketStream outputSocketStream;
-                connection::InputSocketStream inputSocketStream;
                 util::ILogger &logger;
-                bool connected;
-
-                void shutdownInstance(int id);
+                boost::shared_ptr<RemoteControllerClient> rcClient;
+                ::Cluster cluster;
             };
         }
     }
 }
 
-#endif //HAZELCAST_HazelcastServerFactory
+#endif //HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 

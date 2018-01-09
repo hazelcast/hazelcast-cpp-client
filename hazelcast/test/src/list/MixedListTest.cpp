@@ -117,7 +117,7 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add<std::string>("item2"));
                 list->add<std::string>(0, "item3");
                 ASSERT_EQ(3, list->size());
-                std::auto_ptr<std::string> temp = list->set<std::string>(2, "item4").get<std::string>();
+                std::auto_ptr<std::string> temp = list->IList::set<std::string>(2, "item4").get<std::string>();
                 ASSERT_EQ("item2", *temp);
 
                 ASSERT_EQ(3, list->size());

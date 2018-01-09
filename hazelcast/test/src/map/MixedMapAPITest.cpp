@@ -766,13 +766,13 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testSet) {
-                    imap->set<std::string, std::string>("key1", "value1");
+                    imap->IMap::set<std::string, std::string>("key1", "value1");
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
 
-                    imap->set<std::string, std::string>("key1", "value2");
+                    imap->IMap::set<std::string, std::string>("key1", "value2");
                     ASSERT_EQ("value2", *(imap->get<std::string>("key1").get<std::string>()));
 
-                    imap->set<std::string, std::string>("key1", "value3", 1000);
+                    imap->IMap::set<std::string, std::string>("key1", "value3", 1000);
                     ASSERT_EQ("value3", *(imap->get<std::string>("key1").get<std::string>()));
                     // When ttl expires at server, the server does not send near cache invalidation
                     if (clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
@@ -790,7 +790,7 @@ namespace hazelcast {
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    map.set<std::string, std::string>("key1", "value1", 1000);
+                    map.IMap::set<std::string, std::string>("key1", "value1", 1000);
                     std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
                     ASSERT_EQ(*temp, "value1");
                     util::sleep(2);
@@ -809,7 +809,7 @@ namespace hazelcast {
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    map.set<std::string, std::string>("key1", "value1");
+                    map.IMap::set<std::string, std::string>("key1", "value1");
                     std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
                     ASSERT_EQ(*temp, "value1");
                     util::sleep(2);
@@ -2493,7 +2493,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2525,7 +2525,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2558,7 +2558,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2595,7 +2595,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2633,7 +2633,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2669,7 +2669,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2704,7 +2704,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2744,7 +2744,7 @@ namespace hazelcast {
                     ASSERT_EQ((std::string *) NULL, imap->get<std::string>("metin").get<std::string>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<std::string, std::string>("hasan", "suphi");
+                    imap->IMap::set<std::string, std::string>("hasan", "suphi");
                     std::auto_ptr<std::string> value = imap->get<std::string>("hasan").get<std::string>();
                     ASSERT_NE((std::string *) NULL, value.get());
                     ASSERT_EQ("suphi", *value);
@@ -2781,7 +2781,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2818,7 +2818,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2864,7 +2864,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
@@ -2910,7 +2910,7 @@ namespace hazelcast {
                     ASSERT_EQ((int *)NULL, imap->get<int>(3).get<int>().get()); // trigger eviction
 
                     // update an entry
-                    imap->set<int, int>(1, 5);
+                    imap->IMap::set<int, int>(1, 5);
                     std::auto_ptr<int> value = imap->get<int>(1).get<int>();
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);

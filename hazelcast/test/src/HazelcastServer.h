@@ -21,10 +21,10 @@
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#ifndef __hazelcast__hazelcastInstance__
-#define __hazelcast__hazelcastInstance__
+#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
+#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
-#include "hazelcast/util/HazelcastDll.h"
+#include <remotecontroller_types.h>
 
 namespace hazelcast {
     namespace client {
@@ -34,11 +34,8 @@ namespace hazelcast {
 
             class HazelcastServer {
             public:
-                static const int DEFAULT_RETRY_COUNT = 3;
 
-                HazelcastServer(HazelcastServerFactory &);
-
-                HazelcastServer(HazelcastServerFactory& factory, bool useSSL);
+                HazelcastServer(HazelcastServerFactory &factory, bool useSSL = false);
 
                 /**
                  * @returns true if the server were not started before and it is now started successfully
@@ -52,13 +49,11 @@ namespace hazelcast {
             private:
 
                 HazelcastServerFactory & factory;
-                int id;
-                bool isShutDown;
-                bool useSSL;
+                Member member;
             };
         }
     }
 }
 
-#endif /* defined(__hazelcast__hazelcastInstance__) */
+#endif /* defined(HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_) */
 

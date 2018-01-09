@@ -18,6 +18,14 @@
 
 #include <iostream>
 #include <string.h>
+#include <sstream>
+
+#include <boost/shared_ptr.hpp>
+
+#include "RemoteController.h"
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TTransportUtils.h>
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
@@ -35,107 +43,45 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
-                    : address(hostAddress, 6543), socket(address), outputSocketStream(socket),
-                      inputSocketStream(socket), logger(util::ILogger::getLogger()), connected(false) {
+                    : logger(util::ILogger::getLogger()) {
+                boost::shared_ptr<TTransport> socket(new TSocket("localhost", 9701));
+                boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+                boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                rcClient.reset(new RemoteControllerClient(protocol));
+                try {
+                    transport->open();
+                    rcClient->createCluster(cluster, "", "");
+                } catch (TException &tx) {
+                    std::ostringstream out;
+                    out << "The test environment failed to initialize. Could not connect to remote controller. " <<
+                        tx.what();
+                    logger.severe(out.str());
+                    throw;
+                }
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                if (!connected) {
-                    return;
-                }
-
-                try {
-                    outputSocketStream.writeInt(END);
-                    inputSocketStream.readInt();
-                } catch (std::exception &e) {
-                    char msg[200];
-                    util::snprintf(msg, 200, "[HazelcastServerFactory] ~HazelcastServerFactory() exception:%s",
-                                   e.what());
-                    logger.severe(msg);
-                }
-            }
-
-            void HazelcastServerFactory::shutdownInstance(int id) {
-                checkConnection();
-
-                outputSocketStream.writeInt(SHUTDOWN);
-                outputSocketStream.writeInt(id);
-                int i = inputSocketStream.readInt();
-                if (i != OK) {
-                    char msg[200];
-                    util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownInstance(int id): %d", i);
-                    logger.info(msg);
-                }
+                shutdownAll();
             }
 
             void HazelcastServerFactory::shutdownAll() {
-                if (!connected) {
-                    return;
-                }
-
-                outputSocketStream.writeInt(SHUTDOWN_ALL);
                 try {
-                    int i = inputSocketStream.readInt();
-                    if (i != OK) {
-                        char msg[200];
-                        util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownAll(): %d", i);
-                        logger.info(msg);
-                    }
-                } catch (std::exception &e) {
-                    char msg[200];
-                    util::snprintf(msg, 200, "[HazelcastServerFactory] shutdownAll exception:%s", e.what());
-                    logger.severe(msg);
+                    rcClient->shutdownCluster(cluster.id);
+                } catch (TException &tx) {
+                    std::ostringstream out;
+                    out << "Failed to shutdown the cluster with id " << cluster.id << tx.what();
+                    logger.severe(out.str());
                 }
-
             }
 
-            int HazelcastServerFactory::getInstanceId(int retryNumber, bool useSSL) {
-                checkConnection();
-
-                int command = (useSSL ? START_SSL : START);
-                outputSocketStream.writeInt(command);
-                int id = inputSocketStream.readInt();
-                if (FAIL == id) {
-                    char msg[200];
-                    util::snprintf(msg, 200, "[HazelcastServerFactory::getInstanceId] Failed to start server");
-                    logger.warning(msg);
-
-                    while (id == FAIL && retryNumber > 0) {
-                        util::snprintf(msg, 200,
-                                       "[HazelcastServerFactory::getInstanceId] Retrying to start server. Retry number:%d",
-                                       retryNumber);
-                        logger.warning(msg);
-                        outputSocketStream.writeInt(command);
-                        id = inputSocketStream.readInt();
-                        --retryNumber;
-                    }
-                }
-
-                return id;
+            void HazelcastServerFactory::startServer(Member &member) {
+                rcClient->startMember(member, cluster.id);
             }
 
-
-            const std::string &HazelcastServerFactory::getServerAddress() const {
-                return address.getHost();
+            void HazelcastServerFactory::shutdownServer(Member &member) {
+                rcClient->shutdownMember(cluster.id, member.uuid);
             }
 
-            void HazelcastServerFactory::checkConnection() {
-                if (connected) {
-                    return;
-                }
-
-                if (int error = socket.connect(5000)) {
-                    char msg[200];
-                    util::snprintf(msg, 200,
-                                   "[HazelcastServerFactory] Could not connect to socket %s:6543. Errno:%d, %s",
-                                   address.getHost().c_str(), error, strerror(error));
-
-                    throw hazelcast::client::exception::IllegalStateException("HazelcastServerFactory::checkConnection",
-                                                                              msg);
-                }
-
-                this->connected = true;
-            }
         }
     }
 }
