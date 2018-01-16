@@ -37,11 +37,14 @@ import com.hazelcast.nio.serialization.PortableWriter;
 import com.hazelcast.nio.serialization.StreamSerializer;
 import com.hazelcast.nio.ssl.TestKeyStoreUtil;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -706,6 +709,7 @@ public class CppClientListener {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
         System.setProperty("hazelcast.enterprise.license.key", System.getenv("HAZELCAST_ENTERPRISE_KEY"));
+        getInstance(getSSLConfig());
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());
@@ -790,7 +794,10 @@ public class CppClientListener {
 
     private static Config prepareConfig()
             throws IOException {
-        final Config config = new XmlConfigBuilder().build();
+        //System.setProperty("hazelcast.client.config", "/Users/ihsan/Desktop/work/src/hazelcast-cpp-client/java/src/main/resources/hazelcast.xml");
+        String xmlConfig = "/Users/ihsan/Desktop/work/src/hazelcast-cpp-client/java/src/main/resources/hazelcast.xml";
+        //InputStream inputStream = new ByteArrayInputStream(xmlConfig.getBytes(StandardCharsets.UTF_8));
+        final Config config = new XmlConfigBuilder(xmlConfig).build();
 
         config.getSerializationConfig().addPortableFactory(666, new PortableFactory() {
             public Portable create(int classId) {

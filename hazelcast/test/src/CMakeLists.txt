@@ -4,21 +4,21 @@ FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")
 
 set(GOOGLETEST_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/hazelcast/test/googletest/googletest/include)
+set(BOOST_DIR /Users/ihsan/Desktop/work/src/boost_1_64_0)
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    message(STATUS "APPLE ENVIRONMENT DETECTED")
+set(THRIFT_HOME /usr/local/Cellar/thrift/0.11.0)
+set(THRIFT_INCLUDE_DIR ${THRIFT_HOME}/include)
+set(THRIFT_LIB_DIR ${THRIFT_HOME}/lib)
 
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -stdlib=libstdc++")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -stdlib=libstdc++")
-endif()
-
-include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test/src ${GOOGLETEST_INCLUDE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test/src ${GOOGLETEST_INCLUDE_DIR} ${THRIFT_INCLUDE_DIR} ${BOOST_DIR})
 
 SET(HZ_EXE_NAME clientTest_${HZ_LIB_TYPE}_${HZ_BIT})
 
 add_executable(${HZ_EXE_NAME} ${HZ_TEST_SOURCES} ${HZ_TEST_HEADERS})
 
 add_dependencies(${HZ_EXE_NAME} gtest)
+
+link_directories(${THRIFT_LIB_DIR})
 
 target_link_libraries(${HZ_EXE_NAME} ${HZ_LIB_NAME} gtest thrift)
 

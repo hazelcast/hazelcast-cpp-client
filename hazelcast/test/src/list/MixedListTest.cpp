@@ -55,7 +55,8 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    instance = new HazelcastServer(*g_srvFactory, true);
+                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
                     #endif
@@ -79,6 +80,7 @@ namespace hazelcast {
                     delete client;
                     delete clientConfig;
                     delete instance;
+                    delete sslFactory;
 
                     list = NULL;
                     client = NULL;
@@ -90,12 +92,14 @@ namespace hazelcast {
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::IList *list;
+                static HazelcastServerFactory *sslFactory;
             };
 
             HazelcastServer *MixedListTest::instance = NULL;
             ClientConfig *MixedListTest::clientConfig = NULL;
             HazelcastClient *MixedListTest::client = NULL;
             mixedtype::IList *MixedListTest::list = NULL;
+            HazelcastServerFactory *MixedListTest::sslFactory = NULL;
 
             TEST_F(MixedListTest, testAddAll) {
                 std::vector<std::string> l;

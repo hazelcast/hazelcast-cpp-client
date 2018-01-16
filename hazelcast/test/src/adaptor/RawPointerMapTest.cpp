@@ -108,8 +108,9 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         #ifdef HZ_BUILD_WITH_SSL
-                        instance = new HazelcastServer(*g_srvFactory, true);
-                        instance2 = new HazelcastServer(*g_srvFactory, true);
+                        sslFactory = new HazelcastServerFactory(getSslFilePath());
+                        instance = new HazelcastServer(*sslFactory);
+                        instance2 = new HazelcastServer(*sslFactory);
                         #else
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
@@ -142,6 +143,7 @@ namespace hazelcast {
                         delete clientConfig;
                         delete instance2;
                         delete instance;
+                        delete sslFactory;
 
                         intMap = NULL;
                         legacyIntMap = NULL;
@@ -175,6 +177,7 @@ namespace hazelcast {
                     static client::adaptor::RawPointerMap<int, Employee> *employees;
                     static IMap<int, int> *legacyIntMap;
                     static client::adaptor::RawPointerMap<int, int> *intMap;
+                    static HazelcastServerFactory *sslFactory;
                 };
 
                 HazelcastServer *RawPointerMapTest::instance = NULL;
@@ -187,6 +190,7 @@ namespace hazelcast {
                 client::adaptor::RawPointerMap<int, Employee> *RawPointerMapTest::employees = NULL;
                 IMap<int, int> *RawPointerMapTest::legacyIntMap = NULL;
                 client::adaptor::RawPointerMap<int, int> *RawPointerMapTest::intMap = NULL;
+                HazelcastServerFactory *RawPointerMapTest::sslFactory = NULL;
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
@@ -3388,7 +3392,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
                     std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
-                            processor, query::InstanceOfPredicate("Employee"));
+                            processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                     ASSERT_EQ(3, (int) result->size());
                 }

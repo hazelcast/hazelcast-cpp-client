@@ -37,11 +37,14 @@ namespace hazelcast {
             class ClientTestSupportBase {
             public:
                 static std::string getCAFilePath();
+
             protected:
 
                 static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
 
                 static std::auto_ptr<HazelcastClient> getNewClient();
+
+                static const std::string getSslFilePath();
             };
         }
     }

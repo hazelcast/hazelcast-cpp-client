@@ -97,8 +97,9 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         #ifdef HZ_BUILD_WITH_SSL
-                        instance = new HazelcastServer(*g_srvFactory, true);
-                        instance2 = new HazelcastServer(*g_srvFactory, true);
+                        sslFactory = new HazelcastServerFactory(getSslFilePath());
+                        instance = new HazelcastServer(*sslFactory);
+                        instance2 = new HazelcastServer(*sslFactory);
                         #else
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
@@ -108,6 +109,7 @@ namespace hazelcast {
                     static void TearDownTestCase() {
                         delete instance2;
                         delete instance;
+                        delete sslFactory;
 
                         instance2 = NULL;
                         instance = NULL;
@@ -176,6 +178,7 @@ namespace hazelcast {
 
                     static HazelcastServer *instance;
                     static HazelcastServer *instance2;
+                    static HazelcastServerFactory *sslFactory;
                     MapClientConfig *clientConfig;
                     std::auto_ptr<HazelcastClient> client;
                     mixedtype::IMap *imap;
@@ -187,6 +190,7 @@ namespace hazelcast {
 
                 HazelcastServer *MixedMapAPITest::instance = NULL;
                 HazelcastServer *MixedMapAPITest::instance2 = NULL;
+                HazelcastServerFactory *MixedMapAPITest::sslFactory = NULL;
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;

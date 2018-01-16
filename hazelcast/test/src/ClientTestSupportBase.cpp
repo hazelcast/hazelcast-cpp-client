@@ -35,6 +35,10 @@ namespace hazelcast {
                 std::auto_ptr<HazelcastClient> result(new HazelcastClient(*getConfig()));
                 return result;
             }
+
+            const std::string ClientTestSupportBase::getSslFilePath() {
+                return "java/src/main/resources/hazelcast-ssl.xml";
+            }
         }
     }
 }

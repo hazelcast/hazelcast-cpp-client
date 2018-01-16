@@ -44,7 +44,6 @@ namespace hazelcast {
                     if (NULL != nearCachedClient.get()) {
                         nearCachedClient->shutdown();
                     }
-                    g_srvFactory->shutdownAll();
                 }
             protected:
                 /**

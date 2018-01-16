@@ -15,6 +15,7 @@
  */
 
 #include "ClientTestSupport.h"
+#include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/SocketInterceptor.h"
@@ -44,7 +45,8 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
-                HazelcastServer instance(*g_srvFactory, true);
+                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServer instance(sslFactory);
                 std::auto_ptr<ClientConfig> config = getConfig();
                 util::CountDownLatch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);

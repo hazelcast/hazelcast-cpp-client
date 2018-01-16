@@ -33,11 +33,6 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ClientMapNearCacheTest : public ClientTestSupport {
-            public:
-                virtual void TearDown() {
-                    g_srvFactory->shutdownAll();
-                }
-
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.

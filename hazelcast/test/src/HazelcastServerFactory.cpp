@@ -42,19 +42,14 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServerFactory::HazelcastServerFactory(const char *hostAddress)
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : logger(util::ILogger::getLogger()) {
-                boost::shared_ptr<TTransport> socket(new TSocket("localhost", 9701));
-                boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-                boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                rcClient.reset(new RemoteControllerClient(protocol));
                 try {
-                    transport->open();
-                    rcClient->createCluster(cluster, "", "");
+                    rcClient->createCluster(cluster, "", serverXmlConfigFilePath);
                 } catch (TException &tx) {
                     std::ostringstream out;
-                    out << "The test environment failed to initialize. Could not connect to remote controller. " <<
-                        tx.what();
+                    out << "The test environment failed to initialize. Could not connect create cluster with server xml file "
+                            << serverXmlConfigFilePath << ". " << tx.what();
                     logger.severe(out.str());
                     throw;
                 }
@@ -78,9 +73,35 @@ namespace hazelcast {
                 rcClient->startMember(member, cluster.id);
             }
 
+            void HazelcastServerFactory::setAttributes(Member &member) {
+                rcClient->setAttributes(cluster, member);
+            }
+
             void HazelcastServerFactory::shutdownServer(Member &member) {
                 rcClient->shutdownMember(cluster.id, member.uuid);
             }
+
+            const std::string &HazelcastServerFactory::getServerAddress() const {
+                return serverAddress;
+            }
+
+            void HazelcastServerFactory::init(const std::string &serverAddress) {
+                boost::shared_ptr<TTransport> socket(new TSocket(serverAddress, 9701));
+                boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
+                boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
+                rcClient.reset(new RemoteControllerClient(protocol));
+                try {
+                    transport->open();
+                } catch (TException &tx) {
+                    std::ostringstream out;
+                    out << "The test environment failed to initialize. Could not connect to remote controller. " <<
+                        tx.what();
+                    util::ILogger::getLogger().severe(out.str());
+                    throw;
+                }
+            }
+
+            boost::shared_ptr<RemoteControllerClient> HazelcastServerFactory::rcClient;
 
         }
     }

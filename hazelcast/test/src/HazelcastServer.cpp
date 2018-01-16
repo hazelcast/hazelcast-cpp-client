@@ -30,13 +30,15 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory, bool useSSL)
+            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
             :factory(factory) {
+                start();
             }
 
             bool HazelcastServer::start() {
                 try {
                     factory.startServer(member);
+                    factory.setAttributes(member);
                     return true;
                 } catch (TException &tx) {
                     std::ostringstream out;

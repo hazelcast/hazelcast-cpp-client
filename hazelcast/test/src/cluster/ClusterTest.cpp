@@ -35,19 +35,21 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig *> {
-            protected:
-                virtual void TearDown() {
-                    g_srvFactory->shutdownAll();
-                }
+            public:
+                ClusterTest() : sslFactory(getSslFilePath()) {}
 
+            protected:
                 std::auto_ptr<HazelcastServer> startMember() {
                     ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory, true));
+                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
                     }
 
                     return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                 }
+
+            private:
+                HazelcastServerFactory sslFactory;
             };
 
             class SSLClientConfig : public ClientConfig {

@@ -22,6 +22,7 @@
 #include "hazelcast/client/connection/ConnectionManager.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,7 +51,8 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
-                HazelcastServer instance(*g_srvFactory, true);
+                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServer instance(sslFactory);
                 ClientConfig config;
                 config.addAddress(Address("8.8.8.8", 5701));
                 config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
@@ -58,14 +60,16 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
-                HazelcastServer instance(*g_srvFactory, true);
+                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServer instance(sslFactory);
                 std::auto_ptr<ClientConfig> config = getConfig();
                 config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile("abc");
                 ASSERT_THROW(HazelcastClient client(*config), exception::IllegalStateException);
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
-                HazelcastServer instance(*g_srvFactory, true);
+                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServer instance(sslFactory);
 
                 std::auto_ptr<ClientConfig> config = getConfig();
                 config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(

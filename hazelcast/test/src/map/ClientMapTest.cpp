@@ -3080,7 +3080,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
-                        processor, query::InstanceOfPredicate("Employee"));
+                        processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_TRUE((result.end() != result.find(3)));

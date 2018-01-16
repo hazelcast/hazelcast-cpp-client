@@ -78,7 +78,6 @@ namespace hazelcast {
             }
 
             ClientTxnTest::~ClientTxnTest() {
-                g_srvFactory->shutdownAll();
                 client->shutdown();
                 client.reset();
             }

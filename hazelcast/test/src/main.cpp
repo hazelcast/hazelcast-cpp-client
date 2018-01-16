@@ -42,7 +42,8 @@ public:
     }
 
     void SetUp() {
-        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory(serverAddress);
+        HazelcastServerFactory::init(serverAddress);
+        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("java/src/main/resources/hazelcast.xml");
     }
 
     void TearDown() {

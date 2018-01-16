@@ -92,8 +92,9 @@ namespace hazelcast {
 
                         clientContext.getConnectionManager().onCloseOwnerConnection();
                         if (deletingConnection.compareAndSet(false, true)) {
-                            if (conn.get()) {
-                                util::IOUtil::closeResource(conn.get(), "Error while listening cluster events");
+                            boost::shared_ptr<Connection> connection = conn;
+                            if (connection.get()) {
+                                util::IOUtil::closeResource(connection.get(), "Error while listening cluster events");
                                 lifecycleService.fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                             }
                             deletingConnection = false;

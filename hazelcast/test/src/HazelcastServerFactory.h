@@ -39,21 +39,26 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
-                HazelcastServerFactory(const char* hostAddress);
+                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
 
                 const std::string& getServerAddress() const;
 
-                void shutdownAll();
-
                 void startServer(Member &member);
+
+                void setAttributes(Member &member);
 
                 void shutdownServer(Member &member);
 
                 ~HazelcastServerFactory();
 
+                static void init(const std::string &serverAddress);
+
             private:
+                void shutdownAll();
+
+                std::string serverAddress;
                 util::ILogger &logger;
-                boost::shared_ptr<RemoteControllerClient> rcClient;
+                static boost::shared_ptr<RemoteControllerClient> rcClient;
                 ::Cluster cluster;
             };
         }

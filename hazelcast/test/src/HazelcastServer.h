@@ -35,7 +35,7 @@ namespace hazelcast {
             class HazelcastServer {
             public:
 
-                HazelcastServer(HazelcastServerFactory &factory, bool useSSL = false);
+                HazelcastServer(HazelcastServerFactory &factory);
 
                 /**
                  * @returns true if the server were not started before and it is now started successfully
@@ -47,7 +47,6 @@ namespace hazelcast {
                 ~HazelcastServer();
 
             private:
-
                 HazelcastServerFactory & factory;
                 Member member;
             };
