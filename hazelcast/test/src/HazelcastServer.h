@@ -46,9 +46,12 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
+                void setAttributes(int memberStartOrder);
+
             private:
                 HazelcastServerFactory & factory;
                 Member member;
+                bool isStarted;
             };
         }
     }

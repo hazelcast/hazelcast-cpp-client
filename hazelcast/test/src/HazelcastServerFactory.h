@@ -45,7 +45,7 @@ namespace hazelcast {
 
                 void startServer(Member &member);
 
-                void setAttributes(Member &member);
+                void setAttributes(int memberStartOrder);
 
                 void shutdownServer(Member &member);
 
@@ -54,8 +54,6 @@ namespace hazelcast {
                 static void init(const std::string &serverAddress);
 
             private:
-                void shutdownAll();
-
                 std::string serverAddress;
                 util::ILogger &logger;
                 static boost::shared_ptr<RemoteControllerClient> rcClient;

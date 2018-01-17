@@ -35,7 +35,6 @@ class RemoteControllerIf {
   virtual void splitMemberFromCluster(Cluster& _return, const std::string& memberId) = 0;
   virtual void mergeMemberToCluster(Cluster& _return, const std::string& clusterId, const std::string& memberId) = 0;
   virtual void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang) = 0;
-  virtual bool setAttributes(const Cluster& cluster, const Member& member) = 0;
 };
 
 class RemoteControllerIfFactory {
@@ -115,10 +114,6 @@ class RemoteControllerNull : virtual public RemoteControllerIf {
   }
   void executeOnController(Response& /* _return */, const std::string& /* clusterId */, const std::string& /* script */, const Lang::type /* lang */) {
     return;
-  }
-  bool setAttributes(const Cluster& /* cluster */, const Member& /* member */) {
-    bool _return = false;
-    return _return;
   }
 };
 
@@ -1614,117 +1609,6 @@ class RemoteController_executeOnController_presult {
 
 };
 
-typedef struct _RemoteController_setAttributes_args__isset {
-  _RemoteController_setAttributes_args__isset() : cluster(false), member(false) {}
-  bool cluster :1;
-  bool member :1;
-} _RemoteController_setAttributes_args__isset;
-
-class RemoteController_setAttributes_args {
- public:
-
-  RemoteController_setAttributes_args(const RemoteController_setAttributes_args&);
-  RemoteController_setAttributes_args& operator=(const RemoteController_setAttributes_args&);
-  RemoteController_setAttributes_args() {
-  }
-
-  virtual ~RemoteController_setAttributes_args() throw();
-  Cluster cluster;
-  Member member;
-
-  _RemoteController_setAttributes_args__isset __isset;
-
-  void __set_cluster(const Cluster& val);
-
-  void __set_member(const Member& val);
-
-  bool operator == (const RemoteController_setAttributes_args & rhs) const
-  {
-    if (!(cluster == rhs.cluster))
-      return false;
-    if (!(member == rhs.member))
-      return false;
-    return true;
-  }
-  bool operator != (const RemoteController_setAttributes_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const RemoteController_setAttributes_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class RemoteController_setAttributes_pargs {
- public:
-
-
-  virtual ~RemoteController_setAttributes_pargs() throw();
-  const Cluster* cluster;
-  const Member* member;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _RemoteController_setAttributes_result__isset {
-  _RemoteController_setAttributes_result__isset() : success(false) {}
-  bool success :1;
-} _RemoteController_setAttributes_result__isset;
-
-class RemoteController_setAttributes_result {
- public:
-
-  RemoteController_setAttributes_result(const RemoteController_setAttributes_result&);
-  RemoteController_setAttributes_result& operator=(const RemoteController_setAttributes_result&);
-  RemoteController_setAttributes_result() : success(0) {
-  }
-
-  virtual ~RemoteController_setAttributes_result() throw();
-  bool success;
-
-  _RemoteController_setAttributes_result__isset __isset;
-
-  void __set_success(const bool val);
-
-  bool operator == (const RemoteController_setAttributes_result & rhs) const
-  {
-    if (!(success == rhs.success))
-      return false;
-    return true;
-  }
-  bool operator != (const RemoteController_setAttributes_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const RemoteController_setAttributes_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _RemoteController_setAttributes_presult__isset {
-  _RemoteController_setAttributes_presult__isset() : success(false) {}
-  bool success :1;
-} _RemoteController_setAttributes_presult__isset;
-
-class RemoteController_setAttributes_presult {
- public:
-
-
-  virtual ~RemoteController_setAttributes_presult() throw();
-  bool* success;
-
-  _RemoteController_setAttributes_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 class RemoteControllerClient : virtual public RemoteControllerIf {
  public:
   RemoteControllerClient(apache::thrift::stdcxx::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) {
@@ -1792,9 +1676,6 @@ class RemoteControllerClient : virtual public RemoteControllerIf {
   void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang);
   void send_executeOnController(const std::string& clusterId, const std::string& script, const Lang::type lang);
   void recv_executeOnController(Response& _return);
-  bool setAttributes(const Cluster& cluster, const Member& member);
-  void send_setAttributes(const Cluster& cluster, const Member& member);
-  bool recv_setAttributes();
  protected:
   apache::thrift::stdcxx::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   apache::thrift::stdcxx::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;
@@ -1824,7 +1705,6 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
   void process_splitMemberFromCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_mergeMemberToCluster(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_executeOnController(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_setAttributes(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   RemoteControllerProcessor(::apache::thrift::stdcxx::shared_ptr<RemoteControllerIf> iface) :
     iface_(iface) {
@@ -1842,7 +1722,6 @@ class RemoteControllerProcessor : public ::apache::thrift::TDispatchProcessor {
     processMap_["splitMemberFromCluster"] = &RemoteControllerProcessor::process_splitMemberFromCluster;
     processMap_["mergeMemberToCluster"] = &RemoteControllerProcessor::process_mergeMemberToCluster;
     processMap_["executeOnController"] = &RemoteControllerProcessor::process_executeOnController;
-    processMap_["setAttributes"] = &RemoteControllerProcessor::process_setAttributes;
   }
 
   virtual ~RemoteControllerProcessor() {}
@@ -2002,15 +1881,6 @@ class RemoteControllerMultiface : virtual public RemoteControllerIf {
     return;
   }
 
-  bool setAttributes(const Cluster& cluster, const Member& member) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->setAttributes(cluster, member);
-    }
-    return ifaces_[i]->setAttributes(cluster, member);
-  }
-
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -2083,9 +1953,6 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
   void executeOnController(Response& _return, const std::string& clusterId, const std::string& script, const Lang::type lang);
   int32_t send_executeOnController(const std::string& clusterId, const std::string& script, const Lang::type lang);
   void recv_executeOnController(Response& _return, const int32_t seqid);
-  bool setAttributes(const Cluster& cluster, const Member& member);
-  int32_t send_setAttributes(const Cluster& cluster, const Member& member);
-  bool recv_setAttributes(const int32_t seqid);
  protected:
   apache::thrift::stdcxx::shared_ptr< ::apache::thrift::protocol::TProtocol> piprot_;
   apache::thrift::stdcxx::shared_ptr< ::apache::thrift::protocol::TProtocol> poprot_;

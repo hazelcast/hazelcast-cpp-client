@@ -41,6 +41,7 @@ namespace hazelcast {
 
             TEST_F(MemberAttributeTest, testInitialValues) {
                 HazelcastServer instance(*g_srvFactory);
+                instance.setAttributes(0);
                 std::auto_ptr<HazelcastClient> hazelcastClient(getNewClient());
                 Cluster cluster = hazelcastClient->getCluster();
                 std::vector<Member> members = cluster.getMembers();
@@ -141,6 +142,7 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(*clientConfig);
 
                 HazelcastServer instance2(*g_srvFactory);
+                instance2.setAttributes(1);
 
                 ASSERT_TRUE(attributeLatch.await(30));
 

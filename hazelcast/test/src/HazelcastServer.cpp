@@ -31,14 +31,18 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
-            :factory(factory) {
+            :factory(factory), isStarted(false) {
                 start();
             }
 
             bool HazelcastServer::start() {
+                if (isStarted) {
+                    return true;
+                }
+
                 try {
                     factory.startServer(member);
-                    factory.setAttributes(member);
+                    isStarted = true;
                     return true;
                 } catch (TException &tx) {
                     std::ostringstream out;
@@ -49,8 +53,13 @@ namespace hazelcast {
             }
 
             bool HazelcastServer::shutdown() {
+                if (!isStarted) {
+                    return true;
+                }
+
                 try {
                     factory.shutdownServer(member);
+                    isStarted = false;
                     return true;
                 } catch (TException &tx) {
                     std::ostringstream out;
@@ -62,6 +71,13 @@ namespace hazelcast {
 
             HazelcastServer::~HazelcastServer() {
                 shutdown();
+            }
+
+            void HazelcastServer::setAttributes(int memberStartOrder) {
+                if (!isStarted) {
+                    return;
+                }
+                factory.setAttributes(memberStartOrder);
             }
 
         }

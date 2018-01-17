@@ -17,7 +17,6 @@
 // Created by sancar koyunlu on 8/26/13.
 
 #include <iostream>
-#include <string.h>
 #include <sstream>
 
 #include <boost/shared_ptr.hpp>
@@ -56,10 +55,6 @@ namespace hazelcast {
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                shutdownAll();
-            }
-
-            void HazelcastServerFactory::shutdownAll() {
                 try {
                     rcClient->shutdownCluster(cluster.id);
                 } catch (TException &tx) {
@@ -73,8 +68,21 @@ namespace hazelcast {
                 rcClient->startMember(member, cluster.id);
             }
 
-            void HazelcastServerFactory::setAttributes(Member &member) {
-                rcClient->setAttributes(cluster, member);
+            void HazelcastServerFactory::setAttributes(int memberStartOrder) {
+                Response response;
+                std::ostringstream script;
+                script << "function attrs() { "
+                        "var member = instance_" << memberStartOrder << ".getCluster().getLocalMember(); "
+                        "member.setIntAttribute(\"intAttr\", 211); "
+                        "member.setBooleanAttribute(\"boolAttr\", true); "
+                        "member.setByteAttribute(\"byteAttr\", 7); "
+                        "member.setDoubleAttribute(\"doubleAttr\", 2.0); "
+                        "member.setFloatAttribute(\"floatAttr\", 1.2); "
+                        "member.setShortAttribute(\"shortAttr\", 3); "
+                        "return member.setStringAttribute(\"strAttr\", \"strAttr\");} "
+                        " result=attrs(); ";
+
+                rcClient->executeOnController(response, cluster.id, script.str(), Lang::JAVASCRIPT);
             }
 
             void HazelcastServerFactory::shutdownServer(Member &member) {

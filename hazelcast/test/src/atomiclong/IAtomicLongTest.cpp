@@ -36,7 +36,6 @@ namespace hazelcast {
             IAtomicLongTest::~IAtomicLongTest() {
                 atom.reset();
                 client.reset();
-                instance.shutdown();
             }
 
             TEST_F(IAtomicLongTest, testAtomicLong) {
