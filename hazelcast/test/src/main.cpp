@@ -55,8 +55,6 @@ private :
 };
 
 int main(int argc, char** argv) {
-    const char* address;
-
     testing::InitGoogleTest(&argc, argv);
 
     ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment("127.0.0.1"));
