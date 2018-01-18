@@ -59,14 +59,7 @@ int main(int argc, char** argv) {
 
     testing::InitGoogleTest(&argc, argv);
 
-    if(argc == 2){
-        address = argv[1];
-    } else {
-        address = "127.0.0.1";
-    }
-    std::cout << "Server address : "  << address << std::endl;
-
-    ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment(address));
+    ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment("127.0.0.1"));
 
     return RUN_ALL_TESTS();
 
