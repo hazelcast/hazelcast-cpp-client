@@ -44,7 +44,7 @@ namespace hazelcast {
                     factory.startServer(member);
                     isStarted = true;
                     return true;
-                } catch (TException &tx) {
+                } catch (std::exception &tx) {
                     std::ostringstream out;
                     out << "Could not start new member!!! " << tx.what();
                     util::ILogger::getLogger().severe(out.str());
@@ -61,9 +61,9 @@ namespace hazelcast {
                     factory.shutdownServer(member);
                     isStarted = false;
                     return true;
-                } catch (TException &tx) {
+                } catch (std::exception &tx) {
                     std::ostringstream out;
-                    out << "Could not shutdown member " << member.uuid <<  " !!! " << tx.what();
+                    out << "Could not shutdown member " << member <<  " !!! " << tx.what();
                     util::ILogger::getLogger().severe(out.str());
                     return false;
                 }

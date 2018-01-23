@@ -24,7 +24,7 @@
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
-#include <remotecontroller_types.h>
+#include <string>
 
 namespace hazelcast {
     namespace client {
@@ -50,8 +50,8 @@ namespace hazelcast {
 
             private:
                 HazelcastServerFactory & factory;
-                Member member;
                 bool isStarted;
+                std::string member;
             };
         }
     }

@@ -22,13 +22,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "RemoteController.h"
-#include "remotecontroller_types.h"
-
 using namespace std;
-using namespace apache::thrift;
-using namespace apache::thrift::protocol;
-using namespace apache::thrift::transport;
 
 namespace hazelcast {
     namespace util {
@@ -43,11 +37,11 @@ namespace hazelcast {
 
                 const std::string& getServerAddress() const;
 
-                void startServer(Member &member);
+                void startServer(const std::string &member);
 
                 void setAttributes(int memberStartOrder);
 
-                void shutdownServer(Member &member);
+                void shutdownServer(const std::string &member);
 
                 ~HazelcastServerFactory();
 
@@ -56,8 +50,10 @@ namespace hazelcast {
             private:
                 std::string serverAddress;
                 util::ILogger &logger;
+/*
                 static boost::shared_ptr<RemoteControllerClient> rcClient;
                 ::Cluster cluster;
+*/
             };
         }
     }

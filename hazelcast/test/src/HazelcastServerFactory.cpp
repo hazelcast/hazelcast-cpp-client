@@ -21,10 +21,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "RemoteController.h"
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/transport/TSocket.h>
-#include <thrift/transport/TTransportUtils.h>
+#include <Python.h>
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
@@ -43,6 +40,7 @@ namespace hazelcast {
         namespace test {
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : logger(util::ILogger::getLogger()) {
+/*
                 try {
                     rcClient->createCluster(cluster, "", serverXmlConfigFilePath);
                 } catch (TException &tx) {
@@ -52,9 +50,11 @@ namespace hazelcast {
                     logger.severe(out.str());
                     throw;
                 }
+*/
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
+/*
                 try {
                     rcClient->shutdownCluster(cluster.id);
                 } catch (TException &tx) {
@@ -62,14 +62,19 @@ namespace hazelcast {
                     out << "Failed to shutdown the cluster with id " << cluster.id << tx.what();
                     logger.severe(out.str());
                 }
+*/
             }
 
-            void HazelcastServerFactory::startServer(Member &member) {
+            void HazelcastServerFactory::startServer(const std::string &member) {
+/*
                 rcClient->startMember(member, cluster.id);
+*/
             }
 
             void HazelcastServerFactory::setAttributes(int memberStartOrder) {
+/*
                 Response response;
+*/
                 std::ostringstream script;
                 script << "function attrs() { "
                         "var member = instance_" << memberStartOrder << ".getCluster().getLocalMember(); "
@@ -82,11 +87,15 @@ namespace hazelcast {
                         "return member.setStringAttribute(\"strAttr\", \"strAttr\");} "
                         " result=attrs(); ";
 
+/*
                 rcClient->executeOnController(response, cluster.id, script.str(), Lang::JAVASCRIPT);
+*/
             }
 
-            void HazelcastServerFactory::shutdownServer(Member &member) {
+            void HazelcastServerFactory::shutdownServer(const std::string &member) {
+/*
                 rcClient->shutdownMember(cluster.id, member.uuid);
+*/
             }
 
             const std::string &HazelcastServerFactory::getServerAddress() const {
@@ -94,6 +103,85 @@ namespace hazelcast {
             }
 
             void HazelcastServerFactory::init(const std::string &serverAddress) {
+                PyObject *pName, *pModule, *pFunc;
+
+
+                Py_Initialize();
+
+                pName = PyString_FromString("hzrc.client");
+                pModule = PyImport_Import(pName);
+                Py_DECREF(pName);
+
+                if (pModule != NULL) {
+                    pFunc = PyObject_GetAttrString(pModule, "HzRemoteController");
+                    /* pFunc is a new reference */
+
+                    if (pFunc && PyCallable_Check(pFunc)) {
+                        PyObject *pArgs = PyTuple_New(2);
+                        PyObject *ip = PyString_FromString("127.0.0.1");
+                        PyTuple_SetItem(pArgs, 0, ip);
+                        PyObject *port = PyInt_FromLong(9701);
+                        PyTuple_SetItem(pArgs, 1, port);
+                        PyObject *rcObject = PyObject_CallObject(pFunc, pArgs);
+                        //Py_DECREF(pArgs);
+                        if (rcObject != NULL) {
+                            PyObject *clusterObject = PyObject_CallMethod(pFunc, const_cast<char *>("startMember"),
+                                                         const_cast<char *>("ss"), "3.9",
+                                                         "java/src/main/resources/hazelcast.xml");
+                            if (clusterObject == NULL) {
+                                throw exception::IllegalStateException("Failed to create cluster");
+                            }
+
+/*
+                            PyObject *clusterId = PyObject_GetAttrString(clusterObject, "id");
+*/
+
+/*
+                            PyObject *startServerMethod = PyObject_GetAttrString(pFunc, "startMember");
+                            if (startServerMethod != NULL) {
+                                PyObject *args = PyTuple_New(1);
+                                PyTuple_SetItem(args, 0, clusterId);
+                                pValue = PyObject_CallObject(startServerMethod, args);
+                            }
+*/
+
+                            Py_DECREF(rcObject);
+                        } else {
+                            Py_DECREF(rcObject);
+                            Py_DECREF(pModule);
+                            PyErr_Print();
+                            fprintf(stderr,"Call failed\n");
+                        }
+
+                        Py_DECREF(ip);
+                        Py_DECREF(port);
+                    }
+                    else {
+                        if (PyErr_Occurred())
+                            PyErr_Print();
+                        fprintf(stderr, "Cannot find function \"HzRemoteController\"\n");
+                    }
+                    Py_XDECREF(pFunc);
+                    Py_DECREF(pModule);
+                }
+                else {
+                    PyErr_Print();
+                    fprintf(stderr, "Failed to load \"hzrc.client\"\n");
+                }
+                Py_Finalize();
+
+/*
+                PyRun_SimpleString("from hzrc.client import HzRemoteController\n"
+                        "import logging\n"
+                        "\n"
+                        "logging.basicConfig(format='%(asctime)s%(msecs)03d [%(name)s] %(levelname)s: %(message)s', datefmt=\"%H:%M%:%S,\")\n"
+                        "\n"
+                        "logging.getLogger().setLevel(logging.INFO)\n"
+                        "\n"
+                        "rc = HzRemoteController('127.0.0.1', 9701)");
+*/
+                Py_Finalize();
+/*
                 boost::shared_ptr<TTransport> socket(new TSocket(serverAddress, 9701));
                 boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
                 boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
@@ -107,9 +195,12 @@ namespace hazelcast {
                     util::ILogger::getLogger().severe(out.str());
                     throw;
                 }
+*/
             }
 
+/*
             boost::shared_ptr<RemoteControllerClient> HazelcastServerFactory::rcClient;
+*/
 
         }
     }
