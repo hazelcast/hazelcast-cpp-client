@@ -20,10 +20,11 @@
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
-#include <boost/shared_ptr.hpp>
-#include <ostream>
-
 #include <Python.h>
+
+#include <boost/shared_ptr.hpp>
+
+#include <ostream>
 
 using namespace std;
 
