@@ -58,7 +58,7 @@ namespace hazelcast {
 
                 MemberInfo startServer();
 
-                void setAttributes(int memberStartOrder);
+                bool setAttributes(int memberStartOrder);
 
                 bool shutdownServer(const MemberInfo &member);
 

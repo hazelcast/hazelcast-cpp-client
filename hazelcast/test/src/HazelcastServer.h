@@ -45,7 +45,7 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
-                void setAttributes(int memberStartOrder);
+                bool setAttributes(int memberStartOrder);
 
             private:
                 HazelcastServerFactory & factory;

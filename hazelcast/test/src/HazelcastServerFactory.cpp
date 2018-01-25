@@ -141,10 +141,7 @@ namespace hazelcast {
                 return memberInfo;
             }
 
-            void HazelcastServerFactory::setAttributes(int memberStartOrder) {
-/*
-                Response response;
-*/
+            bool HazelcastServerFactory::setAttributes(int memberStartOrder) {
                 std::ostringstream script;
                 script << "function attrs() { "
                         "var member = instance_" << memberStartOrder << ".getCluster().getLocalMember(); "
@@ -157,9 +154,27 @@ namespace hazelcast {
                         "return member.setStringAttribute(\"strAttr\", \"strAttr\");} "
                         " result=attrs(); ";
 
-/*
-                rcClient->executeOnController(response, cluster.id, script.str(), Lang::JAVASCRIPT);
-*/
+
+                PyObject *responseObj = PyObject_CallMethod(rcObject, const_cast<char *>("executeOnController"),
+                                                          const_cast<char *>("(ss)"), clusterId.c_str(),
+                                                          script.str().c_str());
+
+                PyObject *successObjAttrName = PyString_FromString("success");
+                PyObject *isSuccessObj = PyObject_GenericGetAttr(responseObj, successObjAttrName);
+
+                bool result = true;
+                if (isSuccessObj == NULL || isSuccessObj == Py_False) {
+                    result = false;
+
+                    std::ostringstream out;
+                    out << "Failed to execute script " << script << " on member " << memberStartOrder;
+                    logger.severe(out.str());
+                }
+
+                Py_DECREF(responseObj);
+                Py_DECREF(successObjAttrName);
+                Py_DECREF(isSuccessObj);
+                return result;
             }
 
             bool HazelcastServerFactory::shutdownServer(const MemberInfo &member) {

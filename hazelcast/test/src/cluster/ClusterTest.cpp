@@ -198,7 +198,7 @@ namespace hazelcast {
                 cluster.addMembershipListener(&sampleListener);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
-                instance2->setAttributes(1);
+                ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
@@ -234,7 +234,7 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(clientConfig);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
-                instance2->setAttributes(1);
+                ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));

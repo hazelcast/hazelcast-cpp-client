@@ -70,11 +70,11 @@ namespace hazelcast {
                 shutdown();
             }
 
-            void HazelcastServer::setAttributes(int memberStartOrder) {
+            bool HazelcastServer::setAttributes(int memberStartOrder) {
                 if (!isStarted) {
-                    return;
+                    return false;
                 }
-                factory.setAttributes(memberStartOrder);
+                return factory.setAttributes(memberStartOrder);
             }
 
         }
