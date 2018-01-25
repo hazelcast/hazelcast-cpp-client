@@ -21,6 +21,9 @@
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
 #include <boost/shared_ptr.hpp>
+#include <ostream>
+
+#include <Python.h>
 
 using namespace std;
 
@@ -33,27 +36,41 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
+                class MemberInfo {
+                public:
+                    MemberInfo();
+
+                    MemberInfo(const string &uuid, const string &ip, int port);
+
+                    friend ostream &operator<<(ostream &os, const MemberInfo &info);
+
+                    const string &getUuid() const;
+
+                private:
+                    std::string uuid;
+                    std::string ip;
+                    int port;
+                };
+
                 HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
 
-                const std::string& getServerAddress() const;
+                static const std::string& getServerAddress();
 
-                void startServer(const std::string &member);
+                MemberInfo startServer();
 
                 void setAttributes(int memberStartOrder);
 
-                void shutdownServer(const std::string &member);
+                bool shutdownServer(const MemberInfo &member);
 
                 ~HazelcastServerFactory();
 
-                static void init(const std::string &serverAddress);
+                static void init(const std::string &server);
 
             private:
-                std::string serverAddress;
                 util::ILogger &logger;
-/*
-                static boost::shared_ptr<RemoteControllerClient> rcClient;
-                ::Cluster cluster;
-*/
+                static std::string serverAddress;
+                static PyObject *rcObject;
+                std::string clusterId;
             };
         }
     }

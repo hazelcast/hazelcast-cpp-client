@@ -21,8 +21,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <Python.h>
-
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
 
@@ -38,37 +36,109 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+            std::string HazelcastServerFactory::serverAddress;
+            PyObject *HazelcastServerFactory::rcObject;
+
+            void HazelcastServerFactory::init(const std::string &server) {
+                PyObject *pName = PyString_FromString("hzrc.client");
+                PyObject *pModule = PyImport_Import(pName);
+                Py_DECREF(pName);
+
+                if (pModule != NULL) {
+                    PyObject *rcAttribute = PyObject_GetAttrString(pModule, "HzRemoteController");
+                    /* rcAttribute is a new reference */
+
+                    serverAddress = server;
+                    long portNum = 9701;
+                    if (rcAttribute && PyCallable_Check(rcAttribute)) {
+                        PyObject *pArgs = PyTuple_New(2);
+                        PyObject *ip = PyString_FromString(serverAddress.c_str());
+                        PyTuple_SetItem(pArgs, 0, ip);
+                        PyObject *port = PyInt_FromLong(portNum);
+                        PyTuple_SetItem(pArgs, 1, port);
+                        rcObject = PyObject_CallObject(rcAttribute, pArgs);
+                        Py_DECREF(ip);
+                        Py_DECREF(port);
+                        if (rcObject == NULL) {
+                            std::ostringstream out;
+                            out << "Failed to connect to remote controller at " << serverAddress << ":" << portNum;
+                            throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
+                        }
+                    } else {
+                        if (PyErr_Occurred())
+                            PyErr_Print();
+                        fprintf(stderr, "Cannot find function \"HzRemoteController\"\n");
+                    }
+                    Py_XDECREF(rcAttribute);
+                    Py_DECREF(pModule);
+                }
+                else {
+                    PyErr_Print();
+                    fprintf(stderr, "Failed to load \"hzrc.client\"\n");
+                }
+            }
+
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : logger(util::ILogger::getLogger()) {
-/*
-                try {
-                    rcClient->createCluster(cluster, "", serverXmlConfigFilePath);
-                } catch (TException &tx) {
+                PyObject *clusterObject = PyObject_CallMethod(rcObject, const_cast<char *>("createCluster"),
+                                                              const_cast<char *>("(ss)"), "3.9",
+                                                              serverXmlConfigFilePath.c_str());
+                if (clusterObject == NULL) {
                     std::ostringstream out;
-                    out << "The test environment failed to initialize. Could not connect create cluster with server xml file "
-                            << serverXmlConfigFilePath << ". " << tx.what();
-                    logger.severe(out.str());
-                    throw;
+                    out << "Failed to create cluster with xml file path: " << serverXmlConfigFilePath;
+                    throw exception::IllegalStateException("HazelcastServerFactory::HazelcastServerFactory", out.str());
                 }
-*/
+
+                PyObject *clusterUUID = PyObject_GetAttrString(clusterObject, "id");
+                if (clusterUUID == NULL) {
+                    Py_DECREF(clusterObject);
+                    throw exception::IllegalStateException("HazelcastServerFactory::init",
+                                                           "Could not retrieve cluster id as string");
+                }
+
+                clusterId = PyString_AsString(clusterUUID);
+                Py_DECREF(clusterUUID);
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-/*
-                try {
-                    rcClient->shutdownCluster(cluster.id);
-                } catch (TException &tx) {
+                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("shutdownCluster"),
+                                                              const_cast<char *>("(s)"), clusterId.c_str());
+
+                if (resultObj == NULL || resultObj == Py_False) {
                     std::ostringstream out;
-                    out << "Failed to shutdown the cluster with id " << cluster.id << tx.what();
+                    out << "Failed to shutdown the cluster with id " << clusterId;
                     logger.severe(out.str());
                 }
-*/
+
+                Py_DECREF(resultObj);
+                //Py_DECREF(rcObject);
             }
 
-            void HazelcastServerFactory::startServer(const std::string &member) {
-/*
-                rcClient->startMember(member, cluster.id);
-*/
+            HazelcastServerFactory::MemberInfo HazelcastServerFactory::startServer() {
+                PyObject *memberObject = PyObject_CallMethod(rcObject, const_cast<char *>("startMember"),
+                                                             const_cast<char *>("(s)"), clusterId.c_str());
+                if (memberObject == NULL) {
+                    std::ostringstream out;
+                    out << "Failed to start member at cluster " << clusterId;
+                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
+                }
+
+                PyObject *uuidObj = PyObject_GetAttrString(memberObject, "uuid");
+                PyObject *hostObj = PyObject_GetAttrString(memberObject, "host");
+                PyObject *portStringObj = PyString_FromString("port");
+                PyObject *portObj = PyObject_GenericGetAttr(memberObject, portStringObj);
+
+                HazelcastServerFactory::MemberInfo memberInfo(PyString_AsString(uuidObj), PyString_AsString(hostObj),
+                                                              PyInt_AsLong(portObj));
+
+
+                Py_DECREF(memberObject);
+                Py_DECREF(uuidObj);
+                Py_DECREF(hostObj);
+                Py_DECREF(portStringObj);
+                Py_DECREF(portObj);
+
+                return memberInfo;
             }
 
             void HazelcastServerFactory::setAttributes(int memberStartOrder) {
@@ -92,116 +162,42 @@ namespace hazelcast {
 */
             }
 
-            void HazelcastServerFactory::shutdownServer(const std::string &member) {
-/*
-                rcClient->shutdownMember(cluster.id, member.uuid);
-*/
+            bool HazelcastServerFactory::shutdownServer(const MemberInfo &member) {
+                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("shutdownMember"),
+                                                             const_cast<char *>("(ss)"), clusterId.c_str(),
+                                                          member.getUuid().c_str());
+
+                if (resultObj == NULL || resultObj == Py_False) {
+                    std::ostringstream out;
+                    out << "Failed to shutdown the member " << member;
+                    logger.severe(out.str());
+                    Py_DECREF(resultObj);
+                    return false;
+                }
+
+                Py_DECREF(resultObj);
+                return true;
+
             }
 
-            const std::string &HazelcastServerFactory::getServerAddress() const {
+            const std::string &HazelcastServerFactory::getServerAddress() {
                 return serverAddress;
             }
 
-            void HazelcastServerFactory::init(const std::string &serverAddress) {
-                PyObject *pName, *pModule, *pFunc;
+            HazelcastServerFactory::MemberInfo::MemberInfo(const string &uuid, const string &ip, int port) : uuid(uuid),
+                                                                                                             ip(ip),
+                                                                                                             port(port) {}
 
-
-                Py_Initialize();
-
-                pName = PyString_FromString("hzrc.client");
-                pModule = PyImport_Import(pName);
-                Py_DECREF(pName);
-
-                if (pModule != NULL) {
-                    pFunc = PyObject_GetAttrString(pModule, "HzRemoteController");
-                    /* pFunc is a new reference */
-
-                    if (pFunc && PyCallable_Check(pFunc)) {
-                        PyObject *pArgs = PyTuple_New(2);
-                        PyObject *ip = PyString_FromString("127.0.0.1");
-                        PyTuple_SetItem(pArgs, 0, ip);
-                        PyObject *port = PyInt_FromLong(9701);
-                        PyTuple_SetItem(pArgs, 1, port);
-                        PyObject *rcObject = PyObject_CallObject(pFunc, pArgs);
-                        //Py_DECREF(pArgs);
-                        if (rcObject != NULL) {
-                            PyObject *clusterObject = PyObject_CallMethod(pFunc, const_cast<char *>("startMember"),
-                                                         const_cast<char *>("ss"), "3.9",
-                                                         "java/src/main/resources/hazelcast.xml");
-                            if (clusterObject == NULL) {
-                                throw exception::IllegalStateException("Failed to create cluster");
-                            }
-
-/*
-                            PyObject *clusterId = PyObject_GetAttrString(clusterObject, "id");
-*/
-
-/*
-                            PyObject *startServerMethod = PyObject_GetAttrString(pFunc, "startMember");
-                            if (startServerMethod != NULL) {
-                                PyObject *args = PyTuple_New(1);
-                                PyTuple_SetItem(args, 0, clusterId);
-                                pValue = PyObject_CallObject(startServerMethod, args);
-                            }
-*/
-
-                            Py_DECREF(rcObject);
-                        } else {
-                            Py_DECREF(rcObject);
-                            Py_DECREF(pModule);
-                            PyErr_Print();
-                            fprintf(stderr,"Call failed\n");
-                        }
-
-                        Py_DECREF(ip);
-                        Py_DECREF(port);
-                    }
-                    else {
-                        if (PyErr_Occurred())
-                            PyErr_Print();
-                        fprintf(stderr, "Cannot find function \"HzRemoteController\"\n");
-                    }
-                    Py_XDECREF(pFunc);
-                    Py_DECREF(pModule);
-                }
-                else {
-                    PyErr_Print();
-                    fprintf(stderr, "Failed to load \"hzrc.client\"\n");
-                }
-                Py_Finalize();
-
-/*
-                PyRun_SimpleString("from hzrc.client import HzRemoteController\n"
-                        "import logging\n"
-                        "\n"
-                        "logging.basicConfig(format='%(asctime)s%(msecs)03d [%(name)s] %(levelname)s: %(message)s', datefmt=\"%H:%M%:%S,\")\n"
-                        "\n"
-                        "logging.getLogger().setLevel(logging.INFO)\n"
-                        "\n"
-                        "rc = HzRemoteController('127.0.0.1', 9701)");
-*/
-                Py_Finalize();
-/*
-                boost::shared_ptr<TTransport> socket(new TSocket(serverAddress, 9701));
-                boost::shared_ptr<TTransport> transport(new TBufferedTransport(socket));
-                boost::shared_ptr<TProtocol> protocol(new TBinaryProtocol(transport));
-                rcClient.reset(new RemoteControllerClient(protocol));
-                try {
-                    transport->open();
-                } catch (TException &tx) {
-                    std::ostringstream out;
-                    out << "The test environment failed to initialize. Could not connect to remote controller. " <<
-                        tx.what();
-                    util::ILogger::getLogger().severe(out.str());
-                    throw;
-                }
-*/
+            ostream &operator<<(ostream &os, const HazelcastServerFactory::MemberInfo &info) {
+                os << "MemberInfo{uuid: " << info.uuid << " ip: " << info.ip << " port: " << info.port << "}";
+                return os;
             }
 
-/*
-            boost::shared_ptr<RemoteControllerClient> HazelcastServerFactory::rcClient;
-*/
+            HazelcastServerFactory::MemberInfo::MemberInfo() : port(-1) {}
 
+            const string &HazelcastServerFactory::MemberInfo::getUuid() const {
+                return uuid;
+            }
         }
     }
 }

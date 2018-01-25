@@ -25,12 +25,11 @@
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
 #include <string>
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-
-            class HazelcastServerFactory;
 
             class HazelcastServer {
             public:
@@ -51,7 +50,7 @@ namespace hazelcast {
             private:
                 HazelcastServerFactory & factory;
                 bool isStarted;
-                std::string member;
+                HazelcastServerFactory::MemberInfo member;
             };
         }
     }

@@ -42,12 +42,14 @@ public:
     }
 
     void SetUp() {
+        Py_Initialize();
         HazelcastServerFactory::init(serverAddress);
         hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("java/src/main/resources/hazelcast.xml");
     }
 
     void TearDown() {
         delete hazelcast::client::test::g_srvFactory;
+        Py_Finalize();
     }
 
 private :

@@ -26,6 +26,7 @@
 #include <sstream>
 
 #include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/exception/IllegalStateException.h>
 
 namespace hazelcast {
     namespace client {
@@ -41,12 +42,12 @@ namespace hazelcast {
                 }
 
                 try {
-                    factory.startServer(member);
+                    member = factory.startServer();
                     isStarted = true;
                     return true;
-                } catch (std::exception &tx) {
+                } catch (exception::IllegalStateException &illegalStateException) {
                     std::ostringstream out;
-                    out << "Could not start new member!!! " << tx.what();
+                    out << "Could not start new member!!! " << illegalStateException.what();
                     util::ILogger::getLogger().severe(out.str());
                     return false;
                 }
@@ -57,16 +58,12 @@ namespace hazelcast {
                     return true;
                 }
 
-                try {
-                    factory.shutdownServer(member);
-                    isStarted = false;
-                    return true;
-                } catch (std::exception &tx) {
-                    std::ostringstream out;
-                    out << "Could not shutdown member " << member <<  " !!! " << tx.what();
-                    util::ILogger::getLogger().severe(out.str());
+                if (!factory.shutdownServer(member)) {
                     return false;
                 }
+
+                isStarted = false;
+                return true;
             }
 
             HazelcastServer::~HazelcastServer() {
