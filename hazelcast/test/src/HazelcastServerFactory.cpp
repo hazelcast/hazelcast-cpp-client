@@ -156,8 +156,8 @@ namespace hazelcast {
 
 
                 PyObject *responseObj = PyObject_CallMethod(rcObject, const_cast<char *>("executeOnController"),
-                                                          const_cast<char *>("(ss)"), clusterId.c_str(),
-                                                          script.str().c_str());
+                                                          const_cast<char *>("(ssi)"), clusterId.c_str(),
+                                                          script.str().c_str(), 1);
 
                 PyObject *successObjAttrName = PyString_FromString("success");
                 PyObject *isSuccessObj = PyObject_GenericGetAttr(responseObj, successObjAttrName);
