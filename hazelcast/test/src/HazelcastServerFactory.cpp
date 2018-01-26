@@ -16,16 +16,17 @@
 //
 // Created by sancar koyunlu on 8/26/13.
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
 #include <iostream>
 #include <sstream>
-
 #include <boost/shared_ptr.hpp>
 
-#include "HazelcastServerFactory.h"
-#include "HazelcastServer.h"
-
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
