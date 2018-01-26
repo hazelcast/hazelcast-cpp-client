@@ -212,7 +212,7 @@ namespace hazelcast {
             }
 
             std::string HazelcastServerFactory::readFromXmlFile(const std::string &xmlFilePath) {
-                std::ifstream xmlFile (xmlFilePath);
+                std::ifstream xmlFile (xmlFilePath.c_str());
                 if (!xmlFile) {
                     std::ostringstream out;
                     out << "Failed to read from xml file to at " << xmlFilePath;
