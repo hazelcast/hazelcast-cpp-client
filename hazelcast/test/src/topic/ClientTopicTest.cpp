@@ -13,16 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ClientTopicTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
 
-        class HazelcastClient;
-
         namespace test {
+            class ClientTopicTest : public ClientTestSupport {
+            public:
+                ClientTopicTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                ITopic<std::string> topic;
+            };
+
             ClientTopicTest::ClientTopicTest()
             : instance(*g_srvFactory)
             , client(getNewClient())

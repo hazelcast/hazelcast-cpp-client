@@ -16,12 +16,17 @@
 //
 // Created by İhsan Demir on Mar 6 2016.
 //
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServer.h"
+
 #include <gtest/gtest.h>
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"

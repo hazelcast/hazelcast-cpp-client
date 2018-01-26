@@ -13,6 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "serialization/Employee.h"
+#include "TestHelperFunctions.h"
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 #include "hazelcast/client/query/OrPredicate.h"
 #include "hazelcast/client/query/RegexPredicate.h"
@@ -36,12 +46,6 @@
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/ClientConfig.h"
-
-#include "HazelcastServerFactory.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 using namespace hazelcast::client::mixedtype;
 

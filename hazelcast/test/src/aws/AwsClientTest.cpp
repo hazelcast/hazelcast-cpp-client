@@ -20,7 +20,6 @@
 #include <gtest/gtest.h>
 
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/ClientConfig.h>
 
 namespace hazelcast {
     namespace client {

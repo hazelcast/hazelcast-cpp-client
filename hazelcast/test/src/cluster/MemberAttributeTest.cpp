@@ -16,8 +16,12 @@
 //
 // Created by sancar koyunlu on 27/02/14.
 //
-
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/InitialMembershipEvent.h"

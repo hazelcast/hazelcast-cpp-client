@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-#include <memory>
-
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/adaptor/RawPointerMap.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
+
+#include <memory>
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/adaptor/RawPointerMap.h"
+
+#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 using namespace hazelcast::client::mixedtype;
 

@@ -20,14 +20,33 @@
 //  Created by Sancar on 02.08.2013.
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
-
-#include "IAtomicLongTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IAtomicLong.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class IAtomicLongTest : public ClientTestSupport {
+            public:
+                IAtomicLongTest();
+
+                ~IAtomicLongTest();
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<IAtomicLong> atom;
+            };
+
             IAtomicLongTest::IAtomicLongTest() : instance(*g_srvFactory), client(getNewClient()),
                                                  atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {
                 atom->set(0);

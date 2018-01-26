@@ -16,6 +16,19 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "HazelcastServer.h"
+#include "serialization/Employee.h"
+#include "TestHelperFunctions.h"
+#include "ClientTestSupport.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
 #include "hazelcast/client/query/OrPredicate.h"
 #include "hazelcast/client/query/RegexPredicate.h"
 #include "hazelcast/client/query/PagingPredicate.h"
@@ -36,15 +49,8 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/EntryEvent.h"
 
-#include "HazelcastServerFactory.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
-#include "HazelcastServer.h"
+#include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {

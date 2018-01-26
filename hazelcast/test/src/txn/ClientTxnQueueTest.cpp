@@ -16,15 +16,33 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "ClientTxnQueueTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
-        namespace test {
+            namespace test {
+                class ClientTxnQueueTest : public ClientTestSupport {
+                public:
+                    ClientTxnQueueTest();
+
+                    ~ClientTxnQueueTest();
+                protected:
+                    HazelcastServer instance;
+                    ClientConfig clientConfig;
+                    std::auto_ptr<HazelcastClient> client;
+                };
+
             ClientTxnQueueTest::ClientTxnQueueTest()
             : instance(*g_srvFactory)
             , client(getNewClient()) {
