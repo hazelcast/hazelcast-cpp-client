@@ -72,6 +72,8 @@ namespace hazelcast {
                 static std::string serverAddress;
                 static PyObject *rcObject;
                 std::string clusterId;
+
+                std::string readFromXmlFile(const std::string &xmlFilePath);
             };
         }
     }

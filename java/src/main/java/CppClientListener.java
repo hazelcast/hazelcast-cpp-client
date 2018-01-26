@@ -709,7 +709,7 @@ public class CppClientListener {
         final Map<Integer, HazelcastInstance> map = new HashMap<Integer, HazelcastInstance>();
         final Config config = prepareConfig();
         System.setProperty("hazelcast.enterprise.license.key", System.getenv("HAZELCAST_ENTERPRISE_KEY"));
-        getInstance(getSSLConfig());
+        getInstance(config);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
         final ServerSocket welcomeSocket = new ServerSocket(6543);
         System.out.println(welcomeSocket.getLocalSocketAddress());
@@ -796,9 +796,11 @@ public class CppClientListener {
             throws IOException {
         //System.setProperty("hazelcast.client.config", "/Users/ihsan/Desktop/work/src/hazelcast-cpp-client/java/src/main/resources/hazelcast.xml");
         String xmlConfig = "/Users/ihsan/Desktop/work/src/hazelcast-cpp-client/java/src/main/resources/hazelcast.xml";
-        //InputStream inputStream = new ByteArrayInputStream(xmlConfig.getBytes(StandardCharsets.UTF_8));
-        final Config config = new XmlConfigBuilder(xmlConfig).build();
+        InputStream inputStream = new ByteArrayInputStream(xmlConfig.getBytes(StandardCharsets.UTF_8));
+        Config config = new XmlConfigBuilder(inputStream).build();
+        //final Config config = new XmlConfigBuilder(xmlConfig).build();
 
+/*
         config.getSerializationConfig().addPortableFactory(666, new PortableFactory() {
             public Portable create(int classId) {
                 if (classId == 1) {
@@ -949,6 +951,7 @@ public class CppClientListener {
         config.getSerializationConfig().addSerializerConfig(derived2CustomSerializerConfig);
 
         config.addRingBufferConfig(new RingbufferConfig("rb*").setCapacity(CAPACITY));
+*/
 
         return config;
     }

@@ -2,10 +2,10 @@
 
 function cleanup {
     echo "cleanup is being performed."
-    if [ "x${serverPid}" != "x" ]
+    if [ "x${rcPid}" != "x" ]
     then
-        echo "Killing server with pid ${serverPid}"
-        kill -9 ${serverPid}
+        echo "Killing server with pid ${rcPid}"
+        kill -9 ${rcPid}
     fi
     exit
 }
@@ -65,25 +65,13 @@ then
     exit 1
 fi
 
-cd ..
-cd java
+scripts/start-rc.sh
+rcPid=$!
 
-echo "Compiling the java test server"
-mvn -U -q clean install
-if [ $? -ne 0 ]
-then
-    echo "Server compilation and install failed!!!"
-    exit 1
-fi
-
-echo "Starting the java test server"
-mvn exec:java -Dhazelcast.phone.home.enabled=false -Dexec.mainClass="CppClientListener" &
-serverPid=$!
-
-echo "Spawned server with pid ${serverPid}"
+echo "Spawned remote controller with pid ${rcPid}"
 
 DEFAULT_TIMEOUT=30 #seconds
-SERVER_PORT=6543
+SERVER_PORT=9701
 
 timeout=${DEFAULT_TIMEOUT}
 

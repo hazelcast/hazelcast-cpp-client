@@ -24,7 +24,7 @@
 
 #include <iostream>
 #include <sstream>
-#include <boost/shared_ptr.hpp>
+#include <fstream>
 
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
@@ -81,9 +81,11 @@ namespace hazelcast {
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : logger(util::ILogger::getLogger()) {
+                std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
+
                 PyObject *clusterObject = PyObject_CallMethod(rcObject, const_cast<char *>("createCluster"),
                                                               const_cast<char *>("(ss)"), "3.9",
-                                                              serverXmlConfigFilePath.c_str());
+                                                              xmlConfig.c_str());
                 if (clusterObject == NULL) {
                     std::ostringstream out;
                     out << "Failed to create cluster with xml file path: " << serverXmlConfigFilePath;
@@ -207,6 +209,23 @@ namespace hazelcast {
             ostream &operator<<(ostream &os, const HazelcastServerFactory::MemberInfo &info) {
                 os << "MemberInfo{uuid: " << info.uuid << " ip: " << info.ip << " port: " << info.port << "}";
                 return os;
+            }
+
+            std::string HazelcastServerFactory::readFromXmlFile(const std::string &xmlFilePath) {
+                std::ifstream xmlFile (xmlFilePath);
+                if (!xmlFile) {
+                    std::ostringstream out;
+                    out << "Failed to read from xml file to at " << xmlFilePath;
+                    throw exception::IllegalStateException("HazelcastServerFactory::readFromXmlFile", out.str());
+                }
+
+                std::ostringstream buffer;
+
+                buffer << xmlFile.rdbuf();
+
+                xmlFile.close();
+
+                return buffer.str();
             }
 
             HazelcastServerFactory::MemberInfo::MemberInfo() : port(-1) {}
