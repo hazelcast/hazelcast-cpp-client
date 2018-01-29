@@ -46,19 +46,10 @@ echo "Building for platform %BUILDFORPLATFORM%"
 
 MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% /verbosity:n || exit /b 1
 
-cd ..
-cd java
-
-echo "Compiling the java test server"
-call mvn -U clean install
-
-call taskkill /F /FI "WINDOWTITLE eq cpp-java"
-
-echo "Starting the java test server"
-start "cpp-java" /B mvn package exec:java -Dhazelcast.phone.home.enabled=false -Dexec.mainClass="CppClientListener"
+scripts/start-rc.bat &
 
 SET DEFAULT_TIMEOUT=30
-SET SERVER_PORT=6543
+SET SERVER_PORT=9701
 
 SET timeout=%DEFAULT_TIMEOUT%
 
@@ -97,4 +88,4 @@ SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
 
 %BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml" || exit /b 1
 
-call taskkill /F /FI "WINDOWTITLE eq cpp-java"
+taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"

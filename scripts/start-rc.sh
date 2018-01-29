@@ -1,4 +1,20 @@
 #!/bin/sh
+
+function cleanup {
+    echo "cleanup is being performed."
+    if [ "x${rcPid}" != "x" ]
+    then
+        echo "Killing remote controller server with pid ${rcPid}"
+        kill -9 ${rcPid}
+    fi
+    exit
+}
+
+# Disables printing security sensitive data to the logs
+set +x
+
+trap cleanup EXIT
+
 HZ_VERSION="3.9.1"
 HAZELCAST_TEST_VERSION="3.10-SNAPSHOT"
 HAZELCAST_VERSION=${HZ_VERSION}
@@ -40,32 +56,20 @@ else
     fi
 fi
 
-if [ -n "${HAZELCAST_ENTERPRISE_KEY}" ]; then
-    if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
-        echo "hazelcast-enterprise.jar already exists, not downloading from maven."
-    else
-        echo "Downloading: hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
-        mvn -q dependency:get -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} -Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar
-        if [ $? -ne 0 ]; then
-            echo "Failed download hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
-            exit 1
-        fi
-    fi
-    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar:test/javaclasses"
-    echo "Starting Remote Controller ... enterprise ..."
+if [ -f "hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar" ]; then
+echo "hazelcast-enterprise.jar already exists, not downloading from maven."
 else
-    if [ -f "hazelcast-${HAZELCAST_VERSION}.jar" ]; then
-        echo "hazelcast.jar already exists, not downloading from maven."
-    else
-        echo "Downloading: hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION}"
-        mvn -q dependency:get -DrepoUrl=${REPO} -Dartifact=com.hazelcast:hazelcast:${HAZELCAST_VERSION} -Ddest=hazelcast-${HAZELCAST_VERSION}.jar
-        if [ $? -ne 0 ]; then
-            echo "Failed download hazelcast jar com.hazelcast:hazelcast:${HAZELCAST_VERSION}"
-            exit 1
-        fi
+    echo "Downloading: hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
+    mvn -q dependency:get -DrepoUrl=${ENTERPRISE_REPO} -Dartifact=com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION} -Ddest=hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar
+    if [ $? -ne 0 ]; then
+        echo "Failed download hazelcast enterprise jar com.hazelcast:hazelcast-enterprise:${HAZELCAST_ENTERPRISE_VERSION}"
+        exit 1
     fi
-    CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
-    echo "Starting Remote Controller ... oss ..."
 fi
+CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar:test/javaclasses"
+echo "Starting Remote Controller ... enterprise ..."
 
-java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} com.hazelcast.remotecontroller.Main
+java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} com.hazelcast.remotecontroller.Main &
+rcPid=$!
+wait ${rcPid}
+exit $?
