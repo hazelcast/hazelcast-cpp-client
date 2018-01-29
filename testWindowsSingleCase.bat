@@ -46,7 +46,7 @@ echo "Building for platform %BUILDFORPLATFORM%"
 
 MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_BUILD_TYPE%;VisualStudioVersion=12.0;Platform=%BUILDFORPLATFORM%;PlatformTarget=%BUILDFORPLATFORM% /verbosity:n || exit /b 1
 
-scripts/start-rc.bat &
+scripts/start-rc.bat
 
 SET DEFAULT_TIMEOUT=30
 SET SERVER_PORT=9701
@@ -75,7 +75,7 @@ echo "Waiting for the test server to start. Timeout: %timeout% seconds"
 
 :server_failed_to_start
 echo "The test server did not start in %DEFAULT_TIMEOUT% seconds. Test FAILED."
-call taskkill /F /FI "WINDOWTITLE eq cpp-java"
+call taskkill /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
 exit /b 1
 
 :server_started
