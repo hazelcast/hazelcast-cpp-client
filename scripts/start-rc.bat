@@ -51,7 +51,7 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
     )
 )
 
-set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar:hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar:hazelcast-%HZ_VERSION%.jar:hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
+set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-%HZ_VERSION%.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
