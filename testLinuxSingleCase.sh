@@ -52,20 +52,20 @@ fi
 # Let the submodule code be downloaded
 git submodule update --init
 
-#rm -rf ${BUILD_DIR}
-#mkdir ${BUILD_DIR}
+rm -rf ${BUILD_DIR}
+mkdir ${BUILD_DIR}
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
-#cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL}
+cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL}
 
 echo "Running make. Building the project."
-#make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
-#if [ $? -ne 0 ]
-#then
-#    echo "Client compilation failed!!!"
-#    exit 1
-#fi
+make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
+if [ $? -ne 0 ]
+then
+    echo "Client compilation failed!!!"
+    exit 1
+fi
 
 cd ..
 scripts/start-rc.sh &
