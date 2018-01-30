@@ -232,7 +232,7 @@ namespace hazelcast {
                         break;
                     default:
                         char buf[50];
-                        util::snprintf(buf, 50, "Unknown event type :%d", eventType);
+                        util::hz_snprintf(buf, 50, "Unknown event type :%d", eventType);
                         util::ILogger::getLogger().warning(buf);
                 }
                 clientContext.getPartitionService().wakeup();
@@ -281,7 +281,7 @@ namespace hazelcast {
                                 break;
                             default:
                                 char buf[50];
-                                util::snprintf(buf, 50, "Not a known OperationType: %d", operationType);
+                                util::hz_snprintf(buf, 50, "Not a known OperationType: %d", operationType);
                                 throw exception::IllegalArgumentException("Member::updateAttribute", buf);
                         }
                         foundMember = it;

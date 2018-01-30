@@ -39,8 +39,8 @@ namespace hazelcast {
                 sockets.insert(socketId);
             } else {
                 char msg[200];
-                util::snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
-                               socketId);
+                util::hz_snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
+                                  socketId);
                 util::ILogger::getLogger().warning(msg);
             }
         }
@@ -68,9 +68,9 @@ namespace hazelcast {
 
             if (!found) {
                 char msg[200];
-                util::snprintf(msg, 200,
-                               "[SocketSet::removeSocket] Socket with id %d  was not found among the sockets.",
-                               socketId);
+                util::hz_snprintf(msg, 200,
+                                  "[SocketSet::removeSocket] Socket with id %d  was not found among the sockets.",
+                                  socketId);
                 util::ILogger::getLogger().finest(msg);
             }
         }

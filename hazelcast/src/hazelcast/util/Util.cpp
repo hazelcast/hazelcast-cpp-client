@@ -77,7 +77,7 @@ namespace hazelcast {
             return returnCode;
         }
 
-        int snprintf(char *str, size_t len, const char *format, ...) {
+        int hz_snprintf(char *str, size_t len, const char *format, ...) {
             va_list args;
             va_start(args, format);
 
@@ -110,7 +110,7 @@ namespace hazelcast {
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
             int numChars = 0;
             if ((const char *)NULL != msgPrefix) {
-                numChars = util::snprintf(strerrbuf, buflen, "%s ", msgPrefix);
+                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msgPrefix);
                 if (numChars < 0) {
                     return numChars;
                 }

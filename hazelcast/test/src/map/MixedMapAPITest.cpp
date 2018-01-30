@@ -1248,7 +1248,7 @@ namespace hazelcast {
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                     values = imap->values(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) values.size());
                     actualValues.clear();
@@ -2227,7 +2227,7 @@ namespace hazelcast {
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                     entries = imap->entrySet(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) entries->size());
                     entries->sort(query::ENTRY);

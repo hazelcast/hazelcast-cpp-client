@@ -126,8 +126,8 @@ namespace hazelcast {
                         throwIOException(error, "connect", "Failed to connect the socket.");
                     } else {
                         char msg[200];
-                        util::snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
-                                       configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
+                        util::hz_snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
+                                          configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
                         throw exception::IOException("TcpSocket::connect ", msg);
                     }
 

@@ -1116,7 +1116,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 values = ClientMapTest<TypeParam>::intMap->values(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -1525,7 +1525,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 keys = ClientMapTest<TypeParam>::intMap->keySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -1935,7 +1935,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 entries = ClientMapTest<TypeParam>::intMap->entrySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) entries.size());
                 std::sort(entries.begin(), entries.end());

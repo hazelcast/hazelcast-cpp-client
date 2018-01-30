@@ -59,8 +59,9 @@ namespace hazelcast {
 
                 size_t len = message.length() + 150;
                 char *msg = new char[len];
-                util::snprintf(msg, len, "[IOHandler::handleSocketException] Closing socket to endpoint %s:%d, Cause:%s\n",
-                        address.getHost().c_str(), address.getPort(), message.c_str());
+                util::hz_snprintf(msg, len,
+                                  "[IOHandler::handleSocketException] Closing socket to endpoint %s:%d, Cause:%s\n",
+                                  address.getHost().c_str(), address.getPort(), message.c_str());
                 util::ILogger::getLogger().getLogger().warning(msg);
 
                 // release the memory for the message

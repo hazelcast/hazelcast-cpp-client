@@ -102,8 +102,8 @@ namespace hazelcast {
                         std::string commitId(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
                         commitId.erase(std::remove(commitId.begin(), commitId.end(), '"'), commitId.end());
                         char msg[100];
-                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
-                                       commitId.c_str());
+                        util::hz_snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
+                                          commitId.c_str());
                         logger.info(msg);
                         break;
                     }

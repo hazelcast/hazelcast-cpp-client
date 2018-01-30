@@ -54,8 +54,9 @@ namespace hazelcast {
                         size_t size = data->size();
                         if (size > 0 && size < Data::DATA_OVERHEAD) {
                             char msg[100];
-                            util::snprintf(msg, 100, "Provided buffer should be either empty or "
-                                    "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD, (unsigned long) size);
+                            util::hz_snprintf(msg, 100, "Provided buffer should be either empty or "
+                                                      "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD,
+                                              (unsigned long) size);
                             throw exception::IllegalArgumentException("Data::setBuffer", msg);
                         }
 

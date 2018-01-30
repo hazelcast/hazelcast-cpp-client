@@ -132,8 +132,9 @@ namespace hazelcast {
                     for (int i = 0; i < numThreads; ++i) {
                         util::Thread *thr = test.getThread(i);
                         char msg[100];
-                        util::snprintf(msg, 100, "[LoadTest::loadIntMapTestWithConfig] Waiting to join for thread %ld",
-                                       thr->getThreadID());
+                        util::hz_snprintf(msg, 100,
+                                          "[LoadTest::loadIntMapTestWithConfig] Waiting to join for thread %ld",
+                                          thr->getThreadID());
                         util::ILogger::getLogger().info(msg);
                         ASSERT_TRUE(thr->join());
                     }

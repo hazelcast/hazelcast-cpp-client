@@ -113,7 +113,8 @@ namespace hazelcast {
                     int numRemaining = numThreads - numRemoved;
 
                     char msg[200];
-                    hazelcast::util::snprintf(msg, 200, "Was able to remove %d items and left %d items", (numThreads - numRemaining), numRemaining);
+                    hazelcast::util::hz_snprintf(msg, 200, "Was able to remove %d items and left %d items",
+                                                 (numThreads - numRemaining), numRemaining);
                     hazelcast::util::ILogger::getLogger().info(msg);
 
                     for (int j = 0; j < numRemaining; ++j) {

@@ -297,16 +297,17 @@ namespace hazelcast {
                         {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[100];
-                            util::snprintf(msg, 100, "Serialization version does not match the server side. client serailization version:%d",
-                                    serializationVersion);
+                            util::hz_snprintf(msg, 100,
+                                              "Serialization version does not match the server side. client serailization version:%d",
+                                              serializationVersion);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                         default:
                         {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[70];
-                            util::snprintf(msg, 70, "Authentication status code not supported. status:%d",
-                                    resultParameters.status);
+                            util::hz_snprintf(msg, 70, "Authentication status code not supported. status:%d",
+                                              resultParameters.status);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                     }
@@ -332,16 +333,17 @@ namespace hazelcast {
                         {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[100];
-                            util::snprintf(msg, 100, "Serialization version does not match the server side. client serailization version:%d",
-                                    serializationVersion);
+                            util::hz_snprintf(msg, 100,
+                                              "Serialization version does not match the server side. client serailization version:%d",
+                                              serializationVersion);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                         default:
                         {
                             //we do not need serialization version here as we already connected to master and agreed on the version
                             char msg[70];
-                            util::snprintf(msg, 70, "Authentication status code not supported. status:%d",
-                                    resultParameters.status);
+                            util::hz_snprintf(msg, 70, "Authentication status code not supported. status:%d",
+                                              resultParameters.status);
                             throw exception::AuthenticationException("ConnectionManager::authenticate", msg);
                         }
                     }

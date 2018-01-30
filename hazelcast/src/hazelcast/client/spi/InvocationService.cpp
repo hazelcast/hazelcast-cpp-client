@@ -250,7 +250,7 @@ namespace hazelcast {
                     boost::shared_ptr<connection::CallPromise> promise) {
                 if (!clientContext.getLifecycleService().isRunning()) {
                     char msg[200];
-                    util::snprintf(msg, 200, "Client is not running. Did not register the promise for message "
+                    util::hz_snprintf(msg, 200, "Client is not running. Did not register the promise for message "
                             "correlation id:%lld", promise->getRequest()->getCorrelationId());
 
                     std::auto_ptr<exception::IException> exception(new exception::HazelcastClientNotActiveException(
@@ -431,8 +431,10 @@ namespace hazelcast {
                 util::ILogger &logger = util::ILogger::getLogger();
                 if (logger.isFinestEnabled()) {
                     char msg[200];
-                    util::snprintf(msg, 200, "[InvocationService::cleanEventHandlers] There are %ld event handler promises "
-                            "on connection with id:%d to be retried", promises.size(), connection.getConnectionId());
+                    util::hz_snprintf(msg, 200,
+                                      "[InvocationService::cleanEventHandlers] There are %ld event handler promises "
+                                              "on connection with id:%d to be retried", promises.size(),
+                                      connection.getConnectionId());
                     logger.finest(msg);
                 }
 

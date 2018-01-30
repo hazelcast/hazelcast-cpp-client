@@ -258,16 +258,17 @@ namespace hazelcast {
                     size_t len = dataEntries.size();
                     if (0 == len) {
                         char msg[200];
-                        util::snprintf(msg, 200,
-                                       "The are no elements in the array, you should not try accessing any element of the "
-                                               "array. Provided index (%lu) id out of range.", index);
+                        util::hz_snprintf(msg, 200,
+                                          "The are no elements in the array, you should not try accessing any element of the "
+                                                  "array. Provided index (%lu) id out of range.", index);
                         throw client::exception::IllegalArgumentException("DataArray", msg);
                     }
 
                     if (index >= len) {
                         char msg[200];
-                        util::snprintf(msg, 200, "Provided index (%lu) id out of range. Maximum allowed index is %lu",
-                                       index, (len - 1));
+                        util::hz_snprintf(msg, 200,
+                                          "Provided index (%lu) id out of range. Maximum allowed index is %lu",
+                                          index, (len - 1));
                         throw client::exception::IllegalArgumentException("EntryArrayImpl", msg);
                     }
 

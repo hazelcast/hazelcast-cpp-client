@@ -113,7 +113,8 @@ namespace hazelcast {
                     time_t diff = time(NULL) - start;
                     if (diff > 1) { // more than 1 sec
                         char msg[200];
-                        util::snprintf(msg, 200, "[notified_afterExpirationOfEntries] put for %d took %lld secs", i, diff);
+                        util::hz_snprintf(msg, 200, "[notified_afterExpirationOfEntries] put for %d took %lld secs", i,
+                                          diff);
                         util::ILogger::getLogger().warning(msg);
                     }
                 }

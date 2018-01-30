@@ -131,7 +131,7 @@ namespace hazelcast {
                     static void assertEqualsFormat(const char *messageFormat, int64_t expected, int64_t actual,
                                                    monitor::NearCacheStats &stats) {
                         char buf[300];
-                        util::snprintf(buf, 300, messageFormat, expected, actual);
+                        util::hz_snprintf(buf, 300, messageFormat, expected, actual);
                         ASSERT_EQ(expected, actual) << buf << "(" << stats.toString() << ")";
                     }
                 private:
@@ -215,7 +215,7 @@ namespace hazelcast {
                 void populateMap() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        util::snprintf(buf, 30, "value-%d", i);
+                        util::hz_snprintf(buf, 30, "value-%d", i);
                         noNearCacheMap->put(i, buf);
                     }
                     // let enough time to finish invalidation event propagation
@@ -277,7 +277,7 @@ namespace hazelcast {
                     std::map<int, std::string> invalidationMap;
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        util::snprintf(buf, 30, "value-%d", i);
+                        util::hz_snprintf(buf, 30, "value-%d", i);
                         invalidationMap[i] = buf;
                     }
 
@@ -488,7 +488,7 @@ namespace hazelcast {
                 // populate map with an extra entry
                 populateMap();
                 char buf[20];
-                util::snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
+                util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
                 noNearCacheMap->put(DEFAULT_RECORD_COUNT, buf);
 
                 createNearCacheContext();

@@ -261,7 +261,9 @@ namespace hazelcast {
 
                     if (requestedLength > available) {
                         char msg[100];
-                        util::snprintf(msg, 100, "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes", (unsigned long)available, (unsigned long)requestedLength);
+                        util::hz_snprintf(msg, 100,
+                                          "Not enough bytes in internal buffer. Available:%lu bytes but needed %lu bytes",
+                                          (unsigned long) available, (unsigned long) requestedLength);
                         throw exception::IOException("DataInput::checkBoundary", msg);
                     }
                 }
