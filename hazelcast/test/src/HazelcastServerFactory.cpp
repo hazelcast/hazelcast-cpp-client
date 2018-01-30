@@ -170,7 +170,7 @@ namespace hazelcast {
                     result = false;
 
                     std::ostringstream out;
-                    out << "Failed to execute script " << script << " on member " << memberStartOrder;
+                    out << "Failed to execute script " << script.str() << " on member " << memberStartOrder;
                     logger.severe(out.str());
                 }
 

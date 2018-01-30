@@ -20,6 +20,15 @@
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * This include is needed due to the Python.h include so that we do not see the linkage error:
+ * unresolved external symbol __imp__invalid_parameter_noinfo_noreturn
+ * It should be before the Python.h include
+ */
+#include <crtdefs.h>
+#endif
+
 #include <Python.h>
 
 #include <boost/shared_ptr.hpp>
