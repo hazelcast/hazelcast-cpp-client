@@ -62,8 +62,7 @@ pip install -r hazelcast/test/test_requirements.txt || (
     exit /b 1
 )
 
-call scripts/start-rc.bat
-if %errorlevel% (
+call scripts/start-rc.bat || (
     echo "Failed to start the remote controller"
     exit /b 1
 )
