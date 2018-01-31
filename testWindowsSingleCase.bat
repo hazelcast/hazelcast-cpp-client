@@ -95,7 +95,11 @@ echo "Starting the client test now."
 set PYTHONHOME=C:\Python27
 set PYTHONPATH=C:\Python-2.7.14\PCbuild
 SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
+SET PATH=C:\Python27\libs;%PATH%
 
-%BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml" || exit /b 1
+%BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml"
+set result=%errorlevel%
 
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
+
+exit /b %result%
