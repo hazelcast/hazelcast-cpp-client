@@ -37,7 +37,7 @@ int main() {
 
     char buf[20];
     for (int i = 1; i <= 100; i++) {
-        hazelcast::util::snprintf(buf, 20, "foo-%d", i);
+        hazelcast::util::hz_snprintf(buf, 20, "foo-%d", i);
         map.put(i, buf);
     }
     NearCacheSupport::printNearCacheStats(map, "The put(1..100, article) calls have no effect on the empty Near Cache");

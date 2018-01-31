@@ -116,7 +116,7 @@ class PredicateMember {
 public:
     std::vector<Person> getWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[200];
-        hazelcast::util::snprintf(buf, 200, "name == %s", name);
+        hazelcast::util::hz_snprintf(buf, 200, "name == %s", name);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
@@ -124,7 +124,7 @@ public:
 
     std::vector<Person> getNotWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[200];
-        hazelcast::util::snprintf(buf, 200, "name != %s", name);
+        hazelcast::util::hz_snprintf(buf, 200, "name != %s", name);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
@@ -133,7 +133,7 @@ public:
     std::vector<Person> getWithNameAndAge(const char *name, int age,
                                           hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[300];
-        hazelcast::util::snprintf(buf, 300, "name == %s AND age == %d", name, age);
+        hazelcast::util::hz_snprintf(buf, 300, "name == %s AND age == %d", name, age);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
@@ -432,7 +432,7 @@ void queryMapUsingDifferentPredicates() {
     // SqlPredicate
     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
     char sql[100];
-    hazelcast::util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
     valuesArray = rawMap.values(query::SqlPredicate(sql));
     values = intMap.values(query::SqlPredicate(sql));
 
