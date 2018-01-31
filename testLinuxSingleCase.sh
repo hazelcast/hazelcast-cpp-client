@@ -68,6 +68,13 @@ then
 fi
 
 cd ..
+
+pip install -r hazelcast/test/test_requirements.txt
+if [ $? -ne 0 ]; then
+    echo "Failed to install python hazelcast-remote-controller library."
+    exit 1
+fi
+
 scripts/start-rc.sh &
 rcPid=$!
 
