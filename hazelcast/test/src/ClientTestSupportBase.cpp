@@ -37,7 +37,7 @@ namespace hazelcast {
             }
 
             const std::string ClientTestSupportBase::getSslFilePath() {
-                return "java/src/main/resources/hazelcast-ssl.xml";
+                return "hazelcast/test/resources/hazelcast-ssl.xml";
             }
         }
     }

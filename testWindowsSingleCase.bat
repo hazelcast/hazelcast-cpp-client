@@ -16,21 +16,18 @@
 @REM Let the submodule code be downloaded
 git submodule update --init
 
-RD /S /Q %BUILD_DIR%
-mkdir %BUILD_DIR%
-
-pushd %BUILD_DIR%
-
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
     set SOLUTIONTYPE="Visual Studio 12"
     @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
     @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win32\lib
+    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild
 ) else (
     set BUILDFORPLATFORM="x64"
     set SOLUTIONTYPE="Visual Studio 12 Win64"
     @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
     @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
+    set PYTHON_LIB_DIR=%PATH%
 )
 
 if %COMPILE_WITHOUT_SSL% == "COMPILE_WITHOUT_SSL" (
@@ -40,12 +37,19 @@ if %COMPILE_WITHOUT_SSL% == "COMPILE_WITHOUT_SSL" (
 )
 
 if %HZ_BUILD_TYPE% == Debug (
-    set PYTHON_LIBRARY_PATH=C:\Python27\libs\python27_d.lib
+    set PYTHON_LIB_FILE_NAME=python27_d.lib
 ) else (
-    set PYTHON_LIBRARY_PATH=C:\Python27\libs\python27.lib
+    set PYTHON_LIB_FILE_NAME=python27.lib
 )
 
+set PYTHON_LIBRARY_PATH=%PYTHON_LIB_DIR%\%PYTHON_LIB_FILE_NAME%
+
 echo "Using Python library at %PYTHON_LIBRARY_PATH%"
+
+RD /S /Q %BUILD_DIR%
+mkdir %BUILD_DIR%
+
+pushd %BUILD_DIR%
 
 echo "Generating the solution files for compilation"
 cmake .. -G %SOLUTIONTYPE% -DHZ_LIB_TYPE=%HZ_LIB_TYPE% -DHZ_BIT=%HZ_BIT_VERSION% -DCMAKE_BUILD_TYPE=%HZ_BUILD_TYPE% -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_OPENSSL_INCLUDE_DIR=%HZ_OPENSSL_INCLUDE_DIR% -DHZ_OPENSSL_LIB_DIR=%HZ_OPENSSL_LIB_DIR% -DHZ_COMPILE_WITH_SSL=%HZ_COMPILE_WITH_SSL% -DPYTHON_INCLUDE_DIR=C:\Python27\include -DPYTHON_LIBRARY=%PYTHON_LIBRARY_PATH%
@@ -102,9 +106,9 @@ exit /b 1
 echo "Starting the client test now."
 
 set PYTHONHOME=C:\Python27
-set PYTHONPATH=C:\Python-2.7.14\PCbuild
+set PYTHONPATH=%PYTHON_LIB_DIR%
 SET PATH=%BUILD_DIR%\%HZ_BUILD_TYPE%;%PATH%
-SET PATH=C:\Python27\libs;%PATH%
+SET PATH=%PYTHON_LIB_DIR%;%PATH%
 
 %BUILD_DIR%\hazelcast\test\src\%HZ_BUILD_TYPE%\%EXECUTABLE_NAME% --gtest_output="xml:CPP_Client_Test_Report.xml"
 set result=%errorlevel%
