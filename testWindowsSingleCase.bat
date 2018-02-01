@@ -27,7 +27,7 @@ if %HZ_BIT_VERSION% == 32 (
     set SOLUTIONTYPE="Visual Studio 12 Win64"
     @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
     @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
-    set PYTHON_LIB_DIR=C:\Python-2.7.14
+    set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild\amd64
 )
 
 if %COMPILE_WITHOUT_SSL% == "COMPILE_WITHOUT_SSL" (
