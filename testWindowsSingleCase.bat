@@ -71,7 +71,7 @@ call scripts/start-rc.bat || (
     exit /b 1
 )
 
-SET DEFAULT_TIMEOUT=180
+SET DEFAULT_TIMEOUT=300
 SET SERVER_PORT=9701
 
 SET timeout=%DEFAULT_TIMEOUT%

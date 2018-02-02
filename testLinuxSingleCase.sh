@@ -80,7 +80,7 @@ rcPid=$!
 
 echo "Spawned remote controller with pid ${rcPid}"
 
-DEFAULT_TIMEOUT=180 #seconds
+DEFAULT_TIMEOUT=300 #seconds
 SERVER_PORT=9701
 
 timeout=${DEFAULT_TIMEOUT}
