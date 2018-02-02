@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/SocketInterceptor.h"
 #include "hazelcast/client/Socket.h"
-#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
@@ -44,7 +49,8 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
-                HazelcastServer instance(*g_srvFactory, true);
+                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServer instance(sslFactory);
                 std::auto_ptr<ClientConfig> config = getConfig();
                 util::CountDownLatch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);

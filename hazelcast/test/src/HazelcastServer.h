@@ -21,24 +21,23 @@
 //  Copyright (c) 2013 Sancar. All rights reserved.
 //
 
-#ifndef __hazelcast__hazelcastInstance__
-#define __hazelcast__hazelcastInstance__
+#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
+#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
-#include "hazelcast/util/HazelcastDll.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HazelcastServerFactory;
-
             class HazelcastServer {
             public:
-                static const int DEFAULT_RETRY_COUNT = 3;
 
-                HazelcastServer(HazelcastServerFactory &);
-
-                HazelcastServer(HazelcastServerFactory& factory, bool useSSL);
+                HazelcastServer(HazelcastServerFactory &factory);
 
                 /**
                  * @returns true if the server were not started before and it is now started successfully
@@ -49,16 +48,16 @@ namespace hazelcast {
 
                 ~HazelcastServer();
 
-            private:
+                bool setAttributes(int memberStartOrder);
 
+            private:
                 HazelcastServerFactory & factory;
-                int id;
-                bool isShutDown;
-                bool useSSL;
+                bool isStarted;
+                HazelcastServerFactory::MemberInfo member;
             };
         }
     }
 }
 
-#endif /* defined(__hazelcast__hazelcastInstance__) */
+#endif /* defined(HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_) */
 

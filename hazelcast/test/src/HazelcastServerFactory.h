@@ -17,16 +17,25 @@
 // Created by sancar koyunlu on 8/26/13.
 
 
-#ifndef HAZELCAST_HazelcastServerFactory
-#define HAZELCAST_HazelcastServerFactory
+#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
+#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
-#include <memory>
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * This include is needed due to the Python.h include so that we do not see the linkage error:
+ * unresolved external symbol __imp__invalid_parameter_noinfo_noreturn
+ * It should be before the Python.h include
+ */
+#include <crtdefs.h>
+#endif
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/connection/OutputSocketStream.h"
-#include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include <Python.h>
+
+#include <boost/shared_ptr.hpp>
+
+#include <ostream>
+
+using namespace std;
 
 namespace hazelcast {
     namespace util {
@@ -35,46 +44,49 @@ namespace hazelcast {
     namespace client {
         namespace test {
 
-            class HazelcastServer;
-
             class HazelcastServerFactory {
-                friend class HazelcastServer;
-
-                enum {
-                    OK = 5678,
-                    FAIL = -1,
-                    END = 1,
-                    START = 2,
-                    SHUTDOWN = 3,
-                    SHUTDOWN_ALL = 4,
-                    START_SSL = 5
-                };
             public:
-                HazelcastServerFactory(const char* hostAddress);
+                class MemberInfo {
+                public:
+                    MemberInfo();
 
-                const std::string& getServerAddress() const;
+                    MemberInfo(const string &uuid, const string &ip, int port);
 
-                void shutdownAll();
+                    friend ostream &operator<<(ostream &os, const MemberInfo &info);
 
-                int getInstanceId(int retryNumber = 0, bool useSSL = false);
+                    const string &getUuid() const;
+
+                private:
+                    std::string uuid;
+                    std::string ip;
+                    int port;
+                };
+
+                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
+
+                static const std::string& getServerAddress();
+
+                MemberInfo startServer();
+
+                bool setAttributes(int memberStartOrder);
+
+                bool shutdownServer(const MemberInfo &member);
 
                 ~HazelcastServerFactory();
 
+                static void init(const std::string &server);
+
             private:
-                void checkConnection();
-
-                Address address;
-                internal::socket::TcpSocket socket;
-                connection::OutputSocketStream outputSocketStream;
-                connection::InputSocketStream inputSocketStream;
                 util::ILogger &logger;
-                bool connected;
+                static std::string serverAddress;
+                static PyObject *rcObject;
+                std::string clusterId;
 
-                void shutdownInstance(int id);
+                std::string readFromXmlFile(const std::string &xmlFilePath);
             };
         }
     }
 }
 
-#endif //HAZELCAST_HazelcastServerFactory
+#endif //HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 

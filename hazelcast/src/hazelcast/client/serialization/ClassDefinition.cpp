@@ -52,7 +52,7 @@ namespace hazelcast {
                     return fieldDefinitionsMap.find(name)->second;
                 }
                 char msg[200];
-                util::snprintf(msg, 200, "Field (%s) does not exist", NULL != name ? name : "");
+                util::hz_snprintf(msg, 200, "Field (%s) does not exist", NULL != name ? name : "");
                 throw exception::IllegalArgumentException("ClassDefinition::getField", msg);
             }
 

@@ -86,7 +86,9 @@ namespace hazelcast {
                         }
                         default:
                             char buf[300];
-                            util::snprintf(buf, 300, "[ClientAddDistributedObjectListenerCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.", clientMessage->getMessageType());
+                            util::hz_snprintf(buf, 300,
+                                              "[ClientAddDistributedObjectListenerCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.",
+                                              clientMessage->getMessageType());
                             util::ILogger::getLogger().warning(buf);
                     }
                 }

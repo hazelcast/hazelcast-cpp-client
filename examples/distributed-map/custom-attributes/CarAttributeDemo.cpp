@@ -37,9 +37,9 @@ public:
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
         char buf[50];
-        hazelcast::util::snprintf(buf, 50, "%d", breakHorsePower);
+        hazelcast::util::hz_snprintf(buf, 50, "%d", breakHorsePower);
         attributes["bhp"] = buf;
-        hazelcast::util::snprintf(buf, 50, "%d", mileage);
+        hazelcast::util::hz_snprintf(buf, 50, "%d", mileage);
         attributes["mileage"] = buf;
     }
 

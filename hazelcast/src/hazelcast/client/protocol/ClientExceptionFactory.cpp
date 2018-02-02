@@ -143,7 +143,7 @@ namespace hazelcast {
                 std::map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(errorCode);
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
-                    util::snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
+                    util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
                     throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg, ILLEGAL_STATE, -1);
                 }
 

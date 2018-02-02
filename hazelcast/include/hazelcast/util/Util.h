@@ -48,7 +48,7 @@ namespace hazelcast {
         /**
          * Portable snprintf implementation
          */
-        HAZELCAST_API int snprintf(char *str, size_t len, const char *format, ...);
+        HAZELCAST_API int hz_snprintf(char *str, size_t len, const char *format, ...);
 
         /**
          * // converts the date string to 20160420. Removes '-' and '"' characters if exist

@@ -16,13 +16,18 @@
 //
 // Created by sancar koyunlu on 9/13/13.
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/mixedtype/IList.h"
 
+#include "hazelcast/client/mixedtype/IList.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
 
 using namespace hazelcast::client::mixedtype;
 
@@ -55,7 +60,8 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    instance = new HazelcastServer(*g_srvFactory, true);
+                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
                     #endif
@@ -79,6 +85,7 @@ namespace hazelcast {
                     delete client;
                     delete clientConfig;
                     delete instance;
+                    delete sslFactory;
 
                     list = NULL;
                     client = NULL;
@@ -90,12 +97,14 @@ namespace hazelcast {
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::IList *list;
+                static HazelcastServerFactory *sslFactory;
             };
 
             HazelcastServer *MixedListTest::instance = NULL;
             ClientConfig *MixedListTest::clientConfig = NULL;
             HazelcastClient *MixedListTest::client = NULL;
             mixedtype::IList *MixedListTest::list = NULL;
+            HazelcastServerFactory *MixedListTest::sslFactory = NULL;
 
             TEST_F(MixedListTest, testAddAll) {
                 std::vector<std::string> l;
@@ -117,7 +126,7 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add<std::string>("item2"));
                 list->add<std::string>(0, "item3");
                 ASSERT_EQ(3, list->size());
-                std::auto_ptr<std::string> temp = list->set<std::string>(2, "item4").get<std::string>();
+                std::auto_ptr<std::string> temp = list->IList::set<std::string>(2, "item4").get<std::string>();
                 ASSERT_EQ("item2", *temp);
 
                 ASSERT_EQ(3, list->size());

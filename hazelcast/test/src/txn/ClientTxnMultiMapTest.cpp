@@ -15,20 +15,34 @@
  */
 //
 // Created by sancar koyunlu on 9/18/13.
-
-
-
-#include "ClientTxnMultiMapTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
+#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
+            class ClientTxnMultiMapTest : public ClientTestSupport {
+            public:
+                ClientTxnMultiMapTest();
+
+                ~ClientTxnMultiMapTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+            };
+
             ClientTxnMultiMapTest::ClientTxnMultiMapTest()
             : instance(*g_srvFactory)
             , client(getNewClient()) {

@@ -13,20 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 21/04/14.
-//
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
+#include "HazelcastServer.h"
+#include "ClientTestSupport.h"
+
+#include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastServerFactory.h"
-#include "issues/IssueTest.h"
-#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class IssueTest : public ClientTestSupport {
+
+            public:
+                IssueTest();
+
+                ~IssueTest();
+            protected:
+                class Issue864MapListener : public hazelcast::client::EntryAdapter<int, int> {
+                public:
+                    Issue864MapListener(util::CountDownLatch &l);
+
+                    virtual void entryAdded(const EntryEvent<int, int> &event);
+
+                    virtual void entryUpdated(const EntryEvent<int, int> &event);
+
+                private:
+                    util::CountDownLatch &latch;
+                };
+
+                util::CountDownLatch latch;
+                Issue864MapListener listener;
+            };
 
             IssueTest::IssueTest()
             : latch(2), listener(latch) {

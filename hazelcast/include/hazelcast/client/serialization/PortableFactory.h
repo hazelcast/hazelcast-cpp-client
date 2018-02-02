@@ -36,6 +36,9 @@ namespace hazelcast {
              */
             class HAZELCAST_API PortableFactory {
             public:
+                virtual ~PortableFactory() {
+                }
+
                 /**
                  * Creates a Portable instance using given class ID
                  * @param classId portable class ID

@@ -72,7 +72,7 @@ namespace hazelcast {
                 isOwner = owner;
 
                 setFrameLength(size);
-                setVersion(VERSION);
+                setVersion(PROTOCOL_VERSION);
                 setFlags(BEGIN_AND_END_FLAGS);
                 setCorrelationId(0);
                 setPartitionId(-1);

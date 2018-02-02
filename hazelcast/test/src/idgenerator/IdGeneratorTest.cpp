@@ -13,21 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-//  IdGeneratorTest.h
-//  hazelcast
-//
-//  Created by Sancar on 02.08.2013.
-//  Copyright (c) 2013 Sancar. All rights reserved.
-//
 
-#include "idgenerator/IdGeneratorTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "HazelcastServer.h"
+#include "ClientTestSupport.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class IdGeneratorTest : public ClientTestSupport {
+            public:
+                IdGeneratorTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<IdGenerator> generator;
+
+            };
+
             IdGeneratorTest::IdGeneratorTest()
             : instance(*g_srvFactory)
             , client(getNewClient())

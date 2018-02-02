@@ -2,10 +2,12 @@
 
 function cleanup {
     echo "cleanup is being performed."
-    if [ "x${serverPid}" != "x" ]
+    if [ "x${rcPid}" != "x" ]
     then
-        echo "Killing server with pid ${serverPid}"
-        kill -9 ${serverPid}
+        echo "Killing client with pid ${testPid}"
+        kill -9 ${testPid}
+        echo "Killing start-rc.sh with pid ${rcPid}"
+        kill ${rcPid}
     fi
     exit
 }
@@ -66,24 +68,20 @@ then
 fi
 
 cd ..
-cd java
 
-echo "Compiling the java test server"
-mvn -U -q clean install
-if [ $? -ne 0 ]
-then
-    echo "Server compilation and install failed!!!"
+pip install --user -r hazelcast/test/test_requirements.txt
+if [ $? -ne 0 ]; then
+    echo "Failed to install python hazelcast-remote-controller library."
     exit 1
 fi
 
-echo "Starting the java test server"
-mvn exec:java -Dhazelcast.phone.home.enabled=false -Dexec.mainClass="CppClientListener" &
-serverPid=$!
+scripts/start-rc.sh &
+rcPid=$!
 
-echo "Spawned server with pid ${serverPid}"
+echo "Spawned remote controller with pid ${rcPid}"
 
-DEFAULT_TIMEOUT=30 #seconds
-SERVER_PORT=6543
+DEFAULT_TIMEOUT=300 #seconds
+SERVER_PORT=9701
 
 timeout=${DEFAULT_TIMEOUT}
 
@@ -91,7 +89,7 @@ echo "Waiting for the test server to start"
 
 while [ ${timeout} -gt 0 ]
 do
-    netstat -an  | grep ":${SERVER_PORT} "
+    netstat -an  | grep "${SERVER_PORT} "
     if [ $? -eq 0 ]; then
         break
     fi
@@ -108,8 +106,6 @@ if [ ${timeout} -eq 0 ]; then
 else
     echo "Server started in $((DEFAULT_TIMEOUT - timeout)) seconds"
 fi
- 
-cd ..
 
 echo "Starting the client test now."
 ${BUILD_DIR}/hazelcast/test/src/${EXECUTABLE_NAME} --gtest_output="xml:CPP_Client_Test_Report.xml" &

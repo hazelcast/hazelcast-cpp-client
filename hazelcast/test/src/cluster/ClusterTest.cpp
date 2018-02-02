@@ -16,9 +16,13 @@
 //
 // Created by sancar koyunlu on 26/02/14.
 //
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServer.h"
 
 #include <gtest/gtest.h>
-
 #include "ClientTestSupportBase.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
@@ -28,26 +32,27 @@
 #include "hazelcast/client/MemberAttributeEvent.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastServer.h"
 #include "hazelcast/client/LifecycleListener.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClusterTest : public ClientTestSupportBase, public ::testing::TestWithParam<ClientConfig *> {
-            protected:
-                virtual void TearDown() {
-                    g_srvFactory->shutdownAll();
-                }
+            public:
+                ClusterTest() : sslFactory(getSslFilePath()) {}
 
+            protected:
                 std::auto_ptr<HazelcastServer> startMember() {
                     ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory, true));
+                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
                     }
 
                     return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                 }
+
+            private:
+                HazelcastServerFactory sslFactory;
             };
 
             class SSLClientConfig : public ClientConfig {
@@ -196,6 +201,7 @@ namespace hazelcast {
                 cluster.addMembershipListener(&sampleListener);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
+                ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
@@ -231,6 +237,7 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(clientConfig);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
+                ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));

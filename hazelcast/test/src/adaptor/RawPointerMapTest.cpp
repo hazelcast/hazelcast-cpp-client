@@ -15,6 +15,11 @@
  */
 //
 // Created by sancar koyunlu on 8/27/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/query/OrPredicate.h"
 #include "hazelcast/client/query/RegexPredicate.h"
@@ -40,7 +45,6 @@
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/ClientConfig.h"
 
-#include "HazelcastServerFactory.h"
 #include "serialization/Employee.h"
 #include "TestHelperFunctions.h"
 #include "ClientTestSupport.h"
@@ -108,8 +112,9 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         #ifdef HZ_BUILD_WITH_SSL
-                        instance = new HazelcastServer(*g_srvFactory, true);
-                        instance2 = new HazelcastServer(*g_srvFactory, true);
+                        sslFactory = new HazelcastServerFactory(getSslFilePath());
+                        instance = new HazelcastServer(*sslFactory);
+                        instance2 = new HazelcastServer(*sslFactory);
                         #else
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
@@ -142,6 +147,7 @@ namespace hazelcast {
                         delete clientConfig;
                         delete instance2;
                         delete instance;
+                        delete sslFactory;
 
                         intMap = NULL;
                         legacyIntMap = NULL;
@@ -175,6 +181,7 @@ namespace hazelcast {
                     static client::adaptor::RawPointerMap<int, Employee> *employees;
                     static IMap<int, int> *legacyIntMap;
                     static client::adaptor::RawPointerMap<int, int> *intMap;
+                    static HazelcastServerFactory *sslFactory;
                 };
 
                 HazelcastServer *RawPointerMapTest::instance = NULL;
@@ -187,6 +194,7 @@ namespace hazelcast {
                 client::adaptor::RawPointerMap<int, Employee> *RawPointerMapTest::employees = NULL;
                 IMap<int, int> *RawPointerMapTest::legacyIntMap = NULL;
                 client::adaptor::RawPointerMap<int, int> *RawPointerMapTest::intMap = NULL;
+                HazelcastServerFactory *RawPointerMapTest::sslFactory = NULL;
 
                 void tryPutThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
@@ -1136,7 +1144,7 @@ namespace hazelcast {
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                     values = intMap->values(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) values->size());
                     actualValues.clear();
@@ -1653,7 +1661,7 @@ namespace hazelcast {
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                     values = intMap->keySet(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) values->size());
                     actualValues.clear();
@@ -2123,7 +2131,7 @@ namespace hazelcast {
                     // SqlPredicate
                     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                     char sql[100];
-                    util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                    util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                     entries = intMap->entrySet(query::SqlPredicate(sql));
                     ASSERT_EQ(4, (int) entries->size());
                     entries->sort(query::ENTRY);
@@ -3388,7 +3396,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
                     std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
-                            processor, query::InstanceOfPredicate("Employee"));
+                            processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                     ASSERT_EQ(3, (int) result->size());
                 }

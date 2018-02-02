@@ -23,52 +23,58 @@
 
 #include "HazelcastServer.h"
 #include "HazelcastServerFactory.h"
-#include <iostream>
+#include <sstream>
+
+#include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/exception/IllegalStateException.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
-            :factory(factory)
-            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT))
-            , isShutDown(false), useSSL(false) {
-            }
-
-            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory, bool useSSL)
-            :factory(factory)
-            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL))
-            , isShutDown(false), useSSL(useSSL) {
+            :factory(factory), isStarted(false) {
+                start();
             }
 
             bool HazelcastServer::start() {
-                bool result = false;
-
-                if (isShutDown) {
-                    id = factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL);
-                    isShutDown = false;
-                    result = true;
+                if (isStarted) {
+                    return true;
                 }
 
-                return result;
+                try {
+                    member = factory.startServer();
+                    isStarted = true;
+                    return true;
+                } catch (exception::IllegalStateException &illegalStateException) {
+                    std::ostringstream out;
+                    out << "Could not start new member!!! " << illegalStateException.what();
+                    util::ILogger::getLogger().severe(out.str());
+                    return false;
+                }
             }
 
             bool HazelcastServer::shutdown() {
-                bool result = false;
-                try{
-                    if (!isShutDown) {
-                        factory.shutdownInstance(id);
-                        isShutDown = true;
-                        result = true;
-                    }
-                }catch(std::exception& e){
-                    isShutDown = true;
-                    std::cerr << e.what() << std::endl;
+                if (!isStarted) {
+                    return true;
                 }
-                return result;
+
+                if (!factory.shutdownServer(member)) {
+                    return false;
+                }
+
+                isStarted = false;
+                return true;
             }
 
             HazelcastServer::~HazelcastServer() {
                 shutdown();
+            }
+
+            bool HazelcastServer::setAttributes(int memberStartOrder) {
+                if (!isStarted) {
+                    return false;
+                }
+                return factory.setAttributes(memberStartOrder);
             }
 
         }

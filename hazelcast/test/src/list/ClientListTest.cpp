@@ -15,14 +15,18 @@
  */
 //
 // Created by sancar koyunlu on 9/13/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
 
+#include "hazelcast/client/ClientConfig.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/IList.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +40,8 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    instance = new HazelcastServer(*g_srvFactory, true);
+                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
                     #endif
@@ -60,6 +65,7 @@ namespace hazelcast {
                     delete client;
                     delete clientConfig;
                     delete instance;
+                    delete sslFactory;
 
                     list = NULL;
                     client = NULL;
@@ -71,12 +77,14 @@ namespace hazelcast {
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static IList<std::string> *list;
+                static HazelcastServerFactory *sslFactory;
             };
 
             HazelcastServer *ClientListTest::instance = NULL;
             ClientConfig *ClientListTest::clientConfig = NULL;
             HazelcastClient *ClientListTest::client = NULL;
             IList<std::string> *ClientListTest::list = NULL;
+            HazelcastServerFactory *ClientListTest::sslFactory = NULL;
 
             TEST_F(ClientListTest, testAddAll) {
                 std::vector<std::string> l;

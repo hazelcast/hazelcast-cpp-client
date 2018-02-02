@@ -16,6 +16,19 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "HazelcastServer.h"
+#include "serialization/Employee.h"
+#include "TestHelperFunctions.h"
+#include "ClientTestSupport.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
 #include "hazelcast/client/query/OrPredicate.h"
 #include "hazelcast/client/query/RegexPredicate.h"
 #include "hazelcast/client/query/PagingPredicate.h"
@@ -36,15 +49,8 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/EntryEvent.h"
 
-#include "HazelcastServerFactory.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
-#include "HazelcastServer.h"
+#include "hazelcast/client/EntryEvent.h"
 
 namespace hazelcast {
     namespace client {
@@ -1110,7 +1116,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 values = ClientMapTest<TypeParam>::intMap->values(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -1519,7 +1525,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 keys = ClientMapTest<TypeParam>::intMap->keySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -1929,7 +1935,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 entries = ClientMapTest<TypeParam>::intMap->entrySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -3080,7 +3086,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
-                        processor, query::InstanceOfPredicate("Employee"));
+                        processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_TRUE((result.end() != result.find(3)));

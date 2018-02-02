@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-#include <string>
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
+#include "ClientTestSupport.h"
+
+#include <string>
 #include <HazelcastServer.h>
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
-#include "hazelcast/client/mixedtype/MultiMap.h"
 
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
+#include "hazelcast/client/mixedtype/MultiMap.h"
 
 using namespace hazelcast::client::mixedtype;
 

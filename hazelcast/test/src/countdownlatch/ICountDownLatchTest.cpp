@@ -15,15 +15,31 @@
  */
 //
 // Created by sancar koyunlu on 9/5/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include <HazelcastServer.h>
 
-
-
-#include "ICountDownLatchTest.h"
+#include <ClientTestSupport.h>
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ICountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class ICountDownLatchTest : public ClientTestSupport {
+            public:
+                ICountDownLatchTest();
+
+                ~ICountDownLatchTest();
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<ICountDownLatch> l;
+            };
+
             ICountDownLatchTest::ICountDownLatchTest()
             : instance(*g_srvFactory)
             , client(getNewClient())

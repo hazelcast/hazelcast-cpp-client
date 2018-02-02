@@ -42,11 +42,14 @@ public:
     }
 
     void SetUp() {
-        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory(serverAddress);
+        Py_Initialize();
+        HazelcastServerFactory::init(serverAddress);
+        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast.xml");
     }
 
     void TearDown() {
         delete hazelcast::client::test::g_srvFactory;
+        Py_Finalize();
     }
 
 private :
@@ -54,18 +57,9 @@ private :
 };
 
 int main(int argc, char** argv) {
-    const char* address;
-
     testing::InitGoogleTest(&argc, argv);
 
-    if(argc == 2){
-        address = argv[1];
-    } else {
-        address = "127.0.0.1";
-    }
-    std::cout << "Server address : "  << address << std::endl;
-
-    ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment(address));
+    ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment("127.0.0.1"));
 
     return RUN_ALL_TESTS();
 

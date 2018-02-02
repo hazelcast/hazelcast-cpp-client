@@ -356,7 +356,7 @@ namespace hazelcast {
 
                         boost::shared_ptr<std::string> getSharedValue(int value) const {
                             char buf[30];
-                            util::snprintf(buf, 30, "Record-%ld", value);
+                            util::hz_snprintf(buf, 30, "Record-%ld", value);
                             return boost::shared_ptr<std::string>(new std::string(buf));
                         }
 

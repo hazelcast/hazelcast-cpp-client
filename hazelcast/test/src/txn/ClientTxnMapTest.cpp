@@ -15,21 +15,34 @@
  */
 //
 // Created by sancar koyunlu on 9/18/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
-
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 #include "hazelcast/client/query/SqlPredicate.h"
-#include "ClientTxnMapTest.h"
-#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/Employee.h"
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
+            class ClientTxnMapTest : public ClientTestSupport {
+            public:
+                ClientTxnMapTest();
+
+                ~ClientTxnMapTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                std::auto_ptr<HazelcastClient> client;
+            };
+
             ClientTxnMapTest::ClientTxnMapTest()
             : instance(*g_srvFactory)
             , client(getNewClient()) {

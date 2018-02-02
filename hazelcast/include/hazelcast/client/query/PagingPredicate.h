@@ -342,8 +342,8 @@ namespace hazelcast {
                         anchorList.push_back(std::pair<size_t, std::pair<K *, V *> >(page, anchorEntry));
                     } else {
                         char msg[200];
-                        util::snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
-                                       anchorCount);
+                        util::hz_snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
+                                          anchorCount);
                         throw exception::IllegalArgumentException("PagingPredicate::setAnchor", msg);
                     }
                 }

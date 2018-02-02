@@ -42,7 +42,8 @@ namespace hazelcast {
                     }
                     if (fieldCount != cd->getFieldCount()) {
                         char msg[50];
-                        util::snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
+                        util::hz_snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount,
+                                          cd->getFieldCount());
                         throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
                     }
                     this->offset = input.position();
@@ -182,12 +183,14 @@ namespace hazelcast {
                 void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
                     if (factoryId != fd.getFactoryId()) {
                         char msg[100];
-                        util::snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
+                        util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(),
+                                          factoryId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                     if (classId != fd.getClassId()) {
                         char msg[100];
-                        util::snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
+                        util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(),
+                                          classId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                 }

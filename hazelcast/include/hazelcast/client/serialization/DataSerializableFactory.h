@@ -36,6 +36,9 @@ namespace hazelcast {
              */
             class HAZELCAST_API DataSerializableFactory {
             public:
+                virtual ~DataSerializableFactory() {
+                }
+
                 /**
                  * Creates an IdentifiedDataSerializable instance using given class ID
                  *
