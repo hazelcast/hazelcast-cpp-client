@@ -57,4 +57,4 @@ echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"
 
 echo "Starting hazelcast-remote-controller"
-start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -cp %CLASSPATH% com.hazelcast.remotecontroller.Main"
+start "hazelcast-remote-controller" /MIN cmd /c "java -Dhazelcast.enterprise.license.key=%HAZELCAST_ENTERPRISE_KEY% -Dhazelcast.phone.home.enabled=false -cp %CLASSPATH% com.hazelcast.remotecontroller.Main"
