@@ -1,4 +1,4 @@
-We use embedded pythin code to utilize the python hazelcast-remote-controller client. It is used to start and stop members and create stop clusters. In order to make for the embedded python to work, the requirements are:
+We use embedded python code to utilize the python hazelcast-remote-controller client. It is used to start and stop members and create stop clusters. In order to make for the embedded python to work, the requirements are:
 
 - The python hazelcast-remote-controller library is installed using command pip install -r hazelcast/test/test_requirements.txt
 - Windows: At windows the python comes only with release 32-bit libraries. But we need debug libraries and 64-bit versions. Therefore, we had to compile the python at Windows and point to this directory while linking and running the test executable. The libraries are:

@@ -61,7 +61,7 @@ MSBuild.exe HazelcastClient.sln /m /p:Flavor=%HZ_BUILD_TYPE%;Configuration=%HZ_B
 popd
 
 
-pip install -r hazelcast/test/test_requirements.txt || (
+pip install --user -r hazelcast/test/test_requirements.txt || (
     echo "Failed to install python hazelcast-remote-controller library."
     exit /b 1
 )
@@ -71,7 +71,7 @@ call scripts/start-rc.bat || (
     exit /b 1
 )
 
-SET DEFAULT_TIMEOUT=30
+SET DEFAULT_TIMEOUT=180
 SET SERVER_PORT=9701
 
 SET timeout=%DEFAULT_TIMEOUT%
