@@ -34,20 +34,6 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                struct HAZELCAST_API ConnectHandler
-                {
-                    ConnectHandler(asio::error_code &errorCode) : ec(errorCode) {}
-
-                    template <typename Iterator>
-                    void operator()(
-                            const asio::error_code& error,
-                            Iterator iterator) {
-                        ec = error;
-                    }
-
-                    asio::error_code &ec;
-                };
-
                 SSLSocket::SSLSocket(const client::Address &address, asio::io_service &ioSrv,
                                      asio::ssl::context &context)
                         : remoteEndpoint(address), ioService(ioSrv), sslContext(context),
@@ -58,6 +44,10 @@ namespace hazelcast {
 
                 SSLSocket::~SSLSocket() {
                     close();
+                }
+
+                void SSLSocket::handleConnect(const asio::error_code &error) {
+                    errorCode = error;
                 }
 
                 void SSLSocket::checkDeadline(const asio::error_code &ec)
@@ -95,25 +85,25 @@ namespace hazelcast {
 
                         deadline.expires_from_now(boost::posix_time::milliseconds(timeoutInMillis));
 
-                        asio::error_code ec;
-                        checkDeadline(ec);
+                        checkDeadline(errorCode);
 
                         // Set up the variable that receives the result of the asynchronous
                         // operation. The error code is set to would_block to signal that the
                         // operation is incomplete. Asio guarantees that its asynchronous
                         // operations will never fail with would_block, so any other value in
-                        // ec indicates completion.
-                        ec = asio::error::would_block;
+                        // errorCode indicates completion.
+                        errorCode = asio::error::would_block;
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
-                        ConnectHandler handler(ec);
-                        asio::async_connect(socket->lowest_layer(), iterator, handler);
+                        asio::async_connect(socket->lowest_layer(), iterator, boost::bind(&SSLSocket::handleConnect,
+                                                                                          this, _1));
 
                         // Block until the asynchronous operation has completed.
+                        asio::error_code ioRunErrorCode;
                         do {
-                            ioService.run_one(ec);
-                        } while (ec == asio::error::would_block);
+                            ioService.run_one(ioRunErrorCode);
+                        } while (!ioRunErrorCode && errorCode == asio::error::would_block);
 
                         // cancel the deadline timer
                         deadline.cancel();
@@ -130,8 +120,10 @@ namespace hazelcast {
                         // though the connect operation notionally succeeded. Therefore we must
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
-                        if (ec) {
-                            return ec.value();
+                        if (ioRunErrorCode)
+
+                        if (errorCode) {
+                            return errorCode.value();
                         }
 
                         if (!socket->lowest_layer().is_open()) {
