@@ -126,6 +126,8 @@ namespace hazelcast {
                      */
                     int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
 
+                    void handleConnect(const asio::error_code &error);
+
                     void checkDeadline(const asio::error_code &ec);
 
                     client::Address remoteEndpoint;
@@ -134,6 +136,7 @@ namespace hazelcast {
                     asio::ssl::context &sslContext;
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                     asio::deadline_timer deadline;
+                    asio::error_code errorCode;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);
