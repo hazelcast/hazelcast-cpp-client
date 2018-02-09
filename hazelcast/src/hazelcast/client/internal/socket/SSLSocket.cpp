@@ -115,17 +115,19 @@ namespace hazelcast {
                         // into the stopped state following the loop
                         ioService.restart();
 
-                        // Determine whether a connection was successfully established. The
-                        // deadline actor may have had a chance to run and close our socket, even
-                        // though the connect operation notionally succeeded. Therefore we must
-                        // check whether the socket is still open before deciding if we succeeded
-                        // or failed.
-                        if (ioRunErrorCode)
+                        if (ioRunErrorCode) {
+                            return ioRunErrorCode.value();
+                        }
 
                         if (errorCode) {
                             return errorCode.value();
                         }
 
+                        // Determine whether a connection was successfully established. The
+                        // deadline actor may have had a chance to run and close our socket, even
+                        // though the connect operation notionally succeeded. Therefore we must
+                        // check whether the socket is still open before deciding if we succeeded
+                        // or failed.
                         if (!socket->lowest_layer().is_open()) {
                             return asio::error::operation_aborted;
                         }
