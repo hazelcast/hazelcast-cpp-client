@@ -75,6 +75,7 @@ namespace hazelcast {
                 PyTuple_SetItem(pArgs, 0, PyString_FromString(serverAddress.c_str()));
                 PyTuple_SetItem(pArgs, 1, PyInt_FromLong(portNum));
                 rcObject = PyObject_CallObject(rcAttribute, pArgs);
+                Py_DECREF(pArgs);
                 if (rcObject == NULL) {
                     Py_DECREF(moduleObj);
                     std::ostringstream out;
