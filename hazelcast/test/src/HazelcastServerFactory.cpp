@@ -41,41 +41,46 @@ namespace hazelcast {
             PyObject *HazelcastServerFactory::rcObject;
 
             void HazelcastServerFactory::init(const std::string &server) {
-                PyObject *pName = PyString_FromString("hzrc.client");
-                PyObject *pModule = PyImport_Import(pName);
-                Py_DECREF(pName);
+                const char *moduleName = "hzrc.client";
+                PyObject *moduleNameObj = PyString_FromString(moduleName);
+                PyObject *moduleObj = PyImport_Import(moduleNameObj);
+                Py_DECREF(moduleNameObj);
 
-                if (pModule != NULL) {
-                    PyObject *rcAttribute = PyObject_GetAttrString(pModule, "HzRemoteController");
-                    /* rcAttribute is a new reference */
-
-                    serverAddress = server;
-                    long portNum = 9701;
-                    if (rcAttribute && PyCallable_Check(rcAttribute)) {
-                        PyObject *pArgs = PyTuple_New(2);
-                        PyObject *ip = PyString_FromString(serverAddress.c_str());
-                        PyTuple_SetItem(pArgs, 0, ip);
-                        PyObject *port = PyInt_FromLong(portNum);
-                        PyTuple_SetItem(pArgs, 1, port);
-                        rcObject = PyObject_CallObject(rcAttribute, pArgs);
-                        Py_DECREF(ip);
-                        Py_DECREF(port);
-                        if (rcObject == NULL) {
-                            std::ostringstream out;
-                            out << "Failed to connect to remote controller at " << serverAddress << ":" << portNum;
-                            throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
-                        }
-                    } else {
-                        if (PyErr_Occurred())
-                            PyErr_Print();
-                        fprintf(stderr, "Cannot find function \"HzRemoteController\"\n");
-                    }
-                    Py_XDECREF(rcAttribute);
-                    Py_DECREF(pModule);
+                if (NULL == moduleObj) {
+                    std::ostringstream out;
+                    out << "Failed to load Python module " << moduleName;
+                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
                 }
-                else {
-                    PyErr_Print();
-                    fprintf(stderr, "Failed to load \"hzrc.client\"\n");
+
+                PyObject *rcAttribute = PyObject_GetAttrString(moduleObj, "HzRemoteController");
+
+                if (NULL == rcAttribute) {
+                    Py_DECREF(moduleObj);
+                    std::ostringstream out;
+                    out << "The HzRemoteController class could not be found in Python module " << moduleName;
+                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
+                }
+
+                if (!PyCallable_Check(rcAttribute)) {
+                    Py_DECREF(moduleObj);
+                    std::ostringstream out;
+                    out << "The HzRemoteController class is not callable in Python module " << moduleName;
+                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
+                }
+
+                serverAddress = server;
+                long portNum = 9701;
+
+                PyObject *pArgs = PyTuple_New(2);
+                PyTuple_SetItem(pArgs, 0, PyString_FromString(serverAddress.c_str()));
+                PyTuple_SetItem(pArgs, 1, PyInt_FromLong(portNum));
+                rcObject = PyObject_CallObject(rcAttribute, pArgs);
+                Py_DECREF(pArgs);
+                if (rcObject == NULL) {
+                    Py_DECREF(moduleObj);
+                    std::ostringstream out;
+                    out << "Failed to connect to remote controller at " << serverAddress << ":" << portNum;
+                    throw exception::IllegalStateException("HazelcastServerFactory::init", out.str());
                 }
             }
 
@@ -113,8 +118,7 @@ namespace hazelcast {
                     logger.severe(out.str());
                 }
 
-                Py_DECREF(resultObj);
-                //Py_DECREF(rcObject);
+                Py_XDECREF(resultObj);
             }
 
             HazelcastServerFactory::MemberInfo HazelcastServerFactory::startServer() {
@@ -176,7 +180,7 @@ namespace hazelcast {
 
                 Py_DECREF(responseObj);
                 Py_DECREF(successObjAttrName);
-                Py_DECREF(isSuccessObj);
+                Py_XDECREF(isSuccessObj);
                 return result;
             }
 
@@ -186,10 +190,10 @@ namespace hazelcast {
                                                           member.getUuid().c_str());
 
                 if (resultObj == NULL || resultObj == Py_False) {
+                    Py_XDECREF(resultObj);
                     std::ostringstream out;
                     out << "Failed to shutdown the member " << member;
                     logger.severe(out.str());
-                    Py_DECREF(resultObj);
                     return false;
                 }
 
