@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
@@ -34,7 +35,6 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
-
 #endif
 
 namespace hazelcast {
@@ -141,6 +141,29 @@ namespace hazelcast {
                 }
                 return 0;
             #endif
+        }
+
+        int32_t getAvailableCoreCount() {
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            SYSTEM_INFO sysinfo;
+            GetSystemInfo(&sysinfo);
+            return sysinfo.dwNumberOfProcessors;
+            #else
+            return (int32_t) sysconf(_SC_NPROCESSORS_ONLN);
+            #endif
+        }
+
+        std::string StringUtil::timeToString(int64_t timeInMillis) {
+            boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M:%S.%f");
+            std::stringstream dateStream;
+            dateStream.imbue(std::locale(dateStream.getloc(), facet));
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            dateStream << epoch + boost::posix_time::milliseconds(timeInMillis);
+            return dateStream.str();
+        }
+
+        std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
+            return timeInMillis == 0 ? "never" : timeToString(timeInMillis);
         }
     }
 }
