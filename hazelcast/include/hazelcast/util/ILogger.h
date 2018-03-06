@@ -58,12 +58,6 @@ namespace hazelcast {
         public:
             static ILogger& getLogger();
 
-            /**
-             * @deprecated Please use setLogLevel(const client::LogLevel::Level &logLevel)
-             * @param logLevel The log level values
-             */
-            void setLogLevel(int logLevel);
-
             void setLogLevel(const client::LoggerLevel::Level &logLevel);
 
             void severe(const std::string& message);

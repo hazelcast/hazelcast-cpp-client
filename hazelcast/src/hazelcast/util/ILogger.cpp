@@ -63,10 +63,6 @@ namespace hazelcast {
             this->logLevel = logLevel;
         }
 
-        void ILogger::setLogLevel(int logLevel) {
-            this->logLevel = static_cast<client::LoggerLevel::Level>(logLevel);
-        }
-
         void ILogger::severe(const std::string& message) {
             printLog(client::LoggerLevel::SEVERE, message);
         }

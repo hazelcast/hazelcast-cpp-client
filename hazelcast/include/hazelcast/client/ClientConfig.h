@@ -280,22 +280,14 @@ namespace hazelcast {
             ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
 
             /**
-            *  enum LogLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
+            *  enum LogLevel { SEVERE, WARNING, INFO, FINEST };
             *  set INFO to see every log.
             *  set WARNING to see only possible warnings and serious errors.
             *  set SEVERE to see only serious errors
+            *  set FINEST to see all messages including debug messages.
             *
-            *  Default log level is INFO
             * @param loggerLevel The log level to be set.
-            * @return itself ClientConfig
-            */
-            ClientConfig &setLogLevel(LoggerLevel::Level loggerLevel);
-
-            /**
-             * @deprecated Please use setLogLevel(LoggerLevel::Level loggerLevel) instead.
-             *
-             * @param loggerLevel The log level to be set.
-             * @return The configured client configuration for chaining.
+            * @return The configured client configuration for chaining.
              */
             ClientConfig &setLogLevel(LogLevel loggerLevel);
 
