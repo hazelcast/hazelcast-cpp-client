@@ -231,6 +231,24 @@ namespace hazelcast {
                 ASSERT_EQ(0, util::strerror_s(error, msg, 100));
                 ASSERT_STREQ(expectedErrorString.c_str(), msg);
             }
+
+            TEST_F (ClientUtilTest, testAvailableCoreCount) {
+                ASSERT_GT(util::getAvailableCoreCount(), 0);
+            }
+            
+            TEST_F (ClientUtilTest, testStringUtilTimeToString) {
+                std::string timeString = util::StringUtil::timeToString(util::currentTimeMillis());
+                //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280300
+                ASSERT_EQ((size_t) 26, timeString.length());
+                ASSERT_EQ(timeString[0], '2');
+                ASSERT_EQ(timeString[1], '0');
+                ASSERT_EQ(timeString[4], '-');
+                ASSERT_EQ(timeString[7], '-');
+            }
+            
+            TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
+                ASSERT_EQ("never", util::StringUtil::timeToStringFriendly(0));
+            }
         }
     }
 }
