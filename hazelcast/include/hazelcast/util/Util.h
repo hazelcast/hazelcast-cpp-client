@@ -66,6 +66,31 @@ namespace hazelcast {
          */
         HAZELCAST_API int
         strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix = (const char *) NULL);
+
+        int32_t HAZELCAST_API getAvailableCoreCount();
+
+        class HAZELCAST_API StringUtil {
+        public:
+            /**
+             * Returns a String representation of the time.
+             * <p>
+             *
+             * @param timeMillis time in millis
+             * @return the the formatted time string. Format is "%Y-%m-%d %H:%M:%S.%f".
+             */
+            static std::string timeToString(int64_t timeInMillis);
+
+            /**
+             * Returns a String representation of the time. If time is 0, then 'never' is returned.
+             * <p>
+             * This method is not particularly efficient since it generates a ton of litter.
+             *
+             * @param timeMillis time in millis
+             * @return the formatted time string or "never" if timeInMillis is 0. Format is "%Y-%m-%d %H:%M:%S.%f".
+             */
+            static std::string timeToStringFriendly(int64_t timeInMillis);
+
+        };
     }
 }
 
