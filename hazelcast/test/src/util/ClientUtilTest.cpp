@@ -239,7 +239,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = util::StringUtil::timeToString(util::currentTimeMillis());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280300
-                ASSERT_EQ(26, timeString.length());
+                ASSERT_EQ((size_t) 26, timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');
                 ASSERT_EQ(timeString[4], '-');
