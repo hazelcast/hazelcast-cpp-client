@@ -149,11 +149,6 @@ namespace hazelcast {
                 printMessagePrefix(level);
                 std::cout << message;
             }
-            // Due to the problem faced in Linux environment which is described
-            // in https://gcc.gnu.org/ml/gcc/2003-12/msg00743.html, we could not use
-            // std::cout here. outstream flush() function in stdlib 3.4.4 does not handle pthread_cancel call
-            // appropriately.
-            std::flush(std::cout);
         }
 
         LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
