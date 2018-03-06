@@ -37,14 +37,10 @@ namespace hazelcast {
         class HAZELCAST_API LoggerLevel {
         public:
             enum Level {
-                SEVERE = 3, WARNING = 2, INFO = 1, FINEST = 0
+                SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
             };
 
-            static const char *getLevelString(const Level &level) {
-                return levelStrings[level];
-            }
-        private:
-            static const char *levelStrings[4];
+            static const char *getLevelString(const Level &level);
         };
 
         enum LogLevel {

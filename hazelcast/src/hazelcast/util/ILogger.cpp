@@ -29,7 +29,21 @@
 
 namespace hazelcast {
     namespace client {
-        const char *client::LoggerLevel::levelStrings[4] = {"FINEST", "INFO", "WARNING", "SEVERE"};
+        const char *LoggerLevel::getLevelString(const Level &level) {
+            switch (level) {
+                case SEVERE:
+                    return "SEVERE";
+                case WARNING:
+                    return "WARNING";
+                case INFO:
+                    return "INFO";
+                case FINEST:
+                    return "FINEST";
+                default:
+                    assert(0);
+            }
+            return NULL;
+        }
     }
 
     namespace util {
@@ -50,7 +64,7 @@ namespace hazelcast {
         }
 
         void ILogger::setLogLevel(int logLevel) {
-            this->logLevel = (client::LoggerLevel::Level) logLevel;
+            this->logLevel = static_cast<client::LoggerLevel::Level>(logLevel);
         }
 
         void ILogger::severe(const std::string& message) {
@@ -94,7 +108,7 @@ namespace hazelcast {
         }
 
         bool ILogger::isEnabled(int level) const {
-            return isEnabled((client::LoggerLevel::Level) level);
+            return isEnabled(static_cast<client::LoggerLevel::Level>(level));
         }
 
         const char *ILogger::getTime(char *buffer, size_t length) const {
