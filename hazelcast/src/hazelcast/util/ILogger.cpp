@@ -160,14 +160,21 @@ namespace hazelcast {
             std::flush(std::cout);
         }
 
-        LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger) {
-            if (logger.isEnabled(logLevel)) {
-                logger.lockMutex.lock();
-                logger.printMessagePrefix(logLevel);
+        LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
+                                                                                             requestedLogLevel(logLevel) {
+            if (!logger.isEnabled(requestedLogLevel)) {
+                return;
             }
+
+            logger.lockMutex.lock();
+            logger.printMessagePrefix(requestedLogLevel);
         }
 
         LeveledLogger::~LeveledLogger() {
+            if (!logger.isEnabled(requestedLogLevel)) {
+                return;
+            }
+
             std::cout << std::endl;
             logger.lockMutex.unlock();
             std::flush(std::cout);

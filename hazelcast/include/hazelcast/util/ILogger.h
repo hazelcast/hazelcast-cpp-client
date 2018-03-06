@@ -142,6 +142,7 @@ namespace hazelcast {
             LeveledLogger();
 
             ILogger &logger;
+            client::LoggerLevel::Level requestedLogLevel;
         };
     }
 }
