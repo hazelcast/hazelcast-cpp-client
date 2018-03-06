@@ -286,10 +286,18 @@ namespace hazelcast {
             *  set SEVERE to see only serious errors
             *
             *  Default log level is INFO
+            * @param loggerLevel The log level to be set.
             * @return itself ClientConfig
             */
-            ClientConfig &setLogLevel(LogLevel loggerLevel);
+            ClientConfig &setLogLevel(LoggerLevel::Level loggerLevel);
 
+            /**
+             * @deprecated Please use setLogLevel(LoggerLevel::Level loggerLevel) instead.
+             *
+             * @param loggerLevel The log level to be set.
+             * @return The configured client configuration for chaining.
+             */
+            ClientConfig &setLogLevel(LogLevel loggerLevel);
 
             /**
             *
