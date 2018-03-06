@@ -157,7 +157,8 @@ namespace hazelcast {
             boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M:%S.%f");
             std::stringstream dateStream;
             dateStream.imbue(std::locale(dateStream.getloc(), facet));
-            dateStream << timeInMillis;
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            dateStream << epoch + boost::posix_time::milliseconds(timeInMillis);
             return dateStream.str();
         }
 
