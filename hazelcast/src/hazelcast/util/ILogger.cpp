@@ -28,72 +28,83 @@
 #include <assert.h>
 
 namespace hazelcast {
-    namespace util {
+    namespace client {
+        const char *LoggerLevel::getLevelString(const Level &level) {
+            switch (level) {
+                case SEVERE:
+                    return "SEVERE";
+                case WARNING:
+                    return "WARNING";
+                case INFO:
+                    return "INFO";
+                case FINEST:
+                    return "FINEST";
+                default:
+                    assert(0);
+            }
+            return NULL;
+        }
+    }
 
-#define TIME_STRING_LENGTH 25
+    namespace util {
+        ILogger ILogger::singletonLogger;
 
         ILogger& ILogger::getLogger() {
-            static ILogger singleton;
-            return singleton;
+            return singletonLogger;
         }
 
-        ILogger::ILogger() : HazelcastLogLevel(client::INFO) {
+        ILogger::ILogger() : logLevel(client::LoggerLevel::INFO) {
         }
 
         ILogger::~ILogger() {
         }
 
-        void ILogger::setLogLevel(int logLevel) {
-            HazelcastLogLevel = logLevel;
+        void ILogger::setLogLevel(const client::LoggerLevel::Level &logLevel) {
+            this->logLevel = logLevel;
         }
 
         void ILogger::severe(const std::string& message) {
-            if (isEnabled(client::SEVERE)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                // Due to the problem faced in Linux environment which is described
-                // in https://gcc.gnu.org/ml/gcc/2003-12/msg00743.html, we could not use
-                // std::cout here. outstream flush() function in stdlib 3.4.4 does not handle pthread_cancel call
-                // appropriately.
-                printf("%s SEVERE: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
+            printLog(client::LoggerLevel::SEVERE, message);
         }
 
         void ILogger::warning(const std::string& message) {
-            if (isEnabled(client::WARNING)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s WARNING: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
+            printLog(client::LoggerLevel::WARNING, message);
         }
 
         void ILogger::info(const std::string& message) {
-            if (isEnabled(client::INFO)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s INFO: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
+            printLog(client::LoggerLevel::INFO, message);
         }
 
-
         void ILogger::finest(const std::string& message) {
-            if (isEnabled(client::FINEST)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s FINEST: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
+            printLog(client::LoggerLevel::FINEST, message);
+        }
+
+        LeveledLogger ILogger::finest() {
+            return LeveledLogger(*this, client::LoggerLevel::FINEST);
+        }
+
+        LeveledLogger ILogger::info() {
+            return LeveledLogger(*this, client::LoggerLevel::INFO);
+        }
+
+        LeveledLogger ILogger::warning() {
+            return LeveledLogger(*this, client::LoggerLevel::WARNING);
+        }
+
+        LeveledLogger ILogger::severe() {
+            return LeveledLogger(*this, client::LoggerLevel::SEVERE);
         }
 
         void ILogger::setPrefix(const std::string& prefix) {
             this->prefix = prefix;
         }
 
-        bool ILogger::isEnabled(int logLevel) const {
-            return logLevel >= HazelcastLogLevel;
+        bool ILogger::isEnabled(const client::LoggerLevel::Level &logLevel) const {
+            return logLevel >= this->logLevel;
+        }
+
+        bool ILogger::isEnabled(int level) const {
+            return isEnabled(static_cast<client::LoggerLevel::Level>(level));
         }
 
         const char *ILogger::getTime(char *buffer, size_t length) const {
@@ -115,7 +126,49 @@ namespace hazelcast {
         }
 
         bool ILogger::isFinestEnabled() const {
-            return isEnabled(client::FINEST);
+            return isEnabled(client::LoggerLevel::FINEST);
+        }
+
+        const char *ILogger::getLevelString(client::LoggerLevel::Level logLevel) const {
+            return client::LoggerLevel::getLevelString(logLevel);
+        }
+
+        void ILogger::printMessagePrefix(client::LoggerLevel::Level logLevel) const {
+            char buffer[TIME_STRING_LENGTH];
+            std::cout << getTime(buffer, TIME_STRING_LENGTH) << " " << getLevelString(logLevel) << ": [" << getThreadId()
+                      << "] " << prefix << " ";
+        }
+
+        void ILogger::printLog(client::LoggerLevel::Level level, const std::string &message) {
+            if (!isEnabled(level)) {
+                return;
+            }
+
+            {
+                util::LockGuard l(lockMutex);
+                printMessagePrefix(level);
+                std::cout << message;
+            }
+        }
+
+        LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
+                                                                                             requestedLogLevel(logLevel) {
+            if (!logger.isEnabled(requestedLogLevel)) {
+                return;
+            }
+
+            logger.lockMutex.lock();
+            logger.printMessagePrefix(requestedLogLevel);
+        }
+
+        LeveledLogger::~LeveledLogger() {
+            if (!logger.isEnabled(requestedLogLevel)) {
+                return;
+            }
+
+            std::cout << std::endl;
+            logger.lockMutex.unlock();
+            std::flush(std::cout);
         }
     }
 }

@@ -105,8 +105,8 @@ namespace hazelcast {
             return *this;
         }
 
-        ClientConfig& ClientConfig::setLogLevel(LogLevel loggerLevel) {
-            util::ILogger::getLogger().setLogLevel(loggerLevel);
+        ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
+            util::ILogger::getLogger().setLogLevel(static_cast<LoggerLevel::Level>(loggerLevel));
             return *this;
         }
 

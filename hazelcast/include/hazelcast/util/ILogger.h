@@ -17,13 +17,15 @@
 // Created by sancar koyunlu on 20/02/14.
 //
 
-
 #ifndef HAZELCAST_ILogger
 #define HAZELCAST_ILogger
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "Mutex.h"
+#include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/LockGuard.h"
+
 #include <string>
+#include <iostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -32,17 +34,31 @@
 
 namespace hazelcast {
     namespace client {
+        class HAZELCAST_API LoggerLevel {
+        public:
+            enum Level {
+                SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
+            };
+
+            static const char *getLevelString(const Level &level);
+        };
+
         enum LogLevel {
-            SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
+            SEVERE = LoggerLevel::SEVERE, WARNING = LoggerLevel::WARNING, INFO = LoggerLevel::INFO, FINEST = LoggerLevel::FINEST
         };
     }
 
     namespace util {
+        #define TIME_STRING_LENGTH 25
+
+        class LeveledLogger;
+
         class HAZELCAST_API ILogger {
+            friend class LeveledLogger;
         public:
             static ILogger& getLogger();
 
-            void setLogLevel(int logLevel);
+            void setLogLevel(const client::LoggerLevel::Level &logLevel);
 
             void severe(const std::string& message);
 
@@ -54,11 +70,26 @@ namespace hazelcast {
 
             void setPrefix(const std::string& prefix);
 
+            LeveledLogger finest();
+
+            LeveledLogger info();
+
+            LeveledLogger warning();
+
+            LeveledLogger severe();
+
+            bool isEnabled(const client::LoggerLevel::Level &logLevel) const;
+
+            /**
+             * @deprecated Please use isEnabled(const client::LogLevel::Level &logLevel)
+             * @param logLevel The level of the logger for which it will print the logs.
+             * @return true if the level is enabled.
+             */
             bool isEnabled(int logLevel) const;
 
             bool isFinestEnabled() const;
         private:
-            int HazelcastLogLevel;
+            client::LoggerLevel::Level logLevel;
             std::string prefix;
 
             ILogger();
@@ -67,11 +98,45 @@ namespace hazelcast {
 
             const char *getTime(char * buffer, size_t length) const;
 
+            const char *getLevelString(client::LoggerLevel::Level logLevel) const;
+
+            void printMessagePrefix(client::LoggerLevel::Level logLevel) const;
+
             ILogger(const ILogger&);
 
             ILogger& operator=(const ILogger&);
 
             util::Mutex lockMutex;
+
+            static ILogger singletonLogger;
+
+            void printLog(client::LoggerLevel::Level level, const std::string &message);
+        };
+
+        /**
+         * TODO: The lock may not be released on thread cancellations since the destructor may not be called.
+         */
+        class HAZELCAST_API LeveledLogger {
+        public:
+            // Gets the logger lock
+            LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel);
+
+            // Releases the logger lock.
+            virtual ~LeveledLogger();
+
+            template <typename T>
+            LeveledLogger &operator<<(const T &value) {
+                if (logger.isEnabled(logger.logLevel)) {
+                    std::cout << value;
+                }
+                return *this;
+            }
+
+        private:
+            LeveledLogger();
+
+            ILogger &logger;
+            client::LoggerLevel::Level requestedLogLevel;
         };
     }
 }
