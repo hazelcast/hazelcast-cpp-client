@@ -20,7 +20,7 @@
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "UUID.h"
+#include "hazelcast/util/UUID.h"
 
 namespace hazelcast {
     namespace util {

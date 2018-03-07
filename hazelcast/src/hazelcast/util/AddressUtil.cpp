@@ -20,14 +20,14 @@ namespace hazelcast {
     namespace util {
 
         AddressHolder AddressUtil::getAddressHolder(const std::string &address, int defaultPort) {
-            std::string::size_type indexBracketStart = address.find('[');
-            std::string::size_type indexBracketEnd = address.find(']', indexBracketStart);
-            std::string::size_type indexColon = address.find(':');
-            std::string::size_type lastIndexColon = address.rfind(':');
+            int indexBracketStart = static_cast<int>(address.find('['));
+            int indexBracketEnd = static_cast<int>(address.find(']', indexBracketStart));
+            int indexColon = static_cast<int>(address.find(':'));
+            int lastIndexColon = static_cast<int>(address.rfind(':'));
             std::string host;
             int port = defaultPort;
             std::string scopeId;
-            if (indexColon != std::string::npos && lastIndexColon > indexColon) {
+            if (indexColon > -1 && lastIndexColon > indexColon) {
                 // IPv6
                 if (indexBracketStart == 0 && indexBracketEnd > indexBracketStart) {
                     host = address.substr(indexBracketStart + 1, indexBracketEnd - (indexBracketStart + 1));
@@ -37,12 +37,12 @@ namespace hazelcast {
                 } else {
                     host = address;
                 }
-                std::string::size_type indexPercent = host.find('%');
-                if (indexPercent != std::string::npos) {
+                int indexPercent = static_cast<int>(host.find('%'));
+                if (indexPercent != -1) {
                     scopeId = host.substr(indexPercent + 1);
                     host = host.substr(0, indexPercent);
                 }
-            } else if (indexColon != 0 && indexColon == lastIndexColon) {
+            } else if (indexColon > 0 && indexColon == lastIndexColon) {
                 host = address.substr(0, indexColon);
                 port = atoi(address.substr(indexColon + 1).c_str());
             } else {

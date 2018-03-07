@@ -55,7 +55,8 @@ namespace hazelcast {
             int64_t hi = 1L << (digits * 4);
             std::ostringstream out;
             out << std::hex << (hi | (val & (hi - 1)));
-            return out.str().substr(1);
+            std::string value = out.str();
+            return value.substr(1);
         }
 
         bool UUID::operator==(const UUID &rhs) const {
@@ -66,9 +67,5 @@ namespace hazelcast {
             return !(rhs == *this);
         }
 
-        std::ostream &util::operator<<(std::ostream &os, const UUID &uuid) {
-            os << uuid.toString();
-            return os;
-        }
     }
 }

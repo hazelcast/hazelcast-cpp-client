@@ -31,22 +31,30 @@ namespace hazelcast {
                 std::string uuid1String = uuid1.toString();
                 std::string uuid2String = uuid2.toString();
                 ASSERT_NE(uuid1String, uuid2String);
-                ASSERT_EQ(36, uuid1String.length());
-                ASSERT_EQ(36, uuid2String.length());
+                ASSERT_EQ(36U, uuid1String.length());
+                ASSERT_EQ(36U, uuid2String.length());
 
                 std::stringstream ss(uuid1String);
                 std::string token;
                 ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(8, token.length());
+                ASSERT_EQ(8U, token.length());
                 ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4, token.length());
+                ASSERT_EQ(4U, token.length());
                 ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4, token.length());
+                ASSERT_EQ(4U, token.length());
                 ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(4, token.length());
+                ASSERT_EQ(4U, token.length());
                 ASSERT_TRUE(std::getline(ss, token, '-'));
-                ASSERT_EQ(12, token.length());
+                ASSERT_EQ(12U, token.length());
                 ASSERT_FALSE(std::getline(ss, token, '-'));
+            }
+
+            TEST_F(UuidUtilTest, testUuidToString) {
+                int64_t msb = 0xfb34567812345678L;
+                int64_t lsb = 0xabcd123412345678L;
+                util::UUID uuid(msb, lsb);
+                std::string uuidString = uuid.toString();
+                ASSERT_EQ("fb345678-1234-5678-abcd-123412345678", uuidString);
             }
         }
     }

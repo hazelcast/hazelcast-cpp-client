@@ -17,8 +17,10 @@
 #ifndef HAZELCAST_UTIL_ADDRESSHELPER_H_
 #define HAZELCAST_UTIL_ADDRESSHELPER_H_
 
-#include "hazelcast/client/Address.h"
 #include <ostream>
+#include <vector>
+
+#include "hazelcast/client/Address.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {

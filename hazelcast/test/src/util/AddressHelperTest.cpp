@@ -26,13 +26,12 @@ namespace hazelcast {
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
                 std::string address("10.2.3.1");
                 std::vector<Address> addresses = util::AddressHelper::getSocketAddresses(address);
-                ASSERT_EQ(4U, addresses.size());
+                ASSERT_EQ(3U, addresses.size());
                 std::set<Address> socketAddresses;
                 socketAddresses.insert(addresses.begin(), addresses.end());
                 ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5701)));
                 ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5702)));
                 ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5703)));
-                ASSERT_NE(socketAddresses.end(), socketAddresses.find(Address(address, 5704)));
             }
 
             TEST_F(AddressHelperTest, testAddressHolder) {

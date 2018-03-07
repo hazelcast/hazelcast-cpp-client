@@ -71,8 +71,6 @@ namespace hazelcast {
 
             bool operator!=(const UUID &rhs) const;
 
-            friend std::ostream &operator<<(std::ostream &os, const UUID &uuid);
-
             /**
              * Returns a {@code String} object representing this {@code UUID}.
              *
@@ -104,6 +102,7 @@ namespace hazelcast {
             const int64_t mostSigBits;
             const int64_t leastSigBits;
         };
+
     }
 }
 
