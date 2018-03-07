@@ -76,6 +76,22 @@ namespace hazelcast {
             }
         }
 
+        bool Address::operator<(const Address &rhs) const {
+            if (host < rhs.host) {
+                return true;
+            }
+            if (rhs.host < host) {
+                return false;
+            }
+            if (port < rhs.port) {
+                return true;
+            }
+            if (rhs.port < port) {
+                return false;
+            }
+            return type < rhs.type;
+        }
+
         bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
             int i = lhs.getHost().compare(rhs.getHost());
             if (i == 0) {

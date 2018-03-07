@@ -79,6 +79,9 @@ namespace hazelcast {
             virtual void readData(serialization::ObjectDataInput &reader);
 
             /***** serialization::IdentifiedDataSerializable interface implementation end here ************************/
+
+            bool operator<(const Address &rhs) const;
+
         private:
             std::string host;
             int port;
