@@ -50,8 +50,8 @@ namespace hazelcast {
             }
 
             TEST_F(UuidUtilTest, testUuidToString) {
-                int64_t msb = 0xfb34567812345678L;
-                int64_t lsb = 0xabcd123412345678L;
+                int64_t msb = static_cast<int64_t>(0xfb34567812345678LL);
+                int64_t lsb = static_cast<int64_t>(0xabcd123412345678LL);
                 util::UUID uuid(msb, lsb);
                 std::string uuidString = uuid.toString();
                 ASSERT_EQ("fb345678-1234-5678-abcd-123412345678", uuidString);
