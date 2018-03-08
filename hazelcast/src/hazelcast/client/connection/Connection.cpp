@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 5/21/13.
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <WinSock2.h>
+#include <winsock2.h>
 #endif
 
 #include "hazelcast/client/connection/Connection.h"

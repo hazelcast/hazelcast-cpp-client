@@ -21,6 +21,12 @@
 
 #include <string>
 #include <sstream>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// We need to include this header before asio/ip/address.hpp
+#include <winsock2.h>
+#endif
+
 #include <asio/ip/address.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

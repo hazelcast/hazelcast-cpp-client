@@ -16,17 +16,6 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
 #define HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
 
-#include "hazelcast/client/Socket.h"
-
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/AtomicBoolean.h"
-#include <string>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
@@ -47,6 +36,17 @@ typedef int socklen_t;
 #include <sys/select.h>
 #include <fcntl.h>
 
+#endif
+
+#include "hazelcast/client/Socket.h"
+
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/AtomicBoolean.h"
+#include <string>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export	
 #endif
 
 #if !defined(MSG_NOSIGNAL)
