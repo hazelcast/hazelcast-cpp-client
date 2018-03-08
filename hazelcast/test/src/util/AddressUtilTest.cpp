@@ -48,9 +48,6 @@ namespace hazelcast {
                 asio::ip::address address = util::AddressUtil::getByName(addrString);
                 ASSERT_TRUE(address.is_v6());
                 ASSERT_FALSE(address.is_v4());
-                ASSERT_TRUE(address.is_loopback());
-                ASSERT_EQ(0, address.to_v6().scope_id());
-                ASSERT_EQ(0, address.to_v6().scope_id());
                 ASSERT_EQ(addrString, address.to_string());
             }
 
