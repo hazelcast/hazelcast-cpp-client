@@ -53,7 +53,6 @@ namespace hazelcast {
         class HAZELCAST_API AddressHelper {
         public:
             static std::vector<client::Address> getSocketAddresses(const std::string &address);
-
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;

@@ -18,7 +18,7 @@
 #define HAZELCAST_UTIL_ADDRESSUTIL_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "AddressHelper.h"
+#include "hazelcast/util/AddressHelper.h"
 
 namespace hazelcast {
     namespace util {
@@ -27,6 +27,15 @@ namespace hazelcast {
             static AddressHolder getAddressHolder(const std::string &address);
 
             static AddressHolder getAddressHolder(const std::string &address, int defaultPort);
+
+            static bool isIpV4(const std::string &scopedAddress);
+
+            static asio::ip::address getByName(const std::string &host);
+
+            static asio::ip::address getByName(const std::string &host, int port);
+
+        private:
+            static asio::ip::address getByName(const std::string &host, const std::string &service);
         };
 
     }

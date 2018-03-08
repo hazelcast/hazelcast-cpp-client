@@ -15,10 +15,11 @@
  */
 
 #include "hazelcast/util/AddressUtil.h"
-#include <asio/asio/include/asio/io_service.hpp>
-#include <asio/asio/include/asio/ip/tcp.hpp>
+#include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/AddressHelper.h"
+
+#include <asio/ip/tcp.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -41,16 +42,12 @@ namespace hazelcast {
 
         std::vector<client::Address>
         AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount) {
-            std::string inetAddress;
-            bool isIpV4;
+            std::auto_ptr<asio::ip::address> inetAddress;
             try {
-                asio::io_service ioService;
-                asio::ip::tcp::resolver res(ioService);
-                asio::ip::tcp::resolver::query query(scopedAddress, "");
-                asio::ip::basic_resolver<asio::ip::tcp>::iterator iterator = res.resolve(query);
-                isIpV4 = iterator->endpoint().address().is_v4();
-            } catch (asio::system_error &ignored) {
-                util::ILogger::getLogger().getLogger().finest() << "Address not available" << ignored.what();
+                inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
+            } catch (client::exception::UnknownHostException &ignored) {
+                ILogger::getLogger().getLogger().finest() << "Address " << scopedAddress << " ip number is not available"
+                                                          << ignored.what();
             }
 
             int possiblePort = port;
@@ -59,23 +56,22 @@ namespace hazelcast {
             }
             std::vector<client::Address> addresses;
 
-            if (inetAddress.empty()) {
+            if (!inetAddress.get()) {
                 for (int i = 0; i < portTryCount; i++) {
-                    addresses.push_back(client::Address(scopedAddress, possiblePort + i));
-                }
-            } else if (isIpV4) {
-                for (int i = 0; i < portTryCount; i++) {
-                    //TODO addresses.push_back(client::Address(scopedAddress, inetAddress, possiblePort + i));
-                    addresses.push_back(client::Address(inetAddress, possiblePort + i));
-                }
-            }/* TODO: else if (isIpV6) {
-                final Collection<Inet6Address> possibleInetAddresses = getPossibleInetAddressesFor((Inet6Address) inetAddress);
-                for (Inet6Address inet6Address : possibleInetAddresses) {
-                    for (int i = 0; i < portTryCount; i++) {
-                        addresses.add(new Address(scopedAddress, inet6Address, possiblePort + i));
+                    try {
+                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
+                    } catch (client::exception::UnknownHostException &ignored) {
+                        std::ostringstream out;
+                        out << "Address [" << scopedAddress << "] ip number is not available." << ignored.what();
+                        util::ILogger::getLogger().finest(out.str());
                     }
                 }
-            }*/
+            } else if (inetAddress->is_v4() || inetAddress->is_v6()) {
+                for (int i = 0; i < portTryCount; i++) {
+                    addresses.push_back(client::Address(scopedAddress, *inetAddress, possiblePort + i));
+                }
+            }
+            // TODO: Add ip v6 addresses using interfaces as done in Java client.
 
             return addresses;
         }

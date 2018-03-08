@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+#include "hazelcast/client/exception/IllegalStateException.h"
+#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/util/AddressUtil.h"
+
+#include <asio/io_service.hpp>
+#include <asio/ip/basic_resolver.hpp>
+#include <asio/ip/tcp.hpp>
 
 namespace hazelcast {
     namespace util {
@@ -54,5 +60,39 @@ namespace hazelcast {
         AddressHolder AddressUtil::getAddressHolder(const std::string &address) {
             return getAddressHolder(address, -1);
         }
+
+        bool AddressUtil::isIpV4(const std::string &scopedAddress) {
+            try {
+                asio::ip::address address = asio::ip::make_address(scopedAddress);
+                return address.is_v4();
+            } catch (asio::system_error &e) {
+                std::ostringstream out;
+                out << "Address " << scopedAddress << " ip number is not available. " << e.what();
+                throw client::exception::IllegalStateException("AddressUtil::isIpV4", out.str());
+            }
+        }
+
+        asio::ip::address AddressUtil::getByName(const std::string &host) {
+            return getByName(host, "");
+        }
+
+        asio::ip::address AddressUtil::getByName(const std::string &host, int port) {
+            return getByName(host, util::IOUtil::to_string<int>(port));
+        }
+
+        asio::ip::address AddressUtil::getByName(const std::string &host, const std::string &service) {
+            try {
+                asio::io_service ioService;
+                asio::ip::tcp::resolver res(ioService);
+                asio::ip::tcp::resolver::query query(host, service);
+                asio::ip::basic_resolver<asio::ip::tcp>::iterator iterator = res.resolve(query);
+                return iterator->endpoint().address();
+            } catch (asio::system_error &e) {
+                std::ostringstream out;
+                out << "Address " << host << " ip number is not available. " << e.what();
+                throw client::exception::UnknownHostException("AddressUtil::getByName", out.str());
+            }
+        }
+
     }
 }

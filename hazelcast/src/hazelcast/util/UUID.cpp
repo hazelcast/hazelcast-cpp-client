@@ -52,7 +52,7 @@ namespace hazelcast {
         }
 
         std::string UUID::digits(int64_t val, int32_t digits) {
-            int64_t hi = 1L << (digits * 4);
+            int64_t hi = 1LL << (digits * 4);
             std::ostringstream out;
             out << std::hex << (hi | (val & (hi - 1)));
             std::string value = out.str();

@@ -16,7 +16,6 @@
 
 #include <gtest/gtest.h>
 #include <hazelcast/util/AddressUtil.h>
-#include <hazelcast/util/AddressHelper.h>
 
 namespace hazelcast {
     namespace client {
@@ -42,6 +41,25 @@ namespace hazelcast {
                 addressHolder = util::AddressUtil::getAddressHolder("hazelcast.com:80");
                 ASSERT_EQ("hazelcast.com", addressHolder.getAddress());
                 ASSERT_EQ(80, addressHolder.getPort());
+            }
+            
+            TEST_F(AddressUtilTest, testGetByNameIpV6) {
+                std::string addrString("::1");
+                asio::ip::address address = util::AddressUtil::getByName(addrString);
+                ASSERT_TRUE(address.is_v6());
+                ASSERT_FALSE(address.is_v4());
+                ASSERT_TRUE(address.is_loopback());
+                ASSERT_EQ(0, address.to_v6().scope_id());
+                ASSERT_EQ(0, address.to_v6().scope_id());
+                ASSERT_EQ(addrString, address.to_string());
+            }
+
+            TEST_F(AddressUtilTest, testGetByNameIpV4) {
+                std::string addrString("127.0.0.1");
+                asio::ip::address address = util::AddressUtil::getByName(addrString);
+                ASSERT_TRUE(address.is_v4());
+                ASSERT_FALSE(address.is_v6());
+                ASSERT_EQ(addrString, address.to_string());
             }
         }
     }

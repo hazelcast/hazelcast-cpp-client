@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/Address.h"
+#include "hazelcast/util/AddressUtil.h"
 #include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -25,11 +26,27 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address():host("localhost"), type(IPV4) {
+        Address::Address():host("localhost") {
+            init();
         }
 
+        void Address::init() {
+            inetAddress = util::AddressUtil::getByName(host);
+            setType();
+        }
+
+        void Address::setType() { type = isIpV4() ? IPV4 : IPV6; }
+
         Address::Address(const std::string &url, int port)
-        : host(url), port(port), type(IPV4) {
+        : host(url), port(port) {
+            init();
+        }
+
+        Address::Address(const std::string &hostname, const asio::ip::address &inetAddress, int port) : host(hostname),
+                                                                                                        port(port),
+                                                                                                        inetAddress(
+                                                                                                                inetAddress) {
+            setType();
         }
 
         bool Address::operator ==(const Address &rhs) const {
@@ -90,6 +107,14 @@ namespace hazelcast {
                 return false;
             }
             return type < rhs.type;
+        }
+
+        bool Address::isIpV4() const {
+            return inetAddress.is_v4();
+        }
+
+        unsigned long Address::getScopeId() const {
+            return inetAddress.is_v6() ? inetAddress.to_v6().scope_id() : 0;
         }
 
         bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
