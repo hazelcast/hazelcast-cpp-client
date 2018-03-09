@@ -25,6 +25,7 @@
 #include <ctime>
 #include <errno.h>
 #include <gtest/gtest.h>
+#include <hazelcast/client/exception/IOException.h>
 
 namespace hazelcast {
     namespace client {
@@ -123,12 +124,37 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testFutureSetException) {
                 util::Future<int> future;
 
-                std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
+                std::auto_ptr<client::exception::IException> exception(
+                        new client::exception::IException("testFutureSetException", "details"));
                 future.set_exception(exception);
 
-                ASSERT_THROW(future.get(), exception::IException);
+                ASSERT_THROW(future.get(), client::exception::IException);
             }
 
+            TEST_F (ClientUtilTest, testFutureSetClonedIOException) {
+                util::Future<int> future;
+
+                client::exception::IOException ioe("testFutureSetIOException", "details");
+                std::auto_ptr<client::exception::IException> exception(new client::exception::IException(ioe));
+                future.set_exception(ioe.clone());
+
+                ASSERT_THROW(future.get(), client::exception::IOException);
+            }
+
+            TEST_F (ClientUtilTest, testFutureSetUnclonedIOException) {
+                util::Future<int> future;
+
+                client::exception::IOException ioe("testFutureSetUnclonedIOException", "details");
+                std::auto_ptr<client::exception::IException> exception(new client::exception::IException(ioe));
+                future.set_exception(exception);
+
+                try {
+                    future.get();
+                } catch (client::exception::IOException &) {
+                    FAIL();
+                } catch (client::exception::IException &) {
+                }
+            }
 
             TEST_F (ClientUtilTest, testFutureSetValue_afterSomeTime) {
                 util::Future<int> future;

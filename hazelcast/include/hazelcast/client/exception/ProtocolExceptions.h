@@ -33,22 +33,30 @@ namespace hazelcast {
         namespace exception {
             class HAZELCAST_API ProtocolException : public IException {
             public:
-                ProtocolException(const std::string& message, const std::string& details, int32_t errorNo,
-                                  int32_t causeCode)
-                        : IException("Cluster", details), errorCode(errorNo), causeErrorCode(causeCode) {
-                }
+                ProtocolException(const std::string &source, const std::string &message, const std::string &details,
+                                  int32_t errorNo,
+                                  int32_t causeCode);
 
-                ProtocolException(const std::string& source, const std::string& message)
-                        : IException(source, message), errorCode(-1), causeErrorCode(-1) {
-                }
+                ProtocolException(const std::string &source, const std::string &message, int32_t errorNo,
+                                  int32_t causeCode);
 
-                int32_t getErrorCode() const {
-                    return errorCode;
-                }
+                ProtocolException(const std::string& source, const std::string& message);
 
-                int32_t getCauseErrorCode() const {
-                    return causeErrorCode;
-                }
+                ProtocolException(const std::string &source, const std::string &message,
+                                  const boost::shared_ptr<IException> &cause);
+
+                int32_t getErrorCode() const;
+
+                int32_t getCauseErrorCode() const;
+
+                bool operator==(const ProtocolException &rhs) const;
+
+                bool operator!=(const ProtocolException &rhs) const;
+
+                virtual std::auto_ptr<IException> clone() const;
+
+                void raise() const;
+
             private:
                 int32_t errorCode;
                 int32_t causeErrorCode;
@@ -57,17 +65,24 @@ namespace hazelcast {
 #define DEFINE_PROTOCOL_EXCEPTION(ClassName) \
             class HAZELCAST_API ClassName : public ProtocolException {\
             public:\
-                ClassName(const std::string& message, const std::string& details, int32_t errorNo, int32_t causeCode) \
-                    : ProtocolException(message, details, errorNo, causeCode) {\
+                ClassName(const std::string& source, const std::string& message, const std::string& details, \
+                        int32_t errorNo, int32_t causeCode) \
+                    : ProtocolException(source, message, details, errorNo, causeCode) {\
+                }\
+                ClassName(const std::string& source, const std::string& message, int32_t errorNo, int32_t causeCode) \
+                    : ProtocolException(source, message, errorNo, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
                     : ProtocolException(source, message) {\
                 }\
                 ClassName(const std::string& source) : ProtocolException(source, "") {\
                 }\
-                virtual void raise() {\
-                    throw *this;\
-                }\
+                ClassName(const std::string &source, const std::string &message, \
+                            const boost::shared_ptr<IException> &cause) : ProtocolException(source, message, cause) {}\
+                virtual std::auto_ptr<IException> clone() const {\
+                    return std::auto_ptr<IException>(new ClassName(*this));\
+                } \
+                void raise() const { throw *this; } \
             }\
 
             DEFINE_PROTOCOL_EXCEPTION(ArrayIndexOutOfBoundsException);
@@ -151,24 +166,15 @@ namespace hazelcast {
 
             class HAZELCAST_API UndefinedErrorCodeException : public IException {
             public:
-                UndefinedErrorCodeException(int32_t errorCode, int64_t correlationId, std::string details)
-                : error(errorCode), messageCallId(correlationId), detailedErrorMessage(details) {
-                }
+                UndefinedErrorCodeException(int32_t errorCode, int64_t correlationId, std::string details);
 
-                virtual ~UndefinedErrorCodeException() throw() {
-                }
+                virtual ~UndefinedErrorCodeException() throw();
 
-                int32_t getErrorCode() const {
-                    return error;
-                }
+                int32_t getErrorCode() const;
 
-                int64_t getMessageCallId() const {
-                    return messageCallId;
-                }
+                int64_t getMessageCallId() const;
 
-                const std::string &getDetailedErrorMessage() const {
-                    return detailedErrorMessage;
-                }
+                const std::string &getDetailedErrorMessage() const;
 
             private:
                 int32_t error;
@@ -178,8 +184,19 @@ namespace hazelcast {
 
             class HAZELCAST_API HazelcastClientNotActiveException : public IException {
             public:
-                HazelcastClientNotActiveException(const std::string &source, const std::string &message) : IException(
-                        source, message) {}
+                HazelcastClientNotActiveException(const std::string &source, const std::string &message);
+
+                virtual ~HazelcastClientNotActiveException() throw();
+            };
+
+            /**
+             * Thrown when Hazelcast client is offline during an invocation.
+             */
+            class HAZELCAST_API HazelcastClientOfflineException : public IllegalStateException {
+            public:
+                HazelcastClientOfflineException(const std::string &source, const std::string &message);
+
+                virtual ~HazelcastClientOfflineException() throw();
             };
 
             class HAZELCAST_API UnknownHostException : public IException {
@@ -187,6 +204,7 @@ namespace hazelcast {
                 UnknownHostException(const std::string &source, const std::string &message) : IException(
                         source, message) {}
             };
+
         }
     }
 }

@@ -48,7 +48,7 @@ namespace hazelcast {
                     return clientProxy;
                 } catch (exception::IException &e) {
                     proxies.remove(ns);
-                    proxyFuture->set_exception(e);
+                    proxyFuture->set_exception(e.clone());
                     throw;
                 }
             }
