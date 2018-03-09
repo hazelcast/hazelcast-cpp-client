@@ -85,7 +85,7 @@ namespace hazelcast {
 
                 const boost::shared_ptr<IException> &getCause() const;
 
-                friend std::ostream &operator<<(std::ostream &os, const IException &exception);
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
                 virtual bool operator==(const IException &rhs) const;
 
@@ -97,6 +97,8 @@ namespace hazelcast {
                 std::string report;
                 boost::shared_ptr<IException> cause;
             };
+
+            std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
             template <typename EXCEPTIONCLASS>
             class ExceptionBuilder {
