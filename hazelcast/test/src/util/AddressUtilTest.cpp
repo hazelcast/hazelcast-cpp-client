@@ -42,15 +42,6 @@ namespace hazelcast {
                 ASSERT_EQ("hazelcast.com", addressHolder.getAddress());
                 ASSERT_EQ(80, addressHolder.getPort());
             }
-            
-            TEST_F(AddressUtilTest, testGetByNameIpV6) {
-                std::string addrString("www.v6.facebook.com");
-                std::string expectedResolveIp("2a03:2880:20:cf04:face:b00c::12c");
-                asio::ip::address address = util::AddressUtil::getByName(addrString);
-                ASSERT_TRUE(address.is_v6());
-                ASSERT_FALSE(address.is_v4());
-                ASSERT_EQ(expectedResolveIp, address.to_string());
-            }
 
             TEST_F(AddressUtilTest, testGetByNameIpV4) {
                 std::string addrString("127.0.0.1");
