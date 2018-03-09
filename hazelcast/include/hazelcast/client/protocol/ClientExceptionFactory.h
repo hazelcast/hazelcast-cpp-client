@@ -36,7 +36,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientMessage;
 
-            class ExceptionFactory {
+            class HAZELCAST_API ExceptionFactory {
             public:
                 virtual ~ExceptionFactory();
 
