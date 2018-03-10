@@ -181,6 +181,12 @@ namespace hazelcast {
                 HazelcastClientNotActiveException(const std::string &source, const std::string &message) : IException(
                         source, message) {}
             };
+
+            class HAZELCAST_API UnknownHostException : public IException {
+            public:
+                UnknownHostException(const std::string &source, const std::string &message) : IException(
+                        source, message) {}
+            };
         }
     }
 }

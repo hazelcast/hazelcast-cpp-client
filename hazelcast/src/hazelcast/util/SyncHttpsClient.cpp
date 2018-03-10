@@ -18,7 +18,7 @@
 //
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <WinSock2.h>
+#include <winsock2.h>
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL

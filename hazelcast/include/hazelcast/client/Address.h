@@ -23,6 +23,13 @@
 #include <sstream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// We need to include this header before asio/ip/address.hpp
+#include <winsock2.h>
+#endif
+
+#include <asio/ip/address.hpp>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
 #endif
@@ -35,6 +42,8 @@ namespace hazelcast {
          */
         class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
         public:
+            Address(const std::string &hostname, const asio::ip::address &inetAddress, int port);
+
             static const int ID;
 
             /**
@@ -65,6 +74,12 @@ namespace hazelcast {
             int getPort() const;
 
             /**
+             *
+             * @return true if the address is ip V4 address, false otherwise.
+             */
+            bool isIpV4() const;
+
+            /**
              * @return host address as string
              */
             const std::string& getHost() const;
@@ -79,13 +94,23 @@ namespace hazelcast {
             virtual void readData(serialization::ObjectDataInput &reader);
 
             /***** serialization::IdentifiedDataSerializable interface implementation end here ************************/
+
+            unsigned long getScopeId() const;
+
+            bool operator<(const Address &rhs) const;
+
         private:
             std::string host;
             int port;
             byte type;
+            asio::ip::address inetAddress;
 
             static const byte IPV4;
             static const byte IPV6;
+
+            void init();
+
+            void setType();
         };
 
         /**

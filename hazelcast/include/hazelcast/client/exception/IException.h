@@ -87,5 +87,3 @@ namespace hazelcast {
 #endif 
 
 #endif //HAZELCAST_EXCEPTION
-
-
