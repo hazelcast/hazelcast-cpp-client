@@ -49,10 +49,6 @@ namespace hazelcast {
 
                 int32_t getCauseErrorCode() const;
 
-                bool operator==(const ProtocolException &rhs) const;
-
-                bool operator!=(const ProtocolException &rhs) const;
-
                 virtual std::auto_ptr<IException> clone() const;
 
                 void raise() const;

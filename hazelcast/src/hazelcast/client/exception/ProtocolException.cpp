@@ -51,16 +51,6 @@ namespace hazelcast {
                 return causeErrorCode;
             }
 
-            bool ProtocolException::operator==(const ProtocolException &rhs) const {
-                return static_cast<const IException &>(*this) == static_cast<const IException &>(rhs) &&
-                       errorCode == rhs.errorCode &&
-                       causeErrorCode == rhs.causeErrorCode;
-            }
-
-            bool ProtocolException::operator!=(const ProtocolException &rhs) const {
-                return !(rhs == *this);
-            }
-
             std::auto_ptr<IException> ProtocolException::clone() const {
                 return std::auto_ptr<IException>(new ProtocolException(*this));
             }

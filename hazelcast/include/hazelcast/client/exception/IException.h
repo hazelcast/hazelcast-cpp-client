@@ -87,10 +87,6 @@ namespace hazelcast {
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
-                virtual bool operator==(const IException &rhs) const;
-
-                virtual bool operator!=(const IException &rhs) const;
-
             protected:
                 std::string src;
                 std::string msg;

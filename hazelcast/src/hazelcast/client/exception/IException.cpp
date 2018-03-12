@@ -63,30 +63,6 @@ namespace hazelcast {
                 return os;
             }
 
-            bool IException::operator==(const IException &rhs) const {
-                if (src != rhs.src || msg != rhs.msg) {
-                    return false;
-                }
-
-                if (cause.get() == rhs.cause.get()) {
-                    return true;
-                }
-
-                if (!cause.get() && rhs.cause.get()) {
-                    return false;
-                }
-                
-                if (cause.get() && !rhs.cause.get()) {
-                    return false;
-                }
-
-                return *cause == *rhs.cause;
-            }
-
-            bool IException::operator!=(const IException &rhs) const {
-                return !(rhs == *this);
-            }
-
             const boost::shared_ptr<IException> &IException::getCause() const {
                 return cause;
             }

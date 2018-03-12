@@ -35,7 +35,10 @@ namespace hazelcast {
 
                     boost::shared_ptr<exception::IException> exceptionCause = targetDisconnectedException.getCause();
                     ASSERT_NE(static_cast<exception::IException *>(NULL), exceptionCause.get());
-                    ASSERT_EQ(*cause, *exceptionCause);
+                    ASSERT_THROW((exceptionCause->raise()), exception::IOException);
+                    ASSERT_EQ(exceptionCause->getMessage(), cause->getMessage());
+                    ASSERT_EQ(exceptionCause->getSource(), cause->getSource());
+                    ASSERT_EQ((exception::IException *)NULL, exceptionCause->getCause().get());
                 }
 
                 TEST_F(ExceptionTest, testExceptionStreaming) {
