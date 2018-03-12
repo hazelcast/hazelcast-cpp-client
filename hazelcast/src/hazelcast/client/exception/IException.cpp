@@ -21,18 +21,25 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            IException::IException()
-            : std::exception(), src(""), msg(""), report("") {
+            IException::IException() {
             }
 
-
-            IException::IException(const std::string& source, const std::string& message)
-            : std::exception(), src(source), msg(message) {
+            IException::IException(const std::string& source, const std::string& message) : src(source), msg(message) {
                 report = "ExceptionMessage {" + message + "} at " + source;
             }
 
-            IException::~IException() throw() {
+            IException::IException(const std::string &source, const std::string &message,
+                                   const boost::shared_ptr<IException> &cause) : src(source), msg(message),
+                                                                                 cause(cause) {
+                if (cause.get()) {
+                    std::ostringstream out;
+                    out << "ExceptionMessage {" << message + " Caused by:" << *cause << "} at " << source;
+                } else {
+                    report = "ExceptionMessage {" + message + "} at " + source;
+                }
+            }
 
+            IException::~IException() throw() {
             }
 
             char const *IException::what() const throw() {
@@ -47,9 +54,23 @@ namespace hazelcast {
                 return msg;
             }
 
-            void IException::raise() {
+            void IException::raise() const {
                 throw *this;
             }
+
+            std::ostream &operator<<(std::ostream &os, const IException &exception) {
+                os << exception.what();
+                return os;
+            }
+
+            const boost::shared_ptr<IException> &IException::getCause() const {
+                return cause;
+            }
+
+            std::auto_ptr<IException> IException::clone() const {
+                return std::auto_ptr<IException>(new IException(*this));
+            }
+
         }
     }
 }

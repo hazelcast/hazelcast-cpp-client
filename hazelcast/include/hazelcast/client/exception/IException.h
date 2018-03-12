@@ -19,9 +19,15 @@
 #ifndef HAZELCAST_EXCEPTION
 #define HAZELCAST_EXCEPTION
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <string>
+#include <sstream>
 #include <stdexcept>
+#include <ostream>
+#include <memory>
+
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,23 +54,18 @@ namespace hazelcast {
              */
             class HAZELCAST_API IException : public std::exception {
             public:
-                /**
-                 * Constructor
-                 */
                 IException();
 
-                /**
-                 * Constructor
-                 */
                 IException(const std::string &source, const std::string &message);
 
-                /**
-                 * Destructor
-                 */
+                IException(const std::string &source, const std::string &message,
+                           const boost::shared_ptr<IException> &cause);
+
                 virtual ~IException() throw();
 
                 /**
-                 * return exception explanation string.
+                 *
+                 * return  pointer to the explanation string.
                  */
                 virtual char const *what() const throw();
 
@@ -72,12 +73,53 @@ namespace hazelcast {
 
                 const std::string &getMessage() const;
 
-                virtual void raise();
-            private:
+                virtual void raise() const;
+
+                /**
+                 * We need this method to clone the specific derived exception when needed. The exception has to be the
+                 * derived type so that the exception rethrowing works as expected by throwing the derived exception.
+                 * Exception throwing internals works by making a temporary copy of the exception.
+                 * @return The copy of this exception
+                 */
+                virtual std::auto_ptr<IException> clone() const;
+
+                const boost::shared_ptr<IException> &getCause() const;
+
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+
+            protected:
                 std::string src;
                 std::string msg;
                 std::string report;
+                boost::shared_ptr<IException> cause;
             };
+
+            std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+
+            template <typename EXCEPTIONCLASS>
+            class ExceptionBuilder {
+            public:
+                ExceptionBuilder(const std::string &source) : source(source) {}
+
+                template <typename T>
+                ExceptionBuilder &operator<<(const T &message) {
+                    msg << message;
+                    return *this;
+                }
+
+                /**
+                 *
+                 * @return The constructed exception.
+                 */
+                EXCEPTIONCLASS build() {
+                    return EXCEPTIONCLASS(source, msg.str());
+                }
+
+            private:
+                std::string source;
+                std::ostringstream msg;
+            };
+
         }
     }
 }

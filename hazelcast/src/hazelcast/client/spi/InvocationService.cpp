@@ -336,7 +336,8 @@ namespace hazelcast {
                 }
 
                 if (protocol::codec::ErrorCodec::TYPE == message->getMessageType()) {
-                    std::auto_ptr<exception::IException> exception = exceptionFactory.createException(*message);
+                    std::auto_ptr<exception::IException> exception = exceptionFactory.createException(
+                            "InvocationService::handleMessage", *message);
 
                     std::string addrString = util::IOUtil::to_string(serverAddr);
                     tryResend(exception, promise, addrString);
