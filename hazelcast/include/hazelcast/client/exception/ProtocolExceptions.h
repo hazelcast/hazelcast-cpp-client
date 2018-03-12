@@ -201,8 +201,7 @@ namespace hazelcast {
 
             class HAZELCAST_API UnknownHostException : public IException {
             public:
-                UnknownHostException(const std::string &source, const std::string &message) : IException(
-                        source, message) {}
+                UnknownHostException(const std::string &source, const std::string &message);
             };
 
         }

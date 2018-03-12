@@ -105,6 +105,9 @@ namespace hazelcast {
             HazelcastClientOfflineException::~HazelcastClientOfflineException() throw() {
             }
 
+            UnknownHostException::UnknownHostException(const std::string &source, const std::string &message)
+                    : IException(source, message) {
+            }
         }
     }
 }
