@@ -167,13 +167,13 @@ public:
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
         clientConfig.setLogLevel(FINEST);
-        hazelcast::util::Thread monitor(printStats);
+        hazelcast::util::StartedThread monitor(printStats);
         HazelcastClient hazelcastClient(clientConfig);
 
-        std::vector< hazelcast::util::Thread * > threads(THREAD_COUNT);
+        std::vector< hazelcast::util::StartedThread * > threads(THREAD_COUNT);
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            threads[i] = new hazelcast::util::Thread(&SimpleMapTest::staticOp, this, &hazelcastClient);
+            threads[i] = new hazelcast::util::StartedThread(&SimpleMapTest::staticOp, this, &hazelcastClient);
         }
         monitor.join();
 

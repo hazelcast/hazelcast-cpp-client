@@ -23,7 +23,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/spi/ClusterService.h"

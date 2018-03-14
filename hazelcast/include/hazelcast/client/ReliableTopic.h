@@ -188,10 +188,12 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onFailure(const exception::ProtocolException *t) {
+                void onFailure(const exception::IException *throwable) {
                     if (cancelled) {
                         return;
                     }
+
+                    const exception::ProtocolException *t = static_cast<const exception::ProtocolException *>(throwable);
 
                     int32_t err = t->getErrorCode();
                     if (protocol::EXECUTION == err &&

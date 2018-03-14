@@ -19,7 +19,7 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/CountDownLatch.h"
 
 #include <ctime>
@@ -76,7 +76,7 @@ namespace hazelcast {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
                 int wakeUpTime = 3;
-                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
+                util::StartedThread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
                 int waitSeconds = 30;
                 {
                     util::LockGuard lockGuard(mutex);
@@ -95,7 +95,7 @@ namespace hazelcast {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
                 int wakeUpTime = 1;
-                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
+                util::StartedThread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
                 {
                     util::LockGuard lockGuard(mutex);
                     // the following call should not fail with assertion for EINVAL
@@ -161,7 +161,7 @@ namespace hazelcast {
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
                 int expectedValue = 2;
-                util::Thread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
+                util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
                 int value = future.get();
                 ASSERT_EQ(expectedValue, value);
@@ -172,7 +172,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
-                util::Thread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
+                util::StartedThread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
 
                 try {
@@ -183,19 +183,20 @@ namespace hazelcast {
                 }
             }
 
-            void dummyThread(util::ThreadArgs& args) {
-            }
-
             TEST_F (ClientUtilTest, testThreadName) {
                 std::string threadName = "myThreadName";
-                util::Thread thread(threadName, dummyThread);
-                ASSERT_EQ(threadName, thread.getThreadName());
+                // We use latch so that we guarantee that the object instance thread is not destructed at the time when
+                // StartedThread::run is being executed.
+                util::CountDownLatch latch(1);
+                util::StartedThread thread(threadName,  notifyExitingThread, &latch);
+                ASSERT_EQ(threadName, thread.getName());
+                ASSERT_TRUE(latch.await(120));
             }
 
             TEST_F (ClientUtilTest, testThreadJoinAfterThreadExited) {
                 std::string threadName = "myThreadName";
                 util::CountDownLatch latch(1);
-                util::Thread thread(threadName, notifyExitingThread, &latch);
+                util::StartedThread thread(threadName, notifyExitingThread, &latch);
                 ASSERT_TRUE(latch.await(2));
                 // guarantee that the thread exited
                 util::sleep(1);
@@ -207,7 +208,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testCancelJoinItselfFromTheRunningThread) {
                 std::string threadName = "myThreadName";
                 util::CountDownLatch latch(1);
-                util::Thread thread(threadName, cancelJoinFromRunningThread, &latch);
+                util::StartedThread thread(threadName, cancelJoinFromRunningThread, &latch);
                 ASSERT_TRUE(latch.await(1000));
             }
 
@@ -220,7 +221,7 @@ namespace hazelcast {
                 int sleepTime = 30;
                 int wakeUpTime = 3;
                 time_t beg = time(NULL);
-                util::Thread thread(sleepyThread, &sleepTime);
+                util::StartedThread thread(sleepyThread, &sleepTime);
                 util::sleep(wakeUpTime);
                 thread.cancel();
                 thread.join();

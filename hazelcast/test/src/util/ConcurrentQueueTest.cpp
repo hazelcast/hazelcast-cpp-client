@@ -18,7 +18,7 @@
 //
 #include <gtest/gtest.h>
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
@@ -99,10 +99,10 @@ namespace hazelcast {
 
                     int removalValue = 10;
 
-                    std::vector<hazelcast::util::Thread *> threads((size_t)numThreads);
+                    std::vector<hazelcast::util::StartedThread *> threads((size_t)numThreads);
                     for (int i = 0; i < numThreads; ++i) {
                         // I would prefer using scoped_ptr or boost:::scoped_array for array if there was one available
-                        threads[i] = new hazelcast::util::Thread(ConcurentQueueTest::ConcurrentQueueTask, &q, &startLatch, &startRemoveLatch, &removalValue);
+                        threads[i] = new hazelcast::util::StartedThread(ConcurentQueueTest::ConcurrentQueueTask, &q, &startLatch, &startRemoveLatch, &removalValue);
                     }
 
                     // wait for the remove start

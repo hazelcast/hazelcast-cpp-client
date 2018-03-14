@@ -58,7 +58,7 @@ namespace hazelcast {
                 MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
                 HazelcastClient *client = (HazelcastClient *)args.arg1;
                 util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
-                std::string key = util::IOUtil::to_string(util::Thread::getThreadID());
+                std::string key = util::IOUtil::to_string(util::getThreadId());
                 client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
@@ -103,9 +103,9 @@ namespace hazelcast {
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string>("testPutGetRemove");
                 int n = 10;
                 util::CountDownLatch latch(n);
-                std::vector<util::Thread*> threads(n);
+                std::vector<util::StartedThread*> threads(n);
                 for (int i = 0; i < n; i++) {
-                    threads[i] = new util::Thread(putGetRemoveTestThread, &mm, client.get(), &latch);
+                    threads[i] = new util::StartedThread(putGetRemoveTestThread, &mm, client.get(), &latch);
                 }
                 ASSERT_TRUE(latch.await(1));
                 for (int i = 0; i < n; i++) {

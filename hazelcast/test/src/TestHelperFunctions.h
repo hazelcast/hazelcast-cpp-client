@@ -61,5 +61,6 @@
 #define ASSERT_FALSE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, false)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
 #define ASSERT_NOTNULL_EVENTUALLY(value) ASSERT_NE_EVENTUALLY(value, NULL)
+#define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE(latch.await(120))
 
 #endif //HAZELCAST_TestHelperFunctions

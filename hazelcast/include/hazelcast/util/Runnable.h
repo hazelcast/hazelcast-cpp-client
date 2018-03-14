@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 02/04/14.
-//
 
+#ifndef HAZELCAST_UTIL_RUNNABLE_H_
+#define HAZELCAST_UTIL_RUNNABLE_H_
 
-#ifndef HAZELCAST_ThreadArgs
-#define HAZELCAST_ThreadArgs
-
-#include <string>
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
-
-        class Thread;
-
-        class ThreadArgs {
+        class HAZELCAST_API Runnable {
         public:
-            const void *arg0;
-            const void *arg1;
-            const void *arg2;
-            const void *arg3;
-            Thread* currentThread;
-            void (*func)(ThreadArgs &);
-        } ;
+            virtual void run() = 0;
+            virtual const std::string getName() const = 0;
 
+            virtual bool isStriped() {
+                return false;
+            }
+        };
+
+        class StripedRunnable : public Runnable {
+        public:
+            virtual int32_t getKey() = 0;
+
+            virtual bool isStriped() {
+                return true;
+            }
+        };
     }
 }
 
 
-#endif //HAZELCAST_ThreadArgs
-
+#endif //HAZELCAST_UTIL_RUNNABLE_H_

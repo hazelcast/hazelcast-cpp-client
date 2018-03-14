@@ -690,8 +690,8 @@ namespace hazelcast {
 
                     util::CountDownLatch latch(2);
 
-                    util::Thread t1(tryPutThread, &latch, imap);
-                    util::Thread t2(tryRemoveThread, &latch, imap);
+                    util::StartedThread t1(tryPutThread, &latch, imap);
+                    util::StartedThread t2(tryRemoveThread, &latch, imap);
 
                     ASSERT_TRUE(latch.await(20));
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
@@ -834,7 +834,7 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
                     imap->lock<std::string>("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testLockThread, &latch, imap);
+                    util::StartedThread t1(testLockThread, &latch, imap);
                     ASSERT_TRUE(latch.await(5));
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
                     imap->forceUnlock<std::string>("key1");
@@ -846,7 +846,7 @@ namespace hazelcast {
                     ASSERT_EQ("value1", *(imap->get<std::string>("key1").get<std::string>()));
                     imap->lock<std::string>("key1", 2 * 1000);
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testLockTTLThread, &latch, imap);
+                    util::StartedThread t1(testLockTTLThread, &latch, imap);
                     ASSERT_TRUE(latch.await(10));
                     ASSERT_FALSE(imap->isLocked<std::string>("key1"));
                     ASSERT_EQ("value2", *(imap->get<std::string>("key1").get<std::string>()));
@@ -857,7 +857,7 @@ namespace hazelcast {
                 TEST_P(MixedMapAPITest, testLockTtl2) {
                     imap->lock<std::string>("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
-                    util::Thread t1(testLockTTL2Thread, &latch, imap);
+                    util::StartedThread t1(testLockTTL2Thread, &latch, imap);
                     ASSERT_TRUE(latch.await(10));
                     imap->forceUnlock<std::string>("key1");
 
@@ -867,14 +867,14 @@ namespace hazelcast {
 
                     ASSERT_TRUE(imap->tryLock<std::string>("key1", 2 * 1000));
                     util::CountDownLatch latch(1);
-                    util::Thread t1(testMapTryLockThread1, &latch, imap);
+                    util::StartedThread t1(testMapTryLockThread1, &latch, imap);
 
                     ASSERT_TRUE(latch.await(100));
 
                     ASSERT_TRUE(imap->isLocked<std::string>("key1"));
 
                     util::CountDownLatch latch2(1);
-                    util::Thread t2(testMapTryLockThread2, &latch2, imap);
+                    util::StartedThread t2(testMapTryLockThread2, &latch2, imap);
 
                     util::sleep(1);
                     imap->unlock<std::string>("key1");
@@ -887,7 +887,7 @@ namespace hazelcast {
                 TEST_P(MixedMapAPITest, testForceUnlock) {
                     imap->lock<std::string>("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t2(testMapForceUnlockThread, &latch, imap);
+                    util::StartedThread t2(testMapForceUnlockThread, &latch, imap);
                     ASSERT_TRUE(latch.await(100));
                     t2.join();
                     ASSERT_FALSE(imap->isLocked<std::string>("key1"));

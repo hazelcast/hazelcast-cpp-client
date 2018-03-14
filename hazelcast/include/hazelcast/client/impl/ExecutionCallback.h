@@ -30,7 +30,7 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            class ProtocolException;
+            class IException;
         }
         namespace impl {
             /**
@@ -55,7 +55,7 @@ namespace hazelcast {
                  * Called when an execution is completed with an error.
                  * @param e the exception that is thrown
                  */
-                virtual void onFailure(const exception::ProtocolException *e) = 0;
+                virtual void onFailure(const exception::IException *e) = 0;
             };
         }
     }

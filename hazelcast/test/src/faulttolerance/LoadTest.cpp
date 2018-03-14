@@ -23,7 +23,7 @@
 #include "HazelcastServer.h"
 
 #include <gtest/gtest.h>
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "ClientTestSupport.h"
@@ -75,23 +75,23 @@ namespace hazelcast {
                         }
                     }
 
-                    void addThread(util::Thread *thr) {
+                    void addThread(util::StartedThread *thr) {
                         threads.push_back(thr);
                     }
 
-                    util::Thread *getThread(size_t i) const {
+                    util::StartedThread *getThread(size_t i) const {
                         return threads[i];
                     }
 
                     ~LoadTest() {
-                        for (std::vector<util::Thread *>::const_iterator it = threads.begin();
+                        for (std::vector<util::StartedThread *>::const_iterator it = threads.begin();
                              it != threads.end(); ++it) {
                             delete *it;
                         }
                     }
 
                 protected:
-                    std::vector<util::Thread *> threads;
+                    std::vector<util::StartedThread *> threads;
                 };
 
                 void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {
@@ -108,7 +108,7 @@ namespace hazelcast {
                     util::CountDownLatch startLatch(numThreads);
 
                     for (int i = 0; i < numThreads; ++i) {
-                        test.addThread(new util::Thread(LoadTest::loadClient, &imap, &numOps, &startLatch));
+                        test.addThread(new util::StartedThread(LoadTest::loadClient, &imap, &numOps, &startLatch));
                     }
 
                     startLatch.await(20);
@@ -130,7 +130,7 @@ namespace hazelcast {
                      * between instance 5 and instance 4. This caused problems in Linux environment. */
 
                     for (int i = 0; i < numThreads; ++i) {
-                        util::Thread *thr = test.getThread(i);
+                        util::StartedThread *thr = test.getThread(i);
                         char msg[100];
                         util::hz_snprintf(msg, 100,
                                           "[LoadTest::loadIntMapTestWithConfig] Waiting to join for thread %ld",

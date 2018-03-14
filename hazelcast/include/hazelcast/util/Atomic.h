@@ -80,12 +80,21 @@ namespace hazelcast {
                 return v;
             }
 
-            void operator=(T i) {
+            void operator=(const T &i) {
+                LockGuard lockGuard(mutex);
+                v = i;
+            }
+
+            void set(const T &i) {
                 LockGuard lockGuard(mutex);
                 v = i;
             }
 
             operator T() {
+                return get();
+            }
+
+            T get() {
                 LockGuard lockGuard(mutex);
                 return v;
             }

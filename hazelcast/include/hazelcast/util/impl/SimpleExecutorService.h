@@ -1,0 +1,157 @@
+/*
+ * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef HAZELCAST_UTIL_IMPL_SIMPLEEXECUTOR_H_
+#define HAZELCAST_UTIL_IMPL_SIMPLEEXECUTOR_H_
+
+#include <stdint.h>
+#include <vector>
+#include <string>
+#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/BlockingConcurrentQueue.h"
+#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Future.h"
+#include "hazelcast/util/Executor.h"
+#include "hazelcast/util/Callable.h"
+
+namespace hazelcast {
+    namespace util {
+        class ILogger;
+
+        namespace impl {
+            class HAZELCAST_API SimpleExecutorService : public ExecutorService {
+            public:
+                static int32_t DEFAULT_EXECUTOR_QUEUE_CAPACITY;
+
+                SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix, int32_t threadCount,
+                               int32_t maximumQueueCapacity);
+
+                SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix, int32_t threadCount);
+
+                virtual ~SimpleExecutorService();
+
+                void execute(const boost::shared_ptr<Runnable> &command);
+
+                /**
+                 * Submits a value-returning task for execution and returns a
+                 * Future representing the pending results of the task. The
+                 * Future's {@code get} method will return the task's result upon
+                 * successful completion.
+                 *
+                 * <p>
+                 * If you would like to immediately block waiting
+                 * for a task, you can use constructions of the form
+                 * {@code result = exec.submit(aCallable).get();}
+                 *
+                 *
+                 * @param task the task to submit
+                 * @param <T> the type of the task's result
+                 * @return a Future representing pending completion of the task
+                 * @throws RejectedExecutionException if the task cannot be
+                 *         scheduled for execution
+                 * @throws NullPointerException if the task is null
+                 */
+                template<typename T>
+                boost::shared_ptr<Future<T> > submit(const boost::shared_ptr<Callable<T> > &task) {
+                    boost::shared_ptr<CallableRunnableAdaptor<T> > runnable(new CallableRunnableAdaptor<T>(task));
+                    execute(runnable);
+                    return runnable->getFuture();
+                }
+
+                /**
+                 * Shuts down this Executor.
+                 * <p>
+                 * No checking is done to see if the Executor already is shut down, so it should be called only once.
+                 * <p>
+                 * If there is any pending work, it will be thrown away.
+                 */
+                void shutdown();
+
+            protected:
+                template<typename T>
+                class CallableRunnableAdaptor : public Runnable {
+                public:
+                    CallableRunnableAdaptor(const boost::shared_ptr<Callable<T> > &callable) : callable(callable),
+                                                                                               future(new Future<T>()) {
+                    }
+
+                    virtual void run() {
+                        T result = callable->call();
+                        future->set_value(result);
+                    }
+
+                    virtual const std::string getName() const {
+                        return "CallableRunnableAdaptor";
+                    }
+
+                    const boost::shared_ptr<Callable<T> > &getCallable() const {
+                        return callable;
+                    }
+
+                    const boost::shared_ptr<Future<T> > &getFuture() const {
+                        return future;
+                    }
+
+                private:
+                    boost::shared_ptr<Callable<T> > callable;
+                    boost::shared_ptr<Future<T> > future;
+                };
+
+                class Worker : public util::Thread {
+                    friend class SimpleExecutorService;
+                public:
+                    Worker(const std::string &threadNamePrefix, int32_t queueCapacity,
+                           util::AtomicBoolean &live, util::ILogger &logger);
+
+                    virtual void run();
+
+                    void schedule(const boost::shared_ptr<Runnable> &runnable);
+
+                private:
+                    static std::string generateThreadName(const std::string &prefix);
+
+                    // TODO: Should it be non blocking rejecting queue when compared to Java?
+                    util::BlockingConcurrentQueue<boost::shared_ptr<Runnable> > workQueue;
+                    std::string name;
+                    util::AtomicBoolean &live;
+                    util::ILogger &logger;
+                };
+
+                util::ILogger &logger;
+                const std::string &threadNamePrefix;
+                int threadCount;
+                util::AtomicBoolean live;
+                static util::Atomic<int64_t> THREAD_ID_GENERATOR;
+                std::vector<boost::shared_ptr<Worker> > workers;
+                int32_t maximumQueueCapacity;
+
+                virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
+
+                void startWorkers() ;
+            };
+
+        }
+
+        class HAZELCAST_API Executors {
+        public:
+            static boost::shared_ptr<ExecutorService> newSingleThreadExecutor(const std::string &name);
+        };
+
+    }
+}
+
+
+#endif //HAZELCAST_UTIL_IMPL_SIMPLEEXECUTOR_H_

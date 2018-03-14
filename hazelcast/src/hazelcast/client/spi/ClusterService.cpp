@@ -69,7 +69,7 @@ namespace hazelcast {
                  * This thread lifecycle is managed by ClusterListenerThread::stop method
                  * which is guaranteed to be called during shutdown
                  */
-                new util::Thread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun,
+                new util::StartedThread("hz.clusterListenerThread", connection::ClusterListenerThread::staticRun,
                                  &clusterThread, &port);
 
                 if (!clusterThread.awaitStart()) {

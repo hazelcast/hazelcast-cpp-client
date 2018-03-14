@@ -27,7 +27,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/impl/ExecutionCallback.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -70,7 +70,7 @@ namespace hazelcast {
                         static void executerRun(util::ThreadArgs &args);
 
                         Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *ringbuffer;
-                        std::auto_ptr<util::Thread> runnerThread;
+                        std::auto_ptr<util::StartedThread> runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;
                     };

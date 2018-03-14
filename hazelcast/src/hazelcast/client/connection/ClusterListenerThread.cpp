@@ -39,7 +39,7 @@ namespace hazelcast {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
                     : startLatch(1), clientContext(clientContext), deletingConnection(false),
-                      workerThread((util::Thread *)NULL) {
+                      workerThread((util::StartedThread *)NULL) {
             }
 
             void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
@@ -117,7 +117,7 @@ namespace hazelcast {
                 }
                 util::Thread *worker = workerThread;
                 if (worker) {
-                    workerThread = (util::Thread *) NULL;
+                    workerThread = (util::StartedThread *) NULL;
                     delete worker;
                 }
             }

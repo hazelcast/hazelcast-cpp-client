@@ -133,7 +133,7 @@ namespace hazelcast {
                     }
                     ASSERT_EQ(0, q->size());
 
-                    util::Thread t2(testOfferPollThread2, q);
+                    util::StartedThread t2(testOfferPollThread2, q);
 
                     std::auto_ptr<std::string> item = q->poll(30 * 1000);
                     ASSERT_NE(item.get(), (std::string *) NULL);
@@ -178,7 +178,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->isEmpty());
 
                     // start a thread to insert an item
-                    util::Thread t2(testOfferPollThread2, q);
+                    util::StartedThread t2(testOfferPollThread2, q);
 
                     item = q->take();  //  should block till it gets an item
                     ASSERT_NE((std::string *)NULL, item.get());

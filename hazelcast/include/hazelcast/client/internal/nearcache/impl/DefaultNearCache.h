@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h"
@@ -201,7 +201,7 @@ namespace hazelcast {
                             }
 
                             void schedule() {
-                                task = std::auto_ptr<util::Thread>(new util::Thread(taskStarter, this));
+                                task = std::auto_ptr<util::StartedThread>(new util::StartedThread(taskStarter, this));
                             }
 
                             void cancel() {
@@ -223,7 +223,7 @@ namespace hazelcast {
                             NearCacheRecordStore<KS, V> &nearCacheRecordStore;
                             int initialDelayInSeconds;
                             int periodInSeconds;
-                            std::auto_ptr<util::Thread> task;
+                            std::auto_ptr<util::StartedThread> task;
                             util::AtomicBoolean cancelled;
                             std::string name;
                         };

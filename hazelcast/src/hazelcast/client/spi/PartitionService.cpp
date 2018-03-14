@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 6/3/13.
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
@@ -46,7 +46,7 @@ namespace hazelcast {
                 if (!getInitialPartitions()) {
                     return false;
                 }
-                util::Thread *partitionListener = new util::Thread("hz.partitionListener", PartitionService::staticRunListener, this);
+                util::StartedThread *partitionListener = new util::StartedThread("hz.partitionListener", PartitionService::staticRunListener, this);
                 partitionListenerThread.reset(partitionListener);
                 return true;
             }

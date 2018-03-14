@@ -36,7 +36,7 @@
 
 namespace hazelcast {
     namespace util{
-        class Thread;
+        class StartedThread;
 
         class ThreadArgs;
     }
@@ -86,7 +86,7 @@ namespace hazelcast {
 
                 util::AtomicBoolean updating;
 
-                std::auto_ptr<util::Thread> partitionListenerThread;
+                std::auto_ptr<util::StartedThread> partitionListenerThread;
 
                 util::AtomicInt partitionCount;
 

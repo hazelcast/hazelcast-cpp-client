@@ -19,13 +19,14 @@
 
 #ifndef HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
 #define HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
+#include <list>
+#include <iostream>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/ConditionVariable.h"
-#include <list>
-#include <iostream>
+#include "hazelcast/client/exception/InterruptedException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -47,15 +48,21 @@ namespace hazelcast {
                     // wait on condition
                     notFull.wait(m);
                 }
+                if (internalQueue.size() == capacity) {
+                    throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                }
                 internalQueue.push_back(e);
                 notEmpty.notify();
             }
 
             T pop() {
                 util::LockGuard lg(m);
-                while (internalQueue.empty()) {
+                if (internalQueue.empty()) {
                     // wait for notEmpty condition
                     notEmpty.wait(m);
+                }
+                if (internalQueue.empty()) {
+                    throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                 }
                 T element = internalQueue.front();
                 internalQueue.pop_front();
@@ -63,6 +70,22 @@ namespace hazelcast {
                 return element;
             }
 
+            /**
+             * Removes all of the elements from this collection (optional operation).
+             * The collection will be empty after this method returns.
+             *
+             */
+            void clear() {
+                util::LockGuard lg(m);
+                internalQueue.clear();
+                notFull.notify();
+            }
+
+            void interrupt() {
+                util::LockGuard lg(m);
+                notFull.notify();
+                notEmpty.notify();
+            }
         private:
             util::Mutex m;
             /**

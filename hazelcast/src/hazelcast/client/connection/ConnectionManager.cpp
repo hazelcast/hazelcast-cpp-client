@@ -32,7 +32,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/client/SocketInterceptor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -61,9 +61,9 @@ namespace hazelcast {
                 if (!outSelector.start()) {
                     return false;
                 }
-                inSelectorThread.reset(new util::Thread("hz.inListener", InSelector::staticListen, &inSelector));
-                outSelectorThread.reset(new util::Thread("hz.outListener", OutSelector::staticListen, &outSelector));
-                heartBeatThread.reset(new util::Thread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
+                inSelectorThread.reset(new util::StartedThread("hz.inListener", InSelector::staticListen, &inSelector));
+                outSelectorThread.reset(new util::StartedThread("hz.outListener", OutSelector::staticListen, &outSelector));
+                heartBeatThread.reset(new util::StartedThread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
 
                 return socketFactory.start();
             }

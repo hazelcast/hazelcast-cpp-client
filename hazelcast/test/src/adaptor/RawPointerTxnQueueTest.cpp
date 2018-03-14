@@ -25,7 +25,7 @@
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
@@ -84,7 +84,7 @@ namespace hazelcast {
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll2) {
                     util::CountDownLatch latch(1);
-                    util::Thread t(testTransactionalOfferPoll2Thread, &latch, client);
+                    util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, client);
                     TransactionContext context = client->newTransactionContext();
                     context.beginTransaction();
                     TransactionalQueue<std::string> queue0 = context.getQueue<std::string>("defQueue0");
