@@ -21,6 +21,7 @@
 
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
+#include "hazelcast/util/ILogger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -85,15 +86,35 @@ namespace hazelcast {
                 return true;
             }
 
-            void startInternal(Runnable *targetObject) {
-                thread = CreateThread(NULL, 0, impl::AbstractThread::runnableThread, runnableObject, 0 , &id);
-            }
-
             virtual long getThreadID() {
                 return GetCurrentThreadId();
             }
 
         protected:
+            static DWORD WINAPI runnableThread(LPVOID args) {
+                Runnable *runnable = static_cast<Runnable *>(args);
+                ILogger &logger = ILogger::getLogger();
+                try {
+                    runnable->run();
+                } catch (hazelcast::client::exception::InterruptedException &e) {
+                    logger.warning() << "Thread " << runnable->getName() << " is interrupted. " << e;
+                } catch (hazelcast::client::exception::IException &e) {
+                    logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
+                } catch (...) {
+                    logger.warning() << "Thread " << runnable->getName()
+                                     << " is cancelled with an unexpected exception";
+                    return 1L;
+                }
+
+                logger.info() << "Thread " << runnable->getName() << " is finished.";
+
+                return 0;
+            }
+
+            void startInternal(Runnable *targetObject) {
+                thread = CreateThread(NULL, 0, runnableThread, targetObject, 0 , &id);
+            }
+
             util::AtomicBoolean isInterrupted;
             HANDLE thread;
             DWORD id;

@@ -48,7 +48,8 @@ namespace hazelcast {
                 // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
                 // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
                 // `maximumQueueCapacity`.
-                int32_t perThreadMaxQueueCapacity = ceil((double) 1.0 * maximumQueueCapacity / threadCount);
+                int32_t perThreadMaxQueueCapacity = static_cast<int32_t>(ceil(
+                        (double) 1.0 * maximumQueueCapacity / threadCount));
                 for (int i = 0; i < threadCount; i++) {
                     workers[i].reset(new Worker(threadNamePrefix, perThreadMaxQueueCapacity, live, logger));
                     workers[i]->start();

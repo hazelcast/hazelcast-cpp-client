@@ -20,6 +20,12 @@
 #ifndef HAZELCAST_Future
 #define HAZELCAST_Future
 
+#include <memory>
+#include <vector>
+#include <cassert>
+#include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
@@ -27,11 +33,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/Executor.h"
-
-#include <memory>
-#include <cassert>
 #include "hazelcast/client/impl/ExecutionCallback.h"
-#include <boost/foreach.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,6 +50,9 @@ namespace hazelcast {
                 SuccessCallbackRunner(T sharedObj,
                                       const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback)
                         : sharedObj(sharedObj), callback(callback) {}
+
+                virtual ~SuccessCallbackRunner() {
+                }
 
                 virtual void run() {
                     callback->onResponse(&sharedObj);
@@ -68,6 +73,9 @@ namespace hazelcast {
                                         const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback)
                         : exception(exception), callback(callback) {}
 
+                virtual ~ExceptionCallbackRunner() {
+                }
+
                 virtual void run() {
                     callback->onFailure(exception.get());
                 }
@@ -85,6 +93,9 @@ namespace hazelcast {
             : resultReady(false)
             , exceptionReady(false) {
 
+            }
+
+            virtual ~Future() {
             }
 
             void set_value(T& value) {
@@ -161,7 +172,7 @@ namespace hazelcast {
 
             /**
              *
-             * @return true if result or exception is ready. false otherwise when timeout expires.
+             * @return true if result or exception is ready. git pufalse otherwise when timeout expires.
              *
              * Does not throw
              */

@@ -15,8 +15,6 @@
  */
 
 #include "hazelcast/util/impl/AbstractThread.h"
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace util {
@@ -47,27 +45,6 @@ namespace hazelcast {
 
                 startInternal(targetObject);
             }
-
-            void *AbstractThread::runnableThread(void *args) {
-                Runnable *runnable = static_cast<Runnable *>(args);
-                ILogger &logger = ILogger::getLogger();
-                try {
-                    runnable->run();
-                } catch (hazelcast::client::exception::InterruptedException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is interrupted.";
-                } catch (hazelcast::client::exception::IException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
-                } catch (...) {
-                    logger.warning() << "Thread " << runnable->getName()
-                                     << " is cancelled with an unexpected exception";
-                    throw;
-                }
-
-                logger.info() << "Thread " << runnable->getName() << " is finished.";
-
-                return NULL;
-            }
-
         }
     }
 }
