@@ -90,6 +90,7 @@ namespace hazelcast {
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 worker->workQueue.clear();
                                 worker->wakeup();
+                                worker->join();
                             }
             }
 
