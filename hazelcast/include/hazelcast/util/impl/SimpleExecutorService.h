@@ -93,6 +93,9 @@ namespace hazelcast {
                                                                                                future(new Future<T>()) {
                     }
 
+                    virtual ~CallableRunnableAdaptor() {
+                    }
+
                     virtual void run() {
                         T result = callable->call();
                         future->set_value(result);

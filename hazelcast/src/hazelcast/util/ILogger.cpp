@@ -147,7 +147,7 @@ namespace hazelcast {
             {
                 util::LockGuard l(lockMutex);
                 printMessagePrefix(level);
-                std::cout << message;
+                std::cout << message << std::endl;
             }
         }
 
