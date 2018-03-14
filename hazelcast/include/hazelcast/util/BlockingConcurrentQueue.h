@@ -39,7 +39,7 @@ namespace hazelcast {
         /* Blocking - synchronized queue */
         class BlockingConcurrentQueue {
         public:
-            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity(maxQueueCapacity) {
+            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity(maxQueueCapacity), isInterrupted(false) {
             }
 
             void push(const T &e) {
@@ -47,9 +47,9 @@ namespace hazelcast {
                 while (internalQueue.size() == capacity) {
                     // wait on condition
                     notFull.wait(m);
-                }
-                if (internalQueue.size() == capacity) {
-                    throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                    if (isInterrupted) {
+                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                    }
                 }
                 internalQueue.push_back(e);
                 notEmpty.notify();
@@ -57,12 +57,12 @@ namespace hazelcast {
 
             T pop() {
                 util::LockGuard lg(m);
-                if (internalQueue.empty()) {
+                while (internalQueue.empty()) {
                     // wait for notEmpty condition
                     notEmpty.wait(m);
-                }
-                if (internalQueue.empty()) {
-                    throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
+                    if (isInterrupted) {
+                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                    }
                 }
                 T element = internalQueue.front();
                 internalQueue.pop_front();
@@ -85,6 +85,7 @@ namespace hazelcast {
                 util::LockGuard lg(m);
                 notFull.notify();
                 notEmpty.notify();
+                isInterrupted = true;
             }
         private:
             util::Mutex m;
@@ -96,6 +97,7 @@ namespace hazelcast {
             size_t capacity;
             util::ConditionVariable notFull;
             util::ConditionVariable notEmpty;
+            bool isInterrupted;
         };
     }
 }
