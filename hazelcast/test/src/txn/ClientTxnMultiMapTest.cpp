@@ -27,6 +27,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
 
 namespace hazelcast {
     namespace client {
@@ -38,6 +39,38 @@ namespace hazelcast {
                 ~ClientTxnMultiMapTest();
 
             protected:
+                class GetRemoveTestTask : public util::Runnable {
+                public:
+                    GetRemoveTestTask(HazelcastClient &client, util::CountDownLatch &latch) : client(client),
+                                                                                              latch(latch) {}
+
+                    virtual void run() {
+                        std::string key = util::IOUtil::to_string(util::getThreadId());
+                        client.getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
+                        TransactionContext context = client.newTransactionContext();
+                        context.beginTransaction();
+                        TransactionalMultiMap<std::string, std::string> multiMap = context.getMultiMap<std::string, std::string >("testPutGetRemove");
+                        ASSERT_FALSE(multiMap.put(key, "value"));
+                        ASSERT_TRUE(multiMap.put(key, "value1"));
+                        ASSERT_TRUE(multiMap.put(key, "value2"));
+                        ASSERT_EQ(3, (int)multiMap.get(key).size());
+                        ASSERT_EQ(3, (int)multiMap.valueCount(key));
+                        context.commitTransaction();
+
+                        ASSERT_EQ(3, (int)multiMap.get(key).size());
+
+                        latch.countDown();
+                    }
+
+                    virtual const string getName() const {
+                        return "GetRemoveTestTask";
+                    }
+
+                private:
+                    HazelcastClient &client;
+                    util::CountDownLatch &latch;
+                };
+
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
@@ -49,32 +82,6 @@ namespace hazelcast {
             }
             
             ClientTxnMultiMapTest::~ClientTxnMultiMapTest() {
-            }
-
-            void putGetRemoveTestThread(util::ThreadArgs& args) {
-                util::ILogger &logger = util::ILogger::getLogger();
-                logger.info("[ClientTxnMultiMapTest::putGetRemoveTestThread] Thread started.");
-                
-                MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
-                HazelcastClient *client = (HazelcastClient *)args.arg1;
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
-                std::string key = util::IOUtil::to_string(util::getThreadId());
-                client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
-                TransactionContext context = client->newTransactionContext();
-                context.beginTransaction();
-                TransactionalMultiMap<std::string, std::string> multiMap = context.getMultiMap<std::string, std::string >("testPutGetRemove");
-                ASSERT_FALSE(multiMap.put(key, "value"));
-                ASSERT_TRUE(multiMap.put(key, "value1"));
-                ASSERT_TRUE(multiMap.put(key, "value2"));
-                ASSERT_EQ(3, (int)multiMap.get(key).size());
-                ASSERT_EQ(3, (int)multiMap.valueCount(key));
-                context.commitTransaction();
-
-                ASSERT_EQ(3, (int)mm->get(key).size());
-
-                latch->countDown();
-
-                logger.info("[ClientTxnMultiMapTest::putGetRemoveTestThread] Thread finished");
             }
 
             TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
@@ -103,14 +110,15 @@ namespace hazelcast {
                 MultiMap<std::string, std::string > mm = client->getMultiMap<std::string, std::string>("testPutGetRemove");
                 int n = 10;
                 util::CountDownLatch latch(n);
-                std::vector<util::StartedThread*> threads(n);
+
+                std::vector<boost::shared_ptr<util::Thread> > allThreads;
                 for (int i = 0; i < n; i++) {
-                    threads[i] = new util::StartedThread(putGetRemoveTestThread, &mm, client.get(), &latch);
+                    boost::shared_ptr<util::Thread> t(
+                            new util::Thread(boost::shared_ptr<util::Runnable>(new GetRemoveTestTask(*client, latch))));
+                    t->start();
+                    allThreads.push_back(t);
                 }
-                ASSERT_TRUE(latch.await(1));
-                for (int i = 0; i < n; i++) {
-                    delete threads[i] ;
-                }
+                ASSERT_OPEN_EVENTUALLY(latch);
             }
         }
     }

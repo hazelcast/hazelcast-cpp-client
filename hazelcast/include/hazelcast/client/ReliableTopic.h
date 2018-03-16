@@ -128,7 +128,7 @@ namespace hazelcast {
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
                               const std::string &topicName, serialization::pimpl::SerializationService *service,
                               const config::ReliableTopicConfig *reliableTopicConfig)
-                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(rb),
+                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(*rb),
                           serializationService(service), config(reliableTopicConfig) {
                     this->id = id;
                     this->listener = listener;

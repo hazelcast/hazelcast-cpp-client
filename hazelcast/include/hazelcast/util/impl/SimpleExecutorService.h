@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Future.h"
@@ -45,6 +45,8 @@ namespace hazelcast {
                                int32_t maximumQueueCapacity);
 
                 SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix, int32_t threadCount);
+
+                SimpleExecutorService(const std::string &threadNamePrefix, int32_t threadCount);
 
                 virtual ~SimpleExecutorService();
 
@@ -118,7 +120,7 @@ namespace hazelcast {
                     boost::shared_ptr<Future<T> > future;
                 };
 
-                class Worker : public util::Thread {
+                class Worker : public util::Runnable {
                     friend class SimpleExecutorService;
                 public:
                     Worker(const std::string &threadNamePrefix, int32_t queueCapacity,
@@ -126,16 +128,20 @@ namespace hazelcast {
 
                     virtual void run();
 
+                    virtual const std::string getName() const;
+
                     void schedule(const boost::shared_ptr<Runnable> &runnable);
 
+                    void start();
                 private:
                     static std::string generateThreadName(const std::string &prefix);
 
+                    std::string name;
                     // TODO: Should it be non blocking rejecting queue when compared to Java?
                     util::BlockingConcurrentQueue<boost::shared_ptr<Runnable> > workQueue;
-                    std::string name;
                     util::AtomicBoolean &live;
                     util::ILogger &logger;
+                    util::Thread thread;
                 };
 
                 util::ILogger &logger;

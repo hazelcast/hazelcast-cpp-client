@@ -17,15 +17,17 @@
 // Created by sancar koyunlu on 22/08/14.
 //
 
+#include <ClientTestSupportBase.h>
+
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/client/exception/IOException.h"
 
 #include <ctime>
 #include <errno.h>
 #include <gtest/gtest.h>
-#include <hazelcast/client/exception/IOException.h>
 
 namespace hazelcast {
     namespace client {

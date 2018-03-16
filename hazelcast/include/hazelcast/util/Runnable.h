@@ -17,6 +17,9 @@
 #ifndef HAZELCAST_UTIL_RUNNABLE_H_
 #define HAZELCAST_UTIL_RUNNABLE_H_
 
+#include <string>
+#include <stdint.h>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -38,6 +41,23 @@ namespace hazelcast {
             virtual bool isStriped() {
                 return true;
             }
+        };
+
+        class HAZELCAST_API RunnableDelegator : public Runnable {
+        public:
+            RunnableDelegator(Runnable &runnable) : runnable(runnable) {
+            }
+
+            virtual void run() {
+                runnable.run();
+            }
+
+            virtual const std::string getName() const {
+                return runnable.getName();
+            }
+
+        private:
+            Runnable &runnable;
         };
     }
 }

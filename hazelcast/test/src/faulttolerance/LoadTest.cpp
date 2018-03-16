@@ -23,7 +23,10 @@
 #include "HazelcastServer.h"
 
 #include <gtest/gtest.h>
-#include "hazelcast/util/StartedThread.h"
+#include <boost/foreach.hpp>
+
+#include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "ClientTestSupport.h"
@@ -44,54 +47,71 @@ namespace hazelcast {
                         return config;
                     }
 
-                    static void loadClient(hazelcast::util::ThreadArgs &args) {
-                        IMap<int, int> *map = (IMap<int, int> *) args.arg0;
-                        int numberOfOps = *((int *) args.arg1);
-                        util::CountDownLatch *latch = (util::CountDownLatch *) args.arg2;
+                    class LoadClientTask : public util::Runnable {
+                    public:
+                        LoadClientTask(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) : map(map),
+                                                                                                            numberOfOps(
+                                                                                                                    numberOfOps),
+                                                                                                            latch(latch) {}
 
-                        latch->countDown();
+                        virtual void run() {
+                            latch.countDown();
 
-                        latch->await(20);
+                            latch.await(20);
 
-                        for (int i = 0; i < numberOfOps; ++i) {
-                            int mod = rand() % 3;
-                            switch (mod) {
-                                case 0:
-                                    ASSERT_NO_THROW(map->put(i, i));
-                                    break;
-                                case 1:
-                                    ASSERT_NO_THROW(map->remove(i));
-                                case 2: {
-                                    boost::shared_ptr<int> val;
-                                    ASSERT_NO_THROW(val = map->get(i));
-                                    if ((int *) NULL != val.get()) {
-                                        ASSERT_EQ(*val, i);
+                            for (int i = 0; i < numberOfOps; ++i) {
+                                int mod = rand() % 3;
+                                switch (mod) {
+                                    case 0:
+                                        ASSERT_NO_THROW(map.put(i, i));
+                                        break;
+                                    case 1:
+                                        ASSERT_NO_THROW(map.remove(i));
+                                    case 2: {
+                                        boost::shared_ptr<int> val;
+                                        ASSERT_NO_THROW(val = map.get(i));
+                                        if ((int *) NULL != val.get()) {
+                                            ASSERT_EQ(*val, i);
+                                        }
+                                        break;
                                     }
-                                    break;
+                                    default:
+                                        abort();
                                 }
-                                default:
-                                    abort();
                             }
                         }
-                    }
 
-                    void addThread(util::StartedThread *thr) {
-                        threads.push_back(thr);
-                    }
-
-                    util::StartedThread *getThread(size_t i) const {
-                        return threads[i];
-                    }
-
-                    ~LoadTest() {
-                        for (std::vector<util::StartedThread *>::const_iterator it = threads.begin();
-                             it != threads.end(); ++it) {
-                            delete *it;
+                        virtual const string getName() const {
+                            return "LoadClientTask";
                         }
+
+                    private:
+                        IMap<int, int> &map;
+                        int numberOfOps;
+                        util::CountDownLatch &latch;
+                    };
+
+                    void addThread(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) {
+                        boost::shared_ptr<util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
+                        threads.push_back(boost::shared_ptr<util::Thread>(new util::Thread(task)));
+                    }
+
+                    void startThreads() {
+                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                                        t->start();
+                                    }
+                    }
+
+                    void waitForThreadsToFinish() {
+                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                                        util::ILogger::getLogger().info() << "Waiting to join for thread "
+                                                                          << t->getThreadId();
+                                        t->join();
+                                    }
                     }
 
                 protected:
-                    std::vector<util::StartedThread *> threads;
+                    std::vector<boost::shared_ptr<util::Thread> > threads;
                 };
 
                 void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {
@@ -108,8 +128,10 @@ namespace hazelcast {
                     util::CountDownLatch startLatch(numThreads);
 
                     for (int i = 0; i < numThreads; ++i) {
-                        test.addThread(new util::StartedThread(LoadTest::loadClient, &imap, &numOps, &startLatch));
+                        test.addThread(imap, numOps, startLatch);
                     }
+
+                    test.startThreads();
 
                     startLatch.await(20);
 
@@ -129,15 +151,7 @@ namespace hazelcast {
                     /*Note: Could not shutdown instance 5 here, since there may be some incomplete synchronization
                      * between instance 5 and instance 4. This caused problems in Linux environment. */
 
-                    for (int i = 0; i < numThreads; ++i) {
-                        util::StartedThread *thr = test.getThread(i);
-                        char msg[100];
-                        util::hz_snprintf(msg, 100,
-                                          "[LoadTest::loadIntMapTestWithConfig] Waiting to join for thread %ld",
-                                          thr->getThreadID());
-                        util::ILogger::getLogger().info(msg);
-                        ASSERT_TRUE(thr->join());
-                    }
+                    test.waitForThreadsToFinish();
 
                     util::ILogger::getLogger().info(
                             "[LoadTest::loadIntMapTestWithConfig] Finished the test successfully :)");

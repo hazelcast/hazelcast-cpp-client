@@ -73,6 +73,10 @@ namespace hazelcast {
                     }
                 }
             }
+
+            const std::string InSelector::getName() const {
+                return "InSelector";
+            }
         }
     }
 }

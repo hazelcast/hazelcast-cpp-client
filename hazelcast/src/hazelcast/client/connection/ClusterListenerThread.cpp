@@ -38,20 +38,16 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ClusterListenerThread::ClusterListenerThread(spi::ClientContext &clientContext)
-                    : startLatch(1), clientContext(clientContext), deletingConnection(false),
-                      workerThread((util::StartedThread *)NULL) {
+                    : startLatch(1), clientContext(clientContext), deletingConnection(false) {
+                listenerThread.reset(
+                        new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
             }
 
-            void ClusterListenerThread::staticRun(util::ThreadArgs &args) {
-                ClusterListenerThread *clusterListenerThread = (ClusterListenerThread *) args.arg0;
-                int memberPort = *((int *)args.arg1);
-                clusterListenerThread->run(args.currentThread, memberPort);
+            const std::string ClusterListenerThread::getName() const {
+                return "ClusterListenerThread";
             }
 
-            void ClusterListenerThread::run(util::Thread *currentThread, int memberPort) {
-                workerThread = currentThread;
-                awsMemberPort = memberPort;
-
+            void ClusterListenerThread::run() {
                 Address previousConnectionAddr;
                 Address *previousConnectionAddrPtr = NULL;
                 spi::LifecycleService &lifecycleService = clientContext.getLifecycleService();
@@ -83,7 +79,7 @@ namespace hazelcast {
                         clientContext.getServerListenerService().triggerFailedListeners();
                         startLatch.countDown();
                         listenMembershipEvents();
-                        currentThread->interruptibleSleep(1);
+                        listenerThread->interruptibleSleep(1);
                     } catch (std::exception &e) {
                         if (lifecycleService.isRunning()) {
                             util::ILogger::getLogger().warning(
@@ -100,7 +96,7 @@ namespace hazelcast {
                             deletingConnection = false;
                         }
                         if (clientContext.getLifecycleService().isRunning()) {
-                            currentThread->interruptibleSleep(1);
+                            listenerThread->interruptibleSleep(1);
                         }
                     }
                 }
@@ -114,11 +110,6 @@ namespace hazelcast {
                         clientContext.getLifecycleService().fireLifecycleEvent(LifecycleEvent::CLIENT_DISCONNECTED);
                     }
                     deletingConnection = false;
-                }
-                util::Thread *worker = workerThread;
-                if (worker) {
-                    workerThread = (util::StartedThread *) NULL;
-                    delete worker;
                 }
             }
 
@@ -381,6 +372,16 @@ namespace hazelcast {
                 startLatch.await();
                 return !clientContext.getClusterService().getMemberList().empty();
             }
+
+            void ClusterListenerThread::setAwsMemberPort(int awsMemberPort) {
+                ClusterListenerThread::awsMemberPort = awsMemberPort;
+            }
+
+            bool ClusterListenerThread::start() {
+                listenerThread->start();
+                return awaitStart();
+            }
+
         }
     }
 }

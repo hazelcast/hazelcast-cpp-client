@@ -73,7 +73,7 @@ namespace hazelcast {
                 if (!isJoined.compareAndSet(false, true)) {
                     return true;
                 }
-                if (id == getThreadID()) {
+                if (id == getThreadId()) {
                     // called from inside the thread, deadlock possibility
                     return false;
                 }
@@ -86,7 +86,7 @@ namespace hazelcast {
                 return true;
             }
 
-            virtual long getThreadID() {
+            virtual long getThreadId() {
                 return GetCurrentThreadId();
             }
 

@@ -23,7 +23,6 @@
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 #include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/topic/ReliableMessageListener.h"
 #include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"

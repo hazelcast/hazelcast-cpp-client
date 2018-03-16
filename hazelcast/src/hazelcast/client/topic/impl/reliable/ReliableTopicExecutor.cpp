@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
+#include "hazelcast/client/proxy/RingbufferImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb)
-                    : ringbuffer(rb), q(10), shutdown(false) {
+                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb)
+                    : ringbuffer(rb), runnerThread(boost::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown))),
+                      q(10), shutdown(false) {
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {
@@ -31,9 +32,7 @@ namespace hazelcast {
                     }
 
                     void ReliableTopicExecutor::start() {
-                        if (NULL == runnerThread.get()) {
-                            runnerThread = std::auto_ptr<util::StartedThread>(new util::StartedThread(executerRun, &shutdown, &q, ringbuffer));
-                        }
+                        runnerThread.start();
                     }
 
                     void ReliableTopicExecutor::stop() {
@@ -46,45 +45,32 @@ namespace hazelcast {
                         m.callback = NULL;
                         m.sequence = -1;
                         execute(m);
-
-                        /**
-                         * The following line is commented out due to bug
-                         * https://github.com/hazelcast/hazelcast-cpp-client/issues/339
-                         */
-                        //runnerThread->cancel();
-                        runnerThread->join();
-                        runnerThread.reset();
                     }
 
                     void ReliableTopicExecutor::execute(const Message &m) {
                         q.push(m);
                     }
 
-                    void ReliableTopicExecutor::executerRun(util::ThreadArgs &args) {
-                        util::AtomicBoolean *shutdownFlag = (util::AtomicBoolean *)args.arg0;
-                        util::BlockingConcurrentQueue<Message> *q = (util::BlockingConcurrentQueue<Message> *)args.arg1;
-                        Ringbuffer<topic::impl::reliable::ReliableTopicMessage> * rb = (Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *)args.arg2;
-
-                        while (!(*shutdownFlag)) {
-                            Message m = q->pop();
+                    void ReliableTopicExecutor::Task::run() {
+                        while (!shutdown) {
+                            Message m = q.pop();
                             if (CANCEL == m.type) {
                                 // exit the thread
                                 return;
                             }
                             try {
-                                proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *ringbuffer =
-                                        (proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *)rb;
-
-                                connection::CallFuture future = ringbuffer->readManyAsync(m.sequence, 1, m.maxCount);
+                                proxy::RingbufferImpl<ReliableTopicMessage> &ringbuffer =
+                                        static_cast<proxy::RingbufferImpl<ReliableTopicMessage> &>(rb);
+                                connection::CallFuture future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
                                 std::auto_ptr<protocol::ClientMessage> responseMsg;
                                 do {
                                     if (future.waitFor(1000)) {
                                         responseMsg = future.get(); // every one second
                                     }
-                                } while (!(*shutdownFlag) && (protocol::ClientMessage *)NULL == responseMsg.get());
+                                } while (!shutdown && (protocol::ClientMessage *)NULL == responseMsg.get());
 
-                                if (!(*shutdownFlag)) {
-                                    std::auto_ptr<DataArray<ReliableTopicMessage> > allMessages = ringbuffer->getReadManyAsyncResponseObject(
+                                if (!shutdown) {
+                                    std::auto_ptr<DataArray<ReliableTopicMessage> > allMessages = ringbuffer.getReadManyAsyncResponseObject(
                                             responseMsg);
 
                                     m.callback->onResponse(allMessages.get());
@@ -93,7 +79,17 @@ namespace hazelcast {
                                 m.callback->onFailure(&e);
                             }
                         }
+
                     }
+
+                    const std::string ReliableTopicExecutor::Task::getName() const {
+                        return "ReliableTopicExecutor Task";
+                    }
+
+                    ReliableTopicExecutor::Task::Task(Ringbuffer<ReliableTopicMessage> &rb,
+                                                      util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
+                                                      util::AtomicBoolean &shutdown) : rb(rb), q(q),
+                                                                                       shutdown(shutdown) {}
                 }
             }
         }

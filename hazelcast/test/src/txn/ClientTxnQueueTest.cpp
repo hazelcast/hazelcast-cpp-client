@@ -26,7 +26,6 @@
 #include "HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {

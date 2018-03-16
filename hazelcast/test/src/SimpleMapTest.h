@@ -24,6 +24,7 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/Thread.h"
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
@@ -41,14 +42,14 @@ int PUT_PERCENTAGE = 40;
 class Stats {
 public:
     Stats() {
-    };
+    }
 
     Stats(const Stats &rhs) {
         Stats newOne;
-        getCount = (int)rhs.getCount;
-        putCount = (int)rhs.putCount;
-        removeCount = (int)rhs.removeCount;
-    };
+        getCount = (int) rhs.getCount;
+        putCount = (int) rhs.putCount;
+        removeCount = (int) rhs.removeCount;
+    }
 
     Stats getAndReset() {
         Stats newOne(*this);
@@ -56,31 +57,44 @@ public:
         putCount = 0;
         removeCount = 0;
         return newOne;
-    };
+    }
     mutable hazelcast::util::AtomicInt getCount;
     mutable hazelcast::util::AtomicInt putCount;
     mutable hazelcast::util::AtomicInt removeCount;
 
-    void print() const{
-        std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = " << removeCount << std::endl;
-    };
+    void print() const {
+        std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = "
+                  << removeCount << std::endl;
+    }
 
-    int total() const{
+    int total() const {
         return (int) getCount + (int) putCount + (int) removeCount;
-    };
-} stats;
+    }
+};
 
-void printStats(hazelcast::util::ThreadArgs &args) {
-    while (true) {
-        try {
-            hazelcast::util::sleep((unsigned int)STATS_SECONDS);
-            const Stats statsNow = stats.getAndReset();
-            statsNow.print();
-            std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
-        } catch (std::exception &e) {
-            std::cerr << e.what() << std::endl;
+class StatsPrinterTask : public hazelcast::util::Runnable {
+public:
+    StatsPrinterTask(Stats &stats) : stats(stats) {}
+
+    virtual void run() {
+        while (true) {
+            try {
+                hazelcast::util::sleep((unsigned int) STATS_SECONDS);
+                const Stats statsNow = stats.getAndReset();
+                statsNow.print();
+                std::cerr << "Operations per Second : " << statsNow.total() / STATS_SECONDS << std::endl;
+            } catch (std::exception &e) {
+                std::cerr << e.what() << std::endl;
+            }
         }
     }
+
+    virtual const string getName() const {
+        return "StatPrinterTask";
+    }
+
+private:
+    Stats &stats;
 };
 
 class SimpleMapTest {
@@ -91,70 +105,79 @@ public:
     SimpleMapTest(std::string address, int port) {
         server_address = address;
         server_port = port;
-    };
-
-    static void staticOp(hazelcast::util::ThreadArgs &args) {
-        SimpleMapTest *simpleMapTest = (SimpleMapTest *) args.arg0;
-        HazelcastClient *hazelcastClient = (HazelcastClient *) args.arg1;
-        simpleMapTest->op(hazelcastClient);
     }
 
-    void op(HazelcastClient *a) {
-        IMap<int, std::vector<char> > map = a->getMap<int, std::vector<char > >("cppDefault");
+    class Task : public hazelcast::util::Runnable {
+    public:
+        Task(Stats &stats, IMap<int, vector<char> > &map) : stats(stats), map(map) {}
 
-        std::vector<char> value(VALUE_SIZE);
-        bool running = true;
-        int getCount = 0;
-        int putCount = 0;
-        int removeCount = 0;
+        virtual void run() {
+            std::vector<char> value(VALUE_SIZE);
+            bool running = true;
+            int getCount = 0;
+            int putCount = 0;
+            int removeCount = 0;
 
-        int updateIntervalCount = 1000;
-        while (running) {
-            int key = rand() % ENTRY_COUNT;
-            int operation = (rand() % 100);
-            try {
-                if (operation < GET_PERCENTAGE) {
-                    map.get(key);
-                    ++getCount;
-                } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                    boost::shared_ptr<std::vector<char> > vector = map.put(key, value);
-                    ++putCount;
-                } else {
-                    map.remove(key);
-                    ++removeCount;
+            int updateIntervalCount = 1000;
+            while (running) {
+                int key = rand() % ENTRY_COUNT;
+                int operation = (rand() % 100);
+                try {
+                    if (operation < GET_PERCENTAGE) {
+                        map.get(key);
+                        ++getCount;
+                    } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
+                        boost::shared_ptr<std::vector<char> > vector = map.put(key, value);
+                        ++putCount;
+                    } else {
+                        map.remove(key);
+                        ++removeCount;
+                    }
+                    updateStats(updateIntervalCount, getCount, putCount, removeCount);
+                } catch (hazelcast::client::exception::IOException &e) {
+                    hazelcast::util::ILogger::getLogger().warning(
+                            std::string("[SimpleMapTest IOException] ") + e.what());
+                } catch (hazelcast::client::exception::HazelcastInstanceNotActiveException &e) {
+                    hazelcast::util::ILogger::getLogger().warning(
+                            std::string("[SimpleMapTest HazelcastInstanceNotActiveException] ") + e.what());
+                } catch (hazelcast::client::exception::IException &e) {
+                    hazelcast::util::ILogger::getLogger().warning(
+                            std::string("[SimpleMapTest IException] ") + e.what());
+                } catch (...) {
+                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest unknown exception]");
+                    running = false;
+                    throw;
                 }
-                updateStats(updateIntervalCount, getCount, putCount, removeCount);
-            } catch(hazelcast::client::exception::IOException &e) {
-                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IOException] ") + e.what());
-            } catch(hazelcast::client::exception::HazelcastInstanceNotActiveException &e) {
-                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest HazelcastInstanceNotActiveException] ") + e.what());
-            } catch(hazelcast::client::exception::IException &e) {
-                hazelcast::util::ILogger::getLogger().warning(std::string("[SimpleMapTest IException] ") + e.what());
-            } catch(...) {
-                hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest unknown exception]");
-                running = false;
-                throw;
             }
         }
-    }
 
-    void updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
-        if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
-                        int current = stats.getCount;
-                        stats.getCount = current + getCount;
-                        getCount = 0;
+        virtual const string getName() const {
+            return "SimpleMapTest Task";
+        }
 
-                        current = stats.putCount;
-                        stats.putCount = current + putCount;
-                        putCount = 0;
+    private:
+        void updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
+            if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
+                int current = stats.getCount;
+                stats.getCount = current + getCount;
+                getCount = 0;
 
-                        current = stats.removeCount;
-                        stats.removeCount = current + removeCount;
-                        removeCount = 0;
-                    }
-    }
+                current = stats.putCount;
+                stats.putCount = current + putCount;
+                putCount = 0;
 
-    void run() {
+                current = stats.removeCount;
+                stats.removeCount = current + removeCount;
+                removeCount = 0;
+            }
+        }
+
+        Stats &stats;
+        IMap<int, std::vector<char> > &map;
+    };
+
+
+    void start() {
         std::cerr << "Starting Test with  " << std::endl;
         std::cerr << "      Thread Count: " << THREAD_COUNT << std::endl;
         std::cerr << "       Entry Count: " << ENTRY_COUNT << std::endl;
@@ -167,19 +190,23 @@ public:
         clientConfig.getGroupConfig().setName("dev").setPassword("dev-pass");
         clientConfig.addAddress(Address(server_address, server_port)).setAttemptPeriod(10 * 1000);
         clientConfig.setLogLevel(FINEST);
-        hazelcast::util::StartedThread monitor(printStats);
+
+        Stats stats;
+        hazelcast::util::Thread monitor(boost::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)));
+
         HazelcastClient hazelcastClient(clientConfig);
 
-        std::vector< hazelcast::util::StartedThread * > threads(THREAD_COUNT);
+        IMap<int, std::vector<char> > map = hazelcastClient.getMap<int, std::vector<char> >("cppDefault");
+
+        std::vector<boost::shared_ptr<hazelcast::util::Thread> > threads;
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            threads[i] = new hazelcast::util::StartedThread(&SimpleMapTest::staticOp, this, &hazelcastClient);
+            threads.push_back(boost::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(
+                    boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map)))));
         }
+
+        monitor.start();
         monitor.join();
-
-        for (int i = 0; i < THREAD_COUNT; i++) {
-            delete threads[i];
-        }
     }
 };
 

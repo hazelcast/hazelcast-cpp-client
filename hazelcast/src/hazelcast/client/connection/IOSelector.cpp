@@ -27,7 +27,6 @@
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/StartedThread.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -42,11 +41,6 @@ namespace hazelcast {
             :connectionManager(connectionManager) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
-            }
-
-            void IOSelector::staticListen(util::ThreadArgs &args) {
-                IOSelector *inSelector = (IOSelector *) args.arg0;
-                inSelector->listen();
             }
 
             IOSelector::~IOSelector() {
@@ -67,7 +61,7 @@ namespace hazelcast {
                 }
             }
 
-            void IOSelector::listen() {
+            void IOSelector::run() {
                 while (isAlive) {
                     try{
                         processListenerQueue();

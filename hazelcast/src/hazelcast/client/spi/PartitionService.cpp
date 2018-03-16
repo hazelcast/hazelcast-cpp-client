@@ -15,7 +15,7 @@
  */
 //
 // Created by sancar koyunlu on 6/3/13.
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/spi/PartitionService.h"
 #include "hazelcast/client/spi/ClusterService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
@@ -37,7 +37,8 @@ namespace hazelcast {
             : clientContext(clientContext)
             , updating(false)
             , partitionCount(0) {
-
+                partitionListenerThread.reset(
+                        new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
             }
 
             bool PartitionService::start() {
@@ -46,18 +47,16 @@ namespace hazelcast {
                 if (!getInitialPartitions()) {
                     return false;
                 }
-                util::StartedThread *partitionListener = new util::StartedThread("hz.partitionListener", PartitionService::staticRunListener, this);
-                partitionListenerThread.reset(partitionListener);
+                partitionListenerThread->start();
+
                 return true;
             }
 
             void PartitionService::shutdown() {
                 // Do not take the lock here since it may be needed by the partition listener thread to cancel and
                 // the join to succeed and if the lock is already taken it causes a deadlock.
-                if (partitionListenerThread.get() != NULL) {
-                    partitionListenerThread->wakeup();
-                    partitionListenerThread->join();
-                }
+                partitionListenerThread->cancel();
+                partitionListenerThread->join();
             }
 
             boost::shared_ptr<Address> PartitionService::getPartitionOwner(int partitionId) {
@@ -77,15 +76,10 @@ namespace hazelcast {
                 return (hash == INT_MIN) ? 0 : abs(hash) % pc;
             }
 
-            void PartitionService::staticRunListener(util::ThreadArgs& args) {
-                PartitionService *partitionService = (PartitionService *)args.arg0;
-                partitionService->runListener(args.currentThread);
-            }
-
-            void PartitionService::runListener(util::Thread *currentThread) {
+            void PartitionService::run() {
                 while (clientContext.getLifecycleService().isRunning()) {
                     try {
-                        currentThread->interruptibleSleep(10);
+                        partitionListenerThread->interruptibleSleep(10);
                         if (!clientContext.getLifecycleService().isRunning()) {
                             break;
                         }
@@ -94,6 +88,10 @@ namespace hazelcast {
                         util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
                     }
                 }
+            }
+
+            const std::string PartitionService::getName() const {
+                return "hz.partitionListener";
             }
 
             std::auto_ptr<protocol::ClientMessage> PartitionService::getPartitionsFrom(const Address& address) {
@@ -215,9 +213,7 @@ namespace hazelcast {
             }
 
             void PartitionService::wakeup() {
-                if (NULL != partitionListenerThread.get()) {
-                    partitionListenerThread->wakeup();
-                }
+                partitionListenerThread->wakeup();
             }
 
             int PartitionService::getPartitionCount() {
@@ -227,6 +223,7 @@ namespace hazelcast {
 
                 return partitionCount;
             }
+
         }
     }
 }

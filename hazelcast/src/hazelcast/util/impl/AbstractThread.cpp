@@ -19,11 +19,8 @@
 namespace hazelcast {
     namespace util {
         namespace impl {
-            AbstractThread::AbstractThread(const std::string &name) : threadName(name) {
-            }
 
-            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable) : threadName(
-                    runnable->getName()) {
+            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable) : target(runnable) {
                 this->target = runnable;
             }
 
@@ -31,19 +28,22 @@ namespace hazelcast {
             }
 
             const std::string AbstractThread::getName() const {
-                return threadName;
+                if (target.get() == NULL) {
+                    return "";
+                }
+
+                return target->getName();
             }
 
             void AbstractThread::start() {
                 if (!started.compareAndSet(false, true)) {
                     return;
                 }
-                Runnable *targetObject = target.get();
-                if (targetObject == NULL) {
-                    targetObject = this;
+                if (target.get() == NULL) {
+                    return;
                 }
 
-                startInternal(targetObject);
+                startInternal(target.get());
             }
         }
     }

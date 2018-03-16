@@ -28,14 +28,8 @@ namespace hazelcast {
     namespace util {
         class Thread : public impl::AbstractThread {
         public:
-            Thread(const std::string &name) : impl::AbstractThread(name) {
+            Thread(const boost::shared_ptr<Runnable> &runnable) : impl::AbstractThread(runnable) {
                 initAttributes();
-            }
-
-            Thread(const boost::shared_ptr<Runnable> &runnable) : impl::AbstractThread(runnable->getName()) {
-                initAttributes();
-
-                this->target = runnable;
             }
 
             virtual ~Thread() {
@@ -101,7 +95,7 @@ namespace hazelcast {
                 return true;
             }
 
-            virtual long getThreadID() {
+            virtual long getThreadId() {
                 return (long) pthread_self();
             }
 

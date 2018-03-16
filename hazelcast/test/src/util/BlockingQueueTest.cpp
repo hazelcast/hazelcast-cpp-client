@@ -18,11 +18,10 @@
 //
 #include <gtest/gtest.h>
 #include <hazelcast/util/CountDownLatch.h>
-#include <TestHelperFunctions.h>
+#include <ClientTestSupportBase.h>
 
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {

@@ -32,7 +32,6 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/util/StartedThread.h"
 #include "hazelcast/client/SocketInterceptor.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -44,9 +43,12 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             ConnectionManager::ConnectionManager(spi::ClientContext &clientContext, bool smartRouting)
-                    : clientContext(clientContext), inSelector(*this), outSelector(*this), inSelectorThread(NULL),
-                      outSelectorThread(NULL), live(true), heartBeater(clientContext),
-                      heartBeatThread(NULL), smartRouting(smartRouting), ownerConnectionFuture(clientContext),
+                    : clientContext(clientContext), inSelector(*this), outSelector(*this),
+                      inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector))),
+                      outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector))),
+                      live(true),
+                      heartBeatThread(boost::shared_ptr<util::Runnable>(new HeartBeater(clientContext, heartBeatThread))),
+                      smartRouting(smartRouting), ownerConnectionFuture(clientContext),
                       callIdGenerator(0), connectionIdCounter(0), socketFactory(clientContext),
                       translator(clientContext.getClientConfig().getNetworkConfig().getAwsConfig()) {
                 const byte protocol_bytes[3] = {'C', 'B', '2'};
@@ -61,40 +63,34 @@ namespace hazelcast {
                 if (!outSelector.start()) {
                     return false;
                 }
-                inSelectorThread.reset(new util::StartedThread("hz.inListener", InSelector::staticListen, &inSelector));
-                outSelectorThread.reset(new util::StartedThread("hz.outListener", OutSelector::staticListen, &outSelector));
-                heartBeatThread.reset(new util::StartedThread("hz.heartbeater", HeartBeater::staticStart, &heartBeater));
+                inSelectorThread.start();
+                outSelectorThread.start();
+                heartBeatThread.start();
 
                 return socketFactory.start();
             }
 
             void ConnectionManager::shutdown() {
-                live = false;
+                if (!live.compareAndSet(true, false)) {
+                    return;
+                }
+
+                heartBeatThread.wakeup();
+                outSelector.shutdown();
+                inSelector.shutdown();
+
                 // close connections
                 BOOST_FOREACH(boost::shared_ptr<Connection> connection ,  connections.values()) {
                                 // prevent any exceptions
                                 util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                             }
-                heartBeater.shutdown();
-                if (heartBeatThread.get() != NULL) {
-                    heartBeatThread->cancel();
-                    heartBeatThread->join();
-                    heartBeatThread.reset();
-                }
-                inSelector.shutdown();
-                outSelector.shutdown();
-                if (inSelectorThread.get() != NULL) {
-                    inSelectorThread->cancel();
-                    inSelectorThread->join();
-                    inSelectorThread.reset();
-                }
-                if (outSelectorThread.get() != NULL) {
-                    outSelectorThread->cancel();
-                    outSelectorThread->join();
-                    outSelectorThread.reset();
-                }
+
                 connections.clear();
                 socketConnections.clear();
+
+                heartBeatThread.join();
+                outSelectorThread.join();
+                inSelectorThread.join();
             }
 
             void ConnectionManager::onCloseOwnerConnection() {

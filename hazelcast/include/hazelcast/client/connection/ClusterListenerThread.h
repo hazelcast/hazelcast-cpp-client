@@ -23,7 +23,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/AtomicInt.h"
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/protocol/codec/ClientAddMembershipListenerCodec.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/spi/ClusterService.h"
@@ -52,7 +52,9 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API ClusterListenerThread : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+            class HAZELCAST_API ClusterListenerThread
+                    : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler,
+                      public util::Runnable {
                 friend class spi::ClusterService;
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
@@ -69,11 +71,16 @@ namespace hazelcast {
 
                 std::set<Address, addressComparator> getSocketAddresses() const;
 
-
                 /**
                  * @return true if started and initialized successfully, false otherwise
                  */
-                bool awaitStart();
+                bool start();
+
+                virtual void run();
+
+                virtual const std::string getName() const;
+
+                void setAwsMemberPort(int awsMemberPort);
 
             private:
                 util::CountDownLatch startLatch;
@@ -83,7 +90,7 @@ namespace hazelcast {
 
                 std::vector<Member> members;
 
-                util::Atomic<util::Thread *> workerThread;
+                std::auto_ptr<util::Thread> listenerThread;
                 bool isInitialMembersLoaded;
 
                 bool isRegistrationIdReceived;
@@ -112,9 +119,7 @@ namespace hazelcast {
 
                 void fireMembershipEvents(const std::vector<MembershipEvent> &events) const;
 
-                static void staticRun(util::ThreadArgs &args);
-
-                void run(util::Thread *currentThread, int memberPort);
+                bool awaitStart();
             };
         }
     }

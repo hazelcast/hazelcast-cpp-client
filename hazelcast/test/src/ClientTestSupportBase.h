@@ -23,6 +23,9 @@
 #include <memory>
 #include <string>
 
+#include <TestHelperFunctions.h>
+#include <hazelcast/util/Runnable.h>
+
 namespace hazelcast {
     namespace client {
         class ClientConfig;
@@ -48,6 +51,52 @@ namespace hazelcast {
             };
         }
     }
+
+    namespace util {
+        class Thread;
+
+        class ThreadArgs {
+        public:
+            const void *arg0;
+            const void *arg1;
+            const void *arg2;
+            const void *arg3;
+            util::Thread *currentThread;
+
+            void (*func)(ThreadArgs &);
+        };
+
+
+        class StartedThread : util::Runnable {
+        public:
+            StartedThread(const std::string &name, void (*func)(ThreadArgs &),
+                          void *arg0 = NULL, void *arg1 = NULL, void *arg2 = NULL, void *arg3 = NULL);
+
+            StartedThread(void (func)(ThreadArgs &),
+                          void *arg0 = NULL,
+                          void *arg1 = NULL,
+                          void *arg2 = NULL,
+                          void *arg3 = NULL);
+
+            virtual ~StartedThread();
+
+            bool join();
+
+            void cancel();
+
+            virtual void run();
+
+            virtual const std::string getName() const;
+
+        private:
+            ThreadArgs threadArgs;
+            std::string name;
+            std::auto_ptr<util::Thread> thread;
+
+            void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);
+        };
+    }
 }
+
 
 #endif //HAZELCAST_CLIENT_TEST_CLIENTTESTSUPPORTBASE_H

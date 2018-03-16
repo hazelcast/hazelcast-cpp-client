@@ -44,6 +44,12 @@ namespace hazelcast {
                 startWorkers();
             }
 
+            SimpleExecutorService::SimpleExecutorService(const std::string &threadNamePrefix, int threadCount)
+                    : logger(util::ILogger::getLogger()), threadNamePrefix(threadNamePrefix), threadCount(threadCount),
+                      live(true), workers(threadCount), maximumQueueCapacity(DEFAULT_EXECUTOR_QUEUE_CAPACITY) {
+                startWorkers();
+            }
+
             void SimpleExecutorService::startWorkers() {
                 // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
                 // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
@@ -89,8 +95,6 @@ namespace hazelcast {
 
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 worker->workQueue.clear();
-                                worker->wakeup();
-                                worker->join();
                             }
             }
 
@@ -115,12 +119,20 @@ namespace hazelcast {
             SimpleExecutorService::Worker::Worker(const std::string &threadNamePrefix,
                                                   int32_t queueCapacity,
                                                   util::AtomicBoolean &live, util::ILogger &logger)
-                    : Thread(generateThreadName(threadNamePrefix)), workQueue(queueCapacity), live(live),
-                      logger(logger) {
+                    : name(generateThreadName(threadNamePrefix)), workQueue(queueCapacity), live(live),
+                      logger(logger), thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
             }
 
             void SimpleExecutorService::Worker::schedule(const boost::shared_ptr<Runnable> &runnable) {
                 workQueue.push(runnable);
+            }
+
+            void SimpleExecutorService::Worker::start() {
+                thread.start();
+            }
+
+            const std::string SimpleExecutorService::Worker::getName() const {
+                return name;
             }
 
             std::string SimpleExecutorService::Worker::generateThreadName(const std::string &prefix) {

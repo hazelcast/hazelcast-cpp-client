@@ -23,7 +23,7 @@
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/util/ThreadArgs.h"
+#include "hazelcast/util/Runnable.h"
 #include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -42,7 +42,7 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API IOSelector {
+            class HAZELCAST_API IOSelector : public util::Runnable {
             public:
                 IOSelector(ConnectionManager &connectionManager);
 
@@ -52,11 +52,7 @@ namespace hazelcast {
 
                 bool initListenSocket(util::SocketSet &wakeUpSocketSet);
 
-                static void staticListen(util::ThreadArgs& args);
-
-                void listen();
-
-                virtual void listenInternal() = 0;
+                void run();
 
                 void addTask(ListenerTask *listenerTask);
 
@@ -77,11 +73,13 @@ namespace hazelcast {
                 ConnectionManager &connectionManager;
                 std::auto_ptr<Socket> sleepingSocket;
 
+                virtual void listenInternal() = 0;
+
                 /**
                  * @return true if should return from the calling method
                  */
                 bool checkError(const char *messagePrefix, int numSelected) const;
-            private:
+
                 void processListenerQueue();
 
                 std::auto_ptr<Socket> wakeUpSocket;

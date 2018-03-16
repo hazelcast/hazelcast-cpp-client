@@ -33,10 +33,8 @@
 namespace hazelcast {
     namespace util {
         namespace impl {
-            class HAZELCAST_API AbstractThread : public Runnable {
+            class HAZELCAST_API AbstractThread {
             public:
-                AbstractThread(const std::string &name);
-
                 AbstractThread(const boost::shared_ptr<Runnable> &runnable);
 
                 virtual ~AbstractThread();
@@ -53,13 +51,12 @@ namespace hazelcast {
 
                 void start();
 
-                virtual long getThreadID() = 0;
+                virtual long getThreadId() = 0;
 
             protected:
 
                 virtual void startInternal(Runnable *targetObject) = 0;
 
-                std::string threadName;
                 util::AtomicBoolean isJoined;
                 util::AtomicBoolean started;
                 ConditionVariable wakeupCondition;

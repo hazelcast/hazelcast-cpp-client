@@ -33,6 +33,8 @@ namespace hazelcast {
                 void listenInternal();
 
                 bool start();
+
+                virtual const std::string getName() const;
             };
         }
     }

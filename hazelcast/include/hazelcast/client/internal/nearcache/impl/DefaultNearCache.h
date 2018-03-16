@@ -19,7 +19,7 @@
 #include <string>
 #include <memory>
 
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Preconditions.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/store/NearCacheDataRecordStore.h"
@@ -156,7 +156,7 @@ namespace hazelcast {
                             }
                         }
 
-                        class ExpirationTask {
+                        class ExpirationTask : public util::Runnable {
                         public:
                             ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store)
                                     : expirationInProgress(false), nearCacheRecordStore(store),
@@ -200,30 +200,34 @@ namespace hazelcast {
                                 }
                             }
 
+                            virtual const std::string getName() const {
+                                return "ExpirationTask";
+                            }
+
                             void schedule() {
-                                task = std::auto_ptr<util::StartedThread>(new util::StartedThread(taskStarter, this));
+                                task = std::auto_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
+                                        new ExpirationTask(name, nearCacheRecordStore))));
+                                task->start();
+                                cancelled = false;
                             }
 
                             void cancel() {
-                                cancelled = true;
+                                if(!cancelled.compareAndSet(false, true)) {
+                                    return;
+                                }
+
                                 task->cancel();
                                 task->join();
-                                std::ostringstream out;
-                                out << "Near cache expiration thread is stopped for map "
-                                << name << " since near cache is being destroyed.";
-                                util::ILogger::getLogger().info(out.str());
+                                util::ILogger::getLogger().info() << "Near cache expiration thread is stopped for map "
+                                                                     << name << " since near cache is being destroyed.";
                             }
 
-                            static void taskStarter(util::ThreadArgs &args) {
-                                ExpirationTask *expirationTask = (ExpirationTask *) args.arg0;
-                                expirationTask->run();
-                            }
                         private:
                             util::AtomicBoolean expirationInProgress;
                             NearCacheRecordStore<KS, V> &nearCacheRecordStore;
                             int initialDelayInSeconds;
                             int periodInSeconds;
-                            std::auto_ptr<util::StartedThread> task;
+                            std::auto_ptr<util::Thread> task;
                             util::AtomicBoolean cancelled;
                             std::string name;
                         };

@@ -25,6 +25,7 @@
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalMultiMap.h"
 
 namespace hazelcast {
@@ -50,6 +51,40 @@ namespace hazelcast {
                         instance = NULL;
                     }
 
+                    class GetRemoveTestTask : public util::Runnable {
+                    public:
+                        GetRemoveTestTask(MultiMap<string, string> &mm, util::CountDownLatch &latch) : mm(mm),
+                                                                                                       latch(latch) {}
+
+                        virtual void run() {
+                            std::string key = util::IOUtil::to_string(util::getThreadId());
+                            client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
+                            TransactionContext context = client->newTransactionContext();
+                            context.beginTransaction();
+                            TransactionalMultiMap<std::string, std::string> originalMultiMap = context.getMultiMap<std::string, std::string>(
+                                    "testPutGetRemove");
+                            client::adaptor::RawPointerTransactionalMultiMap<std::string, std::string> multiMap(
+                                    originalMultiMap);
+                            ASSERT_FALSE(multiMap.put(key, "value"));
+                            ASSERT_TRUE(multiMap.put(key, "value1"));
+                            ASSERT_TRUE(multiMap.put(key, "value2"));
+                            ASSERT_EQ(3, (int) multiMap.get(key)->size());
+                            context.commitTransaction();
+
+                            ASSERT_EQ(3, (int) mm.get(key).size());
+
+                            latch.countDown();
+                        }
+
+                        virtual const string getName() const {
+                            return "GetRemoveTestTask";
+                        }
+
+                    private:
+                        MultiMap<std::string, std::string> &mm;
+                        util::CountDownLatch &latch;
+                    };
+
                     static HazelcastServer *instance;
                     static ClientConfig *clientConfig;
                     static HazelcastClient *client;
@@ -59,39 +94,20 @@ namespace hazelcast {
                 ClientConfig *RawPointerTxnMultiMapTest::clientConfig = NULL;
                 HazelcastClient *RawPointerTxnMultiMapTest::client = NULL;
 
-                void putGetRemoveTestThread(util::ThreadArgs& args) {
-                    MultiMap<std::string, std::string> *mm = (MultiMap<std::string, std::string > *)args.arg0;
-                    HazelcastClient *client = (HazelcastClient *)args.arg1;
-                    util::CountDownLatch *latch = (util::CountDownLatch *)args.arg2;
-                    std::string key = util::IOUtil::to_string(util::getThreadId());
-                    client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
-                    TransactionContext context = client->newTransactionContext();
-                    context.beginTransaction();
-                    TransactionalMultiMap<std::string, std::string> originalMultiMap = context.getMultiMap<std::string, std::string >("testPutGetRemove");
-                    client::adaptor::RawPointerTransactionalMultiMap<std::string, std::string> multiMap(originalMultiMap);
-                    ASSERT_FALSE(multiMap.put(key, "value"));
-                    ASSERT_TRUE(multiMap.put(key, "value1"));
-                    ASSERT_TRUE(multiMap.put(key, "value2"));
-                    ASSERT_EQ(3, (int)multiMap.get(key)->size());
-                    context.commitTransaction();
-
-                    ASSERT_EQ(3, (int)mm->get(key).size());
-
-                    latch->countDown();
-                }
-
                 TEST_F(RawPointerTxnMultiMapTest, testPutGetRemove) {
-                    MultiMap<std::string, std::string> mm = client->getMultiMap<std::string, std::string >("testPutGetRemove");
+                    MultiMap<std::string, std::string> mm = client->getMultiMap<std::string, std::string>(
+                            "testPutGetRemove");
                     int n = 10;
                     util::CountDownLatch latch(n);
-                    std::vector<util::StartedThread*> threads(n);
+
+                    std::vector<boost::shared_ptr<util::Thread> > allThreads;
                     for (int i = 0; i < n; i++) {
-                        threads[i] = new util::StartedThread(putGetRemoveTestThread, &mm, client, &latch);
+                        boost::shared_ptr<util::Thread> t(
+                                new util::Thread(boost::shared_ptr<util::Runnable>(new GetRemoveTestTask(mm, latch))));
+                        t->start();
+                        allThreads.push_back(t);
                     }
                     ASSERT_TRUE(latch.await(1));
-                    for (int i = 0; i < n; i++) {
-                        delete threads[i] ;
-                    }
                 }
             }
         }

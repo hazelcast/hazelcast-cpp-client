@@ -33,7 +33,7 @@
 #include "hazelcast/client/internal/socket/SocketFactory.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/util/Atomic.h"
-#include "hazelcast/util/StartedThread.h"
+#include "hazelcast/util/Thread.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -207,14 +207,13 @@ namespace hazelcast {
                 SocketInterceptor *socketInterceptor;
                 InSelector inSelector;
                 OutSelector outSelector;
-                std::auto_ptr<util::StartedThread> inSelectorThread;
-                std::auto_ptr<util::StartedThread> outSelectorThread;
+                util::Thread inSelectorThread;
+                util::Thread outSelectorThread;
                 util::AtomicBoolean live;
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
 
-                connection::HeartBeater heartBeater;
-                std::auto_ptr<util::StartedThread> heartBeatThread;
+                util::Thread heartBeatThread;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;
