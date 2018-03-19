@@ -107,8 +107,8 @@ namespace hazelcast {
                 resultReady = true;
                 conditionVariable.notify_all();
                 BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
-                                callbackInfo.executor.execute(boost::shared_ptr<Runnable>(
-                                        new SuccessCallbackRunner(sharedObject, callbackInfo.callback)));
+                                callbackInfo.getExecutor().execute(boost::shared_ptr<Runnable>(
+                                        new SuccessCallbackRunner(sharedObject, callbackInfo.getCallback())));
                             }
                 onComplete();
             }
@@ -124,8 +124,8 @@ namespace hazelcast {
                 exceptionReady = true;
                 conditionVariable.notify_all();
                 BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
-                                callbackInfo.executor.execute(boost::shared_ptr<Runnable>(
-                                        new ExceptionCallbackRunner(this->exception, callbackInfo.callback)));
+                                callbackInfo.getExecutor().execute(boost::shared_ptr<Runnable>(
+                                        new ExceptionCallbackRunner(this->exception, callbackInfo.getCallback())));
                             }
                 onComplete();
             }
@@ -144,7 +144,7 @@ namespace hazelcast {
             }
 
             void complete(const client::exception::IException &exception) {
-                set_exception(exception);
+                set_exception(exception.clone());
             }
 
             T get() {
@@ -194,7 +194,8 @@ namespace hazelcast {
                 exceptionReady = false;
             }
 
-            void andThen(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, util::Executor &executor) {
+            void
+            andThen(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);
                 if (resultReady) {
                     executor.execute(boost::shared_ptr<Runnable>(new SuccessCallbackRunner(sharedObject, callback)));
@@ -206,17 +207,27 @@ namespace hazelcast {
                     return;
                 }
 
-                callbacks.push_back(CallbackInfo(callback, executor));
+                callbacks.push_back(CallbackInfo(callback, &executor));
             }
 
             virtual void onComplete() {}
         protected:
-            struct CallbackInfo {
-                CallbackInfo(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, Executor &executor)
+            class CallbackInfo {
+            public:
+                CallbackInfo(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, Executor *executor)
                         : callback(callback), executor(executor) {}
 
-                const boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
-                util::Executor &executor;
+                const boost::shared_ptr<client::impl::ExecutionCallback<T> > &getCallback() const {
+                    return callback;
+                }
+
+                Executor &getExecutor() const {
+                    return *executor;
+                }
+
+            private:
+                boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
+                Executor *executor;
             };
             bool resultReady;
             bool exceptionReady;

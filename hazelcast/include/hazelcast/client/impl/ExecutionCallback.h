@@ -40,7 +40,7 @@ namespace hazelcast {
              * @param <V> value
              */
             template <typename V>
-            class HAZELCAST_API ExecutionCallback {
+            class ExecutionCallback {
             public:
                 virtual ~ExecutionCallback() { }
 
