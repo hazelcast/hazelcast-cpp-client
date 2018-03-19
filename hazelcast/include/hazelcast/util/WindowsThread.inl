@@ -33,7 +33,7 @@ namespace hazelcast {
 
         class HAZELCAST_API Thread : public impl::AbstractThread {
         public:
-            Thread(const std::string &name) : impl::AbstractThread(name) {
+            Thread(const boost::shared_ptr<Runnable> &runnable) : impl::AbstractThread(runnable) {
             }
 
             virtual ~Thread() {
