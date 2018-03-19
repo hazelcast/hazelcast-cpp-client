@@ -40,9 +40,8 @@ namespace hazelcast {
                 if (started) {
                     cancel();
                     join();
+                    CloseHandle(thread);
                 }
-
-                CloseHandle(thread);
             }
 
             void interruptibleSleep(int seconds) {

@@ -68,7 +68,8 @@ namespace hazelcast {
                 if (!isJoined) {
                     wakeup();
 
-                    pthread_cancel(thread);
+                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
+                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
                 }
             }
 
