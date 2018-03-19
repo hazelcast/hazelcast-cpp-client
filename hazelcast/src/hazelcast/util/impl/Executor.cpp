@@ -95,6 +95,7 @@ namespace hazelcast {
 
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 worker->workQueue.clear();
+                                worker->workQueue.interrupt();
                             }
             }
 
@@ -110,6 +111,8 @@ namespace hazelcast {
                         if (task.get()) {
                             task->run();
                         }
+                    } catch (client::exception::InterruptedException &) {
+                        logger.finest() << getName() << " is interrupted .";
                     } catch (client::exception::IException &t) {
                         logger.warning() << getName() << " caught an exception" << t;
                     }
