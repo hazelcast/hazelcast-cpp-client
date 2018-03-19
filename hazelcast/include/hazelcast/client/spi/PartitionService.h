@@ -57,6 +57,8 @@ namespace hazelcast {
             public:
                 PartitionService(spi::ClientContext &clientContext);
 
+                virtual ~PartitionService();
+
                 bool start();
 
                 void shutdown();

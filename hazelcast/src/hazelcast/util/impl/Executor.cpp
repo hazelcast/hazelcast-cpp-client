@@ -123,6 +123,9 @@ namespace hazelcast {
                       logger(logger), thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
             }
 
+            SimpleExecutorService::Worker::~Worker() {
+            }
+
             void SimpleExecutorService::Worker::schedule(const boost::shared_ptr<Runnable> &runnable) {
                 workQueue.push(runnable);
             }

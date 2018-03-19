@@ -105,12 +105,12 @@ namespace hazelcast {
                 }
                 sharedObject = value;
                 resultReady = true;
-                onComplete();
                 conditionVariable.notify_all();
                 BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
                                 callbackInfo.executor.execute(boost::shared_ptr<Runnable>(
                                         new SuccessCallbackRunner(sharedObject, callbackInfo.callback)));
                             }
+                onComplete();
             }
 
             void set_exception(std::auto_ptr<client::exception::IException> exception) {
@@ -122,12 +122,12 @@ namespace hazelcast {
 
                 this->exception = exception;
                 exceptionReady = true;
-                onComplete();
                 conditionVariable.notify_all();
                 BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
                                 callbackInfo.executor.execute(boost::shared_ptr<Runnable>(
                                         new ExceptionCallbackRunner(this->exception, callbackInfo.callback)));
                             }
+                onComplete();
             }
 
             void reset_exception(std::auto_ptr<client::exception::IException> exception) {
@@ -135,8 +135,8 @@ namespace hazelcast {
 
                 this->exception = exception;
                 exceptionReady = true;
-                onComplete();
                 conditionVariable.notify_all();
+                onComplete();
             }
 
             void complete(T &value) {
@@ -196,6 +196,16 @@ namespace hazelcast {
 
             void andThen(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);
+                if (resultReady) {
+                    executor.execute(boost::shared_ptr<Runnable>(new SuccessCallbackRunner(sharedObject, callback)));
+                    return;
+                }
+
+                if (exceptionReady) {
+                    executor.execute(boost::shared_ptr<Runnable>(new ExceptionCallbackRunner(exception, callback)));
+                    return;
+                }
+
                 callbacks.push_back(CallbackInfo(callback, executor));
             }
 

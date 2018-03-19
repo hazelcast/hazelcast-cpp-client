@@ -224,6 +224,9 @@ namespace hazelcast {
                 return partitionCount;
             }
 
+            PartitionService::~PartitionService() {
+            }
+
         }
     }
 }

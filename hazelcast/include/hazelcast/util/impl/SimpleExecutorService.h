@@ -126,6 +126,8 @@ namespace hazelcast {
                     Worker(const std::string &threadNamePrefix, int32_t queueCapacity,
                            util::AtomicBoolean &live, util::ILogger &logger);
 
+                    virtual ~Worker();
+
                     virtual void run();
 
                     virtual const std::string getName() const;

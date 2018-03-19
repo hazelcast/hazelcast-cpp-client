@@ -166,7 +166,10 @@ namespace hazelcast {
                                       cancelled(false), name(mapName) {
                             }
 
-                            void run() {
+                            virtual ~ExpirationTask() {
+                            }
+
+                            virtual void run() {
                                 std::ostringstream out;
                                 out << "Near cache expiration thread started for map " << name << ". The period is:" <<
                                 periodInSeconds << " seconds.";
