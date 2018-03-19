@@ -45,6 +45,7 @@ namespace hazelcast {
                         m.callback = NULL;
                         m.sequence = -1;
                         execute(m);
+                        runnerThread.join();
                     }
 
                     void ReliableTopicExecutor::execute(const Message &m) {
