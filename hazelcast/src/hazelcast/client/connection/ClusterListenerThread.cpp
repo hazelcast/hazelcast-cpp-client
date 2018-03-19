@@ -382,6 +382,12 @@ namespace hazelcast {
                 return awaitStart();
             }
 
+            ClusterListenerThread::~ClusterListenerThread() {
+                // wait for the listener thread to terminate if started already.
+                listenerThread->cancel();
+                listenerThread->join();
+            }
+
         }
     }
 }

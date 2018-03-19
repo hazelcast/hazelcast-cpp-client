@@ -59,6 +59,8 @@ namespace hazelcast {
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
 
+                virtual ~ClusterListenerThread();
+
                 void stop();
 
                 virtual void handleMember(const Member &member, const int32_t &eventType);
