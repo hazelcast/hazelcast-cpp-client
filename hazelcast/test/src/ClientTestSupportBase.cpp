@@ -66,8 +66,8 @@ namespace hazelcast {
             threadArgs.arg3 = arg3;
             threadArgs.func = func;
             thread.reset(new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
-            thread->start();
             threadArgs.currentThread = thread.get();
+            thread->start();
         }
 
         void StartedThread::run() {

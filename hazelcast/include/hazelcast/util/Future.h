@@ -47,7 +47,7 @@ namespace hazelcast {
         public:
             class SuccessCallbackRunner : public Runnable {
             public:
-                SuccessCallbackRunner(T sharedObj,
+                SuccessCallbackRunner(T &sharedObj,
                                       const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback)
                         : sharedObj(sharedObj), callback(callback) {}
 
@@ -63,7 +63,7 @@ namespace hazelcast {
                 }
 
             private:
-                T sharedObj;
+                T &sharedObj;
                 const boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
             };
 
