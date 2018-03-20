@@ -85,7 +85,7 @@ namespace hazelcast {
                         }
                         refreshPartitions();
                     } catch (exception::IException& e) {
-                        util::ILogger::getLogger().warning(std::string("PartitionService::runListener") + e.what());
+                        util::ILogger::getLogger().warning(std::string("PartitionService::runListener ") + e.what());
                     }
                 }
             }
