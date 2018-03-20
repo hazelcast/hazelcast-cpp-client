@@ -45,6 +45,7 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
             class ClusterService;
+            class LifecycleService;
         }
 
         namespace connection {
@@ -85,6 +86,18 @@ namespace hazelcast {
                 void setAwsMemberPort(int awsMemberPort);
 
             private:
+                class ShutdownTask : public util::Runnable {
+                public:
+                    ShutdownTask(spi::LifecycleService &lifecycleService);
+
+                    virtual void run();
+
+                    virtual const std::string getName() const;
+
+                private:
+                    spi::LifecycleService &lifecycleService;
+                };
+
                 util::CountDownLatch startLatch;
                 spi::ClientContext &clientContext;
                 boost::shared_ptr<Connection> conn;

@@ -43,6 +43,9 @@ namespace hazelcast {
                         new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
             }
 
+            ClusterListenerThread::~ClusterListenerThread() {
+            }
+
             const std::string ClusterListenerThread::getName() const {
                 return "ClusterListenerThread";
             }
@@ -62,7 +65,9 @@ namespace hazelcast {
                                 if (lifecycleService.isRunning()) {
                                     util::ILogger::getLogger().severe(
                                             std::string("Error while connecting to cluster! =>") + e.what());
-                                    lifecycleService.shutdown();
+                                    util::Thread *shutdownThread = new util::Thread(boost::shared_ptr<util::Runnable>(
+                                                                                new ShutdownTask(lifecycleService)));
+                                    shutdownThread->start();
                                 }
                                 /**
                                  * Do nothing except returning here. Since client and cluster service may have been
@@ -111,6 +116,9 @@ namespace hazelcast {
                     }
                     deletingConnection = false;
                 }
+                // wait for the listener thread to terminate if started already.
+                listenerThread->cancel();
+                listenerThread->join();
             }
 
             std::set<Address, addressComparator> ClusterListenerThread::getSocketAddresses() const {
@@ -382,12 +390,16 @@ namespace hazelcast {
                 return awaitStart();
             }
 
-            ClusterListenerThread::~ClusterListenerThread() {
-                // wait for the listener thread to terminate if started already.
-                listenerThread->cancel();
-                listenerThread->join();
+            ClusterListenerThread::ShutdownTask::ShutdownTask(spi::LifecycleService &lifecycleService)
+                    : lifecycleService(lifecycleService) {}
+
+            void ClusterListenerThread::ShutdownTask::run() {
+                lifecycleService.shutdown();
             }
 
+            const std::string ClusterListenerThread::ShutdownTask::getName() const {
+                return "ClusterListenerThread::ShutdownTask";
+            }
         }
     }
 }
