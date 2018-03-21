@@ -17,13 +17,12 @@
 // Created by sancar koyunlu on 31/03/14.
 //
 
-#ifndef HAZELCAST_Future
-#define HAZELCAST_Future
+#ifndef HAZELCAST_UTIL_FUTURE_H_
+#define HAZELCAST_UTIL_FUTURE_H_
 
 #include <memory>
 #include <vector>
 #include <cassert>
-#include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/exception/IException.h"
@@ -106,10 +105,11 @@ namespace hazelcast {
                 sharedObject = value;
                 resultReady = true;
                 conditionVariable.notify_all();
-                BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
-                                callbackInfo.getExecutor().execute(boost::shared_ptr<Runnable>(
-                                        new SuccessCallbackRunner(sharedObject, callbackInfo.getCallback())));
-                            }
+                for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
+                     it != callbacks.end(); ++it) {
+                    (*it).getExecutor().execute(
+                            boost::shared_ptr<Runnable>(new SuccessCallbackRunner(sharedObject, (*it).getCallback())));
+                }
                 onComplete();
             }
 
@@ -117,16 +117,20 @@ namespace hazelcast {
                 LockGuard guard(mutex);
 
                 if (exceptionReady || resultReady) {
-                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exception->what());
+                    util::ILogger::getLogger().warning(
+                            std::string("Future.set_exception should not be called twice : details ") +
+                            exception->what());
                 }
 
                 this->exception = exception;
                 exceptionReady = true;
                 conditionVariable.notify_all();
-                BOOST_FOREACH(CallbackInfo & callbackInfo, callbacks) {
-                                callbackInfo.getExecutor().execute(boost::shared_ptr<Runnable>(
-                                        new ExceptionCallbackRunner(this->exception, callbackInfo.getCallback())));
-                            }
+                for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
+                     it != callbacks.end(); ++it) {
+                    (*it).getExecutor().execute(boost::shared_ptr<Runnable>(
+                            new ExceptionCallbackRunner(this->exception, (*it).getCallback())));
+                }
+
                 onComplete();
             }
 
@@ -248,5 +252,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_Future
+#endif //HAZELCAST_UTIL_FUTURE_H_
 
