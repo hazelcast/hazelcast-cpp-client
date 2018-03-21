@@ -27,8 +27,6 @@
 #include <winsock2.h>
 #endif
 
-#include <asio/ip/address.hpp>
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -42,7 +40,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
         public:
-            Address(const std::string &hostname, const asio::ip::address &inetAddress, int port);
+            Address(const std::string &hostname, int port, unsigned long scopeId);
 
             static const int ID;
 
@@ -103,14 +101,10 @@ namespace hazelcast {
             std::string host;
             int port;
             byte type;
-            asio::ip::address inetAddress;
+            unsigned long scopeId;
 
             static const byte IPV4;
             static const byte IPV6;
-
-            void init();
-
-            void setType();
         };
 
         /**

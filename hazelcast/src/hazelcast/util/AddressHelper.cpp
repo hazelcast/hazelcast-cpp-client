@@ -68,7 +68,12 @@ namespace hazelcast {
                 }
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {
                 for (int i = 0; i < portTryCount; i++) {
-                    addresses.push_back(client::Address(scopedAddress, *inetAddress, possiblePort + i));
+                    if (inetAddress->is_v4()) {
+                        addresses.push_back(client::Address(scopedAddress, possiblePort + i));
+                    } else {
+                        addresses.push_back(
+                                client::Address(scopedAddress, possiblePort + i, inetAddress->to_v6().scope_id()));
+                    }
                 }
             }
             // TODO: Add ip v6 addresses using interfaces as done in Java client.
