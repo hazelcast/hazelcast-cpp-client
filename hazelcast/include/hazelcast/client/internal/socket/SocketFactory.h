@@ -51,7 +51,6 @@ namespace hazelcast {
                     spi::ClientContext &clientContext;
 
                     #ifdef HZ_BUILD_WITH_SSL
-                    std::auto_ptr<asio::io_service> ioService;
                     std::auto_ptr<asio::ssl::context> sslContext;
                     #endif
                 };

@@ -54,8 +54,7 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    SSLSocket(const client::Address &address, asio::io_service &ioService,
-                              asio::ssl::context &sslContext);
+                    SSLSocket(const client::Address &address, asio::ssl::context &sslContext);
 
                     /**
                      * Destructor
@@ -75,7 +74,7 @@ namespace hazelcast {
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len) const;
+                    int send(const void *buffer, int len);
 
                     /**
                      * @param buffer
@@ -84,7 +83,7 @@ namespace hazelcast {
                      * @return number of bytes received.
                      * @throw IOException in failure.
                      */
-                    int receive(void *buffer, int len, int flag = 0) const;
+                    int receive(void *buffer, int len, int flag = 0);
 
                     /**
                      * return socketId
@@ -120,6 +119,28 @@ namespace hazelcast {
 
                     SSLSocket &operator=(const Socket &rhs);
 
+                    class ReadHandler {
+                    public:
+                        ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead), errorCode(ec) {}
+
+                        void operator()(const asio::error_code &err, std::size_t bytes_transferred) {
+                            errorCode = err;
+                            numRead += bytes_transferred;
+                        }
+
+                        size_t &getNumRead() const {
+                            return numRead;
+                        }
+
+                        asio::error_code &getErrorCode() const {
+                            return errorCode;
+                        }
+
+                    private:
+                        size_t &numRead;
+                        asio::error_code &errorCode;
+                    };
+
                     /**
                      * @return numBytes if the no error or error is try_again or would_block
                      * @throws IOException if the error exists and different from try_again and would_block
@@ -132,7 +153,7 @@ namespace hazelcast {
 
                     client::Address remoteEndpoint;
 
-                    asio::io_service &ioService;
+                    asio::io_service ioService;
                     asio::ssl::context &sslContext;
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                     asio::deadline_timer deadline;
