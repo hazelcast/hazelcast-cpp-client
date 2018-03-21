@@ -26,27 +26,15 @@ namespace hazelcast {
         const byte Address::IPV4 = 4;
         const byte Address::IPV6 = 6;
 
-        Address::Address():host("localhost") {
-            init();
+        Address::Address():host("localhost"), type(IPV4) {
         }
-
-        void Address::init() {
-            inetAddress = util::AddressUtil::getByName(host);
-            setType();
-        }
-
-        void Address::setType() { type = isIpV4() ? IPV4 : IPV6; }
 
         Address::Address(const std::string &url, int port)
-        : host(url), port(port) {
-            init();
+        : host(url), port(port), type(IPV4) {
         }
 
-        Address::Address(const std::string &hostname, const asio::ip::address &inetAddress, int port) : host(hostname),
-                                                                                                        port(port),
-                                                                                                        inetAddress(
-                                                                                                                inetAddress) {
-            setType();
+        Address::Address(const std::string &hostname, int port,  unsigned long scopeId) : host(hostname), port(port),
+                                                                                         type(IPV6), scopeId(scopeId) {
         }
 
         bool Address::operator ==(const Address &rhs) const {
@@ -110,11 +98,11 @@ namespace hazelcast {
         }
 
         bool Address::isIpV4() const {
-            return inetAddress.is_v4();
+            return type == IPV4;
         }
 
         unsigned long Address::getScopeId() const {
-            return inetAddress.is_v6() ? inetAddress.to_v6().scope_id() : 0;
+            return scopeId;
         }
 
         bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
@@ -123,7 +111,6 @@ namespace hazelcast {
                 return lhs.getPort() > rhs.getPort();
             }
             return i > 0;
-
         }
 
         std::ostream &operator <<(std::ostream &stream, const Address &address) {
