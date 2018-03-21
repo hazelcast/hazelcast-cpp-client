@@ -15,6 +15,10 @@
  */
 #ifdef HZ_BUILD_WITH_SSL
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include <winsock2.h>
+#endif
+
 #include "hazelcast/client/internal/socket/SSLSocket.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/client/exception/IOException.h"
