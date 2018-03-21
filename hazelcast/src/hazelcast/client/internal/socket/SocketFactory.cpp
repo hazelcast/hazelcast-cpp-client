@@ -80,7 +80,6 @@ namespace hazelcast {
                             }
                         }
 
-                        ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
                     }
                     #else
                     (void) clientContext;
@@ -92,7 +91,7 @@ namespace hazelcast {
                 std::auto_ptr<Socket> SocketFactory::create(const Address &address) const {
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *ioService, *sslContext));
+                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext));
                     }
                     #endif
                     return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address));

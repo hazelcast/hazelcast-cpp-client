@@ -24,7 +24,6 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ISemaphore.h"
 
@@ -85,7 +84,7 @@ namespace hazelcast {
                 ASSERT_EQ(10, s->drainPermits());
 
                 util::CountDownLatch latch(1);
-                util::Thread t(testAcquireThread, s, &latch);
+                util::StartedThread t(testAcquireThread, s, &latch);
 
                 util::sleep(1);
 
@@ -112,7 +111,7 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(1);
 
-                util::Thread t(testTryAcquireThread, s, &latch);
+                util::StartedThread t(testTryAcquireThread, s, &latch);
 
                 s->release(2);
                 ASSERT_TRUE(latch.await(10));

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/serialization/pimpl/SerializationConstants.h>
+#include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"

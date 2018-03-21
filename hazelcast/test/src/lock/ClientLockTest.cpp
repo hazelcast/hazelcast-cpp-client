@@ -78,7 +78,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testLock) {
                 l->lock();
                 util::CountDownLatch latch(1);
-                util::Thread t(testLockLockThread, l, &latch);
+                util::StartedThread t(testLockLockThread, l, &latch);
 
                 ASSERT_TRUE(latch.await(5));
                 l->forceUnlock();
@@ -98,7 +98,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testLockTtl) {
                 l->lock(3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t(testLockTtlThread, l, &latch);
+                util::StartedThread t(testLockTtlThread, l, &latch);
                 ASSERT_TRUE(latch.await(10));
                 l->forceUnlock();
             }
@@ -123,13 +123,13 @@ namespace hazelcast {
 
                 ASSERT_TRUE(l->tryLock(2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t1(testLockTryLockThread1, l, &latch);
+                util::StartedThread t1(testLockTryLockThread1, l, &latch);
                 ASSERT_TRUE(latch.await(100));
 
                 ASSERT_TRUE(l->isLocked());
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(testLockTryLockThread2, l, &latch2);
+                util::StartedThread t2(testLockTryLockThread2, l, &latch2);
                 util::sleep(1);
                 l->unlock();
                 ASSERT_TRUE(latch2.await(100));
@@ -147,7 +147,7 @@ namespace hazelcast {
             TEST_F(ClientLockTest, testForceUnlock) {
                 l->lock();
                 util::CountDownLatch latch(1);
-                util::Thread t(testLockForceUnlockThread, l, &latch);
+                util::StartedThread t(testLockForceUnlockThread, l, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_FALSE(l->isLocked());
             }
@@ -180,7 +180,7 @@ namespace hazelcast {
                 ASSERT_TRUE(l->getRemainingLeaseTime() > 1000 * 30);
 
                 util::CountDownLatch latch(1);
-                util::Thread t(testStatsThread, l, &latch);
+                util::StartedThread t(testStatsThread, l, &latch);
                 ASSERT_TRUE(latch.await(60));
             }
         }

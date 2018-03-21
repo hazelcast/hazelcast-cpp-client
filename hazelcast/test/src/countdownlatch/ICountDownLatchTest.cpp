@@ -61,7 +61,7 @@ namespace hazelcast {
                 ASSERT_FALSE(l->trySetCount(10));
                 ASSERT_EQ(20, l->getCount());
 
-                util::Thread t(testLatchThread, l.get());
+                util::StartedThread t(testLatchThread, l.get());
 
                 ASSERT_TRUE(l->await(10 * 1000));
 

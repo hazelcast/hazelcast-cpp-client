@@ -38,14 +38,13 @@ namespace hazelcast {
 
             }
 
-
             bool OutSelector::start() {
                 return initListenSocket(wakeUpSocketSet);
             }
 
             void OutSelector::listenInternal() {
                 fd_set write_fds;
-               util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
+                util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
 
                 fd_set wakeUp_fds;
                 util::SocketSet::FdRange wakeupSocketRange = wakeUpSocketSet.fillFdSet(wakeUp_fds);
@@ -85,6 +84,11 @@ namespace hazelcast {
                     }
                 }
             }
+
+            const std::string OutSelector::getName() const {
+                return "OutSelector";
+            }
+
         }
     }
 }

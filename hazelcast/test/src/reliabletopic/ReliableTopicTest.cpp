@@ -363,7 +363,7 @@ namespace hazelcast {
                 expectedValues.push_back(6);
 
                 // spawn a thread for publishing new data
-                util::Thread t(publishTopics, intTopic.get(), &expectedValues);
+                util::StartedThread t(publishTopics, intTopic.get(), &expectedValues);
 
                 util::CountDownLatch latch(3);
                 IntListener listener(latch);

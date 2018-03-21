@@ -26,7 +26,6 @@
 #include "HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
@@ -89,7 +88,7 @@ namespace hazelcast {
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 util::CountDownLatch latch(1);
-                util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
+                util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, client.get());
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");

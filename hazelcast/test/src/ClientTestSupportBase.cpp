@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include <hazelcast/util/Thread.h>
 
 namespace hazelcast {
     namespace client {
@@ -40,5 +41,53 @@ namespace hazelcast {
                 return "hazelcast/test/resources/hazelcast-ssl.xml";
             }
         }
+    }
+
+    namespace util {
+        StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
+                                     void *arg0, void *arg1, void *arg2, void *arg3)
+                : name(name) {
+            init(func, arg0, arg1, arg2, arg3);
+        }
+
+        StartedThread::StartedThread(void (func)(ThreadArgs &),
+                                     void *arg0,
+                                     void *arg1,
+                                     void *arg2,
+                                     void *arg3)
+                : name("hz.unnamed") {
+            init(func, arg0, arg1, arg2, arg3);
+        }
+
+        void StartedThread::init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3) {
+            threadArgs.arg0 = arg0;
+            threadArgs.arg1 = arg1;
+            threadArgs.arg2 = arg2;
+            threadArgs.arg3 = arg3;
+            threadArgs.func = func;
+            thread.reset(new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
+            threadArgs.currentThread = thread.get();
+            thread->start();
+        }
+
+        void StartedThread::run() {
+            threadArgs.func(threadArgs);
+        }
+
+        const std::string StartedThread::getName() const {
+            return name;
+        }
+
+        bool StartedThread::join() {
+            return thread->join();
+        }
+
+        StartedThread::~StartedThread() {
+        }
+
+        void StartedThread::cancel() {
+            thread->cancel();
+        }
+
     }
 }

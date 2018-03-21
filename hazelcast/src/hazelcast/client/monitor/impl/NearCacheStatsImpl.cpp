@@ -17,8 +17,8 @@
 #include <limits>
 #include <sstream>
 
-#include <hazelcast/client/monitor/impl/NearCacheStatsImpl.h>
-#include <hazelcast/util/Util.h>
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
