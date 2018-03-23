@@ -6,18 +6,21 @@ int main() {
     ClientConfig config;
     HazelcastClient hz(config);
 
-    /**
-     * Ringbuffer "rb" is assumed to be already created at the cluster.
-     */
     boost::shared_ptr<Ringbuffer<long> > rb = hz.getRingbuffer<long>("rb");
+
+    // we start from the oldest item.
+    // if you want to start from the next item, call rb.tailSequence()+1
+    // add two items into ring buffer
+    rb->add(100);
+    rb->add(200);
+
     // we start from the oldest item.
     // if you want to start from the next item, call rb.tailSequence()+1
     int64_t sequence = rb->headSequence();
     std::cout << "Start reading from: " << sequence << std::endl;
-    while (true) {
-        std::auto_ptr<long> item = rb->readOne(sequence);
-        sequence++;
-        std::cout << "Read: " << *item << std::endl;
-    }
+    sequence += 1;
+    std::cout << *rb->readOne(sequence);
+    // Shutdown this Hazelcast Client
+    hz.Shutdown();
 
 }

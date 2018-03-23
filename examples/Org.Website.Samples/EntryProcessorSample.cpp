@@ -2,11 +2,6 @@
 
 using namespace hazelcast::client;
 
-/**
- * Important Note: You need to implement this class at the server side. The server side java class should implement
- * the com.hazelcast.map.EntryProcessor<String, Integer> interface for the actual processing logic and
- * com.hazelcast.nio.serialization.IdentifiedDataSerializable for deserializing the processor object.
- */
 class IncEntryProcessor : public serialization::IdentifiedDataSerializable {
 public:
     virtual int getFactoryId() const {

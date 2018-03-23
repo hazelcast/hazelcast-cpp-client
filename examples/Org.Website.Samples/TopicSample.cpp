@@ -2,7 +2,7 @@
 
 using namespace hazelcast::client;
 
-class DistributedTopicSample {
+class TopicSample {
 public:
     void onMessage(topic::Message<std::string> message) {
         std::cout << "Got message " << message.getMessageObject() << std::endl;
@@ -16,8 +16,8 @@ int main() {
     // Get a Topic called "my-distributed-topic"
     ITopic<std::string> topic = hz.getTopic<std::string>("my-distributed-topic");
     // Add a Listener to the Topic
-    DistributedTopicSample listener;
-    topic.addMessageListener<DistributedTopicSample>(listener);
+    TopicSample listener;
+    topic.addMessageListener<TopicSample>(listener);
     // Publish a message to the Topic
     topic.publish("Hello to distributed world");
     // Shutdown this Hazelcast Client
