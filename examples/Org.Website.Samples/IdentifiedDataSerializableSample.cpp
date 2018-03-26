@@ -40,7 +40,6 @@ public:
 
     virtual void readData(serialization::ObjectDataInput &reader) {
         id = reader.readInt();
-        // assuming that read name is never null, we can de-reference it
         name = *reader.readUTF();
     }
 

@@ -26,3 +26,5 @@ add_executable(IdentifiedDataSerializableSample ./IdentifiedDataSerializableSamp
 add_executable(PortableSerializableSample ./PortableSerializableSample.cpp)
 add_executable(CustomSerializerSample ./CustomSerializerSample.cpp)
 add_executable(GlobalSerializerSample ./GlobalSerializerSample.cpp)
+add_executable(ListSample ./ListSample.cpp)
+add_executable(SetSample ./SetSample.cpp)

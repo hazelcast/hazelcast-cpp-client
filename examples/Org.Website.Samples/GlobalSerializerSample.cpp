@@ -9,11 +9,11 @@ public:
     }
 
     virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-        //generic serialization
+        // out.write(MyFavoriteSerializer.serialize(object))
     }
 
     virtual void *read(serialization::ObjectDataInput &in) {
-        //generic deserialization
+        // return MyFavoriteSerializer.deserialize(in);
         return NULL;
     }
 };
