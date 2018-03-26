@@ -16,7 +16,6 @@
 #include "TestRawDataPortable.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/PortableReader.h"
-#include "TestSerializationConstants.h"
 
 namespace hazelcast {
     namespace client {
@@ -57,7 +56,8 @@ namespace hazelcast {
                 ds.readData(in);
             }
 
-            TestRawDataPortable::TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k, std::string s, TestDataSerializable ds) {
+            TestRawDataPortable::TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k,
+                                                     std::string s, TestDataSerializable ds) {
                 this->l = l;
                 this->c = c;
                 this->p = p;
@@ -80,6 +80,14 @@ namespace hazelcast {
 
             bool TestRawDataPortable::operator !=(const TestRawDataPortable &m) const {
                 return !(*this == m);
+            }
+
+            std::auto_ptr<serialization::Portable> TestDataPortableFactory::create(int32_t classId) const {
+                if (classId == TestRawDataPortable::CLASS_ID) {
+                    return std::auto_ptr<serialization::Portable>(new TestRawDataPortable());
+                }
+
+                return std::auto_ptr<serialization::Portable>();
             }
         }
     }
