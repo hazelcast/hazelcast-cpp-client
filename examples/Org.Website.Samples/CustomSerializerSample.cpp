@@ -2,16 +2,16 @@
 
 using namespace hazelcast::client;
 
-class CustomSerializableType {
+class CustomSerializable {
 public:
-    CustomSerializableType(const std::string &value) : value(value) {}
+    CustomSerializable(const std::string &value) : value(value) {}
 
     const std::string &getValue() const {
         return value;
     }
 
     void setValue(const std::string &value) {
-        CustomSerializableType::value = value;
+        CustomSerializable::value = value;
     }
 
 private:
@@ -25,7 +25,7 @@ public:
     }
 
     virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-        CustomSerializableType *csObject = static_cast<CustomSerializableType *>(object);
+        CustomSerializable *csObject = static_cast<CustomSerializable *>(object);
         const std::string &value = csObject->getValue();
         int length = (int) value.length();
         std::vector<hazelcast::byte> bytes;
@@ -43,17 +43,19 @@ public:
             value << (char) in.readByte();
         }
 
-        return new CustomSerializableType(value.str());
+        return new CustomSerializable(value.str());
     }
 };
 
 int main() {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().registerSerializer(
             boost::shared_ptr<serialization::StreamSerializer>(new CustomSerializer()));
 
     HazelcastClient hz(clientConfig);
+
+    IMap<long, CustomSerializable> map = hz.getMap<long, CustomSerializable>("customMap");
+    map.put(1L, CustomSerializable("fooooo"));
 
     return 0;
 }

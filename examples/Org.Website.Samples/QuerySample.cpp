@@ -9,27 +9,28 @@
 
 using namespace hazelcast::client;
 
-/**
- * The User class that is a value object in the "users" Distributed Map
- * This Class must be available on the Classpath of the Hazelcast Cluster Members
- */
 class User : public serialization::Portable {
 public:
-    User(const std::string &username, int age, bool active) : username(username), age(age), active(active) {}
+    static const int CLASS_ID = 1;
+
+    User(const std::string &username, int age, bool active) : username(username), age(age), active(active) {
+    }
+
+    User() : age(0), active(false) {
+    }
 
     virtual int getFactoryId() const {
         return 1;
     }
 
     virtual int getClassId() const {
-        return 1;
+        return CLASS_ID;
     }
 
     virtual void writePortable(serialization::PortableWriter &writer) const {
         writer.writeUTF("username", &username);
         writer.writeInt("age", age);
         writer.writeBoolean("active", active);
-
     }
 
     virtual void readPortable(serialization::PortableReader &reader) {
@@ -49,15 +50,30 @@ private:
     bool active;
 };
 
+class ThePortableFactory : public serialization::PortableFactory {
+public:
+    static const int FACTORY_ID = 1;
+
+    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+        if (classId == User::CLASS_ID) {
+            return std::auto_ptr<serialization::Portable>(new User());
+        }
+
+        return std::auto_ptr<serialization::Portable>();
+    }
+};
+
 void generateUsers(IMap<std::string, User> &users) {
-    users.put("Rod", User("Rod",19,true));
-    users.put("Jane", User("Jane",20,true));
-    users.put("Freddy", User("Freddy",23,true));
+    users.put("Rod", User("Rod", 19, true));
+    users.put("Jane", User("Jane", 20, true));
+    users.put("Freddy", User("Freddy", 23, true));
 }
 
 int main() {
-    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     ClientConfig clientConfig;
+    clientConfig.getSerializationConfig().addPortableFactory(ThePortableFactory::FACTORY_ID,
+                                                             boost::shared_ptr<serialization::PortableFactory>(
+                                                                     new ThePortableFactory()));
     HazelcastClient hz(clientConfig);
     // Get a Distributed Map called "users"
     IMap<std::string, User> users = hz.getMap("users");
@@ -74,11 +90,11 @@ int main() {
     std::vector<User> result2 = users.values(criteriaQuery);
     // Print out the results
     std::cout << "Result 1:" << std::endl;
-    for (std::vector<User>::const_iterator it = result1.begin();it != result1.end();++it) {
+    for (std::vector<User>::const_iterator it = result1.begin(); it != result1.end(); ++it) {
         std::cout << (*it) << std::endl;
     }
     std::cout << "Result 2:" << std::endl;
-    for (std::vector<User>::const_iterator it = result2.begin();it != result2.end();++it) {
+    for (std::vector<User>::const_iterator it = result2.begin(); it != result2.end(); ++it) {
         std::cout << (*it) << std::endl;
     }
     hz.shutdown();

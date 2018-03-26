@@ -16,7 +16,7 @@ int main() {
     boost::shared_ptr<std::string> anotherItem = queue.poll(5 * 1000);
     //Indefinitely blocking Operations
     queue.put("yetanotheritem");
-    boost::shared_ptr<std::string> yetanother = queue.take();
+    std::cout << *queue.take() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

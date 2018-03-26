@@ -28,10 +28,8 @@ int main() {
     // Put the integer value of 0 into the Distributed Map
     boost::shared_ptr<int> replacedValue = map.put("key", 0);
     // Run the IncEntryProcessor class on the Hazelcast Cluster Member holding the key called "key"
-    IncEntryProcessor processor;
-    // Assume that entry processor returns a string for the sake of example
     boost::shared_ptr<std::string> returnValueFromIncEntryProcessor = map.executeOnKey<std::string, IncEntryProcessor>(
-            "key", processor);
+            "key", IncEntryProcessor());
     // Show that the IncEntryProcessor updated the value.
     std::cout << "new value:" << map.get("key");
     // Shutdown this Hazelcast Client
