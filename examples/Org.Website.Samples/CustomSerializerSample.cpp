@@ -25,14 +25,22 @@ public:
     }
 
     virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-
+        CustomSerializableType *csObject = static_cast<CustomSerializableType *>(object);
+        const std::string &value = csObject->getValue();
+        int length = (int) value.length();
+        std::vector<hazelcast::byte> bytes;
+        for (int i = 0; i < length; ++i) {
+            bytes.push_back((hazelcast::byte) value[i]);
+        }
+        out.writeInt((int) length);
+        out.write(bytes);
     }
 
     virtual void *read(serialization::ObjectDataInput &in) {
         int32_t len = in.readInt();
         std::ostringstream value;
         for (int i = 0; i < len; ++i) {
-            value << in.readChar();
+            value << (char) in.readByte();
         }
 
         return new CustomSerializableType(value.str());
