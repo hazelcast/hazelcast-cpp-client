@@ -25,7 +25,7 @@ public:
     }
 
     virtual void write(serialization::ObjectDataOutput &out, const void *object) {
-        CustomSerializable *csObject = static_cast<CustomSerializable *>(object);
+        const CustomSerializable *csObject = static_cast<const CustomSerializable *>(object);
         const std::string &value = csObject->getValue();
         int length = (int) value.length();
         std::vector<hazelcast::byte> bytes;

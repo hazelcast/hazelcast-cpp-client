@@ -76,7 +76,7 @@ int main() {
                                                                      new ThePortableFactory()));
     HazelcastClient hz(clientConfig);
     // Get a Distributed Map called "users"
-    IMap<std::string, User> users = hz.getMap("users");
+    IMap<std::string, User> users = hz.getMap<std::string, User>("users");
     // Add some users to the Distributed Map
     generateUsers(users);
     // Create a Predicate from a String (a SQL like Where clause)

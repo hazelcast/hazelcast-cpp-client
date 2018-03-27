@@ -2,10 +2,10 @@
 
 using namespace hazelcast::client;
 
-class TopicSample {
+class TopicSample : public topic::MessageListener<std::string> {
 public:
-    void onMessage(topic::Message<std::string> message) {
-        std::cout << "Got message " << message.getMessageObject() << std::endl;
+    virtual void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
+        std::cout << "Got message " << message->getMessageObject() << std::endl;
     }
 };
 
