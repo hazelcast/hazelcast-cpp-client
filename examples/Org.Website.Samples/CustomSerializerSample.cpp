@@ -4,7 +4,12 @@ using namespace hazelcast::client;
 
 class CustomSerializable {
 public:
+    CustomSerializable() {}
+
     CustomSerializable(const std::string &value) : value(value) {}
+
+    virtual ~CustomSerializable() {
+    }
 
     const std::string &getValue() const {
         return value;
