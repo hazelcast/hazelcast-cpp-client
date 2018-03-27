@@ -136,6 +136,42 @@ namespace hazelcast {
                 ASSERT_EQ(x, y);
             }
 
+            TEST_F(ClientSerializationTest, testIdentifiedDataSerializableWithFactory) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serializationConfig.addDataSerializableFactory(TestSerializationConstants::TEST_DATA_FACTORY,
+                                                               boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                       new TestDataSerializableFactory()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                serialization::pimpl::Data data;
+                TestDataSerializable np(4, 'k');
+                data = serializationService.toData<TestDataSerializable>(&np);
+
+                std::auto_ptr<TestDataSerializable> tnp1;
+                tnp1 = serializationService.toObject<TestDataSerializable>(data);
+                ASSERT_EQ(np, *tnp1);
+            }
+
+            TEST_F(ClientSerializationTest, testPortableWithFactory) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serializationConfig.addPortableFactory(TestSerializationConstants::TEST_PORTABLE_FACTORY,
+                                                               boost::shared_ptr<serialization::PortableFactory>(
+                                                                       new TestDataPortableFactory()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                char charA[] = "test chars";
+                std::vector<char> chars(charA, charA + 10);
+                std::vector<byte> bytes;
+                bytes.resize(5, 0);
+                TestNamedPortable np("named portable", 34567);
+                TestDataSerializable ds(123, 's');
+                TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
+                serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
+
+                std::auto_ptr<TestRawDataPortable> object = serializationService.toObject<TestRawDataPortable>(data);
+                ASSERT_EQ(p, *object);
+            }
+
             TEST_F(ClientSerializationTest, testRawDataWithoutRegistering) {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
@@ -151,7 +187,6 @@ namespace hazelcast {
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 std::auto_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 ASSERT_EQ(p, *x);
-
             }
 
             TEST_F(ClientSerializationTest, testInvalidWrite) {

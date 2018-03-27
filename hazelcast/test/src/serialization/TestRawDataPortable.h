@@ -21,15 +21,21 @@
 
 #include "TestNamedPortable.h"
 #include "TestDataSerializable.h"
+#include "hazelcast/client/serialization/PortableFactory.h"
+#include "TestSerializationConstants.h"
 #include <vector>
+
 #include <stdint.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-
             class TestRawDataPortable : public serialization::Portable {
             public:
+                static const int32_t CLASS_ID = TestSerializationConstants::TEST_RAW_DATA_PORTABLE;
+
+                TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k, std::string s, TestDataSerializable ds);
+
                 TestRawDataPortable();
 
                 int getFactoryId() const;
@@ -39,8 +45,6 @@ namespace hazelcast {
                 void writePortable(serialization::PortableWriter &writer) const;
 
                 void readPortable(serialization::PortableReader &reader);
-
-                TestRawDataPortable(int64_t l, std::vector<char> c, TestNamedPortable p, int32_t k, std::string s, TestDataSerializable ds);
 
                 bool operator ==(const TestRawDataPortable &m) const;
 
@@ -52,6 +56,11 @@ namespace hazelcast {
                 int32_t k;
                 std::string s;
                 TestDataSerializable ds;
+            };
+
+            class TestDataPortableFactory : public serialization::PortableFactory {
+            public:
+                virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const;
             };
         }
     }
