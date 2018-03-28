@@ -168,7 +168,7 @@ namespace hazelcast {
                     #endif
                 }
 
-                int TcpSocket::send(const void *buffer, int len) const {
+                int TcpSocket::send(const void *buffer, int len) {
                     #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
                     #endif
@@ -197,7 +197,7 @@ namespace hazelcast {
                     return bytesSend;
                 }
 
-                int TcpSocket::receive(void *buffer, int len, int flag) const {
+                int TcpSocket::receive(void *buffer, int len, int flag) {
                     #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
                     #endif

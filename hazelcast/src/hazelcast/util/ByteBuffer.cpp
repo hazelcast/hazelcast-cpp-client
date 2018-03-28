@@ -68,14 +68,14 @@ namespace hazelcast {
             pos = i;
         }
 
-        size_t ByteBuffer::readFrom(const client::Socket& socket, int flag) {
+        size_t ByteBuffer::readFrom(client::Socket& socket, int flag) {
             size_t rm = remaining();
             size_t bytesReceived = (size_t)socket.receive(ix(), (int)rm, flag);
             safeIncrementPosition(bytesReceived);
             return bytesReceived;
         }
 
-        size_t ByteBuffer::readFrom(client::Socket const &socket, int numBytesToRead, int flag) {
+        size_t ByteBuffer::readFrom(client::Socket &socket, int numBytesToRead, int flag) {
             size_t calculatedNumber = std::min<size_t>(remaining(), numBytesToRead);
             size_t bytesReceived = (size_t)socket.receive(ix(), (int)calculatedNumber, flag);
             safeIncrementPosition(bytesReceived);

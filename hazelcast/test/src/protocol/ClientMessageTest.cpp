@@ -82,7 +82,7 @@ namespace hazelcast {
                 ClientMessageTest::SocketStub::~SocketStub() {
                 }
 
-                int ClientMessageTest::SocketStub::send(const void *buf, int size) const {
+                int ClientMessageTest::SocketStub::send(const void *buf, int size) {
                     if (size <= 100) {
                         numBytes = size;
                         memcpy(buffer, buf, (size_t)numBytes);

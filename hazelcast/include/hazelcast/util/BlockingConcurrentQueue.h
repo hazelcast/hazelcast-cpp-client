@@ -19,13 +19,14 @@
 
 #ifndef HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
 #define HAZELCAST_UTIL_BLOCKINGCONCURRENTQUEUE_H_
+#include <list>
+#include <iostream>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/ConditionVariable.h"
-#include <list>
-#include <iostream>
+#include "hazelcast/client/exception/InterruptedException.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,7 +39,7 @@ namespace hazelcast {
         /* Blocking - synchronized queue */
         class BlockingConcurrentQueue {
         public:
-            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity(maxQueueCapacity) {
+            BlockingConcurrentQueue(size_t maxQueueCapacity) : capacity(maxQueueCapacity), isInterrupted(false) {
             }
 
             void push(const T &e) {
@@ -46,6 +47,9 @@ namespace hazelcast {
                 while (internalQueue.size() == capacity) {
                     // wait on condition
                     notFull.wait(m);
+                    if (isInterrupted) {
+                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                    }
                 }
                 internalQueue.push_back(e);
                 notEmpty.notify();
@@ -56,6 +60,9 @@ namespace hazelcast {
                 while (internalQueue.empty()) {
                     // wait for notEmpty condition
                     notEmpty.wait(m);
+                    if (isInterrupted) {
+                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                    }
                 }
                 T element = internalQueue.front();
                 internalQueue.pop_front();
@@ -63,6 +70,23 @@ namespace hazelcast {
                 return element;
             }
 
+            /**
+             * Removes all of the elements from this collection (optional operation).
+             * The collection will be empty after this method returns.
+             *
+             */
+            void clear() {
+                util::LockGuard lg(m);
+                internalQueue.clear();
+                notFull.notify();
+            }
+
+            void interrupt() {
+                util::LockGuard lg(m);
+                notFull.notify();
+                notEmpty.notify();
+                isInterrupted = true;
+            }
         private:
             util::Mutex m;
             /**
@@ -73,6 +97,7 @@ namespace hazelcast {
             size_t capacity;
             util::ConditionVariable notFull;
             util::ConditionVariable notEmpty;
+            bool isInterrupted;
         };
     }
 }

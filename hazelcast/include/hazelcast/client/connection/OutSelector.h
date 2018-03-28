@@ -39,6 +39,9 @@ namespace hazelcast {
                 void listenInternal();
 
                 bool start();
+
+                virtual const std::string getName() const;
+
             private:
                 util::SocketSet wakeUpSocketSet;
             };

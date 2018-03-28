@@ -23,11 +23,6 @@
 
 using namespace hazelcast::client::test;
 
-void testSpeed(const char* address) {
-    SimpleMapTest s(address, 5701);
-    s.run();
-}
-
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -63,6 +58,6 @@ int main(int argc, char** argv) {
 
     return RUN_ALL_TESTS();
 
-    //SimpleMapTest(address, 5701).run();
+    //SimpleMapTest(address, 5701).start();
 }
 

@@ -17,21 +17,43 @@
 // Created by sancar koyunlu on 22/08/14.
 //
 
+#include <ClientTestSupportBase.h>
+
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/client/exception/IOException.h"
+#include "hazelcast/client/impl/ExecutionCallback.h"
 
 #include <ctime>
 #include <errno.h>
 #include <gtest/gtest.h>
-#include <hazelcast/client/exception/IOException.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientUtilTest : public ::testing::Test {
             protected:
+                class LatchExecutionCallback : public impl::ExecutionCallback<int> {
+                public:
+                    LatchExecutionCallback(util::CountDownLatch &successLatch, util::CountDownLatch &failLatch)
+                            : successLatch(successLatch), failLatch(failLatch) {}
+
+                    virtual void onResponse(int *response) {
+                        successLatch.countDown();
+                    }
+
+                    virtual void onFailure(const exception::IException *e) {
+                        failLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &successLatch;
+                    util::CountDownLatch &failLatch;
+                };
+
                 static void wakeTheConditionUp(util::ThreadArgs& args) {
                     util::Mutex *mutex = (util::Mutex *)args.arg0;
                     util::ConditionVariable *cv = (util::ConditionVariable *)args.arg1;
@@ -54,7 +76,7 @@ namespace hazelcast {
                     util::Future<int> *future = (util::Future<int> *)args.arg0;
                     int wakeUpTime = *(int *)args.arg1;
                     util::sleep(wakeUpTime);
-                    std::auto_ptr<client::exception::IException> exception(new exception::IException("exceptionName", "details"));
+                    std::auto_ptr<client::exception::IException> exception(new exception::IOException("exceptionName", "details"));
                     future->set_exception(exception);
                 }
 
@@ -76,7 +98,7 @@ namespace hazelcast {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
                 int wakeUpTime = 3;
-                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
+                util::StartedThread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
                 int waitSeconds = 30;
                 {
                     util::LockGuard lockGuard(mutex);
@@ -95,7 +117,7 @@ namespace hazelcast {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
                 int wakeUpTime = 1;
-                util::Thread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
+                util::StartedThread thread(wakeTheConditionUp, &mutex, &conditionVariable, &wakeUpTime);
                 {
                     util::LockGuard lockGuard(mutex);
                     // the following call should not fail with assertion for EINVAL
@@ -161,7 +183,7 @@ namespace hazelcast {
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
                 int expectedValue = 2;
-                util::Thread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
+                util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
                 int value = future.get();
                 ASSERT_EQ(expectedValue, value);
@@ -172,7 +194,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
-                util::Thread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
+                util::StartedThread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
 
                 try {
@@ -183,19 +205,79 @@ namespace hazelcast {
                 }
             }
 
-            void dummyThread(util::ThreadArgs& args) {
+            TEST_F (ClientUtilTest, testFutureSetValueAndThen) {
+                util::Future<int> future;
+                util::CountDownLatch successLatch(1);
+                util::CountDownLatch failLatch(1);
+                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
+                        new LatchExecutionCallback(successLatch, failLatch)), executorService);
+
+                int wakeUpTime = 0;
+                int expectedValue = 2;
+                util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
+
+                ASSERT_OPEN_EVENTUALLY(successLatch);
+            }
+
+            TEST_F (ClientUtilTest, testFutureSetValueBeforeAndThen) {
+                util::Future<int> future;
+                util::CountDownLatch successLatch(1);
+                util::CountDownLatch failLatch(1);
+                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+
+                int value = 5;
+                future.set_value(value);
+                future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
+                        new LatchExecutionCallback(successLatch, failLatch)), executorService);
+
+                ASSERT_OPEN_EVENTUALLY(successLatch);
+            }
+
+            TEST_F (ClientUtilTest, testFutureSetExceptionAndThen) {
+                util::Future<int> future;
+                util::CountDownLatch successLatch(1);
+                util::CountDownLatch failLatch(1);
+                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
+                        new LatchExecutionCallback(successLatch, failLatch)), executorService);
+
+                int wakeUpTime = 0;
+                util::StartedThread thread(ClientUtilTest::setExceptionToFuture, &future, &wakeUpTime);
+
+                ASSERT_OPEN_EVENTUALLY(failLatch);
+                ASSERT_THROW(future.get(), exception::IOException);
+            }
+
+            TEST_F (ClientUtilTest, testFutureSetExceptionBeforeAndThen) {
+                util::Future<int> future;
+                util::CountDownLatch successLatch(1);
+                util::CountDownLatch failLatch(1);
+                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+
+                future.set_exception(std::auto_ptr<client::exception::IException>(
+                        new exception::IOException("exceptionName", "details")));
+                future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
+                        new LatchExecutionCallback(successLatch, failLatch)), executorService);
+
+                ASSERT_OPEN_EVENTUALLY(failLatch);
+                ASSERT_THROW(future.get(), exception::IOException);
             }
 
             TEST_F (ClientUtilTest, testThreadName) {
                 std::string threadName = "myThreadName";
-                util::Thread thread(threadName, dummyThread);
-                ASSERT_EQ(threadName, thread.getThreadName());
+                // We use latch so that we guarantee that the object instance thread is not destructed at the time when
+                // StartedThread::run is being executed.
+                util::CountDownLatch latch(1);
+                util::StartedThread thread(threadName,  notifyExitingThread, &latch);
+                ASSERT_EQ(threadName, thread.getName());
+                ASSERT_TRUE(latch.await(120));
             }
 
             TEST_F (ClientUtilTest, testThreadJoinAfterThreadExited) {
                 std::string threadName = "myThreadName";
                 util::CountDownLatch latch(1);
-                util::Thread thread(threadName, notifyExitingThread, &latch);
+                util::StartedThread thread(threadName, notifyExitingThread, &latch);
                 ASSERT_TRUE(latch.await(2));
                 // guarantee that the thread exited
                 util::sleep(1);
@@ -207,7 +289,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testCancelJoinItselfFromTheRunningThread) {
                 std::string threadName = "myThreadName";
                 util::CountDownLatch latch(1);
-                util::Thread thread(threadName, cancelJoinFromRunningThread, &latch);
+                util::StartedThread thread(threadName, cancelJoinFromRunningThread, &latch);
                 ASSERT_TRUE(latch.await(1000));
             }
 
@@ -220,7 +302,7 @@ namespace hazelcast {
                 int sleepTime = 30;
                 int wakeUpTime = 3;
                 time_t beg = time(NULL);
-                util::Thread thread(sleepyThread, &sleepTime);
+                util::StartedThread thread(sleepyThread, &sleepTime);
                 util::sleep(wakeUpTime);
                 thread.cancel();
                 thread.join();

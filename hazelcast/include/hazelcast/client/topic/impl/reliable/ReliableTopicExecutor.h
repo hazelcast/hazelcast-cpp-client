@@ -24,7 +24,6 @@
 
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/DataArray.h"
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/client/impl/ExecutionCallback.h"
 #include "hazelcast/util/Thread.h"
@@ -54,7 +53,7 @@ namespace hazelcast {
                             client::impl::ExecutionCallback<DataArray<ReliableTopicMessage> > *callback;
                         };
 
-                        ReliableTopicExecutor(Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb);
+                        ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb);
 
                         virtual ~ReliableTopicExecutor();
 
@@ -67,10 +66,23 @@ namespace hazelcast {
 
                         void execute(const Message &m);
                     private:
-                        static void executerRun(util::ThreadArgs &args);
+                        class Task : public util::Runnable {
+                        public:
+                            Task(Ringbuffer <ReliableTopicMessage> &rb, util::BlockingConcurrentQueue<Message> &q,
+                                 util::AtomicBoolean &shutdown);
 
-                        Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *ringbuffer;
-                        std::auto_ptr<util::Thread> runnerThread;
+                            virtual void run();
+
+                            virtual const std::string getName() const;
+
+                        private:
+                            Ringbuffer<ReliableTopicMessage> &rb;
+                            util::BlockingConcurrentQueue<Message> &q;
+                            util::AtomicBoolean &shutdown;
+                        };
+
+                        Ringbuffer<ReliableTopicMessage> &ringbuffer;
+                        util::Thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;
                     };

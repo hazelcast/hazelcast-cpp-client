@@ -20,8 +20,7 @@
 #ifndef HAZELCAST_HeartBeater
 #define HAZELCAST_HeartBeater
 
-#include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/Runnable.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -30,8 +29,6 @@
 
 namespace hazelcast {
     namespace util {
-        class ThreadArgs;
-
         class Thread;
     }
     namespace client {
@@ -40,21 +37,19 @@ namespace hazelcast {
         }
 
         namespace connection {
-            class HAZELCAST_API HeartBeater {
+            class HAZELCAST_API HeartBeater : public util::Runnable {
             public:
-                HeartBeater(spi::ClientContext& clientContext);
+                HeartBeater(spi::ClientContext &clientContext, util::Thread &currentThread);
 
-                static void staticStart(util::ThreadArgs& args);
+                virtual void run();
 
-                void shutdown();
+                virtual const std::string getName() const;
 
             private:
-                void run(util::Thread *currentThread);
-
-                util::AtomicBoolean live;
                 spi::ClientContext& clientContext;
                 int heartBeatIntervalSeconds;
                 int heartBeatTimeoutSeconds;
+                util::Thread &currentThread;
             };
         }
     }

@@ -17,6 +17,8 @@
 #ifndef HAZELCAST_UTIL_ADDRESSUTIL_H_
 #define HAZELCAST_UTIL_ADDRESSUTIL_H_
 
+#include <asio/ip/address.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/AddressHelper.h"
 

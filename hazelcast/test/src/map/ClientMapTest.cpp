@@ -675,8 +675,8 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(2);
 
-                util::Thread t1(ClientMapTest<TypeParam>::tryPutThread, &latch, ClientMapTest<TypeParam>::imap);
-                util::Thread t2(ClientMapTest<TypeParam>::tryRemoveThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::tryPutThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t2(ClientMapTest<TypeParam>::tryRemoveThread, &latch, ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(20));
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
@@ -805,7 +805,7 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
@@ -816,7 +816,7 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->lock("key1", 2 * 1000);
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockTTLThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockTTLThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
                 ASSERT_FALSE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
@@ -826,7 +826,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testLockTtl2) {
                 ClientMapTest<TypeParam>::imap->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
             }
@@ -834,7 +834,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testTryLock) {
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
+                util::StartedThread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
                                 ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(100));
@@ -842,7 +842,7 @@ namespace hazelcast {
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(ClientMapTest<TypeParam>::testMapTryLockThread2, &latch2,
+                util::StartedThread t2(ClientMapTest<TypeParam>::testMapTryLockThread2, &latch2,
                                 ClientMapTest<TypeParam>::imap);
 
                 util::sleep(1);
@@ -855,7 +855,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testForceUnlock) {
                 ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t2(ClientMapTest<TypeParam>::testMapForceUnlockThread, &latch,
+                util::StartedThread t2(ClientMapTest<TypeParam>::testMapForceUnlockThread, &latch,
                                 ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(100));
                 t2.join();

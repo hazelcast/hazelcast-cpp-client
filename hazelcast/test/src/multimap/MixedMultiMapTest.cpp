@@ -271,7 +271,7 @@ namespace hazelcast {
             TEST_F(MixedMultiMapTest, testLock) {
                 mm->lock<std::string>("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(lockThread, mm, &latch);
+                util::StartedThread t(lockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(5));
                 mm->forceUnlock<std::string>("key1");
                 t.join();
@@ -280,7 +280,7 @@ namespace hazelcast {
             TEST_F(MixedMultiMapTest, testLockTtl) {
                 mm->lock<std::string>("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t(lockTtlThread, mm, &latch);
+                util::StartedThread t(lockTtlThread, mm, &latch);
                 ASSERT_TRUE(latch.await(10));
                 mm->forceUnlock<std::string>("key1");
                 t.join();
@@ -289,12 +289,12 @@ namespace hazelcast {
             TEST_F(MixedMultiMapTest, testTryLock) {
                 ASSERT_TRUE(mm->tryLock<std::string>("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t(tryLockThread, mm, &latch);
+                util::StartedThread t(tryLockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_TRUE(mm->isLocked<std::string>("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(tryLockThread2, mm, &latch2);
+                util::StartedThread t2(tryLockThread2, mm, &latch2);
 
                 util::sleep(1);
                 mm->unlock<std::string>("key1");
@@ -306,7 +306,7 @@ namespace hazelcast {
             TEST_F(MixedMultiMapTest, testForceUnlock) {
                 mm->lock<std::string>("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(forceUnlockThread, mm, &latch);
+                util::StartedThread t(forceUnlockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_FALSE(mm->isLocked<std::string>("key1"));
             }

@@ -93,11 +93,11 @@ namespace hazelcast {
                 HazelcastClient client(*clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
-                util::Thread* thread = NULL;
+                util::StartedThread* thread = NULL;
                 int expected = 1000;
                 for (int i = 0; i < expected; i++) {
                     if(i == 5){
-                        thread = new util::Thread(threadTerminateNode, &hz1);
+                        thread = new util::StartedThread(threadTerminateNode, &hz1);
                     }
                     map.put(i, i);
                 }
@@ -134,7 +134,7 @@ namespace hazelcast {
                 ASSERT_TRUE(server.start());
 
                 std::string putThreadName("Map Put Thread");
-                util::Thread t(putThreadName, putMapMessage, &map, &latch);
+                util::StartedThread t(putThreadName, putMapMessage, &map, &latch);
 
                 // 8. Verify that the 2nd entry is received by the listener
                 ASSERT_TRUE(latch.await(20, 0)); // timeout of 20 seconds

@@ -22,6 +22,7 @@
 #define HAZELCAST_ItemListener
 
 #include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/TypedData.h"
 
 namespace hazelcast {
     namespace client {

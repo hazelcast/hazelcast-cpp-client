@@ -207,14 +207,13 @@ namespace hazelcast {
                 SocketInterceptor *socketInterceptor;
                 InSelector inSelector;
                 OutSelector outSelector;
-                std::auto_ptr<util::Thread> inSelectorThread;
-                std::auto_ptr<util::Thread> outSelectorThread;
+                util::Thread inSelectorThread;
+                util::Thread outSelectorThread;
                 util::AtomicBoolean live;
                 util::Mutex lockMutex;
                 boost::shared_ptr<protocol::Principal> principal;
 
-                connection::HeartBeater heartBeater;
-                std::auto_ptr<util::Thread> heartBeatThread;
+                util::Thread heartBeatThread;
                 /** Can be separated via inheritance as Dumb ConnectionManager**/
                 bool smartRouting;
                 OwnerConnectionFuture ownerConnectionFuture;

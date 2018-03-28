@@ -58,6 +58,16 @@ namespace hazelcast {
                 c = reader.readChar();
                 i = reader.readInt();
             }
+
+            std::auto_ptr<serialization::IdentifiedDataSerializable>
+            TestDataSerializableFactory::create(int32_t classId) {
+                switch(classId) {
+                    case TestSerializationConstants::TEST_DATA_SERIALIZABLE:
+                        return std::auto_ptr<serialization::IdentifiedDataSerializable>(new TestDataSerializable());
+                    default:
+                        return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                }
+            }
         }
     }
 }

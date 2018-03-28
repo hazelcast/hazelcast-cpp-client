@@ -226,7 +226,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMultiMapTest, testLock) {
                     mm->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t(lockThread, mm, &latch);
+                    util::StartedThread t(lockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(5));
                     mm->forceUnlock("key1");
                     t.join();
@@ -235,7 +235,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMultiMapTest, testLockTtl) {
                     mm->lock("key1", 3 * 1000);
                     util::CountDownLatch latch(2);
-                    util::Thread t(lockTtlThread, mm, &latch);
+                    util::StartedThread t(lockTtlThread, mm, &latch);
                     ASSERT_TRUE(latch.await(10));
                     mm->forceUnlock("key1");
                     t.join();
@@ -269,12 +269,12 @@ namespace hazelcast {
                 TEST_F(RawPointerMultiMapTest, testTryLock) {
                     ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
                     util::CountDownLatch latch(1);
-                    util::Thread t(tryLockThread, mm, &latch);
+                    util::StartedThread t(tryLockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(100));
                     ASSERT_TRUE(mm->isLocked("key1"));
 
                     util::CountDownLatch latch2(1);
-                    util::Thread t2(tryLockThread2, mm, &latch2);
+                    util::StartedThread t2(tryLockThread2, mm, &latch2);
 
                     util::sleep(1);
                     mm->unlock("key1");
@@ -293,7 +293,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMultiMapTest, testForceUnlock) {
                     mm->lock("key1");
                     util::CountDownLatch latch(1);
-                    util::Thread t(forceUnlockThread, mm, &latch);
+                    util::StartedThread t(forceUnlockThread, mm, &latch);
                     ASSERT_TRUE(latch.await(100));
                     ASSERT_FALSE(mm->isLocked("key1"));
                 }

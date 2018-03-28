@@ -128,7 +128,7 @@ namespace hazelcast {
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
                               const std::string &topicName, serialization::pimpl::SerializationService *service,
                               const config::ReliableTopicConfig *reliableTopicConfig)
-                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(rb),
+                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(*rb),
                           serializationService(service), config(reliableTopicConfig) {
                     this->id = id;
                     this->listener = listener;
@@ -188,10 +188,12 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onFailure(const exception::ProtocolException *t) {
+                void onFailure(const exception::IException *throwable) {
                     if (cancelled) {
                         return;
                     }
+
+                    const exception::ProtocolException *t = static_cast<const exception::ProtocolException *>(throwable);
 
                     int32_t err = t->getErrorCode();
                     if (protocol::EXECUTION == err &&

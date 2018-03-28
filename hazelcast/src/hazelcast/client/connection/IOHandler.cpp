@@ -51,7 +51,6 @@ namespace hazelcast {
             }
 
             IOHandler::~IOHandler() {
-
             }
 
             void IOHandler::handleSocketException(const std::string& message) {

@@ -20,11 +20,11 @@
 #ifndef HAZELCAST_PARTITION_SERVICE
 #define HAZELCAST_PARTITION_SERVICE
 
-#include "hazelcast/util/ThreadArgs.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Mutex.h"
+#include "hazelcast/util/Thread.h"
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -35,11 +35,6 @@
 #endif
 
 namespace hazelcast {
-    namespace util{
-        class Thread;
-
-        class ThreadArgs;
-    }
 
     namespace client {
         namespace protocol {
@@ -58,9 +53,11 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
 
-            class HAZELCAST_API PartitionService {
+            class HAZELCAST_API PartitionService : public util::Runnable {
             public:
                 PartitionService(spi::ClientContext &clientContext);
+
+                virtual ~PartitionService();
 
                 bool start();
 
@@ -80,6 +77,10 @@ namespace hazelcast {
 
                 int getPartitionCount();
 
+                virtual void run();
+
+                virtual const std::string getName() const;
+
             private:
 
                 spi::ClientContext &clientContext;
@@ -93,10 +94,6 @@ namespace hazelcast {
                 std::auto_ptr<std::map<int, boost::shared_ptr<Address> > > partitions;
 
                 util::Mutex lock;
-
-                static void staticRunListener(util::ThreadArgs& args);
-
-                void runListener(util::Thread* currentThread);
 
                 std::auto_ptr<protocol::ClientMessage> getPartitionsFrom(const Address &address);
 

@@ -45,6 +45,7 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
             class ClusterService;
+            class LifecycleService;
         }
 
         namespace connection {
@@ -52,10 +53,14 @@ namespace hazelcast {
 
             class ConnectionManager;
 
-            class HAZELCAST_API ClusterListenerThread : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler {
+            class HAZELCAST_API ClusterListenerThread
+                    : public protocol::codec::ClientAddMembershipListenerCodec::AbstractEventHandler,
+                      public util::Runnable {
                 friend class spi::ClusterService;
             public:
                 ClusterListenerThread(spi::ClientContext &clientContext);
+
+                virtual ~ClusterListenerThread();
 
                 void stop();
 
@@ -69,13 +74,30 @@ namespace hazelcast {
 
                 std::set<Address, addressComparator> getSocketAddresses() const;
 
-
                 /**
                  * @return true if started and initialized successfully, false otherwise
                  */
-                bool awaitStart();
+                bool start();
+
+                virtual void run();
+
+                virtual const std::string getName() const;
+
+                void setAwsMemberPort(int awsMemberPort);
 
             private:
+                class ShutdownTask : public util::Runnable {
+                public:
+                    ShutdownTask(spi::LifecycleService &lifecycleService);
+
+                    virtual void run();
+
+                    virtual const std::string getName() const;
+
+                private:
+                    spi::LifecycleService &lifecycleService;
+                };
+
                 util::CountDownLatch startLatch;
                 spi::ClientContext &clientContext;
                 boost::shared_ptr<Connection> conn;
@@ -83,7 +105,7 @@ namespace hazelcast {
 
                 std::vector<Member> members;
 
-                util::Atomic<util::Thread *> workerThread;
+                std::auto_ptr<util::Thread> listenerThread;
                 bool isInitialMembersLoaded;
 
                 bool isRegistrationIdReceived;
@@ -112,9 +134,7 @@ namespace hazelcast {
 
                 void fireMembershipEvents(const std::vector<MembershipEvent> &events) const;
 
-                static void staticRun(util::ThreadArgs &args);
-
-                void run(util::Thread *currentThread, int memberPort);
+                bool awaitStart();
             };
         }
     }

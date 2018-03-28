@@ -17,10 +17,11 @@
 // Created by İhsan Demir on 6 June 2016.
 //
 #include <gtest/gtest.h>
+#include <hazelcast/util/CountDownLatch.h>
+#include <ClientTestSupportBase.h>
 
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
@@ -42,6 +43,12 @@ namespace hazelcast {
                         hazelcast::util::AtomicInt *val = (hazelcast::util::AtomicInt *)args.arg1;
                         *val = q->pop();
                     }
+
+                    static void Interrupt(hazelcast::util::ThreadArgs &args) {
+                        hazelcast::util::BlockingConcurrentQueue<int> *q = (hazelcast::util::BlockingConcurrentQueue<int> *)args.arg0;
+                        hazelcast::util::sleep(1);
+                        q->interrupt();
+                    }
                 };
 
                 TEST_F(BlockingConcurrentQueueTest, testPushDelyaed) {
@@ -60,7 +67,7 @@ namespace hazelcast {
                     int val = 7;
 
                     unsigned long sleepTime = 3000U;
-                    hazelcast::util::Thread t(PushDelayed, &q, &val, &sleepTime);
+                    hazelcast::util::StartedThread t(PushDelayed, &q, &val, &sleepTime);
 
                     int64_t start = hazelcast::util::currentTimeMillis();
                     ASSERT_EQ(val, q.pop());
@@ -84,12 +91,24 @@ namespace hazelcast {
                     hazelcast::util::AtomicInt val(-1);
                     int testValue = 7;
                     unsigned long sleepTime = 3000U;
-                    hazelcast::util::Thread t(Pop, &q, &val, &sleepTime);
+                    hazelcast::util::StartedThread t(Pop, &q, &val, &sleepTime);
 
                     hazelcast::util::sleepmillis(2000);
                     ASSERT_NO_THROW(q.push(testValue));
                     hazelcast::util::sleepmillis(1000);
                     ASSERT_EQ(testValue, (int)val);
+                }
+
+                TEST_F(BlockingConcurrentQueueTest, testInterrupt) {
+                    size_t capacity = 3;
+
+                    hazelcast::util::BlockingConcurrentQueue<int> q(capacity);
+
+                    hazelcast::util::CountDownLatch latch(1);
+                    hazelcast::util::StartedThread t(Interrupt, &q);
+                    // Note that this test is time sensitive, this thread shoulc be waiting at blocking pop when the
+                    // other thread executes the interrup call.
+                    ASSERT_THROW(q.pop(), client::exception::InterruptedException);
                 }
             }
         }

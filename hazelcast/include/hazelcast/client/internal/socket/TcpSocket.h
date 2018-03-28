@@ -90,7 +90,7 @@ namespace hazelcast {
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len) const;
+                    int send(const void *buffer, int len);
 
                     /**
                      * @param buffer
@@ -99,7 +99,7 @@ namespace hazelcast {
                      * @return number of bytes received.
                      * @throw IOException in failure.
                      */
-                    int receive(void *buffer, int len, int flag = 0) const;
+                    int receive(void *buffer, int len, int flag = 0);
 
                     /**
                      * return socketId

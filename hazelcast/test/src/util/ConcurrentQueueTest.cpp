@@ -16,12 +16,16 @@
 //
 // Created by İhsan Demir on Mar 6 2016.
 //
+
+#include <boost/shared_ptr.hpp>
+
 #include <gtest/gtest.h>
 #include "hazelcast/util/ConcurrentQueue.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/impl/SimpleExecutorService.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,35 +34,54 @@ namespace hazelcast {
                 class ConcurentQueueTest : public ::testing::Test
                 {
                 protected:
-                    static void ConcurrentQueueTask(hazelcast::util::ThreadArgs &args) {
-                        hazelcast::util::ConcurrentQueue<int> *q = (hazelcast::util::ConcurrentQueue<int> *)args.arg0;
-                        hazelcast::util::CountDownLatch *startLatch = (hazelcast::util::CountDownLatch *)args.arg1;
-                        hazelcast::util::CountDownLatch *startRemoveLatch = (hazelcast::util::CountDownLatch *)args.arg2;
-                        int *removalValue = (int *)args.arg3;
+                    class ConcurrentQueueTask : public hazelcast::util::Runnable {
+                    public:
+                        ConcurrentQueueTask(hazelcast::util::ConcurrentQueue<int> &q,
+                                            hazelcast::util::CountDownLatch &startLatch,
+                                            hazelcast::util::CountDownLatch &startRemoveLatch, int removalValue) : q(q),
+                                                                                                                   startLatch(
+                                                                                                                           startLatch),
+                                                                                                                   startRemoveLatch(
+                                                                                                                           startRemoveLatch),
+                                                                                                                   removalValue(
+                                                                                                                           removalValue) {}
 
-                        int numItems = 1000;
+                    private:
+                        virtual void run() {
+                            int numItems = 1000;
 
-                        std::vector<int> values((size_t)numItems);
+                            std::vector<int> values((size_t)numItems);
 
-                        startLatch->countDown();
+                            startLatch.countDown();
 
-                        ASSERT_TRUE(startLatch->await(10));
+                            ASSERT_TRUE(startLatch.await(10));
 
-                        // insert items
-                        for (int i = 0; i < numItems; ++i) {
-                            values[i] = i;
-                            q->offer(&values[i]);
+                            // insert items
+                            for (int i = 0; i < numItems; ++i) {
+                                values[i] = i;
+                                q.offer(&values[i]);
+                            }
+
+                            q.offer(&removalValue);
+                            startRemoveLatch.countDown();
+
+                            // poll items
+                            for (int i = 0; i < numItems; ++i) {
+                                values[i] = i;
+                                ASSERT_NE((int *)NULL, q.poll());
+                            }
                         }
 
-                        q->offer(removalValue);
-                        startRemoveLatch->countDown();
-
-                        // poll items
-                        for (int i = 0; i < numItems; ++i) {
-                            values[i] = i;
-                            ASSERT_NE((int *)NULL, q->poll());
+                        virtual const std::string getName() const {
+                            return "ConcurrentQueueTask";
                         }
-                    }
+
+                    private:
+                        hazelcast::util::ConcurrentQueue<int> &q;
+                        hazelcast::util::CountDownLatch &startLatch;
+                        hazelcast::util::CountDownLatch &startRemoveLatch;
+                        int removalValue;
+                    };
                 };
 
                 TEST_F(ConcurentQueueTest, testSingleThread) {
@@ -99,10 +122,13 @@ namespace hazelcast {
 
                     int removalValue = 10;
 
-                    std::vector<hazelcast::util::Thread *> threads((size_t)numThreads);
-                    for (int i = 0; i < numThreads; ++i) {
-                        // I would prefer using scoped_ptr or boost:::scoped_array for array if there was one available
-                        threads[i] = new hazelcast::util::Thread(ConcurentQueueTest::ConcurrentQueueTask, &q, &startLatch, &startRemoveLatch, &removalValue);
+                    std::vector<boost::shared_ptr<hazelcast::util::Thread> > allThreads;
+                    for (int i = 0; i < numThreads; i++) {
+                        boost::shared_ptr<hazelcast::util::Thread> t(
+                                new hazelcast::util::Thread(boost::shared_ptr<hazelcast::util::Runnable>(
+                                        new ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue))));
+                        t->start();
+                        allThreads.push_back(t);
                     }
 
                     // wait for the remove start
@@ -122,13 +148,6 @@ namespace hazelcast {
                     }
                     ASSERT_EQ(0, q.removeAll(&removalValue));
 
-                    for (int i = 0; i < numThreads; ++i) {
-                        ASSERT_TRUE(threads[i]->join());
-                    }
-
-                    for (int i = 0; i < numThreads; ++i) {
-                        delete threads[i];
-                    }
                 }
             }
         }

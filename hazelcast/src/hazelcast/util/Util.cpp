@@ -35,13 +35,18 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
+#include <pthread.h>
 #endif
 
 namespace hazelcast {
     namespace util {
 
         long getThreadId() {
-            return util::Thread::getThreadID();
+        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            return GetCurrentThreadId();
+        #else
+            return (long) pthread_self();
+        #endif
         }
 
 		void sleep(int seconds){
