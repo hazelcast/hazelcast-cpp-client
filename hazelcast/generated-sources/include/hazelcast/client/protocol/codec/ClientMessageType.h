@@ -36,7 +36,11 @@ namespace hazelcast {
                     HZ_CLIENT_GETDISTRIBUTEDOBJECTS=0x000c,
                     HZ_CLIENT_ADDDISTRIBUTEDOBJECTLISTENER=0x000d,
                     HZ_CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER=0x000e,
-                    HZ_CLIENT_PING=0x000f
+                    HZ_CLIENT_PING=0x000f,
+                    HZ_CLIENT_STATISTICS=0x0010,
+                    HZ_CLIENT_DEPLOYCLASSES=0x0011,
+                    HZ_CLIENT_ADDPARTITIONLISTENER=0x0012,
+                    HZ_CLIENT_CREATEPROXIES=0x0013
                 };
             }
         }

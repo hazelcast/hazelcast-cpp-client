@@ -49,21 +49,21 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockLockCodec::RequestParameters::encode(getName(), leaseTimeInMillis, util::getThreadId());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ILock::unlock() {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockUnlockCodec::RequestParameters::encode(getName(), util::getThreadId());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ILock::forceUnlock() {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockForceUnlockCodec::RequestParameters::encode(getName());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         bool ILock::isLocked() {

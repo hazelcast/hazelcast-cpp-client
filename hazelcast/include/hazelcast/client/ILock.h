@@ -20,7 +20,6 @@
 #define HAZELCAST_ILock
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include <string>

@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
+#include "hazelcast/client/exception/IllegalArgumentException.h"
+#include "hazelcast/client/Address.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 
 namespace hazelcast {
     namespace client {
         namespace config {
+            int32_t ClientNetworkConfig::CONNECTION_ATTEMPT_PERIOD = 3000;
+
             ClientNetworkConfig::ClientNetworkConfig()
-                    : connectionTimeout(5000) {
+                    : connectionTimeout(5000), smartRouting(true), connectionAttemptLimit(-1),
+                      connectionAttemptPeriod(CONNECTION_ATTEMPT_PERIOD) {
             }
 
             SSLConfig &ClientNetworkConfig::getSSLConfig() {
@@ -48,6 +53,60 @@ namespace hazelcast {
 
             ClientAwsConfig &ClientNetworkConfig::getAwsConfig() {
                 return clientAwsConfig;
+            }
+
+            bool ClientNetworkConfig::isSmartRouting() const {
+                return smartRouting;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setSmartRouting(bool smartRouting) {
+                ClientNetworkConfig::smartRouting = smartRouting;
+                return *this;
+            }
+
+            int32_t ClientNetworkConfig::getConnectionAttemptLimit() const {
+                return connectionAttemptLimit;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptLimit(int32_t connectionAttemptLimit) {
+                if (connectionAttemptLimit < 0) {
+                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptLimit",
+                                                              "connectionAttemptLimit cannot be negative");
+                }
+                this->connectionAttemptLimit = connectionAttemptLimit;
+                return *this;
+            }
+
+            int32_t ClientNetworkConfig::getConnectionAttemptPeriod() const {
+                return connectionAttemptPeriod;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setConnectionAttemptPeriod(int32_t connectionAttemptPeriod) {
+                if (connectionAttemptPeriod < 0) {
+                    throw exception::IllegalArgumentException("ClientNetworkConfig::setConnectionAttemptPeriod",
+                                                              "connectionAttemptPeriod cannot be negative");
+                }
+                this->connectionAttemptPeriod = connectionAttemptPeriod;
+                return *this;
+            }
+
+            std::vector<Address> ClientNetworkConfig::getAddresses() const {
+                return addressList;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::addAddresses(const std::vector<Address> &addresses) {
+                addressList.insert(addressList.end(), addresses.begin(), addresses.end());
+                return *this;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::setAddresses(const std::vector<Address> &addresses) {
+                addressList = addresses;
+                return *this;
+            }
+
+            ClientNetworkConfig &ClientNetworkConfig::addAddress(const Address &address) {
+                addressList.push_back(address);
+                return *this;
             }
         }
     }

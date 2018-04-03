@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_UTIL_CALLABLE_H_
 #define HAZELCAST_UTIL_CALLABLE_H_
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Named.h"
 
 namespace hazelcast {
     namespace util {
@@ -35,7 +35,7 @@ namespace hazelcast {
          * @param <V> the result type of method {@code call}
          */
         template <typename V>
-        class Callable {
+        class Callable : public Named {
         public:
             virtual V call() = 0;
         };

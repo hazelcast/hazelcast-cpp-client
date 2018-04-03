@@ -41,11 +41,11 @@ namespace hazelcast {
                     LatchExecutionCallback(util::CountDownLatch &successLatch, util::CountDownLatch &failLatch)
                             : successLatch(successLatch), failLatch(failLatch) {}
 
-                    virtual void onResponse(int *response) {
+                    virtual void onResponse(const int &response) {
                         successLatch.countDown();
                     }
 
-                    virtual void onFailure(const exception::IException *e) {
+                    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
                         failLatch.countDown();
                     }
 

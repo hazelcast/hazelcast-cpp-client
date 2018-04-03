@@ -22,6 +22,7 @@
 #define HAZELCAST_InitialMembershipListener
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,7 +48,7 @@ namespace hazelcast {
          * @see Cluster#addMembershipListener(InitialMembershipListener *listener)
          * @see MembershipEvent#getMembers()
          */
-        class HAZELCAST_API InitialMembershipListener {
+        class HAZELCAST_API InitialMembershipListener : public MembershipListener {
         public:
             virtual ~InitialMembershipListener();
 
@@ -59,25 +60,15 @@ namespace hazelcast {
             virtual void init(const InitialMembershipEvent &event) = 0;
 
             /**
-            * Invoked when a new member is added to the cluster.
-            *
-            * @param membershipEvent membership event
-            */
-            virtual void memberAdded(const MembershipEvent &membershipEvent) = 0;
-
-            /**
              * Invoked when an existing member leaves the cluster.
              *
              * @param membershipEvent membership event
              */
             virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
 
-            /**
-             * Invoked when an attribute of a member was changed.
-             *
-             * @param memberAttributeEvent member attribute event
-             */
-            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
+            virtual bool shouldRequestInitialMembers() const {
+                return true;
+            }
         };
 
     }

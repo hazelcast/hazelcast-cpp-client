@@ -27,10 +27,9 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOHandler::IOHandler(Connection& connection, IOSelector& ioSelector)
+            IOHandler::IOHandler(Connection &connection, IOSelector& ioSelector)
             : ioSelector(ioSelector)
             , connection(connection) {
-
             }
 
             void IOHandler::registerSocket() {
@@ -39,7 +38,7 @@ namespace hazelcast {
             }
 
             void IOHandler::registerHandler() {
-                if (!connection.live)
+                if (!connection.isAlive())
                     return;
                 Socket const& socket = connection.getSocket();
                 ioSelector.addSocket(socket);

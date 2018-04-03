@@ -64,7 +64,7 @@ namespace hazelcast {
 
             void SimpleExecutorService::execute(const boost::shared_ptr<Runnable> &command) {
                 if (command.get() == NULL) {
-                    throw client::exception::IException("SimpleExecutor::execute", "command can't be null");
+                    throw client::exception::NullPointerException("SimpleExecutor::execute", "command can't be null");
                 }
 
                 if (!live) {
@@ -94,8 +94,7 @@ namespace hazelcast {
                 }
 
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
-                                worker->workQueue.clear();
-                                worker->workQueue.interrupt();
+                                worker->shutdown();
                             }
             }
 
@@ -114,7 +113,7 @@ namespace hazelcast {
                     } catch (client::exception::InterruptedException &) {
                         logger.finest() << getName() << " is interrupted .";
                     } catch (client::exception::IException &t) {
-                        logger.warning() << getName() << " caught an exception" << t;
+                        logger.warning() << getName() << " caused an exception" << t;
                     }
                 }
             }
@@ -143,8 +142,15 @@ namespace hazelcast {
 
             std::string SimpleExecutorService::Worker::generateThreadName(const std::string &prefix) {
                 std::ostringstream out;
-                out << prefix << "-" << (++THREAD_ID_GENERATOR);
+                out << prefix << (++THREAD_ID_GENERATOR);
                 return out.str();
+            }
+
+            void SimpleExecutorService::Worker::shutdown() {
+                workQueue.clear();
+                workQueue.interrupt();
+                thread.cancel();
+                thread.join();
             }
         }
 

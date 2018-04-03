@@ -17,6 +17,11 @@
 #define HAZELCAST_CLIENT
 
 #include <memory>
+#include <stdint.h>
+#include <vector>
+
+#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
@@ -31,14 +36,14 @@
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/PartitionService.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/ReliableTopic.h"
 #include "hazelcast/client/mixedtype/HazelcastClient.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -406,7 +411,8 @@ namespace hazelcast {
  *
  */
         namespace connection {
-            class ConnectionManager;
+            class ClientConnectionManagerImpl;
+            class AddressProvider;
         }
 
         namespace serialization {
@@ -417,18 +423,21 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
 
-            class InvocationService;
-
-            class ClusterService;
+            class ClientInvocationService;
 
             class PartitionService;
 
             class LifecycleService;
 
-            class ServerListenerService;
+            class ClientListenerService;
 
             class ClientProxyFactory;
 
+            class ClientExecutionService;
+
+            namespace impl {
+                class ClientExecutionServiceImpl;
+            }
         }
 
         class ClientConfig;
@@ -472,6 +481,13 @@ namespace hazelcast {
             * Destructor
             */
             ~HazelcastClient();
+
+            /**
+             * Returns the name of this Hazelcast instance.
+             *
+             * @return name of this Hazelcast instance
+             */
+            const std::string &getName() const;
 
             /**
             *
@@ -713,6 +729,14 @@ namespace hazelcast {
             internal::nearcache::NearCacheManager &getNearCacheManager();
 
             serialization::pimpl::SerializationService &getSerializationService();
+
+            const spi::impl::sequence::CallIdSequence &getCallIdSequence() const;
+
+            const protocol::ClientExceptionFactory &getExceptionFactory() const;
+
+            spi::ClientExecutionService &getClientExecutionService() const;
+
+            void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
         private:
             boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
                                                                                const std::string &name,
@@ -723,22 +747,40 @@ namespace hazelcast {
             util::CountDownLatch shutdownLatch;
             spi::ClientContext clientContext;
             serialization::pimpl::SerializationService serializationService;
-            std::auto_ptr<connection::ConnectionManager> connectionManager;
+            std::auto_ptr<connection::ClientConnectionManagerImpl> connectionManager;
             internal::nearcache::NearCacheManager nearCacheManager;
-            spi::ClusterService clusterService;
-            spi::PartitionService partitionService;
-            spi::InvocationService invocationService;
-            spi::ServerListenerService serverListenerService;
+            spi::impl::ClientClusterServiceImpl clusterService;
+            boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
+            std::auto_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
+            std::auto_ptr<spi::ClientInvocationService> invocationService;
+            std::auto_ptr<spi::ClientListenerService> listenerService;
+            spi::impl::ClientTransactionManagerServiceImpl transactionManager;
             Cluster cluster;
             spi::LifecycleService lifecycleService;
             spi::ProxyManager proxyManager;
             std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
+            std::auto_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
+            protocol::ClientExceptionFactory exceptionFactory;
+            std::string instanceName;
+            static util::Atomic<int32_t> CLIENT_ID;
+            int32_t id;
 
             HazelcastClient(const HazelcastClient& rhs);
 
             void operator=(const HazelcastClient& rhs);
 
             const std::string TOPIC_RB_PREFIX;
+
+            std::auto_ptr<spi::ClientListenerService> initListenerService();
+
+            std::auto_ptr<spi::ClientInvocationService> initInvocationService();
+
+            std::auto_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+
+            std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
+                    const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);
+
+            std::vector<boost::shared_ptr<connection::AddressProvider> > createAddressProviders();
         };
 
     }

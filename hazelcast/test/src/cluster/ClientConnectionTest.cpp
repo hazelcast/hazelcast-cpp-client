@@ -26,7 +26,7 @@
 #endif
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -37,7 +37,7 @@ namespace hazelcast {
                 std::vector<internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
-                    std::vector<boost::shared_ptr<connection::Connection> > conns = context.getConnectionManager().getConnections();
+                    std::vector<boost::shared_ptr<connection::Connection> > conns = context.getConnectionManager().getActiveConnections();
                     EXPECT_GT(conns.size(), (size_t) 0);
                     boost::shared_ptr<connection::Connection> aConnection = conns[0];
                     internal::socket::SSLSocket &socket = (internal::socket::SSLSocket &) aConnection->getSocket();
@@ -78,6 +78,8 @@ namespace hazelcast {
                 std::auto_ptr<ClientConfig> config = getConfig();
                 config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(
                         "HIGH");
+                config->getNetworkConfig().setConnectionTimeout(120 * 1000);
+                config->setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "120000");
                 std::vector<internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(*config);
 
                 std::string unsupportedCipher = supportedCiphers[0].name;

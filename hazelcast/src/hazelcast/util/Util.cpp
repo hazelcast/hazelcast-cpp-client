@@ -17,11 +17,11 @@
 // Created by sancar koyunlu on 5/3/13.
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/Thread.h"
 
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/date_time/microsec_time_clock.hpp>
 #include <boost/date_time.hpp>
+#include <boost/tokenizer.hpp>
 
 #include <string.h>
 #include <algorithm>
@@ -36,6 +36,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <boost/foreach.hpp>
+
 #endif
 
 namespace hazelcast {
@@ -105,11 +107,21 @@ namespace hazelcast {
             }
         }
 
-        int64_t currentTimeMillis() {
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+        boost::posix_time::time_duration getDurationSinceEpoch() {
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
             boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
             boost::posix_time::time_duration diff = now - epoch;
+            return diff;
+        }
+
+        int64_t currentTimeMillis() {
+            boost::posix_time::time_duration diff = getDurationSinceEpoch();
             return diff.total_milliseconds();
+        }
+
+        int64_t currentTimeNanos() {
+            boost::posix_time::time_duration diff = getDurationSinceEpoch();
+            return diff.total_nanoseconds();
         }
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
@@ -169,6 +181,34 @@ namespace hazelcast {
 
         std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
             return timeInMillis == 0 ? "never" : timeToString(timeInMillis);
+        }
+
+        std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {
+            typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+            boost::char_separator<char> sep(".");
+            tokenizer tok(version, sep);
+
+            std::vector<std::string> tokens;
+            BOOST_FOREACH(const std::string &token , tok) {
+                            tokens.push_back(token);
+            }
+
+            return tokens;
+        }
+
+        int Int64Util::numberOfLeadingZeros(int64_t i) {
+            // HD, Figure 5-6
+            if (i == 0)
+                return 64;
+            int n = 1;
+            int64_t x = (int64_t)(i >> 32);
+            if (x == 0) { n += 32; x = (int64_t)i; }
+            if (x >> 16 == 0) { n += 16; x <<= 16; }
+            if (x >> 24 == 0) { n +=  8; x <<=  8; }
+            if (x >> 28 == 0) { n +=  4; x <<=  4; }
+            if (x >> 30 == 0) { n +=  2; x <<=  2; }
+            n -= x >> 31;
+            return n;
         }
     }
 }

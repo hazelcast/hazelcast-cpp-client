@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {

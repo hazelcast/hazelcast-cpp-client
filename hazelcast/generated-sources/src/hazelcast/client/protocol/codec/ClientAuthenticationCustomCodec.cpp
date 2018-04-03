@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,8 +35,9 @@ namespace hazelcast {
                         const std::string *ownerUuid, 
                         bool isOwnerConnection, 
                         const std::string &clientType, 
-                        uint8_t serializationVersion) {
-                    int32_t requiredDataSize = calculateDataSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion);
+                        uint8_t serializationVersion, 
+                        const std::string &clientHazelcastVersion) {
+                    int32_t requiredDataSize = calculateDataSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion, clientHazelcastVersion);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ClientAuthenticationCustomCodec::RequestParameters::TYPE);
                     clientMessage->setRetryable(RETRYABLE);
@@ -45,6 +47,7 @@ namespace hazelcast {
                     clientMessage->set(isOwnerConnection);
                     clientMessage->set(clientType);
                     clientMessage->set(serializationVersion);
+                    clientMessage->set(clientHazelcastVersion);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
@@ -55,7 +58,8 @@ namespace hazelcast {
                         const std::string *ownerUuid, 
                         bool isOwnerConnection, 
                         const std::string &clientType, 
-                        uint8_t serializationVersion) {
+                        uint8_t serializationVersion, 
+                        const std::string &clientHazelcastVersion) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(credentials);
                     dataSize += ClientMessage::calculateDataSize(uuid);
@@ -63,6 +67,7 @@ namespace hazelcast {
                     dataSize += ClientMessage::calculateDataSize(isOwnerConnection);
                     dataSize += ClientMessage::calculateDataSize(clientType);
                     dataSize += ClientMessage::calculateDataSize(serializationVersion);
+                    dataSize += ClientMessage::calculateDataSize(clientHazelcastVersion);
                     return dataSize;
                 }
 
@@ -80,6 +85,10 @@ namespace hazelcast {
                     ownerUuid = clientMessage.getNullable<std::string >();
 
                     serializationVersion = clientMessage.get<uint8_t >();
+
+                    serverHazelcastVersion = clientMessage.get<std::string >();
+
+                    clientUnregisteredMembers = clientMessage.getNullableArray<Member >();
                 }
 
                 ClientAuthenticationCustomCodec::ResponseParameters ClientAuthenticationCustomCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
@@ -92,6 +101,8 @@ namespace hazelcast {
                         uuid = std::auto_ptr<std::string>(new std::string(*rhs.uuid));
                         ownerUuid = std::auto_ptr<std::string>(new std::string(*rhs.ownerUuid));
                         serializationVersion = rhs.serializationVersion;
+                        serverHazelcastVersion = rhs.serverHazelcastVersion;
+                        clientUnregisteredMembers = std::auto_ptr<std::vector<Member> >(new std::vector<Member>(*rhs.clientUnregisteredMembers));
                 }
                 //************************ EVENTS END **************************************************************************//
 

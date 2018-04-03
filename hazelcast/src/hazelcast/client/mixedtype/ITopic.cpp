@@ -21,18 +21,18 @@ namespace hazelcast {
     namespace client {
         namespace mixedtype {
             std::string ITopic::addMessageListener(topic::MessageListener &listener) {
-                client::impl::BaseEventHandler *topicEventHandler = new mixedtype::topic::impl::TopicEventHandlerImpl(getName(),
-                                                                                                   context->getClusterService(),
-                                                                                                   context->getSerializationService(),
-                                                                                                   listener);
+                client::impl::BaseEventHandler *topicEventHandler = new mixedtype::topic::impl::TopicEventHandlerImpl(
+                        getName(), context->getClientClusterService(),
+                        context->getSerializationService(),
+                        listener);
                 return proxy::ITopicImpl::addMessageListener(topicEventHandler);
             }
 
-            bool ITopic::removeMessageListener(const std::string& registrationId) {
+            bool ITopic::removeMessageListener(const std::string &registrationId) {
                 return proxy::ITopicImpl::removeMessageListener(registrationId);
             }
 
-            ITopic::ITopic(const std::string& instanceName, spi::ClientContext *context)
+            ITopic::ITopic(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::ITopicImpl(instanceName, context) {
             }
         }

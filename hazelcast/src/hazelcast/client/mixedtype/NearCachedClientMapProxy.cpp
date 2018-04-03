@@ -15,6 +15,7 @@
  */
 
 #include <boost/foreach.hpp>
+#include "hazelcast/client/protocol/codec/MapRemoveEntryListenerCodec.h"
 
 #include "hazelcast/client/mixedtype/NearCachedClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -25,7 +26,7 @@
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/adapter/IMapDataStructureAdapter.h"
 #include "hazelcast/client/protocol/codec/MapAddNearCacheEntryListenerCodec.h"
-#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/EntryEvent.h"
@@ -33,8 +34,9 @@
 namespace hazelcast {
     namespace client {
         namespace mixedtype {
-            NearCachedClientMapProxy::NearCachedClientMapProxy(const std::string &instanceName, spi::ClientContext *context,
-                                                   const mixedtype::config::MixedNearCacheConfig &config)
+            NearCachedClientMapProxy::NearCachedClientMapProxy(const std::string &instanceName,
+                                                               spi::ClientContext *context,
+                                                               const mixedtype::config::MixedNearCacheConfig &config)
                     : ClientMapProxy(instanceName, context), cacheLocalEntries(false), invalidateOnChange(false),
                       keyStateMarker(NULL), nearCacheConfig(config) {
             }
@@ -139,22 +141,25 @@ namespace hazelcast {
                 invalidateNearCache(key);
             }
 
-            bool NearCachedClientMapProxy::tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
+            bool
+            NearCachedClientMapProxy::tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
                 bool response = ClientMapProxy::tryRemoveInternal(key, timeoutInMillis);
                 invalidateNearCache(key);
                 return response;
             }
 
-            bool NearCachedClientMapProxy::tryPutInternal(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                                    long timeoutInMillis) {
+            bool NearCachedClientMapProxy::tryPutInternal(const serialization::pimpl::Data &key,
+                                                          const serialization::pimpl::Data &value,
+                                                          long timeoutInMillis) {
                 bool response = ClientMapProxy::tryPutInternal(key, value, timeoutInMillis);
                 invalidateNearCache(key);
                 return response;
             }
 
-            std::auto_ptr<serialization::pimpl::Data> NearCachedClientMapProxy::putInternal(const serialization::pimpl::Data &key,
-                                                                                      const serialization::pimpl::Data &value,
-                                                                                      long timeoutInMillis) {
+            std::auto_ptr<serialization::pimpl::Data>
+            NearCachedClientMapProxy::putInternal(const serialization::pimpl::Data &key,
+                                                  const serialization::pimpl::Data &value,
+                                                  long timeoutInMillis) {
                 std::auto_ptr<serialization::pimpl::Data> previousValue =
                         ClientMapProxy::putInternal(key, value, timeoutInMillis);
                 invalidateNearCache(key);
@@ -162,14 +167,16 @@ namespace hazelcast {
             }
 
             void NearCachedClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &key,
-                                                             const serialization::pimpl::Data &value, int ttlInMillis) {
+                                                                   const serialization::pimpl::Data &value,
+                                                                   int ttlInMillis) {
                 ClientMapProxy::tryPutTransientInternal(key, value, ttlInMillis);
                 invalidateNearCache(key);
             }
 
-            std::auto_ptr<serialization::pimpl::Data> NearCachedClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
-                                                                                              const serialization::pimpl::Data &valueData,
-                                                                                              int ttlInMillis) {
+            std::auto_ptr<serialization::pimpl::Data>
+            NearCachedClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+                                                          const serialization::pimpl::Data &valueData,
+                                                          int ttlInMillis) {
                 std::auto_ptr<serialization::pimpl::Data> previousValue =
                         ClientMapProxy::putIfAbsentData(keyData, valueData, ttlInMillis);
                 invalidateNearCache(keyData);
@@ -177,23 +184,25 @@ namespace hazelcast {
             }
 
             bool NearCachedClientMapProxy::replaceIfSameInternal(const serialization::pimpl::Data &keyData,
-                                                           const serialization::pimpl::Data &valueData,
-                                                           const serialization::pimpl::Data &newValueData) {
+                                                                 const serialization::pimpl::Data &valueData,
+                                                                 const serialization::pimpl::Data &newValueData) {
                 bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
                 invalidateNearCache(keyData);
                 return result;
             }
 
-            std::auto_ptr<serialization::pimpl::Data> NearCachedClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
-                                                                                          const serialization::pimpl::Data &valueData) {
+            std::auto_ptr<serialization::pimpl::Data>
+            NearCachedClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
+                                                      const serialization::pimpl::Data &valueData) {
                 std::auto_ptr<serialization::pimpl::Data> value =
                         proxy::IMapImpl::replaceData(keyData, valueData);
                 invalidateNearCache(keyData);
                 return value;
             }
 
-            void NearCachedClientMapProxy::setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                                                 int ttlInMillis) {
+            void NearCachedClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
+                                                       const serialization::pimpl::Data &valueData,
+                                                       int ttlInMillis) {
                 proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                 invalidateNearCache(keyData);
             }
@@ -210,7 +219,7 @@ namespace hazelcast {
                     EntryVector result = populateFromNearCache(pIdToKeyData, markers);
 
                     EntryVector responses = ClientMapProxy::getAllInternal(pIdToKeyData);
-                    BOOST_FOREACH(const EntryVector::value_type &entry , responses) {
+                    BOOST_FOREACH(const EntryVector::value_type &entry, responses) {
                                     boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
                                             entry.first.clone());
                                     boost::shared_ptr<TypedData> value = boost::shared_ptr<TypedData>(new TypedData(
@@ -243,7 +252,7 @@ namespace hazelcast {
 
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::executeOnKeyInternal(const serialization::pimpl::Data &keyData,
-                                                     const serialization::pimpl::Data &processor) {
+                                                           const serialization::pimpl::Data &processor) {
                 std::auto_ptr<serialization::pimpl::Data> response =
                         ClientMapProxy::executeOnKeyData(keyData, processor);
                 invalidateNearCache(keyData);
@@ -264,11 +273,13 @@ namespace hazelcast {
 
             map::impl::nearcache::KeyStateMarker *NearCachedClientMapProxy::getKeyStateMarker() {
                 return boost::static_pointer_cast<
-                        map::impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, TypedData> >(nearCache)->
+                        map::impl::nearcache::InvalidationAwareWrapper<serialization::pimpl::Data, TypedData> >(
+                        nearCache)->
                         getKeyStateMarker();
             }
 
-            void NearCachedClientMapProxy::addNearCacheInvalidateListener(std::auto_ptr<client::impl::BaseEventHandler> handler) {
+            void NearCachedClientMapProxy::addNearCacheInvalidateListener(
+                    std::auto_ptr<client::impl::BaseEventHandler> handler) {
                 try {
                     invalidationListenerId = boost::shared_ptr<std::string>(
                             new std::string(proxy::ProxyImpl::registerListener(
@@ -282,11 +293,11 @@ namespace hazelcast {
                 }
             }
 
-
-            std::auto_ptr<protocol::codec::IAddListenerCodec> NearCachedClientMapProxy::createNearCacheEntryListenerCodec() {
-                return std::auto_ptr<protocol::codec::IAddListenerCodec>(
-                        new protocol::codec::MapAddNearCacheEntryListenerCodec(
-                                nearCache->getName(), EntryEventType::INVALIDATION, false));
+            boost::shared_ptr<spi::impl::ListenerMessageCodec>
+            NearCachedClientMapProxy::createNearCacheEntryListenerCodec() {
+                int32_t listenerFlags = EntryEventType::INVALIDATION;
+                return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
+                        new NearCacheEntryListenerMessageCodec(getName(), listenerFlags));
             }
 
             void NearCachedClientMapProxy::resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key) {
@@ -298,7 +309,8 @@ namespace hazelcast {
                 keyStateMarker->forceUnmark(*key);
             }
 
-            void NearCachedClientMapProxy::unmarkRemainingMarkedKeys(std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> &markers) {
+            void NearCachedClientMapProxy::unmarkRemainingMarkedKeys(
+                    std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> &markers) {
                 for (std::map<boost::shared_ptr<serialization::pimpl::Data>, bool>::const_iterator it = markers.begin();
                      it != markers.end(); ++it) {
                     if (it->second) {
@@ -308,7 +320,7 @@ namespace hazelcast {
             }
 
             void NearCachedClientMapProxy::tryToPutNearCache(boost::shared_ptr<serialization::pimpl::Data> &keyData,
-                                                       boost::shared_ptr<TypedData> &response) {
+                                                             boost::shared_ptr<TypedData> &response) {
                 try {
                     if (response.get()) {
                         nearCache->put(keyData, response);
@@ -333,18 +345,22 @@ namespace hazelcast {
             }
 
             EntryVector
-            NearCachedClientMapProxy::populateFromNearCache(ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData, MARKER_MAP &markers) {
+            NearCachedClientMapProxy::populateFromNearCache(ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData,
+                                                            MARKER_MAP &markers) {
                 EntryVector result;
 
-                BOOST_FOREACH(ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas , pIdToKeyData) {
+                BOOST_FOREACH(ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas, pIdToKeyData) {
                                 typedef std::vector<boost::shared_ptr<serialization::pimpl::Data> > SHARED_DATA_VECTOR;
                                 SHARED_DATA_VECTOR nonCachedData;
-                                BOOST_FOREACH(const SHARED_DATA_VECTOR::value_type &keyData , partitionDatas.second) {
+                                BOOST_FOREACH(const SHARED_DATA_VECTOR::value_type &keyData, partitionDatas.second) {
                                                 boost::shared_ptr<TypedData> cached = nearCache->get(keyData);
                                                 if (cached.get() != NULL && !cached->getData() &&
-                                                    internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT != cached) {
-                                                    serialization::pimpl::Data valueData(std::auto_ptr<std::vector<byte> >(
-                                                            new std::vector<byte>(cached->getData()->toByteArray())));
+                                                    internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT !=
+                                                    cached) {
+                                                    serialization::pimpl::Data valueData(
+                                                            std::auto_ptr<std::vector<byte> >(
+                                                                    new std::vector<byte>(
+                                                                            cached->getData()->toByteArray())));
                                                     result.push_back(std::make_pair(*keyData, valueData));
                                                 } else if (invalidateOnChange) {
                                                     markers[keyData] = keyStateMarker->tryMark(*keyData);
@@ -356,6 +372,31 @@ namespace hazelcast {
                 return result;
             }
 
+            std::auto_ptr<protocol::ClientMessage>
+            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags,
+                                                                          localOnly).encodeRequest();
+            }
+
+            std::string NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeAddResponse(
+                    protocol::ClientMessage &responseMessage) const {
+                return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags, false).decodeResponse(
+                        responseMessage);
+            }
+
+            std::auto_ptr<protocol::ClientMessage>
+            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeRemoveRequest(
+                    const std::string &realRegistrationId) const {
+                return protocol::codec::MapRemoveEntryListenerCodec(name, realRegistrationId).encodeRequest();
+            }
+
+            bool NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeRemoveResponse(
+                    protocol::ClientMessage &clientMessage) const {
+                return protocol::codec::MapRemoveEntryListenerCodec(name, "").decodeResponse(clientMessage);
+            }
+
+            NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::NearCacheEntryListenerMessageCodec(
+                    const std::string &name, int32_t listenerFlags) : name(name), listenerFlags(listenerFlags) {}
         }
     }
 }

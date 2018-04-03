@@ -17,44 +17,33 @@
 #ifndef HAZELCAST_UTIL_RUNNABLE_H_
 #define HAZELCAST_UTIL_RUNNABLE_H_
 
-#include <string>
 #include <stdint.h>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Named.h"
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API Runnable {
+        class HAZELCAST_API Runnable : public Named {
         public:
             virtual void run() = 0;
-            virtual const std::string getName() const = 0;
 
-            virtual bool isStriped() {
-                return false;
-            }
+            virtual bool isStriped();
         };
 
         class StripedRunnable : public Runnable {
         public:
             virtual int32_t getKey() = 0;
 
-            virtual bool isStriped() {
-                return true;
-            }
+            virtual bool isStriped();
         };
 
         class HAZELCAST_API RunnableDelegator : public Runnable {
         public:
-            RunnableDelegator(Runnable &runnable) : runnable(runnable) {
-            }
+            RunnableDelegator(Runnable &runnable);
 
-            virtual void run() {
-                runnable.run();
-            }
+            virtual void run();
 
-            virtual const std::string getName() const {
-                return runnable.getName();
-            }
+            virtual const std::string getName() const;
 
         private:
             Runnable &runnable;

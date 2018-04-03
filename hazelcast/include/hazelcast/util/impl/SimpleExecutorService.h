@@ -99,12 +99,16 @@ namespace hazelcast {
                     }
 
                     virtual void run() {
-                        T result = callable->call();
-                        future->set_value(result);
+                        try {
+                            T result = callable->call();
+                            future->set_value(result);
+                        } catch (client::exception::IException &e) {
+                            future->set_exception(e.clone());
+                        }
                     }
 
                     virtual const std::string getName() const {
-                        return "CallableRunnableAdaptor";
+                        return callable->getName();
                     }
 
                     const boost::shared_ptr<Callable<T> > &getCallable() const {
@@ -135,6 +139,8 @@ namespace hazelcast {
                     void schedule(const boost::shared_ptr<Runnable> &runnable);
 
                     void start();
+
+                    void shutdown();
                 private:
                     static std::string generateThreadName(const std::string &prefix);
 

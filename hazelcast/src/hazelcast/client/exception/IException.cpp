@@ -71,6 +71,10 @@ namespace hazelcast {
                 return std::auto_ptr<IException>(new IException(*this));
             }
 
+            bool IException::isProtocolException() const {
+                return false;
+            }
+
         }
     }
 }

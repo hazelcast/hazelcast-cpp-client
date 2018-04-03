@@ -83,6 +83,10 @@ namespace hazelcast {
         bool Member::removeAttribute(const std::string &key) {
             return 0 != attributes.erase(key);
         }
+
+        bool Member::operator<(const Member &rhs) const {
+            return uuid < rhs.uuid;
+        }
     }
 }
 

@@ -23,6 +23,7 @@
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Util.h"
 #include <ctime>
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #include "hazelcast/client/protocol/codec/TransactionCreateCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionCommitCodec.h"
@@ -31,7 +32,7 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            #define MILLISECOND_IN_A_SECOND 1000
+#define MILLISECOND_IN_A_SECOND 1000
 
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
                                                boost::shared_ptr<connection::Connection> connection)
@@ -73,7 +74,7 @@ namespace hazelcast {
                                     options.getTransactionType(), threadId);
 
 
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     protocol::codec::TransactionCreateCodec::ResponseParameters result =
                             protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
@@ -142,11 +143,11 @@ namespace hazelcast {
                 return clientContext.getSerializationService();
             }
 
-            spi::InvocationService &TransactionProxy::getInvocationService() {
+            spi::ClientInvocationService &TransactionProxy::getInvocationService() {
                 return clientContext.getInvocationService();
             }
 
-            boost::shared_ptr<connection::Connection>TransactionProxy::getConnection() {
+            boost::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
                 return connection;
             }
 
@@ -192,12 +193,15 @@ namespace hazelcast {
                 value = values[i];
             }
 
-            std::auto_ptr<protocol::ClientMessage> TransactionProxy::invoke(
+            boost::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
                     std::auto_ptr<protocol::ClientMessage> request) {
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnConnection(request,
-                                                                                                        connection);
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        clientContext, request, "", connection);
+                return spi::impl::ClientInvocation::invoke(invocation)->get();
+            }
 
-                return future.get();
+            spi::ClientContext &TransactionProxy::getClientContext() const {
+                return clientContext;
             }
         }
     }

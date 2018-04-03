@@ -19,7 +19,6 @@
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
-#include "hazelcast/client/spi/ClusterService.h"
 
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/TransactionalMapContainsKeyCodec.h"

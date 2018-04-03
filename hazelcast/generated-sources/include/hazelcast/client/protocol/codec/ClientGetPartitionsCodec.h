@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,8 @@ namespace hazelcast {
                         public:
                             static const int TYPE;
 
-                            std::vector<std::pair<Address, std::vector<int32_t > > > partitions;
+                            std::vector<std::pair<Address, std::vector<int32_t> > > partitions;
+                                                        int32_t partitionStateVersion;
                             
                             static ResponseParameters decode(ClientMessage &clientMessage);
 

@@ -105,6 +105,12 @@ namespace hazelcast {
             return scopeId;
         }
 
+        std::string Address::toString() const {
+            std::ostringstream out;
+            out << "Address[" << getHost() << ":" << getPort() << "]";
+            return out.str();
+        }
+
         bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
             int i = lhs.getHost().compare(rhs.getHost());
             if (i == 0) {
@@ -114,7 +120,7 @@ namespace hazelcast {
         }
 
         std::ostream &operator <<(std::ostream &stream, const Address &address) {
-            return stream << "Address[" << address.getHost() << ":" << address.getPort() << "]";
+            return stream << address.toString();
         }
 
     }

@@ -128,7 +128,7 @@ namespace hazelcast {
                 util::LockGuard lg(mapLock);
                 for (typename std::map<K, V, Comparator>::iterator it = internalMap.find(key);
                      it != internalMap.end(); ++it) {
-                    if (*it->second == value) {
+                    if (it->second == value) {
                         internalMap.erase(it);
                         return true;
                     }

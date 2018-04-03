@@ -18,88 +18,92 @@
 //
 
 #include <boost/foreach.hpp>
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 #include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/connection/CallFuture.h"
-
+#include "hazelcast/client/spi/ClientInvocationService.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-
-            ProxyImpl::ProxyImpl(const std::string& serviceName, const std::string& objectName, spi::ClientContext *context)
-            : DistributedObject(serviceName, objectName)
-            , context(context) {
-
+            ProxyImpl::ProxyImpl(const std::string &serviceName, const std::string &objectName,
+                                 spi::ClientContext *context)
+                    : DistributedObject(serviceName, objectName), context(context) {
             }
 
             ProxyImpl::~ProxyImpl() {
-
             }
 
-            std::string ProxyImpl::registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
-                                                    int partitionId, impl::BaseEventHandler *handler) {
-                return context->getServerListenerService().registerListener(addListenerCodec, partitionId, handler);
-            }
-
-            std::string ProxyImpl::registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
+            std::string ProxyImpl::registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
                                                     impl::BaseEventHandler *handler) {
-                return context->getServerListenerService().registerListener(addListenerCodec, handler);
+                return context->getClientListenerService().registerListener(codec,
+                                                                            boost::shared_ptr<spi::EventHandler<protocol::ClientMessage> >(
+                                                                                    new EventHandlerDelegator(
+                                                                                            handler)));
             }
 
-            int ProxyImpl::getPartitionId(const serialization::pimpl::Data& key) {
+            int ProxyImpl::getPartitionId(const serialization::pimpl::Data &key) {
                 return context->getPartitionService().getPartitionId(key);
             }
 
-            std::auto_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                spi::InvocationService& invocationService = context->getInvocationService();
-                connection::CallFuture future = invocationService.invokeOnPartitionOwner(request, partitionId);
-                return future.get();
+            boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
+                    std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
+
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName(), partitionId);
+                return spi::impl::ClientInvocation::invoke(invocation)->get();
             }
 
-            connection::CallFuture ProxyImpl::invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                spi::InvocationService& invocationService = context->getInvocationService();
-                return invocationService.invokeOnPartitionOwner(request, partitionId);
+            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            ProxyImpl::invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName(), partitionId);
+                return spi::impl::ClientInvocation::invoke(invocation);
             }
 
-            std::auto_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request) {
-                connection::CallFuture future = context->getInvocationService().invokeOnRandomTarget(request);
-                return future.get();
+            boost::shared_ptr<protocol::ClientMessage>
+            ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request) {
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName());
+                return spi::impl::ClientInvocation::invoke(invocation)->get();
             }
 
             void ProxyImpl::destroy() {
                 onDestroy();
 
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::RequestParameters::encode(
-                                        DistributedObject::getName(), DistributedObject::getServiceName());
+                        DistributedObject::getName(), DistributedObject::getServiceName());
 
-                context->getInvocationService().invokeOnRandomTarget(request).get();
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName());
+                spi::impl::ClientInvocation::invoke(invocation)->get();
             }
 
-            std::auto_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                                     boost::shared_ptr<connection::Connection> conn) {
-                connection::CallFuture future = context->getInvocationService().invokeOnConnection(request, conn);
-                return future.get();
+            boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request,
+                                                                         boost::shared_ptr<connection::Connection> conn) {
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName(), conn);
+                return spi::impl::ClientInvocation::invoke(invocation)->get();
             }
 
             std::vector<hazelcast::client::TypedData>
             ProxyImpl::toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values) const {
                 std::vector<hazelcast::client::TypedData> result;
                 typedef std::vector<serialization::pimpl::Data> VALUES;
-                BOOST_FOREACH(const VALUES::value_type &value , values) {
-                    result.push_back(TypedData(
-                            std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(value)),
-                            context->getSerializationService()));
-                }
+                BOOST_FOREACH(const VALUES::value_type &value, values) {
+                                result.push_back(TypedData(
+                                        std::auto_ptr<serialization::pimpl::Data>(
+                                                new serialization::pimpl::Data(value)),
+                                        context->getSerializationService()));
+                            }
                 return result;
             }
 
@@ -107,7 +111,7 @@ namespace hazelcast {
                     const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &dataEntrySet) {
                 typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > ENTRIES_DATA;
                 std::vector<std::pair<TypedData, TypedData> > result;
-                BOOST_FOREACH(const ENTRIES_DATA::value_type &value , dataEntrySet) {
+                BOOST_FOREACH(const ENTRIES_DATA::value_type &value, dataEntrySet) {
                                 serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
                                 TypedData keyData(std::auto_ptr<serialization::pimpl::Data>(
                                         new serialization::pimpl::Data(value.first)), serializationService);
@@ -120,6 +124,21 @@ namespace hazelcast {
 
             boost::shared_ptr<serialization::pimpl::Data> ProxyImpl::toShared(const serialization::pimpl::Data &data) {
                 return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+            }
+
+            ProxyImpl::EventHandlerDelegator::EventHandlerDelegator(impl::BaseEventHandler *handler) : handler(
+                    handler) {}
+
+            void ProxyImpl::EventHandlerDelegator::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
+                handler->handle(event);
+            }
+
+            void ProxyImpl::EventHandlerDelegator::beforeListenerRegister() {
+                handler->beforeListenerRegister();
+            }
+
+            void ProxyImpl::EventHandlerDelegator::onListenerRegister() {
+                handler->onListenerRegister();
             }
         }
     }

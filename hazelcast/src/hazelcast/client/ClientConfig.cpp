@@ -13,6 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <boost/foreach.hpp>
+
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/LifecycleListener.h"
@@ -24,27 +28,29 @@ namespace hazelcast {
 
         ClientConfig::ClientConfig()
         : loadBalancer(NULL)
-        , smart(true)
         , redoOperation(false)
-        , connectionAttemptLimit(2)
-        , attemptPeriod(3000)
         , socketInterceptor(NULL)
-        , credentials(NULL) {
+        , credentials(NULL)
+        , executorPoolSize(-1) {
         }
 
         ClientConfig& ClientConfig::addAddress(const Address& address) {
-            addressList.insert(address);
+            networkConfig.addAddress(address);
             return (*this);
         }
 
         ClientConfig& ClientConfig::addAddresses(const std::vector<Address>& addresses) {
-            addressList.insert(addresses.begin(), addresses.end());
+            networkConfig.addAddresses(addresses);
             return (*this);
         }
 
 
-        std::set<Address, addressComparator>& ClientConfig::getAddresses() {
-            return addressList;
+        std::set<Address> ClientConfig::getAddresses() {
+            std::set<Address> result;
+            BOOST_FOREACH(const Address &address , networkConfig.getAddresses()) {
+                result.insert(address);
+            }
+            return result;
         }
 
         ClientConfig& ClientConfig::setGroupConfig(GroupConfig& groupConfig) {
@@ -59,12 +65,12 @@ namespace hazelcast {
 
 
         ClientConfig& ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
-            this->connectionAttemptLimit = connectionAttemptLimit;
+            networkConfig.setConnectionAttemptLimit(connectionAttemptLimit);
             return *this;
         }
 
         int ClientConfig::getConnectionAttemptLimit() const {
-            return connectionAttemptLimit;
+            return networkConfig.getConnectionAttemptLimit();
         }
 
         ClientConfig& ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
@@ -77,12 +83,12 @@ namespace hazelcast {
         }
 
         ClientConfig& ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
-            this->attemptPeriod = attemptPeriodInMillis;
+            networkConfig.setConnectionAttemptPeriod(attemptPeriodInMillis);
             return *this;
         }
 
         int ClientConfig::getAttemptPeriod() const {
-            return attemptPeriod;
+            return networkConfig.getConnectionAttemptPeriod();
         }
 
         ClientConfig& ClientConfig::setRedoOperation(bool redoOperation) {
@@ -157,12 +163,12 @@ namespace hazelcast {
         }
 
         ClientConfig& ClientConfig::setSmart(bool smart) {
-            this->smart = smart;
+            networkConfig.setSmartRouting(smart);
             return *this;
         }
 
         bool ClientConfig::isSmart() const {
-            return smart;
+            return networkConfig.isSmartRouting();
         }
 
         SerializationConfig &ClientConfig::getSerializationConfig() {
@@ -209,6 +215,37 @@ namespace hazelcast {
         const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> ClientConfig::getMixedNearCacheConfig(const std::string &name) {
             return boost::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
                     getNearCacheConfig<TypedData, TypedData>(name));
+        }
+
+        const boost::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
+            return instanceName;
+        }
+
+        void ClientConfig::setInstanceName(const boost::shared_ptr<std::string> &instanceName) {
+            ClientConfig::instanceName = instanceName;
+        }
+
+        const boost::shared_ptr<config::NearCacheConfigBase> ClientConfig::lookupByPattern(const std::string &name) {
+            // TODO: implement the lookup
+            return nearCacheConfigMap.get(name);
+        }
+
+        int32_t ClientConfig::getExecutorPoolSize() const {
+            return executorPoolSize;
+        }
+
+        void ClientConfig::setExecutorPoolSize(int32_t executorPoolSize) {
+            ClientConfig::executorPoolSize = executorPoolSize;
+        }
+
+        const config::ClientConnectionStrategyConfig &ClientConfig::getConnectionStrategyConfig() const {
+            return connectionStrategyConfig;
+        }
+
+        ClientConfig &ClientConfig::setConnectionStrategyConfig(
+                const config::ClientConnectionStrategyConfig &connectionStrategyConfig) {
+            ClientConfig::connectionStrategyConfig = connectionStrategyConfig;
+            return *this;
         }
     }
 }

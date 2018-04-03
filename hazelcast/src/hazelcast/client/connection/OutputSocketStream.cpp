@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <sys/socket.h>
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/Socket.h"
 
@@ -24,12 +25,12 @@ namespace hazelcast {
             }
 
             void OutputSocketStream::write(const std::vector<byte>& bytes) {
-                socket.send((void *)&(bytes[0]), (int)(sizeof(char) * bytes.size()));
+                socket.send((void *)&(bytes[0]), (int)(sizeof(char) * bytes.size()), MSG_WAITALL);
             }
 
             void OutputSocketStream::writeByte(int i) {
                 char x = (char)(0xff & i);
-                socket.send((void *)&(x), sizeof(char));
+                socket.send((void *)&(x), sizeof(char), MSG_WAITALL);
             }
 
             void OutputSocketStream::writeInt(int v) {

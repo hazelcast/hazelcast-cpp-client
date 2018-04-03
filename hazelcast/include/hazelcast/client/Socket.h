@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_SOCKET_H_
 
 #include "hazelcast/client/Address.h"
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -48,7 +49,7 @@ namespace hazelcast {
              * @return number of bytes send
              * @throw IOException in failure.
              */
-            virtual int send(const void *buffer, int len) = 0;
+            virtual int send(const void *buffer, int len, int flag = 0) = 0;
 
             /**
              * @param buffer
@@ -83,6 +84,14 @@ namespace hazelcast {
             virtual client::Address getAddress() const = 0;
 
             virtual void setBlocking(bool blocking) = 0;
+
+            /**
+             *
+             * This function is used to obtain the locally bound endpoint of the socket.
+             *
+             * @returns An address that represents the local endpoint of the socket.
+             */
+            virtual std::auto_ptr<Address> localSocketAddress() const = 0;
         };
 
         /**

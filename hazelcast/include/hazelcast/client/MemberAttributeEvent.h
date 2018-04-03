@@ -20,10 +20,9 @@
 #ifndef HAZELCAST_MemberAttributeEvent
 #define HAZELCAST_MemberAttributeEvent
 
+#include <vector>
 
 #include "hazelcast/client/MembershipEvent.h"
-#include "hazelcast/util/IOUtil.h"
-#include <boost/smart_ptr/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,8 +33,6 @@ namespace hazelcast {
     namespace client {
 
         class Cluster;
-
-        class Member;
 
         /**
          *
@@ -56,7 +53,7 @@ namespace hazelcast {
             * InternalAPI. constructor
             */
             MemberAttributeEvent(Cluster &cluster, const Member &member, MemberAttributeOperationType operationType,
-                                 const std::string &key, std::string &value, const std::vector<Member> &memberList);
+                                 const std::string &key, std::string &value);
 
             /**
              *

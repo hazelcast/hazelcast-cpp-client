@@ -18,6 +18,8 @@
 
 #include <vector>
 #include <set>
+#include <boost/shared_ptr.hpp>
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
@@ -62,6 +64,8 @@ namespace hazelcast {
             ClientConfig();
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#addAddress(const Address &)}.
+            *
             * Adds an address to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
@@ -71,6 +75,8 @@ namespace hazelcast {
             ClientConfig &addAddress(const Address &address);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#addAddresses(const std::vector<Address> &)}.
+            *
             * Adds all address in given vector to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
@@ -80,12 +86,14 @@ namespace hazelcast {
             ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getAddresses()}.
+            *
             * Returns set of the initial addresses.
             * Client will use this vector to find a running Member, connect to it.
             *
             * @return vector of addresses
             */
-            std::set<Address, addressComparator> &getAddresses();
+            std::set<Address> getAddresses();
 
             /**
             * The Group Configuration properties like:
@@ -115,6 +123,8 @@ namespace hazelcast {
             const Credentials *getCredentials();
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
+            *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
@@ -125,6 +135,8 @@ namespace hazelcast {
             ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getConnectionAttemptLimit()}
+            *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
@@ -146,6 +158,8 @@ namespace hazelcast {
             int getConnectionTimeout() const;
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#setAttemptPeriod(int32_t)}
+            *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
             * @param attemptPeriodInMillis
@@ -154,6 +168,8 @@ namespace hazelcast {
             ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getAttemptPeriod()}
+            *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
             * @return int attemptPeriodInMillis
@@ -181,12 +197,16 @@ namespace hazelcast {
             bool isRedoOperation() const;
 
             /**
+            * @deprecated Please use ClientNetworkConfig#isSmartRouting
+            *
             * @return true if client configured as smart
             * see setSmart()
             */
             bool isSmart() const;
 
             /**
+            * @deprecated Please use ClientNetworkConfig#setSmartRouting
+            *
             * If true, client will route the key based operations to owner of the key at the best effort.
             * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
             * guarantee that the operation will always be executed on the owner.
@@ -408,6 +428,30 @@ namespace hazelcast {
              */
             ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
 
+            const boost::shared_ptr<std::string> &getInstanceName() const;
+
+            void setInstanceName(const boost::shared_ptr<std::string> &instanceName);
+
+            /**
+             * Pool size for internal ExecutorService which handles responses etc.
+             *
+             * @return int Executor pool size.
+             */
+            int32_t getExecutorPoolSize() const;
+
+            /**
+             * Sets Client side Executor pool size.
+             *
+             * @param executorPoolSize pool size
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             */
+            void setExecutorPoolSize(int32_t executorPoolSize);
+
+            const config::ClientConnectionStrategyConfig &getConnectionStrategyConfig() const;
+
+            ClientConfig &
+            setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
+
         private:
 
             GroupConfig groupConfig;
@@ -415,8 +459,6 @@ namespace hazelcast {
             config::ClientNetworkConfig networkConfig;
 
             SerializationConfig serializationConfig;
-
-            std::set<Address, addressComparator> addressList;
 
             LoadBalancer *loadBalancer;
 
@@ -430,13 +472,7 @@ namespace hazelcast {
 
             std::map<std::string, std::string> properties;
 
-            bool smart;
-
             bool redoOperation;
-
-            int connectionAttemptLimit;
-
-            int attemptPeriod;
 
             SocketInterceptor *socketInterceptor;
 
@@ -446,10 +482,16 @@ namespace hazelcast {
 
             util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
 
-            const boost::shared_ptr<config::NearCacheConfigBase> lookupByPattern(const std::string &name) {
-                    // TODO: implement the lookup
-                    return nearCacheConfigMap.get(name);
-            }
+            boost::shared_ptr<std::string> instanceName;
+
+            /**
+             * pool-size for internal ExecutorService which handles responses etc.
+             */
+            int32_t executorPoolSize;
+
+            config::ClientConnectionStrategyConfig connectionStrategyConfig;
+
+            const boost::shared_ptr<config::NearCacheConfigBase> lookupByPattern(const std::string &name);
         };
 
     }

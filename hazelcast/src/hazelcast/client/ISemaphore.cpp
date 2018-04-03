@@ -48,7 +48,7 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreAcquireCodec::RequestParameters::encode(getName(), permits);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         int ISemaphore::availablePermits() {
@@ -69,7 +69,7 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreReducePermitsCodec::RequestParameters::encode(getName(), reduction);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ISemaphore::release() {
@@ -80,7 +80,7 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreReleaseCodec::RequestParameters::encode(getName(), permits);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         bool ISemaphore::tryAcquire() {

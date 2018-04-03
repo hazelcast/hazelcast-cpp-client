@@ -19,14 +19,17 @@
 
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/TransactionalObject.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            #define MILLISECONDS_IN_A_SECOND 1000
+#define MILLISECONDS_IN_A_SECOND 1000
 
-            TransactionalObject::TransactionalObject(const std::string& serviceName, const std::string& objectName, txn::TransactionProxy *context)
-            : serviceName(serviceName), name(objectName), context(context) {
+            TransactionalObject::TransactionalObject(const std::string &serviceName, const std::string &objectName,
+                                                     txn::TransactionProxy *context)
+                    : serviceName(serviceName), name(objectName), context(context) {
 
             }
 
@@ -34,11 +37,11 @@ namespace hazelcast {
 
             }
 
-            const std::string& TransactionalObject::getServiceName() {
+            const std::string &TransactionalObject::getServiceName() {
                 return serviceName;
             }
 
-            const std::string& TransactionalObject::getName() {
+            const std::string &TransactionalObject::getName() {
                 return name;
             }
 
@@ -48,8 +51,10 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::RequestParameters::encode(
                         name, serviceName);
 
-                spi::InvocationService& invocationService = context->getInvocationService();
-                invocationService.invokeOnConnection(request, context->getConnection());
+                boost::shared_ptr<connection::Connection> connection = context->getConnection();
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        context->getClientContext(), request, name, connection);
+                spi::impl::ClientInvocation::invoke(invocation)->get();
             }
 
             void TransactionalObject::onDestroy() {
@@ -60,18 +65,16 @@ namespace hazelcast {
                 return context->getTxnId();
             }
 
-
             int TransactionalObject::getTimeoutInMilliseconds() const {
                 return context->getTimeoutSeconds() * MILLISECONDS_IN_A_SECOND;
             }
 
-            std::auto_ptr<protocol::ClientMessage> TransactionalObject::invoke(
+            boost::shared_ptr<protocol::ClientMessage> TransactionalObject::invoke(
                     std::auto_ptr<protocol::ClientMessage> request) {
-
-                connection::CallFuture future = context->getInvocationService().invokeOnConnection(
-                        request, context->getConnection());
-
-                return future.get();
+                boost::shared_ptr<connection::Connection> connection = context->getConnection();
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        context->getClientContext(), request, name, connection);
+                return spi::impl::ClientInvocation::invoke(invocation)->get();
             }
         }
     }

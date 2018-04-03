@@ -20,7 +20,7 @@
 #ifndef HAZELCAST_MembershipEvent
 #define HAZELCAST_MembershipEvent
 
-#include <vector>
+#include <set>
 #include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -50,13 +50,15 @@ namespace hazelcast {
             enum MembershipEventType {
                 MEMBER_ADDED = 1,
                 MEMBER_REMOVED = 2,
+                MEMBER_ATTRIBUTE_CHANGED = 5
             };
 
             /**
              * Internal API.
              * Constructor.
              */
-            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType, const std::vector<Member> &membersList);
+            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
+                            const std::set<Member> &membersList);
 
             /**
              * Destructor
@@ -76,7 +78,7 @@ namespace hazelcast {
              *
              * @return the members at the moment after this event.
              */
-            virtual const std::vector<Member> getMembers() const;
+            virtual const std::set<Member> getMembers() const;
 
             /**
              * Returns the cluster of the event.
@@ -104,7 +106,7 @@ namespace hazelcast {
             Cluster *cluster;
             Member member;
             MembershipEventType eventType;
-            std::vector<Member> members;
+            std::set<Member> members;
         };
     }
 }

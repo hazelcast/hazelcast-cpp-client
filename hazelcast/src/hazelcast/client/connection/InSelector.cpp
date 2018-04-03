@@ -22,7 +22,7 @@
 
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/Connection.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -33,7 +33,7 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InSelector::InSelector(ConnectionManager& connectionManager)
+            InSelector::InSelector(ClientConnectionManagerImpl& connectionManager)
             : IOSelector(connectionManager) {
             }
 
@@ -65,7 +65,7 @@ namespace hazelcast {
                             int wakeUpSignal;
                             sleepingSocket->receive(&wakeUpSignal, sizeof(int));
                         } else {
-                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+                            boost::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
                             if (conn.get() != NULL) {
                                 conn->getReadHandler().handle();
                             }

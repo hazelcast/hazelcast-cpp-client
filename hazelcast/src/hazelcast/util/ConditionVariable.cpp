@@ -87,25 +87,8 @@ namespace hazelcast {
             assert(EINVAL != error);
         }
 
-        bool ConditionVariable::waitFor(Mutex& mutex, int64_t timeInMilliseconds) {
-            struct timeval tv;
-            ::gettimeofday(&tv, NULL);
-
-            struct timespec ts;
-            ts.tv_sec = tv.tv_sec;
-            ts.tv_nsec = tv.tv_usec * 1000;
-            int64_t seconds = timeInMilliseconds / 1000;
-            if (seconds > std::numeric_limits<time_t>::max()) {
-                ts.tv_sec = std::numeric_limits<time_t>::max();
-            } else {
-                ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
-                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
-                if (nsec >= NANOS_IN_A_SECOND) {
-                    nsec -= NANOS_IN_A_SECOND;
-                    ++ts.tv_sec;
-                }
-                ts.tv_nsec = nsec;
-            }
+        bool ConditionVariable::waitNanos(Mutex& mutex, int64_t nanos) {
+            struct timespec ts = calculateTimeFromNanos(nanos);
 
             int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
             (void)error;
@@ -117,6 +100,65 @@ namespace hazelcast {
             }
 
             return true;
+        }
+
+        bool ConditionVariable::waitFor(Mutex& mutex, int64_t timeInMilliseconds) {
+            struct timespec ts = calculateTimeFromMilliseconds(timeInMilliseconds);
+
+            int error = pthread_cond_timedwait(&condition, &(mutex.mutex), &ts);
+            (void)error;
+            assert(EPERM != error);
+            assert(EINVAL != error);
+
+            if (ETIMEDOUT == error) {
+                return false;
+            }
+
+            return true;
+        }
+
+        struct timespec ConditionVariable::calculateTimeFromMilliseconds(int64_t timeInMilliseconds) const {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+
+            struct timespec ts;
+            ts.tv_sec = tv.tv_sec;
+            ts.tv_nsec = tv.tv_usec * 1000;
+            int64_t seconds = timeInMilliseconds / 1000;
+            if (seconds > ::std::__1::numeric_limits<long>::max()) {
+                ts.tv_sec = ::std::__1::numeric_limits<long>::max();
+            } else {
+                ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
+                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
+                if (nsec >= NANOS_IN_A_SECOND) {
+                    nsec -= NANOS_IN_A_SECOND;
+                    ++ts.tv_sec;
+                }
+                ts.tv_nsec = nsec;
+            }
+            return ts;
+        }
+
+        struct timespec ConditionVariable::calculateTimeFromNanos(int64_t nanos) const {
+            struct timeval tv;
+            gettimeofday(&tv, NULL);
+
+            struct timespec ts;
+            ts.tv_sec = tv.tv_sec;
+            ts.tv_nsec = tv.tv_usec * 1000;
+            int64_t seconds = nanos / NANOS_IN_A_SECOND;
+            if (seconds > ::std::__1::numeric_limits<long>::max()) {
+                ts.tv_sec = ::std::__1::numeric_limits<long>::max();
+            } else {
+                ts.tv_sec += (time_t) (nanos / NANOS_IN_A_SECOND);
+                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (nanos % 1000);
+                if (nsec >= NANOS_IN_A_SECOND) {
+                    nsec -= NANOS_IN_A_SECOND;
+                    ++ts.tv_sec;
+                }
+                ts.tv_nsec = nsec;
+            }
+            return ts;
         }
 
         void ConditionVariable::wait(Mutex& mutex) {

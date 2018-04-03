@@ -96,7 +96,7 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::AtomicLongSetCodec::RequestParameters::encode(getName(), newValue);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
     }
 }

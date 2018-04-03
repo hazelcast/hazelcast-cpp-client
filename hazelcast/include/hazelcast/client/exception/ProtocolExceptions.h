@@ -53,6 +53,8 @@ namespace hazelcast {
 
                 void raise() const;
 
+                virtual bool isProtocolException() const;
+
             private:
                 int32_t errorCode;
                 int32_t causeErrorCode;

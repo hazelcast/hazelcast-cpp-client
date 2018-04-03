@@ -59,6 +59,10 @@ namespace hazelcast {
                 throw *this;
             }
 
+            bool ProtocolException::isProtocolException() const {
+                return true;
+            }
+
             UndefinedErrorCodeException::UndefinedErrorCodeException(int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
                     : error(errorCode), messageCallId(correlationId), detailedErrorMessage(details) {

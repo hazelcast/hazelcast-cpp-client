@@ -42,8 +42,12 @@ namespace hazelcast {
             }
 
             void interruptibleSleep(int seconds) {
+                interruptibleSleepMillis(seconds * 1000);
+            }
+
+            void interruptibleSleepMillis(int timeInMillis) {
                 LockGuard guard(wakeupMutex);
-                wakeupCondition.waitFor(wakeupMutex, seconds * 1000);
+                wakeupCondition.waitFor(wakeupMutex, timeInMillis);
             }
 
             void wakeup() {
@@ -98,6 +102,10 @@ namespace hazelcast {
 
             virtual long getThreadId() {
                 return (long) pthread_self();
+            }
+
+            static void yield() {
+                pthread_yield_np();
             }
 
         protected:

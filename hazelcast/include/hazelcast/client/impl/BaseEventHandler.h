@@ -23,6 +23,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <string>
 #include <memory>
+#include "hazelcast/client/spi/EventHandler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,11 +36,14 @@ namespace hazelcast {
             class ClientMessage;
         }
         namespace impl {
-            class HAZELCAST_API BaseEventHandler {
+            class HAZELCAST_API BaseEventHandler : public spi::EventHandler<protocol::ClientMessage> {
             public:
                 virtual ~BaseEventHandler();
                 
                 virtual void handle(std::auto_ptr<protocol::ClientMessage> message) = 0;
+
+                // TODO: Remove the above method after changing and regenerating the codecs
+                virtual void handle(const boost::shared_ptr<protocol::ClientMessage> &event);
 
                 std::string registrationId;
 

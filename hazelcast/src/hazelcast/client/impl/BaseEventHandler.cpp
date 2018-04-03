@@ -19,6 +19,7 @@
 
 
 #include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,7 +27,10 @@ namespace hazelcast {
             BaseEventHandler::~BaseEventHandler(){
             }
 
-
+            void BaseEventHandler::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
+                std::auto_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
+                handle(e);
+            }
         }
     }
 }

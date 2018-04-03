@@ -107,6 +107,8 @@ namespace hazelcast {
              */
             bool lookupAttribute(const std::string &key) const;
 
+            bool operator<(const Member &rhs) const;
+
         private:
             void setAttribute(const std::string &key, const std::string &value);
 

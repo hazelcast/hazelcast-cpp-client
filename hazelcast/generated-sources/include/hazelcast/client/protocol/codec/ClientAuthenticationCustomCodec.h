@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #endif
 
 #include <memory>
+#include <vector>
 #include <string>
 
 
@@ -40,6 +41,7 @@ namespace hazelcast {
             }
         }
         class Address;
+        class Member;
 
         namespace protocol {
             namespace codec {
@@ -58,7 +60,8 @@ namespace hazelcast {
                                 const std::string *ownerUuid, 
                                 bool isOwnerConnection, 
                                 const std::string &clientType, 
-                                uint8_t serializationVersion);
+                                uint8_t serializationVersion, 
+                                const std::string &clientHazelcastVersion);
 
                         static int32_t calculateDataSize(
                                 const serialization::pimpl::Data &credentials, 
@@ -66,7 +69,8 @@ namespace hazelcast {
                                 const std::string *ownerUuid, 
                                 bool isOwnerConnection, 
                                 const std::string &clientType, 
-                                uint8_t serializationVersion);
+                                uint8_t serializationVersion, 
+                                const std::string &clientHazelcastVersion);
 
                         private:
                             // Preventing public access to constructors
@@ -84,7 +88,9 @@ namespace hazelcast {
                             std::auto_ptr<std::string > uuid;
                             std::auto_ptr<std::string > ownerUuid;
                             uint8_t serializationVersion;
-                            
+                                                        std::string serverHazelcastVersion;
+                                                        std::auto_ptr<std::vector<Member> > clientUnregisteredMembers;
+
                             static ResponseParameters decode(ClientMessage &clientMessage);
 
                             // define copy constructor (needed for auto_ptr variables)

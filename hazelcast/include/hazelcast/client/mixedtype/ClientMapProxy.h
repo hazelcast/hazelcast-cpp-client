@@ -37,6 +37,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/Future.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -548,7 +549,7 @@ namespace hazelcast {
                     serialization::pimpl::Data keyData = toData(key);
                     impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
@@ -1087,9 +1088,9 @@ namespace hazelcast {
                                                                                             keyData,
                                                                                             util::getThreadId());
 
-                    connection::CallFuture callFuture = invokeAndGetFuture(request, partitionId);
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(request, partitionId);
 
-                    return client::Future<ResultType>(callFuture, getSerializationService(), submitToKeyDecoder);
+                    return client::Future<ResultType>(*clientInvocationFuture, getSerializationService(), submitToKeyDecoder);
                 }
 
                 static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response);

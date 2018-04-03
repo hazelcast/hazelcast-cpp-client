@@ -34,7 +34,7 @@ namespace hazelcast {
                 protected:
                     class SocketStub : public internal::socket::TcpSocket {
                     public:
-                        virtual int send(const void *buf, int size);
+                        virtual int send(const void *buf, int size, int flag=0);
 
                         virtual ~SocketStub();
 

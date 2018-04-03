@@ -20,7 +20,7 @@
 #include "hazelcast/client/proxy/ISetImpl.h"
 
 #include "hazelcast/client/impl/ItemEventHandler.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
 
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/SetSizeCodec.h"
@@ -47,16 +47,11 @@ namespace hazelcast {
             }
 
             std::string ISetImpl::addItemListener(impl::BaseEventHandler *itemEventHandler, bool includeValue) {
-                std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec = std::auto_ptr<protocol::codec::IAddListenerCodec>(
-                        new protocol::codec::SetAddListenerCodec(getName(), includeValue, false));
-
-                return registerListener(addCodec, itemEventHandler);
+                return registerListener(createItemListenerCodec(includeValue), itemEventHandler);
             }
 
             bool ISetImpl::removeItemListener(const std::string& registrationId) {
-                protocol::codec::SetRemoveListenerCodec removeCodec(getName(), registrationId);
-
-                return context->getServerListenerService().deRegisterListener(removeCodec);
+                return context->getClientListenerService().deregisterListener(registrationId);
             }
 
             int ISetImpl::size() {
@@ -131,8 +126,40 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetClearCodec::RequestParameters::encode(getName());
 
-                invoke(request, partitionId);
+                invokeOnPartition(request, partitionId);
             }
+
+            boost::shared_ptr<spi::impl::ListenerMessageCodec>
+            ISetImpl::createItemListenerCodec(bool includeValue) {
+                return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
+                        new SetListenerMessageCodec(getName(), includeValue));
+            }
+
+            ISetImpl::SetListenerMessageCodec::SetListenerMessageCodec(const std::string &name,
+                                                                             bool includeValue) : name(name),
+                                                                                                  includeValue(
+                                                                                                          includeValue) {}
+
+            std::auto_ptr<protocol::ClientMessage>
+            ISetImpl::SetListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                return protocol::codec::SetAddListenerCodec(name, includeValue, localOnly).encodeRequest();
+            }
+
+            std::string ISetImpl::SetListenerMessageCodec::decodeAddResponse(
+                    protocol::ClientMessage &responseMessage) const {
+                return protocol::codec::SetAddListenerCodec(name, includeValue, false).decodeResponse(responseMessage);
+            }
+
+            std::auto_ptr<protocol::ClientMessage>
+            ISetImpl::SetListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
+                return protocol::codec::SetRemoveListenerCodec(name, realRegistrationId).encodeRequest();
+            }
+
+            bool ISetImpl::SetListenerMessageCodec::decodeRemoveResponse(
+                    protocol::ClientMessage &clientMessage) const {
+                return protocol::codec::SetRemoveListenerCodec(name, "").decodeResponse(clientMessage);
+            }
+
         }
     }
 }

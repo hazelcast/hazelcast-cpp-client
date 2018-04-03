@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_MAP_NEARCACHEDCLIENTMAPPROXY_H_
 
 #include <boost/shared_ptr.hpp>
+#include "hazelcast/client/protocol/codec/MapRemoveEntryListenerCodec.h"
 
 #include "hazelcast/client/map/ClientMapProxy.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -26,7 +27,7 @@
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/adapter/IMapDataStructureAdapter.h"
 #include "hazelcast/client/protocol/codec/MapAddNearCacheEntryListenerCodec.h"
-#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/EntryEvent.h"
@@ -351,10 +352,38 @@ namespace hazelcast {
                     boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
                 };
 
-                std::auto_ptr<protocol::codec::IAddListenerCodec> createNearCacheEntryListenerCodec() {
-                    return std::auto_ptr<protocol::codec::IAddListenerCodec>(
-                            new protocol::codec::MapAddNearCacheEntryListenerCodec(
-                                    nearCache->getName(), EntryEventType::INVALIDATION, false));
+                class NearCacheEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const {
+                        return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags,
+                                                                                  localOnly).encodeRequest();
+                    }
+
+                    std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const {
+                        return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags, false).decodeResponse(
+                                responseMessage);
+                    }
+
+                    std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const {
+                        return protocol::codec::MapRemoveEntryListenerCodec(name, realRegistrationId).encodeRequest();
+                    }
+
+                    bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const {
+                        return protocol::codec::MapRemoveEntryListenerCodec(name, "").decodeResponse(clientMessage);
+                    }
+
+                    NearCacheEntryListenerMessageCodec(const std::string &name, int32_t listenerFlags)
+                            : name(name), listenerFlags(listenerFlags) {}
+                private:
+                    const std::string &name;
+                    int32_t listenerFlags;
+                };
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createNearCacheEntryListenerCodec() {
+                    int32_t listenerFlags = EntryEventType::INVALIDATION;
+                    return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
+                            new NearCacheEntryListenerMessageCodec(DistributedObject::getName(), listenerFlags));
                 }
 
                 void resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key) {

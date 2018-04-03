@@ -13,11 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <string>
+#include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
         MembershipListener::~MembershipListener() {
+        }
+
+        const std::string &MembershipListener::getRegistrationId() const {
+            return registrationId;
+        }
+
+        void MembershipListener::setRegistrationId(const std::string &registrationId) {
+            MembershipListener::registrationId = registrationId;
         }
     }
 }

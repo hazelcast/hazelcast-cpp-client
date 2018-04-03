@@ -23,7 +23,7 @@
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerCodec.h"
 
@@ -39,7 +39,7 @@ namespace hazelcast {
             template<typename K, typename V, typename BaseType>
             class EntryEventHandler : public BaseType {
             public:
-                EntryEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                EntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                   serialization::pimpl::SerializationService &serializationService,
                                   EntryListener<K, V> &listener, bool includeValue)
                 : instanceName(instanceName)
@@ -70,7 +70,7 @@ namespace hazelcast {
                                       std::auto_ptr<serialization::pimpl::Data> mergingValue,
                                       const int32_t &eventType, const std::string &uuid,
                                       const int32_t &numberOfAffectedEntries) {
-                    std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                     MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
 
@@ -106,7 +106,7 @@ namespace hazelcast {
                     if (NULL != key.get()) {
                         eventKey = serializationService.toObject<K>(*key);
                     }
-                    std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
                     EntryEvent<K, V> entryEvent(instanceName, *member, type, eventKey, val, oldVal, mergingVal);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);
@@ -125,7 +125,7 @@ namespace hazelcast {
 
             private:
                 const std::string& instanceName;
-                spi::ClusterService& clusterService;
+                spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService& serializationService;
                 EntryListener<K, V>& listener;
                 bool includeValue;
@@ -137,7 +137,7 @@ namespace hazelcast {
                 template<typename BaseType>
                 class MixedEntryEventHandler : public BaseType {
                 public:
-                    MixedEntryEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                    MixedEntryEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                            serialization::pimpl::SerializationService &serializationService,
                                            MixedEntryListener &listener, bool includeValue)
                             : instanceName(instanceName)
@@ -168,7 +168,7 @@ namespace hazelcast {
                                           std::auto_ptr<serialization::pimpl::Data> mergingValue,
                                           const int32_t &eventType, const std::string &uuid,
                                           const int32_t &numberOfAffectedEntries) {
-                        std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                         MapEvent mapEvent(*member, (EntryEventType::Type)eventType, instanceName, numberOfAffectedEntries);
 
@@ -186,7 +186,7 @@ namespace hazelcast {
                                         const int32_t &eventType, const std::string &uuid,
                                         const int32_t &numberOfAffectedEntries) {
                         EntryEventType type((EntryEventType::Type)eventType);
-                        std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
                         MixedEntryEvent entryEvent(instanceName, *member, type, TypedData(key, serializationService),
                                                    TypedData(value, serializationService),
                                                    TypedData(oldValue, serializationService),
@@ -208,7 +208,7 @@ namespace hazelcast {
 
                 private:
                     const std::string& instanceName;
-                    spi::ClusterService& clusterService;
+                    spi::ClientClusterService& clusterService;
                     serialization::pimpl::SerializationService& serializationService;
                     MixedEntryListener& listener;
                     bool includeValue;

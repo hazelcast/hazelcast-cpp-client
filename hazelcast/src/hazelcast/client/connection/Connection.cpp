@@ -21,18 +21,19 @@
 #endif
 
 #include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/connection/CallPromise.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/connection/OutputSocketStream.h"
 #include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/connection/CallFuture.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/util/Util.h"
-
+#include "hazelcast/client/spi/LifecycleService.h"
+#include "hazelcast/client/impl/BuildInfo.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -46,31 +47,40 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
-                                   OutSelector& oListener, internal::socket::SocketFactory &socketFactory, bool isOwner)
-            : live(true)
-            , clientContext(clientContext)
-            , invocationService(clientContext.getInvocationService())
-            , readHandler(*this, iListener, 16 << 10, clientContext)
-            , writeHandler(*this, oListener, 16 << 10)
-            , _isOwnerConnection(isOwner)
-            , heartBeating(true)
-            , receiveBuffer(new byte[16 << 10])
-            , receiveByteBuffer((char *)receiveBuffer, 16 << 10)
-            , messageBuilder(*this, *this)
-            , connectionId(-1) {
+            Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener,
+                                   OutSelector &oListener, internal::socket::SocketFactory &socketFactory, bool isOwner)
+                    : closedTimeMillis(0), lastHeartbeatRequestedMillis(0), lastHeartbeatReceivedMillis(0),
+                      clientContext(clientContext),
+                      invocationService(clientContext.getInvocationService()),
+                      readHandler(*this, iListener, 16 << 10, clientContext),
+                      writeHandler(*this, oListener, 16 << 10), authenticatedAsOwner(isOwner),
+                      heartBeating(true), receiveBuffer(new byte[16 << 10]),
+                      receiveByteBuffer((char *) receiveBuffer, 16 << 10), messageBuilder(*this),
+                      connectionId(-1), pendingPacketCount(0),
+                      connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
                 socket = socketFactory.create(address);
-                wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
-                assert(receiveByteBuffer.remaining() >= protocol::ClientMessage::HEADER_SIZE); // Note: Always make sure that the size >= ClientMessage header size.
+                assert(receiveByteBuffer.remaining() >=
+                       protocol::ClientMessage::HEADER_SIZE); // Note: Always make sure that the size >= ClientMessage header size.
             }
 
             Connection::~Connection() {
-                live = false;
                 delete[] receiveBuffer;
             }
 
+            void Connection::incrementPendingPacketCount() {
+                ++pendingPacketCount;
+            }
+
+            void Connection::decrementPendingPacketCount() {
+                --pendingPacketCount;
+            }
+
+            int32_t Connection::getPendingPacketCount() {
+                return pendingPacketCount;
+            }
+
             void Connection::connect(int timeoutInMillis) {
-                if (!live) {
+                if (!isAlive()) {
                     std::ostringstream out;
                     out << "Connection " << connectionId << " is already closed!";
                     throw exception::IOException("Connection::connect", out.str());
@@ -82,165 +92,199 @@ namespace hazelcast {
                     util::strerror_s(error, errorMsg, 200);
                     throw exception::IOException("Connection::connect", errorMsg);
                 }
+
+                // TODO: make this send all guarantee
+                socket->send("CB2", 3, MSG_WAITALL);
             }
 
-            void Connection::init(const std::vector<byte>& PROTOCOL) {
-                connection::OutputSocketStream outputSocketStream(*socket);
-                outputSocketStream.write(PROTOCOL);
+            void Connection::close(const char *reason) {
+                close(reason, boost::shared_ptr<exception::IException>());
             }
 
-            void Connection::close(const char *closeReason) {
-                if (!live.compareAndSet(true, false)) {
+            void Connection::close(const char *reason, const boost::shared_ptr<exception::IException> &cause) {
+                if (!closedTimeMillis.compareAndSet(0, util::currentTimeMillis())) {
                     return;
                 }
 
-                const Address &serverAddr = getRemoteEndpoint();
-                int socketId = socket->getSocketId();
-                
-                std::stringstream message;
-                message << "Closing connection (id:" << connectionId << ") to " << serverAddr <<
-                        " with socket id " << socketId <<
-                        (_isOwnerConnection ? " as the owner connection." : ". ") <<
-                        (NULL != closeReason ? closeReason : "");
-                util::ILogger::getLogger().warning(message.str());
-                if (!_isOwnerConnection) {
-                    readHandler.deRegisterSocket();
+                closeCause = cause;
+                if (reason) {
+                    closeReason = reason;
                 }
 
-                if (!_isOwnerConnection) {
-                    /**
-                     * Remove connection and socket from the list before closing the socket
-                     * in order to prevent the use of closed socket descriptor.
-                     */
-                    clientContext.getConnectionManager().onConnectionClose(serverAddr, socketId);
+                logClose();
 
-                    clientContext.getInvocationService().cleanResources(*this);
+                writeHandler.deRegisterSocket();
+                readHandler.deRegisterSocket();
+
+                try {
+                    innerClose();
+                } catch (exception::IException &e) {
+                    util::ILogger::getLogger().warning() << "Exception while closing connection" << e.getMessage();
+                }
+
+                clientContext.getConnectionManager().onClose(*this);
+            }
+
+            bool Connection::write(const boost::shared_ptr<protocol::ClientMessage> &message) {
+                writeHandler.enqueueData(message);
+                return true;
+            }
+
+            Socket &Connection::getSocket() {
+                return *socket;
+            }
+
+            const Address &Connection::getRemoteEndpoint() const {
+                return socket->getRemoteEndpoint();
+            }
+
+            void Connection::setRemoteEndpoint(const Address &remoteEndpoint) {
+                socket->setRemoteEndpoint(remoteEndpoint);
+            }
+
+            ReadHandler &Connection::getReadHandler() {
+                return readHandler;
+            }
+
+            WriteHandler &Connection::getWriteHandler() {
+                return writeHandler;
+            }
+
+            bool Connection::isHeartBeating() {
+                return isAlive() && heartBeating;
+            }
+
+            void Connection::handleClientMessage(const boost::shared_ptr<Connection> &connection,
+                                                 std::auto_ptr<protocol::ClientMessage> &message) {
+                incrementPendingPacketCount();
+                if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
+                    spi::impl::listener::AbstractClientListenerService &listenerService =
+                            (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();
+                    listenerService.handleClientMessage(boost::shared_ptr<protocol::ClientMessage>(message), connection);
+                } else {
+                    invocationService.handleClientMessage(connection, message);
+                }
+            }
+
+            int Connection::getConnectionId() const {
+                return connectionId;
+            }
+
+            bool Connection::isAlive() {
+                return closedTimeMillis.get() == 0;
+            }
+
+            const std::string &Connection::getCloseReason() const {
+                return closeReason;
+            }
+
+            void Connection::logClose() {
+                std::ostringstream message;
+                message << *this << " closed. Reason: ";
+                if (!closeReason.empty()) {
+                    message << closeReason;
+                } else if (closeCause.get() != NULL) {
+                    message << closeCause->getSource() << "[" + closeCause->getMessage() << "]";
+                } else {
+                    message << "Socket explicitly closed";
+                }
+
+                util::ILogger &logger = util::ILogger::getLogger();
+                if (clientContext.getLifecycleService().isRunning()) {
+                    if (!closeCause.get()) {
+                        logger.info() << message.str();
+                    } else {
+                        logger.warning() << message.str() << *closeCause;
+                    }
+                } else {
+                    if (closeCause.get() == NULL) {
+                        logger.finest() << message.str();
+                    } else {
+                        logger.finest() << message.str() << *closeCause;
+                    }
+                }
+            }
+
+            bool Connection::isAuthenticatedAsOwner() const {
+                return authenticatedAsOwner;
+            }
+
+            void Connection::setIsAuthenticatedAsOwner() {
+                authenticatedAsOwner = true;
+            }
+
+            bool Connection::operator==(const Connection &rhs) const {
+                return connectionId == rhs.connectionId;
+            }
+
+            bool Connection::operator!=(const Connection &rhs) const {
+                return !(rhs == *this);
+            }
+
+            const std::string &Connection::getConnectedServerVersionString() const {
+                return connectedServerVersionString;
+            }
+
+            void Connection::setConnectedServerVersion(const std::string &connectedServerVersionString) {
+                Connection::connectedServerVersionString = connectedServerVersionString;
+                connectedServerVersion = impl::BuildInfo::calculateVersion(connectedServerVersionString);
+            }
+
+            int Connection::getConnectedServerVersion() const {
+                return connectedServerVersion;
+            }
+
+            std::auto_ptr<Address> Connection::getLocalSocketAddress() const {
+                return socket->localSocketAddress();
+            }
+
+            int64_t Connection::lastReadTimeMillis() {
+                return readHandler.getLastReadTimeMillis();
+            }
+
+            void Connection::onHeartbeatFailed() {
+                heartBeating = false;
+            }
+
+            void Connection::onHeartbeatResumed() {
+                heartBeating = true;
+            }
+
+            void Connection::onHeartbeatReceived() {
+                lastHeartbeatReceivedMillis = util::currentTimeMillis();
+            }
+
+            void Connection::onHeartbeatRequested() {
+                lastHeartbeatRequestedMillis = util::currentTimeMillis();
+            }
+
+            void Connection::innerClose() {
+                if (!socket.get()) {
+                    return;;
                 }
 
                 socket->close();
             }
 
-
-            void Connection::write(protocol::ClientMessage *message) {
-                writeHandler.enqueueData(message);
-            }
-
-            Socket& Connection::getSocket() {
-                return *socket;
-            }
-
-            const Address& Connection::getRemoteEndpoint() const {
-                return socket->getRemoteEndpoint();
-            }
-
-            void Connection::setRemoteEndpoint(const Address& remoteEndpoint) {
-                socket->setRemoteEndpoint(remoteEndpoint);
-            }
-
-            std::auto_ptr<protocol::ClientMessage> Connection::sendAndReceive(protocol::ClientMessage &clientMessage) {
-                writeBlocking(clientMessage);
-                return readBlocking();
-            }
-
-            void Connection::writeBlocking(protocol::ClientMessage &message) {
-                message.setFlags(protocol::ClientMessage::BEGIN_AND_END_FLAGS);
-                int32_t numWritten = 0;
-                int32_t frameLen = message.getFrameLength();
-                while (numWritten < frameLen) {
-                    numWritten += message.writeTo(*socket, numWritten, frameLen);
-                }
-            }
-
-            std::auto_ptr<protocol::ClientMessage> Connection::readBlocking() {
-                responseMessage.reset();
-                receiveByteBuffer.clear();
-                messageBuilder.reset();
-
-                do {
-                    int32_t numRead = 0;
-                    do {
-                        numRead += receiveByteBuffer.readFrom(*socket,
-                                protocol::ClientMessage::VERSION_FIELD_OFFSET - numRead, MSG_WAITALL);
-                    } while (numRead < protocol::ClientMessage::VERSION_FIELD_OFFSET); // make sure that we can read the length
-
-                    wrapperMessage.wrapForDecode(receiveBuffer, (int32_t)16 << 10, false);
-                    int32_t size = wrapperMessage.getFrameLength();
-
-                    receiveByteBuffer.readFrom(*socket, size - numRead, MSG_WAITALL);
-
-                    receiveByteBuffer.flip();
-
-                    messageBuilder.onData(receiveByteBuffer);
-
-                    receiveByteBuffer.compact();
-                } while (NULL == responseMessage.get());
-
-                return responseMessage;
-            }
-
-            ReadHandler& Connection::getReadHandler() {
-                return readHandler;
-            }
-
-            WriteHandler& Connection::getWriteHandler() {
-                return writeHandler;
-            }
-
-            void Connection::setAsOwnerConnection(bool isOwnerConnection) {
-                _isOwnerConnection = isOwnerConnection;
-            }
-
-            void Connection::heartBeatingFailed() {
-                if (!heartBeating) {
-                    return;
-                }
-                // set the flag first to avoid the usage of this connection
-                heartBeating = false;
-
-                std::stringstream errorMessage;
-                errorMessage << "Heartbeat to connection  " << getRemoteEndpoint() << " is failed. ";
-                util::ILogger::getLogger().warning(errorMessage.str());
-
-                clientContext.getConnectionManager().onDetectingUnresponsiveConnection(*this);
-            }
-
-            void Connection::heartBeatingSucceed() {
-                heartBeating = true;
-            }
-
-            bool Connection::isHeartBeating() {
-                return heartBeating;
-            }
-
-            void Connection::handleMessage(connection::Connection &connection, std::auto_ptr<protocol::ClientMessage> message) {
-                responseMessage = message;
-            }
-
-            int  Connection::getConnectionId() const {
-                return connectionId;
-            }
-
-            void  Connection::setConnectionId(int connectionId) {
-                Connection::connectionId = connectionId;
-            }
-
-            bool Connection::isOwnerConnection() const {
-                return _isOwnerConnection;
-            }
-
-            std::ostream HAZELCAST_API &operator << (std::ostream &out, const Connection &connection) {
+            std::ostream &operator<<(std::ostream &os, const Connection &connection) {
                 Connection &conn = const_cast<Connection &>(connection);
-                time_t lastRead = conn.lastRead;
-                bool live = conn.live;
-                out << "ClientConnection{"
-                << "alive=" << live
-                << ", connectionId=" << connection.getConnectionId()
-                << ", remoteEndpoint=" << connection.getRemoteEndpoint()
-                << ", lastReadTime=" << lastRead
-                << ", isHeartbeating=" << conn.isHeartBeating()
-                << '}';
+                int64_t lastRead = conn.lastReadTimeMillis();
+                int64_t closedTime = conn.closedTimeMillis;
+                int64_t lastHeartBeatRequestedTime = conn.lastHeartbeatRequestedMillis;
+                int64_t lastHeartBeatReceivedTime = conn.lastHeartbeatReceivedMillis;
+                os << "ClientConnection{"
+                   << "alive=" << conn.isAlive()
+                   << ", connectionId=" << connection.getConnectionId()
+                   << ", remoteEndpoint=" << connection.getRemoteEndpoint()
+                   << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead)
+                   << ", closedTime=" << util::StringUtil::timeToStringFriendly(closedTime)
+                   << ", lastHeartbeatRequested=" << util::StringUtil::timeToStringFriendly(lastHeartBeatRequestedTime)
+                   << ", lastHeartbeatReceived=" << util::StringUtil::timeToStringFriendly(lastHeartBeatReceivedTime)
+                   << ", isHeartbeating=" << conn.isHeartBeating()
+                   << ", connected server version=" << conn.connectedServerVersionString
+                   << '}';
 
-                return out;
+                return os;
             }
         }
     }

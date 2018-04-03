@@ -17,7 +17,6 @@
 #define HAZELCAST_ATOMIC_NUMBER
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <string>

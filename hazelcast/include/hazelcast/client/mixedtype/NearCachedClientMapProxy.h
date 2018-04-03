@@ -161,7 +161,7 @@ namespace hazelcast {
                     boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, TypedData> > nearCache;
                 };
 
-                std::auto_ptr<protocol::codec::IAddListenerCodec> createNearCacheEntryListenerCodec();
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createNearCacheEntryListenerCodec();
 
                 void resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key);
 
@@ -178,8 +178,25 @@ namespace hazelcast {
 
                 void invalidateNearCache(boost::shared_ptr<serialization::pimpl::Data> key);
 
-
             private:
+                class NearCacheEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    NearCacheEntryListenerMessageCodec(const std::string &name, int32_t listenerFlags);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    int32_t listenerFlags;
+                };
+
                 bool cacheLocalEntries;
                 bool invalidateOnChange;
                 map::impl::nearcache::KeyStateMarker *keyStateMarker;

@@ -43,7 +43,7 @@ namespace hazelcast {
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::CountDownLatchCountDownCodec::RequestParameters::encode(getName());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         int ICountDownLatch::getCount() {

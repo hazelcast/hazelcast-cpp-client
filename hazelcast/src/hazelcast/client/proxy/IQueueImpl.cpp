@@ -40,7 +40,7 @@
 #include "hazelcast/client/protocol/codec/QueueRemainingCapacityCodec.h"
 #include "hazelcast/client/protocol/codec/QueueIsEmptyCodec.h"
 
-#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -52,16 +52,11 @@ namespace hazelcast {
             }
 
             std::string IQueueImpl::addItemListener(impl::BaseEventHandler *itemEventHandler, bool includeValue) {
-                std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec = std::auto_ptr<protocol::codec::IAddListenerCodec>(
-                        new protocol::codec::QueueAddListenerCodec(getName(), includeValue, false));
-
-                return registerListener(addCodec, itemEventHandler);
+                return registerListener(createItemListenerCodec(includeValue), itemEventHandler);
             }
 
             bool IQueueImpl::removeItemListener(const std::string &registrationId) {
-                protocol::codec::QueueRemoveListenerCodec removeCodec(getName(), registrationId);
-
-                return context->getServerListenerService().deRegisterListener(removeCodec);
+                return context->getClientListenerService().deregisterListener(registrationId);
             }
 
             bool IQueueImpl::offer(const serialization::pimpl::Data &element, long timeoutInMillis) {
@@ -77,7 +72,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueuePutCodec::RequestParameters::encode(getName(), element);
 
-                invoke(request, partitionId);
+                invokeOnPartition(request, partitionId);
             }
 
             std::auto_ptr<serialization::pimpl::Data> IQueueImpl::pollData(long timeoutInMillis) {
@@ -180,7 +175,38 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueClearCodec::RequestParameters::encode(getName());
 
-                invoke(request, partitionId);
+                invokeOnPartition(request, partitionId);
+            }
+
+            boost::shared_ptr<spi::impl::ListenerMessageCodec>
+            IQueueImpl::createItemListenerCodec(bool includeValue) {
+                return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
+                        new QueueListenerMessageCodec(getName(), includeValue));
+            }
+
+            IQueueImpl::QueueListenerMessageCodec::QueueListenerMessageCodec(const std::string &name,
+                                                                          bool includeValue) : name(name),
+                                                                                               includeValue(
+                                                                                                       includeValue) {}
+
+            std::auto_ptr<protocol::ClientMessage>
+            IQueueImpl::QueueListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                return protocol::codec::QueueAddListenerCodec(name, includeValue, localOnly).encodeRequest();
+            }
+
+            std::string IQueueImpl::QueueListenerMessageCodec::decodeAddResponse(
+                    protocol::ClientMessage &responseMessage) const {
+                return protocol::codec::QueueAddListenerCodec(name, includeValue, false).decodeResponse(responseMessage);
+            }
+
+            std::auto_ptr<protocol::ClientMessage>
+            IQueueImpl::QueueListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
+                return protocol::codec::QueueRemoveListenerCodec(name, realRegistrationId).encodeRequest();
+            }
+
+            bool IQueueImpl::QueueListenerMessageCodec::decodeRemoveResponse(
+                    protocol::ClientMessage &clientMessage) const {
+                return protocol::codec::QueueRemoveListenerCodec(name, "").decodeResponse(clientMessage);
             }
 
         }

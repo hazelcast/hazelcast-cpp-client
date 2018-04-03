@@ -20,7 +20,7 @@
 #define HAZELCAST_ITEM_EVENT_HANDLER
 
 #include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ItemEvent.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -33,7 +33,7 @@ namespace hazelcast {
             template<typename E, typename BaseType>
             class ItemEventHandler : public BaseType {
             public:
-                ItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                ItemEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                  serialization::pimpl::SerializationService &serializationService,
                                  ItemListener<E> &listener, bool includeValue)
                         : instanceName(instanceName), clusterService(clusterService),
@@ -47,7 +47,7 @@ namespace hazelcast {
                     if (includeValue) {
                         obj = serializationService.toObject<E>(*item);
                     }
-                    std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                    boost::shared_ptr<Member> member = clusterService.getMember(uuid);
                     ItemEventType type((ItemEventType::Type) eventType);
                     ItemEvent<E> itemEvent(instanceName, type, *obj, *member);
                     if (type == ItemEventType::ADDED) {
@@ -59,7 +59,7 @@ namespace hazelcast {
 
             private:
                 const std::string &instanceName;
-                spi::ClusterService &clusterService;
+                spi::ClientClusterService &clusterService;
                 serialization::pimpl::SerializationService &serializationService;
                 ItemListener<E> &listener;
                 bool includeValue;
@@ -71,7 +71,7 @@ namespace hazelcast {
                 template<typename BaseType>
                 class MixedItemEventHandler : public BaseType {
                 public:
-                    MixedItemEventHandler(const std::string &instanceName, spi::ClusterService &clusterService,
+                    MixedItemEventHandler(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                           serialization::pimpl::SerializationService &serializationService,
                                           MixedItemListener &listener)
                             : instanceName(instanceName), clusterService(clusterService),
@@ -80,7 +80,7 @@ namespace hazelcast {
 
                     virtual void handleItem(std::auto_ptr<serialization::pimpl::Data> item, const std::string &uuid,
                                             const int32_t &eventType) {
-                        std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
                         ItemEventType type((ItemEventType::Type) eventType);
                         ItemEvent<TypedData> itemEvent(instanceName, type, TypedData(item, serializationService), *member);
                         if (type == ItemEventType::ADDED) {
@@ -92,7 +92,7 @@ namespace hazelcast {
 
                 private:
                     const std::string &instanceName;
-                    spi::ClusterService &clusterService;
+                    spi::ClientClusterService &clusterService;
                     serialization::pimpl::SerializationService &serializationService;
                     MixedItemListener &listener;
                 };

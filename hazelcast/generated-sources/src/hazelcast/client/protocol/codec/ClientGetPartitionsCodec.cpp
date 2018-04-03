@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ namespace hazelcast {
                         throw exception::UnexpectedMessageTypeException("ClientGetPartitionsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
                     }
 
-                    partitions = clientMessage.getEntryArray<Address, std::vector<int32_t > >();
+                    partitions = clientMessage.getArray<std::pair<Address, std::vector<int32_t> > >();
+
+                    partitionStateVersion = clientMessage.get<int32_t >();
                 }
 
                 ClientGetPartitionsCodec::ResponseParameters ClientGetPartitionsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
@@ -54,6 +56,7 @@ namespace hazelcast {
 
                 ClientGetPartitionsCodec::ResponseParameters::ResponseParameters(const ClientGetPartitionsCodec::ResponseParameters &rhs) {
                         partitions = rhs.partitions;
+                        partitionStateVersion = rhs.partitionStateVersion;
                 }
                 //************************ EVENTS END **************************************************************************//
 

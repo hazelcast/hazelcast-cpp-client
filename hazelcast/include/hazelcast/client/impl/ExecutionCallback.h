@@ -20,6 +20,8 @@
 #ifndef HAZELCAST_CLIENT_IMPL_EXECUTIONCALLBACK_H_
 #define HAZELCAST_CLIENT_IMPL_EXECUTIONCALLBACK_H_
 
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -49,13 +51,13 @@ namespace hazelcast {
                  *
                  * @param response the result of the successful execution
                  */
-                virtual void onResponse(V *response) = 0;
+                virtual void onResponse(const V &response) = 0;
 
                 /**
                  * Called when an execution is completed with an error.
                  * @param e the exception that is thrown
                  */
-                virtual void onFailure(const exception::IException *e) = 0;
+                virtual void onFailure(const boost::shared_ptr<exception::IException> &e) = 0;
             };
         }
     }

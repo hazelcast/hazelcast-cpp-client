@@ -37,7 +37,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOSelector::IOSelector(ConnectionManager &connectionManager)
+            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager)
             :connectionManager(connectionManager) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
@@ -54,7 +54,7 @@ namespace hazelcast {
 
                 int wakeUpSignal = 9;
                 try {
-                    wakeUpSocket->send(&wakeUpSignal, sizeof(int));
+                    wakeUpSocket->send(&wakeUpSignal, sizeof(int), MSG_WAITALL);
                 } catch(exception::IOException &e) {
                     util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw;

@@ -19,23 +19,14 @@
 
 
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
-        Cluster::Cluster(spi::ClusterService &clusterService)
+        Cluster::Cluster(spi::ClientClusterService &clusterService)
         :clusterService(clusterService) {
-
-        }
-
-        void Cluster::addMembershipListener(InitialMembershipListener *listener) {
-            clusterService.addMembershipListener(listener);
-        }
-
-        bool Cluster::removeMembershipListener(InitialMembershipListener *listener) {
-            return clusterService.removeMembershipListener(listener);;
         }
 
         void Cluster::addMembershipListener(MembershipListener *listener) {
@@ -43,11 +34,19 @@ namespace hazelcast {
         }
 
         bool Cluster::removeMembershipListener(MembershipListener *listener) {
-            return clusterService.removeMembershipListener(listener);
+            return clusterService.removeMembershipListener(listener->getRegistrationId());
         }
 
         std::vector<Member>  Cluster::getMembers() {
             return clusterService.getMemberList();
+        }
+
+        std::string Cluster::addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) {
+            return clusterService.addMembershipListener(listener);
+        }
+
+        bool Cluster::removeMembershipListener(const std::string &registrationId) {
+            return clusterService.removeMembershipListener(registrationId);
         }
     }
 }

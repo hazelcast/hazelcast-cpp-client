@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-/*
- * IMessageHandler.h
- *
- *  Created on: Apr 10, 2015
- *      Author: ihsan
- */
-
-#ifndef HAZELCAST_IMESSAGEHANDLER
-#define HAZELCAST_IMESSAGEHANDLER
+#ifndef HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
+#define HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_
 
 #include <memory>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -42,7 +36,8 @@ namespace hazelcast {
             public:
                 virtual ~IMessageHandler() { }
 
-                virtual void handleMessage(connection::Connection &connection, std::auto_ptr<ClientMessage> message) = 0;
+                virtual void handleClientMessage(const boost::shared_ptr<connection::Connection> &connection,
+                                                 std::auto_ptr<ClientMessage> &message) = 0;
             };
         }
     }
@@ -51,4 +46,4 @@ namespace hazelcast {
 
 
 
-#endif //HAZELCAST_IMESSAGEHANDLER
+#endif //HAZELCAST_CLIENT_PROTOCOL_IMESSAGEHANDLER_H_

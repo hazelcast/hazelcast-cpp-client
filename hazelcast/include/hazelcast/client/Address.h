@@ -97,6 +97,7 @@ namespace hazelcast {
 
             bool operator<(const Address &rhs) const;
 
+            std::string toString() const;
         private:
             std::string host;
             int port;

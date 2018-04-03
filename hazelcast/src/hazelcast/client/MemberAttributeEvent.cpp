@@ -25,9 +25,8 @@ namespace hazelcast {
 
         MemberAttributeEvent::MemberAttributeEvent(Cluster &cluster, const Member &member,
                                                    MemberAttributeEvent::MemberAttributeOperationType operationType,
-                                                   const std::string &key, std::string &value,
-                                                   const std::vector<Member> &memberList)
-                : MembershipEvent(cluster, member, MembershipEvent::MEMBER_ADDED, memberList),
+                                                   const std::string &key, std::string &value)
+                : MembershipEvent(cluster, member, MembershipEvent::MEMBER_ATTRIBUTE_CHANGED, std::set<Member>()),
                   operationType(operationType), key(key), value(value) {
         }
 

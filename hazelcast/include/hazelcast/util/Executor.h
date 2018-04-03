@@ -42,7 +42,6 @@ namespace hazelcast {
              */
             virtual void shutdown() = 0;
         };
-
     }
 }
 

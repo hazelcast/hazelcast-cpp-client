@@ -40,7 +40,7 @@ namespace hazelcast {
             std::string ClientMapProxy::addEntryListener(MixedEntryListener &listener, bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClusterService(), context->getSerializationService(),
+                                getName(), context->getClientClusterService(), context->getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
@@ -51,7 +51,7 @@ namespace hazelcast {
                                        bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                getName(), context->getClusterService(), context->getSerializationService(),
+                                getName(), context->getClientClusterService(), context->getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
