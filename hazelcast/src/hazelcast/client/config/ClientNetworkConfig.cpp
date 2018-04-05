@@ -74,6 +74,7 @@ namespace hazelcast {
                                                               "connectionAttemptLimit cannot be negative");
                 }
                 this->connectionAttemptLimit = connectionAttemptLimit;
+                updateConnectionTimeout();
                 return *this;
             }
 
@@ -87,7 +88,14 @@ namespace hazelcast {
                                                               "connectionAttemptPeriod cannot be negative");
                 }
                 this->connectionAttemptPeriod = connectionAttemptPeriod;
+                updateConnectionTimeout();
                 return *this;
+            }
+
+            void ClientNetworkConfig::updateConnectionTimeout() {
+                if (connectionAttemptLimit > 0) {
+                    connectionTimeout = connectionAttemptPeriod * connectionAttemptLimit;
+                }
             }
 
             std::vector<Address> ClientNetworkConfig::getAddresses() const {

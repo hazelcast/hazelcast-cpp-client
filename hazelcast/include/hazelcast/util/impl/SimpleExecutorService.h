@@ -125,10 +125,8 @@ namespace hazelcast {
                 };
 
                 class Worker : public util::Runnable {
-                    friend class SimpleExecutorService;
                 public:
-                    Worker(const std::string &threadNamePrefix, int32_t queueCapacity,
-                           util::AtomicBoolean &live, util::ILogger &logger);
+                    Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity);
 
                     virtual ~Worker();
 
@@ -142,13 +140,12 @@ namespace hazelcast {
 
                     void shutdown();
                 private:
-                    static std::string generateThreadName(const std::string &prefix);
+                    std::string generateThreadName(const std::string &prefix);
 
+                    SimpleExecutorService &executorService;
                     std::string name;
                     // TODO: Should it be non blocking rejecting queue when compared to Java?
                     util::BlockingConcurrentQueue<boost::shared_ptr<Runnable> > workQueue;
-                    util::AtomicBoolean &live;
-                    util::ILogger &logger;
                     util::Thread thread;
                 };
 
@@ -156,7 +153,7 @@ namespace hazelcast {
                 const std::string &threadNamePrefix;
                 int threadCount;
                 util::AtomicBoolean live;
-                static util::Atomic<int64_t> THREAD_ID_GENERATOR;
+                util::Atomic<int64_t> threadIdGenerator;
                 std::vector<boost::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
 

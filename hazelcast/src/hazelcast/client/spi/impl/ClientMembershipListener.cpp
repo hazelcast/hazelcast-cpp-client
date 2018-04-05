@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/MemberAttributeEvent.h>
 #include "hazelcast/client/spi/impl/ClientMembershipListener.h"
 #include "hazelcast/client/MembershipEvent.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -85,6 +86,18 @@ namespace hazelcast {
                                                                       const int32_t &operationType,
                                                                       std::auto_ptr<std::string> value) {
                     std::vector<Member> members = clusterService.getMemberList();
+                    BOOST_FOREACH (Member &target, members) {
+                                    if (target.getUuid() == uuid) {
+                                        Member::MemberAttributeOperationType type = (Member::MemberAttributeOperationType) operationType;
+                                        target.updateAttribute(type, key, value);
+                                        MemberAttributeEvent memberAttributeEvent(client.getCluster(), target,
+                                                                                  (MemberAttributeEvent::MemberAttributeOperationType) type,
+                                                                                  key, value.get() ? (*value) : "");
+                                        clusterService.fireMemberAttributeEvent(memberAttributeEvent);
+                                        break;
+                                    }
+                                }
+
                 }
 
                 void ClientMembershipListener::memberAdded(const Member &member) {
@@ -199,8 +212,6 @@ namespace hazelcast {
                     }
                 }
             }
-
-
         }
     }
 }

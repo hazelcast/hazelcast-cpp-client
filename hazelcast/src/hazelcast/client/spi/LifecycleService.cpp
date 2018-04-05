@@ -58,6 +58,8 @@ namespace hazelcast {
 
                 loadBalancer->init(cluster);
 
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
+
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
 
                 fireLifecycleEvent(LifecycleEvent::STARTED);
@@ -74,7 +76,7 @@ namespace hazelcast {
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
                 ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
                 clientContext.getClientExecutionService().shutdown();
-                ((spi::impl::listener::AbstractClientListenerService &)clientContext.getClientListenerService()).shutdown();
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 shutdownLatch.countDown();
@@ -94,8 +96,7 @@ namespace hazelcast {
                 util::LockGuard lg(listenerLock);
                 util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
-                    case LifecycleEvent::STARTING :
-                    {
+                    case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420
                         std::string date(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE));
                         util::gitDateToHazelcastLogDate(date);

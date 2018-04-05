@@ -201,12 +201,14 @@ namespace hazelcast {
                 cluster.addMembershipListener(&sampleListener);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
+
+                ASSERT_TRUE(memberAdded.await(30));
+                ASSERT_TRUE(memberAddedInit.await(30));
+
                 ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
-                ASSERT_TRUE(memberAdded.await(30));
-                ASSERT_TRUE(memberAddedInit.await(30));
 
                 instance2->shutdown();
 
@@ -220,8 +222,8 @@ namespace hazelcast {
             }
 
             TEST_P(ClusterTest, testClusterListenersFromConfig) {
-                util::CountDownLatch memberAdded(2);
-                util::CountDownLatch memberAddedInit(3);
+                util::CountDownLatch memberAdded(1);
+                util::CountDownLatch memberAddedInit(1);
                 util::CountDownLatch memberRemoved(1);
                 util::CountDownLatch memberRemovedInit(1);
                 util::CountDownLatch attributeLatch(7);
@@ -237,12 +239,14 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(clientConfig);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
+
+                ASSERT_TRUE(memberAdded.await(30));
+                ASSERT_TRUE(memberAddedInit.await(30));
+
                 ASSERT_TRUE(instance2->setAttributes(1));
 
                 ASSERT_TRUE(attributeLatchInit.await(30));
                 ASSERT_TRUE(attributeLatch.await(30));
-                ASSERT_TRUE(memberAdded.await(30));
-                ASSERT_TRUE(memberAddedInit.await(30));
 
                 instance2->shutdown();
 
@@ -287,7 +291,7 @@ namespace hazelcast {
                 std::auto_ptr<HazelcastServer> instance = startMember();
 
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-                clientConfig.setAttemptPeriod(1000).setConnectionAttemptLimit(100).setLogLevel(FINEST);
+                clientConfig.setAttemptPeriod(1000).setConnectionAttemptLimit(100);
                 // set the heartbeat interval to 1 seconds so that the heartbeater ClientPingCodec related code is
                 // executed for code coverage.
                 clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_INTERVAL] = "1";
@@ -307,7 +311,7 @@ namespace hazelcast {
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
                 ASSERT_TRUE(lifecycleLatch.await(60));
                 // Let enough time for the client to re-register the failed listeners
-                util::sleep(5);
+                util::sleep(2);
                 m.put("sample", "entry");
                 ASSERT_TRUE(countDownLatch.await(30));
                 ASSERT_TRUE(hazelcastClient.removeLifecycleListener(&lifecycleListener));
@@ -328,7 +332,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStates) {
                 HazelcastServer instance(*g_srvFactory);
 
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
                 util::CountDownLatch startingLatch(1);
@@ -355,9 +359,10 @@ namespace hazelcast {
             }
 
             TEST_P(ClusterTest, testConnectionAttemptPeriod) {
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                 clientConfig.setAttemptPeriod(900);
                 clientConfig.setConnectionAttemptLimit(3);
+                clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 8000));
 
                 int64_t startTimeMillis = util::currentTimeMillis();
                 try {
@@ -371,7 +376,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
                 HazelcastServer instance(*g_srvFactory);
 
-                ClientConfig clientConfig;
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                 util::CountDownLatch startingLatch(1);
                 util::CountDownLatch startedLatch(1);
                 util::CountDownLatch connectedLatch(1);
@@ -390,7 +395,6 @@ namespace hazelcast {
 
                 client.shutdown();
 
-                ASSERT_TRUE(disconnectedLatch.await(3));
                 ASSERT_TRUE(shuttingDownLatch.await(5));
                 ASSERT_TRUE(shutdownLatch.await(10));
             }

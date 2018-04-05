@@ -113,7 +113,7 @@ namespace hazelcast {
                     return 1L;
                 }
 
-                logger.info() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << runnable->getName() << " is finished.";
 
                 return 0;
             }

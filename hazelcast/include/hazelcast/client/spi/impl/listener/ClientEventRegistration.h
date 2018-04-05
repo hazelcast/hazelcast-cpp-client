@@ -43,6 +43,8 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API ClientEventRegistration {
                     public:
+                        ClientEventRegistration();
+
                         ClientEventRegistration(const std::string &serverRegistrationId, int64_t callId,
                                                 const boost::shared_ptr<connection::Connection> &subscriber,
                                                 const boost::shared_ptr<ListenerMessageCodec> &codec);
@@ -83,8 +85,8 @@ namespace hazelcast {
                     private:
                         std::string serverRegistrationId;
                         int64_t callId;
-                        const boost::shared_ptr<connection::Connection> subscriber;
-                        const boost::shared_ptr<ListenerMessageCodec> codec;
+                        boost::shared_ptr<connection::Connection> subscriber;
+                        boost::shared_ptr<ListenerMessageCodec> codec;
                     };
                 }
             }

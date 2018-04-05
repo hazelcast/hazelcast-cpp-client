@@ -39,6 +39,7 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/connection/AddressTranslator.h"
+#include "hazelcast/client/connection/ConnectionListenable.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -81,9 +82,8 @@ namespace hazelcast {
             /**
             * Responsible for managing {@link Connection} objects.
             */
-            class HAZELCAST_API ClientConnectionManagerImpl : public spi::impl::ConnectionHeartbeatListener {
-                friend class AuthCallback;
-
+            class HAZELCAST_API ClientConnectionManagerImpl : public spi::impl::ConnectionHeartbeatListener,
+                                                              public ConnectionListenable {
             public:
                 ClientConnectionManagerImpl(spi::ClientContext &client,
                                             const boost::shared_ptr<AddressTranslator> &addressTranslator,
@@ -152,6 +152,11 @@ namespace hazelcast {
 
                 virtual void heartbeatStopped(const boost::shared_ptr<Connection> &connection);
 
+                virtual void addConnectionListener(const boost::shared_ptr<ConnectionListener> &connectionListener);
+
+                void addConnectionHeartbeatListener(
+                        const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &listener);
+
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
@@ -196,9 +201,6 @@ namespace hazelcast {
                 std::auto_ptr<ClientConnectionStrategy> initializeStrategy(spi::ClientContext &client);
 
                 void startEventLoopGroup();
-
-                void addConnectionHeartbeatListener(
-                        const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &listener);
 
                 void stopEventLoopGroup();
 

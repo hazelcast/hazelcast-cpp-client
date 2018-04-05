@@ -19,8 +19,8 @@
 #include <vector>
 #include <set>
 #include <boost/shared_ptr.hpp>
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/SerializationConfig.h"
@@ -46,6 +46,8 @@ namespace hazelcast {
         class InitialMembershipListener;
 
         class LifecycleListener;
+
+        class InitialMembershipEvent;
 
         /**
         * HazelcastClient configuration class.
@@ -249,6 +251,8 @@ namespace hazelcast {
             const std::set<LifecycleListener *> &getLifecycleListeners() const;
 
             /**
+            * @deprecated Please use addListener(const boost::shared_ptr<MembershipListener> &listener) instead.
+            *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
@@ -261,13 +265,29 @@ namespace hazelcast {
             ClientConfig &addListener(MembershipListener *listener);
 
             /**
+            * Adds a listener to configuration to be registered when HazelcastClient starts.
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * otherwise it will slow down the system.
+            *
+            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+            *
+            * @param listener MembershipListener *listener
+            * @return itself ClientConfig
+            */
+            ClientConfig &addListener(const boost::shared_ptr<MembershipListener> &listener);
+
+            /**
             * Returns registered membershipListeners
             *
             * @return registered membershipListeners
             */
             const std::set<MembershipListener *> &getMembershipListeners() const;
 
+            const std::set<boost::shared_ptr<MembershipListener> > &getMangedMembershipListeners() const;
+
             /**
+            * @deprecated Please use addListener(const boost::shared_ptr<InitialMembershipListener> &listener)
+            *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
             * @param listener InitialMembershipListener *listener
@@ -276,11 +296,12 @@ namespace hazelcast {
             ClientConfig &addListener(InitialMembershipListener *listener);
 
             /**
-            * Returns registered initialMembershipListeners
+            * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
-            * @return registered initialMembershipListeners
+            * @param listener InitialMembershipListener *listener
+            * @return itself ClientConfig
             */
-            const std::set<InitialMembershipListener *> &getInitialMembershipListeners() const;
+            ClientConfig &addListener(const boost::shared_ptr<InitialMembershipListener> &listener);
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -453,7 +474,6 @@ namespace hazelcast {
             setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
 
         private:
-
             GroupConfig groupConfig;
 
             config::ClientNetworkConfig networkConfig;
@@ -465,8 +485,7 @@ namespace hazelcast {
             impl::RoundRobinLB defaultLoadBalancer;
 
             std::set<MembershipListener *> membershipListeners;
-
-            std::set<InitialMembershipListener *> initialMembershipListeners;
+            std::set<boost::shared_ptr<MembershipListener> > managedMembershipListeners;
 
             std::set<LifecycleListener *> lifecycleListeners;
 

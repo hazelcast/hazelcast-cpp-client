@@ -183,7 +183,7 @@ namespace hazelcast {
                     connection = getOrConnect(address, true);
                     client.onClusterConnect(connection);
                     setOwnerConnectionAddress(boost::shared_ptr<Address>(new Address(connection->getRemoteEndpoint())));
-                    logger.info() << "Setting " << connection << " as owner with principal " << *principal.get();
+                    logger.info() << "Setting " << *connection << " as owner with principal " << *principal.get();
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
                 } catch (exception::IException &e) {
@@ -616,6 +616,12 @@ namespace hazelcast {
                 }
 
                 return pendingSocketIdToConnection.get(fileDescriptor);
+            }
+
+            void
+            ClientConnectionManagerImpl::addConnectionListener(
+                    const boost::shared_ptr<ConnectionListener> &connectionListener) {
+                connectionListeners.add(connectionListener);
             }
 
             ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,

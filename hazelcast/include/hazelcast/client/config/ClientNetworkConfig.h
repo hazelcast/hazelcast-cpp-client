@@ -193,6 +193,8 @@ namespace hazelcast {
                 int32_t connectionAttemptPeriod;
 
                 std::vector<Address> addressList;
+
+                void updateConnectionTimeout();
             };
         }
     }

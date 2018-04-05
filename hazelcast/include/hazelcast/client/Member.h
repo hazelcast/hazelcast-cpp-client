@@ -109,6 +109,9 @@ namespace hazelcast {
 
             bool operator<(const Member &rhs) const;
 
+            void updateAttribute(MemberAttributeOperationType operationType, const std::string &key,
+                                 std::auto_ptr<std::string> &value);
+
         private:
             void setAttribute(const std::string &key, const std::string &value);
 

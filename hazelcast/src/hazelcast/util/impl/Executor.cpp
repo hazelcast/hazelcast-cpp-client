@@ -27,7 +27,6 @@ namespace hazelcast {
     namespace util {
         namespace impl {
             int32_t SimpleExecutorService::DEFAULT_EXECUTOR_QUEUE_CAPACITY = 100 * 1000;
-            util::Atomic<int64_t> SimpleExecutorService::THREAD_ID_GENERATOR;
 
             SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
                                                          int threadCount,
@@ -57,7 +56,7 @@ namespace hazelcast {
                 int32_t perThreadMaxQueueCapacity = static_cast<int32_t>(ceil(
                         (double) 1.0 * maximumQueueCapacity / threadCount));
                 for (int i = 0; i < threadCount; i++) {
-                    workers[i].reset(new Worker(threadNamePrefix, perThreadMaxQueueCapacity, live, logger));
+                    workers[i].reset(new Worker(*this, perThreadMaxQueueCapacity));
                     workers[i]->start();
                 }
             }
@@ -104,25 +103,18 @@ namespace hazelcast {
 
             void SimpleExecutorService::Worker::run() {
                 boost::shared_ptr<Runnable> task;
-                while (live) {
+                while (executorService.live) {
                     try {
                         task = workQueue.pop();
                         if (task.get()) {
                             task->run();
                         }
                     } catch (client::exception::InterruptedException &) {
-                        logger.finest() << getName() << " is interrupted .";
+                        executorService.logger.finest() << getName() << " is interrupted .";
                     } catch (client::exception::IException &t) {
-                        logger.warning() << getName() << " caused an exception" << t;
+                        executorService.logger.warning() << getName() << " caused an exception" << t;
                     }
                 }
-            }
-
-            SimpleExecutorService::Worker::Worker(const std::string &threadNamePrefix,
-                                                  int32_t queueCapacity,
-                                                  util::AtomicBoolean &live, util::ILogger &logger)
-                    : name(generateThreadName(threadNamePrefix)), workQueue(queueCapacity), live(live),
-                      logger(logger), thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
             }
 
             SimpleExecutorService::Worker::~Worker() {
@@ -142,7 +134,7 @@ namespace hazelcast {
 
             std::string SimpleExecutorService::Worker::generateThreadName(const std::string &prefix) {
                 std::ostringstream out;
-                out << prefix << (++THREAD_ID_GENERATOR);
+                out << prefix << (++executorService.threadIdGenerator);
                 return out.str();
             }
 
@@ -151,6 +143,12 @@ namespace hazelcast {
                 workQueue.interrupt();
                 thread.cancel();
                 thread.join();
+            }
+
+            SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity) :
+                    executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
+                    workQueue((size_t) maximumQueueCapacity),
+                    thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
             }
         }
 

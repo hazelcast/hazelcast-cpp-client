@@ -19,5 +19,33 @@ namespace hazelcast {
     namespace client {
         InitialMembershipListener::~InitialMembershipListener() {
         }
+
+        bool InitialMembershipListener::shouldRequestInitialMembers() const {
+            return true;
+        }
+
+        void InitialMembershipListenerDelegator::init(
+                const InitialMembershipEvent &event) {
+            listener->init(event);
+        }
+
+        void InitialMembershipListenerDelegator::memberRemoved(
+                const MembershipEvent &membershipEvent) {
+            listener->memberRemoved(membershipEvent);
+        }
+
+        void InitialMembershipListenerDelegator::memberAdded(
+                const MembershipEvent &membershipEvent) {
+            listener->memberAdded(membershipEvent);
+        }
+
+        void InitialMembershipListenerDelegator::memberAttributeChanged(
+                const MemberAttributeEvent &memberAttributeEvent) {
+            listener->memberAttributeChanged(memberAttributeEvent);
+        }
+
+        InitialMembershipListenerDelegator::InitialMembershipListenerDelegator(
+                InitialMembershipListener *listener) : listener(listener) {}
+
     }
 }

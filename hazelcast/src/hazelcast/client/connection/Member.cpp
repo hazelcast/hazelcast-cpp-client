@@ -87,6 +87,21 @@ namespace hazelcast {
         bool Member::operator<(const Member &rhs) const {
             return uuid < rhs.uuid;
         }
+
+        void Member::updateAttribute(Member::MemberAttributeOperationType operationType, const std::string &key,
+                                     std::auto_ptr<std::string> &value) {
+            switch (operationType) {
+                case PUT:
+                    attributes[key] = *value;
+                    break;
+                case REMOVE:
+                    attributes.erase(key);
+                    break;
+                default:
+                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Member::updateAttribute")
+                            << "Not a known OperationType: " << operationType).build();
+            }
+        }
     }
 }
 

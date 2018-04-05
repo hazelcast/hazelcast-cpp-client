@@ -55,6 +55,13 @@ namespace hazelcast {
                     bool ClientRegistrationKey::operator<(const ClientRegistrationKey &rhs) const {
                         return userRegistrationId < rhs.userRegistrationId;
                     }
+
+                    std::ostream &operator<<(std::ostream &os, const ClientRegistrationKey &key) {
+                        os << "ClientRegistrationKey{ userRegistrationId='" << key.userRegistrationId + '\'' + '}';
+                        return os;
+                    }
+
+                    ClientRegistrationKey::ClientRegistrationKey() {}
                 }
             }
         }

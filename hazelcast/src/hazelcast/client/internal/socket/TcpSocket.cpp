@@ -120,8 +120,6 @@ namespace hazelcast {
                     int error = errno;
                     #endif
 
-                    setBlocking(true);
-
                     if (error) {
                         throwIOException(error, "connect", "Failed to connect the socket.");
                     } else {

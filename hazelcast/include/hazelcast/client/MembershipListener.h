@@ -87,6 +87,22 @@ namespace hazelcast {
         private:
             std::string registrationId;
         };
+
+        class MembershipListenerDelegator : public MembershipListener {
+        public:
+            MembershipListenerDelegator(MembershipListener *listener);
+
+            virtual void memberAdded(const MembershipEvent &membershipEvent);
+
+            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+
+            virtual bool shouldRequestInitialMembers() const;
+
+        private:
+            MembershipListener *listener;
+        };
     }
 }
 #endif /* HAZELCAST_MEMBERSHIP_LISTENER */

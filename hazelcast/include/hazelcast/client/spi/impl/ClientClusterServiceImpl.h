@@ -20,6 +20,7 @@
 #include <map>
 
 #include "hazelcast/client/spi/ClientClusterService.h"
+#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/Atomic.h"
@@ -62,8 +63,6 @@ namespace hazelcast {
 
                     virtual size_t getSize();
 
-                    virtual std::string addMembershipListener(MembershipListener *listener);
-
                     virtual std::string addMembershipListener(const boost::shared_ptr<MembershipListener> &listener);
 
                     virtual bool removeMembershipListener(const std::string &registrationId);
@@ -73,32 +72,20 @@ namespace hazelcast {
                     void handleInitialMembershipEvent(const InitialMembershipEvent &event);
 
                     void listenMembershipEvents(const boost::shared_ptr<connection::Connection> &ownerConnection);
+
+                    void fireMemberAttributeEvent(const MemberAttributeEvent &event);
                 protected:
                     ClientContext &client;
                 private:
-                    class MembershipListenerDelegator : public MembershipListener {
-                    public:
-                        MembershipListenerDelegator(MembershipListener *listener);
-
-                    private:
-                        virtual void memberAdded(const MembershipEvent &membershipEvent);
-
-                        virtual void memberRemoved(const MembershipEvent &membershipEvent);
-
-                        virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
-
-                    private:
-                        MembershipListener *listener;
-                    };
-
                     boost::shared_ptr<ClientMembershipListener> clientMembershipListener;
                     util::Atomic<std::map<Address, boost::shared_ptr<Member> > > members;
                     util::SynchronizedValueMap<std::string, boost::shared_ptr<MembershipListener> > listeners;
+
                     util::Mutex initialMembershipListenerMutex;
 
-                    std::string addMembershipListenerWithoutInit(MembershipListener *listener);
+                    std::string addMembershipListenerWithoutInit(const boost::shared_ptr<MembershipListener> &listener);
 
-                    void initMembershipListener(MembershipListener *listener);
+                    void initMembershipListener(MembershipListener &listener);
 
                     void fireMembershipEvent(const MembershipEvent &event);
 

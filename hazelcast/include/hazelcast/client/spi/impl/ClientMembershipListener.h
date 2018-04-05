@@ -66,7 +66,7 @@ namespace hazelcast {
                                                              const int32_t &operationType,
                                                              std::auto_ptr<std::string> value);
 
-                    static void listenMembershipEvents(const boost::shared_ptr<ClientMembershipListener> &listener,
+                    void listenMembershipEvents(const boost::shared_ptr<ClientMembershipListener> &listener,
                                                        const boost::shared_ptr<connection::Connection> &ownerConnection);
 
                 private:

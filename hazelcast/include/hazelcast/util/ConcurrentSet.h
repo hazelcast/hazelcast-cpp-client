@@ -38,6 +38,27 @@ namespace hazelcast {
             }
 
             /**
+             * Adds the specified element to this set if it is not already present
+             * (optional operation).  More formally, adds the specified element
+             * <tt>e</tt> to this set if the set contains no element <tt>e2</tt>
+             * such that
+             * <tt>(e==e2)</tt>.
+             * If this set already contains the element, the call leaves the set
+             * unchanged and returns <tt>false</tt>.  In combination with the
+             * restriction on constructors, this ensures that sets never contain
+             * duplicate elements.
+             *
+             *
+             * @param e element to be added to this set
+             * @return <tt>true</tt> if this set did not already contain the specified
+             *         element
+             */
+            bool add(const T &e) {
+                util::LockGuard lg(m);
+                return internalSet.insert(e).second;
+            }
+
+            /**
              * Returns the number of elements in this set (its cardinality).
              *
              * @return the number of elements in this set (its cardinality)

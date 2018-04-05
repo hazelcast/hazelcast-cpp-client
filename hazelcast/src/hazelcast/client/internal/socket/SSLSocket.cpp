@@ -57,7 +57,7 @@ namespace hazelcast {
                 {
                     // The timer may return an error, e.g. operation_aborted when we cancel it. would_block is OK,
                     // since we set it at the start of the connection.
-                    if (ec != asio::error::would_block) {
+                    if (ec && ec != asio::error::would_block) {
                         return;
                     }
 
@@ -88,14 +88,14 @@ namespace hazelcast {
 
                         deadline.expires_from_now(boost::posix_time::milliseconds(timeoutInMillis));
 
-                        checkDeadline(errorCode);
-
                         // Set up the variable that receives the result of the asynchronous
                         // operation. The error code is set to would_block to signal that the
                         // operation is incomplete. Asio guarantees that its asynchronous
                         // operations will never fail with would_block, so any other value in
                         // errorCode indicates completion.
                         errorCode = asio::error::would_block;
+
+                        checkDeadline(errorCode);
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
@@ -110,7 +110,7 @@ namespace hazelcast {
                         ioService.restart();
                         do {
                             ioService.run_one(ioRunErrorCode);
-                        } while (!ioRunErrorCode && errorCode == asio::error::would_block);
+                        } while (!ioRunErrorCode && (errorCode == asio::error::would_block));
 
                         // cancel the deadline timer
                         deadline.cancel();

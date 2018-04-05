@@ -47,7 +47,7 @@ namespace hazelcast {
             /**
              * @deprecated Please use {@link addMembershipListener(const boost::shared_ptr<MembershipListener> &)}
              *
-             * Adds InitialMembershipListener to listen for membership updates.
+             * Adds MembershipListener to listen for membership updates.
              *
              * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
              * otherwise it will slow down the system.
@@ -76,6 +76,40 @@ namespace hazelcast {
              * @see #removeMembershipListener(const std::string &)
              */
             std::string addMembershipListener(const boost::shared_ptr<MembershipListener> &listener);
+
+            /**
+             * @deprecated Please use {@link addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &)}
+             *
+             * Adds InitialMembershipListener to listen for membership updates.
+             *
+             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+             * otherwise it will slow down the system.
+             *
+             * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+             *
+             * @param listener InitialMembershipListener
+             * @return the registration ID
+             */
+
+            std::string addMembershipListener(InitialMembershipListener *listener);
+
+            /**
+             * Adds MembershipListener to listen for membership updates.
+             * <p>
+             * The addMembershipListener method returns a register ID. This ID is needed to remove the MembershipListener using the
+             * {@link #removeMembershipListener(String)} method.
+             * <p>
+             * If the MembershipListener implements the {@link InitialMembershipListener} interface, it will also receive
+             * the {@link InitialMembershipEvent}.
+             * <p>
+             * There is no check for duplicate registrations, so if you register the listener twice, it will get events twice.
+             *
+             * @param listener membership listener
+             * @return the registration ID
+             * @throws NullPointerException if listener is null
+             * @see #removeMembershipListener(const std::string &)
+             */
+            std::string addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &listener);
 
             /**
              * @deprecated Please use {@link removeMembershipListener(const std::string &)}

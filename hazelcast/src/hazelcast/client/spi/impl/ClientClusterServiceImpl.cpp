@@ -31,18 +31,16 @@ namespace hazelcast {
                 impl::ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client(client) {
                     ClientConfig &config = client.getClientConfig();
-                    std::set<MembershipListener *> const &membershipListeners = config.getMembershipListeners();
+                    const std::set<boost::shared_ptr<MembershipListener> > &membershipListeners = config.getMangedMembershipListeners();
 
-                    BOOST_FOREACH(MembershipListener *listener, membershipListeners) {
+                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, membershipListeners) {
                                     addMembershipListenerWithoutInit(listener);
                                 }
-
                 }
 
-                std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(MembershipListener *listener) {
+                std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(const boost::shared_ptr<MembershipListener> &listener) {
                     std::string id = util::UuidUtil::newUnsecureUuidString();
-                    boost::shared_ptr<MembershipListener> adoptedListener(new MembershipListenerDelegator(listener));
-                    listeners.put(id, adoptedListener);
+                    listeners.put(id, listener);
                     return id;
                 }
 
@@ -86,25 +84,12 @@ namespace hazelcast {
                     return getMemberList().size();
                 }
 
-                std::string
-                ClientClusterServiceImpl::addMembershipListener(MembershipListener *listener) {
-                    if (listener == NULL) {
-                        throw exception::NullPointerException("ClientClusterServiceImpl::addMembershipListener",
-                                                              "listener can't be null");
-                    }
-
-                    util::LockGuard guard(initialMembershipListenerMutex);
-                    std::string id = addMembershipListenerWithoutInit(listener);
-                    initMembershipListener(listener);
-                    return id;
-                }
-
-                void ClientClusterServiceImpl::initMembershipListener(MembershipListener *listener) {
-                    if (listener->shouldRequestInitialMembers()) {
+                void ClientClusterServiceImpl::initMembershipListener(MembershipListener &listener) {
+                    if (listener.shouldRequestInitialMembers()) {
                         Cluster &cluster = client.getCluster();
                         std::vector<Member> memberCollection = getMemberList();
                         InitialMembershipEvent event(cluster, memberCollection);
-                        ((InitialMembershipListener *) listener)->init(event);
+                        ((InitialMembershipListener &) listener).init(event);
                     }
                 }
 
@@ -126,33 +111,40 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::fireMembershipEvent(const MembershipEvent &event) {
-                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener , listeners.values()) {
-                        if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                            listener->memberAdded(event);
-                        } else {
-                            listener->memberRemoved(event);
-                        }
-                    }
+                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                                    if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
+                                        listener->memberAdded(event);
+                                    } else {
+                                        listener->memberRemoved(event);
+                                    }
+                                }
+                }
+
+                void ClientClusterServiceImpl::fireMemberAttributeEvent(const MemberAttributeEvent &event) {
+                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                                    listener->memberAttributeChanged(event);
+                                }
                 }
 
                 void ClientClusterServiceImpl::handleInitialMembershipEvent(const InitialMembershipEvent &event) {
                     util::LockGuard guard(initialMembershipListenerMutex);
                     const std::vector<Member> &initialMembers = event.getMembers();
-                        std::map<Address, boost::shared_ptr<Member> > newMap;
-                        BOOST_FOREACH (const Member &initialMember , initialMembers) {
-                            newMap[initialMember.getAddress()] = boost::shared_ptr<Member>(new Member(initialMember));
-                        }
-                        members.set(newMap);
-                        fireInitialMembershipEvent(event);
-                    
+                    std::map<Address, boost::shared_ptr<Member> > newMap;
+                    BOOST_FOREACH (const Member &initialMember, initialMembers) {
+                                    newMap[initialMember.getAddress()] = boost::shared_ptr<Member>(
+                                            new Member(initialMember));
+                                }
+                    members.set(newMap);
+                    fireInitialMembershipEvent(event);
+
                 }
 
                 void ClientClusterServiceImpl::fireInitialMembershipEvent(const InitialMembershipEvent &event) {
-                    BOOST_FOREACH (const boost::shared_ptr<MembershipListener> &listener , listeners.values()) {
-                        if (listener->shouldRequestInitialMembers()) {
-                            ((InitialMembershipListener *) listener.get())->init(event);
-                        }
-                    }
+                    BOOST_FOREACH (const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                                    if (listener->shouldRequestInitialMembers()) {
+                                        ((InitialMembershipListener *) listener.get())->init(event);
+                                    }
+                                }
                 }
 
                 void ClientClusterServiceImpl::shutdown() {
@@ -160,38 +152,24 @@ namespace hazelcast {
 
                 void ClientClusterServiceImpl::listenMembershipEvents(
                         const boost::shared_ptr<connection::Connection> &ownerConnection) {
-                    ClientMembershipListener::listenMembershipEvents(clientMembershipListener, ownerConnection);
+                    clientMembershipListener->listenMembershipEvents(clientMembershipListener, ownerConnection);
                 }
 
                 std::string
                 ClientClusterServiceImpl::addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) {
-                    std::string registrationId = addMembershipListener(listener.get());
+                    if (listener.get() == NULL) {
+                        throw exception::NullPointerException("ClientClusterServiceImpl::addMembershipListener",
+                                                              "listener can't be null");
+                    }
 
-                    listeners.put(registrationId, listener);
-
-                    return registrationId;
+                    util::LockGuard guard(initialMembershipListenerMutex);
+                    std::string id = addMembershipListenerWithoutInit(listener);
+                    initMembershipListener(*listener);
+                    return id;
                 }
 
                 bool ClientClusterServiceImpl::removeMembershipListener(const std::string &registrationId) {
                     return listeners.remove(registrationId);
-                }
-
-                ClientClusterServiceImpl::MembershipListenerDelegator::MembershipListenerDelegator(
-                        MembershipListener *listener) : listener(listener) {}
-
-                void ClientClusterServiceImpl::MembershipListenerDelegator::memberAdded(
-                        const MembershipEvent &membershipEvent) {
-                    listener->memberAdded(membershipEvent);
-                }
-
-                void ClientClusterServiceImpl::MembershipListenerDelegator::memberRemoved(
-                        const MembershipEvent &membershipEvent) {
-                    listener->memberRemoved(membershipEvent);
-                }
-
-                void ClientClusterServiceImpl::MembershipListenerDelegator::memberAttributeChanged(
-                        const MemberAttributeEvent &memberAttributeEvent) {
-                    listener->memberAttributeChanged(memberAttributeEvent);
                 }
             }
         }

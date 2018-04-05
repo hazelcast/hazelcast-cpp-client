@@ -56,6 +56,8 @@ namespace hazelcast {
                     bool ClientEventRegistration::operator<(const ClientEventRegistration &rhs) const {
                         return serverRegistrationId < rhs.serverRegistrationId;
                     }
+
+                    ClientEventRegistration::ClientEventRegistration() {}
                 }
             }
         }

@@ -120,7 +120,7 @@ namespace hazelcast {
                 try {
                     runnable->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is interrupted. " << e;
+                    logger.finest() << "Thread " << runnable->getName() << " is interrupted. " << e;
                 } catch (hazelcast::client::exception::IException &e) {
                     logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
                 } catch (...) {
@@ -129,7 +129,7 @@ namespace hazelcast {
                     throw;
                 }
 
-                logger.info() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << runnable->getName() << " is finished.";
 
                 return NULL;
             }

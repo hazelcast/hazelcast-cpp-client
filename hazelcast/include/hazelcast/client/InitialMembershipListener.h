@@ -66,11 +66,24 @@ namespace hazelcast {
              */
             virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
 
-            virtual bool shouldRequestInitialMembers() const {
-                return true;
-            }
+            virtual bool shouldRequestInitialMembers() const;
         };
 
+        class InitialMembershipListenerDelegator : public InitialMembershipListener {
+        public:
+            InitialMembershipListenerDelegator(InitialMembershipListener *listener);
+
+            virtual void init(const InitialMembershipEvent &event);
+
+            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+
+            virtual void memberAdded(const MembershipEvent &membershipEvent);
+
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+
+        private:
+            InitialMembershipListener *listener;
+        };
     }
 }
 

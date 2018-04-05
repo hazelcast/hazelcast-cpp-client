@@ -185,16 +185,16 @@ namespace hazelcast {
             return exceptionFactory;
         }
 
-        std::auto_ptr<spi::ClientListenerService> HazelcastClient::initListenerService() {
+        boost::shared_ptr<spi::ClientListenerService> HazelcastClient::initListenerService() {
             int eventQueueCapacity = clientProperties.getEventQueueCapacity().getInteger();
             int eventThreadCount = clientProperties.getEventThreadCount().getInteger();
             config::ClientNetworkConfig &networkConfig = clientConfig.getNetworkConfig();
             if (networkConfig.isSmartRouting()) {
-                return std::auto_ptr<spi::ClientListenerService>(
+                return boost::shared_ptr<spi::ClientListenerService>(
                         new spi::impl::listener::SmartClientListenerService(clientContext, eventThreadCount,
                                                                             eventQueueCapacity));
             } else {
-                return std::auto_ptr<spi::ClientListenerService>(
+                return boost::shared_ptr<spi::ClientListenerService>(
                         new spi::impl::listener::NonSmartClientListenerService(clientContext, eventThreadCount,
                                                                                eventQueueCapacity));
             }
