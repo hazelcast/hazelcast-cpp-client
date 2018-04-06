@@ -512,7 +512,7 @@ namespace hazelcast {
                         }
                     } else {
                         logger.warning() << "Unable to get alive cluster connection, attempt " << attempt << " of "
-                                         << connectionAttemptPeriod << ".";
+                                         << connectionAttemptLimit << ".";
                     }
                 }
                 std::ostringstream out;

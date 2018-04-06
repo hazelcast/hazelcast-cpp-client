@@ -275,8 +275,12 @@ namespace hazelcast {
                     return true;
                 }
 
+                cancelled = true;
+
                 exception = boost::shared_ptr<client::exception::IException>(
                         new concurrent::CancellationException("Future::cancel", "Future is cancelled."));
+
+                exceptionReady = true;
 
                 return true;
             }

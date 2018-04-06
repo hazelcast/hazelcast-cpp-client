@@ -113,7 +113,7 @@ namespace hazelcast {
 
             static ILogger singletonLogger;
 
-            void printLog(client::LoggerLevel::Level level, const std::string &message);
+            void printLog(client::LoggerLevel::Level level, const std::string &message, bool printPrefix = true);
         };
 
         /**

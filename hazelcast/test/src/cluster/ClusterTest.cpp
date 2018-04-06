@@ -332,7 +332,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStates) {
                 HazelcastServer instance(*g_srvFactory);
 
-                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                ClientConfig clientConfig;
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
                 util::CountDownLatch startingLatch(1);
@@ -376,7 +376,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
                 HazelcastServer instance(*g_srvFactory);
 
-                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                ClientConfig clientConfig;
                 util::CountDownLatch startingLatch(1);
                 util::CountDownLatch startedLatch(1);
                 util::CountDownLatch connectedLatch(1);

@@ -137,14 +137,16 @@ namespace hazelcast {
             printMessagePrefix(logLevel, std::cout);
         }
 
-        void ILogger::printLog(client::LoggerLevel::Level level, const std::string &message) {
+        void ILogger::printLog(client::LoggerLevel::Level level, const std::string &message, bool printPrefix) {
             if (!isEnabled(level)) {
                 return;
             }
 
             {
                 util::LockGuard l(lockMutex);
-                printMessagePrefix(level);
+                if (printPrefix) {
+                    printMessagePrefix(level);
+                }
                 std::cout << message << std::endl;
                 std::flush(std::cout);
             }
@@ -167,7 +169,7 @@ namespace hazelcast {
         }
 
         LeveledLogger::~LeveledLogger() {
-            logger.printLog(requestedLogLevel, out.str());
+            logger.printLog(requestedLogLevel, out.str(), false);
         }
 
         LeveledLogger::LeveledLogger(const LeveledLogger &rhs) : logger(rhs.logger),
