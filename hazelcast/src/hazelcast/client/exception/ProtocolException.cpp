@@ -32,15 +32,15 @@ namespace hazelcast {
                     : IException(source, message), errorCode(errorNo), causeErrorCode(causeCode) {
             }
 
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message)
-                    : IException(source, message), errorCode(-1), causeErrorCode(-1) {
+            ProtocolException::ProtocolException(const std::string &source, const std::string &message, int32_t errorNo)
+                    : IException(source, message), errorCode(errorNo), causeErrorCode(-1) {
             }
 
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message,
+            ProtocolException::ProtocolException(const std::string &source, const std::string &message, int32_t errorNo,
                                                  const boost::shared_ptr<IException> &cause) : IException(source,
                                                                                                           message,
                                                                                                           cause),
-                                                                                               errorCode(-1),
+                                                                                               errorCode(errorNo),
                                                                                                causeErrorCode(-1) {}
 
             int32_t ProtocolException::getErrorCode() const {

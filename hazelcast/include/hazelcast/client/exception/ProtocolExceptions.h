@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -34,15 +35,14 @@ namespace hazelcast {
             class HAZELCAST_API ProtocolException : public IException {
             public:
                 ProtocolException(const std::string &source, const std::string &message, const std::string &details,
-                                  int32_t errorNo,
-                                  int32_t causeCode);
+                                  int32_t errorNo, int32_t causeCode);
 
                 ProtocolException(const std::string &source, const std::string &message, int32_t errorNo,
                                   int32_t causeCode);
 
-                ProtocolException(const std::string& source, const std::string& message);
+                ProtocolException(const std::string &source, const std::string &message, int32_t errorNo);
 
-                ProtocolException(const std::string &source, const std::string &message,
+                ProtocolException(const std::string &source, const std::string &message, int32_t errorNo,
                                   const boost::shared_ptr<IException> &cause);
 
                 int32_t getErrorCode() const;
@@ -60,107 +60,108 @@ namespace hazelcast {
                 int32_t causeErrorCode;
             };
 
-#define DEFINE_PROTOCOL_EXCEPTION(ClassName) \
+#define DEFINE_PROTOCOL_EXCEPTION(ClassName, errorNo) \
             class HAZELCAST_API ClassName : public ProtocolException {\
             public:\
+                static const int32_t ERROR_CODE = errorNo;\
                 ClassName(const std::string& source, const std::string& message, const std::string& details, \
-                        int32_t errorNo, int32_t causeCode) \
-                    : ProtocolException(source, message, details, errorNo, causeCode) {\
+                        int32_t causeCode) \
+                    : ProtocolException(source, message, details, ERROR_CODE, causeCode) {\
                 }\
-                ClassName(const std::string& source, const std::string& message, int32_t errorNo, int32_t causeCode) \
-                    : ProtocolException(source, message, errorNo, causeCode) {\
+                ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
+                    : ProtocolException(source, message, ERROR_CODE, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
-                    : ProtocolException(source, message) {\
+                    : ProtocolException(source, message, ERROR_CODE) {\
                 }\
-                ClassName(const std::string& source) : ProtocolException(source, "") {\
+                ClassName(const std::string& source) : ProtocolException(source, "", ERROR_CODE) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
-                            const boost::shared_ptr<IException> &cause) : ProtocolException(source, message, cause) {}\
+                            const boost::shared_ptr<IException> &cause) : ProtocolException(source, message, ERROR_CODE, cause) {}\
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \
                 void raise() const { throw *this; } \
             }\
 
-            DEFINE_PROTOCOL_EXCEPTION(ArrayIndexOutOfBoundsException);
-            DEFINE_PROTOCOL_EXCEPTION(ArrayStoreException);
-            DEFINE_PROTOCOL_EXCEPTION(AuthenticationException);
-            DEFINE_PROTOCOL_EXCEPTION(CacheNotExistsException);
-            DEFINE_PROTOCOL_EXCEPTION(CallerNotMemberException);
-            DEFINE_PROTOCOL_EXCEPTION(CancellationException);
-            DEFINE_PROTOCOL_EXCEPTION(ClassCastException);
-            DEFINE_PROTOCOL_EXCEPTION(ClassNotFoundException);
-            DEFINE_PROTOCOL_EXCEPTION(ConcurrentModificationException);
-            DEFINE_PROTOCOL_EXCEPTION(ConfigMismatchException);
-            DEFINE_PROTOCOL_EXCEPTION(ConfigurationException);
-            DEFINE_PROTOCOL_EXCEPTION(DistributedObjectDestroyedException);
-            DEFINE_PROTOCOL_EXCEPTION(DuplicateInstanceNameException);
-            DEFINE_PROTOCOL_EXCEPTION(EOFException);
-            DEFINE_PROTOCOL_EXCEPTION(ExecutionException);
-            DEFINE_PROTOCOL_EXCEPTION(HazelcastException);
-            DEFINE_PROTOCOL_EXCEPTION(HazelcastInstanceNotActiveException);
-            DEFINE_PROTOCOL_EXCEPTION(HazelcastOverloadException);
-            DEFINE_PROTOCOL_EXCEPTION(HazelcastSerializationException);
-            DEFINE_PROTOCOL_EXCEPTION(IOException);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalArgumentException);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalAccessException);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalAccessError);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalMonitorStateException);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalStateException);
-            DEFINE_PROTOCOL_EXCEPTION(IllegalThreadStateException);
-            DEFINE_PROTOCOL_EXCEPTION(IndexOutOfBoundsException);
-            DEFINE_PROTOCOL_EXCEPTION(InterruptedException);
-            DEFINE_PROTOCOL_EXCEPTION(InvalidAddressException);
-            DEFINE_PROTOCOL_EXCEPTION(InvalidConfigurationException);
-            DEFINE_PROTOCOL_EXCEPTION(MemberLeftException);
-            DEFINE_PROTOCOL_EXCEPTION(NegativeArraySizeException);
-            DEFINE_PROTOCOL_EXCEPTION(NoSuchElementException);
-            DEFINE_PROTOCOL_EXCEPTION(NotSerializableException);
-            DEFINE_PROTOCOL_EXCEPTION(NullPointerException);
-            DEFINE_PROTOCOL_EXCEPTION(OperationTimeoutException);
-            DEFINE_PROTOCOL_EXCEPTION(PartitionMigratingException);
-            DEFINE_PROTOCOL_EXCEPTION(QueryException);
-            DEFINE_PROTOCOL_EXCEPTION(QueryResultSizeExceededException);
-            DEFINE_PROTOCOL_EXCEPTION(QuorumException);
-            DEFINE_PROTOCOL_EXCEPTION(ReachedMaxSizeException);
-            DEFINE_PROTOCOL_EXCEPTION(RejectedExecutionException);
-            DEFINE_PROTOCOL_EXCEPTION(RemoteMapReduceException);
-            DEFINE_PROTOCOL_EXCEPTION(ResponseAlreadySentException);
-            DEFINE_PROTOCOL_EXCEPTION(RetryableHazelcastException);
-            DEFINE_PROTOCOL_EXCEPTION(RetryableIOException);
-            DEFINE_PROTOCOL_EXCEPTION(RuntimeException);
-            DEFINE_PROTOCOL_EXCEPTION(SecurityException);
-            DEFINE_PROTOCOL_EXCEPTION(SocketException);
+            DEFINE_PROTOCOL_EXCEPTION(ArrayIndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS);
+            DEFINE_PROTOCOL_EXCEPTION(ArrayStoreException, protocol::ARRAY_STORE);
+            DEFINE_PROTOCOL_EXCEPTION(AuthenticationException, protocol::AUTHENTICATIONERROR);
+            DEFINE_PROTOCOL_EXCEPTION(CacheNotExistsException, protocol::CACHE_NOT_EXISTS);
+            DEFINE_PROTOCOL_EXCEPTION(CallerNotMemberException, protocol::CALLER_NOT_MEMBER);
+            DEFINE_PROTOCOL_EXCEPTION(CancellationException, protocol::CANCELLATION);
+            DEFINE_PROTOCOL_EXCEPTION(ClassCastException, protocol::CLASS_CAST);
+            DEFINE_PROTOCOL_EXCEPTION(ClassNotFoundException, protocol::CLASS_NOT_FOUND);
+            DEFINE_PROTOCOL_EXCEPTION(ConcurrentModificationException, protocol::CONCURRENT_MODIFICATION);
+            DEFINE_PROTOCOL_EXCEPTION(ConfigMismatchException, protocol::CONFIG_MISMATCH);
+            DEFINE_PROTOCOL_EXCEPTION(ConfigurationException, protocol::CONFIGURATION);
+            DEFINE_PROTOCOL_EXCEPTION(DistributedObjectDestroyedException, protocol::DISTRIBUTED_OBJECT_DESTROYED);
+            DEFINE_PROTOCOL_EXCEPTION(DuplicateInstanceNameException, protocol::DUPLICATE_INSTANCE_NAME);
+            DEFINE_PROTOCOL_EXCEPTION(EOFException, protocol::ENDOFFILE);
+            DEFINE_PROTOCOL_EXCEPTION(ExecutionException, protocol::EXECUTION);
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastException, protocol::HAZELCAST);
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastInstanceNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE);
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastOverloadException, protocol::HAZELCAST_OVERLOAD);
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastSerializationException, protocol::HAZELCAST_SERIALIZATION);
+            DEFINE_PROTOCOL_EXCEPTION(IOException, protocol::IO);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalArgumentException, protocol::ILLEGAL_ARGUMENT);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalAccessException, protocol::ILLEGAL_ACCESS_EXCEPTION);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalAccessError, protocol::ILLEGAL_ACCESS_ERROR);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalMonitorStateException, protocol::ILLEGAL_MONITOR_STATE);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalStateException, protocol::ILLEGAL_STATE);
+            DEFINE_PROTOCOL_EXCEPTION(IllegalThreadStateException, protocol::ILLEGAL_THREAD_STATE);
+            DEFINE_PROTOCOL_EXCEPTION(IndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS);
+            DEFINE_PROTOCOL_EXCEPTION(InterruptedException, protocol::INTERRUPTED);
+            DEFINE_PROTOCOL_EXCEPTION(InvalidAddressException, protocol::INVALID_ADDRESS);
+            DEFINE_PROTOCOL_EXCEPTION(InvalidConfigurationException, protocol::INVALID_CONFIGURATION);
+            DEFINE_PROTOCOL_EXCEPTION(MemberLeftException, protocol::MEMBER_LEFT);
+            DEFINE_PROTOCOL_EXCEPTION(NegativeArraySizeException, protocol::NEGATIVE_ARRAY_SIZE);
+            DEFINE_PROTOCOL_EXCEPTION(NoSuchElementException, protocol::NO_SUCH_ELEMENT);
+            DEFINE_PROTOCOL_EXCEPTION(NotSerializableException, protocol::NOT_SERIALIZABLE);
+            DEFINE_PROTOCOL_EXCEPTION(NullPointerException, protocol::NULL_POINTER);
+            DEFINE_PROTOCOL_EXCEPTION(OperationTimeoutException, protocol::OPERATION_TIMEOUT);
+            DEFINE_PROTOCOL_EXCEPTION(PartitionMigratingException, protocol::PARTITION_MIGRATING);
+            DEFINE_PROTOCOL_EXCEPTION(QueryException, protocol::QUERY);
+            DEFINE_PROTOCOL_EXCEPTION(QueryResultSizeExceededException, protocol::QUERY_RESULT_SIZE_EXCEEDED);
+            DEFINE_PROTOCOL_EXCEPTION(QuorumException, protocol::QUORUM);
+            DEFINE_PROTOCOL_EXCEPTION(ReachedMaxSizeException, protocol::REACHED_MAX_SIZE);
+            DEFINE_PROTOCOL_EXCEPTION(RejectedExecutionException, protocol::REJECTED_EXECUTION);
+            DEFINE_PROTOCOL_EXCEPTION(RemoteMapReduceException, protocol::REMOTE_MAP_REDUCE);
+            DEFINE_PROTOCOL_EXCEPTION(ResponseAlreadySentException, protocol::RESPONSE_ALREADY_SENT);
+            DEFINE_PROTOCOL_EXCEPTION(RetryableHazelcastException, protocol::RETRYABLE_HAZELCAST);
+            DEFINE_PROTOCOL_EXCEPTION(RetryableIOException, protocol::RETRYABLE_IO);
+            DEFINE_PROTOCOL_EXCEPTION(RuntimeException, protocol::RUNTIME);
+            DEFINE_PROTOCOL_EXCEPTION(SecurityException, protocol::SECURITY);
+            DEFINE_PROTOCOL_EXCEPTION(SocketException, protocol::SOCKET);
             /**
             * Raised at Ringbuffer::readOne if the provided sequence is smaller then Ringbuffer::headSequence() is passed.
             */
-            DEFINE_PROTOCOL_EXCEPTION(StaleSequenceException);
-            DEFINE_PROTOCOL_EXCEPTION(TargetDisconnectedException);
-            DEFINE_PROTOCOL_EXCEPTION(TargetNotMemberException);
-            DEFINE_PROTOCOL_EXCEPTION(TimeoutException);
-            DEFINE_PROTOCOL_EXCEPTION(TopicOverloadException);
-            DEFINE_PROTOCOL_EXCEPTION(TopologyChangedException);
-            DEFINE_PROTOCOL_EXCEPTION(TransactionException);
-            DEFINE_PROTOCOL_EXCEPTION(TransactionNotActiveException);
-            DEFINE_PROTOCOL_EXCEPTION(TransactionTimedOutException);
-            DEFINE_PROTOCOL_EXCEPTION(URISyntaxException);
-            DEFINE_PROTOCOL_EXCEPTION(UTFDataFormatException);
-            DEFINE_PROTOCOL_EXCEPTION(UnsupportedOperationException);
-            DEFINE_PROTOCOL_EXCEPTION(WrongTargetException);
-            DEFINE_PROTOCOL_EXCEPTION(XAException);
-            DEFINE_PROTOCOL_EXCEPTION(AccessControlException);
-            DEFINE_PROTOCOL_EXCEPTION(LoginException);
-            DEFINE_PROTOCOL_EXCEPTION(UnsupportedCallbackException);
-            DEFINE_PROTOCOL_EXCEPTION(NoDataMemberInClusterException);
-            DEFINE_PROTOCOL_EXCEPTION(ReplicatedMapCantBeCreatedOnLiteMemberException);
-            DEFINE_PROTOCOL_EXCEPTION(MaxMessageSizeExceeded);
-            DEFINE_PROTOCOL_EXCEPTION(WANReplicationQueueFullException);
-            DEFINE_PROTOCOL_EXCEPTION(AssertionError);
-            DEFINE_PROTOCOL_EXCEPTION(OutOfMemoryError);
-            DEFINE_PROTOCOL_EXCEPTION(StackOverflowError);
-            DEFINE_PROTOCOL_EXCEPTION(NativeOutOfMemoryError);
-            DEFINE_PROTOCOL_EXCEPTION(ServiceNotFoundException);
+            DEFINE_PROTOCOL_EXCEPTION(StaleSequenceException, protocol::STALE_SEQUENCE);
+            DEFINE_PROTOCOL_EXCEPTION(TargetDisconnectedException, protocol::TARGET_DISCONNECTED);
+            DEFINE_PROTOCOL_EXCEPTION(TargetNotMemberException, protocol::TARGET_NOT_MEMBER);
+            DEFINE_PROTOCOL_EXCEPTION(TimeoutException, protocol::TIMEOUT);
+            DEFINE_PROTOCOL_EXCEPTION(TopicOverloadException, protocol::TOPIC_OVERLOAD);
+            DEFINE_PROTOCOL_EXCEPTION(TopologyChangedException, protocol::TOPOLOGY_CHANGED);
+            DEFINE_PROTOCOL_EXCEPTION(TransactionException, protocol::TRANSACTION);
+            DEFINE_PROTOCOL_EXCEPTION(TransactionNotActiveException, protocol::TRANSACTION_NOT_ACTIVE);
+            DEFINE_PROTOCOL_EXCEPTION(TransactionTimedOutException, protocol::TRANSACTION_TIMED_OUT);
+            DEFINE_PROTOCOL_EXCEPTION(URISyntaxException, protocol::URI_SYNTAX);
+            DEFINE_PROTOCOL_EXCEPTION(UTFDataFormatException, protocol::UTF_DATA_FORMAT);
+            DEFINE_PROTOCOL_EXCEPTION(UnsupportedOperationException, protocol::UNSUPPORTED_OPERATION);
+            DEFINE_PROTOCOL_EXCEPTION(WrongTargetException, protocol::WRONG_TARGET);
+            DEFINE_PROTOCOL_EXCEPTION(XAException, protocol::XA);
+            DEFINE_PROTOCOL_EXCEPTION(AccessControlException, protocol::ACCESS_CONTROL);
+            DEFINE_PROTOCOL_EXCEPTION(LoginException, protocol::LOGIN);
+            DEFINE_PROTOCOL_EXCEPTION(UnsupportedCallbackException, protocol::UNSUPPORTED_CALLBACK);
+            DEFINE_PROTOCOL_EXCEPTION(NoDataMemberInClusterException, protocol::NO_DATA_MEMBER);
+            DEFINE_PROTOCOL_EXCEPTION(ReplicatedMapCantBeCreatedOnLiteMemberException, protocol::REPLICATED_MAP_CANT_BE_CREATED);
+            DEFINE_PROTOCOL_EXCEPTION(MaxMessageSizeExceeded, protocol::MAX_MESSAGE_SIZE_EXCEEDED);
+            DEFINE_PROTOCOL_EXCEPTION(WANReplicationQueueFullException, protocol::WAN_REPLICATION_QUEUE_FULL);
+            DEFINE_PROTOCOL_EXCEPTION(AssertionError, protocol::ASSERTION_ERROR);
+            DEFINE_PROTOCOL_EXCEPTION(OutOfMemoryError, protocol::OUT_OF_MEMORY_ERROR);
+            DEFINE_PROTOCOL_EXCEPTION(StackOverflowError, protocol::STACK_OVERFLOW_ERROR);
+            DEFINE_PROTOCOL_EXCEPTION(NativeOutOfMemoryError, protocol::NATIVE_OUT_OF_MEMORY_ERROR);
+            DEFINE_PROTOCOL_EXCEPTION(ServiceNotFoundException, protocol::SERVICE_NOT_FOUND);
 
             class HAZELCAST_API UndefinedErrorCodeException : public IException {
             public:

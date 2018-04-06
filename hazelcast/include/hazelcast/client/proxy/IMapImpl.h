@@ -270,9 +270,8 @@ namespace hazelcast {
 
                 class MapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
                 public:
-                    MapEntryListenerToKeyCodec(const std::string &name, bool includeValue,
-                                                              int32_t listenerFlags,
-                                                              serialization::pimpl::Data &key);
+                    MapEntryListenerToKeyCodec(const std::string &name, bool includeValue, int32_t listenerFlags,
+                                               const serialization::pimpl::Data &key);
 
                     virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 

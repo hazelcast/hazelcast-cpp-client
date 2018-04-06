@@ -165,8 +165,6 @@ namespace hazelcast {
 
                     bool isRetrySafeException(exception::IException &exception);
 
-                    bool isDisconnectedRetryable(exception::IException &exception, protocol::ClientMessage &message);
-
                     exception::IException newOperationTimeoutException(exception::IException &exception);
 
                     void execute();

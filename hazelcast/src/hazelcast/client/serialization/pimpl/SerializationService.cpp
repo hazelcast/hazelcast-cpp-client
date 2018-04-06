@@ -143,13 +143,12 @@ namespace hazelcast {
                         return Data();
                     }
 
-                    const Data *data = object->getData();
-                    if ((Data *)NULL == data) {
+                    const boost::shared_ptr<Data> data = object->getData();
+                    if ((Data *)NULL == data.get()) {
                         return Data();
                     }
 
-                    return Data(std::auto_ptr<std::vector<byte> >(
-                            new std::vector<byte>(data->toByteArray())));
+                    return Data(*data);
                 }
 
             }

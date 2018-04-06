@@ -343,26 +343,27 @@ namespace hazelcast {
 
             EntryVector
             IMapImpl::getAllData(const std::map<int, std::vector<serialization::pimpl::Data> > &partitionToKeyData) {
-                std::vector<spi::impl::ClientInvocationFuture *> futures;
+                std::vector<boost::shared_ptr<spi::impl::ClientInvocationFuture> > futures;
 
                 for (std::map<int, std::vector<serialization::pimpl::Data> >::const_iterator it = partitionToKeyData.begin();
                      it != partitionToKeyData.end(); ++it) {
                     std::auto_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapGetAllCodec::RequestParameters::encode(getName(), it->second);
 
-                    futures.push_back(invokeAndGetFuture(request, it->first).get());
+                    futures.push_back(invokeAndGetFuture(request, it->first));
                 }
 
                 EntryVector result;
                 // wait for all futures
-                for (std::vector<spi::impl::ClientInvocationFuture *>::iterator it = futures.begin();
-                     it != futures.end(); ++it) {
-                    boost::shared_ptr<protocol::ClientMessage> responseForPartition = (*it)->get();
-                    protocol::codec::MapGetAllCodec::ResponseParameters resultForPartition = protocol::codec::MapGetAllCodec::ResponseParameters::decode(
-                            *responseForPartition);
-                    result.insert(result.end(), resultForPartition.response.begin(), resultForPartition.response.end());
+                BOOST_FOREACH(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &future, futures) {
+                                boost::shared_ptr<protocol::ClientMessage> responseForPartition = future->get();
+                                protocol::codec::MapGetAllCodec::ResponseParameters resultForPartition =
+                                        protocol::codec::MapGetAllCodec::ResponseParameters::decode(
+                                                *responseForPartition);
+                                result.insert(result.end(), resultForPartition.response.begin(),
+                                              resultForPartition.response.end());
 
-                }
+                            }
 
                 return result;
             }
@@ -477,21 +478,20 @@ namespace hazelcast {
             }
 
             void IMapImpl::putAllData(const std::map<int, EntryVector> &partitionedEntries) {
-                std::vector<spi::impl::ClientInvocationFuture *> futures;
+                std::vector<boost::shared_ptr<spi::impl::ClientInvocationFuture> > futures;
 
                 for (std::map<int, EntryVector>::const_iterator it = partitionedEntries.begin();
                      it != partitionedEntries.end(); ++it) {
                     std::auto_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapPutAllCodec::RequestParameters::encode(getName(), it->second);
 
-                    futures.push_back(invokeAndGetFuture(request, it->first).get());
+                    futures.push_back(invokeAndGetFuture(request, it->first));
                 }
 
                 // wait for all futures
-                for (std::vector<spi::impl::ClientInvocationFuture *>::iterator it = futures.begin();
-                     it != futures.end(); ++it) {
-                    (*it)->get();
-                }
+                BOOST_FOREACH(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &future, futures) {
+                                future->get();
+                            }
             }
 
             void IMapImpl::clear() {
@@ -608,8 +608,7 @@ namespace hazelcast {
 
             std::string IMapImpl::MapEntryListenerToKeyCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::MapAddEntryListenerToKeyCodec(name, serialization::pimpl::Data(),
-                                                                      includeValue, listenerFlags,
+                return protocol::codec::MapAddEntryListenerToKeyCodec(name, key, includeValue, listenerFlags,
                                                                       false).decodeResponse(responseMessage);
             }
 
@@ -622,6 +621,11 @@ namespace hazelcast {
                     protocol::ClientMessage &clientMessage) const {
                 return protocol::codec::MapRemoveEntryListenerCodec(name, "").decodeResponse(clientMessage);
             }
+
+            IMapImpl::MapEntryListenerToKeyCodec::MapEntryListenerToKeyCodec(const std::string &name, bool includeValue,
+                                                                             int32_t listenerFlags,
+                                                                             const serialization::pimpl::Data &key)
+                    : name(name), includeValue(includeValue), listenerFlags(listenerFlags), key(key) {}
 
             IMapImpl::MapEntryListenerWithPredicateMessageCodec::MapEntryListenerWithPredicateMessageCodec(
                     const std::string &name, bool includeValue, int32_t listenerFlags,
@@ -636,9 +640,9 @@ namespace hazelcast {
 
             std::string IMapImpl::MapEntryListenerWithPredicateMessageCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::MapAddEntryListenerWithPredicateCodec(name, serialization::pimpl::Data(),
-                                                                              includeValue, listenerFlags,
-                                                                              false).decodeResponse(responseMessage);
+                return protocol::codec::MapAddEntryListenerWithPredicateCodec(name, predicate, includeValue,
+                                                                              listenerFlags, false).decodeResponse(
+                        responseMessage);
             }
 
             std::auto_ptr<protocol::ClientMessage>
@@ -652,11 +656,6 @@ namespace hazelcast {
                 return protocol::codec::MapRemoveEntryListenerCodec(name, "").decodeResponse(clientMessage);
             }
 
-            IMapImpl::MapEntryListenerToKeyCodec::MapEntryListenerToKeyCodec(const std::string &name, bool includeValue,
-                                                                             int32_t listenerFlags,
-                                                                             serialization::pimpl::Data &key) {
-
-            }
 
         }
     }

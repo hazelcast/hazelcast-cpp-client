@@ -45,8 +45,22 @@ namespace hazelcast {
 
                 unsigned int Data::DATA_OVERHEAD = Data::DATA_OFFSET;
 
-                Data::Data()
-                : data(NULL), cachedHashValue(-1) {
+                Data::Data() : cachedHashValue(-1) {
+                }
+
+                Data::Data(const boost::shared_ptr<std::vector<byte> > &data) : data(data) {
+                    if (data.get()) {
+                        size_t size = data->size();
+                        if (size > 0 && size < Data::DATA_OVERHEAD) {
+                            char msg[100];
+                            util::hz_snprintf(msg, 100, "Provided buffer should be either empty or "
+                                                        "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD,
+                                              (unsigned long) size);
+                            throw exception::IllegalArgumentException("Data::setBuffer", msg);
+                        }
+
+                        cachedHashValue = calculateHash();
+                    }
                 }
 
                 Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), cachedHashValue(-1) {
@@ -60,19 +74,8 @@ namespace hazelcast {
                             throw exception::IllegalArgumentException("Data::setBuffer", msg);
                         }
 
-                        cachedHashValue = getPartitionHash();
+                        cachedHashValue = calculateHash();
                     }
-                }
-
-                Data::Data(const Data& rhs)
-                : data(rhs.data) {
-                    cachedHashValue = rhs.cachedHashValue;
-                }
-
-                Data& Data::operator=(const Data& rhs) {
-                    data = rhs.data;
-                    cachedHashValue = rhs.cachedHashValue;
-                    return (*this);
                 }
 
                 size_t Data::dataSize() const {
@@ -84,10 +87,7 @@ namespace hazelcast {
                 }
 
                 int Data::getPartitionHash() const {
-                    if (hasPartitionHash()) {
-                        return Bits::readIntB(*data, Data::PARTITION_HASH_OFFSET);
-                    }
-                    return hash();
+                    return cachedHashValue;
                 }
 
                 bool Data::hasPartitionHash() const {
@@ -109,17 +109,7 @@ namespace hazelcast {
                     return Bits::readIntB(*data, Data::TYPE_OFFSET);
                 }
 
-                Data Data::clone() const {
-                    std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>(*data));
-                    return Data(bytes);
-                }
-
                 int Data::hash() const {
-                    if (cachedHashValue > 0) {
-                        return cachedHashValue;
-                    }
-
-                    cachedHashValue = calculateHash();
                     return cachedHashValue;
                 }
 
@@ -128,11 +118,16 @@ namespace hazelcast {
                     if (size == 0) {
                         return 0;
                     }
+
+                    if (hasPartitionHash()) {
+                        return Bits::readIntB(*data, Data::PARTITION_HASH_OFFSET);
+                    }
+
                     return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int) size);
                 }
 
-                bool operator<(const Data &lhs, const Data &rhs) {
-                    return lhs.hash() < rhs.hash();
+                bool Data::operator<(const Data &rhs) const {
+                    return cachedHashValue < rhs.cachedHashValue;
                 }
             }
         }

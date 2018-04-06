@@ -55,11 +55,9 @@ namespace hazelcast {
 
                     Data();
 
+                    Data(const boost::shared_ptr<std::vector<byte> > &data);
+
                     Data(std::auto_ptr<std::vector<byte> > buffer);
-
-                    Data(const Data &rhs);
-
-                    Data &operator=(const Data &rhs);
 
                     size_t dataSize() const;
 
@@ -79,15 +77,15 @@ namespace hazelcast {
 
                     int32_t getType() const;
 
-                    Data clone() const;
+                    bool operator<(const Data &rhs) const;
+
                 private:
-                    mutable std::auto_ptr<std::vector<byte> > data;
-                    mutable int cachedHashValue;
+                    boost::shared_ptr<std::vector<byte> > data;
+                    int cachedHashValue;
 
                     inline int calculateHash() const;
                 };
 
-                bool HAZELCAST_API operator<(const Data &lhs, const Data &rhs);
             }
         }
     }

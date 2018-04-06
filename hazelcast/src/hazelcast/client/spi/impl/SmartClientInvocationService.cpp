@@ -19,6 +19,8 @@
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/protocol/ClientExceptionFactory.h"
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 namespace hazelcast {
     namespace client {
@@ -70,7 +72,7 @@ namespace hazelcast {
                     if (!isMember(*target)) {
                         throw (exception::ExceptionBuilder<exception::TargetNotMemberException>(
                                 "SmartClientInvocationService::invokeOnTarget")
-                                << "Target '" << target << "' is not a member.").build();
+                                << "Target '" << *target << "' is not a member.").build();
                     }
                     boost::shared_ptr<connection::Connection> connection = getOrTriggerConnect(target);
                     invokeOnConnection(invocation, connection);

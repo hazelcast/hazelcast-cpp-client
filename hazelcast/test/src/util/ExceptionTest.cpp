@@ -73,7 +73,6 @@ namespace hazelcast {
                     boost::shared_ptr<exception::IException> exception(ioExceptionFactory.createException(source,
                                                                                                           originalMessage,
                                                                                                           details,
-                                                                                                          code,
                                                                                                           causeCode));
 
                     try {

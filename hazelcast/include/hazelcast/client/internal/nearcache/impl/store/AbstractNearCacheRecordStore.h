@@ -312,9 +312,7 @@ namespace hazelcast {
 
                             boost::shared_ptr<V> dataToValue(
                                     const boost::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
-                                return boost::shared_ptr<V>(new TypedData(std::auto_ptr<serialization::pimpl::Data>(
-                                        new serialization::pimpl::Data(std::auto_ptr<std::vector<byte> >(
-                                                new std::vector<byte>(data->toByteArray())))), serializationService));
+                                return boost::shared_ptr<V>(new TypedData(data, serializationService));
                             }
 
                             boost::shared_ptr<V> dataToValue(

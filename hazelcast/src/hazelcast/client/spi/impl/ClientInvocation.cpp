@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -216,7 +217,9 @@ namespace hazelcast {
 
                     bool retry = isRetrySafeException(exception)
                                  || invocationService.isRedoOperation()
-                                 || isDisconnectedRetryable(exception, *clientMessage);
+                                 || (exception.isProtocolException() &&
+                                     static_cast<exception::ProtocolException &>(exception).getErrorCode() ==
+                                     protocol::TARGET_DISCONNECTED && clientMessage->isRetryable());
 
                     if (!retry) {
                         clientInvocationFuture->complete(exception);
@@ -244,57 +247,31 @@ namespace hazelcast {
                 }
 
                 bool ClientInvocation::isNotAllowedToRetryOnSelection(exception::IException &exception) {
-                    if (isBindToSingleConnection()) {
-                        try {
-                            exception.raise();
-                        } catch (exception::IOException &e) {
-                            return true;
-                        } catch (...) {
-                        }
+                    if (isBindToSingleConnection() && exception.isProtocolException() &&
+                        static_cast<exception::ProtocolException &>(exception).getErrorCode() == protocol::IO) {
+                        return true;
                     }
 
-                    if (address.get() != NULL) {
-                        try {
-                            exception.raise();
-                        } catch (exception::TargetNotMemberException &e) {
-                            if (clientClusterService.getMember(*address).get() == NULL) {
-                                //when invocation send over address
-                                //if exception is target not member and
-                                //address is not available in member list , don't retry
-                                return true;
-                            }
-                        } catch (...) {
-                        }
+                    if (address.get() != NULL && exception.isProtocolException() &&
+                        static_cast<exception::ProtocolException &>(exception).getErrorCode() ==
+                        protocol::TARGET_NOT_MEMBER && clientClusterService.getMember(*address).get() == NULL) {
+                        //when invocation send over address
+                        //if exception is target not member and
+                        //address is not available in member list , don't retry
+                        return true;
                     }
-
                     return false;
                 }
 
                 bool ClientInvocation::isRetrySafeException(exception::IException &exception) {
-                    try {
-                        throw exception;
-                    } catch (exception::IOException &) {
-                        return true;
-                    } catch (exception::HazelcastInstanceNotActiveException &) {
-                        return true;
-                    } catch (exception::RetryableIOException &) {
-                        return true;
-                    } catch (...) {
+                    if (!exception.isProtocolException()) {
                         return false;
                     }
-                }
 
-                bool ClientInvocation::isDisconnectedRetryable(exception::IException &exception,
-                                                               protocol::ClientMessage &message) {
-                    try {
-                        throw exception;
-                    } catch (exception::TargetDisconnectedException &) {
-                        if (message.isRetryable()) {
-                            return true;
-                        }
-                    } catch (...) {
-                    }
-                    return false;
+                    int32_t errorCode = static_cast<exception::ProtocolException &>(exception).getErrorCode();
+                    return errorCode == protocol::IO ||
+                           errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE ||
+                           errorCode == protocol::RETRYABLE_HAZELCAST;
                 }
 
                 exception::IException

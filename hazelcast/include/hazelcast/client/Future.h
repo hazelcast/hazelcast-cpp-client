@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <memory>
 #include <assert.h>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
@@ -116,9 +117,9 @@ namespace hazelcast {
             /**
              * This constructor is only for internal use!!!!
              */
-            Future(spi::impl::ClientInvocationFuture &callFuture,
+            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
                    serialization::pimpl::SerializationService &serializationService,
-                   Decoder decoder) : clientInvocationFuture(&callFuture),
+                   Decoder decoder) : clientInvocationFuture(invocationFuture),
                                       serializationService(serializationService), decoderFunction(decoder) {
             }
 
@@ -130,7 +131,7 @@ namespace hazelcast {
             Future(const Future &movedFuture) : clientInvocationFuture(movedFuture.clientInvocationFuture),
                                                 serializationService(movedFuture.serializationService),
                                                 decoderFunction(movedFuture.decoderFunction) {
-                (const_cast<Future &>(movedFuture)).clientInvocationFuture = NULL;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
             }
 
             /**
@@ -141,7 +142,7 @@ namespace hazelcast {
              */
             Future &operator=(const Future &movedFuture) {
                 this->clientInvocationFuture = movedFuture.clientInvocationFuture;
-                (const_cast<Future &>(movedFuture)).clientInvocationFuture = NULL;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
                 this->decoderFunction = movedFuture.decoderFunction;
                 return *this;
             }
@@ -166,7 +167,7 @@ namespace hazelcast {
              * the future
              */
             std::auto_ptr<V> get() {
-                if (!clientInvocationFuture) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized. "
                             "It may have been moved from.");
                 }
@@ -194,7 +195,7 @@ namespace hazelcast {
              * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
              */
             future_status wait_for(int64_t timeoutInMilliseconds) const {
-                if (!clientInvocationFuture) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
                 }
 
@@ -219,11 +220,11 @@ namespace hazelcast {
              * @return true if *this refers to a shared state, otherwise false.
              */
             bool valid() const {
-                return clientInvocationFuture != NULL;
+                return clientInvocationFuture.get() != NULL;
             }
 
         private:
-            spi::impl::ClientInvocationFuture *clientInvocationFuture;
+            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
             serialization::pimpl::SerializationService &serializationService;
             Decoder decoderFunction;
         };
@@ -239,9 +240,9 @@ namespace hazelcast {
             /**
              * This constructor is only for internal use!!!!
              */
-            Future(spi::impl::ClientInvocationFuture &invocationFuture,
+            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
                    serialization::pimpl::SerializationService &serializationService,
-                   Decoder decoder) : clientInvocationFuture(&invocationFuture),
+                   Decoder decoder) : clientInvocationFuture(invocationFuture),
                                       serializationService(serializationService), decoderFunction(decoder) {
             }
 
@@ -253,7 +254,7 @@ namespace hazelcast {
             Future(const Future &movedFuture) : clientInvocationFuture(movedFuture.clientInvocationFuture),
                                                 serializationService(movedFuture.serializationService),
                                                 decoderFunction(movedFuture.decoderFunction) {
-                (const_cast<Future &>(movedFuture)).clientInvocationFuture = NULL;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
             }
 
             /**
@@ -264,7 +265,7 @@ namespace hazelcast {
              */
             Future &operator=(const Future &movedFuture) {
                 this->clientInvocationFuture = movedFuture.clientInvocationFuture;
-                (const_cast<Future &>(movedFuture)).clientInvocationFuture = NULL;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
                 this->decoderFunction = movedFuture.decoderFunction;
                 return *this;
             }
@@ -289,7 +290,7 @@ namespace hazelcast {
              * the future
              */
             TypedData get() {
-                if (!clientInvocationFuture) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized. "
                             "It may have been moved from.");
                 }
@@ -315,7 +316,7 @@ namespace hazelcast {
              * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
              */
             future_status wait_for(int64_t timeoutInMilliseconds) const {
-                if (!clientInvocationFuture) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
                 }
 
@@ -340,11 +341,11 @@ namespace hazelcast {
              * @return true if *this refers to a shared state, otherwise false.
              */
             bool valid() const {
-                return clientInvocationFuture != NULL;
+                return clientInvocationFuture.get() != NULL;
             }
 
         private:
-            spi::impl::ClientInvocationFuture *clientInvocationFuture;
+            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
             serialization::pimpl::SerializationService &serializationService;
             Decoder decoderFunction;
         };

@@ -99,7 +99,7 @@ namespace hazelcast {
 
                 try {
                     boost::shared_ptr<TypedData> value = ClientMapProxy::getInternal(*key);
-                    if (marked && value->getData()) {
+                    if (marked && value->getData().get()) {
                         tryToPutNearCache(key, value);
                     }
                     return value;
@@ -220,11 +220,10 @@ namespace hazelcast {
 
                     EntryVector responses = ClientMapProxy::getAllInternal(pIdToKeyData);
                     BOOST_FOREACH(const EntryVector::value_type &entry, responses) {
-                                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
-                                            entry.first.clone());
+                                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(entry.first);
                                     boost::shared_ptr<TypedData> value = boost::shared_ptr<TypedData>(new TypedData(
                                             std::auto_ptr<serialization::pimpl::Data>(
-                                                    new serialization::pimpl::Data(entry.second.clone())),
+                                                    new serialization::pimpl::Data(entry.second)),
                                             getSerializationService()));
                                     bool marked = false;
                                     if (markers.count(key)) {
@@ -354,13 +353,10 @@ namespace hazelcast {
                                 SHARED_DATA_VECTOR nonCachedData;
                                 BOOST_FOREACH(const SHARED_DATA_VECTOR::value_type &keyData, partitionDatas.second) {
                                                 boost::shared_ptr<TypedData> cached = nearCache->get(keyData);
-                                                if (cached.get() != NULL && !cached->getData() &&
+                                                if (cached.get() != NULL && !cached->getData().get() &&
                                                     internal::nearcache::NearCache<serialization::pimpl::Data, TypedData>::NULL_OBJECT !=
                                                     cached) {
-                                                    serialization::pimpl::Data valueData(
-                                                            std::auto_ptr<std::vector<byte> >(
-                                                                    new std::vector<byte>(
-                                                                            cached->getData()->toByteArray())));
+                                                    serialization::pimpl::Data valueData(*cached->getData());
                                                     result.push_back(std::make_pair(*keyData, valueData));
                                                 } else if (invalidateOnChange) {
                                                     markers[keyData] = keyStateMarker->tryMark(*keyData);
