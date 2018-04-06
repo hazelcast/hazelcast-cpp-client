@@ -25,6 +25,9 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API Named {
         public:
+            virtual ~Named() {
+            }
+
             virtual const std::string getName() const = 0;
         };
     }

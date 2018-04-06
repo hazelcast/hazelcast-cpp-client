@@ -40,6 +40,9 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientInvocationService : public protocol::IMessageHandler {
             public:
+                virtual ~ClientInvocationService() {
+                }
+
                 virtual void invokeOnConnection(boost::shared_ptr<impl::ClientInvocation> invocation,
                                                 boost::shared_ptr<connection::Connection> connection) = 0;
 

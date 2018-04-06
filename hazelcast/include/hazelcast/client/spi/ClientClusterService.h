@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT_SPI_CLIENTCLUSTERSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_CLIENTCLUSTERSERVICE_H_
 
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
@@ -37,6 +38,9 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientClusterService {
             public:
+                virtual ~ClientClusterService() {
+                }
+
                 /**
                  * Gets the member for the given address.
                  *

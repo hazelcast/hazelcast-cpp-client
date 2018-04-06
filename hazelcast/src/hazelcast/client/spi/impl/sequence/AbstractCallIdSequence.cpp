@@ -61,6 +61,9 @@ namespace hazelcast {
                     bool AbstractCallIdSequence::hasSpace() {
                         return longs.get(INDEX_HEAD) - longs.get(INDEX_TAIL) < maxConcurrentInvocations;
                     }
+
+                    AbstractCallIdSequence::~AbstractCallIdSequence() {
+                    }
                 }
             }
         }

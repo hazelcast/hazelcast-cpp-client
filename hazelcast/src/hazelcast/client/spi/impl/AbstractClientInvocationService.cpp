@@ -241,6 +241,9 @@ namespace hazelcast {
                     return os;
                 }
 
+                AbstractClientInvocationService::~AbstractClientInvocationService() {
+                }
+
                 AbstractClientInvocationService::ResponseThread::ResponseThread(const std::string &name,
                                                                                 util::ILogger &invocationLogger,
                                                                                 AbstractClientInvocationService &invocationService,
@@ -313,6 +316,9 @@ namespace hazelcast {
 
                 const std::string AbstractClientInvocationService::ResponseThread::getName() const {
                     return "AbstractClientInvocationService::ResponseThread";
+                }
+
+                AbstractClientInvocationService::ResponseThread::~ResponseThread() {
                 }
             }
         }

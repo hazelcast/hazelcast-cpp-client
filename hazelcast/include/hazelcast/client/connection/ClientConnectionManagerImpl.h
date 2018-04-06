@@ -89,6 +89,8 @@ namespace hazelcast {
                                             const boost::shared_ptr<AddressTranslator> &addressTranslator,
                                             const std::vector<boost::shared_ptr<AddressProvider> > &addressProviders);
 
+                virtual ~ClientConnectionManagerImpl();
+
                 /**
                 * Start clientConnectionManager
                 */

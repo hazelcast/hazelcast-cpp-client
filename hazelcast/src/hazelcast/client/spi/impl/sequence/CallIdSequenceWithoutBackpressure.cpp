@@ -40,6 +40,9 @@ namespace hazelcast {
                     int64_t CallIdSequenceWithoutBackpressure::getLastCallId() {
                         return head;
                     }
+
+                    CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() {
+                    }
                 }
             }
         }

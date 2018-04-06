@@ -53,6 +53,9 @@ namespace hazelcast {
                 std::map<std::string, std::string> AwsAddressProvider::getLookupTable() {
                     return privateToPublic;
                 }
+
+                AwsAddressProvider::~AwsAddressProvider() {
+                }
             }
         }
     }

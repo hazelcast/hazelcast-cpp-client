@@ -36,6 +36,9 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API ListenerMessageCodec {
                 public:
+                    virtual ~ListenerMessageCodec() {
+                    }
+
                     virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const = 0;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const = 0;

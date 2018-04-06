@@ -27,6 +27,9 @@ namespace hazelcast {
                     : clientContext(clientContext), logger(logger),
                       clientConnectionStrategyConfig(clientConnectionStrategyConfig) {
             }
+
+            ClientConnectionStrategy::~ClientConnectionStrategy() {
+            }
         }
     }
 }

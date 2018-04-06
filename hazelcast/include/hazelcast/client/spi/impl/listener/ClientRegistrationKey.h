@@ -66,7 +66,7 @@ namespace hazelcast {
                     private:
                         std::string userRegistrationId;
                         boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
-                        const boost::shared_ptr<ListenerMessageCodec> codec;
+                        boost::shared_ptr<ListenerMessageCodec> codec;
                     };
                 }
             }

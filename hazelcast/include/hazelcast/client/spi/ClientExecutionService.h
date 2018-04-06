@@ -37,6 +37,9 @@ namespace hazelcast {
              */
             class HAZELCAST_API ClientExecutionService : public spi::TaskScheduler {
             public:
+                virtual ~ClientExecutionService() {
+                }
+
                 /**
                  * @return executorService that alien (user code) runs on
                  */

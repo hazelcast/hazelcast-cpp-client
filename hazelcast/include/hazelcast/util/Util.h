@@ -22,6 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
 #include <string>
+#include <vector>
 #include <assert.h>
 #include <stdint.h>
 #include <boost/date_time/posix_time/ptime.hpp>

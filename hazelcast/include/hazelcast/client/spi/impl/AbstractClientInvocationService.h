@@ -63,6 +63,8 @@ namespace hazelcast {
 
                     AbstractClientInvocationService(ClientContext &client);
 
+                    virtual ~AbstractClientInvocationService();
+
                     bool start();
 
                     void shutdown();
@@ -83,6 +85,8 @@ namespace hazelcast {
                         ResponseThread(const std::string &name, util::ILogger &invocationLogger,
                                        AbstractClientInvocationService &invocationService,
                                        ClientContext &clientContext);
+
+                        virtual ~ResponseThread();
 
                         virtual void run();
 

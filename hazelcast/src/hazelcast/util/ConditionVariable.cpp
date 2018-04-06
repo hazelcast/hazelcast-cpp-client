@@ -125,8 +125,8 @@ namespace hazelcast {
             ts.tv_sec = tv.tv_sec;
             ts.tv_nsec = tv.tv_usec * 1000;
             int64_t seconds = timeInMilliseconds / 1000;
-            if (seconds > ::std::__1::numeric_limits<long>::max()) {
-                ts.tv_sec = ::std::__1::numeric_limits<long>::max();
+            if (seconds > std::numeric_limits<time_t>::max()) {
+                ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
                 ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
                 long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
@@ -147,8 +147,8 @@ namespace hazelcast {
             ts.tv_sec = tv.tv_sec;
             ts.tv_nsec = tv.tv_usec * 1000;
             int64_t seconds = nanos / NANOS_IN_A_SECOND;
-            if (seconds > ::std::__1::numeric_limits<long>::max()) {
-                ts.tv_sec = ::std::__1::numeric_limits<long>::max();
+            if (seconds > std::numeric_limits<time_t>::max()) {
+                ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
                 ts.tv_sec += (time_t) (nanos / NANOS_IN_A_SECOND);
                 long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (nanos % 1000);

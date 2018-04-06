@@ -17,6 +17,8 @@
 #ifndef HAZELCAST_CLIENT_CONNECTION_ADDRESSPROVIDER_H_
 #define HAZELCAST_CLIENT_CONNECTION_ADDRESSPROVIDER_H_
 
+#include <vector>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/Address.h"
 

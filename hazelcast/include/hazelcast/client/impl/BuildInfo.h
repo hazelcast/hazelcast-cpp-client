@@ -40,7 +40,7 @@ namespace hazelcast {
                 // major.minor.patch-RC-SNAPSHOT
                 static const int MAJOR_VERSION_MULTIPLIER = 10000;
                 static const int MINOR_VERSION_MULTIPLIER = 100;
-                static const int PATCH_TOKEN_INDEX = 2;
+                static const size_t PATCH_TOKEN_INDEX = 2;
 
                 std::string version;
                 std::string build;

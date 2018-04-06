@@ -46,6 +46,8 @@ namespace hazelcast {
                      */
                     class HAZELCAST_API AbstractCallIdSequence : public CallIdSequence {
                     public:
+                        virtual ~AbstractCallIdSequence();
+
                         AbstractCallIdSequence(int32_t maxConcurrentInvocations);
 
                         virtual int32_t getMaxConcurrentInvocations() const;

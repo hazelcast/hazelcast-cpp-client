@@ -105,7 +105,11 @@ namespace hazelcast {
             }
 
             static void yield() {
+                #ifdef __linux__
+                pthread_yield();
+                #else
                 pthread_yield_np();
+                #endif
             }
 
         protected:

@@ -21,6 +21,9 @@ namespace hazelcast {
             return false;
         }
 
+        Runnable::~Runnable() {
+        }
+
         bool StripedRunnable::isStriped() {
             return true;
         }

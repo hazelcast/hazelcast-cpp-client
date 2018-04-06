@@ -48,6 +48,8 @@ namespace hazelcast {
                 namespace listener {
                     class HAZELCAST_API AbstractClientListenerService : public ClientListenerService {
                     public:
+                        virtual ~AbstractClientListenerService();
+
                         AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
                                                       int32_t eventQueueCapacity);
 
@@ -65,6 +67,8 @@ namespace hazelcast {
                         class ClientEventProcessor : public util::StripedRunnable {
                             friend class AbstractClientListenerService;
                         public:
+                            virtual ~ClientEventProcessor();
+
                             virtual void run();
 
                             virtual const std::string getName() const;

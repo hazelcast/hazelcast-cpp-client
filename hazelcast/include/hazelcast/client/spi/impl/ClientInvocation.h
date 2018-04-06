@@ -68,6 +68,7 @@ namespace hazelcast {
                 class HAZELCAST_API ClientInvocation
                         : public util::Runnable, public boost::enable_shared_from_this<ClientInvocation> {
                 public:
+                    virtual ~ClientInvocation();
 
                     static boost::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
                                                                       std::auto_ptr<protocol::ClientMessage> &clientMessage,

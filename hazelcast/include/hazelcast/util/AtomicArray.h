@@ -33,7 +33,12 @@ namespace hazelcast {
              *
              * @param length the length of the array
              */
-            AtomicArray(size_t length) : array(length), locks(length) {
+            AtomicArray(size_t length) : array(length) {
+                locks = new util::Mutex[length];
+            }
+
+            virtual ~AtomicArray() {
+                delete[] locks;
             }
 
             /**
@@ -75,7 +80,7 @@ namespace hazelcast {
 
         private:
             std::vector<T> array;
-            std::vector<util::Mutex> locks;
+            util::Mutex *locks;
 
             void checkIndexBound(size_t i) {
                 if (i >= array.size()) {

@@ -381,8 +381,8 @@ namespace hazelcast {
                         typedef std::vector<std::pair<ClientRegistrationKey, boost::shared_ptr<ConnectionRegistrationsMap> > > ENTRY_VECTOR;
                         BOOST_FOREACH(const ENTRY_VECTOR::value_type &registrationMapEntry,
                                       listenerService.registrations.entrySet()) {
-                                        const boost::shared_ptr<ConnectionRegistrationsMap> &registrationMap = registrationMapEntry.second;
-                                        ConnectionRegistrationsMap::const_iterator foundRegistration = registrationMap->find(
+                                        boost::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
+                                        ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
                                                 connection);
                                         if (foundRegistration != registrationMap->end()) {
                                             listenerService.removeEventHandler(foundRegistration->second.getCallId());

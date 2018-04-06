@@ -18,6 +18,7 @@
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTCLUSTERSERVICEIMPL_H
 
 #include <map>
+#include <vector>
 
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/InitialMembershipListener.h"

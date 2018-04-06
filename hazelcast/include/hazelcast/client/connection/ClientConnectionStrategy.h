@@ -46,6 +46,8 @@ namespace hazelcast {
                 ClientConnectionStrategy(spi::ClientContext &clientContext, util::ILogger &logger,
                                          const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig);
 
+                virtual ~ClientConnectionStrategy();
+
                 /**
                  * Called after {@link ConnectionManager} started.
                  * Connecting to cluster can be triggered from this method using one of

@@ -390,6 +390,8 @@ namespace hazelcast {
                     return out.str();
                 }
 
+                ClientInvocation::~ClientInvocation() {
+                }
             }
         }
     }

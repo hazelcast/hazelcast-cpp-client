@@ -40,6 +40,8 @@ namespace hazelcast {
                 public:
                     AwsAddressProvider(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
 
+                    virtual ~AwsAddressProvider();
+
                     virtual std::vector<Address> loadAddresses();
 
                 private:

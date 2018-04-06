@@ -25,6 +25,8 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API Runnable : public Named {
         public:
+            virtual ~Runnable();
+
             virtual void run() = 0;
 
             virtual bool isStriped();

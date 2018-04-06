@@ -624,6 +624,9 @@ namespace hazelcast {
                 connectionListeners.add(connectionListener);
             }
 
+            ClientConnectionManagerImpl::~ClientConnectionManagerImpl() {
+            }
+
             ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,
                                                                                 const bool asOwner,
                                                                                 const boost::shared_ptr<AuthenticationFuture> &future,

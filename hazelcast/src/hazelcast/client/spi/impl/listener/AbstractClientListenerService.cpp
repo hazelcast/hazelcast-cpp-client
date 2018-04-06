@@ -65,6 +65,9 @@ namespace hazelcast {
                     void AbstractClientListenerService::start() {
                     }
 
+                    AbstractClientListenerService::~AbstractClientListenerService() {
+                    }
+
                     void AbstractClientListenerService::ClientEventProcessor::run() {
                         try {
                             long correlationId = clientMessage->getCorrelationId();
@@ -97,6 +100,9 @@ namespace hazelcast {
                             util::ILogger &logger)
                             : clientMessage(clientMessage), connection(connection), eventHandlerMap(eventHandlerMap),
                               logger(logger) {
+                    }
+
+                    AbstractClientListenerService::ClientEventProcessor::~ClientEventProcessor() {
                     }
 
                 }
