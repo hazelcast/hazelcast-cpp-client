@@ -53,8 +53,7 @@ namespace hazelcast {
                     errorCode = error;
                 }
 
-                void SSLSocket::checkDeadline(const asio::error_code &ec)
-                {
+                void SSLSocket::checkDeadline(const asio::error_code &ec) {
                     // The timer may return an error, e.g. operation_aborted when we cancel it. would_block is OK,
                     // since we set it at the start of the connection.
                     if (ec && ec != asio::error::would_block) {
@@ -144,8 +143,7 @@ namespace hazelcast {
                         // SO_NOSIGPIPE seems to be internally handled by asio on connect and accept. no such option
                         // is defined at the api, hence not setting this option
 
-                        // set the socket as blocking by default
-                        setBlocking(true);
+                        setBlocking(false);
                         socketId = socket->lowest_layer().native_handle();
                     } catch (asio::system_error &e) {
                         return e.code().value();
@@ -196,15 +194,17 @@ namespace hazelcast {
                     asio::error_code ioRunErrorCode;
                     ioService.restart();
                     if (flag == MSG_WAITALL) {
-                        asio::async_read(*socket, asio::buffer(buffer, (size_t) len), asio::transfer_exactly((size_t) len), readHandler);
+                        asio::async_read(*socket, asio::buffer(buffer, (size_t) len),
+                                         asio::transfer_exactly((size_t) len), readHandler);
                         do {
-                            ioService.run(ioRunErrorCode);
+                            ioService.run_one(ioRunErrorCode);
                             handleError("SSLSocket::receive", size, ec);
                         } while (!ioRunErrorCode && readHandler.getNumRead() < (size_t) len);
 
                         return (int) readHandler.getNumRead();
                     } else {
-                        size = socket->read_some(asio::buffer(buffer, (size_t) len), ec);
+                        size = asio::read(*socket, asio::buffer(buffer, (size_t) len),
+                                          asio::transfer_exactly((size_t) len), ec);
                     }
 
                     return handleError("SSLSocket::receive", size, ec);
@@ -233,7 +233,8 @@ namespace hazelcast {
                     if (ec) {
                         return std::auto_ptr<Address>();
                     }
-                    return std::auto_ptr<Address>(new Address(localEndpoint.address().to_string(), localEndpoint.port()));
+                    return std::auto_ptr<Address>(
+                            new Address(localEndpoint.address().to_string(), localEndpoint.port()));
                 }
 
                 void SSLSocket::close() {
@@ -242,19 +243,36 @@ namespace hazelcast {
                     socket->lowest_layer().close(ec);
                 }
 
-                int SSLSocket::handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const {
+                int SSLSocket::handleError(const std::string &source, size_t numBytes,
+                                           const asio::error_code &error) const {
                     if (error && error != asio::error::try_again && error != asio::error::would_block) {
-                            throw exception::IOException(source, error.message());
+                        throw exception::IOException(source, error.message());
                     }
                     return (int) numBytes;
                 }
 
+                SSLSocket::ReadHandler::ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead),
+                                                                                             errorCode(ec) {}
+
+                void SSLSocket::ReadHandler::operator()(const asio::error_code &err, std::size_t bytes_transferred) {
+                    errorCode = err;
+                    numRead += bytes_transferred;
+                }
+
+                size_t &SSLSocket::ReadHandler::getNumRead() const {
+                    return numRead;
+                }
+
+                asio::error_code &SSLSocket::ReadHandler::getErrorCode() const {
+                    return errorCode;
+                }
+
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info) {
                     out << "Cipher{"
-                            "Name: " << info.name <<
-                    ", Bits:"<< info.numberOfBits <<
-                    ", Version:"<< info.version <<
-                    ", Description:"<< info.description << "}";
+                           "Name: " << info.name <<
+                        ", Bits:" << info.numberOfBits <<
+                        ", Version:" << info.version <<
+                        ", Description:" << info.description << "}";
 
                     return out;
                 }

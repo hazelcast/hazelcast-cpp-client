@@ -124,20 +124,13 @@ namespace hazelcast {
 
                     class ReadHandler {
                     public:
-                        ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead), errorCode(ec) {}
+                        ReadHandler(size_t &numRead, asio::error_code &ec);
 
-                        void operator()(const asio::error_code &err, std::size_t bytes_transferred) {
-                            errorCode = err;
-                            numRead += bytes_transferred;
-                        }
+                        void operator()(const asio::error_code &err, std::size_t bytes_transferred);
 
-                        size_t &getNumRead() const {
-                            return numRead;
-                        }
+                        size_t &getNumRead() const;
 
-                        asio::error_code &getErrorCode() const {
-                            return errorCode;
-                        }
+                        asio::error_code &getErrorCode() const;
 
                     private:
                         size_t &numRead;

@@ -192,7 +192,9 @@ namespace hazelcast {
                 }
 
                 // wait for condition variable to be notified
-                conditionVariable.wait(mutex);
+                while (!resultReady && !exceptionReady) {
+                    conditionVariable.wait(mutex);
+                }
 
                 if (resultReady) {
                     return sharedObject;

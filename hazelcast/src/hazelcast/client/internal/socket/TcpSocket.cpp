@@ -111,7 +111,6 @@ namespace hazelcast {
                     FD_SET(socketId, &err);
                     errno = 0;
                     if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
-                        setBlocking(true);
                         return 0;
                     }
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
