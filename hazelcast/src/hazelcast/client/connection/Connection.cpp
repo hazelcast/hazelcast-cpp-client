@@ -27,8 +27,6 @@
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/connection/OutputSocketStream.h"
-#include "hazelcast/client/connection/InputSocketStream.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/internal/socket/TcpSocket.h"
 #include "hazelcast/util/Util.h"
@@ -48,12 +46,12 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener,
-                                   OutSelector &oListener, internal::socket::SocketFactory &socketFactory, bool isOwner)
+                                   OutSelector &oListener, internal::socket::SocketFactory &socketFactory)
                     : closedTimeMillis(0), lastHeartbeatRequestedMillis(0), lastHeartbeatReceivedMillis(0),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
-                      writeHandler(*this, oListener, 16 << 10), authenticatedAsOwner(isOwner),
+                      writeHandler(*this, oListener, 16 << 10),
                       heartBeating(true), receiveBuffer(new byte[16 << 10]),
                       receiveByteBuffer((char *) receiveBuffer, 16 << 10), messageBuilder(*this),
                       connectionId(-1), pendingPacketCount(0),
@@ -205,7 +203,7 @@ namespace hazelcast {
                 }
             }
 
-            bool Connection::isAuthenticatedAsOwner() const {
+            bool Connection::isAuthenticatedAsOwner() {
                 return authenticatedAsOwner;
             }
 

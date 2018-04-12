@@ -103,7 +103,8 @@ namespace hazelcast {
                 void ClientMembershipListener::memberAdded(const Member &member) {
                     members.insert(member);
                     logger.info() << membersString();
-                    MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_ADDED, members);
+                    MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
+                                          std::vector<Member>(members.begin(), members.end()));
                     clusterService.handleMembershipEvent(event);
                 }
 
@@ -127,7 +128,8 @@ namespace hazelcast {
                     if (connection.get() != NULL) {
                         connection->close("", newTargetDisconnectedExceptionCausedByMemberLeftEvent(connection));
                     }
-                    MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_REMOVED, members);
+                    MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_REMOVED,
+                                          std::vector<Member>(members.begin(), members.end()));
                     clusterService.handleMembershipEvent(event);
                 }
 
@@ -162,7 +164,9 @@ namespace hazelcast {
                     typedef const std::map<std::string, Member> MemberMap;
                     BOOST_FOREACH (const MemberMap::value_type &member, prevMembers) {
                                     events.push_back(MembershipEvent(client.getCluster(), member.second,
-                                                                     MembershipEvent::MEMBER_REMOVED, eventMembers));
+                                                                     MembershipEvent::MEMBER_REMOVED,
+                                                                     std::vector<Member>(eventMembers.begin(),
+                                                                                         eventMembers.end())));
                                     const Address &address = member.second.getAddress();
                                     if (clusterService.getMember(address).get() == NULL) {
                                         boost::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
@@ -177,7 +181,8 @@ namespace hazelcast {
                     BOOST_FOREACH (const Member &member, newMembers) {
                                     events.push_back(
                                             MembershipEvent(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
-                                                            eventMembers));
+                                                            std::vector<Member>(eventMembers.begin(),
+                                                                                eventMembers.end())));
                                 }
 
                     return events;

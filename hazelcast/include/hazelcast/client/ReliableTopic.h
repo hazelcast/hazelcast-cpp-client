@@ -43,7 +43,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ReliableTopic : public proxy::ReliableTopicImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

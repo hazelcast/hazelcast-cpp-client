@@ -39,9 +39,5 @@ namespace hazelcast {
                         }
 
         }
-
-        InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, const std::vector<Member> &members) : members(
-                members), cluster(cluster) {
-        }
     }
 }

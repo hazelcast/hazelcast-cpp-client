@@ -22,7 +22,7 @@ namespace hazelcast {
     namespace client {
         namespace mixedtype {
             namespace impl {
-                HazelcastClientImpl::HazelcastClientImpl(client::HazelcastClient &client) : client(client) {
+                HazelcastClientImpl::HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client) : client(client) {
                 }
 
                 HazelcastClientImpl::~HazelcastClientImpl() {

@@ -44,8 +44,6 @@ namespace hazelcast {
 
         namespace spi {
             class ClientContext;
-
-            class ClusterService;
         }
 
         namespace serialization {
@@ -59,8 +57,6 @@ namespace hazelcast {
         }
 
         namespace txn {
-            class BaseTxnRequest;
-
             class HAZELCAST_API TxnState {
             public:
                 enum State {

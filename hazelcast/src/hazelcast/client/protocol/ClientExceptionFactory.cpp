@@ -126,7 +126,9 @@ namespace hazelcast {
                         error.errorCode);
                 if (errorCodeToFactory.end() == it) {
                     return std::auto_ptr<exception::IException>(
-                            new exception::UndefinedErrorCodeException(error.errorCode, clientMessage.getCorrelationId(),
+                            new exception::UndefinedErrorCodeException(source, "",
+                                                                       error.errorCode,
+                                                                       clientMessage.getCorrelationId(),
                                                                        error.toString()));
                 }
 

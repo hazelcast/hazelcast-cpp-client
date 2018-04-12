@@ -30,7 +30,6 @@ namespace hazelcast {
                                                                              util::ILogger &logger,
                                                                              const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
                     : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig) {
-                executor = util::Executors::newSingleThreadExecutor(clientContext.getName() + ".clientShutdown-");
             }
 
             void DefaultClientConnectionStrategy::start() {
@@ -113,7 +112,10 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::shutdownWithExternalThread() {
-                executor->execute(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)));
+                boost::shared_ptr<util::Thread> shutdownThread(
+                        new util::Thread(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext))));
+                shutdownThread->start();
+                shutdownThreads.offer(shutdownThread);
             }
 
             DefaultClientConnectionStrategy::ShutdownTask::ShutdownTask(spi::ClientContext &clientContext)
@@ -128,7 +130,7 @@ namespace hazelcast {
             }
 
             const std::string DefaultClientConnectionStrategy::ShutdownTask::getName() const {
-                return "ShutdownTask";
+                return clientContext.getName() + ".clientShutdown-";
             }
         }
     }

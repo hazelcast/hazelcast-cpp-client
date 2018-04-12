@@ -89,7 +89,6 @@ namespace hazelcast {
                 int64_t heartbeatInterval;
                 int64_t heartbeatTimeout;
                 util::Atomic<std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > > heartbeatListeners;
-                boost::shared_ptr<util::ExecutorService> executor;
 
                 void checkConnection(int64_t now, boost::shared_ptr<Connection> &connection);
 

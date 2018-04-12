@@ -53,7 +53,11 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<connection::Connection> NonSmartClientInvocationService::getOwnerConnection() {
-                    const boost::shared_ptr<Address> &ownerConnectionAddress = connectionManager->getOwnerConnectionAddress();
+                    boost::shared_ptr<Address> ownerConnectionAddress = connectionManager->getOwnerConnectionAddress();
+                    if (ownerConnectionAddress.get() == NULL) {
+                        throw exception::IOException("NonSmartClientInvocationService::getOwnerConnection",
+                                                     "Owner connection address is not available.");
+                    }
                     boost::shared_ptr<connection::Connection> ownerConnection = connectionManager->getActiveConnection(
                             *ownerConnectionAddress);
                     if (ownerConnection.get() == NULL) {

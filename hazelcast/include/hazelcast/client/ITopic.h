@@ -39,7 +39,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ITopic : public proxy::ITopicImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

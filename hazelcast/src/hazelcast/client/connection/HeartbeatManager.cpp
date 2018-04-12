@@ -37,7 +37,6 @@ namespace hazelcast {
                 int intervalSeconds = clientProperties.getHeartbeatInterval().getInteger();
                 heartbeatInterval = intervalSeconds > 0 ? intervalSeconds * 1000 : util::IOUtil::to_value<int>(
                         (std::string) ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT) * 1000;
-                executor = util::Executors::newSingleThreadExecutor(client.getName() + ".heartbeat");
             }
 
             void HeartbeatManager::start() {

@@ -36,6 +36,7 @@ namespace hazelcast {
                 IssueTest();
 
                 ~IssueTest();
+
             protected:
                 class Issue864MapListener : public hazelcast::client::EntryAdapter<int, int> {
                 public:
@@ -54,20 +55,20 @@ namespace hazelcast {
             };
 
             IssueTest::IssueTest()
-            : latch(2), listener(latch) {
+                    : latch(2), listener(latch) {
             }
 
             IssueTest::~IssueTest() {
             }
-            
+
             void threadTerminateNode(util::ThreadArgs &args) {
                 HazelcastServer *node = (HazelcastServer *) args.arg0;
                 node->shutdown();
             }
 
             void putMapMessage(util::ThreadArgs &args) {
-                IMap<int, int> *map = (IMap<int, int> *)args.arg0;
-                util::CountDownLatch *latch = (util::CountDownLatch *)args.arg1;
+                IMap<int, int> *map = (IMap<int, int> *) args.arg0;
+                util::CountDownLatch *latch = (util::CountDownLatch *) args.arg1;
 
                 do {
                     // 7. Put a 2nd entry to the map
@@ -75,7 +76,7 @@ namespace hazelcast {
                         map->put(2, 20);
                     } catch (std::exception &e) {
                         // suppress the error
-						(void)e; // suppress the unused variable warning
+                        (void) e; // suppress the unused variable warning
                     }
                     util::sleep(1);
                 } while (latch->get() > 0);
@@ -93,10 +94,10 @@ namespace hazelcast {
                 HazelcastClient client(*clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
-                util::StartedThread* thread = NULL;
+                util::StartedThread *thread = NULL;
                 int expected = 1000;
                 for (int i = 0; i < expected; i++) {
-                    if(i == 5){
+                    if (i == 5) {
                         thread = new util::StartedThread(threadTerminateNode, &hz1);
                     }
                     map.put(i, i);
@@ -116,13 +117,13 @@ namespace hazelcast {
                 HazelcastClient client(*clientConfig);
 
                 // 3. Get a map
-                IMap <int, int> map = client.getMap<int, int>("IssueTest_map");
+                IMap<int, int> map = client.getMap<int, int>("IssueTest_map");
 
                 // 4. Subscribe client to entry added event
                 map.addEntryListener(listener, true);
 
                 // Put a key, value to the map
-                ASSERT_EQ((int *)NULL, map.put(1, 10).get());
+                ASSERT_EQ((int *) NULL, map.put(1, 10).get());
 
                 ASSERT_TRUE(latch.await(20, 1)); // timeout of 20 seconds
 
@@ -149,7 +150,7 @@ namespace hazelcast {
             TEST_F(IssueTest, testIssue221) {
                 // start a server
                 HazelcastServer server(*g_srvFactory);
-                
+
                 // start a client
                 std::auto_ptr<ClientConfig> config = getConfig();
                 HazelcastClient client(*config);
@@ -160,8 +161,14 @@ namespace hazelcast {
 
                 try {
                     map.get(1);
-                } catch (exception::IOException &) {
-                    // this is the expected exception, test passes, do nothing
+                } catch (exception::OperationTimeoutException &e) {
+                    boost::shared_ptr<exception::IException> causeException = e.getCause();
+                    ASSERT_NOTNULL(causeException.get(), exception::IException);
+                    bool isProtocolException = causeException->isProtocolException();
+                    ASSERT_TRUE(isProtocolException);
+                    boost::shared_ptr<exception::ProtocolException> cause = boost::static_pointer_cast<exception::ProtocolException>(
+                            causeException);
+                    ASSERT_EQ(protocol::IO, cause->getErrorCode());
                 } catch (exception::IException &e) {
                     std::string msg = e.what();
                     if (msg.find("ConnectionManager is not active") == std::string::npos) {

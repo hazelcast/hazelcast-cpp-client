@@ -53,6 +53,7 @@ namespace hazelcast {
         * HazelcastClient configuration class.
         */
         class HAZELCAST_API ClientConfig {
+            friend class spi::impl::ClientClusterServiceImpl;
         public:
 
             /**
@@ -283,7 +284,13 @@ namespace hazelcast {
             */
             const std::set<MembershipListener *> &getMembershipListeners() const;
 
-            const std::set<boost::shared_ptr<MembershipListener> > &getMangedMembershipListeners() const;
+            /**
+             * Returns registered membershipListeners
+             *
+             * @return registered membership listeners. This method returns the same list as the
+             * getMembershipListeners method but as a set of shared_ptr.
+             */
+            const std::set<boost::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
 
             /**
             * @deprecated Please use addListener(const boost::shared_ptr<InitialMembershipListener> &listener)
@@ -468,7 +475,7 @@ namespace hazelcast {
              */
             void setExecutorPoolSize(int32_t executorPoolSize);
 
-            const config::ClientConnectionStrategyConfig &getConnectionStrategyConfig() const;
+            config::ClientConnectionStrategyConfig &getConnectionStrategyConfig();
 
             ClientConfig &
             setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);

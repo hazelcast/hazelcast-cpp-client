@@ -19,6 +19,7 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include <hazelcast/util/Thread.h>
+#include <hazelcast/util/UuidUtil.h>
 
 namespace hazelcast {
     namespace client {
@@ -39,6 +40,15 @@ namespace hazelcast {
 
             const std::string ClientTestSupportBase::getSslFilePath() {
                 return "hazelcast/test/resources/hazelcast-ssl.xml";
+            }
+
+            std::string ClientTestSupportBase::randomMapName() {
+                return randomString();
+            }
+
+            std::string ClientTestSupportBase::randomString() {
+                // TODO: Change with secure uuid generator as in Java
+                return util::UuidUtil::newUnsecureUuidString();
             }
         }
     }

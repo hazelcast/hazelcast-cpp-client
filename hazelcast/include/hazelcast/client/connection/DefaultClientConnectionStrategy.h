@@ -17,6 +17,9 @@
 #ifndef HAZELCAST_CLIENT_CONNECTION_DEFAULTCLIENTCONNECTIONSTRATEGY_H_
 #define HAZELCAST_CLIENT_CONNECTION_DEFAULTCLIENTCONNECTIONSTRATEGY_H_
 
+#include "hazelcast/util/ConcurrentQueue.h"
+#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/SynchronizedQueue.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/util/Executor.h"
@@ -71,7 +74,8 @@ namespace hazelcast {
                 util::AtomicBoolean disconnectedFromCluster;
                 bool clientStartAsync;
                 config::ClientConnectionStrategyConfig::ReconnectMode reconnectMode;
-                boost::shared_ptr<util::ExecutorService> executor;
+                // This queue is used for avoiding memory leak
+                util::SynchronizedQueue<util::Thread> shutdownThreads;
 
                 bool isClusterAvailable() const;
 

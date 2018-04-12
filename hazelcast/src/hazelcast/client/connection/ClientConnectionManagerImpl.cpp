@@ -82,8 +82,6 @@ namespace hazelcast {
                 connectionStrategy = initializeStrategy(client);
 
                 clusterConnectionExecutor = createSingleThreadExecutorService(client);
-                shutdownExecutor = util::Executors::newSingleThreadExecutor(
-                        client.getName() + ".clientShutdown-");
 
                 shuffleMemberList = client.getClientProperties().getShuffleMemberList().getBoolean();
 
@@ -199,9 +197,9 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<Connection>
-            ClientConnectionManagerImpl::createSocketConnection(const Address &address, bool ownerConnection) {
+            ClientConnectionManagerImpl::createSocketConnection(const Address &address) {
                 boost::shared_ptr<Connection> conn(
-                        new Connection(address, client, inSelector, outSelector, socketFactory, ownerConnection));
+                        new Connection(address, client, inSelector, outSelector, socketFactory));
 
                 conn->connect(client.getClientConfig().getConnectionTimeout());
                 if (socketInterceptor != NULL) {
@@ -274,10 +272,6 @@ namespace hazelcast {
                     return future;
                 }
                 return oldFuture;
-            }
-
-            boost::shared_ptr<Connection> ClientConnectionManagerImpl::createSocketConnection(const Address &address) {
-                return createSocketConnection(address, false);
             }
 
             boost::shared_ptr<Connection>
@@ -788,8 +782,10 @@ namespace hazelcast {
                 } catch (exception::IException &e) {
                     connectionManager.logger.warning() << "Could not connect to cluster, shutting down the client. "
                                                        << e.getMessage();
-                    connectionManager.shutdownExecutor->execute(
-                            boost::shared_ptr<util::Runnable>(new ShutdownTask(connectionManager.client)));
+                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(
+                            boost::shared_ptr<util::Runnable>(new ShutdownTask(connectionManager.client))));
+                    shutdownThread->start();
+                    connectionManager.shutdownThreads.offer(shutdownThread);
 
                     throw;
                 }
@@ -811,7 +807,7 @@ namespace hazelcast {
             }
 
             const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                return "ShutdownTask";
+                return client.getName() + ".clientShutdown-";
             }
 
             void ClientConnectionManagerImpl::TimeoutAuthenticationTask::run() {

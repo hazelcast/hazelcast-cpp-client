@@ -35,9 +35,7 @@ namespace hazelcast {
         namespace impl {
             class BaseEventHandler;
 
-            class BaseRemoveListenerRequest;
-
-            class ClientRequest;
+            class HazelcastClientInstanceImpl;
         }
 
         namespace serialization {
@@ -67,7 +65,7 @@ namespace hazelcast {
         * @see TransactionalList
         */
         class HAZELCAST_API DistributedObject : public IDistributedObject {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
             /**

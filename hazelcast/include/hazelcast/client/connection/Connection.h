@@ -67,7 +67,7 @@ namespace hazelcast {
                                              public boost::enable_shared_from_this<Connection> {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
-                           OutSelector& listener, internal::socket::SocketFactory &socketFactory, bool isOwner);
+                           OutSelector& listener, internal::socket::SocketFactory &socketFactory);
 
                 ~Connection();
 
@@ -99,7 +99,7 @@ namespace hazelcast {
 
                 void onHeartbeatRequested();
 
-                bool isAuthenticatedAsOwner() const;
+                bool isAuthenticatedAsOwner();
 
                 void setIsAuthenticatedAsOwner();
 
@@ -144,7 +144,7 @@ namespace hazelcast {
                 std::auto_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
-                bool authenticatedAsOwner;
+                util::AtomicBoolean authenticatedAsOwner;
                 util::AtomicBoolean heartBeating;
                 byte* receiveBuffer;
                 util::ByteBuffer receiveByteBuffer;

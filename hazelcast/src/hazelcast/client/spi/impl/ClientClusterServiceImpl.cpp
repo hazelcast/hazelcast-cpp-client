@@ -31,16 +31,18 @@ namespace hazelcast {
                 impl::ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client(client) {
                     ClientConfig &config = client.getClientConfig();
-                    const std::set<boost::shared_ptr<MembershipListener> > &membershipListeners = config.getMangedMembershipListeners();
+                    const std::set<boost::shared_ptr<MembershipListener> > &membershipListeners = config.getManagedMembershipListeners();
 
                     BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, membershipListeners) {
                                     addMembershipListenerWithoutInit(listener);
                                 }
                 }
 
-                std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(const boost::shared_ptr<MembershipListener> &listener) {
+                std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(
+                        const boost::shared_ptr<MembershipListener> &listener) {
                     std::string id = util::UuidUtil::newUnsecureUuidString();
                     listeners.put(id, listener);
+                    listener->setRegistrationId(id);
                     return id;
                 }
 
@@ -88,7 +90,8 @@ namespace hazelcast {
                     if (listener.shouldRequestInitialMembers()) {
                         Cluster &cluster = client.getCluster();
                         std::vector<Member> memberCollection = getMemberList();
-                        InitialMembershipEvent event(cluster, memberCollection);
+                        InitialMembershipEvent event(cluster, std::set<Member>(memberCollection.begin(),
+                                                                               memberCollection.end()));
                         ((InitialMembershipListener &) listener).init(event);
                     }
                 }

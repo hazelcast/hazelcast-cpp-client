@@ -194,7 +194,6 @@ namespace hazelcast {
 
                 std::vector<Address> addressList;
 
-                void updateConnectionTimeout();
             };
         }
     }

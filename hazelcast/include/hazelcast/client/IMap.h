@@ -65,7 +65,7 @@ namespace hazelcast {
         template<typename K, typename V>
         class IMap {
             friend class spi::ProxyManager;
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerMap<K, V>;
 
         public:

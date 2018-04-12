@@ -34,7 +34,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ISet : public proxy::ISetImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerSet<E>;
 
         public:

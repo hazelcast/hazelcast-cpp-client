@@ -47,5 +47,17 @@ namespace hazelcast {
         InitialMembershipListenerDelegator::InitialMembershipListenerDelegator(
                 InitialMembershipListener *listener) : listener(listener) {}
 
+        bool InitialMembershipListenerDelegator::shouldRequestInitialMembers() const {
+            return listener->shouldRequestInitialMembers();
+        }
+
+        const std::string &InitialMembershipListenerDelegator::getRegistrationId() const {
+            return listener->getRegistrationId();
+        }
+
+        void InitialMembershipListenerDelegator::setRegistrationId(const std::string &registrationId) {
+            listener->setRegistrationId(registrationId);
+        }
+
     }
 }

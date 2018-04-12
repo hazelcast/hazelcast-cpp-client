@@ -46,8 +46,6 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipEvent {
         public:
-            InitialMembershipEvent(Cluster &cluster, const std::vector<Member> &members);
-
             InitialMembershipEvent(Cluster &cluster, const std::set<Member> &members);
 
             /**

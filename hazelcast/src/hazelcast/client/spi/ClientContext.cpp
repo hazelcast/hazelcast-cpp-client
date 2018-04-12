@@ -16,17 +16,22 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
+#include <hazelcast/client/HazelcastClient.h>
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
-#include "hazelcast/client/spi/ClientClusterService.h"
-
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext(HazelcastClient &hazelcastClient)
-            : hazelcastClient(hazelcastClient) {
+            ClientContext::ClientContext(client::HazelcastClient &hazelcastClient) : hazelcastClient(
+                    *hazelcastClient.clientImpl) {
+            }
+
+            ClientContext::ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient)
+                    : hazelcastClient(hazelcastClient) {
             }
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
@@ -65,7 +70,7 @@ namespace hazelcast {
                 return hazelcastClient.nearCacheManager;
             }
 
-            ClientProperties& ClientContext::getClientProperties() {
+            ClientProperties &ClientContext::getClientProperties() {
                 return hazelcastClient.clientProperties;
             }
 
@@ -92,6 +97,7 @@ namespace hazelcast {
             void ClientContext::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
                 hazelcastClient.onClusterConnect(ownerConnection);
             }
+
         }
 
     }

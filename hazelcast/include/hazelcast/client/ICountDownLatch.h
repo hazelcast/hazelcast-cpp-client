@@ -59,7 +59,7 @@ namespace hazelcast {
          *
          */
         class HAZELCAST_API ICountDownLatch : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

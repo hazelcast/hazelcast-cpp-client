@@ -40,7 +40,7 @@ namespace hazelcast {
         */
         template<typename E>
         class IList : public proxy::IListImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerList<E>;
 
         public:

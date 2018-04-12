@@ -78,6 +78,8 @@ namespace hazelcast {
                 }\
                 ClassName(const std::string &source, const std::string &message, \
                             const boost::shared_ptr<IException> &cause) : ProtocolException(source, message, ERROR_CODE, cause) {}\
+                ClassName(const std::string &source, const std::string &message, \
+                            const IException &cause) : ProtocolException(source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone())) {}\
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \
@@ -163,46 +165,35 @@ namespace hazelcast {
             DEFINE_PROTOCOL_EXCEPTION(NativeOutOfMemoryError, protocol::NATIVE_OUT_OF_MEMORY_ERROR);
             DEFINE_PROTOCOL_EXCEPTION(ServiceNotFoundException, protocol::SERVICE_NOT_FOUND);
 
-            class HAZELCAST_API UndefinedErrorCodeException : public IException {
+            // -----------------    ONLY Client side exceptions below -------------------------------------------
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE);
+            /**
+             * Thrown when Hazelcast client is offline during an invocation.
+             */
+            DEFINE_PROTOCOL_EXCEPTION(HazelcastClientOfflineException, -1);
+            DEFINE_PROTOCOL_EXCEPTION(UnknownHostException, -2);
+
+            class HAZELCAST_API UndefinedErrorCodeException : public ProtocolException {
             public:
-                UndefinedErrorCodeException(int32_t errorCode, int64_t correlationId, std::string details);
+                UndefinedErrorCodeException(const std::string &source, const std::string &message,
+                                                            int32_t errorCode, int64_t correlationId,
+                                                            std::string details);
 
                 virtual ~UndefinedErrorCodeException() throw();
 
-                int32_t getErrorCode() const;
+                int32_t getUndefinedErrorCode() const;
 
                 int64_t getMessageCallId() const;
 
                 const std::string &getDetailedErrorMessage() const;
+
+                virtual std::auto_ptr<IException> clone() const;
 
             private:
                 int32_t error;
                 int64_t messageCallId;
                 std::string detailedErrorMessage;
             };
-
-            class HAZELCAST_API HazelcastClientNotActiveException : public IException {
-            public:
-                HazelcastClientNotActiveException(const std::string &source, const std::string &message);
-
-                virtual ~HazelcastClientNotActiveException() throw();
-            };
-
-            /**
-             * Thrown when Hazelcast client is offline during an invocation.
-             */
-            class HAZELCAST_API HazelcastClientOfflineException : public IllegalStateException {
-            public:
-                HazelcastClientOfflineException(const std::string &source, const std::string &message);
-
-                virtual ~HazelcastClientOfflineException() throw();
-            };
-
-            class HAZELCAST_API UnknownHostException : public IException {
-            public:
-                UnknownHostException(const std::string &source, const std::string &message);
-            };
-
         }
     }
 }

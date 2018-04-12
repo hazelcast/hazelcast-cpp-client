@@ -42,8 +42,6 @@ namespace hazelcast {
 
                 void onFailure(const boost::shared_ptr<exception::IException> &throwable);
 
-                void onFailure(const exception::IException &throwable);
-
                 boost::shared_ptr<Connection> get();
             private:
                 boost::shared_ptr<util::CountDownLatch> countDownLatch;

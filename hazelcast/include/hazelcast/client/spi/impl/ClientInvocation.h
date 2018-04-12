@@ -166,7 +166,7 @@ namespace hazelcast {
 
                     bool isRetrySafeException(exception::IException &exception);
 
-                    exception::IException newOperationTimeoutException(exception::IException &exception);
+                    exception::OperationTimeoutException newOperationTimeoutException(exception::IException &exception);
 
                     void execute();
 

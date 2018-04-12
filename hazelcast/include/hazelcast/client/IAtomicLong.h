@@ -35,7 +35,7 @@ namespace hazelcast {
         *
         */
         class HAZELCAST_API IAtomicLong : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
             friend class IdGenerator;
 

@@ -34,7 +34,9 @@ namespace hazelcast {
                     int32_t undefinedError = client::protocol::SERVICE_NOT_FOUND + 1;
                     int64_t callId = 0x1122334455667788LL;
                     const std::string details = "This is the detail about the exception";
-                    client::exception::UndefinedErrorCodeException exception(undefinedError, callId, details);
+                    client::exception::UndefinedErrorCodeException exception("testUndefinedErrorCodeException",
+                                                                             "this is a test", undefinedError, callId,
+                                                                             details);
                     ASSERT_EQ(undefinedError, exception.getErrorCode());
                     ASSERT_EQ(callId, exception.getMessageCallId());
                     ASSERT_EQ(details, exception.getDetailedErrorMessage());

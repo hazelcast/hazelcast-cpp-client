@@ -169,7 +169,8 @@ namespace hazelcast {
                     nearCachedClient = std::auto_ptr<HazelcastClient>(new HazelcastClient(*nearCachedClientConfig));
                     nearCachedMap = std::auto_ptr<IMap<int, std::string> >(new IMap<int, std::string>(
                             nearCachedClient->getMap<int, std::string>(DEFAULT_NEAR_CACHE_NAME)));
-                    nearCacheManager = &nearCachedClient->getNearCacheManager();
+                    spi::ClientContext clientContext(*nearCachedClient);
+                    nearCacheManager = &clientContext.getNearCacheManager();
                     nearCache = nearCacheManager->
                             getNearCache<int, std::string, serialization::pimpl::Data>(DEFAULT_NEAR_CACHE_NAME);
                     this->stats = (nearCache.get() == NULL) ? NULL : &nearCache->getNearCacheStats();
@@ -229,7 +230,8 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<serialization::pimpl::Data> getNearCacheKey(int key) {
-                    return client->getSerializationService().toSharedData<int>(&key);
+                    spi::ClientContext clientContext(*client);
+                    return clientContext.getSerializationService().toSharedData<int>(&key);
                 }
 
                 int64_t getExpectedMissesWithLocalUpdatePolicy() {

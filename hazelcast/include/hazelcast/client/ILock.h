@@ -37,7 +37,7 @@ namespace hazelcast {
         *
         */
         class HAZELCAST_API ILock : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

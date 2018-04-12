@@ -99,8 +99,14 @@ namespace hazelcast {
                 boost::shared_ptr<Address> SmartClientInvocationService::getRandomAddress() {
                     // TODO: Change loadBalancer to return pointer as in Java so that it is possible to denote the
                     // case where no address can be provided
-                    Member member = loadBalancer.next();
-                    return boost::shared_ptr<Address>(new Address(member.getAddress()));
+                    boost::shared_ptr<Address> address;
+                    try {
+                        Member member = loadBalancer.next();
+                        address = boost::shared_ptr<Address>(new Address(member.getAddress()));
+                    } catch (exception::IOException &) {
+                        // do nothing, there is no available server
+                    }
+                    return address;
                 }
             }
         }

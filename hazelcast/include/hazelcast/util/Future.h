@@ -192,7 +192,7 @@ namespace hazelcast {
                 }
 
                 // wait for condition variable to be notified
-                while (!resultReady && !exceptionReady) {
+                while (!resultReady && !exceptionReady && !cancelled) {
                     conditionVariable.wait(mutex);
                 }
 

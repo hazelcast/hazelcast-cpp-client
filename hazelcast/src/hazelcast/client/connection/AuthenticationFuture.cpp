@@ -32,11 +32,6 @@ namespace hazelcast {
                 countDownLatch->countDown();
             }
 
-            void AuthenticationFuture::onFailure(const exception::IException &throwable) {
-                this->throwable = boost::shared_ptr<exception::IException>(new exception::IException(throwable));
-                countDownLatch->countDown();
-            }
-
             boost::shared_ptr<Connection> AuthenticationFuture::get() {
                 countDownLatch->await();
                 if (connection.get() != NULL) {

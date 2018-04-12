@@ -47,7 +47,7 @@ namespace hazelcast {
             *
             */
             class HAZELCAST_API ITopic : public proxy::ITopicImpl {
-                friend class client::HazelcastClient;
+                friend class client::impl::HazelcastClientInstanceImpl;;
 
             public:
 

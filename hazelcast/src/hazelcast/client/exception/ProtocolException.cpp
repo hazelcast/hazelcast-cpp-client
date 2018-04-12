@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <err.h>
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {
@@ -63,12 +64,16 @@ namespace hazelcast {
                 return true;
             }
 
-            UndefinedErrorCodeException::UndefinedErrorCodeException(int32_t errorCode, int64_t correlationId,
+            UndefinedErrorCodeException::UndefinedErrorCodeException(const std::string &source,
+                                                                     const std::string &message,
+                                                                     int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
-                    : error(errorCode), messageCallId(correlationId), detailedErrorMessage(details) {
+                    : ProtocolException(source, message, protocol::UNDEFINED), error(errorCode),
+                      messageCallId(correlationId),
+                      detailedErrorMessage(details) {
             }
 
-            int32_t UndefinedErrorCodeException::getErrorCode() const {
+            int32_t UndefinedErrorCodeException::getUndefinedErrorCode() const {
                 return error;
             }
 
@@ -83,25 +88,10 @@ namespace hazelcast {
             UndefinedErrorCodeException::~UndefinedErrorCodeException() throw() {
             }
 
-            HazelcastClientNotActiveException::HazelcastClientNotActiveException(const std::string &source,
-                                                                                 const std::string &message)
-                    : IException(
-                    source, message) {}
-
-            HazelcastClientNotActiveException::~HazelcastClientNotActiveException() throw() {
-
+            std::auto_ptr<IException> UndefinedErrorCodeException::clone() const {
+                return std::auto_ptr<IException>(new UndefinedErrorCodeException(*this));
             }
 
-            HazelcastClientOfflineException::HazelcastClientOfflineException(const std::string &source,
-                                                                             const std::string &message)
-                    : IllegalStateException(source, message) {}
-
-            HazelcastClientOfflineException::~HazelcastClientOfflineException() throw() {
-            }
-
-            UnknownHostException::UnknownHostException(const std::string &source, const std::string &message)
-                    : IException(source, message) {
-            }
         }
     }
 }

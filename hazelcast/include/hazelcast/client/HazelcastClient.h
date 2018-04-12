@@ -16,34 +16,7 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include <memory>
-#include <stdint.h>
-#include <vector>
-
-#include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
-#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
-#include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/proxy/RingbufferImpl.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/IList.h"
-#include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/client/ReliableTopic.h"
-#include "hazelcast/client/mixedtype/HazelcastClient.h"
-#include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
-#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include <hazelcast/client/impl/HazelcastClientInstanceImpl.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -410,53 +383,6 @@ namespace hazelcast {
  *  or as an Item in IQueue.
  *
  */
-        namespace connection {
-            class ClientConnectionManagerImpl;
-            class AddressProvider;
-        }
-
-        namespace serialization {
-            namespace pimpl {
-                class SerializationService;
-            }
-        }
-        namespace spi {
-            class ClientContext;
-
-            class ClientInvocationService;
-
-            class PartitionService;
-
-            class LifecycleService;
-
-            class ClientListenerService;
-
-            class ClientProxyFactory;
-
-            class ClientExecutionService;
-
-            namespace impl {
-                class ClientExecutionServiceImpl;
-            }
-        }
-
-        class ClientConfig;
-
-        class IdGenerator;
-
-        class IAtomicLong;
-
-        class ICountDownLatch;
-
-        class ISemaphore;
-
-        class ILock;
-
-        class TransactionContext;
-
-        class TransactionOptions;
-
-        class Cluster;
 
         /**
         * Hazelcast Client enables you to do all Hazelcast operations without
@@ -467,8 +393,6 @@ namespace hazelcast {
         */
         class HAZELCAST_API HazelcastClient {
             friend class spi::ClientContext;
-            friend class mixedtype::impl::HazelcastClientImpl;
-
         public:
             /**
             * Constructs a hazelcastClient with given ClientConfig.
@@ -476,11 +400,6 @@ namespace hazelcast {
             * @param config client configuration to start the client with
             */
             HazelcastClient(ClientConfig &config);
-
-            /**
-            * Destructor
-            */
-            ~HazelcastClient();
 
             /**
              * Returns the name of this Hazelcast instance.
@@ -497,8 +416,7 @@ namespace hazelcast {
             */
             template<typename T>
             T getDistributedObject(const std::string& name) {
-                T t(name, &(clientContext));
-                return t;
+                return clientImpl->getDistributedObject<T>(name);
             }
 
             /**
@@ -512,11 +430,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             IMap<K, V> getMap(const std::string &name) {
-                map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(IMap<K, V>::SERVICE_NAME, name, factory);
-
-                return IMap<K, V>(proxy);
+                return clientImpl->getMap<K, V>(name);
             }
 
             /**
@@ -527,7 +441,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             MultiMap<K, V> getMultiMap(const std::string& name) {
-                return getDistributedObject<MultiMap<K, V> >(name);
+                return clientImpl->getMultiMap<K, V>(name);
             }
 
             /**
@@ -538,7 +452,7 @@ namespace hazelcast {
             */
             template<typename E>
             IQueue<E> getQueue(const std::string& name) {
-                return getDistributedObject<IQueue<E> >(name);
+                return clientImpl->getQueue<E>(name);
             }
 
             /**
@@ -551,7 +465,7 @@ namespace hazelcast {
 
             template<typename E>
             ISet<E> getSet(const std::string& name) {
-                return getDistributedObject<ISet<E> >(name);
+                return clientImpl->getSet<E>(name);
             }
 
             /**
@@ -563,7 +477,7 @@ namespace hazelcast {
             */
             template<typename E>
             IList<E> getList(const std::string& name) {
-                return getDistributedObject<IList<E> >(name);
+                return clientImpl->getList<E>(name);
             }
 
             /**
@@ -574,7 +488,7 @@ namespace hazelcast {
             */
             template<typename E>
             ITopic<E> getTopic(const std::string& name) {
-                return getDistributedObject<ITopic<E> >(name);
+                return clientImpl->getTopic<E>(name);
             };
 
             /**
@@ -585,9 +499,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
-                        getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
-                return boost::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
+                return clientImpl->getReliableTopic<E>(name);
             }
 
             /**
@@ -653,7 +565,7 @@ namespace hazelcast {
              */
             template <typename E>
             boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+                return clientImpl->getRingbuffer<E>(name);
             }
 
             /**
@@ -726,61 +638,16 @@ namespace hazelcast {
              */
             mixedtype::HazelcastClient &toMixedType() const;
 
-            internal::nearcache::NearCacheManager &getNearCacheManager();
-
-            serialization::pimpl::SerializationService &getSerializationService();
-
-            const spi::impl::sequence::CallIdSequence &getCallIdSequence() const;
-
-            const protocol::ClientExceptionFactory &getExceptionFactory() const;
-
-            spi::ClientExecutionService &getClientExecutionService() const;
-
-            void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+            /**
+             * Returns the lifecycle service for this instance.
+             * <p>
+             * LifecycleService allows you to shutdown this HazelcastInstance and listen for the lifecycle events.
+             *
+             * @return the lifecycle service for this instance
+             */
+            spi::LifecycleService &getLifecycleService();
         private:
-            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
-                                                                               const std::string &name,
-                                                                               spi::ClientProxyFactory &factory);
-
-            ClientConfig clientConfig;
-            ClientProperties clientProperties;
-            util::CountDownLatch shutdownLatch;
-            spi::ClientContext clientContext;
-            serialization::pimpl::SerializationService serializationService;
-            std::auto_ptr<connection::ClientConnectionManagerImpl> connectionManager;
-            internal::nearcache::NearCacheManager nearCacheManager;
-            spi::impl::ClientClusterServiceImpl clusterService;
-            boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
-            std::auto_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
-            std::auto_ptr<spi::ClientInvocationService> invocationService;
-            boost::shared_ptr<spi::ClientListenerService> listenerService;
-            spi::impl::ClientTransactionManagerServiceImpl transactionManager;
-            Cluster cluster;
-            spi::LifecycleService lifecycleService;
-            spi::ProxyManager proxyManager;
-            std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
-            std::auto_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
-            protocol::ClientExceptionFactory exceptionFactory;
-            std::string instanceName;
-            static util::Atomic<int32_t> CLIENT_ID;
-            int32_t id;
-
-            HazelcastClient(const HazelcastClient& rhs);
-
-            void operator=(const HazelcastClient& rhs);
-
-            const std::string TOPIC_RB_PREFIX;
-
-            boost::shared_ptr<spi::ClientListenerService> initListenerService();
-
-            std::auto_ptr<spi::ClientInvocationService> initInvocationService();
-
-            std::auto_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
-
-            std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
-                    const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);
-
-            std::vector<boost::shared_ptr<connection::AddressProvider> > createAddressProviders();
+            boost::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
         };
 
     }

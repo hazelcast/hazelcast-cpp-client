@@ -40,6 +40,10 @@ namespace hazelcast {
 
         class ClientProperties;
 
+        namespace impl {
+            class HazelcastClientInstanceImpl;
+        }
+
         namespace connection {
             class ClientConnectionManagerImpl;
             class Connection;
@@ -77,8 +81,9 @@ namespace hazelcast {
 
             class HAZELCAST_API ClientContext {
             public:
+                ClientContext(client::HazelcastClient &hazelcastClient);
 
-                ClientContext(HazelcastClient &hazelcastClient);
+                ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
                 serialization::pimpl::SerializationService &getSerializationService();
 
@@ -112,7 +117,7 @@ namespace hazelcast {
 
                 void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
             private:
-                HazelcastClient &hazelcastClient;
+                client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };
         }
     }

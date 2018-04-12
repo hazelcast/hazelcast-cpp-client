@@ -257,7 +257,7 @@ namespace hazelcast {
             ClientConfig::executorPoolSize = executorPoolSize;
         }
 
-        const config::ClientConnectionStrategyConfig &ClientConfig::getConnectionStrategyConfig() const {
+        config::ClientConnectionStrategyConfig &ClientConfig::getConnectionStrategyConfig() {
             return connectionStrategyConfig;
         }
 
@@ -267,7 +267,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const std::set<boost::shared_ptr<MembershipListener> > &ClientConfig::getMangedMembershipListeners() const {
+        const std::set<boost::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
             return managedMembershipListeners;
         }
 

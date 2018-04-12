@@ -37,7 +37,7 @@ namespace hazelcast {
         */
         template<typename E>
         class IQueue : public proxy::IQueueImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerQueue<E>;
 
         public:

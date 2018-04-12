@@ -42,6 +42,160 @@ namespace hazelcast {
                 ClusterTest() : sslFactory(getSslFilePath()) {}
 
             protected:
+                class EntryAddedListener : public EntryAdapter<std::string, std::string> {
+                public:
+                    EntryAddedListener(util::CountDownLatch &addLatch)
+                            : addLatch(addLatch) {
+                    }
+
+                    void entryAdded(const EntryEvent<std::string, std::string> &event) {
+                        addLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &addLatch;
+                };
+
+                class ConnectedStateListener : public LifecycleListener {
+                public:
+                    ConnectedStateListener(util::CountDownLatch &latch)
+                            : latch(latch) {
+
+                    }
+
+                    void stateChanged(const LifecycleEvent &event) {
+                        if (event.getState() == LifecycleEvent::CLIENT_CONNECTED) {
+                            latch.countDown();
+                        }
+                    }
+
+                private:
+                    util::CountDownLatch &latch;
+                };
+
+                class ClientAllStatesListener : public LifecycleListener {
+                public:
+
+                    ClientAllStatesListener(util::CountDownLatch *startingLatch,
+                                            util::CountDownLatch *startedLatch = NULL,
+                                            util::CountDownLatch *connectedLatch = NULL,
+                                            util::CountDownLatch *disconnectedLatch = NULL,
+                                            util::CountDownLatch *shuttingDownLatch = NULL,
+                                            util::CountDownLatch *shutdownLatch = NULL)
+                            : startingLatch(startingLatch), startedLatch(startedLatch), connectedLatch(connectedLatch),
+                              disconnectedLatch(disconnectedLatch), shuttingDownLatch(shuttingDownLatch),
+                              shutdownLatch(shutdownLatch) {}
+
+                    virtual void stateChanged(const LifecycleEvent &lifecycleEvent) {
+                        switch (lifecycleEvent.getState()) {
+                            case LifecycleEvent::STARTING:
+                                if (startingLatch) {
+                                    startingLatch->countDown();
+                                }
+                                break;
+                            case LifecycleEvent::STARTED:
+                                if (startedLatch) {
+                                    startedLatch->countDown();
+                                }
+                                break;
+                            case LifecycleEvent::CLIENT_CONNECTED:
+                                if (connectedLatch) {
+                                    connectedLatch->countDown();
+                                }
+                                break;
+                            case LifecycleEvent::CLIENT_DISCONNECTED:
+                                if (disconnectedLatch) {
+                                    disconnectedLatch->countDown();
+                                }
+                                break;
+                            case LifecycleEvent::SHUTTING_DOWN:
+                                if (shuttingDownLatch) {
+                                    shuttingDownLatch->countDown();
+                                }
+                                break;
+                            case LifecycleEvent::SHUTDOWN:
+                                if (shutdownLatch) {
+                                    shutdownLatch->countDown();
+                                }
+                                break;
+                            default:
+                                FAIL() << "No such state expected:" << lifecycleEvent.getState();
+                        }
+                    }
+
+                private:
+                    util::CountDownLatch *startingLatch;
+                    util::CountDownLatch *startedLatch;
+                    util::CountDownLatch *connectedLatch;
+                    util::CountDownLatch *disconnectedLatch;
+                    util::CountDownLatch *shuttingDownLatch;
+                    util::CountDownLatch *shutdownLatch;
+                };
+
+                class SampleInitialListener : public InitialMembershipListener {
+                public:
+                    SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
+                                          util::CountDownLatch &_memberRemoved)
+                            : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
+                              _memberRemoved(_memberRemoved) {
+
+                    }
+
+                    void init(const InitialMembershipEvent &event) {
+                        std::vector<Member> const &members = event.getMembers();
+                        if (members.size() == 1) {
+                            _memberAdded.countDown();
+                        }
+                    }
+
+                    void memberAdded(const MembershipEvent &event) {
+                        _memberAdded.countDown();
+                    }
+
+                    void memberRemoved(const MembershipEvent &event) {
+                        _memberRemoved.countDown();
+                    }
+
+
+                    void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
+                        _attributeLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &_memberAdded;
+                    util::CountDownLatch &_attributeLatch;
+                    util::CountDownLatch &_memberRemoved;
+                };
+
+                class SampleListenerInClusterTest : public MembershipListener {
+                public:
+                    SampleListenerInClusterTest(util::CountDownLatch &_memberAdded,
+                                                util::CountDownLatch &_attributeLatch,
+                                                util::CountDownLatch &_memberRemoved)
+                            : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch),
+                              _memberRemoved(_memberRemoved) {
+
+                    }
+
+                    void memberAdded(const MembershipEvent &event) {
+                        _memberAdded.countDown();
+                    }
+
+                    void memberRemoved(const MembershipEvent &event) {
+                        _memberRemoved.countDown();
+                    }
+
+                    void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
+                        memberAttributeEvent.getKey();
+                        _attributeLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &_memberAdded;
+                    util::CountDownLatch &_attributeLatch;
+                    util::CountDownLatch &_memberRemoved;
+                };
+
                 std::auto_ptr<HazelcastServer> startMember() {
                     ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
@@ -63,125 +217,45 @@ namespace hazelcast {
                 }
             };
 
-            class ClientAllStatesListener : public LifecycleListener {
-            public:
+            TEST_P(ClusterTest, testSharedClusterListeners) {
+                std::auto_ptr<HazelcastServer> instance = startMember();
+                HazelcastClient hazelcastClient(*const_cast<ParamType &>(GetParam()));
+                Cluster cluster = hazelcastClient.getCluster();
+                util::CountDownLatch memberAdded(1);
+                util::CountDownLatch memberAddedInit(2);
+                util::CountDownLatch memberRemoved(1);
+                util::CountDownLatch memberRemovedInit(1);
+                util::CountDownLatch attributeLatch(7);
+                util::CountDownLatch attributeLatchInit(7);
 
-                ClientAllStatesListener(util::CountDownLatch *startingLatch, util::CountDownLatch *startedLatch = NULL,
-                                        util::CountDownLatch *connectedLatch = NULL,
-                                        util::CountDownLatch *disconnectedLatch = NULL,
-                                        util::CountDownLatch *shuttingDownLatch = NULL,
-                                        util::CountDownLatch *shutdownLatch = NULL)
-                        : startingLatch(startingLatch), startedLatch(startedLatch), connectedLatch(connectedLatch),
-                          disconnectedLatch(disconnectedLatch), shuttingDownLatch(shuttingDownLatch),
-                          shutdownLatch(shutdownLatch) { }
+                boost::shared_ptr<MembershipListener> sampleInitialListener(
+                        new SampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit));
+                boost::shared_ptr<MembershipListener> sampleListener(
+                        new SampleListenerInClusterTest(memberAdded, attributeLatch, memberRemoved));
 
-                virtual void stateChanged(const LifecycleEvent &lifecycleEvent) {
-                    switch (lifecycleEvent.getState()) {
-                        case LifecycleEvent::STARTING:
-                            if (startingLatch) {
-                                startingLatch->countDown();
-                            }
-                            break;
-                        case LifecycleEvent::STARTED:
-                            if (startedLatch) {
-                                startedLatch->countDown();
-                            }
-                            break;
-                        case LifecycleEvent::CLIENT_CONNECTED:
-                            if (connectedLatch) {
-                                connectedLatch->countDown();
-                            }
-                            break;
-                        case LifecycleEvent::CLIENT_DISCONNECTED:
-                            if (disconnectedLatch) {
-                                disconnectedLatch->countDown();
-                            }
-                            break;
-                        case LifecycleEvent::SHUTTING_DOWN:
-                            if (shuttingDownLatch) {
-                                shuttingDownLatch->countDown();
-                            }
-                            break;
-                        case LifecycleEvent::SHUTDOWN:
-                            if (shutdownLatch) {
-                                shutdownLatch->countDown();
-                            }
-                            break;
-                        default:
-                            FAIL() << "No such state expected:" << lifecycleEvent.getState();
-                    }
-                }
+                std::string initialListenerRegistrationId = cluster.addMembershipListener(sampleInitialListener);
+                std::string sampleListenerRegistrationId = cluster.addMembershipListener(sampleListener);
 
-            private:
-                util::CountDownLatch *startingLatch;
-                util::CountDownLatch *startedLatch;
-                util::CountDownLatch *connectedLatch;
-                util::CountDownLatch *disconnectedLatch;
-                util::CountDownLatch *shuttingDownLatch;
-                util::CountDownLatch *shutdownLatch;
-            };
+                std::auto_ptr<HazelcastServer> instance2 = startMember();
 
-            class SampleInitialListener : public InitialMembershipListener {
-            public:
-                SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
-                                      util::CountDownLatch &_memberRemoved)
-                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
+                ASSERT_TRUE(memberAdded.await(30));
+                ASSERT_TRUE(memberAddedInit.await(30));
 
-                }
+                ASSERT_TRUE(instance2->setAttributes(1));
 
-                void init(const InitialMembershipEvent &event) {
-                    std::vector<Member> const &members = event.getMembers();
-                    if (members.size() == 1) {
-                        _memberAdded.countDown();
-                    }
-                }
+                ASSERT_TRUE(attributeLatchInit.await(30));
+                ASSERT_TRUE(attributeLatch.await(30));
 
-                void memberAdded(const MembershipEvent &event) {
-                    _memberAdded.countDown();
-                }
+                instance2->shutdown();
 
-                void memberRemoved(const MembershipEvent &event) {
-                    _memberRemoved.countDown();
-                }
+                ASSERT_TRUE(memberRemoved.await(30));
+                ASSERT_TRUE(memberRemovedInit.await(30));
 
+                instance->shutdown();
 
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-                    _attributeLatch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &_memberAdded;
-                util::CountDownLatch &_attributeLatch;
-                util::CountDownLatch &_memberRemoved;
-            };
-
-
-            class SampleListenerInClusterTest : public MembershipListener {
-            public:
-                SampleListenerInClusterTest(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
-                                            util::CountDownLatch &_memberRemoved)
-                        : _memberAdded(_memberAdded), _attributeLatch(_attributeLatch), _memberRemoved(_memberRemoved) {
-
-                }
-
-                void memberAdded(const MembershipEvent &event) {
-                    _memberAdded.countDown();
-                }
-
-                void memberRemoved(const MembershipEvent &event) {
-                    _memberRemoved.countDown();
-                }
-
-                void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-                    memberAttributeEvent.getKey();
-                    _attributeLatch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &_memberAdded;
-                util::CountDownLatch &_attributeLatch;
-                util::CountDownLatch &_memberRemoved;
-            };
+                ASSERT_TRUE(cluster.removeMembershipListener(initialListenerRegistrationId));
+                ASSERT_TRUE(cluster.removeMembershipListener(sampleListenerRegistrationId));
+            }
 
             TEST_P(ClusterTest, testClusterListeners) {
                 std::auto_ptr<HazelcastServer> instance = startMember();
@@ -217,8 +291,8 @@ namespace hazelcast {
 
                 instance->shutdown();
 
-                cluster.removeMembershipListener(&sampleInitialListener);
-                cluster.removeMembershipListener(&sampleListener);
+                ASSERT_TRUE(cluster.removeMembershipListener(&sampleInitialListener));
+                ASSERT_TRUE(cluster.removeMembershipListener(&sampleListener));
             }
 
             TEST_P(ClusterTest, testClusterListenersFromConfig) {
@@ -256,37 +330,6 @@ namespace hazelcast {
                 instance->shutdown();
             }
 
-            class DummyListenerClusterTest : public EntryAdapter<std::string, std::string> {
-            public:
-                DummyListenerClusterTest(util::CountDownLatch &addLatch)
-                        : addLatch(addLatch) {
-                }
-
-                void entryAdded(const EntryEvent<std::string, std::string> &event) {
-                    addLatch.countDown();
-                }
-
-            private:
-                util::CountDownLatch &addLatch;
-            };
-
-            class LclForClusterTest : public LifecycleListener {
-            public:
-                LclForClusterTest(util::CountDownLatch &latch)
-                        : latch(latch) {
-
-                }
-
-                void stateChanged(const LifecycleEvent &event) {
-                    if (event.getState() == LifecycleEvent::CLIENT_CONNECTED) {
-                        latch.countDown();
-                    }
-                }
-
-            private:
-                util::CountDownLatch &latch;
-            };
-
             TEST_P(ClusterTest, testListenersWhenClusterDown) {
                 std::auto_ptr<HazelcastServer> instance = startMember();
 
@@ -298,14 +341,14 @@ namespace hazelcast {
                 HazelcastClient hazelcastClient(clientConfig);
 
                 util::CountDownLatch countDownLatch(1);
-                DummyListenerClusterTest listener(countDownLatch);
+                EntryAddedListener listener(countDownLatch);
                 IMap<std::string, std::string> m = hazelcastClient.getMap<std::string, std::string>(
                         "testListenersWhenClusterDown");
                 std::string entryListenerRegistrationId = m.addEntryListener(listener, true);
                 instance->shutdown();
 
                 util::CountDownLatch lifecycleLatch(1);
-                LclForClusterTest lifecycleListener(lifecycleLatch);
+                ConnectedStateListener lifecycleListener(lifecycleLatch);
                 hazelcastClient.addLifecycleListener(&lifecycleListener);
 
                 std::auto_ptr<HazelcastServer> instance2 = startMember();
@@ -399,15 +442,16 @@ namespace hazelcast {
                 ASSERT_TRUE(shutdownLatch.await(10));
             }
 
-            #ifdef HZ_BUILD_WITH_SSL
+#ifdef HZ_BUILD_WITH_SSL
+
             INSTANTIATE_TEST_CASE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new ClientConfig(), new SSLClientConfig()));
-            #else
+#else
             INSTANTIATE_TEST_CASE_P(All,
                                     ClusterTest,
                                     ::testing::Values(new ClientConfig()));
-            #endif
+#endif
         }
     }
 }

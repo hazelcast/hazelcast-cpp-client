@@ -20,7 +20,7 @@
 #ifndef HAZELCAST_MembershipEvent
 #define HAZELCAST_MembershipEvent
 
-#include <set>
+#include <vector>
 #include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -58,7 +58,7 @@ namespace hazelcast {
              * Constructor.
              */
             MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
-                            const std::set<Member> &membersList);
+                            const std::vector<Member> &membersList);
 
             /**
              * Destructor
@@ -67,18 +67,18 @@ namespace hazelcast {
 
             /**
              * Returns a consistent view of the the members exactly after this MembershipEvent has been processed. So if a
-             * member is removed, the returned set will not include this member. And if a member is added it will include
+             * member is removed, the returned vector will not include this member. And if a member is added it will include
              * this member.
              *
              * The problem with calling the Cluster#getMembers() is that the content could already
              * have changed while processing this event so it becomes very difficult to write a deterministic algorithm since
              * you can't get a deterministic view of the members. This method solves that problem.
              *
-             * The set is immutable and ordered. For more information see Cluster#getMembers().
+             * The vector is immutable and ordered. For more information see Cluster#getMembers().
              *
              * @return the members at the moment after this event.
              */
-            virtual const std::set<Member> getMembers() const;
+            virtual const std::vector<Member> getMembers() const;
 
             /**
              * Returns the cluster of the event.
@@ -106,7 +106,7 @@ namespace hazelcast {
             Cluster *cluster;
             Member member;
             MembershipEventType eventType;
-            std::set<Member> members;
+            std::vector<Member> members;
         };
     }
 }

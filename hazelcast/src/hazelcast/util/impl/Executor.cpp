@@ -26,7 +26,7 @@
 namespace hazelcast {
     namespace util {
         namespace impl {
-            int32_t SimpleExecutorService::DEFAULT_EXECUTOR_QUEUE_CAPACITY = 100 * 1000;
+            int32_t SimpleExecutorService::DEFAULT_EXECUTOR_QUEUE_CAPACITY = INT32_MAX;
 
             SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
                                                          int threadCount,

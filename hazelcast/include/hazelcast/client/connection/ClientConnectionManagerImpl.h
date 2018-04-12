@@ -163,12 +163,9 @@ namespace hazelcast {
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
 
-
                 boost::shared_ptr<Connection> getConnection(const Address &target, bool asOwner);
 
                 boost::shared_ptr<AuthenticationFuture> triggerConnect(const Address &target, bool asOwner);
-
-                boost::shared_ptr<Connection> createSocketConnection(const Address &address, bool ownerConnection);
 
                 boost::shared_ptr<Connection> createSocketConnection(const Address &address);
 
@@ -330,7 +327,8 @@ namespace hazelcast {
                 util::Atomic<boost::shared_ptr<protocol::Principal> > principal;
                 std::auto_ptr<ClientConnectionStrategy> connectionStrategy;
                 boost::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
-                boost::shared_ptr<util::ExecutorService> shutdownExecutor;
+                // This queue is used for avoiding memory leak
+                util::SynchronizedQueue<util::Thread> shutdownThreads;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 bool shuffleMemberList;

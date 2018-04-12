@@ -206,7 +206,7 @@ namespace hazelcast {
                 void ClientInvocation::notifyException(exception::IException &exception) {
                     if (!lifecycleService.isRunning()) {
                         clientInvocationFuture->complete(exception::HazelcastClientNotActiveException(
-                                exception.getSource(), exception.getMessage()));
+                                exception.getSource(), exception.getMessage(), exception));
                         return;
                     }
 
@@ -274,7 +274,7 @@ namespace hazelcast {
                            errorCode == protocol::RETRYABLE_HAZELCAST;
                 }
 
-                exception::IException
+                exception::OperationTimeoutException
                 ClientInvocation::newOperationTimeoutException(exception::IException &exception) {
                     std::ostringstream sb;
                     int64_t nowInMillis = util::currentTimeMillis();

@@ -40,7 +40,7 @@ namespace hazelcast {
          * Cluster-wide unique id generator.
          */
         class HAZELCAST_API IdGenerator : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
             enum {

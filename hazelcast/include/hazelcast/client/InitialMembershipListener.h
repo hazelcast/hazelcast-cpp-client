@@ -32,6 +32,12 @@ namespace hazelcast {
 
         class MemberAttributeEvent;
 
+        namespace spi {
+            namespace impl {
+                class ClientClusterServiceImpl;
+            }
+        }
+
         /**
          * The InitializingMembershipListener is a MembershipListener that will first receives a
          * InitialMembershipEvent when it is registered so it immediately knows which members are available. After
@@ -49,6 +55,8 @@ namespace hazelcast {
          * @see MembershipEvent#getMembers()
          */
         class HAZELCAST_API InitialMembershipListener : public MembershipListener {
+            friend class spi::impl::ClientClusterServiceImpl;
+            friend class InitialMembershipListenerDelegator;
         public:
             virtual ~InitialMembershipListener();
 
@@ -59,13 +67,7 @@ namespace hazelcast {
              */
             virtual void init(const InitialMembershipEvent &event) = 0;
 
-            /**
-             * Invoked when an existing member leaves the cluster.
-             *
-             * @param membershipEvent membership event
-             */
-            virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
-
+        private:
             virtual bool shouldRequestInitialMembers() const;
         };
 
@@ -82,6 +84,12 @@ namespace hazelcast {
             virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
 
         private:
+            virtual bool shouldRequestInitialMembers() const;
+
+            virtual const std::string &getRegistrationId() const;
+
+            virtual void setRegistrationId(const std::string &registrationId);
+
             InitialMembershipListener *listener;
         };
     }

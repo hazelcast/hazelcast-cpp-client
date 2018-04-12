@@ -35,6 +35,12 @@ namespace hazelcast {
 
         class MemberAttributeEvent;
 
+        namespace spi {
+            namespace impl {
+                class ClientClusterServiceImpl;
+            }
+        }
+
         /**
          * Cluster membership listener.
          *
@@ -52,6 +58,9 @@ namespace hazelcast {
 
         class HAZELCAST_API MembershipListener {
             friend class Cluster;
+            friend class MembershipListenerDelegator;
+            friend class InitialMembershipListenerDelegator;
+            friend class spi::impl::ClientClusterServiceImpl;
         public:
             virtual ~MembershipListener();
 
@@ -76,16 +85,14 @@ namespace hazelcast {
              */
             virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
 
-            virtual bool shouldRequestInitialMembers() const {
-                return false;
-            }
-
-            const std::string &getRegistrationId() const;
-
-            void setRegistrationId(const std::string &registrationId);
-
         private:
             std::string registrationId;
+
+            virtual bool shouldRequestInitialMembers() const;
+
+            virtual const std::string &getRegistrationId() const;
+
+            virtual void setRegistrationId(const std::string &registrationId);
         };
 
         class MembershipListenerDelegator : public MembershipListener {
@@ -98,10 +105,14 @@ namespace hazelcast {
 
             virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
 
+        protected:
+            MembershipListener *listener;
+
             virtual bool shouldRequestInitialMembers() const;
 
-        private:
-            MembershipListener *listener;
+            virtual void setRegistrationId(const std::string &registrationId);
+
+            virtual const std::string &getRegistrationId() const;
         };
     }
 }

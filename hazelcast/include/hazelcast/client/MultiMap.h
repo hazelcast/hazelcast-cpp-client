@@ -39,7 +39,7 @@ namespace hazelcast {
         */
         template<typename K, typename V>
         class MultiMap : public proxy::MultiMapImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerMultiMap<K, V>;
 
         public:

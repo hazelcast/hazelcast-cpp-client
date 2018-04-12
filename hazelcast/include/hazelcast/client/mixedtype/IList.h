@@ -36,7 +36,7 @@ namespace hazelcast {
             *
             */
             class HAZELCAST_API IList : public proxy::IListImpl {
-                friend class client::HazelcastClient;
+                friend class client::impl::HazelcastClientInstanceImpl;
 
             public:
                 /**
