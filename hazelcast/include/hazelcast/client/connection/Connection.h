@@ -69,7 +69,7 @@ namespace hazelcast {
                 Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
                            OutSelector& listener, internal::socket::SocketFactory &socketFactory);
 
-                ~Connection();
+                virtual ~Connection();
 
                 void connect(int timeoutInMillis);
 
@@ -79,9 +79,9 @@ namespace hazelcast {
 
                 bool write(const boost::shared_ptr<protocol::ClientMessage> &message);
 
-                const Address& getRemoteEndpoint() const;
+                const boost::shared_ptr<Address> &getRemoteEndpoint() const;
 
-                void setRemoteEndpoint(const Address& remoteEndpoint);
+                void setRemoteEndpoint(const boost::shared_ptr<Address> &remoteEndpoint);
 
                 Socket& getSocket();
 
@@ -140,17 +140,12 @@ namespace hazelcast {
                 // the time in millis the last heartbeat was received. 0 indicates that no heartbeat has ever been received.
                 util::Atomic<int64_t> lastHeartbeatReceivedMillis;
                 spi::ClientContext& clientContext;
-                spi::ClientInvocationService &invocationService;
+                protocol::IMessageHandler &invocationService;
                 std::auto_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 util::AtomicBoolean authenticatedAsOwner;
                 util::AtomicBoolean heartBeating;
-                byte* receiveBuffer;
-                util::ByteBuffer receiveByteBuffer;
-
-                protocol::ClientMessageBuilder messageBuilder;
-                std::auto_ptr<protocol::ClientMessage> responseMessage;
 
                 int connectionId;
                 std::string closeReason;
@@ -159,6 +154,8 @@ namespace hazelcast {
                 util::Atomic<int32_t> pendingPacketCount;
                 std::string connectedServerVersionString;
                 int connectedServerVersion;
+
+                boost::shared_ptr<Address> remoteEndpoint;
 
                 void logClose();
 

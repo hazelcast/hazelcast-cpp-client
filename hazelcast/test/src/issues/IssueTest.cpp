@@ -164,11 +164,7 @@ namespace hazelcast {
                 } catch (exception::OperationTimeoutException &e) {
                     boost::shared_ptr<exception::IException> causeException = e.getCause();
                     ASSERT_NOTNULL(causeException.get(), exception::IException);
-                    bool isProtocolException = causeException->isProtocolException();
-                    ASSERT_TRUE(isProtocolException);
-                    boost::shared_ptr<exception::ProtocolException> cause = boost::static_pointer_cast<exception::ProtocolException>(
-                            causeException);
-                    ASSERT_EQ(protocol::IO, cause->getErrorCode());
+                    ASSERT_EQ(protocol::IO, causeException->getErrorCode());
                 } catch (exception::IException &e) {
                     std::string msg = e.what();
                     if (msg.find("ConnectionManager is not active") == std::string::npos) {

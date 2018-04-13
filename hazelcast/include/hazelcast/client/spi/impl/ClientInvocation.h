@@ -126,12 +126,6 @@ namespace hazelcast {
 
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
-                                     const std::string &objectName,
-                                     boost::shared_ptr<connection::Connection> &connection,
-                                     const boost::shared_ptr<Address> &address);
-
-                    ClientInvocation(spi::ClientContext &clientContext,
-                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName);
 
                     static void invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation);

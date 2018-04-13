@@ -16,8 +16,10 @@
 #ifndef HAZELCAST_CLIENT_SOCKET_H_
 #define HAZELCAST_CLIENT_SOCKET_H_
 
-#include "hazelcast/client/Address.h"
 #include <memory>
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/client/Address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -66,16 +68,6 @@ namespace hazelcast {
             virtual int getSocketId() const = 0;
 
             /**
-             * @param address remote endpoint address.
-             */
-            virtual void setRemoteEndpoint(const client::Address &address) = 0;
-
-            /**
-             * @return remoteEndpoint
-             */
-            virtual const client::Address &getRemoteEndpoint() const = 0;
-
-            /**
              * closes the socket. Automatically called in destructor.
              * Second call to this function is no op.
              */
@@ -94,15 +86,6 @@ namespace hazelcast {
             virtual std::auto_ptr<Address> localSocketAddress() const = 0;
         };
 
-        /**
-         * Socket Ptr compare method. Compares based on socket id.
-         */
-        struct HAZELCAST_API socketPtrComp {
-            /**
-             * Functor.
-             */
-            bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const;
-        };
     }
 }
 

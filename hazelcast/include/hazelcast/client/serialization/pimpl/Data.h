@@ -55,7 +55,9 @@ namespace hazelcast {
 
                     Data();
 
+/*
                     Data(const boost::shared_ptr<std::vector<byte> > &data);
+*/
 
                     Data(std::auto_ptr<std::vector<byte> > buffer);
 

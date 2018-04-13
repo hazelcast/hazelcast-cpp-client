@@ -39,7 +39,7 @@ namespace hazelcast {
 
             void InstanceOfPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("InstanceOfPredicate::readData",
+                throw exception::HazelcastSerializationException("InstanceOfPredicate::readData",
                                             "Client should not need to use readData method!!!");
             }
         }

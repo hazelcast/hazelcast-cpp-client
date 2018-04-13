@@ -24,19 +24,37 @@ namespace hazelcast {
             IException::IException() {
             }
 
-            IException::IException(const std::string& source, const std::string& message) : src(source), msg(message) {
-                report = "ExceptionMessage {" + message + "} at " + source;
+            IException::IException(const std::string &source, const std::string &message, const std::string &details,
+                                   int32_t errorNo, int32_t causeCode) : src(source), msg(message), details(details),
+                                                                         errorCode(errorNo), causeErrorCode(causeCode) {
+                std::ostringstream out;
+                out << "ExceptionMessage {" << message << ". Details:" << details << " Error code:" << errorNo
+                    << ", Cause error code:" << causeCode << "} at " + source;
+                report = out.str();
             }
 
-            IException::IException(const std::string &source, const std::string &message,
+            IException::IException(const std::string &source, const std::string &message, int32_t errorNo,
+                                   int32_t causeCode) : src(source), msg(message), errorCode(errorNo),
+                                                        causeErrorCode(causeCode) {
+                std::ostringstream out;
+                out << "ExceptionMessage {" << message << " Error code:" << errorNo << ", Cause error code:" << causeCode << "} at " + source;
+                report = out.str();
+            }
+
+            IException::IException(const std::string &source, const std::string &message, int32_t errorNo) : src(
+                    source), msg(message), errorCode(errorNo) {
+                std::ostringstream out;
+                out << "ExceptionMessage {" << message << " Error code:" << errorNo << "} at " + source;
+                report = out.str();
+            }
+
+            IException::IException(const std::string &source, const std::string &message, int32_t errorNo,
                                    const boost::shared_ptr<IException> &cause) : src(source), msg(message),
-                                                                                 cause(cause) {
-                if (cause.get()) {
-                    std::ostringstream out;
-                    out << "ExceptionMessage {" << message + " Caused by:" << *cause << "} at " << source;
-                } else {
-                    report = "ExceptionMessage {" + message + "} at " + source;
-                }
+                                                                                 errorCode(errorNo), cause(cause) {
+                std::ostringstream out;
+                out << "ExceptionMessage {" << message << " Error code:" << errorNo << ", Caused by:" << *cause << "} at " + source;
+                report = out.str();
+
             }
 
             IException::~IException() throw() {
@@ -71,10 +89,17 @@ namespace hazelcast {
                 return std::auto_ptr<IException>(new IException(*this));
             }
 
-            bool IException::isProtocolException() const {
-                return false;
+            const std::string &IException::getDetails() const {
+                return details;
             }
 
+            int32_t IException::getErrorCode() const {
+                return errorCode;
+            }
+
+            int32_t IException::getCauseErrorCode() const {
+                return causeErrorCode;
+            }
         }
     }
 }

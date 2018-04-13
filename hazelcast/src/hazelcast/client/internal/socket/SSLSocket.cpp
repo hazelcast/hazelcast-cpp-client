@@ -214,14 +214,6 @@ namespace hazelcast {
                     return socketId;
                 }
 
-                void SSLSocket::setRemoteEndpoint(const client::Address &address) {
-                    remoteEndpoint = address;
-                }
-
-                const client::Address &SSLSocket::getRemoteEndpoint() const {
-                    return remoteEndpoint;
-                }
-
                 client::Address SSLSocket::getAddress() const {
                     asio::ip::basic_endpoint<asio::ip::tcp> remoteEndpoint = socket->lowest_layer().remote_endpoint();
                     return client::Address(remoteEndpoint.address().to_string(), remoteEndpoint.port());

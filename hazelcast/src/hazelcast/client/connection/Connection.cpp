@@ -52,17 +52,12 @@ namespace hazelcast {
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
                       writeHandler(*this, oListener, 16 << 10),
-                      heartBeating(true), receiveBuffer(new byte[16 << 10]),
-                      receiveByteBuffer((char *) receiveBuffer, 16 << 10), messageBuilder(*this),
-                      connectionId(-1), pendingPacketCount(0),
+                      heartBeating(true), connectionId(-1), pendingPacketCount(0),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
                 socket = socketFactory.create(address);
-                assert(receiveByteBuffer.remaining() >=
-                       protocol::ClientMessage::HEADER_SIZE); // Note: Always make sure that the size >= ClientMessage header size.
             }
 
             Connection::~Connection() {
-                delete[] receiveBuffer;
             }
 
             void Connection::incrementPendingPacketCount() {
@@ -132,12 +127,12 @@ namespace hazelcast {
                 return *socket;
             }
 
-            const Address &Connection::getRemoteEndpoint() const {
-                return socket->getRemoteEndpoint();
+            const boost::shared_ptr<Address> &Connection::getRemoteEndpoint() const {
+                return remoteEndpoint;
             }
 
-            void Connection::setRemoteEndpoint(const Address &remoteEndpoint) {
-                socket->setRemoteEndpoint(remoteEndpoint);
+            void Connection::setRemoteEndpoint(const boost::shared_ptr<Address> &remoteEndpoint) {
+                this->remoteEndpoint = remoteEndpoint;
             }
 
             ReadHandler &Connection::getReadHandler() {
@@ -273,8 +268,13 @@ namespace hazelcast {
                 os << "ClientConnection{"
                    << "alive=" << conn.isAlive()
                    << ", connectionId=" << connection.getConnectionId()
-                   << ", remoteEndpoint=" << connection.getRemoteEndpoint()
-                   << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead)
+                   << ", remoteEndpoint=";
+                if (connection.getRemoteEndpoint().get()) {
+                    os << *connection.getRemoteEndpoint();
+                } else {
+                    os << "null";
+                }
+                os << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead)
                    << ", closedTime=" << util::StringUtil::timeToStringFriendly(closedTime)
                    << ", lastHeartbeatRequested=" << util::StringUtil::timeToStringFriendly(lastHeartBeatRequestedTime)
                    << ", lastHeartbeatReceived=" << util::StringUtil::timeToStringFriendly(lastHeartBeatReceivedTime)

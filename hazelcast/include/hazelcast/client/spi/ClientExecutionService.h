@@ -39,11 +39,6 @@ namespace hazelcast {
             public:
                 virtual ~ClientExecutionService() {
                 }
-
-                /**
-                 * @return executorService that alien (user code) runs on
-                 */
-                virtual util::ExecutorService &getUserExecutor() = 0;
             };
         }
     }

@@ -43,7 +43,7 @@ namespace hazelcast {
             }
 
             void AndPredicate::writeData(serialization::ObjectDataOutput &out) const {
-                out.writeInt((int)predicates.size());
+                out.writeInt((int) predicates.size());
                 for (std::vector<Predicate *>::const_iterator it = predicates.begin();
                      it != predicates.end(); ++it) {
                     out.writeObject<serialization::IdentifiedDataSerializable>(*it);
@@ -52,7 +52,8 @@ namespace hazelcast {
 
             void AndPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("AndPredicate::readData", "Client should not need to use readData method!!!");
+                throw exception::HazelcastSerializationException("AndPredicate::readData",
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }

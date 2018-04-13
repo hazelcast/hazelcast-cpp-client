@@ -87,9 +87,9 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService &getSerializationService();
 
-                spi::ClientClusterService &getClientClusterService();
+                ClientClusterService &getClientClusterService();
 
-                hazelcast::client::spi::ClientInvocationService & getInvocationService();
+                ClientInvocationService & getInvocationService();
 
                 ClientConfig &getClientConfig();
 
@@ -113,7 +113,7 @@ namespace hazelcast {
 
                 const std::string &getName() const;
 
-                spi::impl::ClientExecutionServiceImpl &getClientExecutionService() const;
+                impl::ClientExecutionServiceImpl &getClientExecutionService() const;
 
                 void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
             private:

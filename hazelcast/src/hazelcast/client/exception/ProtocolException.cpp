@@ -20,55 +20,11 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message,
-                                                 const std::string &details,
-                                                 int32_t errorNo,
-                                                 int32_t causeCode)
-                    : IException(source, message + ". Details:" + details), errorCode(errorNo),
-                      causeErrorCode(causeCode) {
-            }
-
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message,
-                                                 int32_t errorNo, int32_t causeCode)
-                    : IException(source, message), errorCode(errorNo), causeErrorCode(causeCode) {
-            }
-
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message, int32_t errorNo)
-                    : IException(source, message), errorCode(errorNo), causeErrorCode(-1) {
-            }
-
-            ProtocolException::ProtocolException(const std::string &source, const std::string &message, int32_t errorNo,
-                                                 const boost::shared_ptr<IException> &cause) : IException(source,
-                                                                                                          message,
-                                                                                                          cause),
-                                                                                               errorCode(errorNo),
-                                                                                               causeErrorCode(-1) {}
-
-            int32_t ProtocolException::getErrorCode() const {
-                return errorCode;
-            }
-
-            int32_t ProtocolException::getCauseErrorCode() const {
-                return causeErrorCode;
-            }
-
-            std::auto_ptr<IException> ProtocolException::clone() const {
-                return std::auto_ptr<IException>(new ProtocolException(*this));
-            }
-
-            void ProtocolException::raise() const {
-                throw *this;
-            }
-
-            bool ProtocolException::isProtocolException() const {
-                return true;
-            }
-
             UndefinedErrorCodeException::UndefinedErrorCodeException(const std::string &source,
                                                                      const std::string &message,
                                                                      int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
-                    : ProtocolException(source, message, protocol::UNDEFINED), error(errorCode),
+                    : IException(source, message, protocol::UNDEFINED), error(errorCode),
                       messageCallId(correlationId),
                       detailedErrorMessage(details) {
             }

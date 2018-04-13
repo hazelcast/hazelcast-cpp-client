@@ -147,17 +147,16 @@ namespace hazelcast {
                 util::Future<int> future;
 
                 std::auto_ptr<client::exception::IException> exception(
-                        new client::exception::IException("testFutureSetException", "details"));
+                        new client::exception::IOException("testFutureSetException", "details"));
                 future.set_exception(exception);
 
-                ASSERT_THROW(future.get(), client::exception::IException);
+                ASSERT_THROW(future.get(), client::exception::IOException);
             }
 
             TEST_F (ClientUtilTest, testFutureSetClonedIOException) {
                 util::Future<int> future;
 
                 client::exception::IOException ioe("testFutureSetIOException", "details");
-                std::auto_ptr<client::exception::IException> exception(new client::exception::IException(ioe));
                 future.set_exception(ioe.clone());
 
                 ASSERT_THROW(future.get(), client::exception::IOException);
@@ -167,8 +166,7 @@ namespace hazelcast {
                 util::Future<int> future;
 
                 client::exception::IOException ioe("testFutureSetUnclonedIOException", "details");
-                std::auto_ptr<client::exception::IException> exception(new client::exception::IException(ioe));
-                future.set_exception(exception);
+                future.set_exception(ioe.clone());
 
                 try {
                     future.get();
@@ -209,7 +207,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(util::ILogger::getLogger(), "testFutureAndThen", 3);
                 future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -224,7 +222,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(util::ILogger::getLogger(), "testFutureAndThen", 3);
 
                 int value = 5;
                 future.set_value(value);
@@ -238,7 +236,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(util::ILogger::getLogger(), "testFutureAndThen", 3);
                 future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -253,7 +251,7 @@ namespace hazelcast {
                 util::Future<int> future;
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService("testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(util::ILogger::getLogger(), "testFutureAndThen", 3);
 
                 future.set_exception(std::auto_ptr<client::exception::IException>(
                         new exception::IOException("exceptionName", "details")));

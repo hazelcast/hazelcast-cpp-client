@@ -65,20 +65,6 @@ namespace hazelcast {
                 virtual std::vector<Member> getMemberList() = 0;
 
                 /**
-                 * Returns the address of the master member.
-                 *
-                 * @return The address of the master member. Could be null if the master is not yet known.
-                 */
-                virtual boost::shared_ptr<Address> getMasterAddress() = 0;
-
-                /**
-                 * Gets the current number of members.
-                 *
-                 * @return The current number of members.
-                 */
-                virtual size_t getSize() = 0;
-
-                /**
                  * @param listener The listener to be registered.
                  * @return The registration ID
                  */

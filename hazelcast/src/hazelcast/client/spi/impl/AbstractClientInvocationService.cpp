@@ -114,7 +114,12 @@ namespace hazelcast {
                         boost::shared_ptr<ClientInvocation> clientInvocation = deRegisterCallId(callId);
                         if (clientInvocation.get() != NULL) {
                             std::ostringstream out;
-                            out << "Packet not sent to " << connection->getRemoteEndpoint();
+                            out << "Packet not sent to ";
+                            if (connection->getRemoteEndpoint().get()) {
+                                out << *connection->getRemoteEndpoint();
+                            } else {
+                                out << "null";
+                            }
                             throw exception::IOException("AbstractClientInvocationService::send", out.str());
                         } else {
                             if (invocationLogger.isFinestEnabled()) {

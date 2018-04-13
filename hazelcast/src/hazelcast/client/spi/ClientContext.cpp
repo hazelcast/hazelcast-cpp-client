@@ -38,7 +38,7 @@ namespace hazelcast {
                 return hazelcastClient.serializationService;
             }
 
-            spi::ClientClusterService &ClientContext::getClientClusterService() {
+            ClientClusterService &ClientContext::getClientClusterService() {
                 return hazelcastClient.clusterService;
             }
 
@@ -90,7 +90,7 @@ namespace hazelcast {
                 return hazelcastClient.getName();
             }
 
-            spi::impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
+            impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
                 return *hazelcastClient.executionService;
             }
 

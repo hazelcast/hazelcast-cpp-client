@@ -43,12 +43,6 @@ namespace hazelcast {
                 startWorkers();
             }
 
-            SimpleExecutorService::SimpleExecutorService(const std::string &threadNamePrefix, int threadCount)
-                    : logger(util::ILogger::getLogger()), threadNamePrefix(threadNamePrefix), threadCount(threadCount),
-                      live(true), workers(threadCount), maximumQueueCapacity(DEFAULT_EXECUTOR_QUEUE_CAPACITY) {
-                startWorkers();
-            }
-
             void SimpleExecutorService::startWorkers() {
                 // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
                 // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
@@ -139,7 +133,6 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::Worker::shutdown() {
-                workQueue.clear();
                 workQueue.interrupt();
                 thread.cancel();
                 thread.join();

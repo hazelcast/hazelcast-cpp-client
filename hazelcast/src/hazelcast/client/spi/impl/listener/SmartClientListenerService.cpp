@@ -84,8 +84,7 @@ namespace hazelcast {
                                                 clientConnectionManager.getOrConnect(member.getAddress());
                                             } catch (exception::IException &e) {
                                                 lastFailedMember = member;
-                                                lastException = boost::shared_ptr<exception::IException>(
-                                                        new exception::IException(e));
+                                                lastException = e.clone();
                                             }
                                         }
 
@@ -207,6 +206,12 @@ namespace hazelcast {
 
                                 if (subscriber->isAlive()) {
                                     successful = false;
+                                    std::ostringstream endpoint;
+                                    if (subscriber->getRemoteEndpoint().get()) {
+                                        endpoint << *subscriber->getRemoteEndpoint();
+                                    } else {
+                                        endpoint << "null";
+                                    }
                                     logger.warning() << "SmartClientListenerService::deregisterListenerInternal"
                                                      << "Deregistration of listener with ID " << userRegistrationId
                                                      << " has failed to address " << subscriber->getRemoteEndpoint()

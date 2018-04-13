@@ -31,119 +31,55 @@ namespace hazelcast {
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
-                                                   int partitionId) : logger(util::ILogger::getLogger()),
-                                                                      lifecycleService(
-                                                                              clientContext.getLifecycleService()),
-                                                                      clientClusterService(
-                                                                              clientContext.getClientClusterService()),
-                                                                      invocationService(
-                                                                              clientContext.getInvocationService()),
-                                                                      executionService(
-                                                                              clientContext.getClientExecutionService()),
-                                                                      clientMessage(clientMessage),
-                                                                      callIdSequence(clientContext.getCallIdSequence()),
-                                                                      partitionId(partitionId),
-                                                                      startTimeMillis(util::currentTimeMillis()),
-                                                                      objectName(objectName),
-                                                                      clientInvocationFuture(
-                                                                              new ClientInvocationFuture(logger, *this,
-                                                                                                         callIdSequence,
-                                                                                                         clientContext.getClientExecutionService())) {
+                                                   int partitionId) :
+                        logger(util::ILogger::getLogger()),
+                        lifecycleService(clientContext.getLifecycleService()),
+                        clientClusterService(clientContext.getClientClusterService()),
+                        invocationService(clientContext.getInvocationService()),
+                        executionService(clientContext.getClientExecutionService()),
+                        clientMessage(clientMessage),
+                        callIdSequence(clientContext.getCallIdSequence()),
+                        partitionId(partitionId),
+                        startTimeMillis(util::currentTimeMillis()),
+                        objectName(objectName),
+                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                                                                          clientContext.getClientExecutionService())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
-                                                   const boost::shared_ptr<connection::Connection> &connection)
-                        : logger(
-                        util::ILogger::getLogger()),
-                          lifecycleService(
-                                  clientContext.getLifecycleService()),
-                          clientClusterService(
-                                  clientContext.getClientClusterService()),
-                          invocationService(
-                                  clientContext.getInvocationService()),
-                          executionService(
-                                  clientContext.getClientExecutionService()),
-                          clientMessage(
-                                  clientMessage),
-                          callIdSequence(
-                                  clientContext.getCallIdSequence()),
-                          partitionId(
-                                  UNASSIGNED_PARTITION),
-                          startTimeMillis(
-                                  util::currentTimeMillis()),
-                          objectName(
-                                  objectName),
-                          connection(
-                                  connection),
-                          clientInvocationFuture(new ClientInvocationFuture(
-                                  logger,
-                                  *this,
-                                  callIdSequence,
-                                  clientContext.getClientExecutionService())) {
+                                                   const boost::shared_ptr<connection::Connection> &connection) :
+                        logger(util::ILogger::getLogger()),
+                        lifecycleService(clientContext.getLifecycleService()),
+                        clientClusterService(clientContext.getClientClusterService()),
+                        invocationService(clientContext.getInvocationService()),
+                        executionService(clientContext.getClientExecutionService()),
+                        clientMessage(clientMessage),
+                        callIdSequence(clientContext.getCallIdSequence()),
+                        partitionId(UNASSIGNED_PARTITION),
+                        startTimeMillis(util::currentTimeMillis()),
+                        objectName(objectName),
+                        connection(connection),
+                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                                                                          clientContext.getClientExecutionService())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
-                                                   const std::string &objectName,
-                                                   boost::shared_ptr<connection::Connection> &connection,
-                                                   const boost::shared_ptr<Address> &address) : logger(
-                        util::ILogger::getLogger()),
-                                                                                                lifecycleService(
-                                                                                                        clientContext.getLifecycleService()),
-                                                                                                clientClusterService(
-                                                                                                        clientContext.getClientClusterService()),
-                                                                                                invocationService(
-                                                                                                        clientContext.getInvocationService()),
-                                                                                                executionService(
-                                                                                                        clientContext.getClientExecutionService()),
-                                                                                                clientMessage(
-                                                                                                        clientMessage),
-                                                                                                callIdSequence(
-                                                                                                        clientContext.getCallIdSequence()),
-                                                                                                address(address),
-                                                                                                partitionId(
-                                                                                                        UNASSIGNED_PARTITION),
-                                                                                                startTimeMillis(
-                                                                                                        util::currentTimeMillis()),
-                                                                                                objectName(
-                                                                                                        objectName),
-                                                                                                connection(
-                                                                                                        connection),
-                                                                                                clientInvocationFuture(
-                                                                                                        new ClientInvocationFuture(
-                                                                                                                logger,
-                                                                                                                *this,
-                                                                                                                callIdSequence,
-                                                                                                                clientContext.getClientExecutionService())) {
-                }
-
-                ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
-                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
-                                                   const std::string &objectName) : logger(util::ILogger::getLogger()),
-                                                                                    lifecycleService(
-                                                                                            clientContext.getLifecycleService()),
-                                                                                    clientClusterService(
-                                                                                            clientContext.getClientClusterService()),
-                                                                                    invocationService(
-                                                                                            clientContext.getInvocationService()),
-                                                                                    executionService(
-                                                                                            clientContext.getClientExecutionService()),
-                                                                                    clientMessage(clientMessage),
-                                                                                    callIdSequence(
-                                                                                            clientContext.getCallIdSequence()),
-                                                                                    partitionId(UNASSIGNED_PARTITION),
-                                                                                    startTimeMillis(
-                                                                                            util::currentTimeMillis()),
-                                                                                    objectName(objectName),
-                                                                                    clientInvocationFuture(
-                                                                                            new ClientInvocationFuture(
-                                                                                                    logger,
-                                                                                                    *this,
-                                                                                                    callIdSequence,
-                                                                                                    clientContext.getClientExecutionService())) {
-
+                                                   const std::string &objectName) :
+                        logger(util::ILogger::getLogger()),
+                        lifecycleService(clientContext.getLifecycleService()),
+                        clientClusterService(clientContext.getClientClusterService()),
+                        invocationService(clientContext.getInvocationService()),
+                        executionService(clientContext.getClientExecutionService()),
+                        clientMessage(clientMessage),
+                        callIdSequence(clientContext.getCallIdSequence()),
+                        partitionId(UNASSIGNED_PARTITION),
+                        startTimeMillis(util::currentTimeMillis()),
+                        objectName(objectName),
+                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                                                                          clientContext.getClientExecutionService())) {
                 }
 
                 boost::shared_ptr<ClientInvocationFuture>
@@ -217,9 +153,8 @@ namespace hazelcast {
 
                     bool retry = isRetrySafeException(exception)
                                  || invocationService.isRedoOperation()
-                                 || (exception.isProtocolException() &&
-                                     static_cast<exception::ProtocolException &>(exception).getErrorCode() ==
-                                     protocol::TARGET_DISCONNECTED && clientMessage->isRetryable());
+                                 || (exception.getErrorCode() == protocol::TARGET_DISCONNECTED &&
+                                     clientMessage->isRetryable());
 
                     if (!retry) {
                         clientInvocationFuture->complete(exception);
@@ -247,14 +182,12 @@ namespace hazelcast {
                 }
 
                 bool ClientInvocation::isNotAllowedToRetryOnSelection(exception::IException &exception) {
-                    if (isBindToSingleConnection() && exception.isProtocolException() &&
-                        static_cast<exception::ProtocolException &>(exception).getErrorCode() == protocol::IO) {
+                    if (isBindToSingleConnection() && exception.getErrorCode() == protocol::IO) {
                         return true;
                     }
 
-                    if (address.get() != NULL && exception.isProtocolException() &&
-                        static_cast<exception::ProtocolException &>(exception).getErrorCode() ==
-                        protocol::TARGET_NOT_MEMBER && clientClusterService.getMember(*address).get() == NULL) {
+                    if (address.get() != NULL && exception.getErrorCode() == protocol::TARGET_NOT_MEMBER &&
+                        clientClusterService.getMember(*address).get() == NULL) {
                         //when invocation send over address
                         //if exception is target not member and
                         //address is not available in member list , don't retry
@@ -264,11 +197,7 @@ namespace hazelcast {
                 }
 
                 bool ClientInvocation::isRetrySafeException(exception::IException &exception) {
-                    if (!exception.isProtocolException()) {
-                        return false;
-                    }
-
-                    int32_t errorCode = static_cast<exception::ProtocolException &>(exception).getErrorCode();
+                    int32_t errorCode = exception.getErrorCode();
                     return errorCode == protocol::IO ||
                            errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE ||
                            errorCode == protocol::RETRYABLE_HAZELCAST;

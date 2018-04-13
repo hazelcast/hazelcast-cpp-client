@@ -77,7 +77,7 @@ namespace hazelcast {
 
                                     m.callback->onResponse(allMessages);
                                 }
-                            } catch (exception::ProtocolException &e) {
+                            } catch (exception::IException &e) {
                                 m.callback->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
                             }
                         }

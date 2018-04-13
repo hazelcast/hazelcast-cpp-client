@@ -76,16 +76,6 @@ namespace hazelcast {
                     return memberList;
                 }
 
-                boost::shared_ptr<Address> ClientClusterServiceImpl::getMasterAddress() {
-                    std::vector<Member> memberList = getMemberList();
-                    return !memberList.empty() ? boost::shared_ptr<Address>(new Address(memberList[0].getAddress()))
-                                               : boost::shared_ptr<Address>();
-                }
-
-                size_t ClientClusterServiceImpl::getSize() {
-                    return getMemberList().size();
-                }
-
                 void ClientClusterServiceImpl::initMembershipListener(MembershipListener &listener) {
                     if (listener.shouldRequestInitialMembers()) {
                         Cluster &cluster = client.getCluster();

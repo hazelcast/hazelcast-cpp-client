@@ -149,11 +149,6 @@ namespace hazelcast {
 
                 connectionStrategy->shutdown();
 
-
-                if (alive.compareAndSet(true, false)) {
-                    return;
-                }
-
                 activeConnectionsFileDescriptors.clear();
                 activeConnections.clear();
                 socketConnections.clear();
@@ -180,8 +175,6 @@ namespace hazelcast {
                     logger.info() << "Trying to connect to " << address << " as owner member";
                     connection = getOrConnect(address, true);
                     client.onClusterConnect(connection);
-                    setOwnerConnectionAddress(boost::shared_ptr<Address>(new Address(connection->getRemoteEndpoint())));
-                    logger.info() << "Setting " << *connection << " as owner with principal " << *principal.get();
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
                 } catch (exception::IException &e) {
@@ -329,7 +322,6 @@ namespace hazelcast {
                     ownerUuid = principal->getOwnerUuid();
                 }
                 std::auto_ptr<protocol::ClientMessage> clientMessage;
-                const Credentials *credentials = client.getClientConfig().getCredentials();
                 if (credentials == NULL) {
                     // TODO: Change UsernamePasswordCredentials to implement Credentials interface so that we can just 
                     // upcast the credentials as done at Java
@@ -357,7 +349,7 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::onAuthenticated(const Address &target,
                                                               const boost::shared_ptr<Connection> &connection) {
-                boost::shared_ptr<Connection> oldConnection = activeConnections.put(connection->getRemoteEndpoint(),
+                boost::shared_ptr<Connection> oldConnection = activeConnections.put(*connection->getRemoteEndpoint(),
                                                                                     connection);
                 int socketId = connection->getSocket().getSocketId();
                 activeConnectionsFileDescriptors.put(socketId, connection);
@@ -377,7 +369,13 @@ namespace hazelcast {
                 }
 
                 connectionsInProgress.remove(target);
-                logger.info() << "Authenticated with server " << connection->getRemoteEndpoint() << ", server version:"
+                std::ostringstream out;
+                if (connection->getRemoteEndpoint().get()) {
+                    out << *connection->getRemoteEndpoint();
+                } else {
+                    out << "null";
+                }
+                logger.info() << "Authenticated with server " << out.str() << ", server version:"
                               << connection->getConnectedServerVersionString() << " Local address: "
                               << (connection->getLocalSocketAddress().get() != NULL
                                   ? connection->getLocalSocketAddress()->toString() : "null");
@@ -408,9 +406,17 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::removeFromActiveConnections(const boost::shared_ptr<Connection> &connection) {
-                const Address &endpoint = connection->getRemoteEndpoint();
+                boost::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
 
-                if (activeConnections.remove(endpoint, connection)) {
+                if (endpoint.get() == NULL) {
+                    if (logger.isFinestEnabled()) {
+                        logger.finest() << "Destroying " << *connection << ", but it has end-point set to null "
+                                        << "-> not removing it from a connection map";
+                    }
+                    return;
+                }
+
+                if (activeConnections.remove(*endpoint, connection)) {
                     logger.info() << "Removed connection to endpoint: " << endpoint << ", connection: " << *connection;
                     activeConnectionsFileDescriptors.remove(connection->getSocket().getSocketId());
                     fireConnectionRemovedEvent(connection);
@@ -634,7 +640,7 @@ namespace hazelcast {
                     connection = getConnection(target);
                 } catch (exception::IException &e) {
                     util::ILogger::getLogger().finest() << e;
-                    future->onFailure(boost::shared_ptr<exception::IException>(new exception::IException(e)));
+                    future->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
                     connectionManager.connectionsInProgress.remove(target);
                     return;
                 }
@@ -687,7 +693,7 @@ namespace hazelcast {
                 try {
                     result.reset(new protocol::codec::ClientAuthenticationCodec::ResponseParameters(
                             protocol::codec::ClientAuthenticationCodec::ResponseParameters::decode(*response)));
-                } catch (exception::ProtocolException &e) {
+                } catch (exception::IException &e) {
                     onFailure(boost::shared_ptr<exception::IException>(e.clone()));
                     return;
                 }
@@ -695,12 +701,17 @@ namespace hazelcast {
                 switch (authenticationStatus) {
                     case protocol::AUTHENTICATED: {
                         connection->setConnectedServerVersion(result->serverHazelcastVersion);
-                        connection->setRemoteEndpoint(*result->address);
+                        connection->setRemoteEndpoint(boost::shared_ptr<Address>(result->address));
                         if (asOwner) {
                             connection->setIsAuthenticatedAsOwner();
                             boost::shared_ptr<protocol::Principal> principal(
                                     new protocol::Principal(result->uuid, result->ownerUuid));
                             connectionManager.setPrincipal(principal);
+                            //setting owner connection is moved to here(before onAuthenticated/before connected event)
+                            //so that invocations that requires owner connection on this connection go through
+                            connectionManager.setOwnerConnectionAddress(connection->getRemoteEndpoint());
+                            connectionManager.logger.info() << "Setting " << *connection << " as owner with principal "
+                                                            << *principal;
                         }
                         connectionManager.onAuthenticated(target, connection);
                         future->onSuccess(connection);
@@ -750,11 +761,11 @@ namespace hazelcast {
             }
 
             void ClientConnectionManagerImpl::DisconnecFromClusterTask::run() {
-                const Address &endpoint = connection->getRemoteEndpoint();
+                boost::shared_ptr<Address> endpoint = connection->getRemoteEndpoint();
                 // it may be possible that while waiting on executor queue, the client got connected (another connection),
                 // then we do not need to do anything for cluster disconnect.
                 boost::shared_ptr<Address> ownerAddress = connectionManager.ownerConnectionAddress;
-                if (ownerAddress.get() && endpoint != *ownerAddress) {
+                if (ownerAddress.get() && (endpoint.get() && *endpoint != *ownerAddress)) {
                     return;
                 }
 

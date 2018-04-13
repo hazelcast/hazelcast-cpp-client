@@ -138,7 +138,6 @@ namespace hazelcast {
                     util::AtomicBoolean isShutdown;
                     int64_t invocationTimeoutMillis;
                     int64_t invocationRetryPauseMillis;
-                    std::auto_ptr<CleanResourcesTask> cleanResourcesThread;
                     ResponseThread responseThread;
 
                     boost::shared_ptr<ClientInvocation> deRegisterCallId(int64_t callId);

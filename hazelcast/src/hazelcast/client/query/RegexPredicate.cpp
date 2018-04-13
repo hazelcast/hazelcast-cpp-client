@@ -41,7 +41,7 @@ namespace hazelcast {
 
             void RegexPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("RegexPredicate::readData",
+                throw exception::HazelcastSerializationException("RegexPredicate::readData",
                                             "Client should not need to use readData method!!!");
             }
         }

@@ -94,14 +94,6 @@ namespace hazelcast {
             int value;
         };
 
-        namespace exception {
-            class HAZELCAST_API FutureUninitialized : public IException {
-            public:
-                FutureUninitialized(const std::string &source, const std::string &message) : IException(source,
-                                                                                                        message) { }
-            };
-        }
-
         /**
          * This is a unique Future. It can not be shared. The copy constructor actually moves and invalidates the moved
          * from Future. It acts similar to std::future (avaialable since C++11)

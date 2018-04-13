@@ -23,10 +23,10 @@ namespace hazelcast {
             namespace impl {
                 ClientInvocationFuture::ClientInvocationFuture(util::ILogger &logger, ClientInvocation &invocation,
                                                                sequence::CallIdSequence &callIdSequence,
-                                                               util::Executor &defaultExecutor)
+                                                               util::Executor &internalExecutor)
                         : util::Future<boost::shared_ptr<protocol::ClientMessage> >(logger),
                           invocation(invocation), callIdSequence(callIdSequence),
-                          defaultExecutor(defaultExecutor) {}
+                          internalExecutor(internalExecutor) {}
 
                 void ClientInvocationFuture::onComplete() {
                     callIdSequence.complete();
@@ -42,7 +42,7 @@ namespace hazelcast {
                     util::Future<boost::shared_ptr<protocol::ClientMessage> >::andThen(
                             boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
                                     new InternalDelegatingExecutionCallback(callback, callIdSequence)),
-                            defaultExecutor);
+                            internalExecutor);
                 }
 
                 std::string ClientInvocationFuture::invocationToString() {

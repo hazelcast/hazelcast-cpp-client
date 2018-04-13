@@ -200,11 +200,9 @@ namespace hazelcast {
                         return;
                     }
 
-                    const exception::ProtocolException *t = static_cast<const exception::ProtocolException *>(throwable.get());
-
-                    int32_t err = t->getErrorCode();
+                    int32_t err = throwable->getErrorCode();
                     if (protocol::EXECUTION == err &&
-                        protocol::STALE_SEQUENCE == t->getCauseErrorCode()) {
+                        protocol::STALE_SEQUENCE == throwable->getCauseErrorCode()) {
                         // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
                         int64_t remoteHeadSeq = ringbuffer->headSequence();
 
@@ -244,7 +242,7 @@ namespace hazelcast {
                     } else {
                         std::ostringstream out;
                         out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                            << " Reason: Unhandled exception, details:" << t->what();
+                            << " Reason: Unhandled exception, details:" << throwable->what();
                         logger.warning(out.str());
                     }
 

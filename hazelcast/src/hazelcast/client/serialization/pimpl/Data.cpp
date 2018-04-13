@@ -48,6 +48,7 @@ namespace hazelcast {
                 Data::Data() : cachedHashValue(-1) {
                 }
 
+/*
                 Data::Data(const boost::shared_ptr<std::vector<byte> > &data) : data(data) {
                     if (data.get()) {
                         size_t size = data->size();
@@ -62,16 +63,15 @@ namespace hazelcast {
                         cachedHashValue = calculateHash();
                     }
                 }
+*/
 
                 Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), cachedHashValue(-1) {
                     if (data.get()) {
                         size_t size = data->size();
                         if (size > 0 && size < Data::DATA_OVERHEAD) {
-                            char msg[100];
-                            util::hz_snprintf(msg, 100, "Provided buffer should be either empty or "
-                                                      "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD,
-                                              (unsigned long) size);
-                            throw exception::IllegalArgumentException("Data::setBuffer", msg);
+                            throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Data::setBuffer")
+                                    << "Provided buffer should be either empty or should contain more than "
+                                    << Data::DATA_OVERHEAD << " bytes! Provided buffer size:" << size).build();
                         }
 
                         cachedHashValue = calculateHash();
@@ -79,7 +79,7 @@ namespace hazelcast {
                 }
 
                 size_t Data::dataSize() const {
-                    return (size_t)std::max<int>((int)totalSize() - (int)Data::DATA_OVERHEAD, 0);
+                    return (size_t) std::max<int>((int) totalSize() - (int) Data::DATA_OVERHEAD, 0);
                 }
 
                 size_t Data::totalSize() const {
@@ -95,7 +95,7 @@ namespace hazelcast {
                         return false;
                     }
                     return data->size() >= Data::DATA_OVERHEAD &&
-                            *reinterpret_cast<int *>(&((*data)[PARTITION_HASH_OFFSET])) != 0;
+                           *reinterpret_cast<int *>(&((*data)[PARTITION_HASH_OFFSET])) != 0;
                 }
 
                 std::vector<byte> &Data::toByteArray() const {
@@ -123,7 +123,7 @@ namespace hazelcast {
                         return Bits::readIntB(*data, Data::PARTITION_HASH_OFFSET);
                     }
 
-                    return MurmurHash3_x86_32((void*)&((*data)[Data::DATA_OFFSET]) , (int) size);
+                    return MurmurHash3_x86_32((void *) &((*data)[Data::DATA_OFFSET]), (int) size);
                 }
 
                 bool Data::operator<(const Data &rhs) const {
@@ -139,7 +139,7 @@ namespace boost {
      * Template specialization for the less operator comparing two shared_ptr Data.
      */
     template<>
-    bool operator <(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+    bool operator<(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
                    const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) BOOST_NOEXCEPT {
         const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
         const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();

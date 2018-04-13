@@ -46,8 +46,6 @@ namespace hazelcast {
 
                 SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix, int32_t threadCount);
 
-                SimpleExecutorService(const std::string &threadNamePrefix, int32_t threadCount);
-
                 virtual ~SimpleExecutorService();
 
                 void execute(const boost::shared_ptr<Runnable> &command);

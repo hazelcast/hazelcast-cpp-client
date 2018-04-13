@@ -92,16 +92,6 @@ namespace hazelcast {
                     int getSocketId() const;
 
                     /**
-                     * @param address remote endpoint address.
-                     */
-                    void setRemoteEndpoint(const client::Address &address);
-
-                    /**
-                     * @return remoteEndpoint
-                     */
-                    const client::Address &getRemoteEndpoint() const;
-
-                    /**
                      * closes the socket. Automatically called in destructor.
                      * Second call to this function is no op.
                      */

@@ -223,14 +223,6 @@ namespace hazelcast {
                     return socketId;
                 }
 
-                void TcpSocket::setRemoteEndpoint(const client::Address &address) {
-                    remoteEndpoint = address;
-                }
-
-                const client::Address &TcpSocket::getRemoteEndpoint() const {
-                    return remoteEndpoint;
-                }
-
                 client::Address TcpSocket::getAddress() const {
                     char host[1024];
                     char service[20];

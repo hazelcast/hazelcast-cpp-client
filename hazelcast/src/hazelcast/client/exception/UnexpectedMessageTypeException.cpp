@@ -19,13 +19,14 @@
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 #include <sstream>
+#include "hazelcast/client/protocol/ClientProtocolErrorCodes.h"
 
 namespace hazelcast {
     namespace client {
         namespace exception {
             UnexpectedMessageTypeException::UnexpectedMessageTypeException(const std::string &source,
                                                                            int actualType, int expectedType)
-                    : hazelcast::client::exception::IException(source, "") {
+                    : hazelcast::client::exception::IException(source, "", protocol::UNEXPECTED_MESSAGE_TYPE) {
                 std::ostringstream os;
                 os << "[" << hazelcast::client::exception::IException::what() << "] Expected type:" << expected <<
                 ", but message type is:" << actual;

@@ -40,8 +40,6 @@ namespace hazelcast {
         namespace exception {
             /**
              * Base class for all exception originated from Hazelcast methods.
-             * If exception coming from hazelcast servers cannot be identified,
-             * it will be fired as IException.
              *
              *
              * @see InstanceNotActiveException
@@ -56,10 +54,16 @@ namespace hazelcast {
             public:
                 IException();
 
-                IException(const std::string &source, const std::string &message);
+                IException(const std::string &source, const std::string &message, const std::string &details,
+                                  int32_t errorNo, int32_t causeCode);
 
-                IException(const std::string &source, const std::string &message,
-                           const boost::shared_ptr<IException> &cause);
+                IException(const std::string &source, const std::string &message, int32_t errorNo,
+                                  int32_t causeCode);
+
+                IException(const std::string &source, const std::string &message, int32_t errorNo);
+
+                IException(const std::string &source, const std::string &message, int32_t errorNo,
+                                  const boost::shared_ptr<IException> &cause);
 
                 virtual ~IException() throw();
 
@@ -83,7 +87,11 @@ namespace hazelcast {
                  */
                 virtual std::auto_ptr<IException> clone() const;
 
-                virtual bool isProtocolException() const;
+                const std::string &getDetails() const;
+
+                int32_t getErrorCode() const;
+
+                int32_t getCauseErrorCode() const;
 
                 const boost::shared_ptr<IException> &getCause() const;
 
@@ -92,7 +100,10 @@ namespace hazelcast {
             protected:
                 std::string src;
                 std::string msg;
+                std::string details;
                 std::string report;
+                int32_t errorCode;
+                int32_t causeErrorCode;
                 boost::shared_ptr<IException> cause;
             };
 

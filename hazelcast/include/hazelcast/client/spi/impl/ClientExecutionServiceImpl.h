@@ -47,8 +47,6 @@ namespace hazelcast {
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
                                                int32_t poolSize);
 
-                    virtual util::ExecutorService &getUserExecutor();
-
                     void execute(const boost::shared_ptr<util::Runnable> &command);
 
                     void shutdown();
@@ -105,7 +103,6 @@ namespace hazelcast {
                     };
 
                     util::ILogger &logger;
-                    boost::shared_ptr<util::ExecutorService> userExecutor;
                     // TODO: Change with ScheduledExecutorService
                     boost::shared_ptr<util::ExecutorService> internalExecutor;
 

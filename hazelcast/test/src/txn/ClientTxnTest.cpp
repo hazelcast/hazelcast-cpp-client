@@ -51,7 +51,7 @@ namespace hazelcast {
                     std::vector<Member> members = getMembers();
                     size_t len = members.size();
                     if (len == 0) {
-                        throw exception::IException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                        throw exception::IOException("const Member& RoundRobinLB::next()", "No member in member list!!");
                     }
                     for (size_t i = 0; i < len; i++) {
                         if (members[i].getAddress().getPort() == 5701) {

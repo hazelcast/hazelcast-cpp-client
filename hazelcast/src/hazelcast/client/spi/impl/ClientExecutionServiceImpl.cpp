@@ -47,21 +47,13 @@ namespace hazelcast {
                     internalExecutor.reset(
                             new util::impl::SimpleExecutorService(logger, name + ".internal-", internalPoolSize,
                                                                   INT32_MAX));
-                    userExecutor.reset(
-                            new util::impl::SimpleExecutorService(logger, name + ".user-", executorPoolSize,
-                                                                  INT32_MAX));
-                }
-
-                util::ExecutorService &ClientExecutionServiceImpl::getUserExecutor() {
-                    return *userExecutor;
-                }
+                 }
 
                 void ClientExecutionServiceImpl::execute(const boost::shared_ptr<util::Runnable> &command) {
                     internalExecutor->execute(command);
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
-                    shutdownExecutor("user", *userExecutor, logger);
                     shutdownExecutor("internal", *internalExecutor, logger);
 
                     boost::shared_ptr<AbstractRunner> runner;

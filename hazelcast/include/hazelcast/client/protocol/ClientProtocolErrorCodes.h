@@ -103,7 +103,13 @@ namespace hazelcast {
                 OUT_OF_MEMORY_ERROR = 76,
                 STACK_OVERFLOW_ERROR = 77,
                 NATIVE_OUT_OF_MEMORY_ERROR = 78,
-                SERVICE_NOT_FOUND = 79
+                SERVICE_NOT_FOUND = 79,
+
+                // Non protocol exceptions, thrown locally
+                HAZELCAST_CLIENT_OFFLINE = -1,
+                UNKNOWN_HOST = -2,
+                FUTURE_UNINITIALIZED = -3,
+                UNEXPECTED_MESSAGE_TYPE = -4
             };
         }
     }
