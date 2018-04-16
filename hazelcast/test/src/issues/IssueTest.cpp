@@ -132,7 +132,7 @@ namespace hazelcast {
 
                 // 6. Restart the server
                 ASSERT_TRUE(server.shutdown());
-                ASSERT_TRUE(server.start());
+                HazelcastServer server2(*g_srvFactory);
 
                 std::string putThreadName("Map Put Thread");
                 util::StartedThread t(putThreadName, putMapMessage, &map, &latch);
@@ -159,18 +159,7 @@ namespace hazelcast {
 
                 server.shutdown();
 
-                try {
-                    map.get(1);
-                } catch (exception::OperationTimeoutException &e) {
-                    boost::shared_ptr<exception::IException> causeException = e.getCause();
-                    ASSERT_NOTNULL(causeException.get(), exception::IException);
-                    ASSERT_EQ(protocol::IO, causeException->getErrorCode());
-                } catch (exception::IException &e) {
-                    std::string msg = e.what();
-                    if (msg.find("ConnectionManager is not active") == std::string::npos) {
-                        FAIL() << "Unexpected exception. Received exception:" << msg;
-                    }
-                }
+                ASSERT_THROW(map.get(1), exception::HazelcastClientNotActiveException);
             }
 
             void IssueTest::Issue864MapListener::entryAdded(const EntryEvent<int, int> &event) {

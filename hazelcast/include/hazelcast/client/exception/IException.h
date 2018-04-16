@@ -33,7 +33,7 @@
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #pragma warning(disable: 4275) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -52,18 +52,17 @@ namespace hazelcast {
              */
             class HAZELCAST_API IException : public std::exception {
             public:
-                IException();
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           const std::string &details, int32_t errorNo, int32_t causeCode);
 
-                IException(const std::string &source, const std::string &message, const std::string &details,
-                                  int32_t errorNo, int32_t causeCode);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, int32_t causeCode);
 
-                IException(const std::string &source, const std::string &message, int32_t errorNo,
-                                  int32_t causeCode);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo);
 
-                IException(const std::string &source, const std::string &message, int32_t errorNo);
-
-                IException(const std::string &source, const std::string &message, int32_t errorNo,
-                                  const boost::shared_ptr<IException> &cause);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, const boost::shared_ptr<IException> &cause);
 
                 virtual ~IException() throw();
 
@@ -109,12 +108,12 @@ namespace hazelcast {
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
-            template <typename EXCEPTIONCLASS>
+            template<typename EXCEPTIONCLASS>
             class ExceptionBuilder {
             public:
                 ExceptionBuilder(const std::string &source) : source(source) {}
 
-                template <typename T>
+                template<typename T>
                 ExceptionBuilder &operator<<(const T &message) {
                     msg << message;
                     return *this;
@@ -143,6 +142,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif //HAZELCAST_EXCEPTION

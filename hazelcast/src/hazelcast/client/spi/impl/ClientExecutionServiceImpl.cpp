@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-#include "hazelcast/util/IOUtil.h"
 #include <boost/foreach.hpp>
+
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
+#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Runnable.h"
@@ -39,11 +40,6 @@ namespace hazelcast {
                                 ClientProperties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
                     }
 
-                    int executorPoolSize = poolSize;
-                    if (executorPoolSize <= 0) {
-                        executorPoolSize = util::getAvailableCoreCount();
-                    }
-
                     internalExecutor.reset(
                             new util::impl::SimpleExecutorService(logger, name + ".internal-", internalPoolSize,
                                                                   INT32_MAX));
@@ -55,14 +51,6 @@ namespace hazelcast {
 
                 void ClientExecutionServiceImpl::shutdown() {
                     shutdownExecutor("internal", *internalExecutor, logger);
-
-                    boost::shared_ptr<AbstractRunner> runner;
-                    while ((runner = delayedRunners.poll()).get()) {
-                        runner->shutdown();
-                        const boost::shared_ptr<util::Thread> &runnerThread = runner->getRunnerThread();
-                        runnerThread->cancel();
-                        runnerThread->join();
-                    }
                 }
 
                 void
@@ -88,104 +76,12 @@ namespace hazelcast {
                 ClientExecutionServiceImpl::scheduleWithRepetition(const boost::shared_ptr<util::Runnable> &command,
                                                                    int64_t initialDelayInMillis,
                                                                    int64_t periodInMillis) {
-                    if (!command.get()) {
-                        throw exception::NullPointerException("ClientExecutionServiceImpl::scheduleWithRepetition",
-                                                              "command can't be null");
-                    }
-                    boost::shared_ptr<RepeatingRunner> repeatingRunner(
-                            new RepeatingRunner(command, initialDelayInMillis, periodInMillis));
-                    boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner));
-                    repeatingRunner->setRunnerThread(thread);
-                    thread->start();
-                    delayedRunners.offer(repeatingRunner);
+                    internalExecutor->scheduleAtFixedRate(command, initialDelayInMillis, periodInMillis);
                 }
 
                 void ClientExecutionServiceImpl::schedule(const boost::shared_ptr<util::Runnable> &command,
                                                           int64_t initialDelayInMillis) {
-                    if (!command.get()) {
-                        throw exception::NullPointerException("ClientExecutionServiceImpl::scheduleWithRepetition",
-                                                              "command can't be null");
-                    }
-
-                    boost::shared_ptr<DelayedRunner> delayedRunner(new DelayedRunner(command, initialDelayInMillis));
-                    boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner));
-                    delayedRunner->setRunnerThread(thread);
-                    thread->start();
-                    delayedRunners.offer(delayedRunner);
-                }
-
-                ClientExecutionServiceImpl::RepeatingRunner::RepeatingRunner(
-                        const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                        int64_t periodInMillis) : AbstractRunner(command, initialDelayInMillis, periodInMillis) {
-                }
-
-                const std::string ClientExecutionServiceImpl::RepeatingRunner::getName() const {
-                    return command->getName();
-                }
-
-                ClientExecutionServiceImpl::AbstractRunner::AbstractRunner(
-                        const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) : command(
-                        command), initialDelayInMillis(initialDelayInMillis), periodInMillis(-1), live(true) {
-                }
-
-                ClientExecutionServiceImpl::AbstractRunner::AbstractRunner(
-                        const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                        int64_t periodInMillis) : command(command), initialDelayInMillis(initialDelayInMillis),
-                                                  periodInMillis(periodInMillis), live(true) {}
-
-                void ClientExecutionServiceImpl::AbstractRunner::shutdown() {
-                    live = false;
-                }
-
-                void ClientExecutionServiceImpl::AbstractRunner::setRunnerThread(
-                        const boost::shared_ptr<util::Thread> &thread) {
-                    runnerThread = thread;
-                }
-
-                const boost::shared_ptr<util::Thread> &
-                ClientExecutionServiceImpl::AbstractRunner::getRunnerThread() const {
-                    return runnerThread;
-                }
-
-                void ClientExecutionServiceImpl::AbstractRunner::run() {
-                    startTimeMillis = util::currentTimeMillis() + initialDelayInMillis;
-                    while (live) {
-                        int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
-                        if (waitTimeMillis > 0) {
-                            if (runnerThread.get()) {
-                                runnerThread->interruptibleSleepMillis(waitTimeMillis);
-                            } else {
-                                util::sleepmillis(waitTimeMillis);
-                            }
-                        }
-
-                        if (!live) {
-                            return;
-                        }
-
-                        try {
-                            command->run();
-                        } catch (exception::IException &e) {
-                            util::ILogger::getLogger().warning() << "Repeated runnable " << getName()
-                                                                 << " run method caused exception:" << e;
-                        }
-
-                        if (periodInMillis < 0) {
-                            return;
-                        }
-
-                        startTimeMillis += periodInMillis;
-                    }
-                }
-
-                const std::string ClientExecutionServiceImpl::DelayedRunner::getName() const {
-                    return command->getName();
-                }
-
-                ClientExecutionServiceImpl::DelayedRunner::DelayedRunner(
-                        const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis)
-                        : AbstractRunner(command, initialDelayInMillis) {
-
+                    internalExecutor->schedule(command, initialDelayInMillis);
                 }
             }
         }

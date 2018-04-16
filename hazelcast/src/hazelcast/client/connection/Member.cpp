@@ -76,14 +76,6 @@ namespace hazelcast {
             return attributes.find(key) != attributes.end();
         }
 
-        void Member::setAttribute(const std::string &key, const std::string &value) {
-            attributes[key] = value;
-        }
-
-        bool Member::removeAttribute(const std::string &key) {
-            return 0 != attributes.erase(key);
-        }
-
         bool Member::operator<(const Member &rhs) const {
             return uuid < rhs.uuid;
         }
@@ -101,6 +93,9 @@ namespace hazelcast {
                     throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Member::updateAttribute")
                             << "Not a known OperationType: " << operationType).build();
             }
+        }
+
+        Member::Member(const std::string &uuid) : uuid(uuid), liteMember(false) {
         }
     }
 }

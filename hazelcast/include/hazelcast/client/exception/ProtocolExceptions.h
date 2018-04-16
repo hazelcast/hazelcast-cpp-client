@@ -38,21 +38,21 @@ namespace hazelcast {
                 static const int32_t ERROR_CODE = errorNo;\
                 ClassName(const std::string& source, const std::string& message, const std::string& details, \
                         int32_t causeCode) \
-                    : IException(source, message, details, ERROR_CODE, causeCode) {\
+                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
-                    : IException(source, message, ERROR_CODE, causeCode) {\
+                    : IException(#ClassName, source, message, ERROR_CODE, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
-                    : IException(source, message, ERROR_CODE) {\
+                    : IException(#ClassName, source, message, ERROR_CODE) {\
                 }\
-                ClassName(const std::string& source) : IException(source, "", ERROR_CODE) {\
+                ClassName(const std::string& source) : IException(#ClassName, source, "", ERROR_CODE) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
                             const boost::shared_ptr<IException> &cause) \
-                            : IException(source, message, ERROR_CODE, cause) {}\
+                            : IException(#ClassName, source, message, ERROR_CODE, cause) {}\
                 ClassName(const std::string &source, const std::string &message, const IException &cause) \
-                            : IException(source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone())) {}\
+                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone())) {}\
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \

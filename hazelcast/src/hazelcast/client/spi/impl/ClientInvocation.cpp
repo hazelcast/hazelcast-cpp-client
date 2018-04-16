@@ -41,7 +41,9 @@ namespace hazelcast {
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(partitionId),
                         startTimeMillis(util::currentTimeMillis()),
+                        retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
+                        invokeCount(0),
                         clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
                                                                           clientContext.getClientExecutionService())) {
                 }
@@ -59,6 +61,7 @@ namespace hazelcast {
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(UNASSIGNED_PARTITION),
                         startTimeMillis(util::currentTimeMillis()),
+                        retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         connection(connection),
                         clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
@@ -77,6 +80,7 @@ namespace hazelcast {
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(UNASSIGNED_PARTITION),
                         startTimeMillis(util::currentTimeMillis()),
+                        retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
                                                                           clientContext.getClientExecutionService())) {
@@ -99,6 +103,7 @@ namespace hazelcast {
                 }
 
                 void ClientInvocation::invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation) {
+                    invocation->invokeCount++;
                     try {
                         if (invocation->isBindToSingleConnection()) {
                             invocation->invocationService.invokeOnConnection(invocation, invocation->connection);

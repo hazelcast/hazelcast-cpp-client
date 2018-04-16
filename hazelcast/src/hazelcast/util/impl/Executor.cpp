@@ -89,15 +89,60 @@ namespace hazelcast {
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 worker->shutdown();
                             }
+
+                boost::shared_ptr<DelayedRunner> runner;
+                while ((runner = delayedRunners.poll()).get()) {
+                    runner->shutdown();
+                    const boost::shared_ptr<util::Thread> &runnerThread = runner->getRunnerThread();
+                    runnerThread->cancel();
+                    runnerThread->join();
+                }
             }
 
             SimpleExecutorService::~SimpleExecutorService() {
                 shutdown();
             }
 
+            void SimpleExecutorService::schedule(const boost::shared_ptr<util::Runnable> &command,
+                                                 int64_t initialDelayInMillis) {
+                if (command.get() == NULL) {
+                    throw client::exception::NullPointerException("SimpleExecutor::schedule", "command can't be null");
+                }
+
+                if (!live) {
+                    throw client::exception::RejectedExecutionException("SimpleExecutor::schedule",
+                                                                        "Executor is terminated!");
+                }
+
+                boost::shared_ptr<DelayedRunner> delayedRunner(new DelayedRunner(command, initialDelayInMillis));
+                boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner));
+                delayedRunner->setRunnerThread(thread);
+                thread->start();
+                delayedRunners.offer(delayedRunner);
+            }
+
+            void SimpleExecutorService::scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command,
+                                                            int64_t initialDelayInMillis, int64_t periodInMillis) {
+                if (command.get() == NULL) {
+                    throw client::exception::NullPointerException("SimpleExecutor::scheduleAtFixedRate", "command can't be null");
+                }
+
+                if (!live) {
+                    throw client::exception::RejectedExecutionException("SimpleExecutor::scheduleAtFixedRate",
+                                                                        "Executor is terminated!");
+                }
+
+                boost::shared_ptr<RepeatingRunner> repeatingRunner(
+                        new RepeatingRunner(command, initialDelayInMillis, periodInMillis));
+                boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner));
+                repeatingRunner->setRunnerThread(thread);
+                thread->start();
+                delayedRunners.offer(repeatingRunner);
+            }
+
             void SimpleExecutorService::Worker::run() {
                 boost::shared_ptr<Runnable> task;
-                while (executorService.live) {
+                while (executorService.live || !workQueue.isEmpty()) {
                     try {
                         task = workQueue.pop();
                         if (task.get()) {
@@ -109,6 +154,8 @@ namespace hazelcast {
                         executorService.logger.warning() << getName() << " caused an exception" << t;
                     }
                 }
+
+                assert(workQueue.isEmpty());
             }
 
             SimpleExecutorService::Worker::~Worker() {
@@ -143,13 +190,81 @@ namespace hazelcast {
                     workQueue((size_t) maximumQueueCapacity),
                     thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
             }
+
+            SimpleExecutorService::RepeatingRunner::RepeatingRunner(
+                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                    int64_t periodInMillis) : DelayedRunner(command, initialDelayInMillis, periodInMillis) {
+            }
+
+            const std::string SimpleExecutorService::RepeatingRunner::getName() const {
+                return command->getName();
+            }
+
+            SimpleExecutorService::DelayedRunner::DelayedRunner(
+                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) : command(
+                    command), initialDelayInMillis(initialDelayInMillis), periodInMillis(-1), live(true) {
+            }
+
+            SimpleExecutorService::DelayedRunner::DelayedRunner(
+                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                    int64_t periodInMillis) : command(command), initialDelayInMillis(initialDelayInMillis),
+                                              periodInMillis(periodInMillis), live(true) {}
+
+            void SimpleExecutorService::DelayedRunner::shutdown() {
+                live = false;
+            }
+
+            void SimpleExecutorService::DelayedRunner::setRunnerThread(
+                    const boost::shared_ptr<util::Thread> &thread) {
+                runnerThread = thread;
+            }
+
+            const boost::shared_ptr<util::Thread> &
+            SimpleExecutorService::DelayedRunner::getRunnerThread() const {
+                return runnerThread;
+            }
+
+            void SimpleExecutorService::DelayedRunner::run() {
+                startTimeMillis = util::currentTimeMillis() + initialDelayInMillis;
+                bool isNotRepeating = periodInMillis < 0;
+                while (live || isNotRepeating) {
+                    if (live) {
+                        int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
+                        if (waitTimeMillis > 0) {
+                            if (runnerThread.get()) {
+                                runnerThread->interruptibleSleepMillis(waitTimeMillis);
+                            } else {
+                                util::sleepmillis(waitTimeMillis);
+                            }
+                        }
+                    }
+
+                    try {
+                        command->run();
+                    } catch (client::exception::IException &e) {
+                        util::ILogger::getLogger().warning() << "Repeated runnable " << getName()
+                                                             << " run method caused exception:" << e;
+                    }
+
+                    if (isNotRepeating) {
+                        return;
+                    }
+
+                    startTimeMillis += periodInMillis;
+                }
+            }
+
+            const std::string SimpleExecutorService::DelayedRunner::getName() const {
+                return command->getName();
+            }
+
         }
 
         boost::shared_ptr<ExecutorService> Executors::newSingleThreadExecutor(const std::string &name) {
             return boost::shared_ptr<ExecutorService>(
                     new impl::SimpleExecutorService(util::ILogger::getLogger(), name, 1));
         }
-
+        
     }
 }
 

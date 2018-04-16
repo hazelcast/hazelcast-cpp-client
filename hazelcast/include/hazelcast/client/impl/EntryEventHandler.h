@@ -19,6 +19,8 @@
 #ifndef HAZELCAST_ENTRY_EVENT_HANDLER
 #define HAZELCAST_ENTRY_EVENT_HANDLER
 
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/MapEvent.h"
 #include "hazelcast/client/EntryListener.h"
@@ -107,6 +109,9 @@ namespace hazelcast {
                         eventKey = serializationService.toObject<K>(*key);
                     }
                     boost::shared_ptr<Member> member = clusterService.getMember(uuid);
+                    if (member.get() == NULL) {
+                        member.reset(new Member(uuid));
+                    }
                     EntryEvent<K, V> entryEvent(instanceName, *member, type, eventKey, val, oldVal, mergingVal);
                     if (type == EntryEventType::ADDED) {
                         listener.entryAdded(entryEvent);

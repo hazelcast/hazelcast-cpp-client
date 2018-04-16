@@ -42,6 +42,64 @@ namespace hazelcast {
              */
             virtual void shutdown() = 0;
         };
+
+        /**
+         * An {@link ExecutorService} that can schedule commands to run after a given
+         * delay, or to execute periodically.
+         *
+         * <p>The {@code schedule} methods create tasks with various delays
+         * and return a task object that can be used to cancel or check
+         * execution. The {@code scheduleAtFixedRate} and
+         * {@code scheduleWithFixedDelay} methods create and execute tasks
+         * that run periodically until cancelled.
+         *
+         * <p>Commands submitted using the {@link Executor#execute(Runnable)}
+         * and {@link ExecutorService} {@code submit} methods are scheduled
+         * with a requested delay of zero. Zero and negative delays (but not
+         * periods) are also allowed in {@code schedule} methods, and are
+         * treated as requests for immediate execution.
+         *
+         *
+         * <p>The {@link Executors} class provides convenient factory methods for
+         * the ScheduledExecutorService implementations provided in this package.
+         *
+         */
+        class HAZELCAST_API ScheduledExecutorService : public ExecutorService {
+        public:
+            /**
+             * Creates and executes a one-shot action that becomes enabled
+             * after the given delay.
+             *
+             * @param command the task to execute
+             * @param delay the time from now to delay execution
+             * @throws RejectedExecutionException if the task cannot be
+             *         scheduled for execution
+             * @throws NullPointerException if command is null
+             */
+            virtual void schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) = 0;
+
+            /**
+             * Creates and executes a periodic action that becomes enabled first
+             * after the given initial delay, and subsequently with the given
+             * period. Executions will commence after
+             * {@code initialDelay} then {@code initialDelay+period}, then
+             * {@code initialDelay + 2 * period}, and so on.
+             * If any execution of this task
+             * takes longer than its period, then subsequent execution will be skipped.
+             *
+             * @param command the task to execute
+             * @param initialDelay the time to delay first execution
+             * @param period the period between successive executions
+             * @param unit the time unit of the initialDelay and period parameters
+             * @throws RejectedExecutionException if the task cannot be
+             *         scheduled for execution
+             * @throws NullPointerException if command is null
+             * @throws IllegalArgumentException if period is less than or equal to zero
+             */
+            virtual void scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command,
+                                             int64_t initialDelayInMillis, int64_t periodInMillis) = 0;
+
+        };
     }
 }
 

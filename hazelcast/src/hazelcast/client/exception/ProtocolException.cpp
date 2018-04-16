@@ -24,7 +24,7 @@ namespace hazelcast {
                                                                      const std::string &message,
                                                                      int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
-                    : IException(source, message, protocol::UNDEFINED), error(errorCode),
+                    : IException("UndefinedErrorCodeException", source, message, protocol::UNDEFINED), error(errorCode),
                       messageCallId(correlationId),
                       detailedErrorMessage(details) {
             }

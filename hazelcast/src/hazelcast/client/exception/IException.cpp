@@ -21,38 +21,41 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            IException::IException() {
-            }
-
-            IException::IException(const std::string &source, const std::string &message, const std::string &details,
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, const std::string &details,
                                    int32_t errorNo, int32_t causeCode) : src(source), msg(message), details(details),
                                                                          errorCode(errorNo), causeErrorCode(causeCode) {
                 std::ostringstream out;
-                out << "ExceptionMessage {" << message << ". Details:" << details << " Error code:" << errorNo
+                out << exceptionName << " {" << message << ". Details:" << details << " Error code:" << errorNo
                     << ", Cause error code:" << causeCode << "} at " + source;
                 report = out.str();
             }
 
-            IException::IException(const std::string &source, const std::string &message, int32_t errorNo,
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo,
                                    int32_t causeCode) : src(source), msg(message), errorCode(errorNo),
                                                         causeErrorCode(causeCode) {
                 std::ostringstream out;
-                out << "ExceptionMessage {" << message << " Error code:" << errorNo << ", Cause error code:" << causeCode << "} at " + source;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << ", Cause error code:"
+                    << causeCode << "} at " + source;
                 report = out.str();
             }
 
-            IException::IException(const std::string &source, const std::string &message, int32_t errorNo) : src(
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo) : src(
                     source), msg(message), errorCode(errorNo) {
                 std::ostringstream out;
-                out << "ExceptionMessage {" << message << " Error code:" << errorNo << "} at " + source;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << "} at " + source;
                 report = out.str();
             }
 
-            IException::IException(const std::string &source, const std::string &message, int32_t errorNo,
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo,
                                    const boost::shared_ptr<IException> &cause) : src(source), msg(message),
                                                                                  errorCode(errorNo), cause(cause) {
                 std::ostringstream out;
-                out << "ExceptionMessage {" << message << " Error code:" << errorNo << ", Caused by:" << *cause << "} at " + source;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << ", Caused by:" << *cause
+                    << "} at " + source;
                 report = out.str();
 
             }

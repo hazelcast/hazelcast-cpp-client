@@ -17,12 +17,6 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 
-#include <vector>
-
-#include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/util/SynchronizedQueue.h"
-#include "hazelcast/util/Atomic.h"
-
 #include "hazelcast/client/spi/ClientExecutionService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -34,7 +28,9 @@ namespace hazelcast {
     namespace util {
         class Runnable;
 
-        class Thread;
+        class ScheduledExecutorService;
+
+        class ILogger;
     }
 
     namespace client {
@@ -63,50 +59,8 @@ namespace hazelcast {
                                            int64_t periodInMillis);
 
                 private:
-                    class AbstractRunner : public util::Runnable {
-                    public:
-                        AbstractRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis);
-
-                        AbstractRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
-                                       int64_t periodInMillis);
-
-                        virtual void run();
-
-                        void shutdown();
-
-                        void setRunnerThread(const boost::shared_ptr<util::Thread> &thread);
-
-                        const boost::shared_ptr<util::Thread> &getRunnerThread() const;
-                    protected:
-                        const boost::shared_ptr<util::Runnable> command;
-                        int64_t initialDelayInMillis;
-                        int64_t periodInMillis;
-                        util::AtomicBoolean live;
-                        int64_t startTimeMillis;
-                        boost::shared_ptr<util::Thread> runnerThread;
-                    };
-
-                    class RepeatingRunner : public AbstractRunner {
-                    public:
-                        RepeatingRunner(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                                        int64_t periodInMillis);
-
-                        virtual const std::string getName() const;
-                    };
-
-                    class DelayedRunner : public AbstractRunner {
-                    public:
-                        DelayedRunner(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
-
-                    private:
-                        virtual const std::string getName() const;
-                    };
-
                     util::ILogger &logger;
-                    // TODO: Change with ScheduledExecutorService
-                    boost::shared_ptr<util::ExecutorService> internalExecutor;
-
-                    util::SynchronizedQueue<AbstractRunner> delayedRunners;
+                    boost::shared_ptr<util::ScheduledExecutorService> internalExecutor;
                 };
             }
         }
