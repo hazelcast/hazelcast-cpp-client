@@ -32,7 +32,7 @@ namespace hazelcast {
             const Member RoundRobinLB::next() {
                 std::vector<Member> members = getMembers();
                 if (members.size() == 0) {
-                    throw exception::IOException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                    throw exception::IllegalStateException("const Member& RoundRobinLB::next()", "No member in member list!!");
                 }
                 return members[++index % members.size()];
             }

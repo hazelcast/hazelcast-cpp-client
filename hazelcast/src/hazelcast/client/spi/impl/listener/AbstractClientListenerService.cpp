@@ -75,7 +75,7 @@ namespace hazelcast {
                                     correlationId);
                             if (eventHandler.get() == NULL) {
                                 logger.warning() << "No eventHandler for callId: " << correlationId << ", event: "
-                                                 << clientMessage << ", connection: " << connection;
+                                                 << *clientMessage << ", connection: " << *connection;
                                 return;
                             }
 

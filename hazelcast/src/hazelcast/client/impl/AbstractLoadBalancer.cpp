@@ -62,6 +62,10 @@ namespace hazelcast {
 
             AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
             }
+
+            void AbstractLoadBalancer::init(const InitialMembershipEvent &event) {
+                setMembersRef();
+            }
         }
     }
 }
