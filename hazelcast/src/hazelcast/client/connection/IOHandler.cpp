@@ -53,21 +53,9 @@ namespace hazelcast {
             }
 
             void IOHandler::handleSocketException(const std::string& message) {
-                const boost::shared_ptr<Address> &address = connection.getRemoteEndpoint();
-
-                size_t len = message.length() + 150;
-                char *msg = new char[len];
-                util::hz_snprintf(msg, len,
-                                  "[IOHandler::handleSocketException] Closing socket to endpoint %s:%d, Cause:%s\n",
-                                  address->getHost().c_str(), address->getPort(), message.c_str());
-                util::ILogger::getLogger().getLogger().warning(msg);
-
-                // release the memory for the message
-                delete [] msg;
-
                 // TODO: This call shall resend pending requests and reregister events, hence it can be off-loaded
                 // to another thread in order not to block the critical IO thread
-                connection.close();
+                connection.close(message.c_str());
             }
         }
     }
