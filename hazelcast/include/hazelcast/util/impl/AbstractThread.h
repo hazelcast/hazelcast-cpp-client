@@ -41,26 +41,31 @@ namespace hazelcast {
 
                 virtual const std::string getName() const;
 
-                virtual void interruptibleSleep(int seconds) = 0;
+                virtual void interruptibleSleep(int seconds);
 
-                virtual void wakeup() = 0;
+                void interruptibleSleepMillis(int64_t timeInMillis);
 
-                virtual void cancel() = 0;
+                virtual void wakeup();
 
-                virtual bool join() = 0;
+                virtual void cancel();
+
+                virtual bool join();
 
                 void start();
 
                 virtual long getThreadId() = 0;
 
             protected:
-
                 virtual void startInternal(Runnable *targetObject) = 0;
+                virtual bool isCalledFromSameThread() = 0;
+                virtual bool innerJoin() = 0;
 
                 util::AtomicBoolean isJoined;
                 util::AtomicBoolean started;
                 ConditionVariable wakeupCondition;
+
                 Mutex wakeupMutex;
+
                 boost::shared_ptr<Runnable> target;
             };
         }

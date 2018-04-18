@@ -42,65 +42,6 @@ namespace hazelcast {
                 pthread_attr_destroy(&attr);
             }
 
-            void interruptibleSleep(int seconds) {
-                interruptibleSleepMillis(seconds * 1000);
-            }
-
-            void interruptibleSleepMillis(int64_t timeInMillis) {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.waitFor(wakeupMutex, timeInMillis);
-            }
-
-            void wakeup() {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
-            }
-
-            void cancel() {
-                if (!started) {
-                    return;
-                }
-
-                if (pthread_equal(thread, pthread_self())) {
-                    /**
-                     * do not allow cancelling itself
-                     * at Linux, pthread_cancel may cause cancel by signal
-                     * and calling thread may be terminated.
-                     */
-                    return;
-                }
-
-                if (!isJoined) {
-                    wakeup();
-
-                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
-                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
-                }
-            }
-
-            bool join() {
-                if (!started) {
-                    return false;
-                }
-
-                if (pthread_equal(thread, pthread_self())) {
-                    // called from inside the thread, deadlock possibility
-                    return false;
-                }
-
-                if (!isJoined.compareAndSet(false, true)) {
-                    return true;
-                }
-
-                int err = pthread_join(thread, NULL);
-                if (EINVAL == err || ESRCH == err || EDEADLK == err) {
-                    isJoined = false;
-                    return false;
-                }
-                isJoined = true;
-                return true;
-            }
-
             virtual long getThreadId() {
                 return (long) pthread_self();
             }
@@ -142,6 +83,19 @@ namespace hazelcast {
             void startInternal(Runnable *targetObject) {
                 pthread_create(&thread, &attr, runnableThread, targetObject);
                 started = true;
+            }
+
+            virtual bool isCalledFromSameThread() {
+                return pthread_equal(thread, pthread_self()) != 0;
+            }
+
+            virtual bool innerJoin() {
+                int err = pthread_join(thread, NULL);
+                if (EINVAL == err || ESRCH == err || EDEADLK == err) {
+                    isJoined = false;
+                    return false;
+                }
+                return true;
             }
 
             pthread_t thread;

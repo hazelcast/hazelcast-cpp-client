@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+#include <cerrno>
 #include "hazelcast/util/impl/AbstractThread.h"
+#include "hazelcast/util/LockGuard.h"
 
 namespace hazelcast {
     namespace util {
@@ -45,6 +47,65 @@ namespace hazelcast {
 
                 startInternal(target.get());
             }
+
+            void AbstractThread::interruptibleSleep(int seconds) {
+                interruptibleSleepMillis(seconds * 1000);
+            }
+
+            void AbstractThread::interruptibleSleepMillis(int64_t timeInMillis) {
+                LockGuard guard(wakeupMutex);
+                wakeupCondition.waitFor(wakeupMutex, timeInMillis);
+            }
+
+            void AbstractThread::wakeup() {
+                LockGuard guard(wakeupMutex);
+                wakeupCondition.notify();
+            }
+
+            void AbstractThread::cancel() {
+                if (!started) {
+                    return;
+                }
+
+                if (isCalledFromSameThread()) {
+                    /**
+                     * do not allow cancelling itself
+                     * at Linux, pthread_cancel may cause cancel by signal
+                     * and calling thread may be terminated.
+                     */
+                    return;
+                }
+
+                if (!isJoined) {
+                    wakeup();
+
+                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
+                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
+                }
+            }
+
+            bool AbstractThread::join() {
+                if (!started) {
+                    return false;
+                }
+
+                if (isCalledFromSameThread()) {
+                    // called from inside the thread, deadlock possibility
+                    return false;
+                }
+
+                if (!isJoined.compareAndSet(false, true)) {
+                    return true;
+                }
+
+                if (!innerJoin()) {
+                    return false;
+                }
+
+                isJoined = true;
+                return true;
+            }
+
         }
     }
 }

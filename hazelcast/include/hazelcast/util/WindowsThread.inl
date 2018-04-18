@@ -46,59 +46,6 @@ namespace hazelcast {
                 }
             }
 
-            void interruptibleSleep(int seconds) {
-                interruptibleSleepMillis(seconds * 1000);
-            }
-
-            void interruptibleSleepMillis(int64_t timeInMillis) {
-                LockGuard lock(wakeupMutex);
-                if(isInterrupted){
-                    isInterrupted = false;
-                    throw hazelcast::client::exception::InterruptedException("interruptibleSleepMillis");
-                }
-                bool wokenUpbyInterruption = wakeupCondition.waitFor(wakeupMutex, timeInMillis);
-                if(wokenUpbyInterruption && isInterrupted){
-                    isInterrupted = false;
-                    throw hazelcast::client::exception::InterruptedException("interruptibleSleepMillis");
-                }
-            }
-
-            void wakeup() {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
-            }
-
-            void cancel() {
-                if (!started) {
-                    return;
-                }
-
-                LockGuard lock(wakeupMutex);
-                isInterrupted = true;
-                wakeupCondition.notify_all();
-            }
-
-            bool join() {
-                if (!started) {
-                    return false;
-                }
-
-                if (!isJoined.compareAndSet(false, true)) {
-                    return true;
-                }
-                if (id == getThreadId()) {
-                    // called from inside the thread, deadlock possibility
-                    return false;
-                }
-
-                DWORD err = WaitForSingleObject(thread, INFINITE);
-                if (err != WAIT_OBJECT_0) {
-                    return false;
-                }
-                isJoined = true;
-                return true;
-            }
-
             virtual long getThreadId() {
                 return GetCurrentThreadId();
             }
@@ -133,7 +80,18 @@ namespace hazelcast {
                 started = true;
             }
 
-            util::AtomicBoolean isInterrupted;
+            virtual bool isCalledFromSameThread() {
+                return id == getThreadId();
+            }
+
+            virtual bool innerJoin() {
+                DWORD err = WaitForSingleObject(thread, INFINITE);
+                if (err != WAIT_OBJECT_0) {
+                    return false;
+                }
+                return true;
+            }
+
             HANDLE thread;
             DWORD id;
         };
