@@ -154,8 +154,7 @@ namespace hazelcast {
                                             member.getUuid());
                                     if (formerEntry != prevMembers.end()) {
                                         prevMembers.erase(formerEntry);
-                                    }
-                                    if (formerEntry == prevMembers.end()) {
+                                    } else {
                                         newMembers.push_back(member);
                                     }
                                 }

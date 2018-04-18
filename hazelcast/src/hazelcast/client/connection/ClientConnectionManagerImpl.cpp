@@ -274,7 +274,7 @@ namespace hazelcast {
                     if (connection.get() != NULL) {
                         return connection;
                     }
-                    const boost::shared_ptr<AuthenticationFuture> &firstCallback = triggerConnect(address, asOwner);
+                    boost::shared_ptr<AuthenticationFuture> firstCallback = triggerConnect(address, asOwner);
                     connection = firstCallback->get();
 
                     if (!asOwner) {
@@ -289,7 +289,7 @@ namespace hazelcast {
             void
             ClientConnectionManagerImpl::authenticate(const Address &target, boost::shared_ptr<Connection> &connection,
                                                       bool asOwner, boost::shared_ptr<AuthenticationFuture> &future) {
-                const boost::shared_ptr<protocol::Principal> &principal = getPrincipal();
+                boost::shared_ptr<protocol::Principal> principal = getPrincipal();
                 std::auto_ptr<protocol::ClientMessage> clientMessage = encodeAuthenticationRequest(asOwner,
                                                                                                    client.getSerializationService(),
                                                                                                    principal.get());

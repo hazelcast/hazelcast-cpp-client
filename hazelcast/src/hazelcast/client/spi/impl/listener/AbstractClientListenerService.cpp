@@ -71,7 +71,7 @@ namespace hazelcast {
                     void AbstractClientListenerService::ClientEventProcessor::run() {
                         try {
                             int64_t correlationId = clientMessage->getCorrelationId();
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &eventHandler = eventHandlerMap.get(
+                            boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
                                     correlationId);
                             if (eventHandler.get() == NULL) {
                                 logger.warning() << "No eventHandler for callId: " << correlationId << ", event: "

@@ -94,7 +94,7 @@ namespace hazelcast {
                         std::string userRegistrationId = util::UuidUtil::newUnsecureUuidString();
                         ClientRegistrationKey registrationKey(userRegistrationId, handler, listenerMessageCodec);
                         try {
-                            const boost::shared_ptr<ClientEventRegistration> &registration = listenerService.invoke(
+                            boost::shared_ptr<ClientEventRegistration> registration = listenerService.invoke(
                                                                 registrationKey);
                             activeRegistrations.put(registrationKey, registration);
                             userRegistrations.insert(registrationKey);
