@@ -178,7 +178,12 @@ namespace hazelcast {
                      * Requests not to send SIGPIPE on errors on stream oriented sockets when the other end breaks the connection.
                      * The EPIPE error is still returned.
                      */
-                    if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, flag | MSG_NOSIGNAL)) == -1) {
+
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(true);
+                    }
+
+                    if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
                         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
                         if (WSAEWOULDBLOCK == error) {
@@ -186,10 +191,19 @@ namespace hazelcast {
                         int error = errno;
                         if (EAGAIN == error) {
                         #endif
+                            if (flag == MSG_WAITALL) {
+                                setBlocking(false);
+                            }
                             return 0;
                         }
 
+                        if (flag == MSG_WAITALL) {
+                            setBlocking(false);
+                        }
                         throwIOException(error, "send", "Send failed.");
+                    }
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(false);
                     }
                     return bytesSend;
                 }
