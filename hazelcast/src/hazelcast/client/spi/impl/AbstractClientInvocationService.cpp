@@ -50,7 +50,7 @@ namespace hazelcast {
 
                     responseThread.start();
 
-                    long cleanResourcesMillis = CLEAN_RESOURCES_MILLIS.getLong();
+                    int64_t cleanResourcesMillis = CLEAN_RESOURCES_MILLIS.getLong();
                     if (cleanResourcesMillis <= 0) {
                         cleanResourcesMillis = util::IOUtil::to_value<int64_t>(
                                 CLEAN_RESOURCES_MILLIS.getDefaultValue());
@@ -271,7 +271,7 @@ namespace hazelcast {
                         ClientPacket task;
                         try {
                             task = responseQueue.pop();
-                        } catch (exception::InterruptedException &e) {
+                        } catch (exception::InterruptedException &) {
                             continue;
                         }
                         process(task);

@@ -22,6 +22,7 @@
 #include <boost/date_time/microsec_time_clock.hpp>
 #include <boost/date_time.hpp>
 #include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
 
 #include <string.h>
 #include <algorithm>
@@ -36,7 +37,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <boost/foreach.hpp>
 
 #endif
 

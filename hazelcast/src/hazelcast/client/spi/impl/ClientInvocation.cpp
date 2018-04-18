@@ -114,7 +114,7 @@ namespace hazelcast {
                         } else {
                             invocation->invocationService.invokeOnRandomTarget(invocation);
                         }
-                    } catch (exception::HazelcastOverloadException &e) {
+                    } catch (exception::HazelcastOverloadException &) {
                         throw;
                     } catch (exception::IException &e) {
                         invocation->notifyException(e);
@@ -318,7 +318,7 @@ namespace hazelcast {
                         executionService.execute(boost::shared_ptr<util::Runnable>(shared_from_this()));
                     } else {
                         // progressive retry delay
-                        long delayMillis = util::min<int64_t>(1 << ((int64_t) invokeCount - MAX_FAST_INVOCATION_COUNT),
+                        int64_t delayMillis = util::min<int64_t>(1 << (invokeCount.get() - MAX_FAST_INVOCATION_COUNT),
                                                               retryPauseMillis);
                         executionService.schedule(shared_from_this(), delayMillis);
                     }

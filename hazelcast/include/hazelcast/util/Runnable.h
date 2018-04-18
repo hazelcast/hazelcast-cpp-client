@@ -32,7 +32,7 @@ namespace hazelcast {
             virtual bool isStriped();
         };
 
-        class StripedRunnable : public Runnable {
+        class HAZELCAST_API StripedRunnable : public Runnable {
         public:
             virtual int32_t getKey() = 0;
 

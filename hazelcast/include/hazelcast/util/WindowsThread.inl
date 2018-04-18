@@ -16,6 +16,8 @@
 #ifndef HAZELCAST_UTIL_WINDOWSTHREAD_INL_
 #define HAZELCAST_UTIL_WINDOWSTHREAD_INL_
 
+#include <stdint.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -48,7 +50,7 @@ namespace hazelcast {
                 interruptibleSleepMillis(seconds * 1000);
             }
 
-            void interruptibleSleepMillis(int timeInMillis) {
+            void interruptibleSleepMillis(int64_t timeInMillis) {
                 LockGuard lock(wakeupMutex);
                 if(isInterrupted){
                     isInterrupted = false;

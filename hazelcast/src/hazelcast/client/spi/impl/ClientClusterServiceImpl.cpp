@@ -162,7 +162,7 @@ namespace hazelcast {
                 }
 
                 bool ClientClusterServiceImpl::removeMembershipListener(const std::string &registrationId) {
-                    return listeners.remove(registrationId);
+                    return listeners.remove(registrationId).get() != NULL;
                 }
             }
         }

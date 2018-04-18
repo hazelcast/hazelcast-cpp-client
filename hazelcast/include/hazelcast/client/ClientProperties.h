@@ -58,9 +58,7 @@ namespace hazelcast {
 
             bool getBoolean() const;
 
-            std::string getString() const;
-
-            long getLong() const;
+            int64_t getLong() const;
 
             const std::string &getDefaultValue() const;
 

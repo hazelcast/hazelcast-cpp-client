@@ -42,6 +42,8 @@ namespace hazelcast {
 
 			bool waitFor(Mutex &mutex, int64_t timeInMilliseconds);
 
+            bool waitNanos(Mutex& mutex, int64_t nanos);
+
             void notify();
 
             void notify_all();

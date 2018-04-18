@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API ClientAddPartitionListenerCodec : public IAddListenerCodec{
                 public:
-                    virtual ~ClientAddPartitionListenerCodec();
                     //************************ REQUEST STARTS ******************************************************************//
                     class HAZELCAST_API RequestParameters {
                         public:
@@ -85,12 +84,6 @@ namespace hazelcast {
 
                     //************************ EVENTS END **********************************************************************//
 
-                    //************************ IAddListenerCodec interface starts *******************************************//
-                    std::auto_ptr<ClientMessage> encodeRequest() const;
-
-                    std::string decodeResponse(ClientMessage &responseMessage) const;
-
-                    //************************ IAddListenerCodec interface ends *********************************************//
                     private:
                         // Preventing public access to constructors
                         ClientAddPartitionListenerCodec ();

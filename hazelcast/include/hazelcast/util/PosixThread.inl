@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/util/LockGuard.h"
@@ -45,7 +46,7 @@ namespace hazelcast {
                 interruptibleSleepMillis(seconds * 1000);
             }
 
-            void interruptibleSleepMillis(int timeInMillis) {
+            void interruptibleSleepMillis(int64_t timeInMillis) {
                 LockGuard guard(wakeupMutex);
                 wakeupCondition.waitFor(wakeupMutex, timeInMillis);
             }

@@ -270,7 +270,7 @@ namespace hazelcast {
 */
                         try {
                             invoke(registrationKey, connection);
-                        } catch (exception::IOException &e) {
+                        } catch (exception::IOException &) {
                             boost::shared_ptr<std::vector<ClientRegistrationKey> > failedRegsToConnection = failedRegistrations.get(
                                     connection);
                             if (failedRegsToConnection.get() == NULL) {

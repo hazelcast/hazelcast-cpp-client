@@ -21,6 +21,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <assert.h>
@@ -82,8 +83,8 @@ namespace hazelcast {
         int32_t HAZELCAST_API getAvailableCoreCount();
 
         template <typename T>
-        const T &min(const T&value1, const T&value2) {
-            return value1 < value2 ? value1 : value2;
+        const T &(min)(const T &left, const T &right) {
+            return std::min<T>(left, right);
         }
 
         class HAZELCAST_API StringUtil {

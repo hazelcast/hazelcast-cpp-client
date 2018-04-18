@@ -69,7 +69,8 @@ namespace hazelcast {
                     try {
                         Address address = getRandomAddress();
                         return client.getConnectionManager().getOrConnect(address);
-                    } catch (exception::IException &e) {
+                    } catch (exception::IllegalStateException &) {
+                        // loadBalancer.next may throw IllegalStateException when no available member
                         throwException(true);
                     }
                     return boost::shared_ptr<connection::Connection>();

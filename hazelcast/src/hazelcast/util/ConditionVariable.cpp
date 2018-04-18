@@ -26,6 +26,11 @@
 
 namespace hazelcast {
     namespace util {
+        #define NANOS_IN_A_SECOND 1000 * 1000 * 1000
+        #define MILLIS_IN_A_SECOND 1000
+        #define NANOS_IN_A_MILLISECOND 1000 * 1000
+        #define NANOS_IN_A_USECOND 1000
+
         ConditionVariable::ConditionVariable() {
             InitializeConditionVariable(&condition);
         }
@@ -40,6 +45,14 @@ namespace hazelcast {
 
         bool ConditionVariable::waitFor(Mutex &mutex, int64_t timeInMilliseconds) {
             BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD) timeInMilliseconds);
+            if(interrupted){
+                return true;
+            }
+            return false;
+        }
+
+        bool ConditionVariable::waitNanos(Mutex &mutex, int64_t nanos) {
+            BOOL interrupted = SleepConditionVariableCS(&condition,  &(mutex.mutex), (DWORD) (nanos / NANOS_IN_A_MILLISECOND));
             if(interrupted){
                 return true;
             }
@@ -123,13 +136,13 @@ namespace hazelcast {
 
             struct timespec ts;
             ts.tv_sec = tv.tv_sec;
-            ts.tv_nsec = tv.tv_usec * 1000;
-            int64_t seconds = timeInMilliseconds / 1000;
+            ts.tv_nsec = tv.tv_usec * NANOS_IN_A_USECOND;
+            int64_t seconds = timeInMilliseconds / MILLIS_IN_A_SECOND;
             if (seconds > std::numeric_limits<time_t>::max()) {
                 ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
                 ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
-                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % 1000) * NANOS_IN_A_MILLISECOND;
+                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % MILLIS_IN_A_SECOND) * NANOS_IN_A_MILLISECOND;
                 if (nsec >= NANOS_IN_A_SECOND) {
                     nsec -= NANOS_IN_A_SECOND;
                     ++ts.tv_sec;
@@ -151,7 +164,7 @@ namespace hazelcast {
                 ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
                 ts.tv_sec += (time_t) (nanos / NANOS_IN_A_SECOND);
-                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (nanos % 1000);
+                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (nanos % NANOS_IN_A_USECOND);
                 if (nsec >= NANOS_IN_A_SECOND) {
                     nsec -= NANOS_IN_A_SECOND;
                     ++ts.tv_sec;

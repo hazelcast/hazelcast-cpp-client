@@ -42,7 +42,7 @@ namespace hazelcast {
             /**
              * HeartbeatManager manager used by connection manager.
              */
-            class HAZELCAST_API HeartbeatManager : public util::Runnable {
+            class HeartbeatManager : public util::Runnable {
             public:
                 HeartbeatManager(spi::ClientContext &client);
 

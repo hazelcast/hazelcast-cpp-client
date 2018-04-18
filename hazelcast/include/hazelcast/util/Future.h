@@ -331,11 +331,11 @@ namespace hazelcast {
             T sharedObject;
             boost::shared_ptr<client::exception::IException> exception;
             std::vector<CallbackInfo> callbacks;
-            util::ILogger &logger;
+            ILogger &logger;
 
-            Future(const Future &rhs);
+            Future(const Future &rhs) : logger(rhs.logger) { assert(false); }
 
-            void operator=(const Future &rhs);
+            void operator=(const Future &rhs) { assert(false); }
         };
     }
 }

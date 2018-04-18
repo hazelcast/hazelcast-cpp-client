@@ -115,7 +115,7 @@ namespace hazelcast {
                         // use internal execution service for all partition refresh process (do not use the user executor thread)
                         clientExecutionService.execute(
                                 boost::shared_ptr<util::Runnable>(new RefreshTask(client, *this)));
-                    } catch (exception::RejectedExecutionException &ignored) {
+                    } catch (exception::RejectedExecutionException &) {
                         // ignore
                     }
                 }

@@ -32,7 +32,7 @@ namespace hazelcast {
             /**
              * Default client connection strategy supporting async client start, reconnection modes and disabling reconnection.
              */
-            class HAZELCAST_API DefaultClientConnectionStrategy : public ClientConnectionStrategy {
+            class DefaultClientConnectionStrategy : public ClientConnectionStrategy {
             public:
                 DefaultClientConnectionStrategy(spi::ClientContext &clientContext, util::ILogger &logger,
                                                 const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig);

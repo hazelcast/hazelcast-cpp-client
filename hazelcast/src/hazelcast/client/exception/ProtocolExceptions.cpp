@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <err.h>
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
 namespace hazelcast {

@@ -99,12 +99,8 @@ namespace hazelcast {
             return get<bool>();
         }
 
-        std::string ClientProperty::getString() const {
-            return value;
-        }
-
-        long ClientProperty::getLong() const {
-            return util::IOUtil::to_value<long>(value);
+        int64_t ClientProperty::getLong() const {
+            return util::IOUtil::to_value<int64_t>(value);
         }
 
         const std::string &ClientProperty::getDefaultValue() const {
