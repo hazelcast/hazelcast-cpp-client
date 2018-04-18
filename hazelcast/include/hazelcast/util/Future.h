@@ -223,13 +223,6 @@ namespace hazelcast {
                 return resultReady || exceptionReady;
             }
 
-            void reset() {
-                LockGuard guard(mutex);
-
-                resultReady = false;
-                exceptionReady = false;
-            }
-
             void
             andThen(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);

@@ -40,18 +40,21 @@ namespace hazelcast {
 
                 class HAZELCAST_API ClientInvocationFuture
                         : public util::Future<boost::shared_ptr<protocol::ClientMessage> > {
+                    friend class ClientInvocation;
+
                 public:
-                    ClientInvocationFuture(util::ILogger &logger, ClientInvocation &invocation,
-                                           sequence::CallIdSequence &callIdSequence, util::Executor &internalExecutor);
+                    ClientInvocationFuture(util::ILogger &logger, sequence::CallIdSequence &callIdSequence,
+                                           util::Executor &internalExecutor);
 
                     virtual void onComplete();
 
-                    ClientInvocation &getInvocation() const;
+                    boost::shared_ptr<ClientInvocation> getInvocation() const;
 
                     void
                     andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback);
 
                     virtual std::string invocationToString();
+
                 private:
                     class InternalDelegatingExecutionCallback
                             : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
@@ -69,7 +72,9 @@ namespace hazelcast {
                         sequence::CallIdSequence &callIdSequence;
                     };
 
-                    ClientInvocation &invocation;
+                    void setInvocation(const boost::shared_ptr<ClientInvocation> &invocation);
+
+                    boost::shared_ptr<ClientInvocation> invocation;
                     sequence::CallIdSequence &callIdSequence;
                     util::Executor &internalExecutor;
 

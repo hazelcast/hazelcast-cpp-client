@@ -67,12 +67,20 @@ namespace hazelcast {
             }
 
             void cancel() {
+                if (!started) {
+                    return;
+                }
+
                 LockGuard lock(wakeupMutex);
                 isInterrupted = true;
                 wakeupCondition.notify_all();
             }
 
             bool join() {
+                if (!started) {
+                    return false;
+                }
+
                 if (!isJoined.compareAndSet(false, true)) {
                     return true;
                 }
@@ -120,6 +128,7 @@ namespace hazelcast {
 
             void startInternal(Runnable *targetObject) {
                 thread = CreateThread(NULL, 0, runnableThread, targetObject, 0 , &id);
+                started = true;
             }
 
             util::AtomicBoolean isInterrupted;

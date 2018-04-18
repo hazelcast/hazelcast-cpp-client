@@ -87,12 +87,16 @@ namespace hazelcast {
                 invocationService = initInvocationService();
                 listenerService = initListenerService();
 
+                lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
+
                 try {
                     if (!lifecycleService.start()) {
-                        throw exception::IllegalStateException("HazelcastClient", "HazelcastClient could not be started!");
+                        throw exception::IllegalStateException("HazelcastClient",
+                                                               "HazelcastClient could not be started!");
                     }
                 } catch (exception::IException &) {
                     lifecycleService.shutdown();
+                    shutdownLatch.await();
                     throw;
                 }
                 mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
@@ -214,7 +218,8 @@ namespace hazelcast {
                                                                   clientConfig.getExecutorPoolSize()));
             }
 
-            std::auto_ptr<connection::ClientConnectionManagerImpl> HazelcastClientInstanceImpl::initConnectionManagerService(
+            std::auto_ptr<connection::ClientConnectionManagerImpl>
+            HazelcastClientInstanceImpl::initConnectionManagerService(
                     const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders) {
                 config::ClientAwsConfig &awsConfig = clientConfig.getNetworkConfig().getAwsConfig();
                 boost::shared_ptr<connection::AddressTranslator> addressTranslator;
@@ -228,24 +233,34 @@ namespace hazelcast {
                 } else {
                     addressTranslator.reset(new spi::impl::DefaultAddressTranslator());
                 }
-                return std::auto_ptr<connection::ClientConnectionManagerImpl>(new connection::ClientConnectionManagerImpl(
-                        clientContext, addressTranslator, addressProviders));
+                return std::auto_ptr<connection::ClientConnectionManagerImpl>(
+                        new connection::ClientConnectionManagerImpl(
+                                clientContext, addressTranslator, addressProviders));
 
             }
 
-            void HazelcastClientInstanceImpl::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
+            void HazelcastClientInstanceImpl::onClusterConnect(
+                    const boost::shared_ptr<connection::Connection> &ownerConnection) {
                 partitionService->listenPartitionTable(ownerConnection);
                 clusterService.listenMembershipEvents(ownerConnection);
             }
 
-            std::vector<boost::shared_ptr<connection::AddressProvider> > HazelcastClientInstanceImpl::createAddressProviders() {
+            std::vector<boost::shared_ptr<connection::AddressProvider> >
+            HazelcastClientInstanceImpl::createAddressProviders() {
                 config::ClientNetworkConfig &networkConfig = getClientConfig().getNetworkConfig();
                 config::ClientAwsConfig &awsConfig = networkConfig.getAwsConfig();
                 std::vector<boost::shared_ptr<connection::AddressProvider> > addressProviders;
 
                 if (awsConfig.isEnabled()) {
+                    int awsMemberPort = clientProperties.getAwsMemberPort().getInteger();
+                    if (awsMemberPort < 0 || awsMemberPort > 65535) {
+                        throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
+                                "HazelcastClientInstanceImpl::createAddressProviders") << "Configured aws member port "
+                                                                                       << awsMemberPort
+                                                                                       << " is not a valid port number. It should be between 0-65535 inclusive.").build();
+                    }
                     addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(
-                            new spi::impl::AwsAddressProvider(awsConfig, util::ILogger::getLogger())));
+                            new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, util::ILogger::getLogger())));
                 }
 
                 addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(

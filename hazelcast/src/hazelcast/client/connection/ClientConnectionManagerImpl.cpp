@@ -417,7 +417,7 @@ namespace hazelcast {
                 }
 
                 if (activeConnections.remove(*endpoint, connection)) {
-                    logger.info() << "Removed connection to endpoint: " << endpoint << ", connection: " << *connection;
+                    logger.info() << "Removed connection to endpoint: " << *endpoint << ", connection: " << *connection;
                     activeConnectionsFileDescriptors.remove(connection->getSocket().getSocketId());
                     fireConnectionRemovedEvent(connection);
                 } else {
@@ -516,10 +516,11 @@ namespace hazelcast {
                     }
                 }
                 std::ostringstream out;
-                out << "Unable to connect to any address! The following addresses were tried: ";
+                out << "Unable to connect to any address! The following addresses were tried: { ";
                 BOOST_FOREACH(const std::set<Address>::value_type &address, triedAddresses) {
-                                out << address << std::endl;
+                                out << address << " , ";
                             }
+                            out << "}";
                 throw exception::IllegalStateException("ConnectionManager::connectToClusterInternal", out.str());
             }
 

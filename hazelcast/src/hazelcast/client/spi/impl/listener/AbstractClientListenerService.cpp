@@ -70,7 +70,7 @@ namespace hazelcast {
 
                     void AbstractClientListenerService::ClientEventProcessor::run() {
                         try {
-                            long correlationId = clientMessage->getCorrelationId();
+                            int64_t correlationId = clientMessage->getCorrelationId();
                             const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &eventHandler = eventHandlerMap.get(
                                     correlationId);
                             if (eventHandler.get() == NULL) {

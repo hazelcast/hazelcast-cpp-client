@@ -54,33 +54,34 @@ namespace hazelcast {
                     util::CountDownLatch &failLatch;
                 };
 
-                static void wakeTheConditionUp(util::ThreadArgs& args) {
-                    util::Mutex *mutex = (util::Mutex *)args.arg0;
-                    util::ConditionVariable *cv = (util::ConditionVariable *)args.arg1;
-                    int wakeUpTime = *(int *)args.arg2;
+                static void wakeTheConditionUp(util::ThreadArgs &args) {
+                    util::Mutex *mutex = (util::Mutex *) args.arg0;
+                    util::ConditionVariable *cv = (util::ConditionVariable *) args.arg1;
+                    int wakeUpTime = *(int *) args.arg2;
                     util::sleep(wakeUpTime);
 
                     util::LockGuard lockGuard(*mutex);
                     cv->notify();
                 }
 
-                static void setValueToFuture(util::ThreadArgs& args) {
-                    util::Future<int> *future = (util::Future<int> *)args.arg0;
-                    int value = *(int *)args.arg1;
-                    int wakeUpTime = *(int *)args.arg2;
+                static void setValueToFuture(util::ThreadArgs &args) {
+                    util::Future<int> *future = (util::Future<int> *) args.arg0;
+                    int value = *(int *) args.arg1;
+                    int wakeUpTime = *(int *) args.arg2;
                     util::sleep(wakeUpTime);
                     future->set_value(value);
                 }
 
-                static void setExceptionToFuture(util::ThreadArgs& args) {
-                    util::Future<int> *future = (util::Future<int> *)args.arg0;
-                    int wakeUpTime = *(int *)args.arg1;
+                static void setExceptionToFuture(util::ThreadArgs &args) {
+                    util::Future<int> *future = (util::Future<int> *) args.arg0;
+                    int wakeUpTime = *(int *) args.arg1;
                     util::sleep(wakeUpTime);
-                    std::auto_ptr<client::exception::IException> exception(new exception::IOException("exceptionName", "details"));
+                    std::auto_ptr<client::exception::IException> exception(
+                            new exception::IOException("exceptionName", "details"));
                     future->set_exception(exception);
                 }
 
-                static void cancelJoinFromRunningThread(util::ThreadArgs& args) {
+                static void cancelJoinFromRunningThread(util::ThreadArgs &args) {
                     util::Thread *currentThread = args.currentThread;
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
                     currentThread->cancel();
@@ -88,7 +89,7 @@ namespace hazelcast {
                     latch->countDown();
                 }
 
-                static void notifyExitingThread(util::ThreadArgs& args) {
+                static void notifyExitingThread(util::ThreadArgs &args) {
                     util::CountDownLatch *latch = (util::CountDownLatch *) args.arg0;
                     latch->countDown();
                 }
@@ -108,7 +109,7 @@ namespace hazelcast {
                     if (wokenUpByInterruption) {
                         end = time(NULL);
                     }
-                    ASSERT_NEAR((double)(end-beg), (double)wakeUpTime, 1);
+                    ASSERT_NEAR((double) (end - beg), (double) wakeUpTime, 1);
                 }
 
             }
@@ -130,7 +131,7 @@ namespace hazelcast {
                 int waitSeconds = 3;
                 time_t beg = time(NULL);
                 ASSERT_FALSE(future.waitFor(waitSeconds * 1000));
-                ASSERT_NEAR((double)(time(NULL) - beg), (double)waitSeconds, 1);
+                ASSERT_NEAR((double) (time(NULL) - beg), (double) waitSeconds, 1);
             }
 
             TEST_F (ClientUtilTest, testFutureSetValue) {
@@ -153,26 +154,19 @@ namespace hazelcast {
                 ASSERT_THROW(future.get(), client::exception::IOException);
             }
 
-            TEST_F (ClientUtilTest, testFutureSetClonedIOException) {
-                util::Future<int> future;
-
-                client::exception::IOException ioe("testFutureSetIOException", "details");
-                future.set_exception(ioe.clone());
-
-                ASSERT_THROW(future.get(), client::exception::IOException);
-            }
-
             TEST_F (ClientUtilTest, testFutureSetUnclonedIOException) {
                 util::Future<int> future;
 
-                client::exception::IOException ioe("testFutureSetUnclonedIOException", "details");
-                future.set_exception(ioe.clone());
+                std::auto_ptr<client::exception::IException> ioe(
+                        new client::exception::IOException("testFutureSetUnclonedIOException", "details"));
+                future.set_exception(ioe);
 
                 try {
                     future.get();
                 } catch (client::exception::IOException &) {
-                    FAIL();
+                    // success
                 } catch (client::exception::IException &) {
+                    FAIL();
                 }
             }
 
@@ -267,7 +261,7 @@ namespace hazelcast {
                 // We use latch so that we guarantee that the object instance thread is not destructed at the time when
                 // StartedThread::run is being executed.
                 util::CountDownLatch latch(1);
-                util::StartedThread thread(threadName,  notifyExitingThread, &latch);
+                util::StartedThread thread(threadName, notifyExitingThread, &latch);
                 ASSERT_EQ(threadName, thread.getName());
                 ASSERT_TRUE(latch.await(120));
             }
@@ -291,8 +285,8 @@ namespace hazelcast {
                 ASSERT_TRUE(latch.await(1000));
             }
 
-            void sleepyThread(util::ThreadArgs& args) {
-                int sleepTime = *(int *)args.arg0;
+            void sleepyThread(util::ThreadArgs &args) {
+                int sleepTime = *(int *) args.arg0;
                 args.currentThread->interruptibleSleep(sleepTime);
             }
 
@@ -304,7 +298,7 @@ namespace hazelcast {
                 util::sleep(wakeUpTime);
                 thread.cancel();
                 thread.join();
-                ASSERT_NEAR((double)(time(NULL) - beg), (double)wakeUpTime , 1);
+                ASSERT_NEAR((double) (time(NULL) - beg), (double) wakeUpTime, 1);
             }
 
             TEST_F (ClientUtilTest, testDateConversion) {
@@ -341,7 +335,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testAvailableCoreCount) {
                 ASSERT_GT(util::getAvailableCoreCount(), 0);
             }
-            
+
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = util::StringUtil::timeToString(util::currentTimeMillis());
                 //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280300
@@ -351,7 +345,7 @@ namespace hazelcast {
                 ASSERT_EQ(timeString[4], '-');
                 ASSERT_EQ(timeString[7], '-');
             }
-            
+
             TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
                 ASSERT_EQ("never", util::StringUtil::timeToStringFriendly(0));
             }

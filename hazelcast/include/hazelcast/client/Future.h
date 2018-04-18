@@ -168,6 +168,8 @@ namespace hazelcast {
 
                 assert(responseMsg.get());
 
+                clientInvocationFuture.reset();
+
                 std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
 
                 std::auto_ptr<V> result = serializationService.toObject<V>(response.get());
@@ -290,6 +292,8 @@ namespace hazelcast {
                 boost::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
 
                 assert(responseMsg.get());
+
+                clientInvocationFuture.reset();
 
                 std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
 

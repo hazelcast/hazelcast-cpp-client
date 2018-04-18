@@ -35,6 +35,9 @@ namespace hazelcast {
              */
             AtomicArray(size_t length) : array(length) {
                 locks = new util::Mutex[length];
+                for (size_t i = 0; i < length; ++i) {
+                    array[i] = 0;
+                }
             }
 
             virtual ~AtomicArray() {

@@ -48,6 +48,7 @@ namespace hazelcast {
             /**
              * @param buffer
              * @param len length of the buffer
+             * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
              * @return number of bytes send
              * @throw IOException in failure.
              */

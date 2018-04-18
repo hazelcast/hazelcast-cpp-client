@@ -21,7 +21,7 @@
 
 namespace hazelcast {
     namespace client {
-        Member::Member() {
+        Member::Member() : liteMember(false) {
         }
 
         Member::Member(const Address &address, const std::string &uuid, bool lite,
@@ -29,7 +29,10 @@ namespace hazelcast {
                 address(address), uuid(uuid), liteMember(lite), attributes(attr) {
         }
 
-        Member::Member(const Address &memberAddress) : address(memberAddress) {
+        Member::Member(const Address &memberAddress) : address(memberAddress), liteMember(false) {
+        }
+
+        Member::Member(const std::string &uuid) : uuid(uuid), liteMember(false) {
         }
 
         bool Member::operator==(const Member &rhs) const {
@@ -93,9 +96,6 @@ namespace hazelcast {
                     throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Member::updateAttribute")
                             << "Not a known OperationType: " << operationType).build();
             }
-        }
-
-        Member::Member(const std::string &uuid) : uuid(uuid), liteMember(false) {
         }
     }
 }

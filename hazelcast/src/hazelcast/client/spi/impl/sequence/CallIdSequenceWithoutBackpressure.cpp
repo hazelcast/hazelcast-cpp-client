@@ -21,6 +21,11 @@ namespace hazelcast {
             namespace impl {
                 namespace sequence {
 
+                    CallIdSequenceWithoutBackpressure::CallIdSequenceWithoutBackpressure() : head(0) {}
+
+                    CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() {
+                    }
+
                     int32_t CallIdSequenceWithoutBackpressure::getMaxConcurrentInvocations() const {
                         return INT32_MAX;
                     }
@@ -39,9 +44,6 @@ namespace hazelcast {
 
                     int64_t CallIdSequenceWithoutBackpressure::getLastCallId() {
                         return head;
-                    }
-
-                    CallIdSequenceWithoutBackpressure::~CallIdSequenceWithoutBackpressure() {
                     }
                 }
             }

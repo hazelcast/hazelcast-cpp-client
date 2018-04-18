@@ -34,6 +34,8 @@ namespace hazelcast {
                 namespace sequence {
                     class HAZELCAST_API CallIdSequenceWithoutBackpressure : public CallIdSequence {
                     public:
+                        CallIdSequenceWithoutBackpressure();
+
                         virtual ~CallIdSequenceWithoutBackpressure();
 
                         virtual int32_t getMaxConcurrentInvocations() const;

@@ -403,8 +403,8 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testConnectionAttemptPeriod) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-                clientConfig.setAttemptPeriod(900);
-                clientConfig.setConnectionAttemptLimit(3);
+                clientConfig.getNetworkConfig().setConnectionAttemptPeriod(900).
+                        setConnectionTimeout(2000).setConnectionAttemptLimit(2);
                 clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 8000));
 
                 int64_t startTimeMillis = util::currentTimeMillis();
@@ -413,7 +413,7 @@ namespace hazelcast {
                 } catch (exception::IllegalStateException &) {
                     // this is expected
                 }
-                ASSERT_GE(util::currentTimeMillis() - startTimeMillis, 3 * 900);
+                ASSERT_GE(util::currentTimeMillis() - startTimeMillis, 2 * 900);
             }
 
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {

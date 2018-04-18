@@ -44,7 +44,7 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                        clientInvocationFuture(new ClientInvocationFuture(logger, callIdSequence,
                                                                           clientContext.getClientExecutionService())) {
                 }
 
@@ -64,7 +64,7 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         connection(connection),
-                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                        clientInvocationFuture(new ClientInvocationFuture(logger, callIdSequence,
                                                                           clientContext.getClientExecutionService())) {
                 }
 
@@ -82,7 +82,7 @@ namespace hazelcast {
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        clientInvocationFuture(new ClientInvocationFuture(logger, *this, callIdSequence,
+                        clientInvocationFuture(new ClientInvocationFuture(logger, callIdSequence,
                                                                           clientContext.getClientExecutionService())) {
                 }
 
@@ -249,23 +249,29 @@ namespace hazelcast {
                                                                              std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                              const std::string &objectName,
                                                                              int partitionId) {
-                    return boost::shared_ptr<ClientInvocation>(
+                    boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, partitionId));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
+                    return invocation;
                 }
 
                 boost::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
                                                                              std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                              const std::string &objectName,
                                                                              const boost::shared_ptr<connection::Connection> &connection) {
-                    return boost::shared_ptr<ClientInvocation>(
+                    boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, connection));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
+                    return invocation;
                 }
 
                 boost::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
                                                                              std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                              const std::string &objectName) {
-                    return boost::shared_ptr<ClientInvocation>(
-                            new ClientInvocation(clientContext, clientMessage, objectName));
+                    boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
+                                                new ClientInvocation(clientContext, clientMessage, objectName));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
+                    return invocation;
                 }
 
                 boost::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() {

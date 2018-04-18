@@ -37,7 +37,7 @@ namespace hazelcast {
                     client::exception::UndefinedErrorCodeException exception("testUndefinedErrorCodeException",
                                                                              "this is a test", undefinedError, callId,
                                                                              details);
-                    ASSERT_EQ(undefinedError, exception.getErrorCode());
+                    ASSERT_EQ(undefinedError, exception.getUndefinedErrorCode());
                     ASSERT_EQ(callId, exception.getMessageCallId());
                     ASSERT_EQ(details, exception.getDetailedErrorMessage());
                 }

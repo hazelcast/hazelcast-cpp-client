@@ -110,9 +110,7 @@ namespace hazelcast {
                 // cancel all runners
                 std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > > runners = runnersMap.clear();
                 for (typename std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > >
-                     ::const_iterator it = runners.begin();
-                        it != runners.end();
-                ++it) {
+                     ::const_iterator it = runners.begin();it != runners.end();++it) {
                     it->second->cancel();
                 }
 

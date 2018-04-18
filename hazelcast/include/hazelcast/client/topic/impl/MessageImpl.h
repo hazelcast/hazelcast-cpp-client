@@ -74,7 +74,7 @@ namespace hazelcast {
                 private:
                     std::auto_ptr<E> messageObject;
                     int64_t publishTime;
-                    const boost::shared_ptr<Member> &publishingMember;
+                    boost::shared_ptr<Member> publishingMember;
                     std::string name;
                 };
             }
@@ -121,7 +121,7 @@ namespace hazelcast {
                     private:
                         std::auto_ptr<TypedData> messageObject;
                         int64_t publishTime;
-                        const boost::shared_ptr<Member> &publishingMember;
+                        boost::shared_ptr<Member> publishingMember;
                         std::string name;
                     };
                 }

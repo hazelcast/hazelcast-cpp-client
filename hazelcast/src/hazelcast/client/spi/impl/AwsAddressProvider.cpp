@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/exception/IException.h"
 #include <boost/foreach.hpp>
+
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/spi/impl/AwsAddressProvider.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/util/AddressHelper.h"
@@ -25,8 +27,9 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
 
-                AwsAddressProvider::AwsAddressProvider(config::ClientAwsConfig &awsConfig,
-                                                       util::ILogger &logger) : logger(logger), awsClient(awsConfig) {
+                AwsAddressProvider::AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort,
+                                                       util::ILogger &logger) : awsMemberPort(
+                        util::IOUtil::to_string<int>(awsMemberPort)), logger(logger), awsClient(awsConfig) {
                 }
 
                 std::vector<Address> AwsAddressProvider::loadAddresses() {
@@ -35,10 +38,12 @@ namespace hazelcast {
                     std::vector<Address> addresses;
 
                     typedef std::map<std::string, std::string> LookupTable;
-                    BOOST_FOREACH(const LookupTable::value_type &privateAddress , lookupTable) {
-                       std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(privateAddress.first);
-                        addresses.insert(addresses.begin(), possibleAddresses.begin(), possibleAddresses.end());
-                    }
+                    BOOST_FOREACH(const LookupTable::value_type &privateAddress, lookupTable) {
+                                    std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
+                                            privateAddress.first + ":" + awsMemberPort);
+                                    addresses.insert(addresses.begin(), possibleAddresses.begin(),
+                                                     possibleAddresses.end());
+                                }
                     return addresses;
                 }
 

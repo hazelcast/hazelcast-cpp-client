@@ -33,7 +33,7 @@ namespace hazelcast {
         namespace test {
             class ClientConnectionTest : public ClientTestSupport {
             protected:
-                #ifdef HZ_BUILD_WITH_SSL
+            #ifdef HZ_BUILD_WITH_SSL
                 std::vector<internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
@@ -43,13 +43,15 @@ namespace hazelcast {
                     internal::socket::SSLSocket &socket = (internal::socket::SSLSocket &) aConnection->getSocket();
                     return socket.getCiphers();
                 }
-                #endif
+
+            #endif
             };
 
             TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
                 HazelcastServer instance(*g_srvFactory);
                 ClientConfig config;
-                config.addAddress(Address("8.8.8.8", 5701));
+                config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
+                        Address("8.8.8.8", 5701));
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
@@ -58,8 +60,8 @@ namespace hazelcast {
                 HazelcastServerFactory sslFactory(getSslFilePath());
                 HazelcastServer instance(sslFactory);
                 ClientConfig config;
-                config.addAddress(Address("8.8.8.8", 5701));
-                config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
+                config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
+                        Address("8.8.8.8", 5701)).getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
@@ -78,21 +80,19 @@ namespace hazelcast {
                 std::auto_ptr<ClientConfig> config = getConfig();
                 config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(
                         "HIGH");
-                config->getNetworkConfig().setConnectionTimeout(120 * 1000);
-                config->setProperty(ClientProperties::PROP_HEARTBEAT_TIMEOUT, "120000");
                 std::vector<internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(*config);
 
                 std::string unsupportedCipher = supportedCiphers[0].name;
                 config = getConfig();
                 config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).
                         setCipherList(std::string("HIGH:!") + unsupportedCipher);
-                
+
                 std::vector<internal::socket::SSLSocket::CipherInfo> newCiphers = getCiphers(*config);
 
                 ASSERT_EQ(supportedCiphers.size() - 1, newCiphers.size());
 
                 for (std::vector<internal::socket::SSLSocket::CipherInfo>::const_iterator it = newCiphers.begin();
-                        it != newCiphers.end();++it) {
+                     it != newCiphers.end(); ++it) {
                     ASSERT_NE(unsupportedCipher, it->name);
                 }
             }

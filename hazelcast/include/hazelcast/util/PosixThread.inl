@@ -140,6 +140,7 @@ namespace hazelcast {
 
             void startInternal(Runnable *targetObject) {
                 pthread_create(&thread, &attr, runnableThread, targetObject);
+                started = true;
             }
 
             pthread_t thread;

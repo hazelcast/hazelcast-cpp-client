@@ -38,13 +38,14 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AwsAddressProvider : public connection::AddressProvider {
                 public:
-                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
+                    AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort, util::ILogger &logger);
 
                     virtual ~AwsAddressProvider();
 
                     virtual std::vector<Address> loadAddresses();
 
                 private:
+                    std::string awsMemberPort;
                     util::ILogger &logger;
                     aws::AWSClient awsClient;
                     util::Atomic<std::map<std::string, std::string> > privateToPublic;
