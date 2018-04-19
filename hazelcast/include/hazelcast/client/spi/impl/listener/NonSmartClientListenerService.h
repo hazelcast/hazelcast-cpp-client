@@ -17,13 +17,9 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 #include <set>
 
+#include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
 #include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
@@ -39,10 +35,15 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace listener {
-                    class HAZELCAST_API NonSmartClientListenerService : public AbstractClientListenerService {
+                    class NonSmartClientListenerService
+                            : public AbstractClientListenerService,
+                              public connection::ConnectionListener,
+                              public boost::enable_shared_from_this<NonSmartClientListenerService> {
                     public:
                         NonSmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
-                                                   int32_t eventQueueCapacity);
+                                                      int32_t eventQueueCapacity);
+
+                        void start();
 
                         virtual std::string
                         registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
@@ -50,28 +51,22 @@ namespace hazelcast {
 
                         virtual bool deregisterListener(const std::string &registrationId);
 
+                        virtual void connectionAdded(const boost::shared_ptr<connection::Connection> &connection);
+
+                        virtual void connectionRemoved(const boost::shared_ptr<connection::Connection> &connection);
+
+                    protected:
+                        virtual std::string
+                        registerListenerInternal(const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+
+                        virtual bool deregisterListenerInternal(const std::string &userRegistrationId);
+
+                        virtual void
+                        connectionAddedInternal(const boost::shared_ptr<connection::Connection> &connection);
+
                     private:
                         typedef util::SynchronizedMap<ClientRegistrationKey, ClientEventRegistration> RegistrationsMap;
-
-                        class RegisterListenerTask : public util::Callable<std::string> {
-                        public:
-                            RegisterListenerTask(RegistrationsMap &activeRegistrations,
-                                                 std::set<ClientRegistrationKey> &userRegistrations,
-                                                 const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                                                 NonSmartClientListenerService &listenerService);
-
-                            virtual std::string call();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            RegistrationsMap &activeRegistrations;
-                            std::set<ClientRegistrationKey> &userRegistrations;
-                            const boost::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec;
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
-                            NonSmartClientListenerService &listenerService;
-                        };
 
                         boost::shared_ptr<ClientEventRegistration> invoke(const ClientRegistrationKey &registrationKey);
 
@@ -83,9 +78,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif // HAZELCAST_CLIENT_SPI_IMPL_LISTENER_NONSMARTCLIENTLISTERNERSERVICE_H_

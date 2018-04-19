@@ -105,6 +105,48 @@ namespace hazelcast {
                     AbstractClientListenerService::ClientEventProcessor::~ClientEventProcessor() {
                     }
 
+                    AbstractClientListenerService::RegisterListenerTask::RegisterListenerTask(
+                            const std::string &taskName,
+                            const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                            const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) : taskName(
+                            taskName), listenerService(listenerService), listenerMessageCodec(listenerMessageCodec),
+                                                                                                       handler(handler) {}
+
+                    std::string AbstractClientListenerService::RegisterListenerTask::call() {
+                        return listenerService->registerListenerInternal(listenerMessageCodec, handler);
+                    }
+
+                    const std::string AbstractClientListenerService::RegisterListenerTask::getName() const {
+                        return taskName;
+                    }
+
+                    AbstractClientListenerService::DeregisterListenerTask::DeregisterListenerTask(
+                            const std::string &taskName,
+                            const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                            const std::string &registrationId) : taskName(taskName), listenerService(listenerService),
+                                                                 registrationId(registrationId) {}
+
+                    bool AbstractClientListenerService::DeregisterListenerTask::call() {
+                        return listenerService->deregisterListenerInternal(registrationId);
+                    }
+
+                    const std::string AbstractClientListenerService::DeregisterListenerTask::getName() const {
+                        return taskName;
+                    }
+
+                    AbstractClientListenerService::ConnectionAddedTask::ConnectionAddedTask(const std::string &taskName,
+                                                                                            const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                                                                                            const boost::shared_ptr<connection::Connection> &connection)
+                            : taskName(taskName), listenerService(listenerService), connection(connection) {}
+
+                    const std::string AbstractClientListenerService::ConnectionAddedTask::getName() const {
+                        return taskName;
+                    }
+
+                    void AbstractClientListenerService::ConnectionAddedTask::run() {
+                        listenerService->connectionAddedInternal(connection);
+                    }
                 }
             }
         }

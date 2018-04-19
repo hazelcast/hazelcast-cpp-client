@@ -69,68 +69,6 @@ namespace hazelcast {
                         typedef std::map<boost::shared_ptr<connection::Connection>, ClientEventRegistration> ConnectionRegistrationsMap;
                         typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
 
-                        class RegisterListenerTask : public util::Callable<std::string> {
-                        public:
-                            RegisterListenerTask(RegistrationsMap &registrations,
-                                                 const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                                                 connection::ClientConnectionManagerImpl &clientConnectionManager,
-                                                 SmartClientListenerService &listenerService);
-
-                            virtual std::string call();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            RegistrationsMap &registrations;
-                            const boost::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec;
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
-                            connection::ClientConnectionManagerImpl &clientConnectionManager;
-                            SmartClientListenerService &listenerService;
-                        };
-
-                        class DeRegisterListenerInternalTask : public util::Callable<bool> {
-                        public:
-                            DeRegisterListenerInternalTask(SmartClientListenerService &listenerService,
-                                                   const std::string &registrationId);
-
-                            virtual bool call();
-
-                            virtual const std::string getName() const;
-
-                        private:
-                            SmartClientListenerService &listenerService;
-                            std::string registrationId;
-                        };
-
-                        class ConnectionAddedTask : public util::Runnable {
-                        public:
-                            ConnectionAddedTask(SmartClientListenerService &listenerService,
-                                                const boost::shared_ptr<connection::Connection> &connection);
-
-                            virtual const std::string getName() const;
-
-                            virtual void run();
-
-                        private:
-                            SmartClientListenerService &listenerService;
-                            const boost::shared_ptr<connection::Connection> connection;
-                        };
-
-                        class ConnectionRemovedTask : public util::Runnable {
-                        public:
-                            ConnectionRemovedTask(SmartClientListenerService &listenerService,
-                                                  const boost::shared_ptr<connection::Connection> &connection);
-
-                            virtual const std::string getName() const;
-
-                            virtual void run();
-
-                        private:
-                            SmartClientListenerService &listenerService;
-                            const boost::shared_ptr<connection::Connection> connection;
-                        };
-
                         class HearbeatResumedTask : public util::Runnable {
                         public:
                             HearbeatResumedTask(SmartClientListenerService &listenerService,
@@ -141,7 +79,36 @@ namespace hazelcast {
                             virtual void run();
 
                         private:
-                            SmartClientListenerService &listenerService;
+                            boost::shared_ptr<SmartClientListenerService> listenerService;
+                            const boost::shared_ptr<connection::Connection> connection;
+                        };
+
+                        class AsyncConnectToAllMembersTask : public util::Runnable {
+                        public:
+                            AsyncConnectToAllMembersTask(
+                                    const boost::shared_ptr<SmartClientListenerService> &listenerService);
+
+                            virtual void run();
+
+                            virtual const std::string getName() const;
+
+                        private:
+                            boost::shared_ptr<SmartClientListenerService> listenerService;
+                        };
+
+                        class ConnectionRemovedTask : public util::Runnable {
+                        public:
+                            ConnectionRemovedTask(const std::string &taskName,
+                                                  const boost::shared_ptr<SmartClientListenerService> &listenerService,
+                                                  const boost::shared_ptr<connection::Connection> &connection);
+
+                            virtual const std::string getName() const;
+
+                            virtual void run();
+
+                        private:
+                            std::string taskName;
+                            boost::shared_ptr<SmartClientListenerService> listenerService;
                             const boost::shared_ptr<connection::Connection> connection;
                         };
 
@@ -167,10 +134,21 @@ namespace hazelcast {
                         void invoke(const ClientRegistrationKey &registrationKey,
                                     const boost::shared_ptr<connection::Connection> &connection);
 
-                        bool deregisterListenerInternal(const std::string &userRegistrationId);
-
                         void invokeFromInternalThread(const ClientRegistrationKey &registrationKey,
                                                       const boost::shared_ptr<connection::Connection> &connection);
+
+                    protected:
+                        virtual std::string
+                        registerListenerInternal(const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+
+                        virtual bool deregisterListenerInternal(const std::string &userRegistrationId);
+
+                        virtual void
+                        connectionAddedInternal(const boost::shared_ptr<connection::Connection> &connection);
+
+                        virtual void
+                        connectionRemovedInternal(const boost::shared_ptr<connection::Connection> &connection);
                     };
                 }
             }

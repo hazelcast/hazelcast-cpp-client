@@ -17,12 +17,8 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_ABSTRACTCLIENTLISTERNERSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_ABSTRACTCLIENTLISTERNERSERVICE_H_
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 #include <stdint.h>
+#include "hazelcast/client/connection/ConnectionListener.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
@@ -87,7 +83,66 @@ namespace hazelcast {
                             util::ILogger &logger;
                         };
 
+                        class RegisterListenerTask : public util::Callable<std::string> {
+                        public:
+                            RegisterListenerTask(const std::string &taskName,
+                                                 const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                                                 const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+
+                            virtual std::string call();
+
+                            virtual const std::string getName() const;
+
+                        private:
+                            std::string taskName;
+                            boost::shared_ptr<AbstractClientListenerService> listenerService;
+                            boost::shared_ptr<impl::ListenerMessageCodec> listenerMessageCodec;
+                            boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler;
+                        };
+
+                        class DeregisterListenerTask : public util::Callable<bool> {
+                        public:
+                            DeregisterListenerTask(const std::string &taskName,
+                                                   const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                                                   const std::string &registrationId);
+
+                            virtual bool call();
+
+                            virtual const std::string getName() const;
+
+                        private:
+                            std::string taskName;
+                            boost::shared_ptr<AbstractClientListenerService> listenerService;
+                            std::string registrationId;
+                        };
+
+                        class ConnectionAddedTask : public util::Runnable {
+                        public:
+                            ConnectionAddedTask(const std::string &taskName,
+                                                const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                                                const boost::shared_ptr<connection::Connection> &connection);
+
+                            virtual const std::string getName() const;
+
+                            virtual void run();
+
+                        private:
+                            std::string taskName;
+                            boost::shared_ptr<AbstractClientListenerService> listenerService;
+                            const boost::shared_ptr<connection::Connection> connection;
+                        };
+
                         void removeEventHandler(int64_t callId);
+
+                        virtual std::string registerListenerInternal(
+                                const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                                const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) = 0;
+
+                        virtual bool deregisterListenerInternal(const std::string &registrationId) = 0;
+
+                        virtual void
+                        connectionAddedInternal(const boost::shared_ptr<connection::Connection> &connection) = 0;
 
                         util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > eventHandlerMap;
                         ClientContext &clientContext;
@@ -101,9 +156,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif // HAZELCAST_CLIENT_SPI_IMPL_LISTENER_ABSTRACTCLIENTLISTERNERSERVICE_H_

@@ -53,8 +53,8 @@ namespace hazelcast {
                         trySyncConnectToAllMembers();
 
                         boost::shared_ptr<util::Callable<std::string> > task(
-                                new RegisterListenerTask(registrations, listenerMessageCodec, handler,
-                                                         clientConnectionManager, *this));
+                                new RegisterListenerTask("SmartClientListenerService::registerListener",
+                                                         shared_from_this(), listenerMessageCodec, handler));
                         return registrationExecutor.submit<std::string>(task)->get();
                     }
 
@@ -66,7 +66,8 @@ namespace hazelcast {
 
                         boost::shared_ptr<util::Future<bool> > future = registrationExecutor.submit(
                                 boost::shared_ptr<util::Callable<bool> >(
-                                        new DeRegisterListenerInternalTask(*this, registrationId)));
+                                        new DeregisterListenerTask("SmartClientListenerService::deregisterListener",
+                                                                   shared_from_this(), registrationId)));
 
                         return future->get();
                     }
@@ -171,6 +172,104 @@ namespace hazelcast {
                         (*registrationMap)[connection] = registration;
                     }
 
+                    void SmartClientListenerService::connectionAdded(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(
+                                        new ConnectionAddedTask("SmartClientListenerService::connectionAdded",
+                                                                shared_from_this(), connection)));
+                    }
+
+                    void SmartClientListenerService::connectionRemoved(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(
+                                        new ConnectionRemovedTask("SmartClientListenerService::connectionRemoved",
+                                                                  shared_from_this(), connection)));
+                    }
+
+                    void SmartClientListenerService::heartbeatResumed(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(new HearbeatResumedTask(*this, connection)));
+                    }
+
+                    void SmartClientListenerService::heartbeatStopped(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //no op
+                    }
+
+                    void
+                    SmartClientListenerService::invokeFromInternalThread(const ClientRegistrationKey &registrationKey,
+                                                                         const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        try {
+                            invoke(registrationKey, connection);
+                        } catch (exception::IOException &) {
+                            boost::shared_ptr<std::vector<ClientRegistrationKey> > failedRegsToConnection = failedRegistrations.get(
+                                    connection);
+                            if (failedRegsToConnection.get() == NULL) {
+                                failedRegsToConnection = boost::shared_ptr<std::vector<ClientRegistrationKey> >(
+                                        new std::vector<ClientRegistrationKey>());
+                                failedRegistrations.put(connection, failedRegsToConnection);
+                            }
+                            failedRegsToConnection->push_back(registrationKey);
+                        } catch (exception::IException &e) {
+                            logger.warning() << "Listener " << registrationKey
+                                             << " can not be added to a new connection: "
+                                             << *connection << ", reason: " << e.getMessage();
+                        }
+                    }
+
+                    void SmartClientListenerService::start() {
+                        clientConnectionManager.addConnectionListener(shared_from_this());
+                        clientConnectionManager.addConnectionHeartbeatListener(shared_from_this());
+
+                        registrationExecutor.scheduleAtFixedRate(
+                                boost::shared_ptr<util::Runnable>(new AsyncConnectToAllMembersTask(shared_from_this())),
+                                1000, 1000);
+                    }
+
+                    std::string SmartClientListenerService::registerListenerInternal(
+                            const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
+                        std::string userRegistrationId = util::UuidUtil::newUnsecureUuidString();
+
+                        ClientRegistrationKey registrationKey(userRegistrationId, handler, listenerMessageCodec);
+                        registrations.put(registrationKey, boost::shared_ptr<ConnectionRegistrationsMap>(
+                                new ConnectionRegistrationsMap()));
+                        BOOST_FOREACH (const boost::shared_ptr<connection::Connection> &connection,
+                                       clientConnectionManager.getActiveConnections()) {
+                                        try {
+                                            invoke(registrationKey, connection);
+                                        } catch (exception::IException &e) {
+                                            if (connection->isAlive()) {
+                                                deregisterListenerInternal(userRegistrationId);
+                                                throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                                                        "SmartClientListenerService::RegisterListenerTask::call")
+                                                        << "Listener can not be added " << e).build();
+                                            }
+                                        }
+                                    }
+                        return userRegistrationId;
+                    }
+
                     bool SmartClientListenerService::deregisterListenerInternal(const std::string &userRegistrationId) {
                         //This method should only be called from registrationExecutor
 /*                      TODO
@@ -225,175 +324,26 @@ namespace hazelcast {
                         return successful;
                     }
 
-                    void SmartClientListenerService::connectionAdded(
+                    void SmartClientListenerService::connectionAddedInternal(
                             const boost::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-                        registrationExecutor.execute(
-                                boost::shared_ptr<util::Runnable>(new ConnectionAddedTask(*this, connection)));
-                    }
-
-                    void SmartClientListenerService::connectionRemoved(
-                            const boost::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-
-                        registrationExecutor.execute(
-                                boost::shared_ptr<util::Runnable>(new ConnectionRemovedTask(*this, connection)));
-                    }
-
-                    void SmartClientListenerService::heartbeatResumed(
-                            const boost::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-                        registrationExecutor.execute(
-                                boost::shared_ptr<util::Runnable>(new HearbeatResumedTask(*this, connection)));
-                    }
-
-                    void SmartClientListenerService::heartbeatStopped(
-                            const boost::shared_ptr<connection::Connection> &connection) {
-                        //no op
-                    }
-
-                    void
-                    SmartClientListenerService::invokeFromInternalThread(const ClientRegistrationKey &registrationKey,
-                                                                         const boost::shared_ptr<connection::Connection> &connection) {
-                        //This method should only be called from registrationExecutor
-/*                      TODO
-                        assert (Thread.currentThread().getName().contains("eventRegistration"));
-*/
-                        try {
-                            invoke(registrationKey, connection);
-                        } catch (exception::IOException &) {
-                            boost::shared_ptr<std::vector<ClientRegistrationKey> > failedRegsToConnection = failedRegistrations.get(
-                                    connection);
-                            if (failedRegsToConnection.get() == NULL) {
-                                failedRegsToConnection = boost::shared_ptr<std::vector<ClientRegistrationKey> >(
-                                        new std::vector<ClientRegistrationKey>());
-                                failedRegistrations.put(connection, failedRegsToConnection);
-                            }
-                            failedRegsToConnection->push_back(registrationKey);
-                        } catch (exception::IException &e) {
-                            logger.warning() << "Listener " << registrationKey
-                                             << " can not be added to a new connection: "
-                                             << *connection << ", reason: " << e.getMessage();
-                        }
-                    }
-
-                    void SmartClientListenerService::start() {
-                        clientConnectionManager.addConnectionListener(shared_from_this());
-                        clientConnectionManager.addConnectionHeartbeatListener(shared_from_this());
-/* TODO
-                        ClientClusterService &clientClusterService = clientContext.getClientClusterService();
-                        registrationExecutor.scheduleWithFixedDelay(new Runnable() {
-                            @Override
-                            public void run() {
-                                Collection<Member> memberList = clientClusterService.getMemberList();
-                                for (Member member : memberList) {
-                                    try {
-                                        clientConnectionManager.getOrTriggerConnect(member.getAddress());
-                                    } catch (IOException e) {
-                                        return;
-                                    }
-                                }
-                            }
-                        }, 1, 1, TimeUnit.SECONDS);
-*/
-                    }
-
-                    SmartClientListenerService::RegisterListenerTask::RegisterListenerTask(
-                            SmartClientListenerService::RegistrationsMap &registrations,
-                            const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                            connection::ClientConnectionManagerImpl &clientConnectionManager,
-                            SmartClientListenerService &listenerService) : registrations(registrations),
-                                                                           listenerMessageCodec(listenerMessageCodec),
-                                                                           handler(handler), clientConnectionManager(
-                                    clientConnectionManager), listenerService(listenerService) {
-                    }
-
-                    std::string SmartClientListenerService::RegisterListenerTask::call() {
-                        std::string userRegistrationId = util::UuidUtil::newUnsecureUuidString();
-
-                        ClientRegistrationKey registrationKey(userRegistrationId, handler, listenerMessageCodec);
-                        registrations.put(registrationKey, boost::shared_ptr<ConnectionRegistrationsMap>(
-                                new ConnectionRegistrationsMap()));
-                        BOOST_FOREACH (const boost::shared_ptr<connection::Connection> &connection,
-                                       clientConnectionManager.getActiveConnections()) {
-                                        try {
-                                            listenerService.invoke(registrationKey, connection);
-                                        } catch (exception::IException &e) {
-                                            if (connection->isAlive()) {
-                                                listenerService.deregisterListenerInternal(userRegistrationId);
-                                                throw (exception::ExceptionBuilder<exception::HazelcastException>(
-                                                        "SmartClientListenerService::RegisterListenerTask::call")
-                                                        << "Listener can not be added " << e).build();
-                                            }
-                                        }
-                                    }
-                        return userRegistrationId;
-                    }
-
-                    const std::string SmartClientListenerService::RegisterListenerTask::getName() const {
-                        return "SmartClientListenerService::RegisterListenerTask";
-                    }
-
-                    const std::string SmartClientListenerService::DeRegisterListenerInternalTask::getName() const {
-                        return "SmartClientListenerService::DeRegisterListenerTask";
-                    }
-
-                    SmartClientListenerService::DeRegisterListenerInternalTask::DeRegisterListenerInternalTask(
-                            SmartClientListenerService &listenerService, const std::string &registrationId)
-                            : listenerService(listenerService), registrationId(registrationId) {}
-
-                    bool SmartClientListenerService::DeRegisterListenerInternalTask::call() {
-                        return listenerService.deregisterListenerInternal(registrationId);;
-                    }
-
-                    const std::string SmartClientListenerService::ConnectionAddedTask::getName() const {
-                        return "SmartClientListenerService::ConnectionAddedTask";
-                    }
-
-                    void SmartClientListenerService::ConnectionAddedTask::run() {
-                        BOOST_FOREACH(const ClientRegistrationKey &registrationKey,
-                                      listenerService.registrations.keys()) {
-                                        listenerService.invokeFromInternalThread(registrationKey, connection);
+                        BOOST_FOREACH(const ClientRegistrationKey &registrationKey, registrations.keys()) {
+                                        invokeFromInternalThread(registrationKey, connection);
                                     }
                     }
 
-                    SmartClientListenerService::ConnectionAddedTask::ConnectionAddedTask(
-                            SmartClientListenerService &listenerService,
-                            const boost::shared_ptr<connection::Connection> &connection) : listenerService(
-                            listenerService), connection(connection) {}
-
-                    SmartClientListenerService::ConnectionRemovedTask::ConnectionRemovedTask(
-                            SmartClientListenerService &listenerService,
-                            const boost::shared_ptr<connection::Connection> &connection) : listenerService(
-                            listenerService), connection(connection) {}
-
-                    const std::string SmartClientListenerService::ConnectionRemovedTask::getName() const {
-                        return "SmartClientListenerService::ConnectionRemovedTask";
-                    }
-
-                    void SmartClientListenerService::ConnectionRemovedTask::run() {
-                        listenerService.failedRegistrations.remove(connection);
+                    void SmartClientListenerService::connectionRemovedInternal(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        failedRegistrations.remove(connection);
                         typedef std::vector<std::pair<ClientRegistrationKey, boost::shared_ptr<ConnectionRegistrationsMap> > > ENTRY_VECTOR;
-                        BOOST_FOREACH(const ENTRY_VECTOR::value_type &registrationMapEntry,
-                                      listenerService.registrations.entrySet()) {
+                        BOOST_FOREACH(const ENTRY_VECTOR::value_type &registrationMapEntry, registrations.entrySet()) {
                                         boost::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
                                         ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
                                                 connection);
                                         if (foundRegistration != registrationMap->end()) {
-                                            listenerService.removeEventHandler(foundRegistration->second.getCallId());
+                                            removeEventHandler(foundRegistration->second.getCallId());
                                             registrationMap->erase(foundRegistration);
-                                            listenerService.registrations.put(registrationMapEntry.first,
-                                                                              registrationMap);
+                                            registrations.put(registrationMapEntry.first,
+                                                              registrationMap);
                                         }
                                     }
                     }
@@ -401,21 +351,58 @@ namespace hazelcast {
                     SmartClientListenerService::HearbeatResumedTask::HearbeatResumedTask(
                             SmartClientListenerService &listenerService,
                             const boost::shared_ptr<connection::Connection> &connection) : listenerService(
-                            listenerService), connection(connection) {}
+                            listenerService.shared_from_this()), connection(connection) {}
 
                     const std::string SmartClientListenerService::HearbeatResumedTask::getName() const {
                         return "SmartClientListenerService::HearbeatResumedTask";
                     }
 
                     void SmartClientListenerService::HearbeatResumedTask::run() {
-                        boost::shared_ptr<std::vector<ClientRegistrationKey> > registrationKeys = listenerService.failedRegistrations.get(
+                        boost::shared_ptr<std::vector<ClientRegistrationKey> > registrationKeys = listenerService->failedRegistrations.get(
                                 connection);
                         if (registrationKeys.get()) {
                             BOOST_FOREACH(const ClientRegistrationKey &registrationKey, *registrationKeys) {
-                                            listenerService.invokeFromInternalThread(registrationKey, connection);
+                                            listenerService->invokeFromInternalThread(registrationKey, connection);
                                         }
                         }
                     }
+
+                    SmartClientListenerService::AsyncConnectToAllMembersTask::AsyncConnectToAllMembersTask(
+                            const boost::shared_ptr<SmartClientListenerService> &listenerService) : listenerService(
+                            listenerService) {}
+
+                    void SmartClientListenerService::AsyncConnectToAllMembersTask::run() {
+                        std::vector<Member> memberList = listenerService->clientContext.getClientClusterService().getMemberList();
+                        BOOST_FOREACH (const Member &member, memberList) {
+                                        try {
+                                            listenerService->clientContext.getConnectionManager().getOrTriggerConnect(
+                                                    member.getAddress());
+                                        } catch (exception::IOException &) {
+                                            return;
+                                        }
+                                    }
+                    }
+
+                    const std::string SmartClientListenerService::AsyncConnectToAllMembersTask::getName() const {
+                        return "SmartClientListenerService::AsyncConnectToAllMembersTask";
+                    }
+
+                    SmartClientListenerService::ConnectionRemovedTask::ConnectionRemovedTask(
+                            const std::string &taskName,
+                            const boost::shared_ptr<SmartClientListenerService> &listenerService,
+                            const boost::shared_ptr<connection::Connection> &connection) : taskName(taskName),
+                                                                                           listenerService(
+                                                                                                   listenerService),
+                                                                                           connection(connection) {}
+
+                    const std::string  SmartClientListenerService::ConnectionRemovedTask::getName() const {
+                        return taskName;
+                    }
+
+                    void  SmartClientListenerService::ConnectionRemovedTask::run() {
+                        listenerService->connectionRemovedInternal(connection);
+                    }
+
                 }
             }
         }

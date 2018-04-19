@@ -18,8 +18,10 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/util/Callable.h"
 #include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,6 +36,10 @@ namespace hazelcast {
 
                     }
 
+                    void NonSmartClientListenerService::start() {
+                        clientContext.getConnectionManager().addConnectionListener(shared_from_this());
+                    }
+
                     std::string NonSmartClientListenerService::registerListener(
                             const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
                             const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
@@ -43,14 +49,39 @@ namespace hazelcast {
 */
 
                         boost::shared_ptr<util::Callable<std::string> > task(
-                                new RegisterListenerTask(activeRegistrations, userRegistrations, listenerMessageCodec,
-                                                         handler, *this));
+                                new RegisterListenerTask("NonSmartClientListenerService::registerListener",
+                                                         shared_from_this(), listenerMessageCodec, handler));
 
                         return registrationExecutor.submit<std::string>(task)->get();
                     }
 
                     bool NonSmartClientListenerService::deregisterListener(const std::string &registrationId) {
-                        return false;
+                        //This method should not be called from registrationExecutor
+/*                      TODO
+                        assert (!Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        boost::shared_ptr<util::Callable<bool> > task(
+                                new DeregisterListenerTask("NonSmartClientListenerService::deregisterListener",
+                                                           shared_from_this(), registrationId));
+
+                        return registrationExecutor.submit<bool>(task)->get();
+                    }
+
+                    void NonSmartClientListenerService::connectionAdded(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(
+                                        new ConnectionAddedTask("NonSmartClientListenerService::connectionAdded",
+                                                                shared_from_this(), connection)));
+                    }
+
+                    void NonSmartClientListenerService::connectionRemoved(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        // no-op
                     }
 
                     boost::shared_ptr<ClientEventRegistration>
@@ -72,43 +103,85 @@ namespace hazelcast {
                         std::string registrationId = registrationKey.getCodec()->decodeAddResponse(*future->get());
                         handler->onListenerRegister();
                         boost::shared_ptr<connection::Connection> connection = future->getInvocation()->getSendConnection();
-                        return boost::shared_ptr<ClientEventRegistration>(new ClientEventRegistration(registrationId, request->getCorrelationId(), connection,
-                                                       registrationKey.getCodec()));
+                        return boost::shared_ptr<ClientEventRegistration>(
+                                new ClientEventRegistration(registrationId,
+                                                            invocation->getClientMessage()->getCorrelationId(),
+                                                            connection, registrationKey.getCodec()));
 
                     }
 
-                    NonSmartClientListenerService::RegisterListenerTask::RegisterListenerTask(
-                            NonSmartClientListenerService::RegistrationsMap &activeRegistrations,
-                            std::set<ClientRegistrationKey> &userRegistrations,
+                    std::string NonSmartClientListenerService::registerListenerInternal(
                             const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                            NonSmartClientListenerService &listenerService) : activeRegistrations(activeRegistrations),
-                                                                              userRegistrations(userRegistrations),
-                                                                              listenerMessageCodec(
-                                                                                      listenerMessageCodec),
-                                                                              handler(handler),
-                                                                              listenerService(listenerService) {
-                    }
-
-                    std::string NonSmartClientListenerService::RegisterListenerTask::call() {
+                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
                         std::string userRegistrationId = util::UuidUtil::newUnsecureUuidString();
                         ClientRegistrationKey registrationKey(userRegistrationId, handler, listenerMessageCodec);
                         try {
-                            boost::shared_ptr<ClientEventRegistration> registration = listenerService.invoke(
-                                                                registrationKey);
+                            boost::shared_ptr<ClientEventRegistration> registration = invoke(registrationKey);
                             activeRegistrations.put(registrationKey, registration);
                             userRegistrations.insert(registrationKey);
                         } catch (exception::IException &e) {
                             throw (exception::ExceptionBuilder<exception::HazelcastException>(
-                                    "NonSmartClientListenerService::RegisterListenerTask::call")
+                                    "NonSmartClientListenerService::registerListenerInternal")
                                     << "Listener can not be added. " << e).build();
                         }
                         return userRegistrationId;
                     }
 
-                    const std::string NonSmartClientListenerService::RegisterListenerTask::getName() const {
-                        return "NonSmartClientListenerService::RegisterListenerTask";
+                    bool
+                    NonSmartClientListenerService::deregisterListenerInternal(const std::string &userRegistrationId) {
+                        ClientRegistrationKey key(userRegistrationId);
+
+                        if (!userRegistrations.erase(key)) {
+                            return false;
+                        }
+
+                        boost::shared_ptr<ClientEventRegistration> registration = activeRegistrations.get(key);
+                        if (registration.get() == NULL) {
+                            return true;
+                        }
+
+                        std::auto_ptr<protocol::ClientMessage> request = registration->getCodec()->encodeRemoveRequest(
+                                registration->getServerRegistrationId());
+                        try {
+                            boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
+                                                                                                      request, "");
+                            boost::shared_ptr<ClientInvocationFuture> future = ClientInvocation::invoke(invocation);
+                            future->get();
+                            removeEventHandler(registration->getCallId());
+                            activeRegistrations.remove(key);
+                        } catch (exception::IException &e) {
+                            throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                                    "NonSmartClientListenerService::deregisterListenerInternal") << "Listener with ID "
+                                                                                                 << userRegistrationId
+                                                                                                 << " could not be removed. Cause:"
+                                                                                                 << e).build();
+                        }
+                        return true;
                     }
+
+                    void NonSmartClientListenerService::connectionAddedInternal(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        BOOST_FOREACH (const ClientRegistrationKey &registrationKey, userRegistrations) {
+                                        try {
+                                            boost::shared_ptr<ClientEventRegistration> oldRegistration = activeRegistrations.get(
+                                                    registrationKey);
+                                            if (oldRegistration.get() != NULL) {
+                                                //if there was a registration corresponding to same user listener key before,
+                                                //then we need to remove its event handler as cleanup
+                                                removeEventHandler(oldRegistration->getCallId());
+                                            }
+                                            boost::shared_ptr<ClientEventRegistration> eventRegistration = invoke(
+                                                    registrationKey);
+                                            activeRegistrations.put(registrationKey, eventRegistration);
+                                        } catch (exception::IException &e) {
+                                            logger.warning() << "Listener " << registrationKey
+                                                             << " can not be added to new connection: "
+                                                             << *connection << " Cause:" << e;
+                                        }
+                                    }
+
+                    }
+
                 }
             }
         }
