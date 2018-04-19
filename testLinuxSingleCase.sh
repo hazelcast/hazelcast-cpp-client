@@ -54,6 +54,18 @@ git submodule update --init
 
 rm -rf ${BUILD_DIR}
 mkdir ${BUILD_DIR}
+
+pip install --user -r hazelcast/test/test_requirements.txt
+if [ $? -ne 0 ]; then
+    echo "Failed to install python hazelcast-remote-controller library."
+    exit 1
+fi
+
+scripts/start-rc.sh &
+rcPid=$!
+
+echo "Spawned remote controller with pid ${rcPid}"
+
 cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
@@ -68,17 +80,6 @@ then
 fi
 
 cd ..
-
-pip install --user -r hazelcast/test/test_requirements.txt
-if [ $? -ne 0 ]; then
-    echo "Failed to install python hazelcast-remote-controller library."
-    exit 1
-fi
-
-scripts/start-rc.sh &
-rcPid=$!
-
-echo "Spawned remote controller with pid ${rcPid}"
 
 DEFAULT_TIMEOUT=300 #seconds
 SERVER_PORT=9701
