@@ -159,9 +159,8 @@ namespace hazelcast {
                                                                                                   request, "",
                                                                                                   connection);
                         invocation->setEventHandler(handler);
-                        boost::shared_ptr<ClientInvocationFuture> future = ClientInvocation::invokeUrgent(invocation);
 
-                        boost::shared_ptr<protocol::ClientMessage> clientMessage = future->get();
+                        boost::shared_ptr<protocol::ClientMessage> clientMessage = invocation->invokeUrgent()->get();
 
                         std::string serverRegistrationId = codec->decodeAddResponse(*clientMessage);
                         handler->onListenerRegister();
@@ -294,7 +293,7 @@ namespace hazelcast {
                                 boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
                                                                                                           request, "",
                                                                                                           subscriber);
-                                ClientInvocation::invoke(invocation)->get();
+                                invocation->invoke()->get();
                                 removeEventHandler(registration.getCallId());
 
                                 ConnectionRegistrationsMap::iterator oldEntry = it;

@@ -295,8 +295,7 @@ namespace hazelcast {
                                                                                                    principal.get());
                 boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         client, clientMessage, "", connection);
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = spi::impl::ClientInvocation::invokeUrgent(
-                        clientInvocation);
+                boost::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = clientInvocation->invokeUrgent();
                 // TODO: let this return a future and pass it to AuthCallback as in Java
                 executionService.schedule(
                         boost::shared_ptr<util::Runnable>(new TimeoutAuthenticationTask(invocationFuture, *this)),

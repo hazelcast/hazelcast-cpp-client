@@ -54,7 +54,7 @@ namespace hazelcast {
                 boost::shared_ptr<connection::Connection> connection = context->getConnection();
                 boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
-                spi::impl::ClientInvocation::invoke(invocation)->get();
+                invocation->invoke()->get();
             }
 
             void TransactionalObject::onDestroy() {
@@ -74,7 +74,7 @@ namespace hazelcast {
                 boost::shared_ptr<connection::Connection> connection = context->getConnection();
                 boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         context->getClientContext(), request, name, connection);
-                return spi::impl::ClientInvocation::invoke(invocation)->get();
+                return invocation->invoke()->get();
             }
         }
     }

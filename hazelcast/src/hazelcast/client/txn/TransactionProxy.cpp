@@ -197,7 +197,7 @@ namespace hazelcast {
                     std::auto_ptr<protocol::ClientMessage> request) {
                 boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         clientContext, request, "", connection);
-                return spi::impl::ClientInvocation::invoke(invocation)->get();
+                return invocation->invoke()->get();
             }
 
             spi::ClientContext &TransactionProxy::getClientContext() const {

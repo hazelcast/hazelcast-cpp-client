@@ -86,20 +86,18 @@ namespace hazelcast {
                                                                           clientContext.getClientExecutionService())) {
                 }
 
-                boost::shared_ptr<ClientInvocationFuture>
-                ClientInvocation::invoke(boost::shared_ptr<ClientInvocation> &invocation) {
-                    assert (invocation->clientMessage.get() != NULL);
-                    invocation->clientMessage->setCorrelationId(invocation->callIdSequence.next());
-                    invocation->invokeOnSelection(invocation);
-                    return invocation->clientInvocationFuture;
+                boost::shared_ptr<ClientInvocationFuture> ClientInvocation::invoke() {
+                    assert (clientMessage.get() != NULL);
+                    clientMessage->setCorrelationId(callIdSequence.next());
+                    invokeOnSelection(shared_from_this());
+                    return clientInvocationFuture;
                 }
 
-                boost::shared_ptr<ClientInvocationFuture>
-                ClientInvocation::invokeUrgent(boost::shared_ptr<ClientInvocation> &invocation) {
-                    assert (invocation->clientMessage.get() != NULL);
-                    invocation->clientMessage->setCorrelationId(invocation->callIdSequence.forceNext());
-                    invocation->invokeOnSelection(invocation);
-                    return invocation->clientInvocationFuture;
+                boost::shared_ptr<ClientInvocationFuture> ClientInvocation::invokeUrgent() {
+                    assert (clientMessage.get() != NULL);
+                    clientMessage->setCorrelationId(callIdSequence.forceNext());
+                    invokeOnSelection(shared_from_this());
+                    return clientInvocationFuture;
                 }
 
                 void ClientInvocation::invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation) {

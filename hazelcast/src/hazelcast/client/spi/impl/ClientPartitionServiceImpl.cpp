@@ -106,7 +106,7 @@ namespace hazelcast {
                         boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client, clientMessage,
                                                                                                   "", ownerConnection);
                         invocation->setEventHandler(shared_from_this());
-                        ClientInvocation::invokeUrgent(invocation)->get();
+                        invocation->invokeUrgent()->get();
                     }
                 }
 
@@ -165,7 +165,7 @@ namespace hazelcast {
                         std::auto_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::RequestParameters::encode();
                         boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                                   requestMessage, "");
-                        boost::shared_ptr<ClientInvocationFuture> future = ClientInvocation::invokeUrgent(invocation);
+                        boost::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         try {
                             boost::shared_ptr<protocol::ClientMessage> responseMessage = future->get();
                             protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =
@@ -206,7 +206,7 @@ namespace hazelcast {
                         std::auto_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::RequestParameters::encode();
                         boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                                   requestMessage, "");
-                        boost::shared_ptr<ClientInvocationFuture> future = ClientInvocation::invokeUrgent(invocation);
+                        boost::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         future->andThen(partitionService.refreshTaskCallback);
                     } catch (exception::IException &e) {
                         if (client.getLifecycleService().isRunning()) {

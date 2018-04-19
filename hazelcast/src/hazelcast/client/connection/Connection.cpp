@@ -75,7 +75,7 @@ namespace hazelcast {
             void Connection::connect(int timeoutInMillis) {
                 if (!isAlive()) {
                     std::ostringstream out;
-                    out << "Connection " << connectionId << " is already closed!";
+                    out << "Connection " << (*this) << " is already closed!";
                     throw exception::IOException("Connection::connect", out.str());
                 }
 

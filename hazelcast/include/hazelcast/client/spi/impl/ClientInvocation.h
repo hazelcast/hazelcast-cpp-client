@@ -85,9 +85,9 @@ namespace hazelcast {
                                                                       std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                       const std::string &objectName);
 
-                    static boost::shared_ptr<ClientInvocationFuture> invoke(boost::shared_ptr<ClientInvocation> &invocation);
+                    boost::shared_ptr<ClientInvocationFuture> invoke();
 
-                    static boost::shared_ptr<ClientInvocationFuture> invokeUrgent(boost::shared_ptr<ClientInvocation> &invocation);
+                    boost::shared_ptr<ClientInvocationFuture> invokeUrgent();
 
                     void run();
 

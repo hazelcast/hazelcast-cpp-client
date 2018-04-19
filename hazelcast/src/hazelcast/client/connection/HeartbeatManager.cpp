@@ -82,8 +82,7 @@ namespace hazelcast {
                             client, request, "", connection);
                     clientInvocation->setBypassHeartbeatCheck(true);
                     connection->onHeartbeatRequested();
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = spi::impl::ClientInvocation::invokeUrgent(
-                            clientInvocation);
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = clientInvocation->invokeUrgent();
                     clientInvocationFuture->andThen(boost::shared_ptr<
                             impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
                             new HearbeatCallback(connection, logger)));
