@@ -45,14 +45,15 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            Connection::Connection(const Address &address, spi::ClientContext &clientContext, InSelector &iListener,
-                                   OutSelector &oListener, internal::socket::SocketFactory &socketFactory)
+            Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
+                                   InSelector &iListener, OutSelector &oListener,
+                                   internal::socket::SocketFactory &socketFactory)
                     : closedTimeMillis(0), lastHeartbeatRequestedMillis(0), lastHeartbeatReceivedMillis(0),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
                       writeHandler(*this, oListener, 16 << 10),
-                      heartBeating(true), connectionId(-1), pendingPacketCount(0),
+                      heartBeating(true), connectionId(connectionId), pendingPacketCount(0),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
                 socket = socketFactory.create(address);
             }
@@ -153,7 +154,8 @@ namespace hazelcast {
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     spi::impl::listener::AbstractClientListenerService &listenerService =
                             (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();
-                    listenerService.handleClientMessage(boost::shared_ptr<protocol::ClientMessage>(message), connection);
+                    listenerService.handleClientMessage(boost::shared_ptr<protocol::ClientMessage>(message),
+                                                        connection);
                 } else {
                     invocationService.handleClientMessage(connection, message);
                 }
@@ -283,6 +285,10 @@ namespace hazelcast {
                    << '}';
 
                 return os;
+            }
+
+            bool Connection::operator<(const Connection &rhs) const {
+                return connectionId < rhs.connectionId;
             }
         }
     }

@@ -402,6 +402,21 @@ namespace hazelcast {
                         listenerService->connectionRemovedInternal(connection);
                     }
 
+                    bool SmartClientListenerService::ConnectionPointerLessComparator::operator()(
+                            const boost::shared_ptr<connection::Connection> &lhs,
+                            const boost::shared_ptr<connection::Connection> &rhs) const {
+                        if (lhs == rhs) {
+                            return false;
+                        }
+                        if (!lhs.get()) {
+                            return true;
+                        }
+                        if (!rhs.get()) {
+                            return false;
+                        }
+
+                        return *lhs < *rhs;
+                    }
                 }
             }
         }

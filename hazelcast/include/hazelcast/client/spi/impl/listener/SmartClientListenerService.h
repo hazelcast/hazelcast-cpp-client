@@ -66,7 +66,12 @@ namespace hazelcast {
                         virtual void start();
 
                     private:
-                        typedef std::map<boost::shared_ptr<connection::Connection>, ClientEventRegistration> ConnectionRegistrationsMap;
+                        struct ConnectionPointerLessComparator {
+                            bool operator()(const boost::shared_ptr<connection::Connection> &lhs,
+                                            const boost::shared_ptr<connection::Connection> &rhs) const;
+                        };
+
+                        typedef std::map<boost::shared_ptr<connection::Connection>, ClientEventRegistration, ConnectionPointerLessComparator> ConnectionRegistrationsMap;
                         typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
 
                         class HearbeatResumedTask : public util::Runnable {

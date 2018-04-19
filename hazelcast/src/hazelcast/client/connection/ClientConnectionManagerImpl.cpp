@@ -71,7 +71,7 @@ namespace hazelcast {
                       inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector))),
                       outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector))),
                       executionService(client.getClientExecutionService()),
-                      translator(addressTranslator), connectionIdCounter(0), socketFactory(client) {
+                      translator(addressTranslator), connectionIdGen(0), socketFactory(client) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
 
                 int64_t connTimeout = networkConfig.getConnectionTimeout();
@@ -192,7 +192,7 @@ namespace hazelcast {
             boost::shared_ptr<Connection>
             ClientConnectionManagerImpl::createSocketConnection(const Address &address) {
                 boost::shared_ptr<Connection> conn(
-                        new Connection(address, client, inSelector, outSelector, socketFactory));
+                        new Connection(address, client, ++connectionIdGen, inSelector, outSelector, socketFactory));
 
                 conn->connect(client.getClientConfig().getConnectionTimeout());
                 if (socketInterceptor != NULL) {

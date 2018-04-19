@@ -334,7 +334,7 @@ namespace hazelcast {
                 bool shuffleMemberList;
                 std::vector<boost::shared_ptr<AddressProvider> > addressProviders;
 
-                util::Atomic<int> connectionIdCounter;
+                util::Atomic<int> connectionIdGen;
                 internal::socket::SocketFactory socketFactory;
 
                 util::Mutex lock;

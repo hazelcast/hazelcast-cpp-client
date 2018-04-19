@@ -66,7 +66,7 @@ namespace hazelcast {
             class HAZELCAST_API Connection : public util::Closeable, public protocol::IMessageHandler,
                                              public boost::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
+                Connection(const Address& address, spi::ClientContext& clientContext, int connectionId, InSelector& iListener,
                            OutSelector& listener, internal::socket::SocketFactory &socketFactory);
 
                 virtual ~Connection();
@@ -123,6 +123,8 @@ namespace hazelcast {
                 bool operator==(const Connection &rhs) const;
 
                 bool operator!=(const Connection &rhs) const;
+
+                bool operator<(const Connection &rhs) const;
 
                 const std::string &getConnectedServerVersionString() const;
 
