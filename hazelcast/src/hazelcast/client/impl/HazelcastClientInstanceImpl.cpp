@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
 #include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
 #include "hazelcast/client/spi/impl/listener/NonSmartClientListenerService.h"
@@ -86,6 +87,8 @@ namespace hazelcast {
 
                 invocationService = initInvocationService();
                 listenerService = initListenerService();
+
+                lockReferenceIdGenerator.reset(new impl::ClientLockReferenceIdGenerator());
 
                 lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
 
@@ -275,6 +278,11 @@ namespace hazelcast {
 
             spi::LifecycleService &HazelcastClientInstanceImpl::getLifecycleService() {
                 return lifecycleService;
+            }
+
+            const boost::shared_ptr<ClientLockReferenceIdGenerator> &
+            HazelcastClientInstanceImpl::getLockReferenceIdGenerator() const {
+                return lockReferenceIdGenerator;
             }
         }
     }

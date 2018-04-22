@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueIsEmptyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueIsEmptyCodec::RequestParameters::TYPE = HZ_QUEUE_ISEMPTY;
-                const bool QueueIsEmptyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueIsEmptyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> QueueIsEmptyCodec::RequestParameters::encode(
+                const QueueMessageType QueueIsEmptyCodec::REQUEST_TYPE = HZ_QUEUE_ISEMPTY;
+                const bool QueueIsEmptyCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> QueueIsEmptyCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueIsEmptyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueIsEmptyCodec::RequestParameters::calculateDataSize(
+                int32_t QueueIsEmptyCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,25 @@ namespace hazelcast {
                 }
 
                 QueueIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueIsEmptyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueIsEmptyCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                QueueIsEmptyCodec::ResponseParameters QueueIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueIsEmptyCodec::ResponseParameters
+                QueueIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueIsEmptyCodec::ResponseParameters::ResponseParameters(const QueueIsEmptyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueIsEmptyCodec::ResponseParameters::ResponseParameters(
+                        const QueueIsEmptyCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

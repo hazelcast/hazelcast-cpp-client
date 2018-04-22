@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/CountDownLatchCountDownCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const CountDownLatchMessageType CountDownLatchCountDownCodec::RequestParameters::TYPE = HZ_COUNTDOWNLATCH_COUNTDOWN;
-                const bool CountDownLatchCountDownCodec::RequestParameters::RETRYABLE = false;
-                const int32_t CountDownLatchCountDownCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> CountDownLatchCountDownCodec::RequestParameters::encode(
+                const CountDownLatchMessageType CountDownLatchCountDownCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_COUNTDOWN;
+                const bool CountDownLatchCountDownCodec::RETRYABLE = false;
+                const ResponseMessageConst CountDownLatchCountDownCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> CountDownLatchCountDownCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)CountDownLatchCountDownCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) CountDownLatchCountDownCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t CountDownLatchCountDownCodec::RequestParameters::calculateDataSize(
+                int32_t CountDownLatchCountDownCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,19 +47,23 @@ namespace hazelcast {
                 }
 
                 CountDownLatchCountDownCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("CountDownLatchCountDownCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "CountDownLatchCountDownCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                CountDownLatchCountDownCodec::ResponseParameters CountDownLatchCountDownCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                CountDownLatchCountDownCodec::ResponseParameters
+                CountDownLatchCountDownCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return CountDownLatchCountDownCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchCountDownCodec::ResponseParameters::ResponseParameters(const CountDownLatchCountDownCodec::ResponseParameters &rhs) {
+                CountDownLatchCountDownCodec::ResponseParameters::ResponseParameters(
+                        const CountDownLatchCountDownCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

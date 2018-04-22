@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapDeleteCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,17 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapDeleteCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_DELETE;
-                const bool TransactionalMapDeleteCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapDeleteCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> TransactionalMapDeleteCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMapMessageType TransactionalMapDeleteCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_DELETE;
+                const bool TransactionalMapDeleteCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapDeleteCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> TransactionalMapDeleteCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapDeleteCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapDeleteCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +46,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapDeleteCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMapDeleteCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,19 +60,23 @@ namespace hazelcast {
                 }
 
                 TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapDeleteCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapDeleteCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                TransactionalMapDeleteCodec::ResponseParameters TransactionalMapDeleteCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapDeleteCodec::ResponseParameters
+                TransactionalMapDeleteCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapDeleteCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(const TransactionalMapDeleteCodec::ResponseParameters &rhs) {
+                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapDeleteCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

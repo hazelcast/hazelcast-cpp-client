@@ -73,6 +73,8 @@ namespace hazelcast {
 
                 void forceUnlock(const serialization::pimpl::Data& key);
 
+                virtual void onInitialize();
+
             private:
                 class MultiMapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
                 public:
@@ -111,6 +113,8 @@ namespace hazelcast {
                     bool includeValue;
                     serialization::pimpl::Data key;
                 };
+
+                boost::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
 
                 boost::shared_ptr<spi::impl::ListenerMessageCodec> createMultiMapEntryListenerCodec(bool includeValue);
 

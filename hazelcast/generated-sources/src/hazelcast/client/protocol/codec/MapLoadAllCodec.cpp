@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapLoadAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapLoadAllCodec::RequestParameters::TYPE = HZ_MAP_LOADALL;
-                const bool MapLoadAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapLoadAllCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapLoadAllCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapLoadAllCodec::REQUEST_TYPE = HZ_MAP_LOADALL;
+                const bool MapLoadAllCodec::RETRYABLE = false;
+                const ResponseMessageConst MapLoadAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapLoadAllCodec::encodeRequest(
+                        const std::string &name,
                         bool replaceExistingValues) {
                     int32_t requiredDataSize = calculateDataSize(name, replaceExistingValues);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapLoadAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapLoadAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(replaceExistingValues);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapLoadAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapLoadAllCodec::calculateDataSize(
+                        const std::string &name,
                         bool replaceExistingValues) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,19 +51,22 @@ namespace hazelcast {
                 }
 
                 MapLoadAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapLoadAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapLoadAllCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapLoadAllCodec::ResponseParameters MapLoadAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapLoadAllCodec::ResponseParameters
+                MapLoadAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapLoadAllCodec::ResponseParameters(clientMessage);
                 }
 
-                MapLoadAllCodec::ResponseParameters::ResponseParameters(const MapLoadAllCodec::ResponseParameters &rhs) {
+                MapLoadAllCodec::ResponseParameters::ResponseParameters(
+                        const MapLoadAllCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

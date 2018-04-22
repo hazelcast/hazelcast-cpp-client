@@ -70,6 +70,7 @@
 namespace hazelcast {
     namespace util {
         class ByteBuffer;
+        class UUID;
     }
 
     namespace client {
@@ -193,6 +194,10 @@ namespace hazelcast {
                 void set(const Address &value);
 
                 void set(const Address *value);
+
+                void set(const util::UUID &value);
+
+                void set(const util::UUID *value);
 
                 void set(const Member &value);
 
@@ -381,6 +386,10 @@ namespace hazelcast {
 
                 static int32_t calculateDataSize(const Address *param);
 
+                static int32_t calculateDataSize(const util::UUID &param);
+
+                static int32_t calculateDataSize(const util::UUID *param);
+
                 static int32_t calculateDataSize(const Member &param);
 
                 static int32_t calculateDataSize(const Member *param);
@@ -513,6 +522,9 @@ namespace hazelcast {
 
             template<>
             Address ClientMessage::get();
+
+            template<>
+            util::UUID ClientMessage::get();
 
             template<>
             Member ClientMessage::get();

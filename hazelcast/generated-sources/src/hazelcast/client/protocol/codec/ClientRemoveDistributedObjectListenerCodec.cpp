@@ -24,70 +24,50 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientRemoveDistributedObjectListenerCodec::RequestParameters::TYPE = HZ_CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER;
-                const bool ClientRemoveDistributedObjectListenerCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ClientRemoveDistributedObjectListenerCodec::ResponseParameters::TYPE = 101;
+                const ClientMessageType ClientRemoveDistributedObjectListenerCodec::REQUEST_TYPE = HZ_CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER;
+                const bool ClientRemoveDistributedObjectListenerCodec::RETRYABLE = true;
+                const ResponseMessageConst ClientRemoveDistributedObjectListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                ClientRemoveDistributedObjectListenerCodec::~ClientRemoveDistributedObjectListenerCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> ClientRemoveDistributedObjectListenerCodec::RequestParameters::encode(
+                std::auto_ptr<ClientMessage> ClientRemoveDistributedObjectListenerCodec::encodeRequest(
                         const std::string &registrationId) {
                     int32_t requiredDataSize = calculateDataSize(registrationId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientRemoveDistributedObjectListenerCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientRemoveDistributedObjectListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(registrationId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ClientRemoveDistributedObjectListenerCodec::RequestParameters::calculateDataSize(
+                int32_t ClientRemoveDistributedObjectListenerCodec::calculateDataSize(
                         const std::string &registrationId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(registrationId);
                     return dataSize;
                 }
 
-                ClientRemoveDistributedObjectListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientRemoveDistributedObjectListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                ClientRemoveDistributedObjectListenerCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ClientRemoveDistributedObjectListenerCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                ClientRemoveDistributedObjectListenerCodec::ResponseParameters ClientRemoveDistributedObjectListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientRemoveDistributedObjectListenerCodec::ResponseParameters
+                ClientRemoveDistributedObjectListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ClientRemoveDistributedObjectListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientRemoveDistributedObjectListenerCodec::ResponseParameters::ResponseParameters(const ClientRemoveDistributedObjectListenerCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                ClientRemoveDistributedObjectListenerCodec::ResponseParameters::ResponseParameters(
+                        const ClientRemoveDistributedObjectListenerCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
-                ClientRemoveDistributedObjectListenerCodec::ClientRemoveDistributedObjectListenerCodec (const std::string &registrationId)
-                        : registrationId_(registrationId) {
-                }
-
-                //************************ IRemoveListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> ClientRemoveDistributedObjectListenerCodec::encodeRequest() const {
-                    return RequestParameters::encode(registrationId_);
-                }
-
-                const std::string &ClientRemoveDistributedObjectListenerCodec::getRegistrationId() const {
-                    return registrationId_;
-                }
-
-                void ClientRemoveDistributedObjectListenerCodec::setRegistrationId(const std::string &id) {
-                    registrationId_ = id;
-                }
-
-                bool ClientRemoveDistributedObjectListenerCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IRemoveListenerCodec interface ends *************************************************//
-
             }
         }
     }

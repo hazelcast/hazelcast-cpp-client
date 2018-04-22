@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapContainsKeyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapContainsKeyCodec::RequestParameters::TYPE = HZ_MAP_CONTAINSKEY;
-                const bool MapContainsKeyCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapContainsKeyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapContainsKeyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapContainsKeyCodec::REQUEST_TYPE = HZ_MAP_CONTAINSKEY;
+                const bool MapContainsKeyCodec::RETRYABLE = true;
+                const ResponseMessageConst MapContainsKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapContainsKeyCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapContainsKeyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapContainsKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapContainsKeyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapContainsKeyCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,22 +56,26 @@ namespace hazelcast {
                 }
 
                 MapContainsKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapContainsKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapContainsKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapContainsKeyCodec::ResponseParameters MapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapContainsKeyCodec::ResponseParameters
+                MapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapContainsKeyCodec::ResponseParameters::ResponseParameters(const MapContainsKeyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapContainsKeyCodec::ResponseParameters::ResponseParameters(
+                        const MapContainsKeyCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -48,7 +48,7 @@ namespace hazelcast {
             void TransactionalObject::destroy() {
                 onDestroy();
 
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::RequestParameters::encode(
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
                         name, serviceName);
 
                 boost::shared_ptr<connection::Connection> connection = context->getConnection();

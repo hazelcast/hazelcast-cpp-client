@@ -19,27 +19,25 @@
 
 #include "hazelcast/client/protocol/codec/MultiMapAddEntryListenerToKeyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapAddEntryListenerToKeyCodec::RequestParameters::TYPE = HZ_MULTIMAP_ADDENTRYLISTENERTOKEY;
-                const bool MultiMapAddEntryListenerToKeyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MultiMapAddEntryListenerToKeyCodec::ResponseParameters::TYPE = 104;
+                const MultiMapMessageType MultiMapAddEntryListenerToKeyCodec::REQUEST_TYPE = HZ_MULTIMAP_ADDENTRYLISTENERTOKEY;
+                const bool MultiMapAddEntryListenerToKeyCodec::RETRYABLE = false;
+                const ResponseMessageConst MultiMapAddEntryListenerToKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                MultiMapAddEntryListenerToKeyCodec::~MultiMapAddEntryListenerToKeyCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> MultiMapAddEntryListenerToKeyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        bool includeValue, 
+                std::auto_ptr<ClientMessage> MultiMapAddEntryListenerToKeyCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        bool includeValue,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, key, includeValue, localOnly);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapAddEntryListenerToKeyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapAddEntryListenerToKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -49,10 +47,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapAddEntryListenerToKeyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        bool includeValue, 
+                int32_t MultiMapAddEntryListenerToKeyCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        bool includeValue,
                         bool localOnly) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -62,72 +60,64 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<std::string >();
+
+                    response = clientMessage.get<std::string>();
+
                 }
 
-                MultiMapAddEntryListenerToKeyCodec::ResponseParameters MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapAddEntryListenerToKeyCodec::ResponseParameters
+                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(const MultiMapAddEntryListenerToKeyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapAddEntryListenerToKeyCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
 
                 //************************ EVENTS START*************************************************************************//
                 MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::~AbstractEventHandler() {
                 }
 
-                void MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle(std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                void MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle(
+                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
-                        case protocol::EVENT_ENTRY:
-                        {
-                            std::auto_ptr<serialization::pimpl::Data > key = clientMessage->getNullable<serialization::pimpl::Data >();
+                        case protocol::EVENT_ENTRY: {
+                            std::auto_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > value = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> value = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > oldValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> oldValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > mergingValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> mergingValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            int32_t eventType = clientMessage->get<int32_t >();
-                            
-                            std::string uuid = clientMessage->get<std::string >();
-                            
-                            int32_t numberOfAffectedEntries = clientMessage->get<int32_t >();
-                            
-                            handleEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                            int32_t eventType = clientMessage->get<int32_t>();
+
+                            std::string uuid = clientMessage->get<std::string>();
+
+                            int32_t numberOfAffectedEntries = clientMessage->get<int32_t>();
+
+
+                            handleEntryEventV10(key, value, oldValue, mergingValue, eventType, uuid,
+                                                numberOfAffectedEntries);
                             break;
                         }
                         default:
-                            char buf[300];
-                            util::hz_snprintf(buf, 300,
-                                              "[MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.",
-                                              clientMessage->getMessageType());
-                            util::ILogger::getLogger().warning(buf);
+                            util::ILogger::getLogger().warning()
+                                    << "[MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type ("
+                                    << messageType << ") received on event handler.";
                     }
                 }
                 //************************ EVENTS END **************************************************************************//
-
-                MultiMapAddEntryListenerToKeyCodec::MultiMapAddEntryListenerToKeyCodec (const std::string &name, const serialization::pimpl::Data &key, const bool &includeValue, const bool &localOnly)
-                        : name_(name), key_(key), includeValue_(includeValue), localOnly_(localOnly) {
-                }
-
-                //************************ IAddListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> MultiMapAddEntryListenerToKeyCodec::encodeRequest() const {
-                    return RequestParameters::encode(name_, key_, includeValue_, localOnly_);
-                }
-
-                std::string MultiMapAddEntryListenerToKeyCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IAddListenerCodec interface ends *************************************************//
-
             }
         }
     }

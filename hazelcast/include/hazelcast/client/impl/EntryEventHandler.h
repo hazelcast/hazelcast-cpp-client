@@ -51,7 +51,7 @@ namespace hazelcast {
                 , includeValue(includeValue) {
                 }
 
-                virtual void handleEntry(std::auto_ptr<serialization::pimpl::Data> key,
+                virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data> key,
                                          std::auto_ptr<serialization::pimpl::Data> value,
                                          std::auto_ptr<serialization::pimpl::Data> oldValue,
                                          std::auto_ptr<serialization::pimpl::Data> mergingValue,
@@ -152,7 +152,7 @@ namespace hazelcast {
                             , includeValue(includeValue) {
                     }
 
-                    virtual void handleEntry(std::auto_ptr<serialization::pimpl::Data> key,
+                    virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data> key,
                                              std::auto_ptr<serialization::pimpl::Data> value,
                                              std::auto_ptr<serialization::pimpl::Data> oldValue,
                                              std::auto_ptr<serialization::pimpl::Data> mergingValue,

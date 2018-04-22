@@ -69,7 +69,7 @@ namespace hazelcast {
 
                     // TODO: change this to use XID which is not null in the future
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::TransactionCreateCodec::RequestParameters::encode(
+                            protocol::codec::TransactionCreateCodec::encodeRequest(
                                     options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
                                     options.getTransactionType(), threadId);
 
@@ -98,7 +98,7 @@ namespace hazelcast {
                     checkTimeout();
 
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::TransactionCommitCodec::RequestParameters::encode(txnId, threadId);
+                            protocol::codec::TransactionCommitCodec::encodeRequest(txnId, threadId);
 
                     invoke(request);
 
@@ -125,7 +125,7 @@ namespace hazelcast {
                     checkThread();
                     try {
                         std::auto_ptr<protocol::ClientMessage> request =
-                                protocol::codec::TransactionRollbackCodec::RequestParameters::encode(txnId, threadId);
+                                protocol::codec::TransactionRollbackCodec::encodeRequest(txnId, threadId);
 
                         invoke(request);
                     } catch (std::exception &) {

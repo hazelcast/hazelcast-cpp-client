@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapSizeCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,16 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapSizeCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_SIZE;
-                const bool TransactionalMapSizeCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapSizeCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> TransactionalMapSizeCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                const TransactionalMapMessageType TransactionalMapSizeCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_SIZE;
+                const bool TransactionalMapSizeCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> TransactionalMapSizeCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapSizeCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -41,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapSizeCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                int32_t TransactionalMapSizeCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,22 +55,26 @@ namespace hazelcast {
                 }
 
                 TransactionalMapSizeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapSizeCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapSizeCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                TransactionalMapSizeCodec::ResponseParameters TransactionalMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapSizeCodec::ResponseParameters
+                TransactionalMapSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapSizeCodec::ResponseParameters::ResponseParameters(const TransactionalMapSizeCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMapSizeCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapSizeCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

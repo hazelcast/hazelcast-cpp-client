@@ -100,6 +100,8 @@ namespace hazelcast {
 
 
         namespace impl {
+            class ClientLockReferenceIdGenerator;
+
             class HAZELCAST_API HazelcastClientInstanceImpl {
                 friend class spi::ClientContext;
                 friend class mixedtype::impl::HazelcastClientImpl;
@@ -370,6 +372,9 @@ namespace hazelcast {
                 const protocol::ClientExceptionFactory &getExceptionFactory() const;
 
                 void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+
+                const boost::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
+
             private:
                 boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
                                                                                    const std::string &name,
@@ -397,6 +402,7 @@ namespace hazelcast {
                 std::string instanceName;
                 static util::Atomic<int32_t> CLIENT_ID;
                 int32_t id;
+                boost::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
 
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs);
 

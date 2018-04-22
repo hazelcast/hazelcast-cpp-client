@@ -156,7 +156,7 @@ namespace hazelcast {
                 EntryVector executeOnEntriesData(const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
 
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::RequestParameters::encode(
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::encodeRequest(
                             getName(), processor);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
@@ -172,7 +172,7 @@ namespace hazelcast {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
                     serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(),
+                            protocol::codec::MapExecuteWithPredicateCodec::encodeRequest(getName(),
                                                                                                      processor,
                                                                                                      predData);
 
@@ -225,6 +225,8 @@ namespace hazelcast {
                         predicate.setAnchor((size_t) nearestPage, anchor);
                     }
                 }
+
+                virtual void onInitialize();
 
             private:
                 class MapEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
@@ -288,6 +290,8 @@ namespace hazelcast {
                     int32_t listenerFlags;
                     serialization::pimpl::Data key;
                 };
+
+                boost::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
 
                 boost::shared_ptr<spi::impl::ListenerMessageCodec>
                 createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags);

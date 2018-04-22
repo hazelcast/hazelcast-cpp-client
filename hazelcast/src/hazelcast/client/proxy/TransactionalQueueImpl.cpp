@@ -35,7 +35,7 @@ namespace hazelcast {
 
             bool TransactionalQueueImpl::offer(const serialization::pimpl::Data& e, long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueueOfferCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalQueueOfferCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), e, timeoutInMillis);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(request);
@@ -43,7 +43,7 @@ namespace hazelcast {
 
             std::auto_ptr<serialization::pimpl::Data> TransactionalQueueImpl::pollData(long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueuePollCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalQueuePollCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), timeoutInMillis);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalQueuePollCodec::ResponseParameters>(request);
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             int TransactionalQueueImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueueSizeCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalQueueSizeCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalQueueSizeCodec::ResponseParameters>(request);

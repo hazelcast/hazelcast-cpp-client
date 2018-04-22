@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapUnlockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,49 +25,56 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapUnlockCodec::RequestParameters::TYPE = HZ_MAP_UNLOCK;
-                const bool MapUnlockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapUnlockCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapUnlockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId) {
-                    int32_t requiredDataSize = calculateDataSize(name, key, threadId);
+                const MapMessageType MapUnlockCodec::REQUEST_TYPE = HZ_MAP_UNLOCK;
+                const bool MapUnlockCodec::RETRYABLE = true;
+                const ResponseMessageConst MapUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapUnlockCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapUnlockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapUnlockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
                     clientMessage->set(threadId);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapUnlockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId) {
+                int32_t MapUnlockCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(key);
                     dataSize += ClientMessage::calculateDataSize(threadId);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 MapUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapUnlockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapUnlockCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapUnlockCodec::ResponseParameters MapUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapUnlockCodec::ResponseParameters
+                MapUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapUnlockCodec::ResponseParameters(clientMessage);
                 }
 
                 MapUnlockCodec::ResponseParameters::ResponseParameters(const MapUnlockCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

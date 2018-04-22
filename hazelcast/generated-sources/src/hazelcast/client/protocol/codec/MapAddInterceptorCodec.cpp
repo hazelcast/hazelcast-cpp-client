@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapAddInterceptorCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapAddInterceptorCodec::RequestParameters::TYPE = HZ_MAP_ADDINTERCEPTOR;
-                const bool MapAddInterceptorCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapAddInterceptorCodec::ResponseParameters::TYPE = 104;
-                std::auto_ptr<ClientMessage> MapAddInterceptorCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapAddInterceptorCodec::REQUEST_TYPE = HZ_MAP_ADDINTERCEPTOR;
+                const bool MapAddInterceptorCodec::RETRYABLE = false;
+                const ResponseMessageConst MapAddInterceptorCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
+
+                std::auto_ptr<ClientMessage> MapAddInterceptorCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &interceptor) {
                     int32_t requiredDataSize = calculateDataSize(name, interceptor);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapAddInterceptorCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapAddInterceptorCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(interceptor);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapAddInterceptorCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapAddInterceptorCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &interceptor) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,26 @@ namespace hazelcast {
                 }
 
                 MapAddInterceptorCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapAddInterceptorCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapAddInterceptorCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<std::string >();
+
+                    response = clientMessage.get<std::string>();
+
                 }
 
-                MapAddInterceptorCodec::ResponseParameters MapAddInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddInterceptorCodec::ResponseParameters
+                MapAddInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapAddInterceptorCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddInterceptorCodec::ResponseParameters::ResponseParameters(const MapAddInterceptorCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapAddInterceptorCodec::ResponseParameters::ResponseParameters(
+                        const MapAddInterceptorCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

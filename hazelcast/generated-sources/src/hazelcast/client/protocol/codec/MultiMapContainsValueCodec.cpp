@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapContainsValueCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapContainsValueCodec::RequestParameters::TYPE = HZ_MULTIMAP_CONTAINSVALUE;
-                const bool MultiMapContainsValueCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MultiMapContainsValueCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MultiMapContainsValueCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MultiMapMessageType MultiMapContainsValueCodec::REQUEST_TYPE = HZ_MULTIMAP_CONTAINSVALUE;
+                const bool MultiMapContainsValueCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapContainsValueCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MultiMapContainsValueCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapContainsValueCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapContainsValueCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapContainsValueCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MultiMapContainsValueCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,26 @@ namespace hazelcast {
                 }
 
                 MultiMapContainsValueCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapContainsValueCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapContainsValueCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MultiMapContainsValueCodec::ResponseParameters MultiMapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapContainsValueCodec::ResponseParameters
+                MultiMapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapContainsValueCodec::ResponseParameters::ResponseParameters(const MultiMapContainsValueCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapContainsValueCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapContainsValueCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

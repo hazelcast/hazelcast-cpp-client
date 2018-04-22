@@ -34,7 +34,7 @@ namespace hazelcast {
 
             bool TransactionalListImpl::add(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListAddCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalListAddCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalListAddCodec::ResponseParameters>(request);
@@ -42,7 +42,7 @@ namespace hazelcast {
 
             bool TransactionalListImpl::remove(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListRemoveCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalListRemoveCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalListRemoveCodec::ResponseParameters>(request);
@@ -50,7 +50,7 @@ namespace hazelcast {
 
             int TransactionalListImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListSizeCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalListSizeCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalListSizeCodec::ResponseParameters>(request);

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapUnlockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,49 +25,58 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapUnlockCodec::RequestParameters::TYPE = HZ_MULTIMAP_UNLOCK;
-                const bool MultiMapUnlockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MultiMapUnlockCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MultiMapUnlockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId) {
-                    int32_t requiredDataSize = calculateDataSize(name, key, threadId);
+                const MultiMapMessageType MultiMapUnlockCodec::REQUEST_TYPE = HZ_MULTIMAP_UNLOCK;
+                const bool MultiMapUnlockCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MultiMapUnlockCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapUnlockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapUnlockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
                     clientMessage->set(threadId);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MultiMapUnlockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId) {
+                int32_t MultiMapUnlockCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(key);
                     dataSize += ClientMessage::calculateDataSize(threadId);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 MultiMapUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapUnlockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapUnlockCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MultiMapUnlockCodec::ResponseParameters MultiMapUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapUnlockCodec::ResponseParameters
+                MultiMapUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapUnlockCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapUnlockCodec::ResponseParameters::ResponseParameters(const MultiMapUnlockCodec::ResponseParameters &rhs) {
+                MultiMapUnlockCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapUnlockCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

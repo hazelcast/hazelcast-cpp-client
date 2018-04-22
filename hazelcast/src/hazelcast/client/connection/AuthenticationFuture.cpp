@@ -38,7 +38,8 @@ namespace hazelcast {
                     return connection;
                 }
                 assert(throwable.get() != NULL);
-                throw exception::ExecutionException("AuthenticationFuture::get", "ExecutionException", throwable);
+                throw exception::ExecutionException("AuthenticationFuture::get", "Could not be authenticated.",
+                                                    throwable);
             }
 
         }

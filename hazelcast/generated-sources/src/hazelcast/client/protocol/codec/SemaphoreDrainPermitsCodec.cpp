@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreDrainPermitsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SemaphoreMessageType SemaphoreDrainPermitsCodec::RequestParameters::TYPE = HZ_SEMAPHORE_DRAINPERMITS;
-                const bool SemaphoreDrainPermitsCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SemaphoreDrainPermitsCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> SemaphoreDrainPermitsCodec::RequestParameters::encode(
+                const SemaphoreMessageType SemaphoreDrainPermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_DRAINPERMITS;
+                const bool SemaphoreDrainPermitsCodec::RETRYABLE = false;
+                const ResponseMessageConst SemaphoreDrainPermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> SemaphoreDrainPermitsCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreDrainPermitsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreDrainPermitsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SemaphoreDrainPermitsCodec::RequestParameters::calculateDataSize(
+                int32_t SemaphoreDrainPermitsCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 SemaphoreDrainPermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreDrainPermitsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "SemaphoreDrainPermitsCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                SemaphoreDrainPermitsCodec::ResponseParameters SemaphoreDrainPermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreDrainPermitsCodec::ResponseParameters
+                SemaphoreDrainPermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreDrainPermitsCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreDrainPermitsCodec::ResponseParameters::ResponseParameters(const SemaphoreDrainPermitsCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                SemaphoreDrainPermitsCodec::ResponseParameters::ResponseParameters(
+                        const SemaphoreDrainPermitsCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

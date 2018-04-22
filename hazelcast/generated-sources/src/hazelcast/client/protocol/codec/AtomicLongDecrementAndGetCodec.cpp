@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/AtomicLongDecrementAndGetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const AtomicLongMessageType AtomicLongDecrementAndGetCodec::RequestParameters::TYPE = HZ_ATOMICLONG_DECREMENTANDGET;
-                const bool AtomicLongDecrementAndGetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t AtomicLongDecrementAndGetCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> AtomicLongDecrementAndGetCodec::RequestParameters::encode(
+                const AtomicLongMessageType AtomicLongDecrementAndGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_DECREMENTANDGET;
+                const bool AtomicLongDecrementAndGetCodec::RETRYABLE = false;
+                const ResponseMessageConst AtomicLongDecrementAndGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> AtomicLongDecrementAndGetCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)AtomicLongDecrementAndGetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) AtomicLongDecrementAndGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t AtomicLongDecrementAndGetCodec::RequestParameters::calculateDataSize(
+                int32_t AtomicLongDecrementAndGetCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 AtomicLongDecrementAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("AtomicLongDecrementAndGetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "AtomicLongDecrementAndGetCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                AtomicLongDecrementAndGetCodec::ResponseParameters AtomicLongDecrementAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                AtomicLongDecrementAndGetCodec::ResponseParameters
+                AtomicLongDecrementAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return AtomicLongDecrementAndGetCodec::ResponseParameters(clientMessage);
                 }
 
-                AtomicLongDecrementAndGetCodec::ResponseParameters::ResponseParameters(const AtomicLongDecrementAndGetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                AtomicLongDecrementAndGetCodec::ResponseParameters::ResponseParameters(
+                        const AtomicLongDecrementAndGetCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

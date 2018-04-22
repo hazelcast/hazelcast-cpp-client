@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalQueueSizeCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,16 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalQueueMessageType TransactionalQueueSizeCodec::RequestParameters::TYPE = HZ_TRANSACTIONALQUEUE_SIZE;
-                const bool TransactionalQueueSizeCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalQueueSizeCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> TransactionalQueueSizeCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                const TransactionalQueueMessageType TransactionalQueueSizeCodec::REQUEST_TYPE = HZ_TRANSACTIONALQUEUE_SIZE;
+                const bool TransactionalQueueSizeCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalQueueSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> TransactionalQueueSizeCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalQueueSizeCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalQueueSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -41,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalQueueSizeCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                int32_t TransactionalQueueSizeCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,22 +55,26 @@ namespace hazelcast {
                 }
 
                 TransactionalQueueSizeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalQueueSizeCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalQueueSizeCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                TransactionalQueueSizeCodec::ResponseParameters TransactionalQueueSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalQueueSizeCodec::ResponseParameters
+                TransactionalQueueSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalQueueSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalQueueSizeCodec::ResponseParameters::ResponseParameters(const TransactionalQueueSizeCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalQueueSizeCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalQueueSizeCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

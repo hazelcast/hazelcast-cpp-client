@@ -326,12 +326,12 @@ namespace hazelcast {
                     // upcast the credentials as done at Java
                     GroupConfig &groupConfig = client.getClientConfig().getGroupConfig();
                     const protocol::UsernamePasswordCredentials cr(groupConfig.getName(), groupConfig.getPassword());
-                    clientMessage = protocol::codec::ClientAuthenticationCodec::RequestParameters::encode(
+                    clientMessage = protocol::codec::ClientAuthenticationCodec::encodeRequest(
                             cr.getPrincipal(), cr.getPassword(), uuid, ownerUuid, asOwner, protocol::ClientTypes::CPP,
                             serializationVersion, HAZELCAST_VERSION);
                 } else {
                     serialization::pimpl::Data data = ss.toData<Credentials>(credentials);
-                    clientMessage = protocol::codec::ClientAuthenticationCustomCodec::RequestParameters::encode(data,
+                    clientMessage = protocol::codec::ClientAuthenticationCustomCodec::encodeRequest(data,
                                                                                                                 uuid,
                                                                                                                 ownerUuid,
                                                                                                                 asOwner,

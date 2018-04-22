@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueRemainingCapacityCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueRemainingCapacityCodec::RequestParameters::TYPE = HZ_QUEUE_REMAININGCAPACITY;
-                const bool QueueRemainingCapacityCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueRemainingCapacityCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> QueueRemainingCapacityCodec::RequestParameters::encode(
+                const QueueMessageType QueueRemainingCapacityCodec::REQUEST_TYPE = HZ_QUEUE_REMAININGCAPACITY;
+                const bool QueueRemainingCapacityCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueRemainingCapacityCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> QueueRemainingCapacityCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueRemainingCapacityCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueRemainingCapacityCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueRemainingCapacityCodec::RequestParameters::calculateDataSize(
+                int32_t QueueRemainingCapacityCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 QueueRemainingCapacityCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueRemainingCapacityCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "QueueRemainingCapacityCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                QueueRemainingCapacityCodec::ResponseParameters QueueRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueRemainingCapacityCodec::ResponseParameters
+                QueueRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueRemainingCapacityCodec::ResponseParameters::ResponseParameters(const QueueRemainingCapacityCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueRemainingCapacityCodec::ResponseParameters::ResponseParameters(
+                        const QueueRemainingCapacityCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveEntryCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,18 +25,19 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMultiMapMessageType TransactionalMultiMapRemoveEntryCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMULTIMAP_REMOVEENTRY;
-                const bool TransactionalMultiMapRemoveEntryCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMultiMapRemoveEntryCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> TransactionalMultiMapRemoveEntryCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                const TransactionalMultiMapMessageType TransactionalMultiMapRemoveEntryCodec::REQUEST_TYPE = HZ_TRANSACTIONALMULTIMAP_REMOVEENTRY;
+                const bool TransactionalMultiMapRemoveEntryCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMultiMapRemoveEntryCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> TransactionalMultiMapRemoveEntryCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMultiMapRemoveEntryCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMultiMapRemoveEntryCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -46,11 +48,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMultiMapRemoveEntryCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                int32_t TransactionalMultiMapRemoveEntryCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -61,23 +63,28 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapRemoveEntryCodec::ResponseParameters
+                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMultiMapRemoveEntryCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(const TransactionalMultiMapRemoveEntryCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMultiMapRemoveEntryCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

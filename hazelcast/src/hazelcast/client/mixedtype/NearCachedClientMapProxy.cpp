@@ -220,7 +220,8 @@ namespace hazelcast {
 
                     EntryVector responses = ClientMapProxy::getAllInternal(pIdToKeyData);
                     BOOST_FOREACH(const EntryVector::value_type &entry, responses) {
-                                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(entry.first);
+                                    boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
+                                            entry.first);
                                     boost::shared_ptr<TypedData> value = boost::shared_ptr<TypedData>(new TypedData(
                                             std::auto_ptr<serialization::pimpl::Data>(
                                                     new serialization::pimpl::Data(entry.second)),
@@ -370,25 +371,25 @@ namespace hazelcast {
 
             std::auto_ptr<protocol::ClientMessage>
             NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags,
-                                                                          localOnly).encodeRequest();
+                return protocol::codec::MapAddNearCacheEntryListenerCodec::encodeRequest(name, listenerFlags,
+                                                                                         localOnly);
             }
 
             std::string NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::MapAddNearCacheEntryListenerCodec(name, listenerFlags, false).decodeResponse(
-                        responseMessage);
+                return protocol::codec::MapAddNearCacheEntryListenerCodec::ResponseParameters::decode(
+                        responseMessage).response;
             }
 
             std::auto_ptr<protocol::ClientMessage>
             NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::encodeRemoveRequest(
                     const std::string &realRegistrationId) const {
-                return protocol::codec::MapRemoveEntryListenerCodec(name, realRegistrationId).encodeRequest();
+                return protocol::codec::MapRemoveEntryListenerCodec::encodeRequest(name, realRegistrationId);
             }
 
             bool NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::decodeRemoveResponse(
                     protocol::ClientMessage &clientMessage) const {
-                return protocol::codec::MapRemoveEntryListenerCodec(name, "").decodeResponse(clientMessage);
+                return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
             NearCachedClientMapProxy::NearCacheEntryListenerMessageCodec::NearCacheEntryListenerMessageCodec(

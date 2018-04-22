@@ -48,7 +48,7 @@ namespace hazelcast {
                             , listener(messageListener) {
                     }
 
-                    virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                    virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                              const std::string &uuid) {
                         boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 
@@ -79,7 +79,7 @@ namespace hazelcast {
                                 , listener(messageListener) {
                         }
 
-                        virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                        virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                                  const std::string &uuid) {
                             boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 

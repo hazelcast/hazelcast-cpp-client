@@ -24,19 +24,19 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API SetMessageType {
 
-                    HZ_SET_SIZE=0x0601,
-                    HZ_SET_CONTAINS=0x0602,
-                    HZ_SET_CONTAINSALL=0x0603,
-                    HZ_SET_ADD=0x0604,
-                    HZ_SET_REMOVE=0x0605,
-                    HZ_SET_ADDALL=0x0606,
-                    HZ_SET_COMPAREANDREMOVEALL=0x0607,
-                    HZ_SET_COMPAREANDRETAINALL=0x0608,
-                    HZ_SET_CLEAR=0x0609,
-                    HZ_SET_GETALL=0x060a,
-                    HZ_SET_ADDLISTENER=0x060b,
-                    HZ_SET_REMOVELISTENER=0x060c,
-                    HZ_SET_ISEMPTY=0x060d
+                    HZ_SET_SIZE = 0x0601,
+                    HZ_SET_CONTAINS = 0x0602,
+                    HZ_SET_CONTAINSALL = 0x0603,
+                    HZ_SET_ADD = 0x0604,
+                    HZ_SET_REMOVE = 0x0605,
+                    HZ_SET_ADDALL = 0x0606,
+                    HZ_SET_COMPAREANDREMOVEALL = 0x0607,
+                    HZ_SET_COMPAREANDRETAINALL = 0x0608,
+                    HZ_SET_CLEAR = 0x0609,
+                    HZ_SET_GETALL = 0x060a,
+                    HZ_SET_ADDLISTENER = 0x060b,
+                    HZ_SET_REMOVELISTENER = 0x060c,
+                    HZ_SET_ISEMPTY = 0x060d
                 };
             }
         }

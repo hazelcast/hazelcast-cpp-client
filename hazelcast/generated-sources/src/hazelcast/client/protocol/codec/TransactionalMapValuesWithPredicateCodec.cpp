@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapValuesWithPredicateCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,17 +24,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapValuesWithPredicateCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_VALUESWITHPREDICATE;
-                const bool TransactionalMapValuesWithPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapValuesWithPredicateCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> TransactionalMapValuesWithPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMapMessageType TransactionalMapValuesWithPredicateCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_VALUESWITHPREDICATE;
+                const bool TransactionalMapValuesWithPredicateCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapValuesWithPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> TransactionalMapValuesWithPredicateCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapValuesWithPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapValuesWithPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -43,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapValuesWithPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMapValuesWithPredicateCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -56,23 +58,28 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapValuesWithPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                TransactionalMapValuesWithPredicateCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                TransactionalMapValuesWithPredicateCodec::ResponseParameters TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapValuesWithPredicateCodec::ResponseParameters
+                TransactionalMapValuesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapValuesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapValuesWithPredicateCodec::ResponseParameters::ResponseParameters(const TransactionalMapValuesWithPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMapValuesWithPredicateCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapValuesWithPredicateCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListContainsAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,48 +25,53 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListContainsAllCodec::RequestParameters::TYPE = HZ_LIST_CONTAINSALL;
-                const bool ListContainsAllCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ListContainsAllCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> ListContainsAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &values) {
+                const ListMessageType ListContainsAllCodec::REQUEST_TYPE = HZ_LIST_CONTAINSALL;
+                const bool ListContainsAllCodec::RETRYABLE = true;
+                const ResponseMessageConst ListContainsAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> ListContainsAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &values) {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListContainsAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListContainsAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(values);
+                    clientMessage->setArray<serialization::pimpl::Data>(values);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ListContainsAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &values) {
+                int32_t ListContainsAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &values) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(values);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(values);
                     return dataSize;
                 }
 
                 ListContainsAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListContainsAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ListContainsAllCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                ListContainsAllCodec::ResponseParameters ListContainsAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListContainsAllCodec::ResponseParameters
+                ListContainsAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListContainsAllCodec::ResponseParameters(clientMessage);
                 }
 
-                ListContainsAllCodec::ResponseParameters::ResponseParameters(const ListContainsAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                ListContainsAllCodec::ResponseParameters::ResponseParameters(
+                        const ListContainsAllCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

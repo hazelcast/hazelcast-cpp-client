@@ -21,8 +21,6 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 
 #include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
-#include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/spi/ClientListenerService.h"
@@ -79,7 +77,7 @@ namespace hazelcast {
             void ProxyImpl::destroy() {
                 onDestroy();
 
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::RequestParameters::encode(
+                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
                         DistributedObject::getName(), DistributedObject::getServiceName());
 
                 boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(

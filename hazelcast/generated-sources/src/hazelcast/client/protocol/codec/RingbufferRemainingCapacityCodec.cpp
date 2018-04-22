@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferRemainingCapacityCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferRemainingCapacityCodec::RequestParameters::TYPE = HZ_RINGBUFFER_REMAININGCAPACITY;
-                const bool RingbufferRemainingCapacityCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferRemainingCapacityCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> RingbufferRemainingCapacityCodec::RequestParameters::encode(
+                const RingbufferMessageType RingbufferRemainingCapacityCodec::REQUEST_TYPE = HZ_RINGBUFFER_REMAININGCAPACITY;
+                const bool RingbufferRemainingCapacityCodec::RETRYABLE = true;
+                const ResponseMessageConst RingbufferRemainingCapacityCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> RingbufferRemainingCapacityCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferRemainingCapacityCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferRemainingCapacityCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t RingbufferRemainingCapacityCodec::RequestParameters::calculateDataSize(
+                int32_t RingbufferRemainingCapacityCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 RingbufferRemainingCapacityCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferRemainingCapacityCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "RingbufferRemainingCapacityCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                RingbufferRemainingCapacityCodec::ResponseParameters RingbufferRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferRemainingCapacityCodec::ResponseParameters
+                RingbufferRemainingCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferRemainingCapacityCodec::ResponseParameters::ResponseParameters(const RingbufferRemainingCapacityCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                RingbufferRemainingCapacityCodec::ResponseParameters::ResponseParameters(
+                        const RingbufferRemainingCapacityCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

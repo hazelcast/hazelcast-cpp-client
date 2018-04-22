@@ -42,6 +42,7 @@ namespace hazelcast {
 
         namespace impl {
             class HazelcastClientInstanceImpl;
+            class ClientLockReferenceIdGenerator;
         }
 
         namespace connection {
@@ -116,6 +117,9 @@ namespace hazelcast {
                 impl::ClientExecutionServiceImpl &getClientExecutionService() const;
 
                 void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+
+                const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

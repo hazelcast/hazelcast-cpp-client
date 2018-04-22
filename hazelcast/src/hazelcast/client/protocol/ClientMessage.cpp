@@ -24,6 +24,7 @@
 #include <assert.h>
 
 #include "hazelcast/client/protocol/ClientMessage.h"
+#include <hazelcast/client/protocol/codec/UUIDCodec.h>
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/protocol/codec/AddressCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
@@ -146,6 +147,14 @@ namespace hazelcast {
 
             void ClientMessage::set(const Address *value) {
                 setNullable<Address>(value);
+            }
+
+            void ClientMessage::set(const util::UUID &value) {
+                codec::UUIDCodec::encode(value, *this);
+            }
+
+            void ClientMessage::set(const util::UUID *value) {
+                setNullable<util::UUID>(value);
             }
 
             void ClientMessage::set(const Member &value) {
@@ -284,6 +293,11 @@ namespace hazelcast {
             }
 
             template<>
+            util::UUID ClientMessage::get() {
+                return codec::UUIDCodec::decode(*this);
+            }
+
+            template<>
             Member ClientMessage::get() {
                 return codec::MemberCodec::decode(*this);
             }
@@ -403,6 +417,14 @@ namespace hazelcast {
 
             int32_t ClientMessage::calculateDataSize(const Member &param) {
                 return codec::MemberCodec::calculateDataSize(param);
+            }
+
+            int32_t ClientMessage::calculateDataSize(const util::UUID *param) {
+                return calculateDataSizeNullable<util::UUID>(param);
+            }
+
+            int32_t ClientMessage::calculateDataSize(const util::UUID &param) {
+                return codec::UUIDCodec::calculateDataSize(param);
             }
 
             int32_t ClientMessage::calculateDataSize(const Member *param) {

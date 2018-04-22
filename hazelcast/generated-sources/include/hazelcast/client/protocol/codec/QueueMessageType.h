@@ -24,26 +24,26 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API QueueMessageType {
 
-                    HZ_QUEUE_OFFER=0x0301,
-                    HZ_QUEUE_PUT=0x0302,
-                    HZ_QUEUE_SIZE=0x0303,
-                    HZ_QUEUE_REMOVE=0x0304,
-                    HZ_QUEUE_POLL=0x0305,
-                    HZ_QUEUE_TAKE=0x0306,
-                    HZ_QUEUE_PEEK=0x0307,
-                    HZ_QUEUE_ITERATOR=0x0308,
-                    HZ_QUEUE_DRAINTO=0x0309,
-                    HZ_QUEUE_DRAINTOMAXSIZE=0x030a,
-                    HZ_QUEUE_CONTAINS=0x030b,
-                    HZ_QUEUE_CONTAINSALL=0x030c,
-                    HZ_QUEUE_COMPAREANDREMOVEALL=0x030d,
-                    HZ_QUEUE_COMPAREANDRETAINALL=0x030e,
-                    HZ_QUEUE_CLEAR=0x030f,
-                    HZ_QUEUE_ADDALL=0x0310,
-                    HZ_QUEUE_ADDLISTENER=0x0311,
-                    HZ_QUEUE_REMOVELISTENER=0x0312,
-                    HZ_QUEUE_REMAININGCAPACITY=0x0313,
-                    HZ_QUEUE_ISEMPTY=0x0314
+                    HZ_QUEUE_OFFER = 0x0301,
+                    HZ_QUEUE_PUT = 0x0302,
+                    HZ_QUEUE_SIZE = 0x0303,
+                    HZ_QUEUE_REMOVE = 0x0304,
+                    HZ_QUEUE_POLL = 0x0305,
+                    HZ_QUEUE_TAKE = 0x0306,
+                    HZ_QUEUE_PEEK = 0x0307,
+                    HZ_QUEUE_ITERATOR = 0x0308,
+                    HZ_QUEUE_DRAINTO = 0x0309,
+                    HZ_QUEUE_DRAINTOMAXSIZE = 0x030a,
+                    HZ_QUEUE_CONTAINS = 0x030b,
+                    HZ_QUEUE_CONTAINSALL = 0x030c,
+                    HZ_QUEUE_COMPAREANDREMOVEALL = 0x030d,
+                    HZ_QUEUE_COMPAREANDRETAINALL = 0x030e,
+                    HZ_QUEUE_CLEAR = 0x030f,
+                    HZ_QUEUE_ADDALL = 0x0310,
+                    HZ_QUEUE_ADDLISTENER = 0x0311,
+                    HZ_QUEUE_REMOVELISTENER = 0x0312,
+                    HZ_QUEUE_REMAININGCAPACITY = 0x0313,
+                    HZ_QUEUE_ISEMPTY = 0x0314
                 };
             }
         }

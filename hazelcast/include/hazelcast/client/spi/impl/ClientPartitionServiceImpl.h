@@ -63,7 +63,7 @@ namespace hazelcast {
                     void refreshPartitions();
 
                     virtual void
-                    handlePartitions(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
+                    handlePartitionsEventV15(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
                                      const int32_t &partitionStateVersion);
 
                     virtual void beforeListenerRegister();

@@ -39,7 +39,7 @@ namespace hazelcast {
                           partitionService((ClientPartitionServiceImpl &) client.getPartitionService()),
                           connectionManager(client.getConnectionManager()) {}
 
-                void ClientMembershipListener::handleMember(const Member &member, const int32_t &eventType) {
+                void ClientMembershipListener::handleMemberEventV10(const Member &member, const int32_t &eventType) {
                     switch (eventType) {
                         case MembershipEvent::MEMBER_ADDED:
                             memberAdded(member);
@@ -53,7 +53,7 @@ namespace hazelcast {
                     partitionService.refreshPartitions();
                 }
 
-                void ClientMembershipListener::handleMemberList(const std::vector<Member> &initialMembers) {
+                void ClientMembershipListener::handleMemberListEventV10(const std::vector<Member> &initialMembers) {
                     std::map<std::string, Member> prevMembers;
                     if (!members.empty()) {
                         BOOST_FOREACH (const Member &member, members) {
@@ -82,7 +82,7 @@ namespace hazelcast {
                 }
 
                 void
-                ClientMembershipListener::handleMemberAttributeChange(const std::string &uuid, const std::string &key,
+                ClientMembershipListener::handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                                       const int32_t &operationType,
                                                                       std::auto_ptr<std::string> value) {
                     std::vector<Member> members = clusterService.getMemberList();
@@ -199,7 +199,7 @@ namespace hazelcast {
                         const boost::shared_ptr<connection::Connection> &ownerConnection) {
                     listener->initialListFetchedLatch = boost::shared_ptr<util::CountDownLatch>(
                             new util::CountDownLatch(1));
-                    std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::RequestParameters::encode(
+                    std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientAddMembershipListenerCodec::encodeRequest(
                             false);
                     boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(listener->client,
                                                                                               clientMessage, "",

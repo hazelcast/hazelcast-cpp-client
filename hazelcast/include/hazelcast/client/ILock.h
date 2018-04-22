@@ -19,10 +19,12 @@
 #ifndef HAZELCAST_ILock
 #define HAZELCAST_ILock
 
+#include <string>
+
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
-#include <string>
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -109,13 +111,16 @@ namespace hazelcast {
 
             bool tryLock(long timeInMillis);
 
+        protected:
+            virtual void onInitialize();
+
         private:
 
             ILock(const std::string& instanceName, spi::ClientContext *context);
 
             serialization::pimpl::Data key;
-
             int partitionId;
+            boost::shared_ptr<impl::ClientLockReferenceIdGenerator> referenceIdGenerator;
         };
     }
 }

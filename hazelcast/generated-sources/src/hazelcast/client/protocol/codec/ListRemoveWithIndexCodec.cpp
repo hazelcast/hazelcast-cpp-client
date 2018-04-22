@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListRemoveWithIndexCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListRemoveWithIndexCodec::RequestParameters::TYPE = HZ_LIST_REMOVEWITHINDEX;
-                const bool ListRemoveWithIndexCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ListRemoveWithIndexCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> ListRemoveWithIndexCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const ListMessageType ListRemoveWithIndexCodec::REQUEST_TYPE = HZ_LIST_REMOVEWITHINDEX;
+                const bool ListRemoveWithIndexCodec::RETRYABLE = false;
+                const ResponseMessageConst ListRemoveWithIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> ListRemoveWithIndexCodec::encodeRequest(
+                        const std::string &name,
                         int32_t index) {
                     int32_t requiredDataSize = calculateDataSize(name, index);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListRemoveWithIndexCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListRemoveWithIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListRemoveWithIndexCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t ListRemoveWithIndexCodec::calculateDataSize(
+                        const std::string &name,
                         int32_t index) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,26 @@ namespace hazelcast {
                 }
 
                 ListRemoveWithIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListRemoveWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ListRemoveWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                ListRemoveWithIndexCodec::ResponseParameters ListRemoveWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListRemoveWithIndexCodec::ResponseParameters
+                ListRemoveWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListRemoveWithIndexCodec::ResponseParameters(clientMessage);
                 }
 
-                ListRemoveWithIndexCodec::ResponseParameters::ResponseParameters(const ListRemoveWithIndexCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                ListRemoveWithIndexCodec::ResponseParameters::ResponseParameters(
+                        const ListRemoveWithIndexCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

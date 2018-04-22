@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapPutAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,45 +25,50 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapPutAllCodec::RequestParameters::TYPE = HZ_MAP_PUTALL;
-                const bool MapPutAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapPutAllCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapPutAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > &entries) {
+                const MapMessageType MapPutAllCodec::REQUEST_TYPE = HZ_MAP_PUTALL;
+                const bool MapPutAllCodec::RETRYABLE = false;
+                const ResponseMessageConst MapPutAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapPutAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &entries) {
                     int32_t requiredDataSize = calculateDataSize(name, entries);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapPutAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapPutAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setEntryArray<serialization::pimpl::Data, serialization::pimpl::Data >(entries);
+                    clientMessage->setArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >(
+                            entries);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapPutAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > &entries) {
+                int32_t MapPutAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &entries) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data, serialization::pimpl::Data > (entries);
+                    dataSize += ClientMessage::calculateDataSize<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >(
+                            entries);
                     return dataSize;
                 }
 
                 MapPutAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapPutAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapPutAllCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapPutAllCodec::ResponseParameters MapPutAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapPutAllCodec::ResponseParameters
+                MapPutAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapPutAllCodec::ResponseParameters(clientMessage);
                 }
 
                 MapPutAllCodec::ResponseParameters::ResponseParameters(const MapPutAllCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

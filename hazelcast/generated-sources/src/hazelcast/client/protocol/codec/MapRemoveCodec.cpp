@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapRemoveCodec::RequestParameters::TYPE = HZ_MAP_REMOVE;
-                const bool MapRemoveCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapRemoveCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> MapRemoveCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapRemoveCodec::REQUEST_TYPE = HZ_MAP_REMOVE;
+                const bool MapRemoveCodec::RETRYABLE = false;
+                const ResponseMessageConst MapRemoveCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> MapRemoveCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapRemoveCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapRemoveCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapRemoveCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapRemoveCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,22 +56,24 @@ namespace hazelcast {
                 }
 
                 MapRemoveCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapRemoveCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapRemoveCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                MapRemoveCodec::ResponseParameters MapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveCodec::ResponseParameters
+                MapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
                 MapRemoveCodec::ResponseParameters::ResponseParameters(const MapRemoveCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

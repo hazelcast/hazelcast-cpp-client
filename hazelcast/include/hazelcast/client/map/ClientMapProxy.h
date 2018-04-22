@@ -1242,7 +1242,7 @@ namespace hazelcast {
                     int partitionId = getPartitionId(keyData);
 
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::MapSubmitToKeyCodec::RequestParameters::encode(getName(),
+                            protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
                                                                                              processor,
                                                                                              keyData,
                                                                                              util::getThreadId());

@@ -24,19 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapRemoveEntryListenerCodec::RequestParameters::TYPE = HZ_MULTIMAP_REMOVEENTRYLISTENER;
-                const bool MultiMapRemoveEntryListenerCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MultiMapRemoveEntryListenerCodec::ResponseParameters::TYPE = 101;
+                const MultiMapMessageType MultiMapRemoveEntryListenerCodec::REQUEST_TYPE = HZ_MULTIMAP_REMOVEENTRYLISTENER;
+                const bool MultiMapRemoveEntryListenerCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapRemoveEntryListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                MultiMapRemoveEntryListenerCodec::~MultiMapRemoveEntryListenerCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> MultiMapRemoveEntryListenerCodec::RequestParameters::encode(
-                        const std::string &name, 
+                std::auto_ptr<ClientMessage> MultiMapRemoveEntryListenerCodec::encodeRequest(
+                        const std::string &name,
                         const std::string &registrationId) {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapRemoveEntryListenerCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapRemoveEntryListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -44,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapRemoveEntryListenerCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MultiMapRemoveEntryListenerCodec::calculateDataSize(
+                        const std::string &name,
                         const std::string &registrationId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,44 +51,26 @@ namespace hazelcast {
                 }
 
                 MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapRemoveEntryListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapRemoveEntryListenerCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MultiMapRemoveEntryListenerCodec::ResponseParameters MultiMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapRemoveEntryListenerCodec::ResponseParameters
+                MultiMapRemoveEntryListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(const MultiMapRemoveEntryListenerCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapRemoveEntryListenerCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
-                MultiMapRemoveEntryListenerCodec::MultiMapRemoveEntryListenerCodec (const std::string &name, const std::string &registrationId)
-                        : name_(name), registrationId_(registrationId) {
-                }
-
-                //************************ IRemoveListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> MultiMapRemoveEntryListenerCodec::encodeRequest() const {
-                    return RequestParameters::encode(name_, registrationId_);
-                }
-
-                const std::string &MultiMapRemoveEntryListenerCodec::getRegistrationId() const {
-                    return registrationId_;
-                }
-
-                void MultiMapRemoveEntryListenerCodec::setRegistrationId(const std::string &id) {
-                    registrationId_ = id;
-                }
-
-                bool MultiMapRemoveEntryListenerCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IRemoveListenerCodec interface ends *************************************************//
-
             }
         }
     }

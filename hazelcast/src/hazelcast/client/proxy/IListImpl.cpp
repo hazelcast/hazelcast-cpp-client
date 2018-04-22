@@ -70,7 +70,7 @@ namespace hazelcast {
 
             int IListImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListSizeCodec::RequestParameters::encode(getName());
+                        protocol::codec::ListSizeCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<int, protocol::codec::ListSizeCodec::ResponseParameters>(request,
                                                                                                    partitionId);
@@ -78,7 +78,7 @@ namespace hazelcast {
 
             bool IListImpl::contains(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListContainsCodec::RequestParameters::encode(getName(), element);
+                        protocol::codec::ListContainsCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::ListContainsCodec::ResponseParameters>(request,
                                                                                                         partitionId);
@@ -86,7 +86,7 @@ namespace hazelcast {
 
             std::vector<serialization::pimpl::Data> IListImpl::toArrayData() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListGetAllCodec::RequestParameters::encode(getName());
+                        protocol::codec::ListGetAllCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::ListGetAllCodec::ResponseParameters>(
                         request, partitionId);
@@ -94,7 +94,7 @@ namespace hazelcast {
 
             bool IListImpl::add(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListAddCodec::RequestParameters::encode(getName(), element);
+                        protocol::codec::ListAddCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::ListAddCodec::ResponseParameters>(request,
                                                                                                    partitionId);
@@ -102,7 +102,7 @@ namespace hazelcast {
 
             bool IListImpl::remove(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListRemoveCodec::RequestParameters::encode(getName(), element);
+                        protocol::codec::ListRemoveCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::ListRemoveCodec::ResponseParameters>(request,
                                                                                                       partitionId);
@@ -110,7 +110,7 @@ namespace hazelcast {
 
             bool IListImpl::containsAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListContainsAllCodec::RequestParameters::encode(getName(), elements);
+                        protocol::codec::ListContainsAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListContainsAllCodec::ResponseParameters>(request,
                                                                                                            partitionId);
@@ -118,7 +118,7 @@ namespace hazelcast {
 
             bool IListImpl::addAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListAddAllCodec::RequestParameters::encode(getName(), elements);
+                        protocol::codec::ListAddAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListAddAllCodec::ResponseParameters>(request,
                                                                                                       partitionId);
@@ -126,7 +126,7 @@ namespace hazelcast {
 
             bool IListImpl::addAll(int index, const std::vector<serialization::pimpl::Data> &elements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListAddAllWithIndexCodec::RequestParameters::encode(getName(), index,
+                        protocol::codec::ListAddAllWithIndexCodec::encodeRequest(getName(), index,
                                                                                              elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListAddAllWithIndexCodec::ResponseParameters>(request,
@@ -135,7 +135,7 @@ namespace hazelcast {
 
             bool IListImpl::removeAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListCompareAndRemoveAllCodec::RequestParameters::encode(getName(), elements);
+                        protocol::codec::ListCompareAndRemoveAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListCompareAndRemoveAllCodec::ResponseParameters>(
                         request, partitionId);
@@ -143,7 +143,7 @@ namespace hazelcast {
 
             bool IListImpl::retainAll(const std::vector<serialization::pimpl::Data> &elements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListCompareAndRetainAllCodec::RequestParameters::encode(getName(), elements);
+                        protocol::codec::ListCompareAndRetainAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::ListCompareAndRetainAllCodec::ResponseParameters>(
                         request, partitionId);
@@ -151,14 +151,14 @@ namespace hazelcast {
 
             void IListImpl::clear() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListClearCodec::RequestParameters::encode(getName());
+                        protocol::codec::ListClearCodec::encodeRequest(getName());
 
                 invokeOnPartition(request, partitionId);
             }
 
             std::auto_ptr<serialization::pimpl::Data> IListImpl::getData(int index) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListGetCodec::RequestParameters::encode(getName(), index);
+                        protocol::codec::ListGetCodec::encodeRequest(getName(), index);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ListGetCodec::ResponseParameters>(
                         request, partitionId);
@@ -167,7 +167,7 @@ namespace hazelcast {
             std::auto_ptr<serialization::pimpl::Data> IListImpl::setData(int index,
                                                                          const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListSetCodec::RequestParameters::encode(getName(), index, element);
+                        protocol::codec::ListSetCodec::encodeRequest(getName(), index, element);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ListSetCodec::ResponseParameters>(
                         request, partitionId);
@@ -175,14 +175,14 @@ namespace hazelcast {
 
             void IListImpl::add(int index, const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListAddWithIndexCodec::RequestParameters::encode(getName(), index, element);
+                        protocol::codec::ListAddWithIndexCodec::encodeRequest(getName(), index, element);
 
                 invokeOnPartition(request, partitionId);
             }
 
             std::auto_ptr<serialization::pimpl::Data> IListImpl::removeData(int index) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListRemoveWithIndexCodec::RequestParameters::encode(getName(), index);
+                        protocol::codec::ListRemoveWithIndexCodec::encodeRequest(getName(), index);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ListRemoveWithIndexCodec::ResponseParameters>(
                         request, partitionId);
@@ -190,7 +190,7 @@ namespace hazelcast {
 
             int IListImpl::indexOf(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListIndexOfCodec::RequestParameters::encode(getName(), element);
+                        protocol::codec::ListIndexOfCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<int, protocol::codec::ListIndexOfCodec::ResponseParameters>(request,
                                                                                                       partitionId);
@@ -198,7 +198,7 @@ namespace hazelcast {
 
             int IListImpl::lastIndexOf(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListLastIndexOfCodec::RequestParameters::encode(getName(), element);
+                        protocol::codec::ListLastIndexOfCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<int, protocol::codec::ListLastIndexOfCodec::ResponseParameters>(request,
                                                                                                           partitionId);
@@ -206,7 +206,7 @@ namespace hazelcast {
 
             std::vector<serialization::pimpl::Data> IListImpl::subListData(int fromIndex, int toIndex) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::ListSubCodec::RequestParameters::encode(getName(), fromIndex, toIndex);
+                        protocol::codec::ListSubCodec::encodeRequest(getName(), fromIndex, toIndex);
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::ListSubCodec::ResponseParameters>(
                         request, partitionId);
@@ -225,22 +225,22 @@ namespace hazelcast {
 
             std::auto_ptr<protocol::ClientMessage>
             IListImpl::ListListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::ListAddListenerCodec(name, includeValue, localOnly).encodeRequest();
+                return protocol::codec::ListAddListenerCodec::encodeRequest(name, includeValue, localOnly);
             }
 
             std::string IListImpl::ListListenerMessageCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::ListAddListenerCodec(name, includeValue, false).decodeResponse(responseMessage);
+                return protocol::codec::ListAddListenerCodec::ResponseParameters::decode(responseMessage).response;
             }
 
             std::auto_ptr<protocol::ClientMessage>
             IListImpl::ListListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
-                return protocol::codec::ListRemoveListenerCodec(name, realRegistrationId).encodeRequest();
+                return protocol::codec::ListRemoveListenerCodec::encodeRequest(name, realRegistrationId);
             }
 
             bool IListImpl::ListListenerMessageCodec::decodeRemoveResponse(
                     protocol::ClientMessage &clientMessage) const {
-                return protocol::codec::ListRemoveListenerCodec(name, "").decodeResponse(clientMessage);
+                return protocol::codec::ListRemoveListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
         }
     }

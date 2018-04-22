@@ -34,28 +34,28 @@ namespace hazelcast {
 
         bool ICountDownLatch::await(long timeoutInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchAwaitCodec::RequestParameters::encode(getName(), timeoutInMillis);
+                    protocol::codec::CountDownLatchAwaitCodec::encodeRequest(getName(), timeoutInMillis);
 
             return invokeAndGetResult<bool, protocol::codec::CountDownLatchAwaitCodec::ResponseParameters>(request, partitionId);
         }
 
         void ICountDownLatch::countDown() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchCountDownCodec::RequestParameters::encode(getName());
+                    protocol::codec::CountDownLatchCountDownCodec::encodeRequest(getName());
 
             invokeOnPartition(request, partitionId);
         }
 
         int ICountDownLatch::getCount() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchGetCountCodec::RequestParameters::encode(getName());
+                    protocol::codec::CountDownLatchGetCountCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int, protocol::codec::CountDownLatchGetCountCodec::ResponseParameters>(request, partitionId);
         }
 
         bool ICountDownLatch::trySetCount(int count) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::CountDownLatchTrySetCountCodec::RequestParameters::encode(getName(), count);
+                    protocol::codec::CountDownLatchTrySetCountCodec::encodeRequest(getName(), count);
 
             return invokeAndGetResult<bool, protocol::codec::CountDownLatchTrySetCountCodec::ResponseParameters>(request, partitionId);
         }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockLockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,49 +24,56 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockLockCodec::RequestParameters::TYPE = HZ_LOCK_LOCK;
-                const bool LockLockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t LockLockCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> LockLockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int64_t leaseTime, 
-                        int64_t threadId) {
-                    int32_t requiredDataSize = calculateDataSize(name, leaseTime, threadId);
+                const LockMessageType LockLockCodec::REQUEST_TYPE = HZ_LOCK_LOCK;
+                const bool LockLockCodec::RETRYABLE = true;
+                const ResponseMessageConst LockLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> LockLockCodec::encodeRequest(
+                        const std::string &name,
+                        int64_t leaseTime,
+                        int64_t threadId,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, leaseTime, threadId, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockLockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockLockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(leaseTime);
                     clientMessage->set(threadId);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t LockLockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int64_t leaseTime, 
-                        int64_t threadId) {
+                int32_t LockLockCodec::calculateDataSize(
+                        const std::string &name,
+                        int64_t leaseTime,
+                        int64_t threadId,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(leaseTime);
                     dataSize += ClientMessage::calculateDataSize(threadId);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 LockLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockLockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("LockLockCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                LockLockCodec::ResponseParameters LockLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                LockLockCodec::ResponseParameters
+                LockLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return LockLockCodec::ResponseParameters(clientMessage);
                 }
 
                 LockLockCodec::ResponseParameters::ResponseParameters(const LockLockCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

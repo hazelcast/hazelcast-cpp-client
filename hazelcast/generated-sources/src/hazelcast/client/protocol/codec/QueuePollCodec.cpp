@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueuePollCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueuePollCodec::RequestParameters::TYPE = HZ_QUEUE_POLL;
-                const bool QueuePollCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueuePollCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> QueuePollCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const QueueMessageType QueuePollCodec::REQUEST_TYPE = HZ_QUEUE_POLL;
+                const bool QueuePollCodec::RETRYABLE = false;
+                const ResponseMessageConst QueuePollCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> QueuePollCodec::encodeRequest(
+                        const std::string &name,
                         int64_t timeoutMillis) {
                     int32_t requiredDataSize = calculateDataSize(name, timeoutMillis);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueuePollCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueuePollCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(timeoutMillis);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t QueuePollCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t QueuePollCodec::calculateDataSize(
+                        const std::string &name,
                         int64_t timeoutMillis) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,24 @@ namespace hazelcast {
                 }
 
                 QueuePollCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueuePollCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueuePollCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                QueuePollCodec::ResponseParameters QueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueuePollCodec::ResponseParameters
+                QueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueuePollCodec::ResponseParameters(clientMessage);
                 }
 
                 QueuePollCodec::ResponseParameters::ResponseParameters(const QueuePollCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapPutTransientCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,18 +25,19 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapPutTransientCodec::RequestParameters::TYPE = HZ_MAP_PUTTRANSIENT;
-                const bool MapPutTransientCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapPutTransientCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapPutTransientCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
-                        int64_t threadId, 
+                const MapMessageType MapPutTransientCodec::REQUEST_TYPE = HZ_MAP_PUTTRANSIENT;
+                const bool MapPutTransientCodec::RETRYABLE = false;
+                const ResponseMessageConst MapPutTransientCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapPutTransientCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
+                        int64_t threadId,
                         int64_t ttl) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapPutTransientCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapPutTransientCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -46,11 +48,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapPutTransientCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
-                        int64_t threadId, 
+                int32_t MapPutTransientCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
+                        int64_t threadId,
                         int64_t ttl) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -62,19 +64,23 @@ namespace hazelcast {
                 }
 
                 MapPutTransientCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapPutTransientCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapPutTransientCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapPutTransientCodec::ResponseParameters MapPutTransientCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapPutTransientCodec::ResponseParameters
+                MapPutTransientCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapPutTransientCodec::ResponseParameters(clientMessage);
                 }
 
-                MapPutTransientCodec::ResponseParameters::ResponseParameters(const MapPutTransientCodec::ResponseParameters &rhs) {
+                MapPutTransientCodec::ResponseParameters::ResponseParameters(
+                        const MapPutTransientCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

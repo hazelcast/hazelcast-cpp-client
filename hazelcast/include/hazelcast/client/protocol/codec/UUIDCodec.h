@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
+#define HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
 
-/*
- *  Created on: 10.11.2015
- *      Author: ihsan
- */
-
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_IREMOVELISTENERCODEC_H_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_IREMOVELISTENERCODEC_H_
-
-#include <memory>
-#include <string>
-
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/UUID.h"
+#include "hazelcast/util/Bits.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,21 +25,22 @@ namespace hazelcast {
             class ClientMessage;
 
             namespace codec {
-                class HAZELCAST_API IRemoveListenerCodec {
+                class UUIDCodec {
                 public:
-                    virtual ~IRemoveListenerCodec() { }
+                    static util::UUID decode(ClientMessage &clientMessage);
 
-                    virtual std::auto_ptr<ClientMessage> encodeRequest() const = 0;
+                    static void encode(const util::UUID &address, ClientMessage &clientMessage);
 
-                    virtual bool decodeResponse(ClientMessage &clientMessage) const = 0;
+                    static int calculateDataSize(const util::UUID &address);
 
-                    virtual const std::string &getRegistrationId() const = 0;
-
-                    virtual void setRegistrationId(const std::string &id) = 0;
+                private:
+                    static const int UUID_LONG_FIELD_COUNT = 2;
+                    static const int UUID_DATA_SIZE = UUID_LONG_FIELD_COUNT * util::Bits::LONG_SIZE_IN_BYTES;
                 };
             }
         }
     }
 }
 
-#endif /* HAZELCAST_CLIENT_PROTOCOL_CODEC_IREMOVELISTENERCODEC_H_ */
+#endif //HAZELCAST_CLIENT_PROTOCOL_CODEC_UUIDCODEC_
+

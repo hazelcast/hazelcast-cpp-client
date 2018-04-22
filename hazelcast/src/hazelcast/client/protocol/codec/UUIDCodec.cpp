@@ -13,37 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/*
- *  Created on: 10.11.2015
- *      Author: ihsan
- */
-
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_IADDLISTENERCODEC_H_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_IADDLISTENERCODEC_H_
-
-#include <memory>
-#include <string>
-
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/UUIDCodec.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            class ClientMessage;
-
             namespace codec {
-                class HAZELCAST_API IAddListenerCodec {
-                public:
-                    virtual ~IAddListenerCodec() { }
+                util::UUID UUIDCodec::decode(ClientMessage &clientMessage) {
+                    return util::UUID(clientMessage.get<int64_t>(), clientMessage.get<int64_t>());
+                }
 
-                    virtual std::auto_ptr<ClientMessage> encodeRequest() const = 0;
+                void UUIDCodec::encode(const util::UUID &uuid, ClientMessage &clientMessage) {
+                    clientMessage.set(uuid.getMostSignificantBits());
+                    clientMessage.set(uuid.getLeastSignificantBits());
+                }
 
-                    virtual std::string decodeResponse(ClientMessage &responseMessage) const = 0;
-                };
+                int UUIDCodec::calculateDataSize(const util::UUID &uuid) {
+                    return UUID_DATA_SIZE;
+                }
             }
         }
     }
 }
-
-#endif /* HAZELCAST_CLIENT_PROTOCOL_CODEC_IADDLISTENERCODEC_H_ */

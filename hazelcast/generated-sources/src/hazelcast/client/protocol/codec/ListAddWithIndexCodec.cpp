@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListAddWithIndexCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListAddWithIndexCodec::RequestParameters::TYPE = HZ_LIST_ADDWITHINDEX;
-                const bool ListAddWithIndexCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ListAddWithIndexCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> ListAddWithIndexCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int32_t index, 
+                const ListMessageType ListAddWithIndexCodec::REQUEST_TYPE = HZ_LIST_ADDWITHINDEX;
+                const bool ListAddWithIndexCodec::RETRYABLE = false;
+                const ResponseMessageConst ListAddWithIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> ListAddWithIndexCodec::encodeRequest(
+                        const std::string &name,
+                        int32_t index,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, index, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListAddWithIndexCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListAddWithIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListAddWithIndexCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int32_t index, 
+                int32_t ListAddWithIndexCodec::calculateDataSize(
+                        const std::string &name,
+                        int32_t index,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,19 +56,23 @@ namespace hazelcast {
                 }
 
                 ListAddWithIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListAddWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ListAddWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                ListAddWithIndexCodec::ResponseParameters ListAddWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddWithIndexCodec::ResponseParameters
+                ListAddWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListAddWithIndexCodec::ResponseParameters(clientMessage);
                 }
 
-                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(const ListAddWithIndexCodec::ResponseParameters &rhs) {
+                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(
+                        const ListAddWithIndexCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

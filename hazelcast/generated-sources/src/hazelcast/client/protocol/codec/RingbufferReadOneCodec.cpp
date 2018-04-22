@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferReadOneCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferReadOneCodec::RequestParameters::TYPE = HZ_RINGBUFFER_READONE;
-                const bool RingbufferReadOneCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferReadOneCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> RingbufferReadOneCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const RingbufferMessageType RingbufferReadOneCodec::REQUEST_TYPE = HZ_RINGBUFFER_READONE;
+                const bool RingbufferReadOneCodec::RETRYABLE = true;
+                const ResponseMessageConst RingbufferReadOneCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> RingbufferReadOneCodec::encodeRequest(
+                        const std::string &name,
                         int64_t sequence) {
                     int32_t requiredDataSize = calculateDataSize(name, sequence);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferReadOneCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferReadOneCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(sequence);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t RingbufferReadOneCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t RingbufferReadOneCodec::calculateDataSize(
+                        const std::string &name,
                         int64_t sequence) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,26 @@ namespace hazelcast {
                 }
 
                 RingbufferReadOneCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferReadOneCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "RingbufferReadOneCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                RingbufferReadOneCodec::ResponseParameters RingbufferReadOneCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferReadOneCodec::ResponseParameters
+                RingbufferReadOneCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferReadOneCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferReadOneCodec::ResponseParameters::ResponseParameters(const RingbufferReadOneCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                RingbufferReadOneCodec::ResponseParameters::ResponseParameters(
+                        const RingbufferReadOneCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

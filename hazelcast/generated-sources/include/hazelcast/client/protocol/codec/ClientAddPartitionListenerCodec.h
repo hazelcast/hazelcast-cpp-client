@@ -24,13 +24,14 @@
 #include <memory>
 #include <vector>
 
-
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -38,56 +39,50 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API ClientAddPartitionListenerCodec : public IAddListenerCodec{
+                class HAZELCAST_API ClientAddPartitionListenerCodec {
                 public:
+                    static const ClientMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
+
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ClientMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest();
 
-                        static std::auto_ptr<ClientMessage> encode();
-
-                        static int32_t calculateDataSize();
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize();
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
 
+                        static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
-                        public:
-                            virtual ~AbstractEventHandler();
+                    public:
+                        virtual ~AbstractEventHandler();
 
-                            void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::auto_ptr<protocol::ClientMessage> message);
 
-                            virtual void handlePartitions(const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions, const int32_t &partitionStateVersion) = 0;
+
+                        virtual void handlePartitionsEventV15(
+                                const std::vector<std::pair<Address, std::vector<int32_t> > > &partitions,
+                                const int32_t &partitionStateVersion) = 0;
 
                     };
 
                     //************************ EVENTS END **********************************************************************//
-
-                    private:
-                        // Preventing public access to constructors
-                        ClientAddPartitionListenerCodec ();
-
+                private:
+                    // Preventing public access to constructors
+                    ClientAddPartitionListenerCodec();
                 };
             }
         }

@@ -37,7 +37,7 @@ namespace hazelcast {
 
             bool TransactionalSetImpl::add(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetAddCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalSetAddCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalSetAddCodec::ResponseParameters>(request);
@@ -45,7 +45,7 @@ namespace hazelcast {
 
             bool TransactionalSetImpl::remove(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetRemoveCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalSetRemoveCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalSetRemoveCodec::ResponseParameters>(request);
@@ -53,7 +53,7 @@ namespace hazelcast {
 
             int TransactionalSetImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetSizeCodec::RequestParameters::encode(
+                        protocol::codec::TransactionalSetSizeCodec::encodeRequest(
                                 getName(), getTransactionId(), util::getThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalSetSizeCodec::ResponseParameters>(request);

@@ -29,6 +29,8 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API UUID {
         public:
+            UUID();
+
             /**
              * Constructs a new <tt>UUID</tt> using the specified data.
              * <tt>mostSigBits</tt> is used for the most significant 64 bits
@@ -99,8 +101,8 @@ namespace hazelcast {
         private:
             static std::string digits(int64_t val, int32_t digits);
 
-            const int64_t mostSigBits;
-            const int64_t leastSigBits;
+            int64_t mostSigBits;
+            int64_t leastSigBits;
         };
 
     }

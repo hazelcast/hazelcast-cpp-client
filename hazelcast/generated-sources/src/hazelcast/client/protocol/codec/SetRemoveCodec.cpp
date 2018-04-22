@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetRemoveCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetRemoveCodec::RequestParameters::TYPE = HZ_SET_REMOVE;
-                const bool SetRemoveCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetRemoveCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SetRemoveCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const SetMessageType SetRemoveCodec::REQUEST_TYPE = HZ_SET_REMOVE;
+                const bool SetRemoveCodec::RETRYABLE = false;
+                const ResponseMessageConst SetRemoveCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SetRemoveCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetRemoveCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetRemoveCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SetRemoveCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t SetRemoveCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,24 @@ namespace hazelcast {
                 }
 
                 SetRemoveCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetRemoveCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("SetRemoveCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SetRemoveCodec::ResponseParameters SetRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetRemoveCodec::ResponseParameters
+                SetRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetRemoveCodec::ResponseParameters(clientMessage);
                 }
 
                 SetRemoveCodec::ResponseParameters::ResponseParameters(const SetRemoveCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

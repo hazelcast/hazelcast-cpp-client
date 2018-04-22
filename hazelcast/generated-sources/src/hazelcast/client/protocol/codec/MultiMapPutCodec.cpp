@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapPutCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,17 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapPutCodec::RequestParameters::TYPE = HZ_MULTIMAP_PUT;
-                const bool MultiMapPutCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MultiMapPutCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MultiMapPutCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
+                const MultiMapMessageType MultiMapPutCodec::REQUEST_TYPE = HZ_MULTIMAP_PUT;
+                const bool MultiMapPutCodec::RETRYABLE = false;
+                const ResponseMessageConst MultiMapPutCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MultiMapPutCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapPutCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapPutCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -44,10 +46,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapPutCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
+                int32_t MultiMapPutCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,22 +60,25 @@ namespace hazelcast {
                 }
 
                 MultiMapPutCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapPutCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MultiMapPutCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MultiMapPutCodec::ResponseParameters MultiMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapPutCodec::ResponseParameters
+                MultiMapPutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapPutCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapPutCodec::ResponseParameters::ResponseParameters(const MultiMapPutCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapPutCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapPutCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

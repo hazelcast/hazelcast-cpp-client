@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
-
-#include <hazelcast/util/Util.h>
-#include <hazelcast/util/ILogger.h>
 #include "hazelcast/client/protocol/codec/ClientAddPartitionListenerCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/Address.h"
@@ -27,60 +26,67 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientAddPartitionListenerCodec::RequestParameters::TYPE = HZ_CLIENT_ADDPARTITIONLISTENER;
-                const bool ClientAddPartitionListenerCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ClientAddPartitionListenerCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> ClientAddPartitionListenerCodec::RequestParameters::encode() {
+                const ClientMessageType ClientAddPartitionListenerCodec::REQUEST_TYPE = HZ_CLIENT_ADDPARTITIONLISTENER;
+                const bool ClientAddPartitionListenerCodec::RETRYABLE = false;
+                const ResponseMessageConst ClientAddPartitionListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> ClientAddPartitionListenerCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientAddPartitionListenerCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientAddPartitionListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ClientAddPartitionListenerCodec::RequestParameters::calculateDataSize() {
+                int32_t ClientAddPartitionListenerCodec::calculateDataSize() {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     return dataSize;
                 }
 
                 ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientAddPartitionListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ClientAddPartitionListenerCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                ClientAddPartitionListenerCodec::ResponseParameters ClientAddPartitionListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientAddPartitionListenerCodec::ResponseParameters
+                ClientAddPartitionListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ClientAddPartitionListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(const ClientAddPartitionListenerCodec::ResponseParameters &rhs) {
+                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(
+                        const ClientAddPartitionListenerCodec::ResponseParameters &rhs) {
                 }
 
                 //************************ EVENTS START*************************************************************************//
                 ClientAddPartitionListenerCodec::AbstractEventHandler::~AbstractEventHandler() {
                 }
 
-                void ClientAddPartitionListenerCodec::AbstractEventHandler::handle(std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                void ClientAddPartitionListenerCodec::AbstractEventHandler::handle(
+                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
-                        case protocol::EVENT_PARTITIONS:
-                        {
+                        case protocol::EVENT_PARTITIONS: {
                             std::vector<std::pair<Address, std::vector<int32_t> > > partitions = clientMessage->getArray<std::pair<Address, std::vector<int32_t> > >();
-                            
-                            int32_t partitionStateVersion = clientMessage->get<int32_t >();
-                            
-                            handlePartitions(partitions, partitionStateVersion);
+
+                            int32_t partitionStateVersion = clientMessage->get<int32_t>();
+
+
+                            handlePartitionsEventV15(partitions, partitionStateVersion);
                             break;
                         }
                         default:
-                            char buf[300];
-                            util::hz_snprintf(buf, 300, "[ClientAddPartitionListenerCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.", clientMessage->getMessageType());
-                            util::ILogger::getLogger().warning(buf);
+                            util::ILogger::getLogger().warning()
+                                    << "[ClientAddPartitionListenerCodec::AbstractEventHandler::handle] Unknown message type ("
+                                    << messageType << ") received on event handler.";
                     }
                 }
                 //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

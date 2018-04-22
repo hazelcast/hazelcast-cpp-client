@@ -77,7 +77,7 @@ namespace hazelcast {
                 }
 
                 if (now - connection->lastReadTimeMillis() > heartbeatInterval) {
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::RequestParameters::encode();
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
                     boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, "", connection);
                     clientInvocation->setBypassHeartbeatCheck(true);

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientAuthenticationCustomCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -26,20 +27,23 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientAuthenticationCustomCodec::RequestParameters::TYPE = HZ_CLIENT_AUTHENTICATIONCUSTOM;
-                const bool ClientAuthenticationCustomCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ClientAuthenticationCustomCodec::ResponseParameters::TYPE = 107;
-                std::auto_ptr<ClientMessage> ClientAuthenticationCustomCodec::RequestParameters::encode(
-                        const serialization::pimpl::Data &credentials, 
-                        const std::string *uuid, 
-                        const std::string *ownerUuid, 
-                        bool isOwnerConnection, 
-                        const std::string &clientType, 
-                        uint8_t serializationVersion, 
+                const ClientMessageType ClientAuthenticationCustomCodec::REQUEST_TYPE = HZ_CLIENT_AUTHENTICATIONCUSTOM;
+                const bool ClientAuthenticationCustomCodec::RETRYABLE = true;
+                const ResponseMessageConst ClientAuthenticationCustomCodec::RESPONSE_TYPE = (ResponseMessageConst) 107;
+
+                std::auto_ptr<ClientMessage> ClientAuthenticationCustomCodec::encodeRequest(
+                        const serialization::pimpl::Data &credentials,
+                        const std::string *uuid,
+                        const std::string *ownerUuid,
+                        bool isOwnerConnection,
+                        const std::string &clientType,
+                        uint8_t serializationVersion,
                         const std::string &clientHazelcastVersion) {
-                    int32_t requiredDataSize = calculateDataSize(credentials, uuid, ownerUuid, isOwnerConnection, clientType, serializationVersion, clientHazelcastVersion);
+                    int32_t requiredDataSize = calculateDataSize(credentials, uuid, ownerUuid, isOwnerConnection,
+                                                                 clientType, serializationVersion,
+                                                                 clientHazelcastVersion);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientAuthenticationCustomCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientAuthenticationCustomCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(credentials);
                     clientMessage->set(uuid);
@@ -52,13 +56,13 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ClientAuthenticationCustomCodec::RequestParameters::calculateDataSize(
-                        const serialization::pimpl::Data &credentials, 
-                        const std::string *uuid, 
-                        const std::string *ownerUuid, 
-                        bool isOwnerConnection, 
-                        const std::string &clientType, 
-                        uint8_t serializationVersion, 
+                int32_t ClientAuthenticationCustomCodec::calculateDataSize(
+                        const serialization::pimpl::Data &credentials,
+                        const std::string *uuid,
+                        const std::string *ownerUuid,
+                        bool isOwnerConnection,
+                        const std::string &clientType,
+                        uint8_t serializationVersion,
                         const std::string &clientHazelcastVersion) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(credentials);
@@ -72,40 +76,56 @@ namespace hazelcast {
                 }
 
                 ClientAuthenticationCustomCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientAuthenticationCustomCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ClientAuthenticationCustomCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    status = clientMessage.get<uint8_t >();
+                    serverHazelcastVersionExist = false;
+                    clientUnregisteredMembersExist = false;
 
-                    address = clientMessage.getNullable<Address >();
 
-                    uuid = clientMessage.getNullable<std::string >();
+                    status = clientMessage.get<uint8_t>();
 
-                    ownerUuid = clientMessage.getNullable<std::string >();
 
-                    serializationVersion = clientMessage.get<uint8_t >();
+                    address = clientMessage.getNullable<Address>();
 
-                    serverHazelcastVersion = clientMessage.get<std::string >();
 
-                    clientUnregisteredMembers = clientMessage.getNullableArray<Member >();
+                    uuid = clientMessage.getNullable<std::string>();
+
+
+                    ownerUuid = clientMessage.getNullable<std::string>();
+
+
+                    serializationVersion = clientMessage.get<uint8_t>();
+                    if (clientMessage.isComplete()) {
+                        return;
+                    }
+
+                    serverHazelcastVersion = clientMessage.get<std::string>();
+                    serverHazelcastVersionExist = true;
+
+                    clientUnregisteredMembers = clientMessage.getNullableArray<Member>();
+                    clientUnregisteredMembersExist = true;
                 }
 
-                ClientAuthenticationCustomCodec::ResponseParameters ClientAuthenticationCustomCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientAuthenticationCustomCodec::ResponseParameters
+                ClientAuthenticationCustomCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ClientAuthenticationCustomCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientAuthenticationCustomCodec::ResponseParameters::ResponseParameters(const ClientAuthenticationCustomCodec::ResponseParameters &rhs) {
-                        status = rhs.status;
-                        address = std::auto_ptr<Address>(new Address(*rhs.address));
-                        uuid = std::auto_ptr<std::string>(new std::string(*rhs.uuid));
-                        ownerUuid = std::auto_ptr<std::string>(new std::string(*rhs.ownerUuid));
-                        serializationVersion = rhs.serializationVersion;
-                        serverHazelcastVersion = rhs.serverHazelcastVersion;
-                        clientUnregisteredMembers = std::auto_ptr<std::vector<Member> >(new std::vector<Member>(*rhs.clientUnregisteredMembers));
+                ClientAuthenticationCustomCodec::ResponseParameters::ResponseParameters(
+                        const ClientAuthenticationCustomCodec::ResponseParameters &rhs) {
+                    status = rhs.status;
+                    address = std::auto_ptr<Address>(new Address(*rhs.address));
+                    uuid = std::auto_ptr<std::string>(new std::string(*rhs.uuid));
+                    ownerUuid = std::auto_ptr<std::string>(new std::string(*rhs.ownerUuid));
+                    serializationVersion = rhs.serializationVersion;
+                    serverHazelcastVersion = rhs.serverHazelcastVersion;
+                    clientUnregisteredMembers = std::auto_ptr<std::vector<Member> >(
+                            new std::vector<Member>(*rhs.clientUnregisteredMembers));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

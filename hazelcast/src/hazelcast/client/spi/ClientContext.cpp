@@ -19,6 +19,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
@@ -96,6 +97,11 @@ namespace hazelcast {
 
             void ClientContext::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
                 hazelcastClient.onClusterConnect(ownerConnection);
+            }
+
+            const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
+            ClientContext::getLockReferenceIdGenerator() {
+                return hazelcastClient.getLockReferenceIdGenerator();
             }
 
         }

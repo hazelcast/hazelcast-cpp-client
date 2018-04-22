@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const AtomicLongMessageType AtomicLongAddAndGetCodec::RequestParameters::TYPE = HZ_ATOMICLONG_ADDANDGET;
-                const bool AtomicLongAddAndGetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t AtomicLongAddAndGetCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> AtomicLongAddAndGetCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const AtomicLongMessageType AtomicLongAddAndGetCodec::REQUEST_TYPE = HZ_ATOMICLONG_ADDANDGET;
+                const bool AtomicLongAddAndGetCodec::RETRYABLE = false;
+                const ResponseMessageConst AtomicLongAddAndGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> AtomicLongAddAndGetCodec::encodeRequest(
+                        const std::string &name,
                         int64_t delta) {
                     int32_t requiredDataSize = calculateDataSize(name, delta);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)AtomicLongAddAndGetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) AtomicLongAddAndGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(delta);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t AtomicLongAddAndGetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t AtomicLongAddAndGetCodec::calculateDataSize(
+                        const std::string &name,
                         int64_t delta) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,22 +51,26 @@ namespace hazelcast {
                 }
 
                 AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("AtomicLongAddAndGetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "AtomicLongAddAndGetCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                AtomicLongAddAndGetCodec::ResponseParameters AtomicLongAddAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                AtomicLongAddAndGetCodec::ResponseParameters
+                AtomicLongAddAndGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return AtomicLongAddAndGetCodec::ResponseParameters(clientMessage);
                 }
 
-                AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(const AtomicLongAddAndGetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(
+                        const AtomicLongAddAndGetCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

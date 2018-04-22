@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapIsEmptyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,16 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapIsEmptyCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_ISEMPTY;
-                const bool TransactionalMapIsEmptyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapIsEmptyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> TransactionalMapIsEmptyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                const TransactionalMapMessageType TransactionalMapIsEmptyCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_ISEMPTY;
+                const bool TransactionalMapIsEmptyCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> TransactionalMapIsEmptyCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapIsEmptyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -41,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapIsEmptyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                int32_t TransactionalMapIsEmptyCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,22 +55,26 @@ namespace hazelcast {
                 }
 
                 TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapIsEmptyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapIsEmptyCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TransactionalMapIsEmptyCodec::ResponseParameters TransactionalMapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapIsEmptyCodec::ResponseParameters
+                TransactionalMapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(const TransactionalMapIsEmptyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapIsEmptyCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

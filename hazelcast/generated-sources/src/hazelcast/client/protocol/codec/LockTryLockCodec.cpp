@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockTryLockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,56 +24,64 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockTryLockCodec::RequestParameters::TYPE = HZ_LOCK_TRYLOCK;
-                const bool LockTryLockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t LockTryLockCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> LockTryLockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
-                    int32_t requiredDataSize = calculateDataSize(name, threadId, lease, timeout);
+                const LockMessageType LockTryLockCodec::REQUEST_TYPE = HZ_LOCK_TRYLOCK;
+                const bool LockTryLockCodec::RETRYABLE = true;
+                const ResponseMessageConst LockTryLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> LockTryLockCodec::encodeRequest(
+                        const std::string &name,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, threadId, lease, timeout, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockTryLockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockTryLockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(threadId);
                     clientMessage->set(lease);
                     clientMessage->set(timeout);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t LockTryLockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
+                int32_t LockTryLockCodec::calculateDataSize(
+                        const std::string &name,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(threadId);
                     dataSize += ClientMessage::calculateDataSize(lease);
                     dataSize += ClientMessage::calculateDataSize(timeout);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 LockTryLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockTryLockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("LockTryLockCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                LockTryLockCodec::ResponseParameters LockTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                LockTryLockCodec::ResponseParameters
+                LockTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return LockTryLockCodec::ResponseParameters(clientMessage);
                 }
 
-                LockTryLockCodec::ResponseParameters::ResponseParameters(const LockTryLockCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                LockTryLockCodec::ResponseParameters::ResponseParameters(
+                        const LockTryLockCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

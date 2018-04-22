@@ -37,7 +37,7 @@ namespace hazelcast {
 
             void ITopicImpl::publish(const serialization::pimpl::Data &data) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TopicPublishCodec::RequestParameters::encode(getName(), data);
+                        protocol::codec::TopicPublishCodec::encodeRequest(getName(), data);
 
                 invokeOnPartition(request, partitionId);
             }
@@ -58,22 +58,22 @@ namespace hazelcast {
 
             std::auto_ptr<protocol::ClientMessage>
             ITopicImpl::TopicListenerMessageCodec::encodeAddRequest(bool localOnly) const {
-                return protocol::codec::TopicAddMessageListenerCodec(name, localOnly).encodeRequest();
+                return protocol::codec::TopicAddMessageListenerCodec::encodeRequest(name, localOnly);
             }
 
             std::string ITopicImpl::TopicListenerMessageCodec::decodeAddResponse(
                     protocol::ClientMessage &responseMessage) const {
-                return protocol::codec::TopicAddMessageListenerCodec(name, false).decodeResponse(responseMessage);
+                return protocol::codec::TopicAddMessageListenerCodec::ResponseParameters::decode(responseMessage).response;
             }
 
             std::auto_ptr<protocol::ClientMessage>
             ITopicImpl::TopicListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
-                return protocol::codec::TopicRemoveMessageListenerCodec(name, realRegistrationId).encodeRequest();
+                return protocol::codec::TopicRemoveMessageListenerCodec::encodeRequest(name, realRegistrationId);
             }
 
             bool ITopicImpl::TopicListenerMessageCodec::decodeRemoveResponse(
                     protocol::ClientMessage &clientMessage) const {
-                return protocol::codec::TopicRemoveMessageListenerCodec(name, "").decodeResponse(clientMessage);
+                return protocol::codec::TopicRemoveMessageListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
         }

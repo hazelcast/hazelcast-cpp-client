@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,14 @@
 #include <vector>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -39,73 +40,61 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API ClientAddMembershipListenerCodec : public IAddListenerCodec{
+                class HAZELCAST_API ClientAddMembershipListenerCodec {
                 public:
-                    virtual ~ClientAddMembershipListenerCodec();
+                    static const ClientMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
+
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ClientMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            bool localOnly);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                bool localOnly);
-
-                        static int32_t calculateDataSize(
-                                bool localOnly);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            bool localOnly);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::string response;
 
-                            std::string response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
-                        public:
-                            virtual ~AbstractEventHandler();
+                    public:
+                        virtual ~AbstractEventHandler();
 
-                            void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::auto_ptr<protocol::ClientMessage> message);
 
-                            virtual void handleMember(const Member &member, const int32_t &eventType) = 0;
 
-                            virtual void handleMemberList(const std::vector<Member > &members) = 0;
+                        virtual void handleMemberEventV10(const Member &member, const int32_t &eventType) = 0;
 
-                            virtual void handleMemberAttributeChange(const std::string &uuid, const std::string &key, const int32_t &operationType, std::auto_ptr<std::string > value) = 0;
+
+                        virtual void handleMemberListEventV10(const std::vector<Member> &members) = 0;
+
+
+                        virtual void
+                        handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
+                                                            const int32_t &operationType,
+                                                            std::auto_ptr<std::string> value) = 0;
 
                     };
 
                     //************************ EVENTS END **********************************************************************//
-
-                    ClientAddMembershipListenerCodec (const bool &localOnly);
-
-                    //************************ IAddListenerCodec interface starts *******************************************//
-                    std::auto_ptr<ClientMessage> encodeRequest() const;
-
-                    std::string decodeResponse(ClientMessage &responseMessage) const;
-
-                    //************************ IAddListenerCodec interface ends *********************************************//
-                    private:
-                        // Preventing public access to constructors
-                        ClientAddMembershipListenerCodec ();
-
-                        bool localOnly_;
+                private:
+                    // Preventing public access to constructors
+                    ClientAddMembershipListenerCodec();
                 };
             }
         }

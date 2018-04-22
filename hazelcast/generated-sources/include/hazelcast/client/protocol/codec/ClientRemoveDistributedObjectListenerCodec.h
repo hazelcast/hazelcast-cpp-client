@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,73 +24,52 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API ClientRemoveDistributedObjectListenerCodec : public IRemoveListenerCodec{
+                class HAZELCAST_API ClientRemoveDistributedObjectListenerCodec {
                 public:
-                    virtual ~ClientRemoveDistributedObjectListenerCodec();
+                    static const ClientMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
+
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ClientMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &registrationId);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &registrationId);
-
-                        static int32_t calculateDataSize(
-                                const std::string &registrationId);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &registrationId);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        bool response;
 
-                            bool response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-
-                    ClientRemoveDistributedObjectListenerCodec (const std::string &registrationId);
-
-                    //************************ IRemoveListenerCodec interface starts *******************************************//
-                    std::auto_ptr<ClientMessage> encodeRequest() const;
-
-                    bool decodeResponse(ClientMessage &clientMessage) const;
-
-                    const std::string &getRegistrationId() const;
-
-                    void setRegistrationId(const std::string &id);
-
-                    //************************ IRemoveListenerCodec interface ends *********************************************//
-                    private:
-                        // Preventing public access to constructors
-                        ClientRemoveDistributedObjectListenerCodec ();
-
-                        std::string registrationId_;
+                private:
+                    // Preventing public access to constructors
+                    ClientRemoveDistributedObjectListenerCodec();
                 };
             }
         }
