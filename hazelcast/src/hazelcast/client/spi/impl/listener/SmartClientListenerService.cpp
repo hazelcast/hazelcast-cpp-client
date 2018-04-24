@@ -167,7 +167,6 @@ namespace hazelcast {
                         int64_t correlationId = invocation->getClientMessage()->getCorrelationId();
                         ClientEventRegistration registration(serverRegistrationId, correlationId, connection, codec);
 
-                        // TODO: Do we need shared_ptr<Connection> comparator
                         (*registrationMap)[connection] = registration;
                     }
 

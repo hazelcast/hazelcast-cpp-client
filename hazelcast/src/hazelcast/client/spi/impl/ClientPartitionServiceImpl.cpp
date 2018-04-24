@@ -39,9 +39,8 @@ namespace hazelcast {
                     }
                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =
                             protocol::codec::ClientGetPartitionsCodec::ResponseParameters::decode(*responseMessage);
-                    // TODO: change last parameter with response.partitionStateVersionExist as done at Java client
                     partitionService.processPartitionResponse(response.partitions, response.partitionStateVersion,
-                                                              false);
+                                                              response.partitionStateVersionExist);
                 }
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onFailure(

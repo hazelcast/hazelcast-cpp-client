@@ -87,7 +87,6 @@ namespace hazelcast {
                     throw exception::IOException("Connection::connect", errorMsg);
                 }
 
-                // TODO: make this send all guarantee
                 socket->send("CB2", 3, MSG_WAITALL);
             }
 
