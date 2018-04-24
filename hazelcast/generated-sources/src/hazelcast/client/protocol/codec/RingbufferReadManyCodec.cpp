@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferReadManyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,18 +24,19 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferReadManyCodec::RequestParameters::TYPE = HZ_RINGBUFFER_READMANY;
-                const bool RingbufferReadManyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferReadManyCodec::ResponseParameters::TYPE = 115;
-                std::auto_ptr<ClientMessage> RingbufferReadManyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int64_t startSequence, 
-                        int32_t minCount, 
-                        int32_t maxCount, 
+                const RingbufferMessageType RingbufferReadManyCodec::REQUEST_TYPE = HZ_RINGBUFFER_READMANY;
+                const bool RingbufferReadManyCodec::RETRYABLE = true;
+                const ResponseMessageConst RingbufferReadManyCodec::RESPONSE_TYPE = (ResponseMessageConst) 115;
+
+                std::auto_ptr<ClientMessage> RingbufferReadManyCodec::encodeRequest(
+                        const std::string &name,
+                        int64_t startSequence,
+                        int32_t minCount,
+                        int32_t maxCount,
                         const serialization::pimpl::Data *filter) {
                     int32_t requiredDataSize = calculateDataSize(name, startSequence, minCount, maxCount, filter);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferReadManyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferReadManyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(startSequence);
@@ -45,11 +47,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t RingbufferReadManyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int64_t startSequence, 
-                        int32_t minCount, 
-                        int32_t maxCount, 
+                int32_t RingbufferReadManyCodec::calculateDataSize(
+                        const std::string &name,
+                        int64_t startSequence,
+                        int32_t minCount,
+                        int32_t maxCount,
                         const serialization::pimpl::Data *filter) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -61,25 +63,46 @@ namespace hazelcast {
                 }
 
                 RingbufferReadManyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferReadManyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "RingbufferReadManyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    readCount = clientMessage.get<int32_t >();
+                    itemSeqsExist = false;
+                    nextSeqExist = false;
 
-                    items = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    readCount = clientMessage.get<int32_t>();
+
+
+                    items = clientMessage.getArray<serialization::pimpl::Data>();
+                    if (clientMessage.isComplete()) {
+                        return;
+                    }
+
+                    itemSeqs = clientMessage.getNullableArray<int64_t>();
+                    itemSeqsExist = true;
+                    if (clientMessage.isComplete()) {
+                        return;
+                    }
+
+                    nextSeq = clientMessage.get<int64_t>();
+                    nextSeqExist = true;
                 }
 
-                RingbufferReadManyCodec::ResponseParameters RingbufferReadManyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferReadManyCodec::ResponseParameters
+                RingbufferReadManyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferReadManyCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferReadManyCodec::ResponseParameters::ResponseParameters(const RingbufferReadManyCodec::ResponseParameters &rhs) {
-                        readCount = rhs.readCount;
-                        items = rhs.items;
+                RingbufferReadManyCodec::ResponseParameters::ResponseParameters(
+                        const RingbufferReadManyCodec::ResponseParameters &rhs) {
+                    readCount = rhs.readCount;
+                    items = rhs.items;
+                    itemSeqs = std::auto_ptr<std::vector<int64_t> >(new std::vector<int64_t>(*rhs.itemSeqs));
+                    nextSeq = rhs.nextSeq;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

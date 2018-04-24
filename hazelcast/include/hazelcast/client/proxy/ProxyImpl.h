@@ -19,15 +19,14 @@
 #ifndef HAZELCAST_ProxyImpl
 #define HAZELCAST_ProxyImpl
 
-#include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
-#include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/spi/EventHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,10 +50,28 @@ namespace hazelcast {
             }
         }
 
+        namespace spi {
+            namespace impl {
+                class ClientInvocationFuture;
+            }
+        }
+
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
             class HAZELCAST_API ProxyImpl : public DistributedObject, public spi::ClientProxy {
+            public:
+                /**
+                * Destroys this object cluster-wide.
+                * Clears and releases all resources for this object.
+                */
+                virtual void destroy();
+
+                template <typename T>
+                TypedData toTypedData(const T &key) {
+                    return TypedData(toHeapData<T>(key), context->getSerializationService());
+                }
+
             protected:
                 /**
                 * Constructor
@@ -82,10 +99,10 @@ namespace hazelcast {
                 * @param partitionId that given request will be send to.
                 * @param request Client request message to be sent.
                 */
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                              int partitionId);
+                boost::shared_ptr<protocol::ClientMessage> invokeOnPartition(std::auto_ptr<protocol::ClientMessage> request,
+                                                                         int partitionId);
 
-                connection::CallFuture invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request,
+                boost::shared_ptr<spi::impl::ClientInvocationFuture> invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request,
                                                               int partitionId);
 
                 /**
@@ -95,28 +112,18 @@ namespace hazelcast {
                 *
                 * @param request ClientMessage ptr.
                 */
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
 
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
+                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
                                                               boost::shared_ptr<connection::Connection> conn);
 
                 /**
                 * Internal API.
                 *
                 * @param registrationRequest ClientMessage ptr.
-                * @param partitionId
                 * @param handler
                 */
-                std::string registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
-                                             int partitionId, impl::BaseEventHandler *handler);
-
-                /**
-                * Internal API.
-                *
-                * @param addListenerCodec Codec for encoding the listener addition request and the response.
-                * @param handler The handler to use when the event arrives.
-                */
-                std::string registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
+                std::string registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
                                              impl::BaseEventHandler *handler);
 
                 /**
@@ -198,7 +205,7 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     return (T)CODEC::decode(*response).response;
                 }
@@ -206,14 +213,14 @@ namespace hazelcast {
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      boost::shared_ptr<connection::Connection> conn) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request, conn);
 
                     return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
+                    boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
 
                     return (T)CODEC::decode(*response).response;
                 }
@@ -221,7 +228,18 @@ namespace hazelcast {
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      int partitionId, boost::shared_ptr<connection::Connection> conn) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request, conn);
+
+                    return (T)CODEC::decode(*response).response;
+                }
+
+
+                template<typename T, typename CODEC>
+                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
+                                     const serialization::pimpl::Data &key) {
+                    int partitionId = getPartitionId(key);
+                    
+                    boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
 
                     return (T)CODEC::decode(*response).response;
                 }
@@ -229,19 +247,21 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
 
                 spi::ClientContext *context;
-            public:
-                /**
-                * Destroys this object cluster-wide.
-                * Clears and releases all resources for this object.
-                */
-                virtual void destroy();
-
-                template <typename T>
-                TypedData toTypedData(const T &key) {
-                    return TypedData(toHeapData<T>(key), context->getSerializationService());
-                }
-
             private:
+                class EventHandlerDelegator : public spi::EventHandler<protocol::ClientMessage> {
+                public:
+                    EventHandlerDelegator(impl::BaseEventHandler *handler);
+
+                    virtual void handle(const boost::shared_ptr<protocol::ClientMessage> &event);
+
+                    virtual void beforeListenerRegister();
+
+                    virtual void onListenerRegister();
+
+                private:
+                    impl::BaseEventHandler *handler;
+                };
+
                 template <typename T>
                 std::auto_ptr<serialization::pimpl::Data> toHeapData(const T *key) {
                     serialization::pimpl::Data data = context->getSerializationService().toData<T>(&key);

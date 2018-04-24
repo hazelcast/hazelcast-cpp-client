@@ -24,9 +24,9 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TransactionalListMessageType {
 
-                    HZ_TRANSACTIONALLIST_ADD=0x1301,
-                    HZ_TRANSACTIONALLIST_REMOVE=0x1302,
-                    HZ_TRANSACTIONALLIST_SIZE=0x1303
+                    HZ_TRANSACTIONALLIST_ADD = 0x1301,
+                    HZ_TRANSACTIONALLIST_REMOVE = 0x1302,
+                    HZ_TRANSACTIONALLIST_SIZE = 0x1303
                 };
             }
         }

@@ -24,13 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/MultiMapMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/MultiMapMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -44,49 +45,42 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API MultiMapContainsEntryCodec {
                 public:
+                    static const MultiMapMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum MultiMapMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            const serialization::pimpl::Data &key,
+                            const serialization::pimpl::Data &value,
+                            int64_t threadId);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &key, 
-                                const serialization::pimpl::Data &value, 
-                                int64_t threadId);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &key, 
-                                const serialization::pimpl::Data &value, 
-                                int64_t threadId);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            const serialization::pimpl::Data &key,
+                            const serialization::pimpl::Data &value,
+                            int64_t threadId);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        bool response;
 
-                            bool response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        MultiMapContainsEntryCodec ();
+                private:
+                    // Preventing public access to constructors
+                    MultiMapContainsEntryCodec();
                 };
             }
         }

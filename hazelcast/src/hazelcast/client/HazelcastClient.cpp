@@ -15,134 +15,84 @@
  */
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IdGenerator.h"
+#include "hazelcast/client/IAtomicLong.h"
 #include "hazelcast/client/ICountDownLatch.h"
-#include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
-#include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
+#include "hazelcast/client/ISemaphore.h"
+#include "hazelcast/client/TransactionContext.h"
+#include "hazelcast/client/Cluster.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
-#ifndef HAZELCAST_VERSION
-#define HAZELCAST_VERSION "NOT_FOUND"
-#endif
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4355) //for strerror	
+#pragma warning(disable: 4996) //for strerror	
 #endif
 
 namespace hazelcast {
     namespace client {
-        HazelcastClient::HazelcastClient(ClientConfig &config)
-        : clientConfig(config)
-        , clientProperties(clientConfig)
-        , shutdownLatch(1)
-        , clientContext(*this)
-        , serializationService(clientConfig.getSerializationConfig())
-        , connectionManager(new connection::ConnectionManager(clientContext, clientConfig.isSmart()))
-        , nearCacheManager(serializationService)
-        , clusterService(clientContext)
-        , partitionService(clientContext)
-        , invocationService(clientContext)
-        , serverListenerService(clientContext)
-        , cluster(clusterService)
-        , lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
-                           clientConfig.getLoadBalancer(), cluster)
-        , proxyManager(clientContext)
-        , TOPIC_RB_PREFIX("_hz_rb_") {
-            std::stringstream prefix;
-            (prefix << "[HazelcastCppClient" << HAZELCAST_VERSION << "] [" << clientConfig.getGroupConfig().getName() << "]" );
-            util::ILogger::getLogger().setPrefix(prefix.str());
-
-            try {
-                if (!lifecycleService.start()) {
-                    throw exception::IllegalStateException("HazelcastClient","HazelcastClient could not be started!");
-                }
-            } catch (exception::IException &) {
-                lifecycleService.shutdown();
-                throw;
-            }
-            mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
+        HazelcastClient::HazelcastClient(ClientConfig &config) : clientImpl(
+                new impl::HazelcastClientInstanceImpl(config)) {
         }
 
-        HazelcastClient::~HazelcastClient() {
-            lifecycleService.shutdown();
-            /**
-             * We can not depend on the destruction order of the variables. lifecycleService may be destructed later
-             * than the clientContext which is accessed by different service threads, hence we need to explicitly wait
-             * for shutdown completion.
-             */
-            shutdownLatch.await();
+        const std::string &HazelcastClient::getName() const {
+            return clientImpl->getName();
         }
 
+        IdGenerator HazelcastClient::getIdGenerator(const std::string &name) {
+            return clientImpl->getIdGenerator(name);
+        }
+
+        IAtomicLong HazelcastClient::getIAtomicLong(const std::string &name) {
+            return clientImpl->getIAtomicLong(name);
+        }
+
+        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &name) {
+            return clientImpl->getICountDownLatch(name);
+        }
+
+        ILock HazelcastClient::getILock(const std::string &name) {
+            return clientImpl->getILock(name);
+        }
+
+        ISemaphore HazelcastClient::getISemaphore(const std::string &name) {
+            return clientImpl->getISemaphore(name);
+        }
 
         ClientConfig &HazelcastClient::getClientConfig() {
-            return clientConfig;
-        }
-
-        Cluster &HazelcastClient::getCluster() {
-            return cluster;
-        }
-
-        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
-            lifecycleService.addLifecycleListener(lifecycleListener);
-        }
-
-        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
-            return lifecycleService.removeLifecycleListener(lifecycleListener);
-        }
-
-        void HazelcastClient::shutdown() {
-            lifecycleService.shutdown();
-
-            serializationService.dispose();
-        }
-
-        IdGenerator HazelcastClient::getIdGenerator(const std::string &instanceName) {
-            return getDistributedObject< IdGenerator >(instanceName);
-        }
-
-        IAtomicLong HazelcastClient::getIAtomicLong(const std::string &instanceName) {
-            return getDistributedObject< IAtomicLong >(instanceName);
-        }
-
-        ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &instanceName) {
-            return getDistributedObject< ICountDownLatch >(instanceName);
-        }
-
-        ISemaphore HazelcastClient::getISemaphore(const std::string &instanceName) {
-            return getDistributedObject< ISemaphore >(instanceName);
-        }
-
-        ILock HazelcastClient::getILock(const std::string &instanceName) {
-            return getDistributedObject< ILock >(instanceName);
+            return clientImpl->getClientConfig();
         }
 
         TransactionContext HazelcastClient::newTransactionContext() {
-            TransactionOptions defaultOptions;
-            return newTransactionContext(defaultOptions);
+            return clientImpl->newTransactionContext();
         }
 
         TransactionContext HazelcastClient::newTransactionContext(const TransactionOptions &options) {
-            return TransactionContext(clientContext, options);
+            return clientImpl->newTransactionContext(options);
         }
 
-        internal::nearcache::NearCacheManager &HazelcastClient::getNearCacheManager() {
-            return nearCacheManager;
+        Cluster &HazelcastClient::getCluster() {
+            return clientImpl->getCluster();
         }
 
-        serialization::pimpl::SerializationService &HazelcastClient::getSerializationService() {
-            return serializationService;
+        void HazelcastClient::addLifecycleListener(LifecycleListener *lifecycleListener) {
+            clientImpl->addLifecycleListener(lifecycleListener);
         }
 
-        boost::shared_ptr<spi::ClientProxy> HazelcastClient::getDistributedObjectForService(
-                const std::string &serviceName,
-                const std::string &name,
-                spi::ClientProxyFactory &factory) {
-            return proxyManager.getOrCreateProxy(serviceName, name, factory);
+        bool HazelcastClient::removeLifecycleListener(LifecycleListener *lifecycleListener) {
+            return clientImpl->removeLifecycleListener(lifecycleListener);
+        }
+
+        void HazelcastClient::shutdown() {
+            clientImpl->shutdown();
         }
 
         mixedtype::HazelcastClient &HazelcastClient::toMixedType() const {
-            return *mixedTypeSupportAdaptor;
+            return clientImpl->toMixedType();
+        }
+
+        spi::LifecycleService &HazelcastClient::getLifecycleService() {
+            return clientImpl->getLifecycleService();
         }
     }
 }
@@ -150,4 +100,3 @@ namespace hazelcast {
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
 #endif
-

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferHeadSequenceCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferHeadSequenceCodec::RequestParameters::TYPE = HZ_RINGBUFFER_HEADSEQUENCE;
-                const bool RingbufferHeadSequenceCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferHeadSequenceCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> RingbufferHeadSequenceCodec::RequestParameters::encode(
+                const RingbufferMessageType RingbufferHeadSequenceCodec::REQUEST_TYPE = HZ_RINGBUFFER_HEADSEQUENCE;
+                const bool RingbufferHeadSequenceCodec::RETRYABLE = true;
+                const ResponseMessageConst RingbufferHeadSequenceCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> RingbufferHeadSequenceCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferHeadSequenceCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferHeadSequenceCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t RingbufferHeadSequenceCodec::RequestParameters::calculateDataSize(
+                int32_t RingbufferHeadSequenceCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 RingbufferHeadSequenceCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferHeadSequenceCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "RingbufferHeadSequenceCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                RingbufferHeadSequenceCodec::ResponseParameters RingbufferHeadSequenceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferHeadSequenceCodec::ResponseParameters
+                RingbufferHeadSequenceCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferHeadSequenceCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferHeadSequenceCodec::ResponseParameters::ResponseParameters(const RingbufferHeadSequenceCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                RingbufferHeadSequenceCodec::ResponseParameters::ResponseParameters(
+                        const RingbufferHeadSequenceCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

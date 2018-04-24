@@ -20,6 +20,8 @@
 #define HAZELCAST_CLIENT_TOPIC_IMPL_MESSAGEIMPL_H_
 
 #include <memory>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/client/topic/Message.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/TypedData.h"
@@ -37,7 +39,7 @@ namespace hazelcast {
                 class MessageImpl : public Message<E> {
                 public:
                     MessageImpl(std::string topicName, std::auto_ptr<E> message, int64_t publishTime,
-                                std::auto_ptr<Member> member)
+                                const boost::shared_ptr<Member> &member)
                             : messageObject(message)
                             , publishTime(publishTime)
                             , publishingMember(member)
@@ -72,7 +74,7 @@ namespace hazelcast {
                 private:
                     std::auto_ptr<E> messageObject;
                     int64_t publishTime;
-                    std::auto_ptr<Member> publishingMember;
+                    boost::shared_ptr<Member> publishingMember;
                     std::string name;
                 };
             }
@@ -84,7 +86,7 @@ namespace hazelcast {
                     class HAZELCAST_API MessageImpl : public client::topic::Message<TypedData> {
                     public:
                         MessageImpl(std::string topicName, std::auto_ptr<TypedData> message, int64_t publishTime,
-                                    std::auto_ptr<Member> member)
+                                    const boost::shared_ptr<Member> &member)
                                 : messageObject(message)
                                 , publishTime(publishTime)
                                 , publishingMember(member)
@@ -119,7 +121,7 @@ namespace hazelcast {
                     private:
                         std::auto_ptr<TypedData> messageObject;
                         int64_t publishTime;
-                        std::auto_ptr<Member> publishingMember;
+                        boost::shared_ptr<Member> publishingMember;
                         std::string name;
                     };
                 }

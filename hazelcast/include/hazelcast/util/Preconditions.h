@@ -37,7 +37,13 @@ namespace hazelcast {
              * @return the value
              * @throws IllegalArgumentException if the value is not positive.
              */
-            static int checkPositive(int value, const std::string &errorMessage);
+            template <typename T>
+            static int checkPositive(const T &value, const std::string &errorMessage) {
+                if (value <= 0) {
+                    throw client::exception::IllegalArgumentException("Preconditions::checkPositive", errorMessage);
+                }
+                return value;
+            }
 
             /**
              * Tests if an argument is not null.
@@ -63,7 +69,13 @@ namespace hazelcast {
              * @return the value
              * @throws java.lang.IllegalArgumentException if the value is negative.
              */
-            static int checkNotNegative(int value, const std::string &errorMessage);
+            template <typename T>
+            static int checkNotNegative(const T &value, const std::string &errorMessage) {
+                if (value < 0) {
+                    throw client::exception::IllegalArgumentException(errorMessage);
+                }
+                return value;
+            }
 
             /**
              * Tests if a string contains text.

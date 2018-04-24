@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionCreateCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,17 +24,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionMessageType TransactionCreateCodec::RequestParameters::TYPE = HZ_TRANSACTION_CREATE;
-                const bool TransactionCreateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionCreateCodec::ResponseParameters::TYPE = 104;
-                std::auto_ptr<ClientMessage> TransactionCreateCodec::RequestParameters::encode(
-                        int64_t timeout, 
-                        int32_t durability, 
-                        int32_t transactionType, 
+                const TransactionMessageType TransactionCreateCodec::REQUEST_TYPE = HZ_TRANSACTION_CREATE;
+                const bool TransactionCreateCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionCreateCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
+
+                std::auto_ptr<ClientMessage> TransactionCreateCodec::encodeRequest(
+                        int64_t timeout,
+                        int32_t durability,
+                        int32_t transactionType,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(timeout, durability, transactionType, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionCreateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionCreateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(timeout);
                     clientMessage->set(durability);
@@ -43,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionCreateCodec::RequestParameters::calculateDataSize(
-                        int64_t timeout, 
-                        int32_t durability, 
-                        int32_t transactionType, 
+                int32_t TransactionCreateCodec::calculateDataSize(
+                        int64_t timeout,
+                        int32_t durability,
+                        int32_t transactionType,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(timeout);
@@ -57,22 +59,26 @@ namespace hazelcast {
                 }
 
                 TransactionCreateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionCreateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionCreateCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<std::string >();
+
+                    response = clientMessage.get<std::string>();
+
                 }
 
-                TransactionCreateCodec::ResponseParameters TransactionCreateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionCreateCodec::ResponseParameters
+                TransactionCreateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionCreateCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionCreateCodec::ResponseParameters::ResponseParameters(const TransactionCreateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionCreateCodec::ResponseParameters::ResponseParameters(
+                        const TransactionCreateCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

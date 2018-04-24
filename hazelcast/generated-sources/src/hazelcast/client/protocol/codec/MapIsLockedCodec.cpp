@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapIsLockedCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapIsLockedCodec::RequestParameters::TYPE = HZ_MAP_ISLOCKED;
-                const bool MapIsLockedCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapIsLockedCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapIsLockedCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapIsLockedCodec::REQUEST_TYPE = HZ_MAP_ISLOCKED;
+                const bool MapIsLockedCodec::RETRYABLE = true;
+                const ResponseMessageConst MapIsLockedCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapIsLockedCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapIsLockedCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapIsLockedCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapIsLockedCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapIsLockedCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,25 @@ namespace hazelcast {
                 }
 
                 MapIsLockedCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapIsLockedCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapIsLockedCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapIsLockedCodec::ResponseParameters MapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapIsLockedCodec::ResponseParameters
+                MapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
-                MapIsLockedCodec::ResponseParameters::ResponseParameters(const MapIsLockedCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapIsLockedCodec::ResponseParameters::ResponseParameters(
+                        const MapIsLockedCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

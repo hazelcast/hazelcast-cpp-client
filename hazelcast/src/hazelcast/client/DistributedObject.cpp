@@ -19,9 +19,6 @@
 
 
 #include "hazelcast/client/DistributedObject.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/spi/ClusterService.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +37,6 @@ namespace hazelcast {
         const std::string &DistributedObject::getName() const {
             return info.getName();
         }
-
 
         void DistributedObject::onDestroy() {
         }

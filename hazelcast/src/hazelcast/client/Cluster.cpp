@@ -19,35 +19,45 @@
 
 
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 
 namespace hazelcast {
     namespace client {
-        Cluster::Cluster(spi::ClusterService &clusterService)
-        :clusterService(clusterService) {
-
-        }
-
-        void Cluster::addMembershipListener(InitialMembershipListener *listener) {
-            clusterService.addMembershipListener(listener);
-        }
-
-        bool Cluster::removeMembershipListener(InitialMembershipListener *listener) {
-            return clusterService.removeMembershipListener(listener);;
+        Cluster::Cluster(spi::ClientClusterService &clusterService)
+                : clusterService(clusterService) {
         }
 
         void Cluster::addMembershipListener(MembershipListener *listener) {
-            clusterService.addMembershipListener(listener);
+            clusterService.addMembershipListener(
+                    boost::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
         }
 
         bool Cluster::removeMembershipListener(MembershipListener *listener) {
-            return clusterService.removeMembershipListener(listener);
+            return clusterService.removeMembershipListener(listener->getRegistrationId());
         }
 
-        std::vector<Member>  Cluster::getMembers() {
+        std::vector<Member> Cluster::getMembers() {
             return clusterService.getMemberList();
+        }
+
+        std::string Cluster::addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) {
+            return clusterService.addMembershipListener(listener);
+        }
+
+        bool Cluster::removeMembershipListener(const std::string &registrationId) {
+            return clusterService.removeMembershipListener(registrationId);
+        }
+
+        std::string Cluster::addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &listener) {
+            return clusterService.addMembershipListener(listener);
+        }
+
+        std::string Cluster::addMembershipListener(InitialMembershipListener *listener) {
+            return clusterService.addMembershipListener(
+                    boost::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
+
         }
     }
 }

@@ -19,7 +19,7 @@
 #ifndef HAZELCAST_CLIENT_TOPIC_IMPL_TOPICEVENTHANDLERIMPL_H_
 #define HAZELCAST_CLIENT_TOPIC_IMPL_TOPICEVENTHANDLERIMPL_H_
 
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/topic/impl/MessageImpl.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/codec/TopicAddMessageListenerCodec.h"
@@ -39,7 +39,7 @@ namespace hazelcast {
                 template<typename E>
                 class TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
                 public:
-                    TopicEventHandlerImpl(const std::string &instanceName, spi::ClusterService &clusterService,
+                    TopicEventHandlerImpl(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                       serialization::pimpl::SerializationService &serializationService,
                                       MessageListener<E> &messageListener)
                             :instanceName(instanceName)
@@ -48,9 +48,9 @@ namespace hazelcast {
                             , listener(messageListener) {
                     }
 
-                    virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                    virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                              const std::string &uuid) {
-                        std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                        boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                         std::auto_ptr<E> object = serializationService.toObject<E>(item);
 
@@ -59,7 +59,7 @@ namespace hazelcast {
                     }
                 private:
                     const std::string &instanceName;
-                    spi::ClusterService &clusterService;
+                    spi::ClientClusterService &clusterService;
                     serialization::pimpl::SerializationService &serializationService;
                     MessageListener<E> &listener;
                 };
@@ -70,7 +70,7 @@ namespace hazelcast {
                 namespace impl {
                     class HAZELCAST_API TopicEventHandlerImpl : public protocol::codec::TopicAddMessageListenerCodec::AbstractEventHandler {
                     public:
-                        TopicEventHandlerImpl(const std::string &instanceName, spi::ClusterService &clusterService,
+                        TopicEventHandlerImpl(const std::string &instanceName, spi::ClientClusterService &clusterService,
                                               serialization::pimpl::SerializationService &serializationService,
                                               MessageListener &messageListener)
                                 :instanceName(instanceName)
@@ -79,9 +79,9 @@ namespace hazelcast {
                                 , listener(messageListener) {
                         }
 
-                        virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                        virtual void handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
                                                  const std::string &uuid) {
-                            std::auto_ptr<Member> member = clusterService.getMember(uuid);
+                            boost::shared_ptr<Member> member = clusterService.getMember(uuid);
 
                             std::auto_ptr<TypedData> object(new TypedData(
                                     std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(item)),
@@ -93,7 +93,7 @@ namespace hazelcast {
                         }
                     private:
                         const std::string &instanceName;
-                        spi::ClusterService &clusterService;
+                        spi::ClientClusterService &clusterService;
                         serialization::pimpl::SerializationService &serializationService;
                         MessageListener &listener;
                     };

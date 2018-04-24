@@ -20,7 +20,7 @@
 #include "hazelcast/client/proxy/ITopicImpl.h"
 
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
 
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/TopicPublishCodec.h"
@@ -37,25 +37,45 @@ namespace hazelcast {
 
             void ITopicImpl::publish(const serialization::pimpl::Data &data) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TopicPublishCodec::RequestParameters::encode(getName(), data);
+                        protocol::codec::TopicPublishCodec::encodeRequest(getName(), data);
 
-                invoke(request, partitionId);
+                invokeOnPartition(request, partitionId);
             }
 
-
             std::string ITopicImpl::addMessageListener(impl::BaseEventHandler *topicEventHandler) {
-                std::auto_ptr<protocol::codec::IAddListenerCodec> addCodec =
-                        std::auto_ptr<protocol::codec::IAddListenerCodec>(
-                                new protocol::codec::TopicAddMessageListenerCodec(getName(), false));
-
-                return registerListener(addCodec, topicEventHandler);
+                return registerListener(createItemListenerCodec(), topicEventHandler);
             }
 
             bool ITopicImpl::removeMessageListener(const std::string &registrationId) {
-                protocol::codec::TopicRemoveMessageListenerCodec removeCodec(getName(), registrationId);
-
-                return context->getServerListenerService().deRegisterListener(removeCodec);
+                return context->getClientListenerService().deregisterListener(registrationId);
             }
+
+            boost::shared_ptr<spi::impl::ListenerMessageCodec> ITopicImpl::createItemListenerCodec() {
+                return boost::shared_ptr<spi::impl::ListenerMessageCodec>(new TopicListenerMessageCodec(getName()));
+            }
+
+            ITopicImpl::TopicListenerMessageCodec::TopicListenerMessageCodec(const std::string &name) : name(name) {}
+
+            std::auto_ptr<protocol::ClientMessage>
+            ITopicImpl::TopicListenerMessageCodec::encodeAddRequest(bool localOnly) const {
+                return protocol::codec::TopicAddMessageListenerCodec::encodeRequest(name, localOnly);
+            }
+
+            std::string ITopicImpl::TopicListenerMessageCodec::decodeAddResponse(
+                    protocol::ClientMessage &responseMessage) const {
+                return protocol::codec::TopicAddMessageListenerCodec::ResponseParameters::decode(responseMessage).response;
+            }
+
+            std::auto_ptr<protocol::ClientMessage>
+            ITopicImpl::TopicListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
+                return protocol::codec::TopicRemoveMessageListenerCodec::encodeRequest(name, realRegistrationId);
+            }
+
+            bool ITopicImpl::TopicListenerMessageCodec::decodeRemoveResponse(
+                    protocol::ClientMessage &clientMessage) const {
+                return protocol::codec::TopicRemoveMessageListenerCodec::ResponseParameters::decode(clientMessage).response;
+            }
+
         }
     }
 }

@@ -22,7 +22,8 @@
 
 namespace hazelcast {
     namespace client {
-        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType, const std::vector<Member> &membersList) :
+        MembershipEvent::MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
+                                         const std::vector<Member> &membersList) :
                 cluster(&cluster), member(member), eventType(eventType), members(membersList) {
         }
 

@@ -24,14 +24,14 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API LockMessageType {
 
-                    HZ_LOCK_ISLOCKED=0x0701,
-                    HZ_LOCK_ISLOCKEDBYCURRENTTHREAD=0x0702,
-                    HZ_LOCK_GETLOCKCOUNT=0x0703,
-                    HZ_LOCK_GETREMAININGLEASETIME=0x0704,
-                    HZ_LOCK_LOCK=0x0705,
-                    HZ_LOCK_UNLOCK=0x0706,
-                    HZ_LOCK_FORCEUNLOCK=0x0707,
-                    HZ_LOCK_TRYLOCK=0x0708
+                    HZ_LOCK_ISLOCKED = 0x0701,
+                    HZ_LOCK_ISLOCKEDBYCURRENTTHREAD = 0x0702,
+                    HZ_LOCK_GETLOCKCOUNT = 0x0703,
+                    HZ_LOCK_GETREMAININGLEASETIME = 0x0704,
+                    HZ_LOCK_LOCK = 0x0705,
+                    HZ_LOCK_UNLOCK = 0x0706,
+                    HZ_LOCK_FORCEUNLOCK = 0x0707,
+                    HZ_LOCK_TRYLOCK = 0x0708
                 };
             }
         }

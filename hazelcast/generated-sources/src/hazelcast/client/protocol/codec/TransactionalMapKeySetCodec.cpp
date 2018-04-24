@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapKeySetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,16 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapKeySetCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_KEYSET;
-                const bool TransactionalMapKeySetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapKeySetCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> TransactionalMapKeySetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                const TransactionalMapMessageType TransactionalMapKeySetCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_KEYSET;
+                const bool TransactionalMapKeySetCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapKeySetCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> TransactionalMapKeySetCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapKeySetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapKeySetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -41,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapKeySetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                int32_t TransactionalMapKeySetCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,22 +55,26 @@ namespace hazelcast {
                 }
 
                 TransactionalMapKeySetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapKeySetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapKeySetCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                TransactionalMapKeySetCodec::ResponseParameters TransactionalMapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapKeySetCodec::ResponseParameters
+                TransactionalMapKeySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapKeySetCodec::ResponseParameters::ResponseParameters(const TransactionalMapKeySetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMapKeySetCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapKeySetCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

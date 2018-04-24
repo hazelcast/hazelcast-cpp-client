@@ -71,10 +71,11 @@ namespace hazelcast {
                     /**
                      * @param buffer
                      * @param len length of the buffer
+                     * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len);
+                    int send(const void *buffer, int len, int flag = 0);
 
                     /**
                      * @param buffer
@@ -91,16 +92,6 @@ namespace hazelcast {
                     int getSocketId() const;
 
                     /**
-                     * @param address remote endpoint address.
-                     */
-                    void setRemoteEndpoint(const client::Address &address);
-
-                    /**
-                     * @return remoteEndpoint
-                     */
-                    const client::Address &getRemoteEndpoint() const;
-
-                    /**
                      * closes the socket. Automatically called in destructor.
                      * Second call to this function is no op.
                      */
@@ -114,6 +105,8 @@ namespace hazelcast {
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
+
+                    std::auto_ptr<Address> localSocketAddress() const;
                 private:
                     SSLSocket(const Socket &rhs);
 
@@ -121,20 +114,13 @@ namespace hazelcast {
 
                     class ReadHandler {
                     public:
-                        ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead), errorCode(ec) {}
+                        ReadHandler(size_t &numRead, asio::error_code &ec);
 
-                        void operator()(const asio::error_code &err, std::size_t bytes_transferred) {
-                            errorCode = err;
-                            numRead += bytes_transferred;
-                        }
+                        void operator()(const asio::error_code &err, std::size_t bytes_transferred);
 
-                        size_t &getNumRead() const {
-                            return numRead;
-                        }
+                        size_t &getNumRead() const;
 
-                        asio::error_code &getErrorCode() const {
-                            return errorCode;
-                        }
+                        asio::error_code &getErrorCode() const;
 
                     private:
                         size_t &numRead;
@@ -158,6 +144,7 @@ namespace hazelcast {
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                     asio::deadline_timer deadline;
                     asio::error_code errorCode;
+                    int socketId;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

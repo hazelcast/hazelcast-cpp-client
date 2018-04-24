@@ -66,7 +66,27 @@ namespace hazelcast {
 
                 void clear();
             private:
+                class QueueListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    QueueListenerMessageCodec(const std::string &name, bool includeValue);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                };
+
                 int partitionId;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

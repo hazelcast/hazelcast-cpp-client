@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListClearCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListClearCodec::RequestParameters::TYPE = HZ_LIST_CLEAR;
-                const bool ListClearCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ListClearCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> ListClearCodec::RequestParameters::encode(
+                const ListMessageType ListClearCodec::REQUEST_TYPE = HZ_LIST_CLEAR;
+                const bool ListClearCodec::RETRYABLE = false;
+                const ResponseMessageConst ListClearCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> ListClearCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListClearCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListClearCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ListClearCodec::RequestParameters::calculateDataSize(
+                int32_t ListClearCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,19 +47,21 @@ namespace hazelcast {
                 }
 
                 ListClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListClearCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("ListClearCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                ListClearCodec::ResponseParameters ListClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListClearCodec::ResponseParameters
+                ListClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListClearCodec::ResponseParameters(clientMessage);
                 }
 
                 ListClearCodec::ResponseParameters::ResponseParameters(const ListClearCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

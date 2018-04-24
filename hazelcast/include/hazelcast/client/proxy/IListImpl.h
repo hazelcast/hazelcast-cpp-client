@@ -72,7 +72,27 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::Data> subListData(int fromIndex, int toIndex);
 
             private:
+                class ListListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    ListListenerMessageCodec(const std::string &name, bool includeValue);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                };
+
                 int partitionId;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

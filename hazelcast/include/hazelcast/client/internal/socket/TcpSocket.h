@@ -43,6 +43,7 @@ typedef int socklen_t;
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -87,10 +88,11 @@ namespace hazelcast {
                     /**
                      * @param buffer
                      * @param len length of the buffer
+                     * @param flag bsd sockets options flag.
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len);
+                    int send(const void *buffer, int len, int flag = 0);
 
                     /**
                      * @param buffer
@@ -107,25 +109,16 @@ namespace hazelcast {
                     int getSocketId() const;
 
                     /**
-                     * @param address remote endpoint address.
-                     */
-                    void setRemoteEndpoint(const client::Address &address);
-
-                    /**
-                     * @return remoteEndpoint
-                     */
-                    const client::Address &getRemoteEndpoint() const;
-
-                    /**
                      * closes the socket. Automatically called in destructor.
                      * Second call to this function is no op.
                      */
                     void close();
 
-                    client::Address getAddress() const;
+                    Address getAddress() const;
 
                     void setBlocking(bool blocking);
 
+                    std::auto_ptr<Address> localSocketAddress() const;
                 private:
                     TcpSocket(const Socket &rhs);
 
@@ -135,9 +128,7 @@ namespace hazelcast {
 
                     void throwIOException(int error, const char *methodName, const char *prefix) const;
 
-                    client::Address remoteEndpoint;
-
-                    const client::Address configAddress;
+                    const Address configAddress;
 
                     struct addrinfo *serverInfo;
                     int socketId;

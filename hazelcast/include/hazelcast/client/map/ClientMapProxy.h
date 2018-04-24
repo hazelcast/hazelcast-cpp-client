@@ -492,7 +492,7 @@ namespace hazelcast {
                 std::string addEntryListener(EntryListener <K, V> &listener, bool includeValue) {
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
@@ -517,7 +517,7 @@ namespace hazelcast {
                 addEntryListener(EntryListener <K, V> &listener, const query::Predicate &predicate, bool includeValue) {
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
@@ -553,7 +553,7 @@ namespace hazelcast {
                     serialization::pimpl::Data keyData = toData(key);
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), context->getClusterService(), context->getSerializationService(),
+                                    getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
@@ -1208,14 +1208,7 @@ namespace hazelcast {
                                  it = partitionToKeyData.begin();it != partitionToKeyData.end();++it) {
                         for (typename std::vector<KEY_DATA_PAIR>::const_iterator
                                      keyIt = it->second.begin();keyIt != it->second.end();++keyIt) {
-                            // Deep copiy the data bytes. This is needed since IMapImpl::getAllData
-                            // implicitely changes the internal pointer of Data object which is needed later by the
-                            // caller of this method.
-                            //TODO: When Data object is made as non-copiable and the map codecs are generated to use
-                            //TODO  shared pointers rather than the Data object, then this duplication can be eliminated
-                            //TODO  using shared pointers of data.
-                            std::auto_ptr<std::vector<byte> > bytes(new std::vector<byte>((*keyIt).second->toByteArray()));
-                            partitionKeys[it->first].push_back(serialization::pimpl::Data(bytes));
+                            partitionKeys[it->first].push_back(serialization::pimpl::Data(*(*keyIt).second));
 
                             dataKeyPairMap[(*keyIt).second] = (*keyIt).first;
                         }
@@ -1249,14 +1242,14 @@ namespace hazelcast {
                     int partitionId = getPartitionId(keyData);
 
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::MapSubmitToKeyCodec::RequestParameters::encode(getName(),
+                            protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
                                                                                              processor,
                                                                                              keyData,
-                                                                                             util::getThreadId());
+                                                                                util::getCurrentThreadId());
 
-                    connection::CallFuture callFuture = invokeAndGetFuture(request, partitionId);
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(request, partitionId);
 
-                    return client::Future<ResultType>(callFuture, getSerializationService(), submitToKeyDecoder);
+                    return client::Future<ResultType>(clientInvocationFuture, getSerializationService(), submitToKeyDecoder);
                 }
 
                 static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response) {

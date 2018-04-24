@@ -97,6 +97,7 @@ namespace hazelcast {
 
             bool operator<(const Address &rhs) const;
 
+            std::string toString() const;
         private:
             std::string host;
             int port;
@@ -107,19 +108,9 @@ namespace hazelcast {
             static const byte IPV6;
         };
 
-        /**
-         * Address comparator functor
-         */
-        struct HAZELCAST_API addressComparator {
-            /**
-             * Address comparator functor
-             * @param lhs
-             * @param rhs
-             */
-            bool operator ()(const Address &lhs, const Address &rhs) const;
-        };
+        typedef std::less<Address> addressComparator;
 
-		std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
+        std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
 
     }
 };

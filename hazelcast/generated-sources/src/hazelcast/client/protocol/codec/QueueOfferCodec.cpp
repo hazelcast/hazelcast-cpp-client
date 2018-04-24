@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueOfferCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueOfferCodec::RequestParameters::TYPE = HZ_QUEUE_OFFER;
-                const bool QueueOfferCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueOfferCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> QueueOfferCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &value, 
+                const QueueMessageType QueueOfferCodec::REQUEST_TYPE = HZ_QUEUE_OFFER;
+                const bool QueueOfferCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueOfferCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> QueueOfferCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &value,
                         int64_t timeoutMillis) {
                     int32_t requiredDataSize = calculateDataSize(name, value, timeoutMillis);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueOfferCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueOfferCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t QueueOfferCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &value, 
+                int32_t QueueOfferCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &value,
                         int64_t timeoutMillis) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,22 +56,25 @@ namespace hazelcast {
                 }
 
                 QueueOfferCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueOfferCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueOfferCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                QueueOfferCodec::ResponseParameters QueueOfferCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueOfferCodec::ResponseParameters
+                QueueOfferCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueOfferCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueOfferCodec::ResponseParameters::ResponseParameters(const QueueOfferCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueOfferCodec::ResponseParameters::ResponseParameters(
+                        const QueueOfferCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

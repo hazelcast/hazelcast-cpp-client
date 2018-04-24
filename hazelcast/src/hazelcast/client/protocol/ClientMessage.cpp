@@ -24,6 +24,7 @@
 #include <assert.h>
 
 #include "hazelcast/client/protocol/ClientMessage.h"
+#include <hazelcast/client/protocol/codec/UUIDCodec.h>
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/protocol/codec/AddressCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
@@ -45,35 +46,35 @@ namespace hazelcast {
             ClientMessage::ClientMessage() : isOwner(false), retryable(false), isBoundToSingleConnection(false) {
             }
 
-            ClientMessage::ClientMessage(int32_t size) : retryable(false),
+            ClientMessage::ClientMessage(int32_t size) : isOwner(true), retryable(false),
                                                          isBoundToSingleConnection(false) {
                 buffer = new byte[size];
                 memset(buffer, 0, size);
-
-                isOwner = true;
 
                 setFrameLength(size);
             }
 
             ClientMessage::~ClientMessage() {
+/*
                 if (isOwner) {
                     delete[] buffer;
                 }
+*/
             }
 
-            void ClientMessage::wrapForDecode(byte *buffer, int32_t size, bool owner) {
-                isOwner = owner;
+            void ClientMessage::wrapForDecode(byte *buffer, int32_t size) {
+                isOwner = false;
                 wrapForRead(buffer, size, HEADER_SIZE);
             }
 
-            void ClientMessage::wrapForEncode(byte *buffer, int32_t size, bool owner) {
+            void ClientMessage::wrapForEncode(byte *buffer, int32_t size) {
                 wrapForWrite(buffer, size, HEADER_SIZE);
 
-                isOwner = owner;
+                isOwner = true;
 
                 setFrameLength(size);
                 setVersion(PROTOCOL_VERSION);
-                setFlags(BEGIN_AND_END_FLAGS);
+                addFlag(BEGIN_AND_END_FLAGS);
                 setCorrelationId(0);
                 setPartitionId(-1);
                 setDataOffset(HEADER_SIZE);
@@ -83,7 +84,7 @@ namespace hazelcast {
                 std::auto_ptr<ClientMessage> msg(new ClientMessage());
                 byte *buffer = new byte[size];
                 memset(buffer, 0, size);
-                msg->wrapForEncode(buffer, size, true);
+                msg->wrapForEncode(buffer, size);
                 return msg;
             }
 
@@ -104,8 +105,12 @@ namespace hazelcast {
                 buffer[VERSION_FIELD_OFFSET] = value;
             }
 
-            void ClientMessage::setFlags(uint8_t value) {
-                buffer[FLAGS_FIELD_OFFSET] = value;
+            uint8_t ClientMessage::getFlags() {
+                return buffer[FLAGS_FIELD_OFFSET];
+            }
+
+            void ClientMessage::addFlag(uint8_t flags) {
+                buffer[FLAGS_FIELD_OFFSET] = getFlags() | flags;
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
@@ -142,6 +147,14 @@ namespace hazelcast {
 
             void ClientMessage::set(const Address *value) {
                 setNullable<Address>(value);
+            }
+
+            void ClientMessage::set(const util::UUID &value) {
+                codec::UUIDCodec::encode(value, *this);
+            }
+
+            void ClientMessage::set(const util::UUID *value) {
+                setNullable<util::UUID>(value);
             }
 
             void ClientMessage::set(const Member &value) {
@@ -280,6 +293,11 @@ namespace hazelcast {
             }
 
             template<>
+            util::UUID ClientMessage::get() {
+                return codec::UUIDCodec::decode(*this);
+            }
+
+            template<>
             Member ClientMessage::get() {
                 return codec::MemberCodec::decode(*this);
             }
@@ -324,6 +342,13 @@ namespace hazelcast {
                 serialization::pimpl::Data value = get<serialization::pimpl::Data>();
 
                 return std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(key, value);
+            }
+
+            template<>
+            std::pair<Address, std::vector<int32_t> > ClientMessage::get() {
+                Address address = codec::AddressCodec::decode(*this);
+                std::vector<int32_t> partitions = getArray<int32_t>();
+                return std::make_pair(address, partitions);
             }
             //----- Getter methods end --------------------------
 
@@ -392,6 +417,14 @@ namespace hazelcast {
 
             int32_t ClientMessage::calculateDataSize(const Member &param) {
                 return codec::MemberCodec::calculateDataSize(param);
+            }
+
+            int32_t ClientMessage::calculateDataSize(const util::UUID *param) {
+                return calculateDataSizeNullable<util::UUID>(param);
+            }
+
+            int32_t ClientMessage::calculateDataSize(const util::UUID &param) {
+                return codec::UUIDCodec::calculateDataSize(param);
             }
 
             int32_t ClientMessage::calculateDataSize(const Member *param) {
@@ -486,6 +519,26 @@ namespace hazelcast {
                 }
 
                 return numBytesSent;
+            }
+
+            bool ClientMessage::isComplete() const {
+                return (index >= HEADER_SIZE) && (index == getFrameLength());
+            }
+
+            std::ostream &operator<<(std::ostream &os, const ClientMessage &message) {
+                int32_t len = message.getIndex();
+                os << "ClientMessage{length=" << len;
+                if (len >= message.HEADER_SIZE) {
+                    os << ", correlationId=" << message.getCorrelationId()
+                    << ", messageType=0x" << std::hex << message.getMessageType() << std::dec
+                    << ", partitionId=" << message.getPartitionId()
+                    << ", isComplete=" << message.isComplete()
+                    << ", isRetryable=" << message.isRetryable()
+                    << ", isEvent=" << message.isFlagSet(message.LISTENER_EVENT_FLAG);
+                }
+                os << "}";
+
+                return os;
             }
         }
     }

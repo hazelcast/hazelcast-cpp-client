@@ -54,7 +54,7 @@ namespace hazelcast {
          *
          */
         class HAZELCAST_API ISemaphore : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

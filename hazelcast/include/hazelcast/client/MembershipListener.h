@@ -24,7 +24,14 @@
 #ifndef HAZELCAST_MEMBERSHIP_LISTENER
 #define HAZELCAST_MEMBERSHIP_LISTENER
 
+#include <string>
+
 #include "hazelcast/util/HazelcastDll.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -32,6 +39,12 @@ namespace hazelcast {
         class MembershipEvent;
 
         class MemberAttributeEvent;
+
+        namespace spi {
+            namespace impl {
+                class ClientClusterServiceImpl;
+            }
+        }
 
         /**
          * Cluster membership listener.
@@ -49,6 +62,10 @@ namespace hazelcast {
          */
 
         class HAZELCAST_API MembershipListener {
+            friend class Cluster;
+            friend class MembershipListenerDelegator;
+            friend class InitialMembershipListenerDelegator;
+            friend class spi::impl::ClientClusterServiceImpl;
         public:
             virtual ~MembershipListener();
 
@@ -73,8 +90,41 @@ namespace hazelcast {
              */
             virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
 
+        private:
+            std::string registrationId;
+
+            virtual bool shouldRequestInitialMembers() const;
+
+            virtual const std::string &getRegistrationId() const;
+
+            virtual void setRegistrationId(const std::string &registrationId);
+        };
+
+        class MembershipListenerDelegator : public MembershipListener {
+        public:
+            MembershipListenerDelegator(MembershipListener *listener);
+
+            virtual void memberAdded(const MembershipEvent &membershipEvent);
+
+            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+
+        protected:
+            MembershipListener *listener;
+
+            virtual bool shouldRequestInitialMembers() const;
+
+            virtual void setRegistrationId(const std::string &registrationId);
+
+            virtual const std::string &getRegistrationId() const;
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif /* HAZELCAST_MEMBERSHIP_LISTENER */
 

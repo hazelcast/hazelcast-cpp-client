@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreReducePermitsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SemaphoreMessageType SemaphoreReducePermitsCodec::RequestParameters::TYPE = HZ_SEMAPHORE_REDUCEPERMITS;
-                const bool SemaphoreReducePermitsCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SemaphoreReducePermitsCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> SemaphoreReducePermitsCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const SemaphoreMessageType SemaphoreReducePermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_REDUCEPERMITS;
+                const bool SemaphoreReducePermitsCodec::RETRYABLE = false;
+                const ResponseMessageConst SemaphoreReducePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> SemaphoreReducePermitsCodec::encodeRequest(
+                        const std::string &name,
                         int32_t reduction) {
                     int32_t requiredDataSize = calculateDataSize(name, reduction);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreReducePermitsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreReducePermitsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(reduction);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SemaphoreReducePermitsCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t SemaphoreReducePermitsCodec::calculateDataSize(
+                        const std::string &name,
                         int32_t reduction) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,19 +51,23 @@ namespace hazelcast {
                 }
 
                 SemaphoreReducePermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreReducePermitsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "SemaphoreReducePermitsCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                SemaphoreReducePermitsCodec::ResponseParameters SemaphoreReducePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreReducePermitsCodec::ResponseParameters
+                SemaphoreReducePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreReducePermitsCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreReducePermitsCodec::ResponseParameters::ResponseParameters(const SemaphoreReducePermitsCodec::ResponseParameters &rhs) {
+                SemaphoreReducePermitsCodec::ResponseParameters::ResponseParameters(
+                        const SemaphoreReducePermitsCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

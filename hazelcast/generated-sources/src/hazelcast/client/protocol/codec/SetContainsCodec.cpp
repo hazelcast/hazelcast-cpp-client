@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetContainsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetContainsCodec::RequestParameters::TYPE = HZ_SET_CONTAINS;
-                const bool SetContainsCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetContainsCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SetContainsCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const SetMessageType SetContainsCodec::REQUEST_TYPE = HZ_SET_CONTAINS;
+                const bool SetContainsCodec::RETRYABLE = false;
+                const ResponseMessageConst SetContainsCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SetContainsCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetContainsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetContainsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SetContainsCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t SetContainsCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,25 @@ namespace hazelcast {
                 }
 
                 SetContainsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetContainsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("SetContainsCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SetContainsCodec::ResponseParameters SetContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetContainsCodec::ResponseParameters
+                SetContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetContainsCodec::ResponseParameters(clientMessage);
                 }
 
-                SetContainsCodec::ResponseParameters::ResponseParameters(const SetContainsCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                SetContainsCodec::ResponseParameters::ResponseParameters(
+                        const SetContainsCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

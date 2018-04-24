@@ -24,8 +24,6 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class ClientMembershipEvent;
-
             AbstractLoadBalancer::AbstractLoadBalancer(AbstractLoadBalancer &rhs) {
                 util::LockGuard lg(rhs.membersLock);
                 membersRef = rhs.membersRef;
@@ -63,6 +61,10 @@ namespace hazelcast {
             }
 
             AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
+            }
+
+            void AbstractLoadBalancer::init(const InitialMembershipEvent &event) {
+                setMembersRef();
             }
         }
     }

@@ -22,76 +22,84 @@
 #endif
 
 #include <memory>
+#include <vector>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
         class Address;
 
+        class Member;
+
         namespace protocol {
             namespace codec {
                 class HAZELCAST_API ClientAuthenticationCodec {
                 public:
+                    static const ClientMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ClientMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &username,
+                            const std::string &password,
+                            const std::string *uuid,
+                            const std::string *ownerUuid,
+                            bool isOwnerConnection,
+                            const std::string &clientType,
+                            uint8_t serializationVersion,
+                            const std::string &clientHazelcastVersion);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &username, 
-                                const std::string &password, 
-                                const std::string *uuid, 
-                                const std::string *ownerUuid, 
-                                bool isOwnerConnection, 
-                                const std::string &clientType, 
-                                uint8_t serializationVersion);
-
-                        static int32_t calculateDataSize(
-                                const std::string &username, 
-                                const std::string &password, 
-                                const std::string *uuid, 
-                                const std::string *ownerUuid, 
-                                bool isOwnerConnection, 
-                                const std::string &clientType, 
-                                uint8_t serializationVersion);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &username,
+                            const std::string &password,
+                            const std::string *uuid,
+                            const std::string *ownerUuid,
+                            bool isOwnerConnection,
+                            const std::string &clientType,
+                            uint8_t serializationVersion,
+                            const std::string &clientHazelcastVersion);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        uint8_t status;
 
-                            uint8_t status;
-                                                        std::auto_ptr<Address > address;
-                            std::auto_ptr<std::string > uuid;
-                            std::auto_ptr<std::string > ownerUuid;
-                            uint8_t serializationVersion;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        std::auto_ptr<Address> address;
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        std::auto_ptr<std::string> uuid;
+
+                        std::auto_ptr<std::string> ownerUuid;
+
+                        uint8_t serializationVersion;
+
+                        std::string serverHazelcastVersion;
+                        bool serverHazelcastVersionExist;
+                        std::auto_ptr<std::vector<Member> > clientUnregisteredMembers;
+                        bool clientUnregisteredMembersExist;
+
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        ClientAuthenticationCodec ();
+                private:
+                    // Preventing public access to constructors
+                    ClientAuthenticationCodec();
                 };
             }
         }

@@ -24,19 +24,23 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API ClientMessageType {
 
-                    HZ_CLIENT_AUTHENTICATION=0x0002,
-                    HZ_CLIENT_AUTHENTICATIONCUSTOM=0x0003,
-                    HZ_CLIENT_ADDMEMBERSHIPLISTENER=0x0004,
-                    HZ_CLIENT_CREATEPROXY=0x0005,
-                    HZ_CLIENT_DESTROYPROXY=0x0006,
-                    HZ_CLIENT_GETPARTITIONS=0x0008,
-                    HZ_CLIENT_REMOVEALLLISTENERS=0x0009,
-                    HZ_CLIENT_ADDPARTITIONLOSTLISTENER=0x000a,
-                    HZ_CLIENT_REMOVEPARTITIONLOSTLISTENER=0x000b,
-                    HZ_CLIENT_GETDISTRIBUTEDOBJECTS=0x000c,
-                    HZ_CLIENT_ADDDISTRIBUTEDOBJECTLISTENER=0x000d,
-                    HZ_CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER=0x000e,
-                    HZ_CLIENT_PING=0x000f
+                    HZ_CLIENT_AUTHENTICATION = 0x0002,
+                    HZ_CLIENT_AUTHENTICATIONCUSTOM = 0x0003,
+                    HZ_CLIENT_ADDMEMBERSHIPLISTENER = 0x0004,
+                    HZ_CLIENT_CREATEPROXY = 0x0005,
+                    HZ_CLIENT_DESTROYPROXY = 0x0006,
+                    HZ_CLIENT_GETPARTITIONS = 0x0008,
+                    HZ_CLIENT_REMOVEALLLISTENERS = 0x0009,
+                    HZ_CLIENT_ADDPARTITIONLOSTLISTENER = 0x000a,
+                    HZ_CLIENT_REMOVEPARTITIONLOSTLISTENER = 0x000b,
+                    HZ_CLIENT_GETDISTRIBUTEDOBJECTS = 0x000c,
+                    HZ_CLIENT_ADDDISTRIBUTEDOBJECTLISTENER = 0x000d,
+                    HZ_CLIENT_REMOVEDISTRIBUTEDOBJECTLISTENER = 0x000e,
+                    HZ_CLIENT_PING = 0x000f,
+                    HZ_CLIENT_STATISTICS = 0x0010,
+                    HZ_CLIENT_DEPLOYCLASSES = 0x0011,
+                    HZ_CLIENT_ADDPARTITIONLISTENER = 0x0012,
+                    HZ_CLIENT_CREATEPROXIES = 0x0013
                 };
             }
         }

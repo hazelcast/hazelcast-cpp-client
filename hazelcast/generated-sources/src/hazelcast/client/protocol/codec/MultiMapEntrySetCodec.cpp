@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapEntrySetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapEntrySetCodec::RequestParameters::TYPE = HZ_MULTIMAP_ENTRYSET;
-                const bool MultiMapEntrySetCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MultiMapEntrySetCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MultiMapEntrySetCodec::RequestParameters::encode(
+                const MultiMapMessageType MultiMapEntrySetCodec::REQUEST_TYPE = HZ_MULTIMAP_ENTRYSET;
+                const bool MultiMapEntrySetCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapEntrySetCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MultiMapEntrySetCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapEntrySetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapEntrySetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MultiMapEntrySetCodec::RequestParameters::calculateDataSize(
+                int32_t MultiMapEntrySetCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 MultiMapEntrySetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapEntrySetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapEntrySetCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MultiMapEntrySetCodec::ResponseParameters MultiMapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapEntrySetCodec::ResponseParameters
+                MultiMapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapEntrySetCodec::ResponseParameters::ResponseParameters(const MultiMapEntrySetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapEntrySetCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapEntrySetCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

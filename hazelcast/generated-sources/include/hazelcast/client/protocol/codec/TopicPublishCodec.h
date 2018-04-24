@@ -24,13 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/TopicMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/TopicMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -44,44 +45,36 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API TopicPublishCodec {
                 public:
+                    static const TopicMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum TopicMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            const serialization::pimpl::Data &message);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &message);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &message);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            const serialization::pimpl::Data &message);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
 
+                        static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        TopicPublishCodec ();
+                private:
+                    // Preventing public access to constructors
+                    TopicPublishCodec();
                 };
             }
         }

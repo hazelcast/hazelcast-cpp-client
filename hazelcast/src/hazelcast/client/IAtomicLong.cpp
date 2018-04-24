@@ -38,65 +38,65 @@ namespace hazelcast {
 
         int64_t IAtomicLong::addAndGet(int64_t delta) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongAddAndGetCodec::RequestParameters::encode(getName(), delta);
+                    protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(getName(), delta);
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongAddAndGetCodec::ResponseParameters>(request, partitionId);
         }
 
         bool IAtomicLong::compareAndSet(int64_t expect, int64_t update) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongCompareAndSetCodec::RequestParameters::encode(getName(), expect, update);
+                    protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(getName(), expect, update);
 
             return invokeAndGetResult<bool, protocol::codec::AtomicLongCompareAndSetCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::decrementAndGet() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongDecrementAndGetCodec::RequestParameters::encode(getName());
+                    protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongDecrementAndGetCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::get() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetCodec::RequestParameters::encode(getName());
+                    protocol::codec::AtomicLongGetCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::getAndAdd(int64_t delta) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndAddCodec::RequestParameters::encode(getName(), delta);
+                    protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(getName(), delta);
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndAddCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::getAndSet(int64_t newValue) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndSetCodec::RequestParameters::encode(getName(), newValue);
+                    protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(getName(), newValue);
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndSetCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::incrementAndGet() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongIncrementAndGetCodec::RequestParameters::encode(getName());
+                    protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongIncrementAndGetCodec::ResponseParameters>(request, partitionId);
         }
 
         int64_t IAtomicLong::getAndIncrement() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndIncrementCodec::RequestParameters::encode(getName());
+                    protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndIncrementCodec::ResponseParameters>(request, partitionId);
         }
 
         void IAtomicLong::set(int64_t newValue) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongSetCodec::RequestParameters::encode(getName(), newValue);
+                    protocol::codec::AtomicLongSetCodec::encodeRequest(getName(), newValue);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
     }
 }

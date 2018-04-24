@@ -645,6 +645,7 @@ namespace hazelcast {
                 for (int i = 0; i < 100; i++) {
                     mapTemp[util::IOUtil::to_string(i)] = util::IOUtil::to_string(i);
                 }
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 0);
                 ClientMapTest<TypeParam>::imap->putAll(mapTemp);
                 ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 100);
 

@@ -57,7 +57,7 @@ namespace hazelcast {
                                                                                                        latch(latch) {}
 
                         virtual void run() {
-                            std::string key = util::IOUtil::to_string(util::getThreadId());
+                            std::string key = util::IOUtil::to_string(util::getCurrentThreadId());
                             client->getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                             TransactionContext context = client->newTransactionContext();
                             context.beginTransaction();

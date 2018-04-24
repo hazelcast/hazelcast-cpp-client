@@ -24,10 +24,10 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API CountDownLatchMessageType {
 
-                    HZ_COUNTDOWNLATCH_AWAIT=0x0c01,
-                    HZ_COUNTDOWNLATCH_COUNTDOWN=0x0c02,
-                    HZ_COUNTDOWNLATCH_GETCOUNT=0x0c03,
-                    HZ_COUNTDOWNLATCH_TRYSETCOUNT=0x0c04
+                    HZ_COUNTDOWNLATCH_AWAIT = 0x0c01,
+                    HZ_COUNTDOWNLATCH_COUNTDOWN = 0x0c02,
+                    HZ_COUNTDOWNLATCH_GETCOUNT = 0x0c03,
+                    HZ_COUNTDOWNLATCH_TRYSETCOUNT = 0x0c04
                 };
             }
         }

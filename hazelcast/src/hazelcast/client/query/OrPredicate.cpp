@@ -52,7 +52,7 @@ namespace hazelcast {
 
             void OrPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("OrPredicate::readData", "Client should not need to use readData method!!!");
+                throw exception::HazelcastSerializationException("OrPredicate::readData", "Client should not need to use readData method!!!");
             }
         }
     }

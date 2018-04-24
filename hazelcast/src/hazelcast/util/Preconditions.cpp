@@ -21,20 +21,6 @@
 
 namespace hazelcast {
     namespace util {
-        int Preconditions::checkPositive(int value, const std::string &errorMessage) {
-            if (value <= 0) {
-                throw client::exception::IllegalArgumentException("Preconditions::checkPositive", errorMessage);
-            }
-            return value;
-        }
-
-        int Preconditions::checkNotNegative(int value, const std::string &errorMessage) {
-            if (value < 0) {
-                throw client::exception::IllegalArgumentException(errorMessage);
-            }
-            return value;
-        }
-
         const std::string &Preconditions::checkHasText(const std::string &argument,
                                                        const std::string &errorMessage) {
             if (argument.empty()) {

@@ -34,24 +34,24 @@ namespace hazelcast {
 
             bool TransactionalListImpl::add(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListAddCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), e);
+                        protocol::codec::TransactionalListAddCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalListAddCodec::ResponseParameters>(request);
             }
 
             bool TransactionalListImpl::remove(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListRemoveCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), e);
+                        protocol::codec::TransactionalListRemoveCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalListRemoveCodec::ResponseParameters>(request);
             }
 
             int TransactionalListImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalListSizeCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId());
+                        protocol::codec::TransactionalListSizeCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalListSizeCodec::ResponseParameters>(request);
             }

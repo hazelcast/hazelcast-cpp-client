@@ -13,11 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <string>
+#include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
         MembershipListener::~MembershipListener() {
+        }
+
+        const std::string &MembershipListener::getRegistrationId() const {
+            return registrationId;
+        }
+
+        void MembershipListener::setRegistrationId(const std::string &registrationId) {
+            this->registrationId = registrationId;
+        }
+
+        bool MembershipListener::shouldRequestInitialMembers() const {
+            return false;
+        }
+
+        MembershipListenerDelegator::MembershipListenerDelegator(
+                MembershipListener *listener) : listener(listener) {}
+
+        void MembershipListenerDelegator::memberAdded(
+                const MembershipEvent &membershipEvent) {
+            listener->memberAdded(membershipEvent);
+        }
+
+        void MembershipListenerDelegator::memberRemoved(
+                const MembershipEvent &membershipEvent) {
+            listener->memberRemoved(membershipEvent);
+        }
+
+        void MembershipListenerDelegator::memberAttributeChanged(
+                const MemberAttributeEvent &memberAttributeEvent) {
+            listener->memberAttributeChanged(memberAttributeEvent);
+        }
+
+        bool MembershipListenerDelegator::shouldRequestInitialMembers() const {
+            return listener->shouldRequestInitialMembers();
+        }
+
+        void MembershipListenerDelegator::setRegistrationId(const std::string &registrationId) {
+            listener->setRegistrationId(registrationId);
+        }
+
+        const std::string &MembershipListenerDelegator::getRegistrationId() const {
+            return listener->getRegistrationId();
         }
     }
 }

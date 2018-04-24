@@ -26,20 +26,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetAddListenerCodec::RequestParameters::TYPE = HZ_SET_ADDLISTENER;
-                const bool SetAddListenerCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetAddListenerCodec::ResponseParameters::TYPE = 104;
+                const SetMessageType SetAddListenerCodec::REQUEST_TYPE = HZ_SET_ADDLISTENER;
+                const bool SetAddListenerCodec::RETRYABLE = false;
+                const ResponseMessageConst SetAddListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                SetAddListenerCodec::~SetAddListenerCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> SetAddListenerCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        bool includeValue, 
+                std::auto_ptr<ClientMessage> SetAddListenerCodec::encodeRequest(
+                        const std::string &name,
+                        bool includeValue,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, includeValue, localOnly);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetAddListenerCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetAddListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(includeValue);
@@ -48,9 +45,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SetAddListenerCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        bool includeValue, 
+                int32_t SetAddListenerCodec::calculateDataSize(
+                        const std::string &name,
+                        bool includeValue,
                         bool localOnly) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -60,63 +57,53 @@ namespace hazelcast {
                 }
 
                 SetAddListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetAddListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "SetAddListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<std::string >();
+
+                    response = clientMessage.get<std::string>();
+
                 }
 
-                SetAddListenerCodec::ResponseParameters SetAddListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetAddListenerCodec::ResponseParameters
+                SetAddListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                SetAddListenerCodec::ResponseParameters::ResponseParameters(const SetAddListenerCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                SetAddListenerCodec::ResponseParameters::ResponseParameters(
+                        const SetAddListenerCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
 
                 //************************ EVENTS START*************************************************************************//
                 SetAddListenerCodec::AbstractEventHandler::~AbstractEventHandler() {
                 }
 
-                void SetAddListenerCodec::AbstractEventHandler::handle(std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                void SetAddListenerCodec::AbstractEventHandler::handle(
+                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
-                        case protocol::EVENT_ITEM:
-                        {
-                            std::auto_ptr<serialization::pimpl::Data > item = clientMessage->getNullable<serialization::pimpl::Data >();
+                        case protocol::EVENT_ITEM: {
+                            std::auto_ptr<serialization::pimpl::Data> item = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::string uuid = clientMessage->get<std::string >();
-                            
-                            int32_t eventType = clientMessage->get<int32_t >();
-                            
-                            handleItem(item, uuid, eventType);
+                            std::string uuid = clientMessage->get<std::string>();
+
+                            int32_t eventType = clientMessage->get<int32_t>();
+
+
+                            handleItemEventV10(item, uuid, eventType);
                             break;
                         }
                         default:
-                            char buf[300];
-                            util::hz_snprintf(buf, 300,
-                                              "[SetAddListenerCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.",
-                                              clientMessage->getMessageType());
-                            util::ILogger::getLogger().warning(buf);
+                            util::ILogger::getLogger().warning()
+                                    << "[SetAddListenerCodec::AbstractEventHandler::handle] Unknown message type ("
+                                    << messageType << ") received on event handler.";
                     }
                 }
                 //************************ EVENTS END **************************************************************************//
-
-                SetAddListenerCodec::SetAddListenerCodec (const std::string &name, const bool &includeValue, const bool &localOnly)
-                        : name_(name), includeValue_(includeValue), localOnly_(localOnly) {
-                }
-
-                //************************ IAddListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> SetAddListenerCodec::encodeRequest() const {
-                    return RequestParameters::encode(name_, includeValue_, localOnly_);
-                }
-
-                std::string SetAddListenerCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IAddListenerCodec interface ends *************************************************//
-
             }
         }
     }

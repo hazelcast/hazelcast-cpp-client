@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapGetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapGetCodec::RequestParameters::TYPE = HZ_MAP_GET;
-                const bool MapGetCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapGetCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> MapGetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapGetCodec::REQUEST_TYPE = HZ_MAP_GET;
+                const bool MapGetCodec::RETRYABLE = true;
+                const ResponseMessageConst MapGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> MapGetCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapGetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapGetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapGetCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,11 +56,14 @@ namespace hazelcast {
                 }
 
                 MapGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapGetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapGetCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
                 MapGetCodec::ResponseParameters MapGetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
@@ -66,10 +71,8 @@ namespace hazelcast {
                 }
 
                 MapGetCodec::ResponseParameters::ResponseParameters(const MapGetCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapAddIndexCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,16 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapAddIndexCodec::RequestParameters::TYPE = HZ_MAP_ADDINDEX;
-                const bool MapAddIndexCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapAddIndexCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapAddIndexCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &attribute, 
+                const MapMessageType MapAddIndexCodec::REQUEST_TYPE = HZ_MAP_ADDINDEX;
+                const bool MapAddIndexCodec::RETRYABLE = false;
+                const ResponseMessageConst MapAddIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapAddIndexCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &attribute,
                         bool ordered) {
                     int32_t requiredDataSize = calculateDataSize(name, attribute, ordered);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapAddIndexCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapAddIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(attribute);
@@ -41,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapAddIndexCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &attribute, 
+                int32_t MapAddIndexCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &attribute,
                         bool ordered) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,19 +55,22 @@ namespace hazelcast {
                 }
 
                 MapAddIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapAddIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapAddIndexCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapAddIndexCodec::ResponseParameters MapAddIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddIndexCodec::ResponseParameters
+                MapAddIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapAddIndexCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddIndexCodec::ResponseParameters::ResponseParameters(const MapAddIndexCodec::ResponseParameters &rhs) {
+                MapAddIndexCodec::ResponseParameters::ResponseParameters(
+                        const MapAddIndexCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

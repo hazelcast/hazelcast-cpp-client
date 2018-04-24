@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalQueuePollCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,17 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalQueueMessageType TransactionalQueuePollCodec::RequestParameters::TYPE = HZ_TRANSACTIONALQUEUE_POLL;
-                const bool TransactionalQueuePollCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalQueuePollCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> TransactionalQueuePollCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalQueueMessageType TransactionalQueuePollCodec::REQUEST_TYPE = HZ_TRANSACTIONALQUEUE_POLL;
+                const bool TransactionalQueuePollCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalQueuePollCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> TransactionalQueuePollCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         int64_t timeout) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, timeout);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalQueuePollCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalQueuePollCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +46,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalQueuePollCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalQueuePollCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         int64_t timeout) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,22 +60,26 @@ namespace hazelcast {
                 }
 
                 TransactionalQueuePollCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalQueuePollCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalQueuePollCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                TransactionalQueuePollCodec::ResponseParameters TransactionalQueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalQueuePollCodec::ResponseParameters
+                TransactionalQueuePollCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalQueuePollCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalQueuePollCodec::ResponseParameters::ResponseParameters(const TransactionalQueuePollCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                TransactionalQueuePollCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalQueuePollCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

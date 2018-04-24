@@ -17,7 +17,6 @@
 #define HAZELCAST_ICOUNT_DOWN_LATCH
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/exception/IException.h"
@@ -60,7 +59,7 @@ namespace hazelcast {
          *
          */
         class HAZELCAST_API ICountDownLatch : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

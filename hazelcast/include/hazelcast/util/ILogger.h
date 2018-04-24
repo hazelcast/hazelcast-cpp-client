@@ -20,12 +20,13 @@
 #ifndef HAZELCAST_ILogger
 #define HAZELCAST_ILogger
 
+#include <string>
+#include <iostream>
+#include <sstream>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
-
-#include <string>
-#include <iostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -102,6 +103,8 @@ namespace hazelcast {
 
             void printMessagePrefix(client::LoggerLevel::Level logLevel) const;
 
+            void printMessagePrefix(client::LoggerLevel::Level logLevel, std::ostream &out) const;
+
             ILogger(const ILogger&);
 
             ILogger& operator=(const ILogger&);
@@ -110,7 +113,7 @@ namespace hazelcast {
 
             static ILogger singletonLogger;
 
-            void printLog(client::LoggerLevel::Level level, const std::string &message);
+            void printLog(client::LoggerLevel::Level level, const std::string &message, bool printPrefix = true);
         };
 
         /**
@@ -118,16 +121,16 @@ namespace hazelcast {
          */
         class HAZELCAST_API LeveledLogger {
         public:
-            // Gets the logger lock
             LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel);
 
-            // Releases the logger lock.
+            LeveledLogger(const LeveledLogger &rhs);
+
             virtual ~LeveledLogger();
 
             template <typename T>
             LeveledLogger &operator<<(const T &value) {
                 if (logger.isEnabled(logger.logLevel)) {
-                    std::cout << value;
+                    out << value;
                 }
                 return *this;
             }
@@ -137,6 +140,7 @@ namespace hazelcast {
 
             ILogger &logger;
             client::LoggerLevel::Level requestedLogLevel;
+            std::ostringstream out;
         };
     }
 }

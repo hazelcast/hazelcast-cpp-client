@@ -20,12 +20,16 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Executor.h"
 #include "hazelcast/util/Callable.h"
+#include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/SynchronizedQueue.h"
+#include "hazelcast/util/SynchronizedQueue.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -37,7 +41,7 @@ namespace hazelcast {
         class ILogger;
 
         namespace impl {
-            class HAZELCAST_API SimpleExecutorService : public ExecutorService {
+            class HAZELCAST_API SimpleExecutorService : public ScheduledExecutorService {
             public:
                 static int32_t DEFAULT_EXECUTOR_QUEUE_CAPACITY;
 
@@ -45,8 +49,6 @@ namespace hazelcast {
                                int32_t maximumQueueCapacity);
 
                 SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix, int32_t threadCount);
-
-                SimpleExecutorService(const std::string &threadNamePrefix, int32_t threadCount);
 
                 virtual ~SimpleExecutorService();
 
@@ -78,6 +80,12 @@ namespace hazelcast {
                     return runnable->getFuture();
                 }
 
+                virtual void schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
+
+                virtual void
+                scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                                    int64_t periodInMillis);
+
                 /**
                  * Shuts down this Executor.
                  * <p>
@@ -99,12 +107,16 @@ namespace hazelcast {
                     }
 
                     virtual void run() {
-                        T result = callable->call();
-                        future->set_value(result);
+                        try {
+                            T result = callable->call();
+                            future->set_value(result);
+                        } catch (client::exception::IException &e) {
+                            future->set_exception(e.clone());
+                        }
                     }
 
                     virtual const std::string getName() const {
-                        return "CallableRunnableAdaptor";
+                        return callable->getName();
                     }
 
                     const boost::shared_ptr<Callable<T> > &getCallable() const {
@@ -121,10 +133,8 @@ namespace hazelcast {
                 };
 
                 class Worker : public util::Runnable {
-                    friend class SimpleExecutorService;
                 public:
-                    Worker(const std::string &threadNamePrefix, int32_t queueCapacity,
-                           util::AtomicBoolean &live, util::ILogger &logger);
+                    Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity);
 
                     virtual ~Worker();
 
@@ -135,24 +145,60 @@ namespace hazelcast {
                     void schedule(const boost::shared_ptr<Runnable> &runnable);
 
                     void start();
-                private:
-                    static std::string generateThreadName(const std::string &prefix);
 
+                    void shutdown();
+                private:
+                    std::string generateThreadName(const std::string &prefix);
+
+                    SimpleExecutorService &executorService;
                     std::string name;
                     // TODO: Should it be non blocking rejecting queue when compared to Java?
                     util::BlockingConcurrentQueue<boost::shared_ptr<Runnable> > workQueue;
-                    util::AtomicBoolean &live;
-                    util::ILogger &logger;
                     util::Thread thread;
+                };
+
+                class DelayedRunner : public util::Runnable {
+                public:
+                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis);
+
+                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
+                                   int64_t periodInMillis);
+
+                    virtual void run();
+
+                    void shutdown();
+
+                    void setRunnerThread(const boost::shared_ptr<util::Thread> &thread);
+
+                    const boost::shared_ptr<util::Thread> &getRunnerThread() const;
+
+                    virtual const std::string getName() const;
+
+                protected:
+                    const boost::shared_ptr<util::Runnable> command;
+                    int64_t initialDelayInMillis;
+                    int64_t periodInMillis;
+                    util::AtomicBoolean live;
+                    int64_t startTimeMillis;
+                    boost::shared_ptr<util::Thread> runnerThread;
+                };
+
+                class RepeatingRunner : public DelayedRunner {
+                public:
+                    RepeatingRunner(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                                    int64_t periodInMillis);
+
+                    virtual const std::string getName() const;
                 };
 
                 util::ILogger &logger;
                 const std::string &threadNamePrefix;
                 int threadCount;
                 util::AtomicBoolean live;
-                static util::Atomic<int64_t> THREAD_ID_GENERATOR;
+                util::Atomic<int64_t> threadIdGenerator;
                 std::vector<boost::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
+                util::SynchronizedQueue<DelayedRunner> delayedRunners;
 
                 virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
 

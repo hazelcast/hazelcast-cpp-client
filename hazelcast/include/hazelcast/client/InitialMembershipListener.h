@@ -22,6 +22,7 @@
 #define HAZELCAST_InitialMembershipListener
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/MembershipListener.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,6 +31,12 @@ namespace hazelcast {
         class MembershipEvent;
 
         class MemberAttributeEvent;
+
+        namespace spi {
+            namespace impl {
+                class ClientClusterServiceImpl;
+            }
+        }
 
         /**
          * The InitializingMembershipListener is a MembershipListener that will first receives a
@@ -47,7 +54,9 @@ namespace hazelcast {
          * @see Cluster#addMembershipListener(InitialMembershipListener *listener)
          * @see MembershipEvent#getMembers()
          */
-        class HAZELCAST_API InitialMembershipListener {
+        class HAZELCAST_API InitialMembershipListener : public MembershipListener {
+            friend class spi::impl::ClientClusterServiceImpl;
+            friend class InitialMembershipListenerDelegator;
         public:
             virtual ~InitialMembershipListener();
 
@@ -58,28 +67,31 @@ namespace hazelcast {
              */
             virtual void init(const InitialMembershipEvent &event) = 0;
 
-            /**
-            * Invoked when a new member is added to the cluster.
-            *
-            * @param membershipEvent membership event
-            */
-            virtual void memberAdded(const MembershipEvent &membershipEvent) = 0;
-
-            /**
-             * Invoked when an existing member leaves the cluster.
-             *
-             * @param membershipEvent membership event
-             */
-            virtual void memberRemoved(const MembershipEvent &membershipEvent) = 0;
-
-            /**
-             * Invoked when an attribute of a member was changed.
-             *
-             * @param memberAttributeEvent member attribute event
-             */
-            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) = 0;
+        private:
+            virtual bool shouldRequestInitialMembers() const;
         };
 
+        class InitialMembershipListenerDelegator : public InitialMembershipListener {
+        public:
+            InitialMembershipListenerDelegator(InitialMembershipListener *listener);
+
+            virtual void init(const InitialMembershipEvent &event);
+
+            virtual void memberRemoved(const MembershipEvent &membershipEvent);
+
+            virtual void memberAdded(const MembershipEvent &membershipEvent);
+
+            virtual void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
+
+        private:
+            virtual bool shouldRequestInitialMembers() const;
+
+            virtual const std::string &getRegistrationId() const;
+
+            virtual void setRegistrationId(const std::string &registrationId);
+
+            InitialMembershipListener *listener;
+        };
     }
 }
 

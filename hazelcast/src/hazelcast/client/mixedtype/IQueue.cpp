@@ -25,7 +25,7 @@ namespace hazelcast {
     namespace client {
         namespace mixedtype {
             std::string IQueue::addItemListener(MixedItemListener &listener, bool includeValue) {
-                spi::ClusterService &cs = context->getClusterService();
+                spi::ClientClusterService &cs = context->getClientClusterService();
                 serialization::pimpl::SerializationService &ss = context->getSerializationService();
                 impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(

@@ -336,7 +336,7 @@ namespace hazelcast {
                 mixedMap->put<int, int>(3, 5);
                 TypedData oldData = mixedMap->put<int, std::string>(10, "MyStringValue");
 
-                ASSERT_EQ(NULL, oldData.getData());
+                ASSERT_EQ(NULL, oldData.getData().get());
 
                 TypedData result = mixedMap->get<int>(3);
                 ASSERT_EQ(-7, result.getType().typeId);

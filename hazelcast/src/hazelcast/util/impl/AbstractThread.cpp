@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
+#include <cerrno>
+#include <hazelcast/util/ILogger.h>
 #include "hazelcast/util/impl/AbstractThread.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
         namespace impl {
+            util::SynchronizedMap<int64_t, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
 
             AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable) : target(runnable) {
                 this->target = runnable;
@@ -44,6 +48,88 @@ namespace hazelcast {
                 }
 
                 startInternal(target.get());
+
+                startedThreads.put(getThreadId(), boost::shared_ptr<UnmanagedAbstractThreadPointer>(
+                        new UnmanagedAbstractThreadPointer(this)));
+            }
+
+            void AbstractThread::interruptibleSleep(int seconds) {
+                interruptibleSleepMillis(seconds * 1000);
+            }
+
+            void AbstractThread::interruptibleSleepMillis(int64_t timeInMillis) {
+                LockGuard guard(wakeupMutex);
+                wakeupCondition.waitFor(wakeupMutex, timeInMillis);
+            }
+
+            void AbstractThread::wakeup() {
+                LockGuard guard(wakeupMutex);
+                wakeupCondition.notify();
+            }
+
+            void AbstractThread::cancel() {
+                if (!started) {
+                    return;
+                }
+
+                if (isCalledFromSameThread()) {
+                    /**
+                     * do not allow cancelling itself
+                     * at Linux, pthread_cancel may cause cancel by signal
+                     * and calling thread may be terminated.
+                     */
+                    return;
+                }
+
+                if (!isJoined) {
+                    wakeup();
+
+                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
+                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
+                }
+            }
+
+            bool AbstractThread::join() {
+                if (!started) {
+                    return false;
+                }
+
+                if (isCalledFromSameThread()) {
+                    // called from inside the thread, deadlock possibility
+                    return false;
+                }
+
+                if (!isJoined.compareAndSet(false, true)) {
+                    return true;
+                }
+
+                int64_t threadId = getThreadId();
+
+                if (!innerJoin()) {
+                    return false;
+                }
+
+                startedThreads.remove(threadId);
+                isJoined = true;
+                return true;
+            }
+
+            void AbstractThread::sleep(int64_t timeInMilliseconds) {
+                int64_t currentThreadId = util::getCurrentThreadId();
+                boost::shared_ptr<UnmanagedAbstractThreadPointer> currentThread = startedThreads.get(currentThreadId);
+                if (currentThread.get()) {
+                    currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
+                } else {
+                    util::ILogger::getLogger().warning() << "AbstractThread::sleep IS NOT interrupptible SLEEP!!! currentThreadId:" << currentThreadId;
+                    util::sleepmillis(timeInMilliseconds);
+                }
+            }
+
+            AbstractThread::UnmanagedAbstractThreadPointer::UnmanagedAbstractThreadPointer(AbstractThread *thread)
+                    : thread(thread) {}
+
+            AbstractThread *AbstractThread::UnmanagedAbstractThreadPointer::getThread() const {
+                return thread;
             }
         }
     }

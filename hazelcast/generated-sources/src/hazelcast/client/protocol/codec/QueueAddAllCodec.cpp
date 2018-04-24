@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueAddAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,48 +25,52 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueAddAllCodec::RequestParameters::TYPE = HZ_QUEUE_ADDALL;
-                const bool QueueAddAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueAddAllCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> QueueAddAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &dataList) {
+                const QueueMessageType QueueAddAllCodec::REQUEST_TYPE = HZ_QUEUE_ADDALL;
+                const bool QueueAddAllCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueAddAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> QueueAddAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &dataList) {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueAddAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueAddAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(dataList);
+                    clientMessage->setArray<serialization::pimpl::Data>(dataList);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueAddAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &dataList) {
+                int32_t QueueAddAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &dataList) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(dataList);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(dataList);
                     return dataSize;
                 }
 
                 QueueAddAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueAddAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueAddAllCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                QueueAddAllCodec::ResponseParameters QueueAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueAddAllCodec::ResponseParameters
+                QueueAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueAddAllCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueAddAllCodec::ResponseParameters::ResponseParameters(const QueueAddAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueAddAllCodec::ResponseParameters::ResponseParameters(
+                        const QueueAddAllCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

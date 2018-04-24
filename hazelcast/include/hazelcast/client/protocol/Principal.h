@@ -20,7 +20,8 @@
 #define HAZELCAST_PRINCIPAL
 
 #include <string>
-#include <memory>
+#include <boost/shared_ptr.hpp>
+#include <ostream>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -39,9 +40,14 @@ namespace hazelcast {
                 const std::string *getUuid() const;
 
                 const std::string *getOwnerUuid() const;
+
+                bool operator==(const Principal &rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const Principal &principal);
+
             private:
-                std::auto_ptr<std::string> uuid;
-                std::auto_ptr<std::string> ownerUuid;
+                boost::shared_ptr<std::string> uuid;
+                boost::shared_ptr<std::string> ownerUuid;
             };
         }
     }

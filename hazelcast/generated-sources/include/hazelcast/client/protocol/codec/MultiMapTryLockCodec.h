@@ -24,13 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/MultiMapMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/MultiMapMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
-#include "hazelcast/client/serialization/pimpl/Data.h"
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -44,51 +45,46 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API MultiMapTryLockCodec {
                 public:
+                    static const MultiMapMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum MultiMapMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            const serialization::pimpl::Data &key,
+                            int64_t threadId,
+                            int64_t lease,
+                            int64_t timeout,
+                            int64_t referenceId);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &key, 
-                                int64_t threadId, 
-                                int64_t lease, 
-                                int64_t timeout);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                const serialization::pimpl::Data &key, 
-                                int64_t threadId, 
-                                int64_t lease, 
-                                int64_t timeout);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            const serialization::pimpl::Data &key,
+                            int64_t threadId,
+                            int64_t lease,
+                            int64_t timeout,
+                            int64_t referenceId);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        bool response;
 
-                            bool response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        MultiMapTryLockCodec ();
+                private:
+                    // Preventing public access to constructors
+                    MultiMapTryLockCodec();
                 };
             }
         }

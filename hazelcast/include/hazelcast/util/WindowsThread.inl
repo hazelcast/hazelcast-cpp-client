@@ -16,12 +16,15 @@
 #ifndef HAZELCAST_UTIL_WINDOWSTHREAD_INL_
 #define HAZELCAST_UTIL_WINDOWSTHREAD_INL_
 
+#include <stdint.h>
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/Util.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -44,49 +47,12 @@ namespace hazelcast {
                 }
             }
 
-            void interruptibleSleep(int seconds) {
-                LockGuard lock(wakeupMutex);
-                if(isInterrupted){
-                    isInterrupted = false;
-                    throw hazelcast::client::exception::InterruptedException("interruptibleSleep");
-                }
-                bool wokenUpbyInterruption = wakeupCondition.waitFor(wakeupMutex, seconds * 1000);
-                if(wokenUpbyInterruption && isInterrupted){
-                    isInterrupted = false;
-                    throw hazelcast::client::exception::InterruptedException("interruptibleSleep");
-                }
+            virtual int64_t getThreadId() {
+                return (int64_t) id;
             }
 
-            void wakeup() {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
-            }
-
-            void cancel() {
-                LockGuard lock(wakeupMutex);
-                isInterrupted = true;
-                wakeupCondition.notify_all();
-            }
-
-            bool join() {
-                if (!isJoined.compareAndSet(false, true)) {
-                    return true;
-                }
-                if (id == getThreadId()) {
-                    // called from inside the thread, deadlock possibility
-                    return false;
-                }
-
-                DWORD err = WaitForSingleObject(thread, INFINITE);
-                if (err != WAIT_OBJECT_0) {
-                    return false;
-                }
-                isJoined = true;
-                return true;
-            }
-
-            virtual long getThreadId() {
-                return GetCurrentThreadId();
+            static void yield() {
+                SwitchToThread();
             }
 
         protected:
@@ -105,16 +71,28 @@ namespace hazelcast {
                     return 1L;
                 }
 
-                logger.info() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << runnable->getName() << " is finished.";
 
                 return 0;
             }
 
             void startInternal(Runnable *targetObject) {
                 thread = CreateThread(NULL, 0, runnableThread, targetObject, 0 , &id);
+                started = true;
             }
 
-            util::AtomicBoolean isInterrupted;
+            virtual bool isCalledFromSameThread() {
+                return id == util::getCurrentThreadId();
+            }
+
+            virtual bool innerJoin() {
+                DWORD err = WaitForSingleObject(thread, INFINITE);
+                if (err != WAIT_OBJECT_0) {
+                    return false;
+                }
+                return true;
+            }
+
             HANDLE thread;
             DWORD id;
         };

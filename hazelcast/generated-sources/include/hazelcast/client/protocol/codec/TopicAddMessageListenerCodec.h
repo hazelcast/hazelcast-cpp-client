@@ -24,13 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/TopicMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/TopicMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -42,72 +43,56 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API TopicAddMessageListenerCodec : public IAddListenerCodec{
+                class HAZELCAST_API TopicAddMessageListenerCodec {
                 public:
-                    virtual ~TopicAddMessageListenerCodec();
+                    static const TopicMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
+
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum TopicMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            bool localOnly);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                bool localOnly);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                bool localOnly);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            bool localOnly);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::string response;
 
-                            std::string response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
-                        public:
-                            virtual ~AbstractEventHandler();
+                    public:
+                        virtual ~AbstractEventHandler();
 
-                            void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::auto_ptr<protocol::ClientMessage> message);
 
-                            virtual void handleTopic(const serialization::pimpl::Data &item, const int64_t &publishTime, const std::string &uuid) = 0;
+
+                        virtual void
+                        handleTopicEventV10(const serialization::pimpl::Data &item, const int64_t &publishTime,
+                                            const std::string &uuid) = 0;
 
                     };
 
                     //************************ EVENTS END **********************************************************************//
-
-                    TopicAddMessageListenerCodec (const std::string &name, const bool &localOnly);
-
-                    //************************ IAddListenerCodec interface starts *******************************************//
-                    std::auto_ptr<ClientMessage> encodeRequest() const;
-
-                    std::string decodeResponse(ClientMessage &responseMessage) const;
-
-                    //************************ IAddListenerCodec interface ends *********************************************//
-                    private:
-                        // Preventing public access to constructors
-                        TopicAddMessageListenerCodec ();
-
-                        std::string name_;
-                        bool localOnly_;
+                private:
+                    // Preventing public access to constructors
+                    TopicAddMessageListenerCodec();
                 };
             }
         }

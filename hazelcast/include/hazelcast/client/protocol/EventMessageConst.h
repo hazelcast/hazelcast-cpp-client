@@ -39,7 +39,8 @@ namespace hazelcast {
 
                 EVENT_CACHEPARTITIONLOST = 214,
                 EVENT_IMAPINVALIDATION = 215,
-                EVENT_IMAPBATCHINVALIDATION = 216
+                EVENT_IMAPBATCHINVALIDATION = 216,
+                EVENT_PARTITIONS = 217
             };
         }
     }

@@ -31,9 +31,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class ClusterListenerThread;
-        }
 
         /**
          * Cluster member class. The default implementation
@@ -43,8 +40,6 @@ namespace hazelcast {
          */
         class HAZELCAST_API Member {
         public:
-            friend class connection::ClusterListenerThread;
-
             /**
             * PUT even type representing an addition of an attribute
             * REMOVE event type representing a deletion of an attribute
@@ -60,6 +55,8 @@ namespace hazelcast {
                    const std::map<std::string, std::string> &attr);
 
             Member(const Address &memberAddress);
+
+            Member(const std::string &uuid);
 
             /**
              * comparison operation
@@ -107,11 +104,12 @@ namespace hazelcast {
              */
             bool lookupAttribute(const std::string &key) const;
 
+            bool operator<(const Member &rhs) const;
+
+            void updateAttribute(MemberAttributeOperationType operationType, const std::string &key,
+                                 std::auto_ptr<std::string> &value);
+
         private:
-            void setAttribute(const std::string &key, const std::string &value);
-
-            bool removeAttribute(const std::string &key);
-
             Address address;
             std::string uuid;
             bool liteMember;

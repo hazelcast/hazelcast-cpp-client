@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionCommitCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionMessageType TransactionCommitCodec::RequestParameters::TYPE = HZ_TRANSACTION_COMMIT;
-                const bool TransactionCommitCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionCommitCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> TransactionCommitCodec::RequestParameters::encode(
-                        const std::string &transactionId, 
+                const TransactionMessageType TransactionCommitCodec::REQUEST_TYPE = HZ_TRANSACTION_COMMIT;
+                const bool TransactionCommitCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionCommitCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> TransactionCommitCodec::encodeRequest(
+                        const std::string &transactionId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(transactionId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionCommitCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionCommitCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(transactionId);
                     clientMessage->set(threadId);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionCommitCodec::RequestParameters::calculateDataSize(
-                        const std::string &transactionId, 
+                int32_t TransactionCommitCodec::calculateDataSize(
+                        const std::string &transactionId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(transactionId);
@@ -49,19 +51,23 @@ namespace hazelcast {
                 }
 
                 TransactionCommitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionCommitCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionCommitCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                TransactionCommitCodec::ResponseParameters TransactionCommitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionCommitCodec::ResponseParameters
+                TransactionCommitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionCommitCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionCommitCodec::ResponseParameters::ResponseParameters(const TransactionCommitCodec::ResponseParameters &rhs) {
+                TransactionCommitCodec::ResponseParameters::ResponseParameters(
+                        const TransactionCommitCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

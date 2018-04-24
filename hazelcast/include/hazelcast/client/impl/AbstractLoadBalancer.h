@@ -20,7 +20,7 @@
 #define HAZELCAST_ABSTRACT_LOAD_BALANCER
 
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/util/Mutex.h"
 
@@ -36,7 +36,7 @@ namespace hazelcast {
         class Cluster;
 
         namespace impl {
-            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
+            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public InitialMembershipListener {
             public:
                 AbstractLoadBalancer();
 
@@ -51,6 +51,8 @@ namespace hazelcast {
                 void memberAdded(const MembershipEvent &membershipEvent);
 
                 void memberRemoved(const MembershipEvent &membershipEvent);
+
+                virtual void init(const InitialMembershipEvent &event);
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
 

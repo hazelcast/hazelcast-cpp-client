@@ -26,19 +26,10 @@ namespace hazelcast {
                                                                                                  ss(&serializationService) {
         }
 
-        TypedData::TypedData(const TypedData &rhs) {
-            this->operator=(rhs);
-        }
+        TypedData::TypedData(const boost::shared_ptr<serialization::pimpl::Data> &data,
+                             serialization::pimpl::SerializationService &serializationService) : data(data),
+                                                                                                 ss(&serializationService) {
 
-        TypedData &TypedData::operator=(const TypedData &rhs) {
-            if (rhs.data.get()) {
-                data.reset(new serialization::pimpl::Data(
-                        std::auto_ptr<std::vector<byte> >(new std::vector<byte>(rhs.data->toByteArray()))));
-            } else {
-                data.reset();
-            }
-            ss = rhs.ss;
-            return *this;
         }
 
         TypedData::~TypedData() {}
@@ -47,13 +38,13 @@ namespace hazelcast {
             return ss->getObjectType(data.get());
         }
 
-        const serialization::pimpl::Data *TypedData::getData() const {
-            return data.get();
+        const boost::shared_ptr<serialization::pimpl::Data> TypedData::getData() const {
+            return data;
         }
 
         bool operator<(const TypedData &lhs, const TypedData &rhs) {
-            const serialization::pimpl::Data *lhsData = lhs.getData();
-            const serialization::pimpl::Data *rhsData = rhs.getData();
+            const serialization::pimpl::Data *lhsData = lhs.getData().get();
+            const serialization::pimpl::Data *rhsData = rhs.getData().get();
             if (lhsData == NULL) {
                 return true;
             }

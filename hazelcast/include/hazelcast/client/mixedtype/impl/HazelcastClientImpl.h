@@ -28,8 +28,9 @@
 
 namespace hazelcast {
     namespace client {
-        class HazelcastClient;
-
+        namespace impl {
+            class HazelcastClientInstanceImpl;
+        }
         namespace spi {
             class ClientContext;
         }
@@ -38,7 +39,7 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API HazelcastClientImpl : public HazelcastClient {
                 public:
-                    HazelcastClientImpl(client::HazelcastClient &client);
+                    HazelcastClientImpl(client::impl::HazelcastClientInstanceImpl &client);
 
                     virtual ~HazelcastClientImpl();
 
@@ -56,7 +57,7 @@ namespace hazelcast {
 
                     virtual Ringbuffer getRingbuffer(const std::string &instanceName);
                 private:
-                    client::HazelcastClient &client;
+                    client::impl::HazelcastClientInstanceImpl &client;
                 };
             }
         }

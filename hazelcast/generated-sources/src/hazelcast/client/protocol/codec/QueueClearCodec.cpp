@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueClearCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueClearCodec::RequestParameters::TYPE = HZ_QUEUE_CLEAR;
-                const bool QueueClearCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueClearCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> QueueClearCodec::RequestParameters::encode(
+                const QueueMessageType QueueClearCodec::REQUEST_TYPE = HZ_QUEUE_CLEAR;
+                const bool QueueClearCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueClearCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> QueueClearCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueClearCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueClearCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueClearCodec::RequestParameters::calculateDataSize(
+                int32_t QueueClearCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,19 +47,22 @@ namespace hazelcast {
                 }
 
                 QueueClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueClearCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueClearCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                QueueClearCodec::ResponseParameters QueueClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueClearCodec::ResponseParameters
+                QueueClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueClearCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueClearCodec::ResponseParameters::ResponseParameters(const QueueClearCodec::ResponseParameters &rhs) {
+                QueueClearCodec::ResponseParameters::ResponseParameters(
+                        const QueueClearCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

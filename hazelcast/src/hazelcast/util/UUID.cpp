@@ -23,6 +23,8 @@
 
 namespace hazelcast {
     namespace util {
+        UUID::UUID() : mostSigBits(0), leastSigBits(0) {}
+
         UUID::UUID(int64_t mostBits, int64_t leastBits) :mostSigBits(mostBits), leastSigBits(leastBits) {
         }
 

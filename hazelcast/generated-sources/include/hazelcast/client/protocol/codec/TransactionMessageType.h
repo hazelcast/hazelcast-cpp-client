@@ -24,9 +24,9 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TransactionMessageType {
 
-                    HZ_TRANSACTION_COMMIT=0x1701,
-                    HZ_TRANSACTION_CREATE=0x1702,
-                    HZ_TRANSACTION_ROLLBACK=0x1703
+                    HZ_TRANSACTION_COMMIT = 0x1701,
+                    HZ_TRANSACTION_CREATE = 0x1702,
+                    HZ_TRANSACTION_ROLLBACK = 0x1703
                 };
             }
         }

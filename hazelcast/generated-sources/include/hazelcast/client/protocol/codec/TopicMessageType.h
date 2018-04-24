@@ -24,9 +24,9 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TopicMessageType {
 
-                    HZ_TOPIC_PUBLISH=0x0401,
-                    HZ_TOPIC_ADDMESSAGELISTENER=0x0402,
-                    HZ_TOPIC_REMOVEMESSAGELISTENER=0x0403
+                    HZ_TOPIC_PUBLISH = 0x0401,
+                    HZ_TOPIC_ADDMESSAGELISTENER = 0x0402,
+                    HZ_TOPIC_REMOVEMESSAGELISTENER = 0x0403
                 };
             }
         }

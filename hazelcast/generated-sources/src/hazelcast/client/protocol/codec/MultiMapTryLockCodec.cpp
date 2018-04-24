@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapTryLockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,60 +25,69 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapTryLockCodec::RequestParameters::TYPE = HZ_MULTIMAP_TRYLOCK;
-                const bool MultiMapTryLockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MultiMapTryLockCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MultiMapTryLockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
-                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout);
+                const MultiMapMessageType MultiMapTryLockCodec::REQUEST_TYPE = HZ_MULTIMAP_TRYLOCK;
+                const bool MultiMapTryLockCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapTryLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MultiMapTryLockCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapTryLockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapTryLockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
                     clientMessage->set(threadId);
                     clientMessage->set(lease);
                     clientMessage->set(timeout);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MultiMapTryLockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
+                int32_t MultiMapTryLockCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(key);
                     dataSize += ClientMessage::calculateDataSize(threadId);
                     dataSize += ClientMessage::calculateDataSize(lease);
                     dataSize += ClientMessage::calculateDataSize(timeout);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 MultiMapTryLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapTryLockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapTryLockCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MultiMapTryLockCodec::ResponseParameters MultiMapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapTryLockCodec::ResponseParameters
+                MultiMapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapTryLockCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapTryLockCodec::ResponseParameters::ResponseParameters(const MultiMapTryLockCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MultiMapTryLockCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapTryLockCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

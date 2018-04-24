@@ -25,7 +25,7 @@ int main() {
     // Add and Get the "counter"
     counter.addAndGet(3); // value is now 3
     // Display the "counter" value
-    std::cout << "counter: " + counter.get() << std::endl;
+    std::cout << "counter: " << counter.get() << std::endl;
     // Shutdown this Hazelcast Client
     hz.shutdown();
 

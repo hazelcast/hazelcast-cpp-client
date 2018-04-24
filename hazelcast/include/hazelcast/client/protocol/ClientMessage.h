@@ -62,6 +62,7 @@
 #include <vector>
 #include <assert.h>
 #include <map>
+#include <ostream>
 
 #include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -69,6 +70,7 @@
 namespace hazelcast {
     namespace util {
         class ByteBuffer;
+        class UUID;
     }
 
     namespace client {
@@ -146,7 +148,7 @@ namespace hazelcast {
 
                 virtual ~ClientMessage();
 
-                void wrapForDecode(byte *buffer, int32_t size, bool owner);
+                void wrapForDecode(byte *buffer, int32_t size);
 
                 static std::auto_ptr<ClientMessage> createForEncode(int32_t size);
 
@@ -162,7 +164,9 @@ namespace hazelcast {
 
                 void setVersion(uint8_t value);
 
-                void setFlags(uint8_t value);
+                uint8_t getFlags();
+
+                void addFlag(uint8_t flags);
 
                 void setCorrelationId(int64_t id);
 
@@ -190,6 +194,10 @@ namespace hazelcast {
                 void set(const Address &value);
 
                 void set(const Address *value);
+
+                void set(const util::UUID &value);
+
+                void set(const util::UUID *value);
 
                 void set(const Member &value);
 
@@ -378,6 +386,10 @@ namespace hazelcast {
 
                 static int32_t calculateDataSize(const Address *param);
 
+                static int32_t calculateDataSize(const util::UUID &param);
+
+                static int32_t calculateDataSize(const util::UUID *param);
+
                 static int32_t calculateDataSize(const Member &param);
 
                 static int32_t calculateDataSize(const Member *param);
@@ -453,10 +465,20 @@ namespace hazelcast {
                  * Returns the number of bytes sent on the socket
                  **/
                 int32_t writeTo(Socket &socket, int32_t offset, int32_t frameLen);
+
+                /**
+                 * Checks the frame size and total data size to validate the message size.
+                 *
+                 * @return true if the message is constructed.
+                 */
+                bool isComplete() const;
+
+                friend std::ostream &operator<<(std::ostream &os, const ClientMessage &message);
+
             private:
                 ClientMessage(int32_t size);
 
-                inline void wrapForEncode(byte *buffer, int32_t size, bool owner);
+                inline void wrapForEncode(byte *buffer, int32_t size);
 
                 void ensureBufferSize(int32_t newCapacity);
 
@@ -502,6 +524,9 @@ namespace hazelcast {
             Address ClientMessage::get();
 
             template<>
+            util::UUID ClientMessage::get();
+
+            template<>
             Member ClientMessage::get();
 
             template<>
@@ -521,6 +546,9 @@ namespace hazelcast {
 
             template<>
             std::pair<serialization::pimpl::Data, serialization::pimpl::Data> ClientMessage::get();
+
+            template<>
+            std::pair<Address, std::vector<int32_t> > ClientMessage::get();
 
         }
 

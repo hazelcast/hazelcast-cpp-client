@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueDrainToCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueDrainToCodec::RequestParameters::TYPE = HZ_QUEUE_DRAINTO;
-                const bool QueueDrainToCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueDrainToCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> QueueDrainToCodec::RequestParameters::encode(
+                const QueueMessageType QueueDrainToCodec::REQUEST_TYPE = HZ_QUEUE_DRAINTO;
+                const bool QueueDrainToCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueDrainToCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> QueueDrainToCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueDrainToCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueDrainToCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueDrainToCodec::RequestParameters::calculateDataSize(
+                int32_t QueueDrainToCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,25 @@ namespace hazelcast {
                 }
 
                 QueueDrainToCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueDrainToCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueDrainToCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                QueueDrainToCodec::ResponseParameters QueueDrainToCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueDrainToCodec::ResponseParameters
+                QueueDrainToCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueDrainToCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueDrainToCodec::ResponseParameters::ResponseParameters(const QueueDrainToCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueDrainToCodec::ResponseParameters::ResponseParameters(
+                        const QueueDrainToCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapClearCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapClearCodec::RequestParameters::TYPE = HZ_MULTIMAP_CLEAR;
-                const bool MultiMapClearCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MultiMapClearCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MultiMapClearCodec::RequestParameters::encode(
+                const MultiMapMessageType MultiMapClearCodec::REQUEST_TYPE = HZ_MULTIMAP_CLEAR;
+                const bool MultiMapClearCodec::RETRYABLE = false;
+                const ResponseMessageConst MultiMapClearCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MultiMapClearCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapClearCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapClearCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MultiMapClearCodec::RequestParameters::calculateDataSize(
+                int32_t MultiMapClearCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,19 +47,23 @@ namespace hazelcast {
                 }
 
                 MultiMapClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapClearCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MultiMapClearCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MultiMapClearCodec::ResponseParameters MultiMapClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapClearCodec::ResponseParameters
+                MultiMapClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapClearCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapClearCodec::ResponseParameters::ResponseParameters(const MultiMapClearCodec::ResponseParameters &rhs) {
+                MultiMapClearCodec::ResponseParameters::ResponseParameters(
+                        const MultiMapClearCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

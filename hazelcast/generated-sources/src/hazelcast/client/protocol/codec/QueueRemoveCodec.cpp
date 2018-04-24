@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueRemoveCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueRemoveCodec::RequestParameters::TYPE = HZ_QUEUE_REMOVE;
-                const bool QueueRemoveCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueRemoveCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> QueueRemoveCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const QueueMessageType QueueRemoveCodec::REQUEST_TYPE = HZ_QUEUE_REMOVE;
+                const bool QueueRemoveCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueRemoveCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> QueueRemoveCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueRemoveCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueRemoveCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t QueueRemoveCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t QueueRemoveCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,25 @@ namespace hazelcast {
                 }
 
                 QueueRemoveCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueRemoveCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueueRemoveCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                QueueRemoveCodec::ResponseParameters QueueRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueRemoveCodec::ResponseParameters
+                QueueRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueRemoveCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueRemoveCodec::ResponseParameters::ResponseParameters(const QueueRemoveCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                QueueRemoveCodec::ResponseParameters::ResponseParameters(
+                        const QueueRemoveCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

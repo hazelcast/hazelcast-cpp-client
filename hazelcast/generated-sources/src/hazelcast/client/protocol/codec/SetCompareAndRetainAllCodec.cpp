@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetCompareAndRetainAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,48 +25,53 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetCompareAndRetainAllCodec::RequestParameters::TYPE = HZ_SET_COMPAREANDRETAINALL;
-                const bool SetCompareAndRetainAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetCompareAndRetainAllCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SetCompareAndRetainAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &values) {
+                const SetMessageType SetCompareAndRetainAllCodec::REQUEST_TYPE = HZ_SET_COMPAREANDRETAINALL;
+                const bool SetCompareAndRetainAllCodec::RETRYABLE = false;
+                const ResponseMessageConst SetCompareAndRetainAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SetCompareAndRetainAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &values) {
                     int32_t requiredDataSize = calculateDataSize(name, values);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetCompareAndRetainAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetCompareAndRetainAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(values);
+                    clientMessage->setArray<serialization::pimpl::Data>(values);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SetCompareAndRetainAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &values) {
+                int32_t SetCompareAndRetainAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &values) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(values);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(values);
                     return dataSize;
                 }
 
                 SetCompareAndRetainAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetCompareAndRetainAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "SetCompareAndRetainAllCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SetCompareAndRetainAllCodec::ResponseParameters SetCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetCompareAndRetainAllCodec::ResponseParameters
+                SetCompareAndRetainAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetCompareAndRetainAllCodec::ResponseParameters(clientMessage);
                 }
 
-                SetCompareAndRetainAllCodec::ResponseParameters::ResponseParameters(const SetCompareAndRetainAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                SetCompareAndRetainAllCodec::ResponseParameters::ResponseParameters(
+                        const SetCompareAndRetainAllCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -33,15 +33,13 @@
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #pragma warning(disable: 4275) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
         namespace exception {
             /**
              * Base class for all exception originated from Hazelcast methods.
-             * If exception coming from hazelcast servers cannot be identified,
-             * it will be fired as IException.
              *
              *
              * @see InstanceNotActiveException
@@ -54,12 +52,17 @@ namespace hazelcast {
              */
             class HAZELCAST_API IException : public std::exception {
             public:
-                IException();
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           const std::string &details, int32_t errorNo, int32_t causeCode);
 
-                IException(const std::string &source, const std::string &message);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, int32_t causeCode);
 
-                IException(const std::string &source, const std::string &message,
-                           const boost::shared_ptr<IException> &cause);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo);
+
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, const boost::shared_ptr<IException> &cause);
 
                 virtual ~IException() throw();
 
@@ -83,6 +86,12 @@ namespace hazelcast {
                  */
                 virtual std::auto_ptr<IException> clone() const;
 
+                const std::string &getDetails() const;
+
+                int32_t getErrorCode() const;
+
+                int32_t getCauseErrorCode() const;
+
                 const boost::shared_ptr<IException> &getCause() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
@@ -90,18 +99,21 @@ namespace hazelcast {
             protected:
                 std::string src;
                 std::string msg;
+                std::string details;
                 std::string report;
+                int32_t errorCode;
+                int32_t causeErrorCode;
                 boost::shared_ptr<IException> cause;
             };
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
-            template <typename EXCEPTIONCLASS>
+            template<typename EXCEPTIONCLASS>
             class ExceptionBuilder {
             public:
                 ExceptionBuilder(const std::string &source) : source(source) {}
 
-                template <typename T>
+                template<typename T>
                 ExceptionBuilder &operator<<(const T &message) {
                     msg << message;
                     return *this;
@@ -115,6 +127,10 @@ namespace hazelcast {
                     return EXCEPTIONCLASS(source, msg.str());
                 }
 
+                boost::shared_ptr<EXCEPTIONCLASS> buildShared() {
+                    return boost::shared_ptr<EXCEPTIONCLASS>(new EXCEPTIONCLASS(source, msg.str()));
+                }
+
             private:
                 std::string source;
                 std::ostringstream msg;
@@ -126,6 +142,6 @@ namespace hazelcast {
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif //HAZELCAST_EXCEPTION

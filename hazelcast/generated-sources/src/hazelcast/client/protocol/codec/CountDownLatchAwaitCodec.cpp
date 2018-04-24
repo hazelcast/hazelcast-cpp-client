@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/CountDownLatchAwaitCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const CountDownLatchMessageType CountDownLatchAwaitCodec::RequestParameters::TYPE = HZ_COUNTDOWNLATCH_AWAIT;
-                const bool CountDownLatchAwaitCodec::RequestParameters::RETRYABLE = false;
-                const int32_t CountDownLatchAwaitCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> CountDownLatchAwaitCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const CountDownLatchMessageType CountDownLatchAwaitCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_AWAIT;
+                const bool CountDownLatchAwaitCodec::RETRYABLE = false;
+                const ResponseMessageConst CountDownLatchAwaitCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> CountDownLatchAwaitCodec::encodeRequest(
+                        const std::string &name,
                         int64_t timeout) {
                     int32_t requiredDataSize = calculateDataSize(name, timeout);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)CountDownLatchAwaitCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) CountDownLatchAwaitCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(timeout);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t CountDownLatchAwaitCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t CountDownLatchAwaitCodec::calculateDataSize(
+                        const std::string &name,
                         int64_t timeout) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,22 +51,26 @@ namespace hazelcast {
                 }
 
                 CountDownLatchAwaitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("CountDownLatchAwaitCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "CountDownLatchAwaitCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                CountDownLatchAwaitCodec::ResponseParameters CountDownLatchAwaitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                CountDownLatchAwaitCodec::ResponseParameters
+                CountDownLatchAwaitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return CountDownLatchAwaitCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchAwaitCodec::ResponseParameters::ResponseParameters(const CountDownLatchAwaitCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                CountDownLatchAwaitCodec::ResponseParameters::ResponseParameters(
+                        const CountDownLatchAwaitCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

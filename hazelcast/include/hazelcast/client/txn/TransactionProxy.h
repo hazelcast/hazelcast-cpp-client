@@ -26,9 +26,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/connection/CallFuture.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -46,8 +44,6 @@ namespace hazelcast {
 
         namespace spi {
             class ClientContext;
-
-            class ClusterService;
         }
 
         namespace serialization {
@@ -56,9 +52,11 @@ namespace hazelcast {
             }
         }
 
-        namespace txn {
-            class BaseTxnRequest;
+        namespace protocol {
+            class ClientMessage;
+        }
 
+        namespace txn {
             class HAZELCAST_API TxnState {
             public:
                 enum State {
@@ -101,16 +99,18 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService& getSerializationService();
 
-                spi::InvocationService& getInvocationService();
+                spi::ClientInvocationService& getInvocationService();
 
                 boost::shared_ptr<connection::Connection> getConnection();
+
+                spi::ClientContext &getClientContext() const;
 
             private:
                 TransactionOptions& options;
                 spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
-                long threadId;
+                int64_t threadId;
                 std::string txnId;
 
                 TxnState state;
@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 void checkTimeout();
 
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
             };
         }
     }

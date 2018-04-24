@@ -24,12 +24,12 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TransactionalMultiMapMessageType {
 
-                    HZ_TRANSACTIONALMULTIMAP_PUT=0x1101,
-                    HZ_TRANSACTIONALMULTIMAP_GET=0x1102,
-                    HZ_TRANSACTIONALMULTIMAP_REMOVE=0x1103,
-                    HZ_TRANSACTIONALMULTIMAP_REMOVEENTRY=0x1104,
-                    HZ_TRANSACTIONALMULTIMAP_VALUECOUNT=0x1105,
-                    HZ_TRANSACTIONALMULTIMAP_SIZE=0x1106
+                    HZ_TRANSACTIONALMULTIMAP_PUT = 0x1101,
+                    HZ_TRANSACTIONALMULTIMAP_GET = 0x1102,
+                    HZ_TRANSACTIONALMULTIMAP_REMOVE = 0x1103,
+                    HZ_TRANSACTIONALMULTIMAP_REMOVEENTRY = 0x1104,
+                    HZ_TRANSACTIONALMULTIMAP_VALUECOUNT = 0x1105,
+                    HZ_TRANSACTIONALMULTIMAP_SIZE = 0x1106
                 };
             }
         }

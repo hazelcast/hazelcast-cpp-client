@@ -34,7 +34,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ISet : public proxy::ISetImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerSet<E>;
 
         public:
@@ -51,7 +51,7 @@ namespace hazelcast {
             std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
                 impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                getName(), context->getClientClusterService(), context->getSerializationService(), listener,
                                 includeValue);
                 return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
             }

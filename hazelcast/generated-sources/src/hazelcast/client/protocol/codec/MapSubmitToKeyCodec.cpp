@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,17 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapSubmitToKeyCodec::RequestParameters::TYPE = HZ_MAP_SUBMITTOKEY;
-                const bool MapSubmitToKeyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapSubmitToKeyCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> MapSubmitToKeyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &entryProcessor, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapSubmitToKeyCodec::REQUEST_TYPE = HZ_MAP_SUBMITTOKEY;
+                const bool MapSubmitToKeyCodec::RETRYABLE = false;
+                const ResponseMessageConst MapSubmitToKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> MapSubmitToKeyCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &entryProcessor,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapSubmitToKeyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapSubmitToKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -44,10 +46,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapSubmitToKeyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &entryProcessor, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapSubmitToKeyCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &entryProcessor,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,22 +60,26 @@ namespace hazelcast {
                 }
 
                 MapSubmitToKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapSubmitToKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapSubmitToKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                MapSubmitToKeyCodec::ResponseParameters MapSubmitToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapSubmitToKeyCodec::ResponseParameters
+                MapSubmitToKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapSubmitToKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapSubmitToKeyCodec::ResponseParameters::ResponseParameters(const MapSubmitToKeyCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                MapSubmitToKeyCodec::ResponseParameters::ResponseParameters(
+                        const MapSubmitToKeyCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

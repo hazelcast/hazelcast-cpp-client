@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockIsLockedByCurrentThreadCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockIsLockedByCurrentThreadCodec::RequestParameters::TYPE = HZ_LOCK_ISLOCKEDBYCURRENTTHREAD;
-                const bool LockIsLockedByCurrentThreadCodec::RequestParameters::RETRYABLE = true;
-                const int32_t LockIsLockedByCurrentThreadCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> LockIsLockedByCurrentThreadCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const LockMessageType LockIsLockedByCurrentThreadCodec::REQUEST_TYPE = HZ_LOCK_ISLOCKEDBYCURRENTTHREAD;
+                const bool LockIsLockedByCurrentThreadCodec::RETRYABLE = true;
+                const ResponseMessageConst LockIsLockedByCurrentThreadCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> LockIsLockedByCurrentThreadCodec::encodeRequest(
+                        const std::string &name,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockIsLockedByCurrentThreadCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockIsLockedByCurrentThreadCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(threadId);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t LockIsLockedByCurrentThreadCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t LockIsLockedByCurrentThreadCodec::calculateDataSize(
+                        const std::string &name,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,22 +51,26 @@ namespace hazelcast {
                 }
 
                 LockIsLockedByCurrentThreadCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockIsLockedByCurrentThreadCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "LockIsLockedByCurrentThreadCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                LockIsLockedByCurrentThreadCodec::ResponseParameters LockIsLockedByCurrentThreadCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                LockIsLockedByCurrentThreadCodec::ResponseParameters
+                LockIsLockedByCurrentThreadCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return LockIsLockedByCurrentThreadCodec::ResponseParameters(clientMessage);
                 }
 
-                LockIsLockedByCurrentThreadCodec::ResponseParameters::ResponseParameters(const LockIsLockedByCurrentThreadCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                LockIsLockedByCurrentThreadCodec::ResponseParameters::ResponseParameters(
+                        const LockIsLockedByCurrentThreadCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

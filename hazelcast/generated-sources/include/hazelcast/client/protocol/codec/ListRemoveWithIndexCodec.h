@@ -24,12 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/ListMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ListMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -43,45 +45,38 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API ListRemoveWithIndexCodec {
                 public:
+                    static const ListMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ListMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            int32_t index);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                int32_t index);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                int32_t index);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            int32_t index);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::auto_ptr<serialization::pimpl::Data> response;
 
-                            std::auto_ptr<serialization::pimpl::Data > response;
 
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        ListRemoveWithIndexCodec ();
+                private:
+                    // Preventing public access to constructors
+                    ListRemoveWithIndexCodec();
                 };
             }
         }

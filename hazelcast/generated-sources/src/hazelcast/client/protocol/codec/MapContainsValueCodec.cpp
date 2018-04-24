@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapContainsValueCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapContainsValueCodec::RequestParameters::TYPE = HZ_MAP_CONTAINSVALUE;
-                const bool MapContainsValueCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapContainsValueCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapContainsValueCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapContainsValueCodec::REQUEST_TYPE = HZ_MAP_CONTAINSVALUE;
+                const bool MapContainsValueCodec::RETRYABLE = true;
+                const ResponseMessageConst MapContainsValueCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapContainsValueCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapContainsValueCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapContainsValueCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapContainsValueCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapContainsValueCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,26 @@ namespace hazelcast {
                 }
 
                 MapContainsValueCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapContainsValueCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapContainsValueCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapContainsValueCodec::ResponseParameters MapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapContainsValueCodec::ResponseParameters
+                MapContainsValueCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
-                MapContainsValueCodec::ResponseParameters::ResponseParameters(const MapContainsValueCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapContainsValueCodec::ResponseParameters::ResponseParameters(
+                        const MapContainsValueCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

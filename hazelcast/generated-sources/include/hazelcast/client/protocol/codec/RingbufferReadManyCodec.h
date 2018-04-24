@@ -25,13 +25,15 @@
 #include <vector>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/RingbufferMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/RingbufferMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
 #include "hazelcast/client/serialization/pimpl/Data.h"
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -40,52 +42,50 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API RingbufferReadManyCodec {
                 public:
+                    static const RingbufferMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum RingbufferMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            int64_t startSequence,
+                            int32_t minCount,
+                            int32_t maxCount,
+                            const serialization::pimpl::Data *filter);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                int64_t startSequence, 
-                                int32_t minCount, 
-                                int32_t maxCount, 
-                                const serialization::pimpl::Data *filter);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                int64_t startSequence, 
-                                int32_t minCount, 
-                                int32_t maxCount, 
-                                const serialization::pimpl::Data *filter);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            int64_t startSequence,
+                            int32_t minCount,
+                            int32_t maxCount,
+                            const serialization::pimpl::Data *filter);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        int32_t readCount;
 
-                            int32_t readCount;
-                                                        std::vector<serialization::pimpl::Data > items;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        std::vector<serialization::pimpl::Data> items;
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        std::auto_ptr<std::vector<int64_t> > itemSeqs;
+                        bool itemSeqsExist;
+                        int64_t nextSeq;
+                        bool nextSeqExist;
+
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        RingbufferReadManyCodec ();
+                private:
+                    // Preventing public access to constructors
+                    RingbufferReadManyCodec();
                 };
             }
         }

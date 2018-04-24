@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientGetPartitionsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,40 +24,53 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientGetPartitionsCodec::RequestParameters::TYPE = HZ_CLIENT_GETPARTITIONS;
-                const bool ClientGetPartitionsCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ClientGetPartitionsCodec::ResponseParameters::TYPE = 108;
-                std::auto_ptr<ClientMessage> ClientGetPartitionsCodec::RequestParameters::encode() {
+                const ClientMessageType ClientGetPartitionsCodec::REQUEST_TYPE = HZ_CLIENT_GETPARTITIONS;
+                const bool ClientGetPartitionsCodec::RETRYABLE = false;
+                const ResponseMessageConst ClientGetPartitionsCodec::RESPONSE_TYPE = (ResponseMessageConst) 108;
+
+                std::auto_ptr<ClientMessage> ClientGetPartitionsCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientGetPartitionsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientGetPartitionsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ClientGetPartitionsCodec::RequestParameters::calculateDataSize() {
+                int32_t ClientGetPartitionsCodec::calculateDataSize() {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     return dataSize;
                 }
 
                 ClientGetPartitionsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientGetPartitionsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ClientGetPartitionsCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    partitions = clientMessage.getEntryArray<Address, std::vector<int32_t > >();
+                    partitionStateVersionExist = false;
+
+
+                    partitions = clientMessage.getArray<std::pair<Address, std::vector<int32_t> > >();
+                    if (clientMessage.isComplete()) {
+                        return;
+                    }
+
+                    partitionStateVersion = clientMessage.get<int32_t>();
+                    partitionStateVersionExist = true;
                 }
 
-                ClientGetPartitionsCodec::ResponseParameters ClientGetPartitionsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientGetPartitionsCodec::ResponseParameters
+                ClientGetPartitionsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ClientGetPartitionsCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientGetPartitionsCodec::ResponseParameters::ResponseParameters(const ClientGetPartitionsCodec::ResponseParameters &rhs) {
-                        partitions = rhs.partitions;
+                ClientGetPartitionsCodec::ResponseParameters::ResponseParameters(
+                        const ClientGetPartitionsCodec::ResponseParameters &rhs) {
+                    partitions = rhs.partitions;
+                    partitionStateVersion = rhs.partitionStateVersion;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

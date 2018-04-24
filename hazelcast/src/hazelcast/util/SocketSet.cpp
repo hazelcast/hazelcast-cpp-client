@@ -67,11 +67,8 @@ namespace hazelcast {
             }
 
             if (!found) {
-                char msg[200];
-                util::hz_snprintf(msg, 200,
-                                  "[SocketSet::removeSocket] Socket with id %d  was not found among the sockets.",
-                                  socketId);
-                util::ILogger::getLogger().finest(msg);
+                util::ILogger::getLogger().finest() << "[SocketSet::removeSocket] Socket with id " << socketId
+                                                    << "  was not found among the sockets.";
             }
         }
 

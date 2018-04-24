@@ -50,10 +50,11 @@ namespace hazelcast {
                             MessageType type;
                             int64_t sequence;
                             int32_t maxCount;
-                            client::impl::ExecutionCallback<DataArray<ReliableTopicMessage> > *callback;
+                            client::impl::ExecutionCallback<boost::shared_ptr<
+                                    DataArray<topic::impl::reliable::ReliableTopicMessage> > > *callback;
                         };
 
-                        ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb);
+                        ReliableTopicExecutor(Ringbuffer <ReliableTopicMessage> &rb);
 
                         virtual ~ReliableTopicExecutor();
 
@@ -65,6 +66,7 @@ namespace hazelcast {
                         void stop();
 
                         void execute(const Message &m);
+
                     private:
                         class Task : public util::Runnable {
                         public:
@@ -76,12 +78,12 @@ namespace hazelcast {
                             virtual const std::string getName() const;
 
                         private:
-                            Ringbuffer<ReliableTopicMessage> &rb;
+                            Ringbuffer <ReliableTopicMessage> &rb;
                             util::BlockingConcurrentQueue<Message> &q;
                             util::AtomicBoolean &shutdown;
                         };
 
-                        Ringbuffer<ReliableTopicMessage> &ringbuffer;
+                        Ringbuffer <ReliableTopicMessage> &ringbuffer;
                         util::Thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;

@@ -24,13 +24,15 @@
 #include <memory>
 #include <vector>
 
-
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
 #include "hazelcast/client/Address.h"
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -39,41 +41,36 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API ClientGetPartitionsCodec {
                 public:
+                    static const ClientMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum ClientMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest();
 
-                        static std::auto_ptr<ClientMessage> encode();
-
-                        static int32_t calculateDataSize();
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize();
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::vector<std::pair<Address, std::vector<int32_t> > > partitions;
 
-                            std::vector<std::pair<Address, std::vector<int32_t > > > partitions;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        int32_t partitionStateVersion;
+                        bool partitionStateVersionExist;
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        ClientGetPartitionsCodec ();
+                private:
+                    // Preventing public access to constructors
+                    ClientGetPartitionsCodec();
                 };
             }
         }

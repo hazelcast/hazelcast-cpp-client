@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2015, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapRemoveAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapRemoveAllCodec::RequestParameters::TYPE = HZ_MAP_REMOVEALL;
-                const bool MapRemoveAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapRemoveAllCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapRemoveAllCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapRemoveAllCodec::REQUEST_TYPE = HZ_MAP_REMOVEALL;
+                const bool MapRemoveAllCodec::RETRYABLE = false;
+                const ResponseMessageConst MapRemoveAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapRemoveAllCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapRemoveAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapRemoveAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapRemoveAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapRemoveAllCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,19 +52,22 @@ namespace hazelcast {
                 }
 
                 MapRemoveAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapRemoveAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapRemoveAllCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                MapRemoveAllCodec::ResponseParameters MapRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveAllCodec::ResponseParameters
+                MapRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapRemoveAllCodec::ResponseParameters(clientMessage);
                 }
 
-                MapRemoveAllCodec::ResponseParameters::ResponseParameters(const MapRemoveAllCodec::ResponseParameters &rhs) {
+                MapRemoveAllCodec::ResponseParameters::ResponseParameters(
+                        const MapRemoveAllCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -44,9 +44,8 @@ namespace hazelcast {
             TypedData(std::auto_ptr<serialization::pimpl::Data> data,
                       serialization::pimpl::SerializationService &serializationService);
 
-            TypedData(const TypedData &rhs);
-
-            TypedData &operator=(const TypedData& rhs);
+            TypedData(const boost::shared_ptr<serialization::pimpl::Data> &data,
+                      serialization::pimpl::SerializationService &serializationService);
 
             virtual ~TypedData();
 
@@ -74,10 +73,10 @@ namespace hazelcast {
              * Internal API
              * @return The pointer to the internal binary data.
              */
-            const serialization::pimpl::Data *getData() const;
+            const boost::shared_ptr<serialization::pimpl::Data> getData() const;
 
         private:
-            std::auto_ptr<serialization::pimpl::Data> data;
+            boost::shared_ptr<serialization::pimpl::Data> data;
             serialization::pimpl::SerializationService *ss;
         };
 

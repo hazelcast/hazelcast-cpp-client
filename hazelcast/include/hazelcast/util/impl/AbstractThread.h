@@ -24,6 +24,7 @@
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,32 +36,50 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API AbstractThread {
             public:
+                class UnmanagedAbstractThreadPointer {
+                public:
+                    UnmanagedAbstractThreadPointer(AbstractThread *thread);
+
+                    AbstractThread *getThread() const;
+
+                private:
+                    AbstractThread *thread;
+                };
+
                 AbstractThread(const boost::shared_ptr<Runnable> &runnable);
 
                 virtual ~AbstractThread();
 
                 virtual const std::string getName() const;
 
-                virtual void interruptibleSleep(int seconds) = 0;
+                virtual void interruptibleSleep(int seconds);
 
-                virtual void wakeup() = 0;
+                void interruptibleSleepMillis(int64_t timeInMillis);
 
-                virtual void cancel() = 0;
+                static void sleep(int64_t timeInMilliseconds);
 
-                virtual bool join() = 0;
+                virtual void wakeup();
+
+                virtual void cancel();
+
+                virtual bool join();
 
                 void start();
 
-                virtual long getThreadId() = 0;
+                virtual int64_t getThreadId() = 0;
 
             protected:
-
                 virtual void startInternal(Runnable *targetObject) = 0;
+                virtual bool isCalledFromSameThread() = 0;
+                virtual bool innerJoin() = 0;
 
                 util::AtomicBoolean isJoined;
                 util::AtomicBoolean started;
                 ConditionVariable wakeupCondition;
+                static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
+
                 Mutex wakeupMutex;
+
                 boost::shared_ptr<Runnable> target;
             };
         }

@@ -16,11 +16,12 @@
 #ifndef HAZELCAST_IQUEUE
 #define HAZELCAST_IQUEUE
 
+#include <stdexcept>
+
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
-#include <stdexcept>
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +37,7 @@ namespace hazelcast {
         */
         template<typename E>
         class IQueue : public proxy::IQueueImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerQueue<E>;
 
         public:
@@ -55,7 +56,7 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                spi::ClusterService& cs = context->getClusterService();
+                spi::ClientClusterService &cs = context->getClientClusterService();
                 serialization::pimpl::SerializationService& ss = context->getSerializationService();
                 impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(getName(), cs, ss, listener, includeValue);

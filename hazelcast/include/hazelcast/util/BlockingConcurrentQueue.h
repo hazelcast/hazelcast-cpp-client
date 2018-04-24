@@ -87,6 +87,12 @@ namespace hazelcast {
                 notEmpty.notify();
                 isInterrupted = true;
             }
+
+            bool isEmpty() {
+                util::LockGuard lg(m);
+                return internalQueue.empty();
+            }
+
         private:
             util::Mutex m;
             /**

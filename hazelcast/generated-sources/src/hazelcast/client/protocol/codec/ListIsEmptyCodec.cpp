@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListIsEmptyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListIsEmptyCodec::RequestParameters::TYPE = HZ_LIST_ISEMPTY;
-                const bool ListIsEmptyCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ListIsEmptyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> ListIsEmptyCodec::RequestParameters::encode(
+                const ListMessageType ListIsEmptyCodec::REQUEST_TYPE = HZ_LIST_ISEMPTY;
+                const bool ListIsEmptyCodec::RETRYABLE = true;
+                const ResponseMessageConst ListIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> ListIsEmptyCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListIsEmptyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ListIsEmptyCodec::RequestParameters::calculateDataSize(
+                int32_t ListIsEmptyCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,25 @@ namespace hazelcast {
                 }
 
                 ListIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListIsEmptyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("ListIsEmptyCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                ListIsEmptyCodec::ResponseParameters ListIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListIsEmptyCodec::ResponseParameters
+                ListIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                ListIsEmptyCodec::ResponseParameters::ResponseParameters(const ListIsEmptyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                ListIsEmptyCodec::ResponseParameters::ResponseParameters(
+                        const ListIsEmptyCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

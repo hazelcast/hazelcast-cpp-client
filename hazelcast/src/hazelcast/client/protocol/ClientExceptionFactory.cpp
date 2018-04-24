@@ -120,18 +120,19 @@ namespace hazelcast {
             }
 
             std::auto_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
-                                                                                         protocol::ClientMessage &message) const {
-                codec::ErrorCodec error = codec::ErrorCodec::decode(message);
+                                                                                         protocol::ClientMessage &clientMessage) const {
+                codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
                 std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         error.errorCode);
                 if (errorCodeToFactory.end() == it) {
                     return std::auto_ptr<exception::IException>(
-                            new exception::UndefinedErrorCodeException(error.errorCode, message.getCorrelationId(),
+                            new exception::UndefinedErrorCodeException(source, "",
+                                                                       error.errorCode,
+                                                                       clientMessage.getCorrelationId(),
                                                                        error.toString()));
                 }
 
-                return it->second->createException(source, *error.message, error.toString(), error.errorCode,
-                                                   error.causeErrorCode);
+                return it->second->createException(source, *error.message, error.toString(), error.causeErrorCode);
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
@@ -140,8 +141,7 @@ namespace hazelcast {
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
                     util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
-                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg,
-                                                           ILLEGAL_STATE, -1);
+                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg);
                 }
 
                 errorCodeToFactory[errorCode] = factory;

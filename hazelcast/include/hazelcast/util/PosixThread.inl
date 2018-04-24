@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/util/LockGuard.h"
@@ -41,63 +42,18 @@ namespace hazelcast {
                 pthread_attr_destroy(&attr);
             }
 
-            void interruptibleSleep(int seconds) {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.waitFor(wakeupMutex, seconds * 1000);
+            virtual int64_t getThreadId() {
+                int64_t threadId = 0;
+                memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
+                return threadId;
             }
 
-            void wakeup() {
-                LockGuard guard(wakeupMutex);
-                wakeupCondition.notify();
-            }
-
-            void cancel() {
-                if (!started) {
-                    return;
-                }
-
-                if (pthread_equal(thread, pthread_self())) {
-                    /**
-                     * do not allow cancelling itself
-                     * at Linux, pthread_cancel may cause cancel by signal
-                     * and calling thread may be terminated.
-                     */
-                    return;
-                }
-
-                if (!isJoined) {
-                    wakeup();
-
-                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
-                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
-                }
-            }
-
-            bool join() {
-                if (!started) {
-                    return false;
-                }
-
-                if (pthread_equal(thread, pthread_self())) {
-                    // called from inside the thread, deadlock possibility
-                    return false;
-                }
-
-                if (!isJoined.compareAndSet(false, true)) {
-                    return true;
-                }
-
-                int err = pthread_join(thread, NULL);
-                if (EINVAL == err || ESRCH == err || EDEADLK == err) {
-                    isJoined = false;
-                    return false;
-                }
-                isJoined = true;
-                return true;
-            }
-
-            virtual long getThreadId() {
-                return (long) pthread_self();
+            static void yield() {
+                #ifdef __linux__
+                pthread_yield();
+                #else
+                pthread_yield_np();
+                #endif
             }
 
         protected:
@@ -112,7 +68,7 @@ namespace hazelcast {
                 try {
                     runnable->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is interrupted. " << e;
+                    logger.finest() << "Thread " << runnable->getName() << " is interrupted. " << e;
                 } catch (hazelcast::client::exception::IException &e) {
                     logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
                 } catch (...) {
@@ -121,13 +77,27 @@ namespace hazelcast {
                     throw;
                 }
 
-                logger.info() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << runnable->getName() << " is finished.";
 
                 return NULL;
             }
 
             void startInternal(Runnable *targetObject) {
                 pthread_create(&thread, &attr, runnableThread, targetObject);
+                started = true;
+            }
+
+            virtual bool isCalledFromSameThread() {
+                return pthread_equal(thread, pthread_self()) != 0;
+            }
+
+            virtual bool innerJoin() {
+                int err = pthread_join(thread, NULL);
+                if (EINVAL == err || ESRCH == err || EDEADLK == err) {
+                    isJoined = false;
+                    return false;
+                }
+                return true;
             }
 
             pthread_t thread;

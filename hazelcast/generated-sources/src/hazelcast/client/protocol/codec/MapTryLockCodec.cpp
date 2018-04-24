@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapTryLockCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,60 +25,68 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapTryLockCodec::RequestParameters::TYPE = HZ_MAP_TRYLOCK;
-                const bool MapTryLockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapTryLockCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapTryLockCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
-                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout);
+                const MapMessageType MapTryLockCodec::REQUEST_TYPE = HZ_MAP_TRYLOCK;
+                const bool MapTryLockCodec::RETRYABLE = true;
+                const ResponseMessageConst MapTryLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapTryLockCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapTryLockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapTryLockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
                     clientMessage->set(threadId);
                     clientMessage->set(lease);
                     clientMessage->set(timeout);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapTryLockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        int64_t threadId, 
-                        int64_t lease, 
-                        int64_t timeout) {
+                int32_t MapTryLockCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        int64_t threadId,
+                        int64_t lease,
+                        int64_t timeout,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(key);
                     dataSize += ClientMessage::calculateDataSize(threadId);
                     dataSize += ClientMessage::calculateDataSize(lease);
                     dataSize += ClientMessage::calculateDataSize(timeout);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
                 MapTryLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapTryLockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("MapTryLockCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapTryLockCodec::ResponseParameters MapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapTryLockCodec::ResponseParameters
+                MapTryLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapTryLockCodec::ResponseParameters(clientMessage);
                 }
 
-                MapTryLockCodec::ResponseParameters::ResponseParameters(const MapTryLockCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapTryLockCodec::ResponseParameters::ResponseParameters(
+                        const MapTryLockCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

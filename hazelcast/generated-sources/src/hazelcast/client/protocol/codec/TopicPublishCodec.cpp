@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TopicPublishCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TopicMessageType TopicPublishCodec::RequestParameters::TYPE = HZ_TOPIC_PUBLISH;
-                const bool TopicPublishCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TopicPublishCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> TopicPublishCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const TopicMessageType TopicPublishCodec::REQUEST_TYPE = HZ_TOPIC_PUBLISH;
+                const bool TopicPublishCodec::RETRYABLE = false;
+                const ResponseMessageConst TopicPublishCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> TopicPublishCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &message) {
                     int32_t requiredDataSize = calculateDataSize(name, message);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TopicPublishCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TopicPublishCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(message);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TopicPublishCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t TopicPublishCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &message) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,19 +52,22 @@ namespace hazelcast {
                 }
 
                 TopicPublishCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TopicPublishCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("TopicPublishCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                TopicPublishCodec::ResponseParameters TopicPublishCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TopicPublishCodec::ResponseParameters
+                TopicPublishCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TopicPublishCodec::ResponseParameters(clientMessage);
                 }
 
-                TopicPublishCodec::ResponseParameters::ResponseParameters(const TopicPublishCodec::ResponseParameters &rhs) {
+                TopicPublishCodec::ResponseParameters::ResponseParameters(
+                        const TopicPublishCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

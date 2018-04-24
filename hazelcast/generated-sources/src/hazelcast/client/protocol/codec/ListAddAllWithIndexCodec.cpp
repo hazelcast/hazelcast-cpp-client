@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListAddAllWithIndexCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,52 +25,57 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListAddAllWithIndexCodec::RequestParameters::TYPE = HZ_LIST_ADDALLWITHINDEX;
-                const bool ListAddAllWithIndexCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ListAddAllWithIndexCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> ListAddAllWithIndexCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int32_t index, 
-                        const std::vector<serialization::pimpl::Data > &valueList) {
+                const ListMessageType ListAddAllWithIndexCodec::REQUEST_TYPE = HZ_LIST_ADDALLWITHINDEX;
+                const bool ListAddAllWithIndexCodec::RETRYABLE = false;
+                const ResponseMessageConst ListAddAllWithIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> ListAddAllWithIndexCodec::encodeRequest(
+                        const std::string &name,
+                        int32_t index,
+                        const std::vector<serialization::pimpl::Data> &valueList) {
                     int32_t requiredDataSize = calculateDataSize(name, index, valueList);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListAddAllWithIndexCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListAddAllWithIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
-                    clientMessage->setArray<serialization::pimpl::Data >(valueList);
+                    clientMessage->setArray<serialization::pimpl::Data>(valueList);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ListAddAllWithIndexCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int32_t index, 
-                        const std::vector<serialization::pimpl::Data > &valueList) {
+                int32_t ListAddAllWithIndexCodec::calculateDataSize(
+                        const std::string &name,
+                        int32_t index,
+                        const std::vector<serialization::pimpl::Data> &valueList) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     dataSize += ClientMessage::calculateDataSize(index);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(valueList);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(valueList);
                     return dataSize;
                 }
 
                 ListAddAllWithIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListAddAllWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ListAddAllWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                ListAddAllWithIndexCodec::ResponseParameters ListAddAllWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListAddAllWithIndexCodec::ResponseParameters
+                ListAddAllWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListAddAllWithIndexCodec::ResponseParameters(clientMessage);
                 }
 
-                ListAddAllWithIndexCodec::ResponseParameters::ResponseParameters(const ListAddAllWithIndexCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                ListAddAllWithIndexCodec::ResponseParameters::ResponseParameters(
+                        const ListAddAllWithIndexCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

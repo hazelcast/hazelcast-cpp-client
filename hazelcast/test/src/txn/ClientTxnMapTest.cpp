@@ -93,10 +93,7 @@ namespace hazelcast {
                 ASSERT_TRUE(regularMap.isEmpty());
             }
 
-            /**
-             * TODO: Enable this test when https://github.com/hazelcast/hazelcast/issues/8238 is solved
-             */
-            TEST_F(ClientTxnMapTest, DISABLED_testRemoveIfSame) {
+            TEST_F(ClientTxnMapTest, testRemoveIfSame) {
                 std::string name = "testRemoveIfSame";
 
                 TransactionContext context = client->newTransactionContext();

@@ -33,7 +33,7 @@ namespace hazelcast {
             *
             */
             class HAZELCAST_API IQueue : public proxy::IQueueImpl {
-                friend class client::HazelcastClient;
+                friend class client::impl::HazelcastClientInstanceImpl;;
 
             public:
                 /**

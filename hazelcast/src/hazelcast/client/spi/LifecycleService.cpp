@@ -17,13 +17,15 @@
 // Created by sancar koyunlu on 6/17/13.
 
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 
@@ -34,7 +36,7 @@ namespace hazelcast {
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::set<LifecycleListener *> &lifecycleListeners,
                                                util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer,
-                                               Cluster &cluster) : clientContext(clientContext), active(true),
+                                               Cluster &cluster) : clientContext(clientContext),
                                                                    shutdownLatch(shutdownLatch),
                                                                    loadBalancer(loadBalancer),
                                                                    cluster(cluster) {
@@ -42,27 +44,28 @@ namespace hazelcast {
             }
 
             bool LifecycleService::start() {
-                fireLifecycleEvent(LifecycleEvent::STARTING);
-
-                if (!clientContext.getInvocationService().start()) {
+                if (!active.compareAndSet(false, true)) {
                     return false;
                 }
+
+                fireLifecycleEvent(LifecycleEvent::STARTED);
+
+                if (!((impl::AbstractClientInvocationService &) clientContext.getInvocationService()).start()) {
+                    return false;
+                }
+
+                ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).start();
 
                 if (!clientContext.getConnectionManager().start()) {
                     return false;
                 }
 
-                if (!clientContext.getClusterService().start()) {
-                    return false;
-                }
-
                 loadBalancer->init(cluster);
 
-                if (!clientContext.getPartitionService().start()) {
-                    return false;
-                }
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
 
-                fireLifecycleEvent(LifecycleEvent::STARTED);
+                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
+
                 return true;
             }
 
@@ -71,10 +74,12 @@ namespace hazelcast {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                clientContext.getInvocationService().shutdown();
                 clientContext.getConnectionManager().shutdown();
-                clientContext.getPartitionService().shutdown();
-                clientContext.getClusterService().shutdown();
+                ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
+                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
+                ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
+                clientContext.getClientExecutionService().shutdown();
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 shutdownLatch.countDown();
@@ -94,8 +99,7 @@ namespace hazelcast {
                 util::LockGuard lg(listenerLock);
                 util::ILogger &logger = util::ILogger::getLogger();
                 switch (lifecycleEvent.getState()) {
-                    case LifecycleEvent::STARTING :
-                    {
+                    case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420
                         std::string date(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE));
                         util::gitDateToHazelcastLogDate(date);
@@ -135,8 +139,10 @@ namespace hazelcast {
             }
 
             LifecycleService::~LifecycleService() {
-                shutdown();
-                shutdownLatch.await();
+                if (active) {
+                    shutdown();
+                    shutdownLatch.await();
+                }
             }
         }
     }

@@ -44,8 +44,7 @@ namespace hazelcast {
             ReliableTopicConfig &ReliableTopicConfig::setReadBatchSize(int batchSize) {
                 if (batchSize <= 0) {
                     throw exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
-                                                              "readBatchSize should be positive",
-                                                              protocol::ILLEGAL_ARGUMENT, -1);
+                                                              "readBatchSize should be positive");
                 }
 
                 this->readBatchSize = batchSize;

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapValuesWithPagingPredicateCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapValuesWithPagingPredicateCodec::RequestParameters::TYPE = HZ_MAP_VALUESWITHPAGINGPREDICATE;
-                const bool MapValuesWithPagingPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapValuesWithPagingPredicateCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MapValuesWithPagingPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapValuesWithPagingPredicateCodec::REQUEST_TYPE = HZ_MAP_VALUESWITHPAGINGPREDICATE;
+                const bool MapValuesWithPagingPredicateCodec::RETRYABLE = true;
+                const ResponseMessageConst MapValuesWithPagingPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MapValuesWithPagingPredicateCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapValuesWithPagingPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapValuesWithPagingPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapValuesWithPagingPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapValuesWithPagingPredicateCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -48,23 +50,28 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapValuesWithPagingPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapValuesWithPagingPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                MapValuesWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapValuesWithPagingPredicateCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MapValuesWithPagingPredicateCodec::ResponseParameters MapValuesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapValuesWithPagingPredicateCodec::ResponseParameters
+                MapValuesWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapValuesWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapValuesWithPagingPredicateCodec::ResponseParameters::ResponseParameters(const MapValuesWithPagingPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapValuesWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
+                        const MapValuesWithPagingPredicateCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientDestroyProxyCodec::RequestParameters::TYPE = HZ_CLIENT_DESTROYPROXY;
-                const bool ClientDestroyProxyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ClientDestroyProxyCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> ClientDestroyProxyCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const ClientMessageType ClientDestroyProxyCodec::REQUEST_TYPE = HZ_CLIENT_DESTROYPROXY;
+                const bool ClientDestroyProxyCodec::RETRYABLE = false;
+                const ResponseMessageConst ClientDestroyProxyCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> ClientDestroyProxyCodec::encodeRequest(
+                        const std::string &name,
                         const std::string &serviceName) {
                     int32_t requiredDataSize = calculateDataSize(name, serviceName);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientDestroyProxyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientDestroyProxyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(serviceName);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ClientDestroyProxyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t ClientDestroyProxyCodec::calculateDataSize(
+                        const std::string &name,
                         const std::string &serviceName) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,19 +51,23 @@ namespace hazelcast {
                 }
 
                 ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientDestroyProxyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "ClientDestroyProxyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
+
+
                 }
 
-                ClientDestroyProxyCodec::ResponseParameters ClientDestroyProxyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ClientDestroyProxyCodec::ResponseParameters
+                ClientDestroyProxyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ClientDestroyProxyCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(const ClientDestroyProxyCodec::ResponseParameters &rhs) {
+                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(
+                        const ClientDestroyProxyCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include <hazelcast/util/Executor.h>
 #include <hazelcast/util/CountDownLatch.h>
+#include <hazelcast/util/Util.h>
 #include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
 
@@ -44,7 +45,7 @@ namespace hazelcast {
                                                                                                                     false) {}
 
                             virtual void run() {
-                                threadId = getThreadId();
+                                threadId = hazelcast::util::getCurrentThreadId();
 
                                 if (threadIdSet) {
                                     if (threadId.get() == expectedTreadId) {

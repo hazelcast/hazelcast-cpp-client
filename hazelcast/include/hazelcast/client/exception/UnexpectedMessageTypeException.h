@@ -51,6 +51,8 @@ namespace hazelcast {
                  * return exception explanation string.
                  */
                 virtual char const *what() const throw();
+
+
             private:
                 int actual;
                 int expected;

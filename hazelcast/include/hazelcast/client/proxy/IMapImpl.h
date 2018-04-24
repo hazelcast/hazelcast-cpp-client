@@ -103,7 +103,7 @@ namespace hazelcast {
                 virtual bool removeEntryListener(const std::string &registrationId);
 
                 std::string
-                addEntryListener(impl::BaseEventHandler *entryEventHandler, const serialization::pimpl::Data &key,
+                addEntryListener(impl::BaseEventHandler *entryEventHandler, serialization::pimpl::Data &key,
                                  bool includeValue);
 
                 std::auto_ptr<map::DataEntryView> getEntryViewData(const serialization::pimpl::Data &key);
@@ -156,7 +156,7 @@ namespace hazelcast {
                 EntryVector executeOnEntriesData(const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
 
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::RequestParameters::encode(
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::encodeRequest(
                             getName(), processor);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
@@ -172,7 +172,7 @@ namespace hazelcast {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
                     serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::MapExecuteWithPredicateCodec::RequestParameters::encode(getName(),
+                            protocol::codec::MapExecuteWithPredicateCodec::encodeRequest(getName(),
                                                                                                      processor,
                                                                                                      predData);
 
@@ -225,6 +225,83 @@ namespace hazelcast {
                         predicate.setAnchor((size_t) nearestPage, anchor);
                     }
                 }
+
+                virtual void onInitialize();
+
+            private:
+                class MapEntryListenerWithPredicateMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    MapEntryListenerWithPredicateMessageCodec(const std::string &name, bool includeValue,
+                                                              int32_t listenerFlags,
+                                                              serialization::pimpl::Data &predicate);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                    int32_t listenerFlags;
+                    serialization::pimpl::Data predicate;
+                };
+
+                class MapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    MapEntryListenerMessageCodec(const std::string &name, bool includeValue, int32_t listenerFlags);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                    int32_t listenerFlags;
+                };
+
+                class MapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    MapEntryListenerToKeyCodec(const std::string &name, bool includeValue, int32_t listenerFlags,
+                                               const serialization::pimpl::Data &key);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                    int32_t listenerFlags;
+                    serialization::pimpl::Data key;
+                };
+
+                boost::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags);
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                createMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &predicate,
+                                            int32_t listenerFlags);
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags, serialization::pimpl::Data &key);
             };
         }
     }

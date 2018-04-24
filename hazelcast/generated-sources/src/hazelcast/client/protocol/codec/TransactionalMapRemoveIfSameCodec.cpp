@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapRemoveIfSameCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,18 +25,19 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapRemoveIfSameCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_REMOVEIFSAME;
-                const bool TransactionalMapRemoveIfSameCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapRemoveIfSameCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> TransactionalMapRemoveIfSameCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                const TransactionalMapMessageType TransactionalMapRemoveIfSameCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_REMOVEIFSAME;
+                const bool TransactionalMapRemoveIfSameCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapRemoveIfSameCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> TransactionalMapRemoveIfSameCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapRemoveIfSameCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapRemoveIfSameCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -46,11 +48,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapRemoveIfSameCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                int32_t TransactionalMapRemoveIfSameCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -61,23 +63,28 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapRemoveIfSameCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapRemoveIfSameCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                TransactionalMapRemoveIfSameCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalMapRemoveIfSameCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TransactionalMapRemoveIfSameCodec::ResponseParameters TransactionalMapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapRemoveIfSameCodec::ResponseParameters
+                TransactionalMapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapRemoveIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapRemoveIfSameCodec::ResponseParameters::ResponseParameters(const TransactionalMapRemoveIfSameCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalMapRemoveIfSameCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapRemoveIfSameCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

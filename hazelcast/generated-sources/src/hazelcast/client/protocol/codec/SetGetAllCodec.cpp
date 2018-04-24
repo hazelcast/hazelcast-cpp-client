@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetGetAllCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetGetAllCodec::RequestParameters::TYPE = HZ_SET_GETALL;
-                const bool SetGetAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetGetAllCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> SetGetAllCodec::RequestParameters::encode(
+                const SetMessageType SetGetAllCodec::REQUEST_TYPE = HZ_SET_GETALL;
+                const bool SetGetAllCodec::RETRYABLE = false;
+                const ResponseMessageConst SetGetAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> SetGetAllCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetGetAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetGetAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SetGetAllCodec::RequestParameters::calculateDataSize(
+                int32_t SetGetAllCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,24 @@ namespace hazelcast {
                 }
 
                 SetGetAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetGetAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("SetGetAllCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                SetGetAllCodec::ResponseParameters SetGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetGetAllCodec::ResponseParameters
+                SetGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetGetAllCodec::ResponseParameters(clientMessage);
                 }
 
                 SetGetAllCodec::ResponseParameters::ResponseParameters(const SetGetAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

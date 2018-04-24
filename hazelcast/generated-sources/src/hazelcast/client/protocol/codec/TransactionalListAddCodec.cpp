@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalListAddCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,17 +25,18 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalListMessageType TransactionalListAddCodec::RequestParameters::TYPE = HZ_TRANSACTIONALLIST_ADD;
-                const bool TransactionalListAddCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalListAddCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> TransactionalListAddCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalListMessageType TransactionalListAddCodec::REQUEST_TYPE = HZ_TRANSACTIONALLIST_ADD;
+                const bool TransactionalListAddCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalListAddCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> TransactionalListAddCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &item) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, item);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalListAddCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalListAddCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +46,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalListAddCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalListAddCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &item) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,22 +60,26 @@ namespace hazelcast {
                 }
 
                 TransactionalListAddCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalListAddCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "TransactionalListAddCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TransactionalListAddCodec::ResponseParameters TransactionalListAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalListAddCodec::ResponseParameters
+                TransactionalListAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalListAddCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalListAddCodec::ResponseParameters::ResponseParameters(const TransactionalListAddCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                TransactionalListAddCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalListAddCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

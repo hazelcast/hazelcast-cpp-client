@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace query {
             /**
-             * This is a merker class for Predicate classes. All predicate classes shall extend this class. It is a pure
+             * This is a marker class for Predicate classes. All predicate classes shall extend this class. It is a pure
              * IdentifiedDataSerializable interface. Making this Predicate interface disallows using any
              * IdentifiedDataSerializable in places where Predicate is needed. This class also indicates that a Java
              * implementation is required at the server side.

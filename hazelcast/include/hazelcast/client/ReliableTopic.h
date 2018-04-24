@@ -43,7 +43,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ReliableTopic : public proxy::ReliableTopicImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 
@@ -79,8 +79,9 @@ namespace hazelcast {
             */
             std::string addMessageListener(topic::ReliableMessageListener<E> &listener) {
                 int id = ++runnerCounter;
-                boost::shared_ptr<MessageRunner<E> > runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
-                                                                          &context->getSerializationService(), config));
+                boost::shared_ptr<MessageRunner < E> >
+                runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
+                                            &context->getSerializationService(), config));
                 runnersMap.put(id, runner);
                 runner->next();
                 return util::IOUtil::to_string<int>(id);
@@ -96,7 +97,7 @@ namespace hazelcast {
             */
             bool removeMessageListener(const std::string &registrationId) {
                 int id = util::IOUtil::to_value<int>(registrationId);
-                boost::shared_ptr<MessageRunner<E> > runner = runnersMap.get(id);
+                boost::shared_ptr<MessageRunner < E> > runner = runnersMap.get(id);
                 if (NULL == runner) {
                     return false;
                 }
@@ -107,22 +108,25 @@ namespace hazelcast {
         protected:
             virtual void onDestroy() {
                 // cancel all runners
-                std::vector<std::pair<int, boost::shared_ptr<MessageRunner<E> > > > runners = runnersMap.clear();
-                for (typename std::vector<std::pair<int, boost::shared_ptr<MessageRunner<E> > > >::const_iterator it = runners.begin();
-                        it != runners.end(); ++it) {
+                std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > > runners = runnersMap.clear();
+                for (typename std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > >
+                     ::const_iterator it = runners.begin();it != runners.end();++it) {
                     it->second->cancel();
                 }
 
                 // destroy the underlying ringbuffer
                 ringbuffer->destroy();
             }
+
         private:
-            ReliableTopic(const std::string &instanceName, spi::ClientContext *context, boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+            ReliableTopic(const std::string &instanceName, spi::ClientContext *context,
+                          boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ReliableTopicImpl(instanceName, context, rb) {
             }
 
-            template <typename T>
-            class MessageRunner : impl::ExecutionCallback<DataArray<topic::impl::reliable::ReliableTopicMessage> > {
+            template<typename T>
+            class MessageRunner
+                    : impl::ExecutionCallback<boost::shared_ptr<DataArray<topic::impl::reliable::ReliableTopicMessage> > > {
             public:
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
@@ -145,7 +149,7 @@ namespace hazelcast {
                 }
 
 
-                virtual ~MessageRunner() { }
+                virtual ~MessageRunner() {}
 
                 void next() {
                     if (cancelled) {
@@ -161,7 +165,8 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onResponse(DataArray<topic::impl::reliable::ReliableTopicMessage> *allMessages) {
+                void onResponse(
+                        const boost::shared_ptr<DataArray<topic::impl::reliable::ReliableTopicMessage> > &allMessages) {
                     if (cancelled) {
                         return;
                     }
@@ -188,24 +193,23 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onFailure(const exception::IException *throwable) {
+                void onFailure(const boost::shared_ptr<exception::IException> &throwable) {
                     if (cancelled) {
                         return;
                     }
 
-                    const exception::ProtocolException *t = static_cast<const exception::ProtocolException *>(throwable);
-
-                    int32_t err = t->getErrorCode();
+                    int32_t err = throwable->getErrorCode();
                     if (protocol::EXECUTION == err &&
-                        protocol::STALE_SEQUENCE == t->getCauseErrorCode()) {
+                        protocol::STALE_SEQUENCE == throwable->getCauseErrorCode()) {
                         // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
                         int64_t remoteHeadSeq = ringbuffer->headSequence();
 
                         if (listener->isLossTolerant()) {
                             if (logger.isFinestEnabled()) {
                                 std::ostringstream out;
-                                out << "MessageListener " << id << " on topic: " << name << " ran into a stale sequence. "
-                                << "Jumping from oldSequence: " << sequence << " to sequence: " << remoteHeadSeq;
+                                out << "MessageListener " << id << " on topic: " << name
+                                    << " ran into a stale sequence. "
+                                    << "Jumping from oldSequence: " << sequence << " to sequence: " << remoteHeadSeq;
                                 logger.finest(out.str());
                             }
                             sequence = remoteHeadSeq;
@@ -215,8 +219,9 @@ namespace hazelcast {
 
                         std::ostringstream out;
                         out << "Terminating MessageListener:" << id << " on topic: " << name << "Reason: The listener "
-                                "was too slow or the retention period of the message has been violated. " << "head: "
-                                << remoteHeadSeq << " sequence:" << sequence;
+                                                                                                "was too slow or the retention period of the message has been violated. "
+                            << "head: "
+                            << remoteHeadSeq << " sequence:" << sequence;
                         logger.warning(out.str());
                     } else if (protocol::HAZELCAST_INSTANCE_NOT_ACTIVE == err) {
                         if (logger.isFinestEnabled()) {
@@ -228,13 +233,14 @@ namespace hazelcast {
                     } else if (protocol::DISTRIBUTED_OBJECT_DESTROYED == err) {
                         if (logger.isFinestEnabled()) {
                             std::ostringstream out;
-                            out << "Terminating MessageListener " << id << " on topic: " << name << " Reason: Topic is destroyed";
+                            out << "Terminating MessageListener " << id << " on topic: " << name
+                                << " Reason: Topic is destroyed";
                             logger.finest(out.str());
                         }
                     } else {
                         std::ostringstream out;
                         out << "Terminating MessageListener " << id << " on topic: " << name << ". "
-                            << " Reason: Unhandled exception, details:" << t->what();
+                            << " Reason: Unhandled exception, details:" << throwable->what();
                         logger.warning(out.str());
                     }
 
@@ -245,6 +251,7 @@ namespace hazelcast {
                     cancelled = true;
                     executor.stop();
                 }
+
             private:
                 void process(const topic::impl::reliable::ReliableTopicMessage *message) {
                     //  proxy.localTopicStats.incrementReceives();
@@ -252,13 +259,14 @@ namespace hazelcast {
                 }
 
                 std::auto_ptr<topic::Message<T> > toMessage(const topic::impl::reliable::ReliableTopicMessage *m) {
-                    std::auto_ptr<Member> member;
+                    boost::shared_ptr<Member> member;
                     const Address *addr = m->getPublisherAddress();
                     if (addr != NULL) {
-                        member = std::auto_ptr<Member>(new Member(*addr));
+                        member = boost::shared_ptr<Member>(new Member(*addr));
                     }
                     std::auto_ptr<T> msg = serializationService->toObject<T>(m->getPayload());
-                    return std::auto_ptr<topic::Message<T> >(new topic::impl::MessageImpl<T>(name, msg, m->getPublishTime(), member));
+                    return std::auto_ptr<topic::Message<T> >(
+                            new topic::impl::MessageImpl<T>(name, msg, m->getPublishTime(), member));
                 }
 
                 bool terminate(const exception::IException &failure) {

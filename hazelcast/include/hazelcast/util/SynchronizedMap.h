@@ -19,12 +19,14 @@
 #ifndef HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 #define HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 
+#include <map>
+#include <vector>
+#include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
-#include <boost/shared_ptr.hpp>
-#include <map>
-#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -126,9 +128,9 @@ namespace hazelcast {
 
             bool remove(const K &key, const V &value) {
                 util::LockGuard lg(mapLock);
-                for (typename std::map<K, V, Comparator>::iterator it = internalMap.find(key);
+                for (typename InternalMap::iterator it = internalMap.find(key);
                      it != internalMap.end(); ++it) {
-                    if (*it->second == value) {
+                    if (it->second == value) {
                         internalMap.erase(it);
                         return true;
                     }
@@ -138,45 +140,37 @@ namespace hazelcast {
 
             std::vector<std::pair<K, V> > entrySet() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K,V> > entries(internalMap.size());
-                typename std::map<K, V, Comparator>::iterator it;
-                int i = 0;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, V>(it->first, it->second);
-                }
+                std::vector<std::pair<K, V> > entries;
+                BOOST_FOREACH(const typename InternalMap::value_type &entry , internalMap) {
+                                entries.push_back(entry);
+                            }
                 return entries;
             }
 
             std::vector<std::pair<K, V> > clear() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, V> > entries(internalMap.size());
-                typename std::map<K, V, Comparator>::iterator it;
-                int i = 0;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, V>(it->first, it->second);
-                }
+                std::vector<std::pair<K, V> > entries;
+                BOOST_FOREACH(const typename InternalMap::value_type &entry , internalMap) {
+                                entries.push_back(entry);
+                            }
                 internalMap.clear();
                 return entries;
             }
 
             std::vector<V> values() {
                 util::LockGuard lg(mapLock);
-                std::vector<V> valueArray(internalMap.size());
-                typename std::map<K, V, Comparator>::iterator it;
-                int i = 0;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    valueArray[i++] = it->second;
-                }
+                std::vector<V> valueArray;
+                BOOST_FOREACH(const typename InternalMap::value_type &entry , internalMap) {
+                                valueArray.push_back(entry.second);
+                            }
                 return valueArray;
             }
 
             std::vector<K> keys() {
                 util::LockGuard lg(mapLock);
-                std::vector<K> keysArray(internalMap.size());
-                typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
-                for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    keysArray[i++] = it->first;
+                std::vector<K> keysArray;
+                BOOST_FOREACH(const typename InternalMap::value_type &entry , internalMap) {
+                    keysArray.push_back(entry.first);
                 }
                 return keysArray;
             }
@@ -191,14 +185,16 @@ namespace hazelcast {
                 if (index < 0 || index >= internalMap.size()) {
                     return std::auto_ptr<std::pair<K, V> >();
                 }
-                typename std::map<K, V>::const_iterator it = internalMap.begin();
+                typename InternalMap::const_iterator it = internalMap.begin();
                 for (size_t i = 0; i < index; ++i) {
                     ++it;
                 }
                 return std::auto_ptr<std::pair<K, V> >(new std::pair<K, V>(it->first, it->second));
             }
         protected:
-            std::map<K, V, Comparator> internalMap;
+            typedef std::map<K, V, Comparator> InternalMap;
+
+            InternalMap internalMap;
             mutable util::Mutex mapLock;
         };
 

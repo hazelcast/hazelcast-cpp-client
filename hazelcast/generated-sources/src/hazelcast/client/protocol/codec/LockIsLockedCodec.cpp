@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockIsLockedCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockIsLockedCodec::RequestParameters::TYPE = HZ_LOCK_ISLOCKED;
-                const bool LockIsLockedCodec::RequestParameters::RETRYABLE = true;
-                const int32_t LockIsLockedCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> LockIsLockedCodec::RequestParameters::encode(
+                const LockMessageType LockIsLockedCodec::REQUEST_TYPE = HZ_LOCK_ISLOCKED;
+                const bool LockIsLockedCodec::RETRYABLE = true;
+                const ResponseMessageConst LockIsLockedCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> LockIsLockedCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockIsLockedCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockIsLockedCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t LockIsLockedCodec::RequestParameters::calculateDataSize(
+                int32_t LockIsLockedCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,25 @@ namespace hazelcast {
                 }
 
                 LockIsLockedCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockIsLockedCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("LockIsLockedCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                LockIsLockedCodec::ResponseParameters LockIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                LockIsLockedCodec::ResponseParameters
+                LockIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return LockIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
-                LockIsLockedCodec::ResponseParameters::ResponseParameters(const LockIsLockedCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                LockIsLockedCodec::ResponseParameters::ResponseParameters(
+                        const LockIsLockedCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

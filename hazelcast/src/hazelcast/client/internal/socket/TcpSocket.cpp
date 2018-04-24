@@ -111,7 +111,6 @@ namespace hazelcast {
                     FD_SET(socketId, &err);
                     errno = 0;
                     if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
-                        setBlocking(true);
                         return 0;
                     }
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -119,8 +118,6 @@ namespace hazelcast {
                     #else
                     int error = errno;
                     #endif
-
-                    setBlocking(true);
 
                     if (error) {
                         throwIOException(error, "connect", "Failed to connect the socket.");
@@ -168,7 +165,7 @@ namespace hazelcast {
                     #endif
                 }
 
-                int TcpSocket::send(const void *buffer, int len) {
+                int TcpSocket::send(const void *buffer, int len, int flag) {
                     #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
                     #endif
@@ -181,6 +178,11 @@ namespace hazelcast {
                      * Requests not to send SIGPIPE on errors on stream oriented sockets when the other end breaks the connection.
                      * The EPIPE error is still returned.
                      */
+
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(true);
+                    }
+
                     if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
                         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
@@ -189,10 +191,19 @@ namespace hazelcast {
                         int error = errno;
                         if (EAGAIN == error) {
                         #endif
+                            if (flag == MSG_WAITALL) {
+                                setBlocking(false);
+                            }
                             return 0;
                         }
 
+                        if (flag == MSG_WAITALL) {
+                            setBlocking(false);
+                        }
                         throwIOException(error, "send", "Send failed.");
+                    }
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(false);
                     }
                     return bytesSend;
                 }
@@ -226,14 +237,6 @@ namespace hazelcast {
                     return socketId;
                 }
 
-                void TcpSocket::setRemoteEndpoint(const client::Address &address) {
-                    remoteEndpoint = address;
-                }
-
-                const client::Address &TcpSocket::getRemoteEndpoint() const {
-                    return remoteEndpoint;
-                }
-
                 client::Address TcpSocket::getAddress() const {
                     char host[1024];
                     char service[20];
@@ -261,7 +264,6 @@ namespace hazelcast {
                         ::close(socketId);
                         #endif
 
-                        socketId = -1; // set it to invalid descriptor to avoid misuse of the socket for this connection
                     }
                 }
 
@@ -279,6 +281,20 @@ namespace hazelcast {
                     char errorMsg[200];
                     util::strerror_s(error, errorMsg, 200, prefix);
                     throw client::exception::IOException(std::string("TcpSocket::") + methodName, errorMsg);
+                }
+
+                std::auto_ptr<Address> TcpSocket::localSocketAddress() const {
+                    struct sockaddr_in sin;
+                    socklen_t addrlen = sizeof(sin);
+                    if (getsockname(socketId, (struct sockaddr *) &sin, &addrlen) == 0 &&
+                        sin.sin_family == AF_INET &&
+                        addrlen == sizeof(sin)) {
+                        int localPort = ntohs(sin.sin_port);
+                        char *localIp = inet_ntoa(sin.sin_addr);
+                        return std::auto_ptr<Address>(new Address(localIp ? localIp : "", localPort));
+                    } else {
+                        return std::auto_ptr<Address>();
+                    }
                 }
             }
         }

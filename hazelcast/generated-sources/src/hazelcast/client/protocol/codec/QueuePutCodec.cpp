@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueuePutCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueuePutCodec::RequestParameters::TYPE = HZ_QUEUE_PUT;
-                const bool QueuePutCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueuePutCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> QueuePutCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const QueueMessageType QueuePutCodec::REQUEST_TYPE = HZ_QUEUE_PUT;
+                const bool QueuePutCodec::RETRYABLE = false;
+                const ResponseMessageConst QueuePutCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> QueuePutCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueuePutCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueuePutCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t QueuePutCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t QueuePutCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,19 +52,21 @@ namespace hazelcast {
                 }
 
                 QueuePutCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueuePutCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("QueuePutCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
+
+
                 }
 
-                QueuePutCodec::ResponseParameters QueuePutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueuePutCodec::ResponseParameters
+                QueuePutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueuePutCodec::ResponseParameters(clientMessage);
                 }
 
                 QueuePutCodec::ResponseParameters::ResponseParameters(const QueuePutCodec::ResponseParameters &rhs) {
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

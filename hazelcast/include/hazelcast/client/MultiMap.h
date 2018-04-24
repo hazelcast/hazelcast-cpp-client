@@ -39,7 +39,7 @@ namespace hazelcast {
         */
         template<typename K, typename V>
         class MultiMap : public proxy::MultiMapImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerMultiMap<K, V>;
 
         public:
@@ -191,7 +191,7 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
-                spi::ClusterService &clusterService = context->getClusterService();
+                spi::ClientClusterService &clusterService = context->getClientClusterService();
                 serialization::pimpl::SerializationService &ss = context->getSerializationService();
                 impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
@@ -218,9 +218,10 @@ namespace hazelcast {
             std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
                 impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                getName(), context->getClientClusterService(), context->getSerializationService(), listener,
                                 includeValue);
-                return proxy::MultiMapImpl::addEntryListener(entryEventHandler, toData(key), includeValue);
+                serialization::pimpl::Data keyData = toData(key);
+                return proxy::MultiMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
             }
 
             /**

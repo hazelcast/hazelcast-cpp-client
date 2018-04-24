@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreAvailablePermitsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,21 +24,22 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SemaphoreMessageType SemaphoreAvailablePermitsCodec::RequestParameters::TYPE = HZ_SEMAPHORE_AVAILABLEPERMITS;
-                const bool SemaphoreAvailablePermitsCodec::RequestParameters::RETRYABLE = true;
-                const int32_t SemaphoreAvailablePermitsCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> SemaphoreAvailablePermitsCodec::RequestParameters::encode(
+                const SemaphoreMessageType SemaphoreAvailablePermitsCodec::REQUEST_TYPE = HZ_SEMAPHORE_AVAILABLEPERMITS;
+                const bool SemaphoreAvailablePermitsCodec::RETRYABLE = true;
+                const ResponseMessageConst SemaphoreAvailablePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> SemaphoreAvailablePermitsCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreAvailablePermitsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreAvailablePermitsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SemaphoreAvailablePermitsCodec::RequestParameters::calculateDataSize(
+                int32_t SemaphoreAvailablePermitsCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,22 +47,26 @@ namespace hazelcast {
                 }
 
                 SemaphoreAvailablePermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreAvailablePermitsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "SemaphoreAvailablePermitsCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                SemaphoreAvailablePermitsCodec::ResponseParameters SemaphoreAvailablePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreAvailablePermitsCodec::ResponseParameters
+                SemaphoreAvailablePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreAvailablePermitsCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreAvailablePermitsCodec::ResponseParameters::ResponseParameters(const SemaphoreAvailablePermitsCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                SemaphoreAvailablePermitsCodec::ResponseParameters::ResponseParameters(
+                        const SemaphoreAvailablePermitsCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

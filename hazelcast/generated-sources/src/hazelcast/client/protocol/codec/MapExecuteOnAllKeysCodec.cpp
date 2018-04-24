@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapExecuteOnAllKeysCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapExecuteOnAllKeysCodec::RequestParameters::TYPE = HZ_MAP_EXECUTEONALLKEYS;
-                const bool MapExecuteOnAllKeysCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapExecuteOnAllKeysCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MapExecuteOnAllKeysCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapExecuteOnAllKeysCodec::REQUEST_TYPE = HZ_MAP_EXECUTEONALLKEYS;
+                const bool MapExecuteOnAllKeysCodec::RETRYABLE = false;
+                const ResponseMessageConst MapExecuteOnAllKeysCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MapExecuteOnAllKeysCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &entryProcessor) {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapExecuteOnAllKeysCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapExecuteOnAllKeysCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapExecuteOnAllKeysCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapExecuteOnAllKeysCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &entryProcessor) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,22 +51,26 @@ namespace hazelcast {
                 }
 
                 MapExecuteOnAllKeysCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapExecuteOnAllKeysCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapExecuteOnAllKeysCodec::ResponseParameters::decode", clientMessage.getMessageType(),
+                                RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MapExecuteOnAllKeysCodec::ResponseParameters MapExecuteOnAllKeysCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteOnAllKeysCodec::ResponseParameters
+                MapExecuteOnAllKeysCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapExecuteOnAllKeysCodec::ResponseParameters(clientMessage);
                 }
 
-                MapExecuteOnAllKeysCodec::ResponseParameters::ResponseParameters(const MapExecuteOnAllKeysCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapExecuteOnAllKeysCodec::ResponseParameters::ResponseParameters(
+                        const MapExecuteOnAllKeysCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

@@ -24,12 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/TransactionMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/TransactionMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -38,49 +40,42 @@ namespace hazelcast {
             namespace codec {
                 class HAZELCAST_API TransactionCreateCodec {
                 public:
+                    static const TransactionMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum TransactionMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            int64_t timeout,
+                            int32_t durability,
+                            int32_t transactionType,
+                            int64_t threadId);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                int64_t timeout, 
-                                int32_t durability, 
-                                int32_t transactionType, 
-                                int64_t threadId);
-
-                        static int32_t calculateDataSize(
-                                int64_t timeout, 
-                                int32_t durability, 
-                                int32_t transactionType, 
-                                int64_t threadId);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            int64_t timeout,
+                            int32_t durability,
+                            int32_t transactionType,
+                            int64_t threadId);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::string response;
 
-                            std::string response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        TransactionCreateCodec ();
+                private:
+                    // Preventing public access to constructors
+                    TransactionCreateCodec();
                 };
             }
         }

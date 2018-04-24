@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListContainsCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,15 +25,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListContainsCodec::RequestParameters::TYPE = HZ_LIST_CONTAINS;
-                const bool ListContainsCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ListContainsCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> ListContainsCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const ListMessageType ListContainsCodec::REQUEST_TYPE = HZ_LIST_CONTAINS;
+                const bool ListContainsCodec::RETRYABLE = true;
+                const ResponseMessageConst ListContainsCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> ListContainsCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListContainsCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListContainsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +42,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListContainsCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t ListContainsCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,22 +52,25 @@ namespace hazelcast {
                 }
 
                 ListContainsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListContainsCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("ListContainsCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                ListContainsCodec::ResponseParameters ListContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListContainsCodec::ResponseParameters
+                ListContainsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListContainsCodec::ResponseParameters(clientMessage);
                 }
 
-                ListContainsCodec::ResponseParameters::ResponseParameters(const ListContainsCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                ListContainsCodec::ResponseParameters::ResponseParameters(
+                        const ListContainsCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

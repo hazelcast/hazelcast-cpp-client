@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapEntriesWithPredicateCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -23,15 +24,16 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapEntriesWithPredicateCodec::RequestParameters::TYPE = HZ_MAP_ENTRIESWITHPREDICATE;
-                const bool MapEntriesWithPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapEntriesWithPredicateCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MapEntriesWithPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapEntriesWithPredicateCodec::REQUEST_TYPE = HZ_MAP_ENTRIESWITHPREDICATE;
+                const bool MapEntriesWithPredicateCodec::RETRYABLE = true;
+                const ResponseMessageConst MapEntriesWithPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MapEntriesWithPredicateCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapEntriesWithPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapEntriesWithPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -39,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapEntriesWithPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapEntriesWithPredicateCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,22 +51,26 @@ namespace hazelcast {
                 }
 
                 MapEntriesWithPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapEntriesWithPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapEntriesWithPredicateCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MapEntriesWithPredicateCodec::ResponseParameters MapEntriesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEntriesWithPredicateCodec::ResponseParameters
+                MapEntriesWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapEntriesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapEntriesWithPredicateCodec::ResponseParameters::ResponseParameters(const MapEntriesWithPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapEntriesWithPredicateCodec::ResponseParameters::ResponseParameters(
+                        const MapEntriesWithPredicateCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

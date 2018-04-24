@@ -19,28 +19,27 @@
 
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapAddEntryListenerWithPredicateCodec::RequestParameters::TYPE = HZ_MAP_ADDENTRYLISTENERWITHPREDICATE;
-                const bool MapAddEntryListenerWithPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapAddEntryListenerWithPredicateCodec::ResponseParameters::TYPE = 104;
+                const MapMessageType MapAddEntryListenerWithPredicateCodec::REQUEST_TYPE = HZ_MAP_ADDENTRYLISTENERWITHPREDICATE;
+                const bool MapAddEntryListenerWithPredicateCodec::RETRYABLE = false;
+                const ResponseMessageConst MapAddEntryListenerWithPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                MapAddEntryListenerWithPredicateCodec::~MapAddEntryListenerWithPredicateCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> MapAddEntryListenerWithPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &predicate, 
-                        bool includeValue, 
-                        int32_t listenerFlags, 
+                std::auto_ptr<ClientMessage> MapAddEntryListenerWithPredicateCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &predicate,
+                        bool includeValue,
+                        int32_t listenerFlags,
                         bool localOnly) {
-                    int32_t requiredDataSize = calculateDataSize(name, predicate, includeValue, listenerFlags, localOnly);
+                    int32_t requiredDataSize = calculateDataSize(name, predicate, includeValue, listenerFlags,
+                                                                 localOnly);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapAddEntryListenerWithPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapAddEntryListenerWithPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -51,11 +50,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapAddEntryListenerWithPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &predicate, 
-                        bool includeValue, 
-                        int32_t listenerFlags, 
+                int32_t MapAddEntryListenerWithPredicateCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &predicate,
+                        bool includeValue,
+                        int32_t listenerFlags,
                         bool localOnly) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -66,72 +65,64 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapAddEntryListenerWithPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                MapAddEntryListenerWithPredicateCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException(
+                                "MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode",
+                                clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.get<std::string >();
+
+                    response = clientMessage.get<std::string>();
+
                 }
 
-                MapAddEntryListenerWithPredicateCodec::ResponseParameters MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapAddEntryListenerWithPredicateCodec::ResponseParameters
+                MapAddEntryListenerWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapAddEntryListenerWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddEntryListenerWithPredicateCodec::ResponseParameters::ResponseParameters(const MapAddEntryListenerWithPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
+                MapAddEntryListenerWithPredicateCodec::ResponseParameters::ResponseParameters(
+                        const MapAddEntryListenerWithPredicateCodec::ResponseParameters &rhs) {
+                    response = rhs.response;
                 }
 
                 //************************ EVENTS START*************************************************************************//
                 MapAddEntryListenerWithPredicateCodec::AbstractEventHandler::~AbstractEventHandler() {
                 }
 
-                void MapAddEntryListenerWithPredicateCodec::AbstractEventHandler::handle(std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                void MapAddEntryListenerWithPredicateCodec::AbstractEventHandler::handle(
+                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
-                        case protocol::EVENT_ENTRY:
-                        {
-                            std::auto_ptr<serialization::pimpl::Data > key = clientMessage->getNullable<serialization::pimpl::Data >();
+                        case protocol::EVENT_ENTRY: {
+                            std::auto_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > value = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> value = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > oldValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> oldValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            std::auto_ptr<serialization::pimpl::Data > mergingValue = clientMessage->getNullable<serialization::pimpl::Data >();
+                            std::auto_ptr<serialization::pimpl::Data> mergingValue = clientMessage->getNullable<serialization::pimpl::Data>();
 
-                            int32_t eventType = clientMessage->get<int32_t >();
-                            
-                            std::string uuid = clientMessage->get<std::string >();
-                            
-                            int32_t numberOfAffectedEntries = clientMessage->get<int32_t >();
-                            
-                            handleEntry(key, value, oldValue, mergingValue, eventType, uuid, numberOfAffectedEntries);
+                            int32_t eventType = clientMessage->get<int32_t>();
+
+                            std::string uuid = clientMessage->get<std::string>();
+
+                            int32_t numberOfAffectedEntries = clientMessage->get<int32_t>();
+
+
+                            handleEntryEventV10(key, value, oldValue, mergingValue, eventType, uuid,
+                                                numberOfAffectedEntries);
                             break;
                         }
                         default:
-                            char buf[300];
-                            util::hz_snprintf(buf, 300,
-                                              "[MapAddEntryListenerWithPredicateCodec::AbstractEventHandler::handle] Unknown message type (%d) received on event handler.",
-                                              clientMessage->getMessageType());
-                            util::ILogger::getLogger().warning(buf);
+                            util::ILogger::getLogger().warning()
+                                    << "[MapAddEntryListenerWithPredicateCodec::AbstractEventHandler::handle] Unknown message type ("
+                                    << messageType << ") received on event handler.";
                     }
                 }
                 //************************ EVENTS END **************************************************************************//
-
-                MapAddEntryListenerWithPredicateCodec::MapAddEntryListenerWithPredicateCodec (const std::string &name, const serialization::pimpl::Data &predicate, const bool &includeValue, const int32_t &listenerFlags, const bool &localOnly)
-                        : name_(name), predicate_(predicate), includeValue_(includeValue), listenerFlags_(listenerFlags), localOnly_(localOnly) {
-                }
-
-                //************************ IAddListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> MapAddEntryListenerWithPredicateCodec::encodeRequest() const {
-                    return RequestParameters::encode(name_, predicate_, includeValue_, listenerFlags_, localOnly_);
-                }
-
-                std::string MapAddEntryListenerWithPredicateCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IAddListenerCodec interface ends *************************************************//
-
             }
         }
     }

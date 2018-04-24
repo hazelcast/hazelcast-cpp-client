@@ -45,7 +45,7 @@ namespace hazelcast {
             }
 
             std::string MultiMap::addEntryListener(MixedEntryListener &listener, bool includeValue) {
-                spi::ClusterService &clusterService = context->getClusterService();
+                spi::ClientClusterService &clusterService = context->getClientClusterService();
                 serialization::pimpl::SerializationService &ss = context->getSerializationService();
                 impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(

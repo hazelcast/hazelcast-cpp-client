@@ -49,7 +49,7 @@ namespace hazelcast {
     namespace util {
         ILogger ILogger::singletonLogger;
 
-        ILogger& ILogger::getLogger() {
+        ILogger &ILogger::getLogger() {
             return singletonLogger;
         }
 
@@ -63,19 +63,19 @@ namespace hazelcast {
             this->logLevel = logLevel;
         }
 
-        void ILogger::severe(const std::string& message) {
+        void ILogger::severe(const std::string &message) {
             printLog(client::LoggerLevel::SEVERE, message);
         }
 
-        void ILogger::warning(const std::string& message) {
+        void ILogger::warning(const std::string &message) {
             printLog(client::LoggerLevel::WARNING, message);
         }
 
-        void ILogger::info(const std::string& message) {
+        void ILogger::info(const std::string &message) {
             printLog(client::LoggerLevel::INFO, message);
         }
 
-        void ILogger::finest(const std::string& message) {
+        void ILogger::finest(const std::string &message) {
             printLog(client::LoggerLevel::FINEST, message);
         }
 
@@ -95,7 +95,7 @@ namespace hazelcast {
             return LeveledLogger(*this, client::LoggerLevel::SEVERE);
         }
 
-        void ILogger::setPrefix(const std::string& prefix) {
+        void ILogger::setPrefix(const std::string &prefix) {
             this->prefix = prefix;
         }
 
@@ -111,12 +111,12 @@ namespace hazelcast {
             time_t rawtime;
             struct tm timeinfo;
 
-            time (&rawtime);
-            int timeResult = hazelcast::util::localtime (&rawtime, &timeinfo);
+            time(&rawtime);
+            int timeResult = hazelcast::util::localtime(&rawtime, &timeinfo);
             assert(0 == timeResult);
 
             if (0 == timeResult) { // this if is needed for release build
-                if (0 == strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo)) {
+                if (0 == strftime(buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo)) {
                     buffer[0] = '\0'; // In case the strftime fails, just return an empty string
                 }
             }
@@ -134,41 +134,47 @@ namespace hazelcast {
         }
 
         void ILogger::printMessagePrefix(client::LoggerLevel::Level logLevel) const {
-            char buffer[TIME_STRING_LENGTH];
-            std::cout << getTime(buffer, TIME_STRING_LENGTH) << " " << getLevelString(logLevel) << ": [" << getThreadId()
-                      << "] " << prefix << " ";
+            printMessagePrefix(logLevel, std::cout);
         }
 
-        void ILogger::printLog(client::LoggerLevel::Level level, const std::string &message) {
+        void ILogger::printLog(client::LoggerLevel::Level level, const std::string &message, bool printPrefix) {
             if (!isEnabled(level)) {
                 return;
             }
 
             {
                 util::LockGuard l(lockMutex);
-                printMessagePrefix(level);
+                if (printPrefix) {
+                    printMessagePrefix(level);
+                }
                 std::cout << message << std::endl;
+                std::flush(std::cout);
             }
+        }
+
+        void ILogger::printMessagePrefix(client::LoggerLevel::Level logLevel, std::ostream &out) const {
+            char buffer[TIME_STRING_LENGTH];
+            out << getTime(buffer, TIME_STRING_LENGTH) << " " << getLevelString(logLevel) << ": [" << getCurrentThreadId()
+                << "] " << prefix << " ";
         }
 
         LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
-                                                                                             requestedLogLevel(logLevel) {
+                                                                                             requestedLogLevel(
+                                                                                                     logLevel) {
             if (!logger.isEnabled(requestedLogLevel)) {
                 return;
             }
 
-            logger.lockMutex.lock();
-            logger.printMessagePrefix(requestedLogLevel);
+            logger.printMessagePrefix(requestedLogLevel, out);
         }
 
         LeveledLogger::~LeveledLogger() {
-            if (!logger.isEnabled(requestedLogLevel)) {
-                return;
-            }
+            logger.printLog(requestedLogLevel, out.str(), false);
+        }
 
-            std::cout << std::endl;
-            logger.lockMutex.unlock();
-            std::flush(std::cout);
+        LeveledLogger::LeveledLogger(const LeveledLogger &rhs) : logger(rhs.logger),
+                                                                 requestedLogLevel(rhs.requestedLogLevel) {
+            out << out.str();
         }
     }
 }

@@ -63,7 +63,7 @@ namespace hazelcast {
              *
              */
             class HAZELCAST_API Ringbuffer : public proxy::ProxyImpl {
-                friend class client::HazelcastClient;
+                friend class client::impl::HazelcastClientInstanceImpl;;
 
             public:
                 virtual ~Ringbuffer();
@@ -137,7 +137,7 @@ namespace hazelcast {
                 template <typename E>
                 int64_t add(const E &item) {
                     serialization::pimpl::Data itemData = toData<E>(item);
-                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferAddCodec::RequestParameters::encode(
+                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferAddCodec::encodeRequest(
                             getName(), OVERWRITE, itemData);
                     return invokeAndGetResult<int64_t, protocol::codec::RingbufferAddCodec::ResponseParameters>(msg, partitionId);
                 }

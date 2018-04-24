@@ -40,11 +40,11 @@ namespace hazelcast {
 
             class IOHandler;
 
-            class ConnectionManager;
+            class ClientConnectionManagerImpl;
 
             class HAZELCAST_API IOSelector : public util::Runnable {
             public:
-                IOSelector(ConnectionManager &connectionManager);
+                IOSelector(ClientConnectionManagerImpl &connectionManager);
 
                 virtual ~IOSelector();
 
@@ -70,7 +70,7 @@ namespace hazelcast {
                 struct timeval t;
                 util::SocketSet socketSet;
                 int wakeUpListenerSocketId;
-                ConnectionManager &connectionManager;
+                ClientConnectionManagerImpl &connectionManager;
                 std::auto_ptr<Socket> sleepingSocket;
 
                 virtual void listenInternal() = 0;

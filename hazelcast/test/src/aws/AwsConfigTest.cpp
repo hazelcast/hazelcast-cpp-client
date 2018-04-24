@@ -101,8 +101,6 @@ namespace hazelcast {
                             setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
-                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
-
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "-1";
 
                     ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);

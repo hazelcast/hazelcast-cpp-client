@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListSetCodec.h"
 #include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
@@ -24,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListSetCodec::RequestParameters::TYPE = HZ_LIST_SET;
-                const bool ListSetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t ListSetCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> ListSetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int32_t index, 
+                const ListMessageType ListSetCodec::REQUEST_TYPE = HZ_LIST_SET;
+                const bool ListSetCodec::RETRYABLE = false;
+                const ResponseMessageConst ListSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> ListSetCodec::encodeRequest(
+                        const std::string &name,
+                        int32_t index,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, index, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListSetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListSetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(index);
@@ -42,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListSetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int32_t index, 
+                int32_t ListSetCodec::calculateDataSize(
+                        const std::string &name,
+                        int32_t index,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,22 +56,24 @@ namespace hazelcast {
                 }
 
                 ListSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListSetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
+                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
+                        throw exception::UnexpectedMessageTypeException("ListSetCodec::ResponseParameters::decode",
+                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
                     }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                ListSetCodec::ResponseParameters ListSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListSetCodec::ResponseParameters
+                ListSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListSetCodec::ResponseParameters(clientMessage);
                 }
 
                 ListSetCodec::ResponseParameters::ResponseParameters(const ListSetCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
-
             }
         }
     }

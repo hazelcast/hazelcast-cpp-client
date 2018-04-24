@@ -34,7 +34,7 @@ namespace hazelcast {
             * @see IMap
             */
             class HAZELCAST_API MultiMap : public proxy::MultiMapImpl {
-                friend class client::HazelcastClient;
+                friend class client::impl::HazelcastClientInstanceImpl;;
 
             public:
                 /**
@@ -204,9 +204,10 @@ namespace hazelcast {
                 std::string addEntryListener(MixedEntryListener &listener, const K &key, bool includeValue) {
                     impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                    getName(), context->getClientClusterService(), context->getSerializationService(), listener,
                                     includeValue);
-                    return proxy::MultiMapImpl::addEntryListener(entryEventHandler, toData(key), includeValue);
+                    serialization::pimpl::Data keyData = toData(key);
+                    return proxy::MultiMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
                 }
 
                 /**
