@@ -34,7 +34,7 @@
 namespace hazelcast {
     namespace util {
 
-        HAZELCAST_API long getThreadId();
+        HAZELCAST_API int64_t getCurrentThreadId();
 
         HAZELCAST_API void sleep(int seconds);
 

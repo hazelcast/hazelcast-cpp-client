@@ -154,7 +154,7 @@ namespace hazelcast {
 
         void ILogger::printMessagePrefix(client::LoggerLevel::Level logLevel, std::ostream &out) const {
             char buffer[TIME_STRING_LENGTH];
-            out << getTime(buffer, TIME_STRING_LENGTH) << " " << getLevelString(logLevel) << ": [" << getThreadId()
+            out << getTime(buffer, TIME_STRING_LENGTH) << " " << getLevelString(logLevel) << ": [" << getCurrentThreadId()
                 << "] " << prefix << " ";
         }
 

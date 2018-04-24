@@ -43,7 +43,7 @@ namespace hazelcast {
                                          util::CountDownLatch &latch) : client(client), mm(mm), latch(latch) {}
 
                     virtual void run() {
-                        std::string key = util::IOUtil::to_string(util::getThreadId());
+                        std::string key = util::IOUtil::to_string(util::getCurrentThreadId());
                         std::string key2 = key + "2";
                         client.getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                         TransactionContext context = client.newTransactionContext();

@@ -37,8 +37,7 @@ namespace hazelcast {
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
                                                boost::shared_ptr<connection::Connection> connection)
                     : options(txnOptions), clientContext(clientContext), connection(connection),
-                      threadId(util::getThreadId()), state(TxnState::NO_TXN), startTime(0) {
-
+                      threadId(util::getCurrentThreadId()), state(TxnState::NO_TXN), startTime(0) {
             }
 
             const std::string &TransactionProxy::getTxnId() const {
@@ -156,7 +155,7 @@ namespace hazelcast {
             }
 
             void TransactionProxy::checkThread() {
-                if (threadId != util::getThreadId()) {
+                if (threadId != util::getCurrentThreadId()) {
                     throw exception::IllegalStateException("TransactionProxy::checkThread()",
                                                            "Transaction cannot span multiple threads!");
                 }

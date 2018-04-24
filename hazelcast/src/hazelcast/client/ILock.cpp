@@ -50,7 +50,8 @@ namespace hazelcast {
 
         void ILock::lock(long leaseTimeInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockLockCodec::encodeRequest(getName(), leaseTimeInMillis, util::getThreadId(),
+                    protocol::codec::LockLockCodec::encodeRequest(getName(), leaseTimeInMillis,
+                                                                  util::getCurrentThreadId(),
                                                                   referenceIdGenerator->getNextReferenceId());
 
             invokeOnPartition(request, partitionId);
@@ -58,7 +59,7 @@ namespace hazelcast {
 
         void ILock::unlock() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockUnlockCodec::encodeRequest(getName(), util::getThreadId(),
+                    protocol::codec::LockUnlockCodec::encodeRequest(getName(), util::getCurrentThreadId(),
                                                                     referenceIdGenerator->getNextReferenceId());
 
             invokeOnPartition(request, partitionId);
@@ -82,7 +83,8 @@ namespace hazelcast {
 
         bool ILock::isLockedByCurrentThread() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockIsLockedByCurrentThreadCodec::encodeRequest(getName(), util::getThreadId());
+                    protocol::codec::LockIsLockedByCurrentThreadCodec::encodeRequest(getName(),
+                                                                                     util::getCurrentThreadId());
 
             return invokeAndGetResult<bool, protocol::codec::LockIsLockedByCurrentThreadCodec::ResponseParameters>(
                     request, partitionId);
@@ -110,7 +112,7 @@ namespace hazelcast {
 
         bool ILock::tryLock(long timeInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockTryLockCodec::encodeRequest(getName(), util::getThreadId(), LONG_MAX,
+                    protocol::codec::LockTryLockCodec::encodeRequest(getName(), util::getCurrentThreadId(), LONG_MAX,
                                                                      timeInMillis,
                                                                      referenceIdGenerator->getNextReferenceId());
 

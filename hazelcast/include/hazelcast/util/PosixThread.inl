@@ -42,8 +42,10 @@ namespace hazelcast {
                 pthread_attr_destroy(&attr);
             }
 
-            virtual long getThreadId() {
-                return (long) pthread_self();
+            virtual int64_t getThreadId() {
+                int64_t threadId = 0;
+                memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
+                return threadId;
             }
 
             static void yield() {

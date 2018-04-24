@@ -66,7 +66,7 @@ namespace hazelcast {
 
                 void start();
 
-                virtual long getThreadId() = 0;
+                virtual int64_t getThreadId() = 0;
 
             protected:
                 virtual void startInternal(Runnable *targetObject) = 0;
@@ -76,7 +76,7 @@ namespace hazelcast {
                 util::AtomicBoolean isJoined;
                 util::AtomicBoolean started;
                 ConditionVariable wakeupCondition;
-                static util::SynchronizedMap<long, UnmanagedAbstractThreadPointer> startedThreads;
+                static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
 
                 Mutex wakeupMutex;
 

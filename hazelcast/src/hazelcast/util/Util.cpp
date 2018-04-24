@@ -43,11 +43,14 @@
 namespace hazelcast {
     namespace util {
 
-        long getThreadId() {
+        int64_t getCurrentThreadId() {
         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-            return GetCurrentThreadId();
+            return (int64_t) GetCurrentThreadId();
         #else
-            return (long) pthread_self();
+            int64_t threadId = 0;
+            pthread_t thread = pthread_self();
+            memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
+            return threadId;
         #endif
         }
 

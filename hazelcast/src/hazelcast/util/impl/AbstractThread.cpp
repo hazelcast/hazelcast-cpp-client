@@ -15,13 +15,14 @@
  */
 
 #include <cerrno>
+#include <hazelcast/util/ILogger.h>
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
         namespace impl {
-            util::SynchronizedMap<long, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
+            util::SynchronizedMap<int64_t, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
 
             AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable) : target(runnable) {
                 this->target = runnable;
@@ -102,7 +103,7 @@ namespace hazelcast {
                     return true;
                 }
 
-                long threadId = getThreadId();
+                int64_t threadId = getThreadId();
 
                 if (!innerJoin()) {
                     return false;
@@ -114,12 +115,13 @@ namespace hazelcast {
             }
 
             void AbstractThread::sleep(int64_t timeInMilliseconds) {
-                long currentThreadId = util::getThreadId();
+                int64_t currentThreadId = util::getCurrentThreadId();
                 boost::shared_ptr<UnmanagedAbstractThreadPointer> currentThread = startedThreads.get(currentThreadId);
-                // this method should only be called from a started thread!!!
-                assert(currentThread.get() != NULL);
                 if (currentThread.get()) {
                     currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
+                } else {
+                    util::ILogger::getLogger().warning() << "AbstractThread::sleep IS NOT interrupptible SLEEP!!! currentThreadId:" << currentThreadId;
+                    util::sleepmillis(timeInMilliseconds);
                 }
             }
 

@@ -24,6 +24,7 @@
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/Util.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,8 +47,8 @@ namespace hazelcast {
                 }
             }
 
-            virtual long getThreadId() {
-                return GetCurrentThreadId();
+            virtual int64_t getThreadId() {
+                return (int64_t) id;
             }
 
             static void yield() {
@@ -81,7 +82,7 @@ namespace hazelcast {
             }
 
             virtual bool isCalledFromSameThread() {
-                return id == getThreadId();
+                return id == util::getCurrentThreadId();
             }
 
             virtual bool innerJoin() {

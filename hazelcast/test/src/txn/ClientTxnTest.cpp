@@ -92,6 +92,8 @@ namespace hazelcast {
                 second.reset(new HazelcastServer(hazelcastInstanceFactory));
                 std::auto_ptr<ClientConfig> clientConfig = getConfig();
                 clientConfig->setRedoOperation(true);
+                // Keep the test time shorter by setting a shorter invocation timeout
+                clientConfig->getProperties()[ClientProperties::INVOCATION_TIMEOUT_SECONDS] = "5";
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
                 clientConfig->setLoadBalancer(loadBalancer.get());
@@ -115,19 +117,23 @@ namespace hazelcast {
                 queue.offer("item");
                 server->shutdown();
 
-                ASSERT_THROW(context.commitTransaction(), exception::IException);
+                try {
+                    context.commitTransaction();
+                } catch (exception::IOException &) {
+                    // no fail
+                } catch (exception::OperationTimeoutException &e) {
+                    // no fail
+                } catch (exception::IException &) {
+                    FAIL();
+                }
 
                 context.rollbackTransaction();
 
                 ASSERT_TRUE(memberRemovedLatch.await(10));
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
-                try {
-                    ASSERT_EQ(0, q.size());
-                    ASSERT_EQ(q.poll().get(), (std::string *)NULL);
-                } catch (exception::IException& e) {
-                    std::cout << e.what() << std::endl;
-                }
+                ASSERT_EQ(0, q.size());
+                ASSERT_EQ(q.poll().get(), (std::string *)NULL);
             }
 
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {

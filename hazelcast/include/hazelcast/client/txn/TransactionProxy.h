@@ -110,7 +110,7 @@ namespace hazelcast {
                 spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
-                long threadId;
+                int64_t threadId;
                 std::string txnId;
 
                 TxnState state;

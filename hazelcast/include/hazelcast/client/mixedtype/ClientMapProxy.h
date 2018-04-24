@@ -1096,7 +1096,7 @@ namespace hazelcast {
                             protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
                                                                                             processor,
                                                                                             keyData,
-                                                                                            util::getThreadId());
+                                                                                util::getCurrentThreadId());
 
                     boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(
                             request, partitionId);

@@ -89,7 +89,7 @@ namespace hazelcast {
             bool IMapImpl::containsKey(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapContainsKeyCodec::encodeRequest(getName(), key,
-                                                                            util::getThreadId());
+                                                                            util::getCurrentThreadId());
 
                 return invokeAndGetResult<bool, protocol::codec::MapContainsKeyCodec::ResponseParameters>(request,
                                                                                                           key);
@@ -104,7 +104,7 @@ namespace hazelcast {
 
             std::auto_ptr<serialization::pimpl::Data> IMapImpl::getData(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapGetCodec::encodeRequest(getName(), key, util::getThreadId());
+                        protocol::codec::MapGetCodec::encodeRequest(getName(), key, util::getCurrentThreadId());
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapGetCodec::ResponseParameters>(
                         request, key);
@@ -112,7 +112,7 @@ namespace hazelcast {
 
             std::auto_ptr<serialization::pimpl::Data> IMapImpl::removeData(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapRemoveCodec::encodeRequest(getName(), key, util::getThreadId());
+                        protocol::codec::MapRemoveCodec::encodeRequest(getName(), key, util::getCurrentThreadId());
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapRemoveCodec::ResponseParameters>(
                         request, key);
@@ -121,7 +121,7 @@ namespace hazelcast {
             bool IMapImpl::remove(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapRemoveIfSameCodec::encodeRequest(getName(), key, value,
-                                                                             util::getThreadId());
+                                                                             util::getCurrentThreadId());
 
                 return invokeAndGetResult<bool, protocol::codec::MapRemoveIfSameCodec::ResponseParameters>(request,
                                                                                                            key);
@@ -138,7 +138,7 @@ namespace hazelcast {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapDeleteCodec::encodeRequest(getName(), key, util::getThreadId());
+                        protocol::codec::MapDeleteCodec::encodeRequest(getName(), key, util::getCurrentThreadId());
 
                 invokeOnPartition(request, partitionId);
             }
@@ -153,7 +153,7 @@ namespace hazelcast {
             bool IMapImpl::tryRemove(const serialization::pimpl::Data &key, long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapTryRemoveCodec::encodeRequest(getName(), key,
-                                                                          util::getThreadId(),
+                                                                          util::getCurrentThreadId(),
                                                                           timeoutInMillis);
 
                 return invokeAndGetResult<bool, protocol::codec::MapTryRemoveCodec::ResponseParameters>(request, key);
@@ -163,7 +163,7 @@ namespace hazelcast {
                                   long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapTryPutCodec::encodeRequest(getName(), key, value,
-                                                                       util::getThreadId(),
+                                                                       util::getCurrentThreadId(),
                                                                        timeoutInMillis);
 
                 return invokeAndGetResult<bool, protocol::codec::MapTryPutCodec::ResponseParameters>(request, key);
@@ -174,7 +174,7 @@ namespace hazelcast {
                                                                         long ttlInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapPutCodec::encodeRequest(getName(), key, value,
-                                                                    util::getThreadId(),
+                                                                    util::getCurrentThreadId(),
                                                                     ttlInMillis);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapPutCodec::ResponseParameters>(
@@ -187,7 +187,7 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapPutTransientCodec::encodeRequest(getName(), key, value,
-                                                                             util::getThreadId(),
+                                                                             util::getCurrentThreadId(),
                                                                              ttlInMillis);
 
                 invokeOnPartition(request, partitionId);
@@ -198,7 +198,7 @@ namespace hazelcast {
                                                                                 long ttlInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapPutIfAbsentCodec::encodeRequest(getName(), key, value,
-                                                                            util::getThreadId(),
+                                                                            util::getCurrentThreadId(),
                                                                             ttlInMillis);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapPutIfAbsentCodec::ResponseParameters>(
@@ -210,7 +210,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapReplaceIfSameCodec::encodeRequest(getName(), key, oldValue,
                                                                               newValue,
-                                                                              util::getThreadId());
+                                                                              util::getCurrentThreadId());
 
                 return invokeAndGetResult<bool, protocol::codec::MapReplaceIfSameCodec::ResponseParameters>(request,
                                                                                                             key);
@@ -220,7 +220,7 @@ namespace hazelcast {
                                                                             const serialization::pimpl::Data &value) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapReplaceCodec::encodeRequest(getName(), key, value,
-                                                                        util::getThreadId());
+                                                                        util::getCurrentThreadId());
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::MapReplaceCodec::ResponseParameters>(
                         request, key);
@@ -232,7 +232,7 @@ namespace hazelcast {
 
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapSetCodec::encodeRequest(getName(), key, value,
-                                                                    util::getThreadId(), ttl);
+                                                                    util::getCurrentThreadId(), ttl);
 
                 invokeOnPartition(request, partitionId);
             }
@@ -245,7 +245,7 @@ namespace hazelcast {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapLockCodec::encodeRequest(getName(), key, util::getThreadId(), leaseTime,
+                        protocol::codec::MapLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(), leaseTime,
                                                                      lockReferenceIdGenerator->getNextReferenceId());
 
                 invokeOnPartition(request, partitionId);
@@ -260,7 +260,7 @@ namespace hazelcast {
 
             bool IMapImpl::tryLock(const serialization::pimpl::Data &key, long timeInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getThreadId(), -1,
+                        protocol::codec::MapTryLockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(), -1,
                                                                         timeInMillis,
                                                                         lockReferenceIdGenerator->getNextReferenceId());
 
@@ -271,7 +271,7 @@ namespace hazelcast {
                 int partitionId = getPartitionId(key);
 
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapUnlockCodec::encodeRequest(getName(), key, util::getThreadId(),
+                        protocol::codec::MapUnlockCodec::encodeRequest(getName(), key, util::getCurrentThreadId(),
                                                                        lockReferenceIdGenerator->getNextReferenceId());
 
                 invokeOnPartition(request, partitionId);
@@ -318,7 +318,7 @@ namespace hazelcast {
             std::auto_ptr<map::DataEntryView> IMapImpl::getEntryViewData(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapGetEntryViewCodec::encodeRequest(getName(), key,
-                                                                             util::getThreadId());
+                                                                             util::getCurrentThreadId());
 
                 return invokeAndGetResult<std::auto_ptr<map::DataEntryView>, protocol::codec::MapGetEntryViewCodec::ResponseParameters>(
                         request, key);
@@ -326,7 +326,7 @@ namespace hazelcast {
 
             bool IMapImpl::evict(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::MapEvictCodec::encodeRequest(getName(), key, util::getThreadId());
+                        protocol::codec::MapEvictCodec::encodeRequest(getName(), key, util::getCurrentThreadId());
 
                 return invokeAndGetResult<bool, protocol::codec::MapEvictCodec::ResponseParameters>(request,
                                                                                                     key);
@@ -507,7 +507,7 @@ namespace hazelcast {
                         protocol::codec::MapExecuteOnKeyCodec::encodeRequest(getName(),
                                                                              processor,
                                                                              key,
-                                                                             util::getThreadId());
+                                                                             util::getCurrentThreadId());
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>,
                         protocol::codec::MapExecuteOnKeyCodec::ResponseParameters>(request, partitionId);
