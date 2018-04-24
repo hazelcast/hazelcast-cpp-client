@@ -58,6 +58,6 @@ int main(int argc, char** argv) {
 
     return RUN_ALL_TESTS();
 
-    //SimpleMapTest(address, 5701).start();
+    //SimpleMapTest("127.0.0.1", 5701).start();
 }
 
