@@ -26,8 +26,6 @@
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/CountDownLatch.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,10 +40,11 @@ namespace hazelcast {
                 class PutGetRemoveTestTask : public util::Runnable {
                 public:
                     PutGetRemoveTestTask(HazelcastClient &client, MultiMap<std::string, std::string> &mm,
-                                      util::CountDownLatch &latch) : client(client), mm(mm), latch(latch) {}
+                                         util::CountDownLatch &latch) : client(client), mm(mm), latch(latch) {}
 
                     virtual void run() {
                         std::string key = util::IOUtil::to_string(util::getThreadId());
+                        std::string key2 = key + "2";
                         client.getMultiMap<std::string, std::string>("testPutGetRemove").put(key, "value");
                         TransactionContext context = client.newTransactionContext();
                         context.beginTransaction();
@@ -54,8 +53,14 @@ namespace hazelcast {
                         ASSERT_FALSE(multiMap.put(key, "value"));
                         ASSERT_TRUE(multiMap.put(key, "value1"));
                         ASSERT_TRUE(multiMap.put(key, "value2"));
+                        ASSERT_TRUE(multiMap.put(key2, "value21"));
+                        ASSERT_TRUE(multiMap.put(key2, "value22"));
                         ASSERT_EQ(3, (int) multiMap.get(key).size());
                         ASSERT_EQ(3, (int) multiMap.valueCount(key));
+                        vector<std::string> removedValues = multiMap.remove(key2);
+                        ASSERT_EQ(2U, removedValues.size())  ;
+                        ASSERT_TRUE((removedValues[0] == "value21" && removedValues[1] == "value22") ||
+                                    (removedValues[1] == "value21" && removedValues[0] == "value22"));
                         context.commitTransaction();
 
                         ASSERT_EQ(3, (int) mm.get(key).size());

@@ -71,9 +71,8 @@ namespace hazelcast {
                     void listenMembershipEvents(const boost::shared_ptr<connection::Connection> &ownerConnection);
 
                     void fireMemberAttributeEvent(const MemberAttributeEvent &event);
-                protected:
-                    ClientContext &client;
                 private:
+                    ClientContext &client;
                     boost::shared_ptr<ClientMembershipListener> clientMembershipListener;
                     util::Atomic<std::map<Address, boost::shared_ptr<Member> > > members;
                     util::SynchronizedValueMap<std::string, boost::shared_ptr<MembershipListener> > listeners;

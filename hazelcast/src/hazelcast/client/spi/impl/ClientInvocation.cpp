@@ -18,7 +18,6 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
@@ -211,9 +210,9 @@ namespace hazelcast {
                     std::ostringstream sb;
                     int64_t nowInMillis = util::currentTimeMillis();
                     sb << *this << " timed out because exception occurred after client invocation timeout "
-                       << invocationService.getInvocationTimeoutMillis() << util::StringUtil::timeToString(nowInMillis)
-                       << ". " << "Start time: " << util::StringUtil::timeToString(startTimeMillis)
-                       << ". Total elapsed time: "
+                       << "Current time :" << invocationService.getInvocationTimeoutMillis()
+                       << util::StringUtil::timeToString(nowInMillis) << ". " << "Start time: "
+                       << util::StringUtil::timeToString(startTimeMillis) << ". Total elapsed time: "
                        << (nowInMillis - startTimeMillis) << " ms. ";
                     return exception::OperationTimeoutException("ClientInvocation::newOperationTimeoutException",
                                                                 sb.str());
@@ -267,7 +266,7 @@ namespace hazelcast {
                                                                              std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                              const std::string &objectName) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
-                                                new ClientInvocation(clientContext, clientMessage, objectName));
+                            new ClientInvocation(clientContext, clientMessage, objectName));
                     invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
@@ -317,7 +316,7 @@ namespace hazelcast {
                     } else {
                         // progressive retry delay
                         int64_t delayMillis = util::min<int64_t>(1 << (invokeCount.get() - MAX_FAST_INVOCATION_COUNT),
-                                                              retryPauseMillis);
+                                                                 retryPauseMillis);
                         executionService.schedule(shared_from_this(), delayMillis);
                     }
                 }

@@ -54,7 +54,7 @@ namespace hazelcast {
                               serializationService(clientContext.getSerializationService()),
                               logger(util::ILogger::getLogger()),
                               eventExecutor(logger, clientContext.getName() + ".event-", eventThreadCount, eventQueueCapacity),
-                              registrationExecutor(logger, clientContext.getName() + ".eventRegistration-", 1, eventQueueCapacity) {
+                              registrationExecutor(logger, clientContext.getName() + ".eventRegistration-", 1) {
                     }
 
                     void AbstractClientListenerService::shutdown() {

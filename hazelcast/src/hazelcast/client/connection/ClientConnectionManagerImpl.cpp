@@ -506,8 +506,7 @@ namespace hazelcast {
                                          << " of " << connectionAttemptLimit << ".";
 
                         if (remainingTime > 0) {
-                            // TODO: change with interruptible sleep
-                            util::sleepmillis(remainingTime);
+                            util::Thread::sleep(remainingTime);
                         }
                     } else {
                         logger.warning() << "Unable to get alive cluster connection, attempt " << attempt << " of "

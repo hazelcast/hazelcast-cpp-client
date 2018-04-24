@@ -24,6 +24,7 @@
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Runnable.h"
+#include "hazelcast/util/SynchronizedMap.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -35,6 +36,16 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API AbstractThread {
             public:
+                class UnmanagedAbstractThreadPointer {
+                public:
+                    UnmanagedAbstractThreadPointer(AbstractThread *thread);
+
+                    AbstractThread *getThread() const;
+
+                private:
+                    AbstractThread *thread;
+                };
+
                 AbstractThread(const boost::shared_ptr<Runnable> &runnable);
 
                 virtual ~AbstractThread();
@@ -44,6 +55,8 @@ namespace hazelcast {
                 virtual void interruptibleSleep(int seconds);
 
                 void interruptibleSleepMillis(int64_t timeInMillis);
+
+                static void sleep(int64_t timeInMilliseconds);
 
                 virtual void wakeup();
 
@@ -63,6 +76,7 @@ namespace hazelcast {
                 util::AtomicBoolean isJoined;
                 util::AtomicBoolean started;
                 ConditionVariable wakeupCondition;
+                static util::SynchronizedMap<long, UnmanagedAbstractThreadPointer> startedThreads;
 
                 Mutex wakeupMutex;
 

@@ -31,6 +31,8 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
+                ClientPartitionServiceImpl::RefreshTaskCallback::RefreshTaskCallback(
+                        ClientPartitionServiceImpl &partitionService) : partitionService(partitionService) {}
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onResponse(
                         const boost::shared_ptr<protocol::ClientMessage> &responseMessage) {
@@ -44,12 +46,11 @@ namespace hazelcast {
                 }
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onFailure(
-                        const boost::shared_ptr<exception::IException> &e) {
-
+                        const boost::shared_ptr<exception::IException> &t) {
+                    if (partitionService.client.getLifecycleService().isRunning()) {
+                        partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:" << t;
+                    }
                 }
-
-                ClientPartitionServiceImpl::RefreshTaskCallback::RefreshTaskCallback(
-                        ClientPartitionServiceImpl &partitionService) : partitionService(partitionService) {}
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client) : client(client),
                                                                                                 logger(util::ILogger::getLogger()),
@@ -170,9 +171,8 @@ namespace hazelcast {
                             protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =
                                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters::decode(
                                             *responseMessage);
-                            // TODO: change with processPartitionResponse(response.partitions, response.partitionStateVersion, response.partitionStateVersionExist)
                             processPartitionResponse(response.partitions,
-                                                     response.partitionStateVersion, false);
+                                                     response.partitionStateVersion, response.partitionStateVersionExist);
                         } catch (exception::IException &e) {
                             if (client.getLifecycleService().isRunning()) {
                                 logger.warning() << "Error while fetching cluster partition table!" << e;
