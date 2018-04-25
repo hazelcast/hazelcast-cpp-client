@@ -20,16 +20,11 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace util {
         namespace concurrent {
             namespace locks {
-                 class HAZELCAST_API LockSupport {
+                 class LockSupport {
                 public:
                      /**
                       * Disables the current thread for thread scheduling purposes, for up to
@@ -66,9 +61,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_UTIL_CONCURRENT_LOCKS_LOCKSUPPORT_H_
