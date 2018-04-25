@@ -201,8 +201,10 @@ public:
         std::vector<boost::shared_ptr<hazelcast::util::Thread> > threads;
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            threads.push_back(boost::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(
-                    boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map)))));
+            boost::shared_ptr<hazelcast::util::Thread> thread = boost::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(
+                                boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map))));
+            thread->start();
+            threads.push_back(thread);
         }
 
         monitor.start();
