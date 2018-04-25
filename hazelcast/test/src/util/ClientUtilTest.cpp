@@ -22,6 +22,7 @@
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Future.h"
 #include "hazelcast/util/Thread.h"
+#include "hazelcast/util/concurrent/locks/LockSupport.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/exception/IOException.h"
@@ -348,6 +349,15 @@ namespace hazelcast {
 
             TEST_F (ClientUtilTest, testStringUtilTimeToStringFriendly) {
                 ASSERT_EQ("never", util::StringUtil::timeToStringFriendly(0));
+            }
+
+            TEST_F (ClientUtilTest, testLockSupport) {
+                int64_t parkDuration = 1000 * 100;
+                int64_t start = util::currentTimeNanos();
+                util::concurrent::locks::LockSupport::parkNanos(parkDuration);
+                int64_t end = util::currentTimeNanos();
+                int64_t actualDuration = end - start;
+                ASSERT_GE(actualDuration, parkDuration);
             }
         }
     }

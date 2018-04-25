@@ -21,11 +21,6 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -53,7 +48,7 @@ namespace hazelcast {
                      * <li>not always being able to fully utilize the number of invocations.</li>
                      * </ol>
                      */
-                    class HAZELCAST_API CallIdSequence {
+                    class CallIdSequence {
                     public:
                         /**
                          * Returns the maximum concurrent invocations supported. INT32_MAX means there is no max.
@@ -93,9 +88,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCE_H_
