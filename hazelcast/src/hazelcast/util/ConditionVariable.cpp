@@ -79,9 +79,9 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        #define NANOS_IN_A_SECOND 1000 * 1000 * 1000
         #define MILLIS_IN_A_SECOND 1000
-        #define NANOS_IN_A_MILLISECOND 1000 * 1000
+        #define NANOS_IN_A_SECOND (NANOS_IN_A_MILLISECOND * MILLIS_IN_A_SECOND)
+        #define NANOS_IN_A_MILLISECOND (NANOS_IN_A_USECOND * 1000)
         #define NANOS_IN_A_USECOND 1000
 
         ConditionVariable::ConditionVariable() {
@@ -141,8 +141,8 @@ namespace hazelcast {
             if (seconds > std::numeric_limits<time_t>::max()) {
                 ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
-                ts.tv_sec += (time_t) (timeInMilliseconds / MILLIS_IN_A_SECOND);
-                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (timeInMilliseconds % MILLIS_IN_A_SECOND) * NANOS_IN_A_MILLISECOND;
+                ts.tv_sec += (time_t) seconds;
+                int64_t nsec = ts.tv_nsec + (timeInMilliseconds % MILLIS_IN_A_SECOND) * NANOS_IN_A_MILLISECOND;
                 if (nsec >= NANOS_IN_A_SECOND) {
                     nsec -= NANOS_IN_A_SECOND;
                     ++ts.tv_sec;
@@ -158,13 +158,13 @@ namespace hazelcast {
 
             struct timespec ts;
             ts.tv_sec = tv.tv_sec;
-            ts.tv_nsec = tv.tv_usec * 1000;
+            ts.tv_nsec = tv.tv_usec * NANOS_IN_A_USECOND;
             int64_t seconds = nanos / NANOS_IN_A_SECOND;
             if (seconds > std::numeric_limits<time_t>::max()) {
                 ts.tv_sec = std::numeric_limits<time_t>::max();
             } else {
-                ts.tv_sec += (time_t) (nanos / NANOS_IN_A_SECOND);
-                long nsec = tv.tv_usec * NANOS_IN_A_USECOND + (nanos % NANOS_IN_A_USECOND);
+                ts.tv_sec += (time_t) seconds;
+                int64_t nsec = ts.tv_nsec + (nanos % NANOS_IN_A_SECOND);
                 if (nsec >= NANOS_IN_A_SECOND) {
                     nsec -= NANOS_IN_A_SECOND;
                     ++ts.tv_sec;

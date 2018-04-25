@@ -23,7 +23,6 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace sequence {
-
                     AbstractCallIdSequence::AbstractCallIdSequence(int32_t maxConcurrentInvocations) : longs(
                             3 * util::Bits::CACHE_LINE_LENGTH / util::Bits::LONG_SIZE_IN_BYTES) {
                         std::ostringstream out;
@@ -32,6 +31,9 @@ namespace hazelcast {
                         util::Preconditions::checkPositive(maxConcurrentInvocations, out.str());
 
                         this->maxConcurrentInvocations = maxConcurrentInvocations;
+                    }
+
+                    AbstractCallIdSequence::~AbstractCallIdSequence() {
                     }
 
                     int32_t AbstractCallIdSequence::getMaxConcurrentInvocations() const {
@@ -62,7 +64,8 @@ namespace hazelcast {
                         return longs.get(INDEX_HEAD) - longs.get(INDEX_TAIL) < maxConcurrentInvocations;
                     }
 
-                    AbstractCallIdSequence::~AbstractCallIdSequence() {
+                    int64_t AbstractCallIdSequence::getTail() {
+                        return longs.get(INDEX_TAIL);
                     }
                 }
             }

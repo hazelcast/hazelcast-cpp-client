@@ -60,6 +60,8 @@ namespace hazelcast {
 
                         virtual int64_t getLastCallId();
 
+                        int64_t getTail();
+
                     protected:
                         virtual void handleNoSpaceLeft() = 0;
 
