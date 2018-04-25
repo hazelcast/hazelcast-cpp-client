@@ -24,7 +24,7 @@ namespace hazelcast {
     namespace util {
         namespace concurrent {
             namespace locks {
-                 class LockSupport {
+                 class HAZELCAST_API LockSupport {
                 public:
                      /**
                       * Disables the current thread for thread scheduling purposes, for up to
