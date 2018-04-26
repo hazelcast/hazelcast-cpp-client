@@ -33,12 +33,12 @@ namespace hazelcast {
             class ClientSemaphoreTest : public ClientTestSupport {
             protected:
                 virtual void SetUp() {
-                    s->reducePermits(100);
+                    s->drainPermits();
                     s->release(10);
                 }
 
                 virtual void TearDown() {
-                    s->reducePermits(100);
+                    s->drainPermits();
                     s->release(10);
                 }
 
