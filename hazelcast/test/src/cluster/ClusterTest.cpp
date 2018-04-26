@@ -205,7 +205,7 @@ namespace hazelcast {
             #else
             INSTANTIATE_TEST_CASE_P(All,
                                     ClusterTest,
-                                    ::testing::Values(new SmartTcpClientConfig(), new NonSmartTcpClientConfig()));
+                                    ::testing::Values(new SmartTcpClientConfig()));
             #endif
         }
     }
