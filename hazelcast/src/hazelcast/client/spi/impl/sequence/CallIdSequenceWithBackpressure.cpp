@@ -17,7 +17,7 @@
 
 #include "hazelcast/client/spi/impl/sequence/CallIdSequenceWithBackpressure.h"
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/Util.h"
+#include "hazelcast/util/TimeUtil.h"
 #include "hazelcast/util/concurrent/BackoffIdleStrategy.h"
 
 namespace hazelcast {
@@ -41,9 +41,9 @@ namespace hazelcast {
                     }
 
                     void CallIdSequenceWithBackpressure::handleNoSpaceLeft() {
-                        boost::posix_time::time_duration start = util::getDurationSinceEpoch();
+                        boost::posix_time::time_duration start = util::TimeUtil::getDurationSinceEpoch();
                         for (int64_t idleCount = 0;; idleCount++) {
-                            int64_t elapsedNanos = (util::getDurationSinceEpoch() - start).total_nanoseconds();
+                            int64_t elapsedNanos = (util::TimeUtil::getDurationSinceEpoch() - start).total_nanoseconds();
                             if (elapsedNanos > backoffTimeoutNanos) {
                                 exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")

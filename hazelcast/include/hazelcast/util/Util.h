@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/3/13.
 
-#ifndef HAZELCAST_UTIL_FUNCTIONS
-#define HAZELCAST_UTIL_FUNCTIONS
+#ifndef HAZELCAST_UTIL_UTIL_H_
+#define HAZELCAST_UTIL_UTIL_H_
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <time.h>
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <assert.h>
 #include <stdint.h>
-#include <boost/date_time/posix_time/ptime.hpp>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
 #define STRINGIZE(STR) #STR
@@ -58,11 +56,6 @@ namespace hazelcast {
          * @param date The date to be modified
          */
         HAZELCAST_API void gitDateToHazelcastLogDate(std::string &date);
-
-        /**
-         * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-         */
-        boost::posix_time::time_duration getDurationSinceEpoch();
 
         /**
          * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
@@ -150,5 +143,5 @@ namespace hazelcast {
 }
 
 
-#endif //HAZELCAST_UTIL_FUNCTIONS
+#endif //HAZELCAST_UTIL_UTIL_H_
 
