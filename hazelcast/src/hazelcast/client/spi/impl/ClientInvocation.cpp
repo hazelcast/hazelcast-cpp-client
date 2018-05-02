@@ -43,8 +43,7 @@ namespace hazelcast {
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        invokeCount(0),
-                        internalExecutor(clientContext.getClientExecutionService()) {
+                        invokeCount(0) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -63,8 +62,7 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         connection(connection),
-                        invokeCount(0),
-                        internalExecutor(clientContext.getClientExecutionService()) {
+                        invokeCount(0) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -81,8 +79,7 @@ namespace hazelcast {
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        invokeCount(0),
-                        internalExecutor(clientContext.getClientExecutionService()) {
+                        invokeCount(0) {
                 }
 
                 ClientInvocation::~ClientInvocation() {
@@ -336,7 +333,7 @@ namespace hazelcast {
                     util::Future<boost::shared_ptr<protocol::ClientMessage> >::andThen(
                             boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
                                     new InternalDelegatingExecutionCallback(callback, callIdSequence)),
-                            internalExecutor);
+                            executionService);
                 }
 
                 std::string ClientInvocation::invocationToString() {

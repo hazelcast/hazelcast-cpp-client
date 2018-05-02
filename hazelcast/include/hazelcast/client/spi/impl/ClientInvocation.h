@@ -182,7 +182,6 @@ namespace hazelcast {
                     bool bypassHeartbeatCheck;
                     boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler;
                     util::Atomic<int64_t> invokeCount;
-                    util::Executor &internalExecutor;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 
