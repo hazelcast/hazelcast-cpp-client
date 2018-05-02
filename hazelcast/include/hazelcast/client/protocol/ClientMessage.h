@@ -91,7 +91,6 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class MemberAttributeChange;
             class DistributedObjectInfo;
         }
 
@@ -453,10 +452,6 @@ namespace hazelcast {
 
                 void setRetryable(bool shouldRetry);
 
-                bool isBindToSingleConnection() const;
-
-                void setIsBoundToSingleConnection(bool isSingleConnection);
-
                 /**
                  * Returns the number of bytes sent on the socket
                  **/
@@ -481,8 +476,6 @@ namespace hazelcast {
                 int32_t findSuitableCapacity(int32_t requiredCapacity, int32_t existingCapacity) const;
 
                 bool retryable;
-                bool isBoundToSingleConnection;
-                std::vector<byte> messageBuffer;
             };
 
             template<>
@@ -546,7 +539,6 @@ namespace hazelcast {
             std::pair<Address, std::vector<int32_t> > ClientMessage::get();
 
         }
-
 
     }
 }
