@@ -168,11 +168,9 @@ namespace hazelcast {
 
                     void shutdown();
 
-                    void setRunnerThread(const boost::shared_ptr<util::Thread> &thread);
-
-                    const boost::shared_ptr<util::Thread> &getRunnerThread() const;
-
                     virtual const std::string getName() const;
+
+                    void setStartTimeMillis(Thread *pThread);
 
                 protected:
                     const boost::shared_ptr<util::Runnable> command;
@@ -180,7 +178,7 @@ namespace hazelcast {
                     int64_t periodInMillis;
                     util::AtomicBoolean live;
                     int64_t startTimeMillis;
-                    boost::shared_ptr<util::Thread> runnerThread;
+                    util::Thread *runnerThread;
                 };
 
                 class RepeatingRunner : public DelayedRunner {
@@ -198,7 +196,7 @@ namespace hazelcast {
                 util::Atomic<int64_t> threadIdGenerator;
                 std::vector<boost::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
-                util::SynchronizedQueue<DelayedRunner> delayedRunners;
+                util::SynchronizedQueue<util::Thread> delayedRunners;
 
                 virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
 

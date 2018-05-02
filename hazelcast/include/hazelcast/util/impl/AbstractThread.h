@@ -68,6 +68,8 @@ namespace hazelcast {
 
                 virtual int64_t getThreadId() = 0;
 
+                const boost::shared_ptr<Runnable> &getTarget() const;
+
             protected:
                 virtual void startInternal(Runnable *targetObject) = 0;
                 virtual bool isCalledFromSameThread() = 0;

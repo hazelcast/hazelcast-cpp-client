@@ -125,6 +125,10 @@ namespace hazelcast {
                 }
             }
 
+            const boost::shared_ptr<Runnable> &AbstractThread::getTarget() const {
+                return target;
+            }
+
             AbstractThread::UnmanagedAbstractThreadPointer::UnmanagedAbstractThreadPointer(AbstractThread *thread)
                     : thread(thread) {}
 
