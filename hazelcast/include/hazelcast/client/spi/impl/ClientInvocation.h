@@ -58,6 +58,10 @@ namespace hazelcast {
             class ClientExecutionService;
 
             namespace impl {
+                namespace sequence {
+                    class CallIdSequence;
+                }
+
                 /**
                  * Handles the routing of a request from a Hazelcast client.
                  * <p>
@@ -66,7 +70,9 @@ namespace hazelcast {
                  * 3) How many times is it retried?
                  */
                 class HAZELCAST_API ClientInvocation
-                        : public util::Runnable, public boost::enable_shared_from_this<ClientInvocation> {
+                        : public util::Runnable,
+                          public ClientInvocationFuture,
+                          public boost::enable_shared_from_this<ClientInvocation> {
                 public:
                     virtual ~ClientInvocation();
 
@@ -114,7 +120,29 @@ namespace hazelcast {
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
+                    virtual void onComplete();
+
+                    virtual void
+                    andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback);
+
+                    virtual std::string invocationToString();
                 private:
+                    class InternalDelegatingExecutionCallback
+                            : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
+                    public:
+                        InternalDelegatingExecutionCallback(
+                                const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback,
+                                sequence::CallIdSequence &callIdSequence);
+
+                        virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &message);
+
+                        virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
+
+                    private:
+                        boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > callback;
+                        sequence::CallIdSequence &callIdSequence;
+                    };
+
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName, int partitionId);
@@ -154,7 +182,6 @@ namespace hazelcast {
                     bool bypassHeartbeatCheck;
                     boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler;
                     util::Atomic<int64_t> invokeCount;
-                    boost::shared_ptr<ClientInvocationFuture> clientInvocationFuture;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 

@@ -44,15 +44,13 @@ namespace hazelcast {
                 INT64_SIZE = 8
             };
 
-            inline void wrapForWrite(byte *buf, int32_t size, int32_t offset) {
-                buffer = buf;
+            inline void wrapForWrite(int32_t size, int32_t offset) {
                 capacity = size;
                 index = offset;
                 readOnly = false;
             }
 
-            inline void wrapForRead(byte *buf, int32_t size, int32_t offset) {
-                buffer = buf;
+            inline void wrapForRead(int32_t size, int32_t offset) {
                 capacity = size;
                 index = offset;
                 readOnly = true;
@@ -216,7 +214,7 @@ namespace hazelcast {
             }
 
         protected:
-            LittleEndianBufferWrapper() : buffer(NULL), capacity(-1), index(-1), readOnly(true) {}
+            LittleEndianBufferWrapper(int32_t size) : buffer(size, 0), capacity(-1), index(-1), readOnly(true) {}
 
             inline int32_t getIndex() const {
                 return index;
@@ -227,8 +225,8 @@ namespace hazelcast {
             }
 
         protected:
-            inline byte *ix() const {
-                return buffer + index;
+            inline byte *ix() {
+                return &buffer[index];
             }
 
             inline bool checkWriteAvailable(int32_t requestedBytes) const {
@@ -251,7 +249,7 @@ namespace hazelcast {
                 return index + requestedBytes <= capacity;
             }
 
-            byte *buffer;
+            std::vector<byte> buffer;
             int32_t capacity;
             int32_t index;
             bool readOnly;

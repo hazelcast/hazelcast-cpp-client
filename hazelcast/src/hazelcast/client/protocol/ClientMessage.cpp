@@ -43,34 +43,15 @@ namespace hazelcast {
         namespace protocol {
             const std::string ClientTypes::CPP = "CPP";
 
-            ClientMessage::ClientMessage() : isOwner(false), retryable(false), isBoundToSingleConnection(false) {
-            }
-
-            ClientMessage::ClientMessage(int32_t size) : isOwner(true), retryable(false),
-                                                         isBoundToSingleConnection(false) {
-                buffer = new byte[size];
-                memset(buffer, 0, size);
-
+            ClientMessage::ClientMessage(int32_t size) : LittleEndianBufferWrapper(size), retryable(false) {
                 setFrameLength(size);
             }
 
             ClientMessage::~ClientMessage() {
-/*
-                if (isOwner) {
-                    delete[] buffer;
-                }
-*/
             }
 
-            void ClientMessage::wrapForDecode(byte *buffer, int32_t size) {
-                isOwner = false;
-                wrapForRead(buffer, size, HEADER_SIZE);
-            }
-
-            void ClientMessage::wrapForEncode(byte *buffer, int32_t size) {
-                wrapForWrite(buffer, size, HEADER_SIZE);
-
-                isOwner = true;
+            void ClientMessage::wrapForEncode(int32_t size) {
+                wrapForWrite(size, HEADER_SIZE);
 
                 setFrameLength(size);
                 setVersion(PROTOCOL_VERSION);
@@ -81,10 +62,8 @@ namespace hazelcast {
             }
 
             std::auto_ptr<ClientMessage> ClientMessage::createForEncode(int32_t size) {
-                std::auto_ptr<ClientMessage> msg(new ClientMessage());
-                byte *buffer = new byte[size];
-                memset(buffer, 0, size);
-                msg->wrapForEncode(buffer, size);
+                std::auto_ptr<ClientMessage> msg(new ClientMessage(size));
+                msg->wrapForEncode(size);
                 return msg;
             }
 
@@ -94,11 +73,11 @@ namespace hazelcast {
 
             //----- Setter methods begin --------------------------------------
             void ClientMessage::setFrameLength(int32_t length) {
-                util::Bits::nativeToLittleEndian4(&length, buffer + FRAME_LENGTH_FIELD_OFFSET);
+                util::Bits::nativeToLittleEndian4(&length, &buffer[FRAME_LENGTH_FIELD_OFFSET]);
             }
 
             void ClientMessage::setMessageType(uint16_t type) {
-                util::Bits::nativeToLittleEndian2(&type, buffer + TYPE_FIELD_OFFSET);
+                util::Bits::nativeToLittleEndian2(&type, &buffer[TYPE_FIELD_OFFSET]);
             }
 
             void ClientMessage::setVersion(uint8_t value) {
@@ -114,15 +93,15 @@ namespace hazelcast {
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
-                util::Bits::nativeToLittleEndian8(&id, buffer + CORRELATION_ID_FIELD_OFFSET);
+                util::Bits::nativeToLittleEndian8(&id, &buffer[CORRELATION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
-                util::Bits::nativeToLittleEndian4(&partitionId, buffer + PARTITION_ID_FIELD_OFFSET);
+                util::Bits::nativeToLittleEndian4(&partitionId, &buffer[PARTITION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setDataOffset(uint16_t offset) {
-                util::Bits::nativeToLittleEndian2(&offset, buffer + DATA_OFFSET_FIELD_OFFSET);
+                util::Bits::nativeToLittleEndian2(&offset, &buffer[DATA_OFFSET_FIELD_OFFSET]);
             }
 
             void ClientMessage::updateFrameLength() {
@@ -184,10 +163,10 @@ namespace hazelcast {
 
             int32_t ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, int32_t offset, int32_t frameLen) {
                 size_t numToRead = (size_t)(frameLen - offset);
-                size_t numRead = byteBuff.readBytes(buffer + offset, numToRead);
+                size_t numRead = byteBuff.readBytes(&buffer[offset], numToRead);
 
                 if (numRead == numToRead) {
-                    wrapForRead(buffer, frameLen, ClientMessage::HEADER_SIZE);
+                    wrapForRead(frameLen, ClientMessage::HEADER_SIZE);
                 }
 
                 return (int32_t) numRead;
@@ -198,7 +177,7 @@ namespace hazelcast {
                 int32_t result;
 
                 util::Bits::littleEndianToNative4(
-                        buffer + FRAME_LENGTH_FIELD_OFFSET, &result);
+                        &buffer[FRAME_LENGTH_FIELD_OFFSET], &result);
 
                 return result;
             }
@@ -206,7 +185,7 @@ namespace hazelcast {
             uint16_t ClientMessage::getMessageType() const {
                 uint16_t type;
 
-                util::Bits::littleEndianToNative2(buffer + TYPE_FIELD_OFFSET, &type);
+                util::Bits::littleEndianToNative2(&buffer[TYPE_FIELD_OFFSET], &type);
 
                 return type;
             }
@@ -217,19 +196,19 @@ namespace hazelcast {
 
             int64_t ClientMessage::getCorrelationId() const {
                 int64_t value;
-                util::Bits::littleEndianToNative8(buffer + CORRELATION_ID_FIELD_OFFSET, &value);
+                util::Bits::littleEndianToNative8(&buffer[CORRELATION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             int32_t ClientMessage::getPartitionId() const {
                 int32_t value;
-                util::Bits::littleEndianToNative4(buffer + PARTITION_ID_FIELD_OFFSET, &value);
+                util::Bits::littleEndianToNative4(&buffer[PARTITION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             uint16_t ClientMessage::getDataOffset() const {
                 uint16_t value;
-                util::Bits::littleEndianToNative2(buffer + DATA_OFFSET_FIELD_OFFSET, &value);
+                util::Bits::littleEndianToNative2(&buffer[DATA_OFFSET_FIELD_OFFSET], &value);
                 return value;
             }
 
@@ -455,7 +434,7 @@ namespace hazelcast {
                 int32_t existingFrameLen = getFrameLength();
                 int32_t newFrameLen = existingFrameLen + dataSize;
                 ensureBufferSize(newFrameLen);
-                memcpy(buffer + existingFrameLen, msg->buffer, (size_t) dataSize);
+                memcpy(&buffer[existingFrameLen], &msg->buffer[0], (size_t) dataSize);
                 setFrameLength(newFrameLen);
             }
 
@@ -464,21 +443,13 @@ namespace hazelcast {
             }
 
             void ClientMessage::ensureBufferSize(int32_t requiredCapacity) {
-                if (isOwner) {
-                    int32_t currentCapacity = getCapacity();
-                    if (requiredCapacity > currentCapacity) {
-                        // allocate new memory
-                        int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
+                int32_t currentCapacity = getCapacity();
+                if (requiredCapacity > currentCapacity) {
+                    // allocate new memory
+                    int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
 
-                        // No need to keep the pointer in a smart pointer here
-                        byte *newBuffer = new byte[newSize];
-                        memcpy(newBuffer, buffer, (size_t) currentCapacity);
-                        // swap the new buffer with the old one
-                        // free the old memory
-                        delete[] buffer;
-                        buffer = newBuffer;
-                        wrapForWrite(buffer, newSize, getIndex());
-                    }
+                    buffer.resize(newSize, 0);
+                    wrapForWrite(newSize, getIndex());
                 } else {
                     // Should never be here
                     assert(0);
@@ -502,20 +473,12 @@ namespace hazelcast {
                 retryable = shouldRetry;
             }
 
-            bool ClientMessage::isBindToSingleConnection() const {
-                return isBoundToSingleConnection;
-            }
-
-            void ClientMessage::setIsBoundToSingleConnection(bool isSingleConnection) {
-                isBoundToSingleConnection = isSingleConnection;
-            }
-
             int32_t ClientMessage::writeTo(Socket &socket, int32_t offset, int32_t frameLen) {
                 int32_t numBytesSent = 0;
 
                 int32_t numBytesLeft = frameLen - offset;
                 if (numBytesLeft > 0) {
-                    numBytesSent = socket.send(buffer + offset, numBytesLeft);
+                    numBytesSent = socket.send(&buffer[offset], numBytesLeft);
                 }
 
                 return numBytesSent;

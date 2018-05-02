@@ -82,6 +82,7 @@ namespace hazelcast {
                 ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                clientContext.getSerializationService().dispose();
                 shutdownLatch.countDown();
             }
 

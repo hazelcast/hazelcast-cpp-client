@@ -67,11 +67,8 @@ namespace hazelcast {
 
                     ASSERT_FALSE(msg->isRetryable());
 
-                    ASSERT_FALSE(msg->isBindToSingleConnection());
-
                     ASSERT_EQ(22, msg->getFrameLength());
 
-                    msg->setIsBoundToSingleConnection(true);
                     msg->setRetryable(true);
                     msg->setCorrelationId(0xABCDEF12);
                     msg->addFlag(0x05);
@@ -80,7 +77,6 @@ namespace hazelcast {
                     msg->setVersion(4);
                     msg->updateFrameLength();
 
-                    ASSERT_TRUE(msg->isBindToSingleConnection());
                     ASSERT_TRUE(msg->isRetryable());
                     ASSERT_EQ(0xABCDEF12, msg->getCorrelationId());
                     ASSERT_FALSE(msg->isFlagSet(2));

@@ -102,7 +102,7 @@ namespace hazelcast {
                         boost::shared_ptr<ClientInvocationFuture> future = invocation->invoke();
                         std::string registrationId = registrationKey.getCodec()->decodeAddResponse(*future->get());
                         handler->onListenerRegister();
-                        boost::shared_ptr<connection::Connection> connection = future->getInvocation()->getSendConnection();
+                        boost::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
                         return boost::shared_ptr<ClientEventRegistration>(
                                 new ClientEventRegistration(registrationId,
                                                             invocation->getClientMessage()->getCorrelationId(),
