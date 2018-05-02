@@ -79,8 +79,6 @@ namespace hazelcast {
 
                 MessageMap partialMessages;
 
-                ClientMessage wrapperMessage;
-
                 std::auto_ptr<ClientMessage> message;
                 connection::Connection &connection;
 

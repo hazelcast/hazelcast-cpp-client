@@ -37,8 +37,9 @@ namespace hazelcast {
 
                 if (NULL == message.get()) {
                     if (buffer.remaining() >= ClientMessage::HEADER_SIZE) {
-                        wrapperMessage.wrapForDecode((byte *) buffer.ix(), (int32_t) buffer.remaining());
-                        frameLen = wrapperMessage.getFrameLength();
+                        util::Bits::littleEndianToNative4(
+                                ((byte *) buffer.ix()) + ClientMessage::FRAME_LENGTH_FIELD_OFFSET, &frameLen);
+
                         message = ClientMessage::create(frameLen);
                         offset = 0;
                     }

@@ -43,34 +43,17 @@ namespace hazelcast {
         namespace protocol {
             const std::string ClientTypes::CPP = "CPP";
 
-            ClientMessage::ClientMessage() : isOwner(false), retryable(false), isBoundToSingleConnection(false) {
-            }
-
-            ClientMessage::ClientMessage(int32_t size) : isOwner(true), retryable(false),
-                                                         isBoundToSingleConnection(false) {
-                buffer = new byte[size];
-                memset(buffer, 0, size);
-
+            ClientMessage::ClientMessage(int32_t size) : retryable(false), isBoundToSingleConnection(false),
+                                                         messageBuffer(size, 0) {
+                buffer = &messageBuffer[0];
                 setFrameLength(size);
             }
 
             ClientMessage::~ClientMessage() {
-/*
-                if (isOwner) {
-                    delete[] buffer;
-                }
-*/
             }
 
-            void ClientMessage::wrapForDecode(byte *buffer, int32_t size) {
-                isOwner = false;
-                wrapForRead(buffer, size, HEADER_SIZE);
-            }
-
-            void ClientMessage::wrapForEncode(byte *buffer, int32_t size) {
-                wrapForWrite(buffer, size, HEADER_SIZE);
-
-                isOwner = true;
+            void ClientMessage::wrapForEncode(int32_t size) {
+                wrapForWrite(&messageBuffer[0], size, HEADER_SIZE);
 
                 setFrameLength(size);
                 setVersion(PROTOCOL_VERSION);
@@ -81,10 +64,8 @@ namespace hazelcast {
             }
 
             std::auto_ptr<ClientMessage> ClientMessage::createForEncode(int32_t size) {
-                std::auto_ptr<ClientMessage> msg(new ClientMessage());
-                byte *buffer = new byte[size];
-                memset(buffer, 0, size);
-                msg->wrapForEncode(buffer, size);
+                std::auto_ptr<ClientMessage> msg(new ClientMessage(size));
+                msg->wrapForEncode(size);
                 return msg;
             }
 
@@ -464,21 +445,13 @@ namespace hazelcast {
             }
 
             void ClientMessage::ensureBufferSize(int32_t requiredCapacity) {
-                if (isOwner) {
-                    int32_t currentCapacity = getCapacity();
-                    if (requiredCapacity > currentCapacity) {
-                        // allocate new memory
-                        int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
+                int32_t currentCapacity = getCapacity();
+                if (requiredCapacity > currentCapacity) {
+                    // allocate new memory
+                    int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
 
-                        // No need to keep the pointer in a smart pointer here
-                        byte *newBuffer = new byte[newSize];
-                        memcpy(newBuffer, buffer, (size_t) currentCapacity);
-                        // swap the new buffer with the old one
-                        // free the old memory
-                        delete[] buffer;
-                        buffer = newBuffer;
-                        wrapForWrite(buffer, newSize, getIndex());
-                    }
+                    messageBuffer.resize(newSize, 0);
+                    wrapForWrite(&messageBuffer[0], newSize, getIndex());
                 } else {
                     // Should never be here
                     assert(0);
