@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(tcpip)
-add_subdirectory(socket-interceptor)
-add_subdirectory(shuffle-memberlist)
+add_executable(startAsyc StartAsync.cpp)
+add_executable(doNotReconnect DoNotReconnectToCluster.cpp)
+add_executable(reconnectAsync ReconnectAsync.cpp)
+
