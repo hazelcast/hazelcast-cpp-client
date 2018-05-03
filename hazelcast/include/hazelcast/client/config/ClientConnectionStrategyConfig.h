@@ -47,13 +47,13 @@ namespace hazelcast {
                             ON,
                     /**
                      * Reconnect to cluster without blocking invocations. Invocations will receive
-                     * {@link com.hazelcast.client.HazelcastClientOfflineException }
+                     * {@link HazelcastClientOfflineException}
                      */
                             ASYNC
                 };
 
                 /**
-                 * Client instance creation won't block on {@link HazelcastClient#newHazelcastClient()} if this value is true
+                 * Client instance creation won't block on {@link HazelcastClient(ClientConfig &)} if this value is true
                  * @return if client connects to cluster asynchronously
                  */
 

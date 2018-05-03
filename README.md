@@ -21,6 +21,12 @@
   * [Custom Serialization](#custom-serialization) 
   * [Polymorphic Types Serialization](#polymorphic-types-serialization) 
   * [Global Serializer](#global-serializer) 
+* [Invocation And Retry Mechanism](#invocation-and-retry-mechanism)
+    * [Client Backpressure](#client-backpressure)
+* [Client Connection Strategy](#client-connection-strategy)
+    * [Configure Client Reconnect Strategy](reconnect-strategy)
+    * [Shuffle Cluster Connection Member List](shuffle-members)
+* [Listener Events](#listener-events)
 * [Raw Pointer API](#raw-pointer-api)
 * [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastclient)
   * [TypedData API](#typeddata-api) 
@@ -380,6 +386,52 @@ Sometimes you may want to use your own serialization for some objects and do not
 ```
 
 MyGlobalSerializer is your implementation of StreamSerializer interface. You do not need to write the getHazelcastTypeId function for your objects which are handled by MyGlobalSerializer class.
+
+# Invocation And Retry Mechanism
+The client works by sending requests to the members in the cluster and processes the reponses. This is called a client invocation to the cluster. If any problem occurs during an invocation, the following rules apply to decide if the invocation should be retried:
+- If the problem is an IOException, which means that the request could not even be sent to the cluster member (e.g. due to a network connection problem), then all such requests can be retried.
+- If the invocation were sent to the cluster and the member returned an exception to the client, the client will retry the invocation only if the operation is a retryable idempotent operation. For example, the IMap::get is idempotent and can be retried but IMap::put is not idempotent.
+
+When invocation is being retried, the client may wait some time before it retries again, this retry wait time is configurable with this configuration property:
+- config.setProperty("hazelcast.client.invocation.retry.pause.millis", "500");
+The default retry wait time is 1000 msecs(i.e. 1 second).
+
+Of course, this retry does not continue indefinitely but finishes when the invocation timeout occurs. This duration is configurable with this configuration property:
+- config.setProperty("hazelcast.client.invocation.timeout.seconds", "30");
+The default timeout is 120 seconds.
+
+## Client Backpressure
+Sometimes, you may want to slow down the client operations to the cluster (e.g. your servers are overloaded). Then the client can be configured to wait until number of outstanding invocations whose reponses are not received to become less than a certain number. This is called "Client Backpressure". By default, the backpressure is disabled. There are a few properties which control the backpressure. These client configuration properties are:
+- "hazelcast.client.max.concurrent.invocations" : The maximum number of concurrent invocations allowed. To prevent the system from overloading, user can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then hazelcast will throw HazelcastOverloadException. By default this property is configured as INT32_MAX.
+- "hazelcast.client.invocation.backoff.timeout.millis": Controls the maximum timeout in millis to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting a <code>HazelcastOverloadException</code>. When set to -1 then <code>HazelcastOverloadException</code> is thrown immediately without any waiting. This is the default value.
+
+# Client Connection Strategy
+Hazelcast client cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured by:
+- ClientConfig::getConnectionStrategyConfig().setAsyncStart(bool);
+
+When this config is set true, the client creation won't wait to connect to cluster. The client instance will throw exception for any request, until it connects to cluster and become ready.
+If it is set to false (the default case), <code>HazelcastClient(const ClientConfig)</code> will block until a cluster connection established and it's ready to use client instance.
+
+## Configure Client Reconnect Strategy
+You can configure how the client should act when the client disconnects from the cluster for any reason. This is configured using the following configuration:
+- ClientConfig::getConnectionStrategyConfig().setReconnectMode(const hazelcast::client::config::ClientConnectionStrategyConfig::ReconnectMode &);
+
+Possible values for the ReconnectMode are:
+- OFF: Prevents reconnect to cluster after a disconnect.
+- ON: Reconnect to cluster by blocking invocations.
+- ASYNC: Reconnect to cluster without blocking invocations. Invocations will receive <code>HazelcastClientOfflineException</code>.
+
+## Shuffle Cluster Connection Member List
+When the client is connecting to the cluster, the configured and the discovered member addresses are being tried sequentially. The order with which the addresses are tried is by default in a randomly shuffled list. But for some reason, you may want the client try only in the order as provided. To achieve this you need to set this configuration:
+- config.setProperty("hazelcast.client.shuffle.member.list", "false")
+
+Client shuffles the given member list to prevent all clients to connect to the same node when this property is set to true. When it is set to false, the client tries to connect to the nodes in the given order. We force the client to not shuffle and try connect in the provided order the addresses are added.
+
+# Listener Events
+When a listener is added then the events are being delivered to the listener as they are received. The events are delivered to your listener implementation via event threads. The number of these event threads can be configured using this property:
+- config.setProperty("hazelcast.client.event.thread.count", "7");
+
+By default, the event thread count is 5. You may set the number of event threads for your application needs. For most of the cases, you do not need to change this value.
 
 # Raw Pointer API
 
