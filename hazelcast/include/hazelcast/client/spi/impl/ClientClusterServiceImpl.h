@@ -75,7 +75,7 @@ namespace hazelcast {
                     ClientContext &client;
                     boost::shared_ptr<ClientMembershipListener> clientMembershipListener;
                     util::Atomic<std::map<Address, boost::shared_ptr<Member> > > members;
-                    util::SynchronizedValueMap<std::string, boost::shared_ptr<MembershipListener> > listeners;
+                    util::SynchronizedMap<std::string, MembershipListener> listeners;
 
                     util::Mutex initialMembershipListenerMutex;
 
