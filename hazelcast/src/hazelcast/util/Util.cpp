@@ -17,12 +17,11 @@
 // Created by sancar koyunlu on 5/3/13.
 
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/TimeUtil.h"
 
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/microsec_time_clock.hpp>
-#include <boost/date_time.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/foreach.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string.h>
 #include <algorithm>
@@ -110,20 +109,13 @@ namespace hazelcast {
             }
         }
 
-        boost::posix_time::time_duration getDurationSinceEpoch() {
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970, 1, 1));
-            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-            boost::posix_time::time_duration diff = now - epoch;
-            return diff;
-        }
-
         int64_t currentTimeMillis() {
-            boost::posix_time::time_duration diff = getDurationSinceEpoch();
+            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
             return diff.total_milliseconds();
         }
 
         int64_t currentTimeNanos() {
-            boost::posix_time::time_duration diff = getDurationSinceEpoch();
+            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
             return diff.total_nanoseconds();
         }
 

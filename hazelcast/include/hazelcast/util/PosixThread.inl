@@ -19,6 +19,7 @@
 #include <pthread.h>
 #include <errno.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "hazelcast/util/impl/AbstractThread.h"
 #include "hazelcast/util/LockGuard.h"
