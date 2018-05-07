@@ -78,15 +78,15 @@ int main() {
     WaitMultiplierProcessor blockerTask;
 
     // submit 5 blocker tasks
-    map.submitToKey(1, blockerTask);
-    map.submitToKey(1, blockerTask);
-    map.submitToKey(1, blockerTask);
-    map.submitToKey(1, blockerTask);
-    map.submitToKey(1, blockerTask);
+    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
+    map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
 
     // Now the 6th call should receive HazelcastOverloadException
     try {
-        map.submitToKey(1, blockerTask);
+        map.submitToKey<int, WaitMultiplierProcessor>(1, blockerTask);
         std::cout << "This line should not execute!!!" << std::endl;
     } catch (hazelcast::client::exception::HazelcastOverloadException &) {
         std::cout << "Received the expected overload exception." << std::endl;
