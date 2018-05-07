@@ -15,6 +15,32 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/config/ClientConnectionStrategyConfig.h>
+#include <hazelcast/client/LifecycleListener.h>
+
+class DisconnectedListener : public hazelcast::client::LifecycleListener {
+public:
+    DisconnectedListener() : disconnectedLatch(1), connectedLatch(1) {}
+
+    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_DISCONNECTED) {
+            disconnectedLatch.countDown();
+        } else if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
+            connectedLatch.countDown();
+        }
+    }
+
+    void waitForDisconnection() {
+        disconnectedLatch.await();
+    }
+
+    bool awaitReconnection(int seconds) {
+        return connectedLatch.await(seconds);
+    }
+private:
+    hazelcast::util::CountDownLatch disconnectedLatch;
+    hazelcast::util::CountDownLatch connectedLatch;
+};
+
 
 int main() {
     hazelcast::client::ClientConfig config;
@@ -24,19 +50,29 @@ int main() {
      * custom implementations may ignore it if configured.
      * default value is {@link ReconnectMode#ON}
      *
-     * This example forces client NOT to reconnect if it ever disconnects from the cluster.
+     * This example forces client to reconnect to the cluster in an async manner.
      */
     config.getConnectionStrategyConfig().setReconnectMode(hazelcast::client::config::ClientConnectionStrategyConfig::ASYNC);
 
     hazelcast::client::HazelcastClient hz(config);
 
-    // it is guaranteed to be connected at this point but if the client somehow disconnects from the cluster, all
-    // invocations will receive HazelcastOfflineException until the cluster is connected.
-
     hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
 
     map.put(1, 100);
 
+    DisconnectedListener listener;
+    hz.addLifecycleListener(&listener);
+
+    // Please shut down the cluster at this point.
+    listener.waitForDisconnection();
+
+    std::cout << "Client is disconnected from the cluster now." << std::endl;
+
+    if (listener.awaitReconnection(10)) {
+        std::cout << "The client is connected to the cluster within 10 seconds after disconnection as expected." << std::endl;
+    }
+
+    hz.shutdown();
     std::cout << "Finished" << std::endl;
 
     return 0;

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_executable(startAsyc StartAsync.cpp)
+add_executable(startAsync StartAsync.cpp)
 add_executable(doNotReconnect DoNotReconnectToCluster.cpp)
 add_executable(reconnectAsync ReconnectAsync.cpp)
 

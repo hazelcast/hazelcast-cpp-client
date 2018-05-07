@@ -13,7 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <stdint.h>
+
 #include <hazelcast/client/HazelcastClient.h>
+
+class WaitMultiplierProcessor : public hazelcast::client::serialization::IdentifiedDataSerializable {
+public:
+    virtual int getFactoryId() const {
+        return 666;
+    }
+
+    virtual int getClassId() const {
+        return 8;
+    }
+
+    virtual void writeData(hazelcast::client::serialization::ObjectDataOutput &out) const {
+        out.writeInt(INT32_MAX);
+        out.writeInt(5);
+    }
+
+    virtual void readData(hazelcast::client::serialization::ObjectDataInput &reader) {
+        // no-op. Client never needs to read
+    }
+};
 
 int main() {
     hazelcast::client::ClientConfig config;
@@ -29,7 +51,7 @@ int main() {
      *
      * The following sets the maximum allowable outstanding concurrent invocations to 10000.
      */
-    config.setProperty("hazelcast.client.max.concurrent.invocations", "10000");
+    config.setProperty("hazelcast.client.max.concurrent.invocations", "5");
 
     /**
      * Control the maximum timeout in millis to wait for an invocation space to be available.
@@ -43,15 +65,32 @@ int main() {
      * the default value.
      * </p>
      *
-     * The following lets a maximum of 3 seconds wait time before throwing the exception.
+     * The following lets a maximum of 2 seconds wait time before throwing the exception.
      */
-    config.setProperty("hazelcast.client.invocation.backoff.timeout.millis", "3000");
+    config.setProperty("hazelcast.client.invocation.backoff.timeout.millis", "2000");
 
     hazelcast::client::HazelcastClient hz(config);
 
     hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");
     
-    map.put(1, 100);
+    map.put(1, 1);
+
+    WaitMultiplierProcessor blockerTask;
+
+    // submit 5 blocker tasks
+    map.submitToKey(1, blockerTask);
+    map.submitToKey(1, blockerTask);
+    map.submitToKey(1, blockerTask);
+    map.submitToKey(1, blockerTask);
+    map.submitToKey(1, blockerTask);
+
+    // Now the 6th call should receive HazelcastOverloadException
+    try {
+        map.submitToKey(1, blockerTask);
+        std::cout << "This line should not execute!!!" << std::endl;
+    } catch (hazelcast::client::exception::HazelcastOverloadException &) {
+        std::cout << "Received the expected overload exception." << std::endl;
+    }
 
     std::cout << "Finished" << std::endl;
 

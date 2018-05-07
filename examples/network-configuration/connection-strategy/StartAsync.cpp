@@ -14,8 +14,32 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/LifecycleListener.h>
+
+class ConnectedListener : public hazelcast::client::LifecycleListener {
+public:
+    ConnectedListener() : latch(1) {}
+
+    virtual void stateChanged(const hazelcast::client::LifecycleEvent &lifecycleEvent) {
+        if (lifecycleEvent.getState() == hazelcast::client::LifecycleEvent::CLIENT_CONNECTED) {
+            latch.countDown();
+        }
+    }
+
+    bool isConnected() {
+        return latch.get() == 0;
+    }
+
+    void waitForConnection() {
+        latch.await();
+    }
+private:
+    hazelcast::util::CountDownLatch latch;
+};
 
 int main() {
+    ConnectedListener listener;
+
     hazelcast::client::ClientConfig config;
 
     /**
@@ -28,12 +52,23 @@ int main() {
      */
     config.getConnectionStrategyConfig().setAsyncStart(true);
 
+    // Added a lifecycle listener so that we can track when the client is connected
+    config.addListener(&listener);
+
     hazelcast::client::HazelcastClient hz(config);
 
     // the client may not have connected to the cluster yet at this point since the cluster connection is async!!!
-    // You can add a lifecycle listener to detect the time the client is connected.
+    if (!listener.isConnected()) {
+        std::cout << "Async client is not connected yet." << std::endl;
+    }
+
+    listener.waitForConnection();
+
+    std::cout << "Async client is connected now." << std::endl;
 
     std::cout << "Finished" << std::endl;
+
+    hz.shutdown();
 
     return 0;
 }

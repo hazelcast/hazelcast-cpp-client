@@ -16,3 +16,4 @@
 add_subdirectory(tcpip)
 add_subdirectory(socket-interceptor)
 add_subdirectory(shuffle-memberlist)
+add_subdirectory(connection-strategy)

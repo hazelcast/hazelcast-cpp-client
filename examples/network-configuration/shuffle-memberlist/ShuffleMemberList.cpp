@@ -17,9 +17,9 @@
 
 int main() {
     hazelcast::client::ClientConfig config;
-    config.addAddress(hazelcast::client::Address("127.0.0.1", 5701)).addAddress(
-            hazelcast::client::Address("127.0.0.1", 5702)).addAddress(
-            hazelcast::client::Address("127.0.0.1", 9090)).addAddress(hazelcast::client::Address("127.0.0.1", 9091));
+    config.addAddress(hazelcast::client::Address("127.0.0.1", 5702)).addAddress(
+            hazelcast::client::Address("127.0.0.1", 9090)).addAddress(hazelcast::client::Address("127.0.0.1", 9091))
+            .addAddress(hazelcast::client::Address("127.0.0.1", 5701));
 
     /**
      * Client shuffles the given member list to prevent all clients to connect to the same node when
@@ -30,9 +30,12 @@ int main() {
      */
     config.setProperty("hazelcast.client.shuffle.member.list", "false");
 
-    hazelcast::client::HazelcastClient hz(config);
+    // Make sure that there is only one member in the cluster and it is started at 127.0.0.1:5701. This will mean that
+    // the client will try all the ip addresses added before this member address until it connects successfully to the
+    // cluster. Please examine the client logs to observe this. For example, it will write:
+    // "Trying to connect to 127.0.0.1:5702 as owner member" but this will fail since no such member exist.
 
-    hazelcast::client::IMap<int, std::string> map = hz.getMap<int, std::string>("test map");
+    hazelcast::client::HazelcastClient hz(config);
 
     std::cout << "Finished" << std::endl;
 

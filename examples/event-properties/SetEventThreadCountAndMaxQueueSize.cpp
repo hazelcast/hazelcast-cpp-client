@@ -78,9 +78,15 @@ int main() {
 
     map.addEntryListener(listener, false);
 
+    // Now we put two entries, and since there is only one event thread, they will be delivered to the entry listener,
+    // from within the same thread, hence it will be a sequential delivery. Hence we should see that "Entry added:100"
+    // is printed before "Entry added:200"
     map.put(1, 100);
+    map.put(2, 200);
 
     std::cout << "Finished" << std::endl;
+
+    hz.shutdown();
 
     return 0;
 }
