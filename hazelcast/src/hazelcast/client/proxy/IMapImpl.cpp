@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 29/09/14.
-//
+#include <climits>
+#include <boost/foreach.hpp>
 
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/spi/ClientListenerService.h"
@@ -76,8 +75,6 @@
 #include "hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
 #include "hazelcast/client/protocol/codec/MapRemoveAllCodec.h"
-
-#include <climits>
 
 namespace hazelcast {
     namespace client {
