@@ -13,7 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-add_subdirectory(tcpip)
-add_subdirectory(socket-interceptor)
-add_subdirectory(shuffle-memberlist)
-add_subdirectory(connection-strategy)
+add_executable(setInvocationTimeouts SetInvocationTimeouts.cpp)

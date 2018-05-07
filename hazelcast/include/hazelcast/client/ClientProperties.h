@@ -213,7 +213,7 @@ namespace hazelcast {
              * If the maximum number of concurrent invocations has been exceeded and a new invocation comes in,
              * then hazelcast will throw HazelcastOverloadException
              * <p/>
-             * By default it is configured as Integer.MaxValue.
+             * By default it is configured as INT32_MAX.
              */
             static const std::string MAX_CONCURRENT_INVOCATIONS;
             static const std::string MAX_CONCURRENT_INVOCATIONS_DEFAULT;

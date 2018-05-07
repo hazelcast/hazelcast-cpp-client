@@ -60,9 +60,9 @@ namespace hazelcast {
                 bool isAsyncStart() const;
 
                 /**
-                 * Set true for non blocking {@link HazelcastClient#newHazelcastClient()}. The client creation won't wait to
+                 * Set true for non blocking {@link HazelcastClient(const ClientConfig &)}. The client creation won't wait to
                  * connect to cluster. The client instace will throw exception until it connects to cluster and become ready.
-                 * If set to false, {@link HazelcastClient#newHazelcastClient()} will block until a cluster connection established and it's
+                 * If set to false, {@link HazelcastClient(const ClientConfig &)} will block until a cluster connection established and it's
                  * ready to use client instance
                  *
                  * default value is false
