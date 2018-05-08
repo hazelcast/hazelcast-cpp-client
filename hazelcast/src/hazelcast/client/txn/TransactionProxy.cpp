@@ -147,7 +147,7 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
-                return connection;
+                    return connection;
             }
 
             void TransactionProxy::checkThread() {
@@ -161,7 +161,7 @@ namespace hazelcast {
                 time_t current = time(NULL);
                 time_t timeoutPoint = startTime + options.getTimeout();
                 if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
-                    throw exception::IllegalStateException("TransactionProxy::checkTimeout()",
+                    throw exception::TransactionException("TransactionProxy::checkTimeout()",
                                                            "Transaction is timed-out!");
                 }
             }
