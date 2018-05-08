@@ -54,6 +54,8 @@ namespace hazelcast {
 
                 int size();
 
+                bool isEmpty();
+
                 std::vector<serialization::pimpl::Data> toArrayData();
 
                 bool containsAll(const std::vector<serialization::pimpl::Data>& elements);

@@ -131,6 +131,14 @@ namespace hazelcast {
                                                                                                     partitionId);
             }
 
+            bool IQueueImpl::isEmpty() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::QueueIsEmptyCodec::encodeRequest(getName());
+
+                return invokeAndGetResult<bool, protocol::codec::QueueIsEmptyCodec::ResponseParameters>(request,
+                                                                                                    partitionId);
+            }
+
             std::vector<serialization::pimpl::Data> IQueueImpl::toArrayData() {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::QueueIteratorCodec::encodeRequest(getName());

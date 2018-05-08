@@ -80,6 +80,18 @@ namespace hazelcast {
                 latch->countDown();
             }
 
+            TEST_F(ClientSemaphoreTest, testSimpleAcquire) {
+                ISemaphore semaphore = client->getISemaphore("testSimpleAcquire");
+                int numberOfPermits = 20;
+                ASSERT_TRUE(semaphore.init(numberOfPermits));
+                for (int i = 0; i < numberOfPermits; i++) {
+                    ASSERT_EQ(numberOfPermits - i, semaphore.availablePermits());
+                    semaphore.acquire();
+                }
+
+                ASSERT_EQ(semaphore.availablePermits(), 0);
+            }
+
             TEST_F(ClientSemaphoreTest, testAcquire) {
                 ASSERT_EQ(10, s->drainPermits());
 

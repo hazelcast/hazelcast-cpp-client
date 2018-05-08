@@ -351,6 +351,28 @@ namespace hazelcast {
                 ASSERT_EQ(2, (int)map.size());
                 ASSERT_EQ(2, (int)map.values().size());
             }
+
+            TEST_F(ClientTxnMapTest, testIsEmpty) {
+                std::string name = "testIsEmpty";
+
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_TRUE(map.isEmpty());
+
+                boost::shared_ptr<std::string> oldValue = map.put("key1", "value1");
+                ASSERT_NULL("old value should be null", oldValue.get(), std::string);
+
+                ASSERT_FALSE(map.isEmpty());
+
+                context.commitTransaction();
+
+                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                ASSERT_FALSE(regularMap.isEmpty());
+            }
+
         }
     }
 }

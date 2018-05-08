@@ -54,7 +54,6 @@
 #include "hazelcast/client/protocol/codec/MapGetEntryViewCodec.h"
 #include "hazelcast/client/protocol/codec/MapEvictCodec.h"
 #include "hazelcast/client/protocol/codec/MapEvictAllCodec.h"
-#include "hazelcast/client/protocol/codec/MapLoadAllCodec.h"
 #include "hazelcast/client/protocol/codec/MapKeySetCodec.h"
 #include "hazelcast/client/protocol/codec/MapGetAllCodec.h"
 #include "hazelcast/client/protocol/codec/MapValuesCodec.h"

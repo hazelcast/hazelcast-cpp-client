@@ -234,6 +234,13 @@ namespace hazelcast {
 
                 ASSERT_TRUE(list->removeItemListener(registrationId));
             }
+
+            TEST_F(ClientListTest, testIsEmpty) {
+                ASSERT_TRUE(list->isEmpty());
+                ASSERT_TRUE(list->add("item1"));
+                ASSERT_FALSE(list->isEmpty());
+            }
+
         }
     }
 }

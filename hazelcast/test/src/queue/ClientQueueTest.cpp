@@ -321,6 +321,12 @@ namespace hazelcast {
                 ASSERT_EQ(0, q->size());
                 ASSERT_EQ(q->poll().get(), (std::string *) NULL);
             }
+
+            TEST_F(ClientQueueTest, testIsEmpty) {
+                ASSERT_TRUE(q->isEmpty());
+                ASSERT_TRUE(q->offer("item1"));
+                ASSERT_FALSE(q->isEmpty());
+            }
         }
     }
 }

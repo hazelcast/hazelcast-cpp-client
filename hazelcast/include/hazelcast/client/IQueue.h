@@ -209,7 +209,7 @@ namespace hazelcast {
             * @return true if queue is empty
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::IQueueImpl::isEmpty();
             }
 
             /**
