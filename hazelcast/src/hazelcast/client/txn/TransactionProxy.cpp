@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/txn/ClientTransactionUtil.h>
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/util/Util.h"
@@ -189,9 +190,7 @@ namespace hazelcast {
 
             boost::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
                     std::auto_ptr<protocol::ClientMessage> request) {
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        clientContext, request, "", connection);
-                return invocation->invoke()->get();
+                return ClientTransactionUtil::invoke(request, getTxnId(), clientContext, connection);
             }
 
             spi::ClientContext &TransactionProxy::getClientContext() const {

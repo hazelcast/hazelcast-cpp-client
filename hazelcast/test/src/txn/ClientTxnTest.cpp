@@ -63,9 +63,9 @@ namespace hazelcast {
 
             };
 
-            class MyLifecycleListener : public MembershipListener {
+            class MyMembershipListener : public MembershipListener {
             public:
-                MyLifecycleListener(util::CountDownLatch& countDownLatch)
+                MyMembershipListener(util::CountDownLatch& countDownLatch)
                 : countDownLatch(countDownLatch) {
 
                 }
@@ -106,55 +106,62 @@ namespace hazelcast {
             }
 
             TEST_F(ClientTxnTest, testTxnRollback) {
+                std::string queueName = randomString();
+                TransactionContext context = client->newTransactionContext();
+                util::CountDownLatch txnRollbackLatch(1);
                 util::CountDownLatch memberRemovedLatch(1);
-                std::string queueName = "testTxnRollback";
-                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
+                MyMembershipListener myLifecycleListener(memberRemovedLatch);
                 client->getCluster().addMembershipListener(&myLifecycleListener);
 
-                TransactionContext context = client->newTransactionContext();
-                context.beginTransaction();
-                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                queue.offer("item");
-                server->shutdown();
-
                 try {
+                    context.beginTransaction();
+                    ASSERT_FALSE(context.getTxnId().empty());
+                    TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                    queue.offer(randomString());
+
+                    server->shutdown();
+
                     context.commitTransaction();
-                } catch (exception::IOException &) {
-                    // no fail
-                } catch (exception::OperationTimeoutException &e) {
-                    // no fail
-                } catch (exception::IException &) {
                     FAIL();
+                } catch (exception::TransactionException &e) {
+                    context.rollbackTransaction();
+                    txnRollbackLatch.countDown();
                 }
 
-                context.rollbackTransaction();
+                ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
+                ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
-                ASSERT_TRUE(memberRemovedLatch.await(10));
-
-                IQueue<std::string> q = client->getQueue<std::string>(queueName);
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                ASSERT_NULL("Poll result should be null since it is rolled back", q.poll().get(), std::string);
                 ASSERT_EQ(0, q.size());
-                ASSERT_EQ(q.poll().get(), (std::string *)NULL);
             }
 
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {
-                std::string queueName = "testTxnRollbackOnServerCrash";
+                std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
+                util::CountDownLatch txnRollbackLatch(1);
                 util::CountDownLatch memberRemovedLatch(1);
+
                 context.beginTransaction();
+
                 TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
                 queue.offer("str");
-                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
+
+                MyMembershipListener myLifecycleListener(memberRemovedLatch);
                 client->getCluster().addMembershipListener(&myLifecycleListener);
+
                 server->shutdown();
 
-                ASSERT_THROW(context.commitTransaction(), exception::IException);
+                ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
 
                 context.rollbackTransaction();
+                txnRollbackLatch.countDown();
 
-                ASSERT_TRUE(memberRemovedLatch.await(10));
+                ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
+                ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
-                ASSERT_EQ(q.poll().get(), (std::string *)NULL);
+                ASSERT_NULL("queue poll should return null", q.poll().get(), std::string);
                 ASSERT_EQ(0, q.size());
             }
         }
