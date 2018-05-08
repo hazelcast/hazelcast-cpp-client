@@ -114,6 +114,13 @@ namespace hazelcast {
                         request, partitionId);
             }
 
+            std::vector<serialization::pimpl::Data> IQueueImpl::drainToData() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::QueueDrainToCodec::encodeRequest(getName());
+
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::QueueDrainToMaxSizeCodec::ResponseParameters>(
+                        request, partitionId);
+            }
 
             std::auto_ptr<serialization::pimpl::Data> IQueueImpl::peekData() {
                 std::auto_ptr<protocol::ClientMessage> request =

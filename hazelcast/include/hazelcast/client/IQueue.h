@@ -159,7 +159,12 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             size_t drainTo(std::vector<E>& elements) {
-                return drainTo(elements, -1);
+                std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData();
+                for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
+                    std::auto_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
+                    elements.push_back(*e);
+                }
+                return coll.size();
             }
 
             /**
