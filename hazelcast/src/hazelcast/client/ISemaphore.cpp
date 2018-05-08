@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/protocol/codec/SemaphoreIncreasePermitsCodec.h>
 #include "hazelcast/client/ISemaphore.h"
 
 // Includes for parameters classes
@@ -34,6 +35,7 @@ namespace hazelcast {
         }
 
         bool ISemaphore::init(int permits) {
+            checkNegative(permits);
             std::auto_ptr<protocol::ClientMessage> request =
                     protocol::codec::SemaphoreInitCodec::encodeRequest(getName(), permits);
 
@@ -103,6 +105,19 @@ namespace hazelcast {
                     protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, timeoutInMillis);
 
             return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request, partitionId);
+        }
+
+        void ISemaphore::increasePermits(int32_t increase) {
+            checkNegative(increase);
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::SemaphoreIncreasePermitsCodec::encodeRequest(getName(), increase);
+            invokeOnPartition(request, partitionId);
+        }
+
+        void ISemaphore::checkNegative(int32_t permits) const {
+            if (permits < 0) {
+                throw exception::IllegalArgumentException("ISemaphore::checkNegative", "Permits cannot be negative!");
+            }
         }
     }
 }

@@ -67,6 +67,10 @@ namespace hazelcast {
             return *this;
         }
 
+        int TransactionOptions::getTimeoutMillis() const {
+            return timeoutSeconds * 1000;
+        }
+
         TransactionType::TransactionType(Type value):value(value) {
         }
 
