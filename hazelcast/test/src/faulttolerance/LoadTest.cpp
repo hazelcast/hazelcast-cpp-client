@@ -131,7 +131,7 @@ namespace hazelcast {
 
                     test.startThreads();
 
-                    startLatch.await(20);
+                    ASSERT_TRUE(startLatch.await(20));
 
                     instance1.shutdown();
                     instance2.shutdown();
