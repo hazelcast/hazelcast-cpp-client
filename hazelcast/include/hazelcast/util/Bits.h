@@ -285,13 +285,6 @@ namespace hazelcast {
             // ------------------ BIG ENDIAN Conversions ends ------------------------
 
         private :
-            /**
-            * Make the default constructor and the destructor inaccessible from public.
-            */
-            Bits();
-
-            virtual ~Bits();
-
             inline static void swap_2(const void *orig, void* target) {
                 *reinterpret_cast<uint16_t *> (target) =
                         bswap16 (*reinterpret_cast<uint16_t const *> (orig));
