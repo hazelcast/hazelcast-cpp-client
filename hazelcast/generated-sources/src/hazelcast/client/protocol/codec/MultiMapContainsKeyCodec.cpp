@@ -66,10 +66,7 @@ namespace hazelcast {
                     return MultiMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapContainsKeyCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapContainsKeyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

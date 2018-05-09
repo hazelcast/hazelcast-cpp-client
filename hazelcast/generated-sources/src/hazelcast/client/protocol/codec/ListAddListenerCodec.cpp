@@ -67,10 +67,6 @@ namespace hazelcast {
                     return ListAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                ListAddListenerCodec::ResponseParameters::ResponseParameters(
-                        const ListAddListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 ListAddListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

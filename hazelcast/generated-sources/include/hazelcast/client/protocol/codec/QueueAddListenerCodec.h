@@ -69,13 +69,11 @@ namespace hazelcast {
 
                         static ResponseParameters decode(ClientMessage &clientMessage);
 
-                        // define copy constructor (needed for auto_ptr variables)
-                        ResponseParameters(const ResponseParameters &rhs);
-
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
+
 
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {

@@ -57,10 +57,7 @@ namespace hazelcast {
                     return ListIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                ListIsEmptyCodec::ResponseParameters::ResponseParameters(
-                        const ListIsEmptyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

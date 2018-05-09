@@ -57,10 +57,7 @@ namespace hazelcast {
                     return QueueRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueRemainingCapacityCodec::ResponseParameters::ResponseParameters(
-                        const QueueRemainingCapacityCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

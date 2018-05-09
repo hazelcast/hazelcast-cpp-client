@@ -69,6 +69,7 @@ namespace hazelcast {
                 MapRemoveCodec::ResponseParameters::ResponseParameters(const MapRemoveCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
+
             }
         }
     }

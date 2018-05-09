@@ -57,10 +57,7 @@ namespace hazelcast {
                     return MultiMapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapEntrySetCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapEntrySetCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

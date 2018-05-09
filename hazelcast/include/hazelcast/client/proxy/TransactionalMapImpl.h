@@ -36,6 +36,8 @@ namespace hazelcast {
 
                 int size();
 
+                bool isEmpty();
+
                 std::auto_ptr<serialization::pimpl::Data> putData(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);
 
                 void set(const serialization::pimpl::Data& key, const serialization::pimpl::Data& value);

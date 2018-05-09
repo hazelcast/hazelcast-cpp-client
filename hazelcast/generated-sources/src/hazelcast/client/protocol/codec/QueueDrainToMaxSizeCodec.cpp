@@ -61,10 +61,7 @@ namespace hazelcast {
                     return QueueDrainToMaxSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueDrainToMaxSizeCodec::ResponseParameters::ResponseParameters(
-                        const QueueDrainToMaxSizeCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

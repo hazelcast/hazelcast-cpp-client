@@ -58,19 +58,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                TransactionalMapDeleteCodec::ResponseParameters
-                TransactionalMapDeleteCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionalMapDeleteCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapDeleteCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionCommitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                TransactionCommitCodec::ResponseParameters
-                TransactionCommitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionCommitCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionCommitCodec::ResponseParameters::ResponseParameters(
-                        const TransactionCommitCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

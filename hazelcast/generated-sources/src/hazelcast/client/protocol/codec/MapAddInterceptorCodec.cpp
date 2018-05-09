@@ -62,10 +62,7 @@ namespace hazelcast {
                     return MapAddInterceptorCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddInterceptorCodec::ResponseParameters::ResponseParameters(
-                        const MapAddInterceptorCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

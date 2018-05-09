@@ -59,11 +59,7 @@ namespace hazelcast {
                     return ClientGetPartitionsCodec::ResponseParameters(clientMessage);
                 }
 
-                ClientGetPartitionsCodec::ResponseParameters::ResponseParameters(
-                        const ClientGetPartitionsCodec::ResponseParameters &rhs) {
-                    partitions = rhs.partitions;
-                    partitionStateVersion = rhs.partitionStateVersion;
-                }
+
             }
         }
     }

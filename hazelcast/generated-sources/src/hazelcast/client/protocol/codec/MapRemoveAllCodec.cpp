@@ -50,19 +50,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapRemoveAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapRemoveAllCodec::ResponseParameters
-                MapRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapRemoveAllCodec::ResponseParameters(clientMessage);
-                }
-
-                MapRemoveAllCodec::ResponseParameters::ResponseParameters(
-                        const MapRemoveAllCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

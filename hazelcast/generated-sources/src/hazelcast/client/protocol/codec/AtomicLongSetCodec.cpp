@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                AtomicLongSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                AtomicLongSetCodec::ResponseParameters
-                AtomicLongSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return AtomicLongSetCodec::ResponseParameters(clientMessage);
-                }
-
-                AtomicLongSetCodec::ResponseParameters::ResponseParameters(
-                        const AtomicLongSetCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

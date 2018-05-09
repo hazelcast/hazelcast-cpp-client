@@ -62,10 +62,7 @@ namespace hazelcast {
                     return MultiMapIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapIsLockedCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapIsLockedCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

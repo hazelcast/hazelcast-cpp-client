@@ -57,10 +57,7 @@ namespace hazelcast {
                     return LockGetRemainingLeaseTimeCodec::ResponseParameters(clientMessage);
                 }
 
-                LockGetRemainingLeaseTimeCodec::ResponseParameters::ResponseParameters(
-                        const LockGetRemainingLeaseTimeCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

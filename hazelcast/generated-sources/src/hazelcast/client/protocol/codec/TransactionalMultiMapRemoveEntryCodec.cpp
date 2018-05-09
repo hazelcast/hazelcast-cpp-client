@@ -75,10 +75,7 @@ namespace hazelcast {
                     return TransactionalMultiMapRemoveEntryCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMultiMapRemoveEntryCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

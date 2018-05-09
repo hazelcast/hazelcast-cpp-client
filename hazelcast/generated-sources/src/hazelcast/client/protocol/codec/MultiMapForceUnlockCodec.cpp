@@ -54,19 +54,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MultiMapForceUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MultiMapForceUnlockCodec::ResponseParameters
-                MultiMapForceUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MultiMapForceUnlockCodec::ResponseParameters(clientMessage);
-                }
-
-                MultiMapForceUnlockCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapForceUnlockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

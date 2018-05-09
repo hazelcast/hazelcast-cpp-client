@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                SemaphoreAcquireCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                SemaphoreAcquireCodec::ResponseParameters
-                SemaphoreAcquireCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreAcquireCodec::ResponseParameters(clientMessage);
-                }
-
-                SemaphoreAcquireCodec::ResponseParameters::ResponseParameters(
-                        const SemaphoreAcquireCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

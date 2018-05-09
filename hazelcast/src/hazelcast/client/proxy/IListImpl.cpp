@@ -76,6 +76,14 @@ namespace hazelcast {
                                                                                                    partitionId);
             }
 
+            bool IListImpl::isEmpty() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::ListIsEmptyCodec::encodeRequest(getName());
+
+                return invokeAndGetResult<bool, protocol::codec::ListIsEmptyCodec::ResponseParameters>(request,
+                                                                                                   partitionId);
+            }
+
             bool IListImpl::contains(const serialization::pimpl::Data &element) {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::ListContainsCodec::encodeRequest(getName(), element);

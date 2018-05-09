@@ -53,19 +53,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapAddIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapAddIndexCodec::ResponseParameters
-                MapAddIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapAddIndexCodec::ResponseParameters(clientMessage);
-                }
-
-                MapAddIndexCodec::ResponseParameters::ResponseParameters(
-                        const MapAddIndexCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

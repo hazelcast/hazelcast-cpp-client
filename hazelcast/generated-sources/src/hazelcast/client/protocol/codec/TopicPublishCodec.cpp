@@ -50,19 +50,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TopicPublishCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                TopicPublishCodec::ResponseParameters
-                TopicPublishCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TopicPublishCodec::ResponseParameters(clientMessage);
-                }
-
-                TopicPublishCodec::ResponseParameters::ResponseParameters(
-                        const TopicPublishCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

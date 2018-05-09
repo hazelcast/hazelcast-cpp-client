@@ -61,10 +61,7 @@ namespace hazelcast {
                     return AtomicLongGetAndSetCodec::ResponseParameters(clientMessage);
                 }
 
-                AtomicLongGetAndSetCodec::ResponseParameters::ResponseParameters(
-                        const AtomicLongGetAndSetCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -67,10 +67,6 @@ namespace hazelcast {
                     return MultiMapAddEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapAddEntryListenerCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapAddEntryListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 MultiMapAddEntryListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

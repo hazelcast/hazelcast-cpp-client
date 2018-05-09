@@ -62,10 +62,7 @@ namespace hazelcast {
                     return MapValuesWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapValuesWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
-                        const MapValuesWithPagingPredicateCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

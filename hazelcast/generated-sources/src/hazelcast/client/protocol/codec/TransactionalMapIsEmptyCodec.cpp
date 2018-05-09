@@ -65,10 +65,7 @@ namespace hazelcast {
                     return TransactionalMapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapIsEmptyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

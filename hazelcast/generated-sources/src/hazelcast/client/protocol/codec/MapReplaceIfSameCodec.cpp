@@ -74,10 +74,7 @@ namespace hazelcast {
                     return MapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                MapReplaceIfSameCodec::ResponseParameters::ResponseParameters(
-                        const MapReplaceIfSameCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

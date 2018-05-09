@@ -74,6 +74,7 @@ namespace hazelcast {
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
+
                 private:
                     // Preventing public access to constructors
                     ListRemoveWithIndexCodec();

@@ -67,10 +67,6 @@ namespace hazelcast {
                     return QueueAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueAddListenerCodec::ResponseParameters::ResponseParameters(
-                        const QueueAddListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 QueueAddListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

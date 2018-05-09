@@ -79,7 +79,7 @@ namespace hazelcast {
             * @see IMap#isEmpty()
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::TransactionalMapImpl::isEmpty();
             }
 
             /**

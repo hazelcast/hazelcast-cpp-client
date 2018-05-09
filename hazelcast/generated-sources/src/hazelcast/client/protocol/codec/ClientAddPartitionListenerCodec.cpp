@@ -43,19 +43,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-
-
-                }
-
-                ClientAddPartitionListenerCodec::ResponseParameters
-                ClientAddPartitionListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientAddPartitionListenerCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(
-                        const ClientAddPartitionListenerCodec::ResponseParameters &rhs) {
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 ClientAddPartitionListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

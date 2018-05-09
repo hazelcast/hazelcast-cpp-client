@@ -61,9 +61,7 @@ namespace hazelcast {
                     return MapGetAllCodec::ResponseParameters(clientMessage);
                 }
 
-                MapGetAllCodec::ResponseParameters::ResponseParameters(const MapGetAllCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

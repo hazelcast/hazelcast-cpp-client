@@ -62,19 +62,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                TransactionalMapSetCodec::ResponseParameters
-                TransactionalMapSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionalMapSetCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionalMapSetCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapSetCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

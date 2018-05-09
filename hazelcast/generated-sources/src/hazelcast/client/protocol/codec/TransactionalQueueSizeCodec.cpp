@@ -65,10 +65,7 @@ namespace hazelcast {
                     return TransactionalQueueSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalQueueSizeCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalQueueSizeCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -79,10 +79,7 @@ namespace hazelcast {
                     return TransactionalMapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapReplaceIfSameCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapReplaceIfSameCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

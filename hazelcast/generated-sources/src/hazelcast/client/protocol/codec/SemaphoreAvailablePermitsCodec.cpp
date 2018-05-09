@@ -57,10 +57,7 @@ namespace hazelcast {
                     return SemaphoreAvailablePermitsCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreAvailablePermitsCodec::ResponseParameters::ResponseParameters(
-                        const SemaphoreAvailablePermitsCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -62,10 +62,7 @@ namespace hazelcast {
                     return MultiMapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapContainsValueCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapContainsValueCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

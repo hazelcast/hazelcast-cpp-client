@@ -71,6 +71,7 @@ namespace hazelcast {
                         const MapGetEntryViewCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
                 }
+
             }
         }
     }

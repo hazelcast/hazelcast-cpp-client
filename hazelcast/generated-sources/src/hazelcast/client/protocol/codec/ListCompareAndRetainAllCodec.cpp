@@ -62,10 +62,7 @@ namespace hazelcast {
                     return ListCompareAndRetainAllCodec::ResponseParameters(clientMessage);
                 }
 
-                ListCompareAndRetainAllCodec::ResponseParameters::ResponseParameters(
-                        const ListCompareAndRetainAllCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

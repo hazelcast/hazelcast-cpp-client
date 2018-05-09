@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionRollbackCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                TransactionRollbackCodec::ResponseParameters
-                TransactionRollbackCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionRollbackCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionRollbackCodec::ResponseParameters::ResponseParameters(
-                        const TransactionRollbackCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

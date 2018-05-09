@@ -57,18 +57,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                LockLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                LockLockCodec::ResponseParameters
-                LockLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockLockCodec::ResponseParameters(clientMessage);
-                }
-
-                LockLockCodec::ResponseParameters::ResponseParameters(const LockLockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

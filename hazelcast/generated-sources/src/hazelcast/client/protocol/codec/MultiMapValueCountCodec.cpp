@@ -66,10 +66,7 @@ namespace hazelcast {
                     return MultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapValueCountCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapValueCountCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

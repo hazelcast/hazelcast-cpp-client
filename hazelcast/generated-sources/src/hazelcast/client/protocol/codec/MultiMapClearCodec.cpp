@@ -45,19 +45,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MultiMapClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MultiMapClearCodec::ResponseParameters
-                MultiMapClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MultiMapClearCodec::ResponseParameters(clientMessage);
-                }
-
-                MultiMapClearCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapClearCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

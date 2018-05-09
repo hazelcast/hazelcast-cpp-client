@@ -61,10 +61,7 @@ namespace hazelcast {
                     return CountDownLatchAwaitCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchAwaitCodec::ResponseParameters::ResponseParameters(
-                        const CountDownLatchAwaitCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

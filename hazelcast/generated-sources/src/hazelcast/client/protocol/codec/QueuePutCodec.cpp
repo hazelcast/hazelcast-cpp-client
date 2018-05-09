@@ -50,18 +50,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                QueuePutCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                QueuePutCodec::ResponseParameters
-                QueuePutCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return QueuePutCodec::ResponseParameters(clientMessage);
-                }
-
-                QueuePutCodec::ResponseParameters::ResponseParameters(const QueuePutCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

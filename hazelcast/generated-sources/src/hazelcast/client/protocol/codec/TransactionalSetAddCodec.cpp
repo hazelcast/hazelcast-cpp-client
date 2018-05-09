@@ -70,10 +70,7 @@ namespace hazelcast {
                     return TransactionalSetAddCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalSetAddCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalSetAddCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

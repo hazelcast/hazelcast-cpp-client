@@ -62,19 +62,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapPutTransientCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapPutTransientCodec::ResponseParameters
-                MapPutTransientCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapPutTransientCodec::ResponseParameters(clientMessage);
-                }
-
-                MapPutTransientCodec::ResponseParameters::ResponseParameters(
-                        const MapPutTransientCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

@@ -66,10 +66,7 @@ namespace hazelcast {
                     return RingbufferAddCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferAddCodec::ResponseParameters::ResponseParameters(
-                        const RingbufferAddCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

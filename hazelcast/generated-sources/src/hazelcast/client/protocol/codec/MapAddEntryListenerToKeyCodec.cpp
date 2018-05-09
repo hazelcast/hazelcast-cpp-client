@@ -75,10 +75,6 @@ namespace hazelcast {
                     return MapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(
-                        const MapAddEntryListenerToKeyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 MapAddEntryListenerToKeyCodec::AbstractEventHandler::~AbstractEventHandler() {

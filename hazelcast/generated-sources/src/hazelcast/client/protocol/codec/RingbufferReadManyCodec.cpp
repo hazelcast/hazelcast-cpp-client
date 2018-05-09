@@ -96,6 +96,7 @@ namespace hazelcast {
                     itemSeqs = std::auto_ptr<std::vector<int64_t> >(new std::vector<int64_t>(*rhs.itemSeqs));
                     nextSeq = rhs.nextSeq;
                 }
+
             }
         }
     }

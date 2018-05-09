@@ -62,18 +62,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapLockCodec::ResponseParameters
-                MapLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapLockCodec::ResponseParameters(clientMessage);
-                }
-
-                MapLockCodec::ResponseParameters::ResponseParameters(const MapLockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

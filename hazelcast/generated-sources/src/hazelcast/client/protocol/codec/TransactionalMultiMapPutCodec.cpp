@@ -74,10 +74,7 @@ namespace hazelcast {
                     return TransactionalMultiMapPutCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapPutCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMultiMapPutCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

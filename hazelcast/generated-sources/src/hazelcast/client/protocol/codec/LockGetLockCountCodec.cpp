@@ -57,10 +57,7 @@ namespace hazelcast {
                     return LockGetLockCountCodec::ResponseParameters(clientMessage);
                 }
 
-                LockGetLockCountCodec::ResponseParameters::ResponseParameters(
-                        const LockGetLockCountCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -61,10 +61,7 @@ namespace hazelcast {
                     return MultiMapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapRemoveEntryListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

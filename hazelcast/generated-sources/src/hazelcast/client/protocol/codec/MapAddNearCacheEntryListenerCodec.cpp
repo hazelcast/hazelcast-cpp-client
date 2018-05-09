@@ -69,10 +69,6 @@ namespace hazelcast {
                     return MapAddNearCacheEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddNearCacheEntryListenerCodec::ResponseParameters::ResponseParameters(
-                        const MapAddNearCacheEntryListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 MapAddNearCacheEntryListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

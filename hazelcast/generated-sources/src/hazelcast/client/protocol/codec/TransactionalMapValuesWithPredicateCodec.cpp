@@ -70,10 +70,7 @@ namespace hazelcast {
                     return TransactionalMapValuesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapValuesWithPredicateCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapValuesWithPredicateCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                ClientDestroyProxyCodec::ResponseParameters
-                ClientDestroyProxyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientDestroyProxyCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(
-                        const ClientDestroyProxyCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

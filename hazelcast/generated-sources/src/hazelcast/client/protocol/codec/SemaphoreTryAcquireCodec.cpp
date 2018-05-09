@@ -65,10 +65,7 @@ namespace hazelcast {
                     return SemaphoreTryAcquireCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(
-                        const SemaphoreTryAcquireCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -74,9 +74,7 @@ namespace hazelcast {
                     return MapTryPutCodec::ResponseParameters(clientMessage);
                 }
 
-                MapTryPutCodec::ResponseParameters::ResponseParameters(const MapTryPutCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

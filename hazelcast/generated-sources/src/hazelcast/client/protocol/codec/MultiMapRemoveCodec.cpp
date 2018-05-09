@@ -65,10 +65,7 @@ namespace hazelcast {
                     return MultiMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapRemoveCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapRemoveCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

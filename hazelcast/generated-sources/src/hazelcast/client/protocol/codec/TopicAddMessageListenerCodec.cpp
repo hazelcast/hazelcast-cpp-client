@@ -63,10 +63,6 @@ namespace hazelcast {
                     return TopicAddMessageListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                TopicAddMessageListenerCodec::ResponseParameters::ResponseParameters(
-                        const TopicAddMessageListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 TopicAddMessageListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

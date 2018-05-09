@@ -54,19 +54,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                ListAddWithIndexCodec::ResponseParameters
-                ListAddWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ListAddWithIndexCodec::ResponseParameters(clientMessage);
-                }
-
-                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(
-                        const ListAddWithIndexCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

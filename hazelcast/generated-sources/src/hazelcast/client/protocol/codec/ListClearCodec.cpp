@@ -45,18 +45,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ListClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                ListClearCodec::ResponseParameters
-                ListClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ListClearCodec::ResponseParameters(clientMessage);
-                }
-
-                ListClearCodec::ResponseParameters::ResponseParameters(const ListClearCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

@@ -61,10 +61,7 @@ namespace hazelcast {
                     return LockIsLockedByCurrentThreadCodec::ResponseParameters(clientMessage);
                 }
 
-                LockIsLockedByCurrentThreadCodec::ResponseParameters::ResponseParameters(
-                        const LockIsLockedByCurrentThreadCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

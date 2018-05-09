@@ -49,19 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                LockForceUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                LockForceUnlockCodec::ResponseParameters
-                LockForceUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockForceUnlockCodec::ResponseParameters(clientMessage);
-                }
-
-                LockForceUnlockCodec::ResponseParameters::ResponseParameters(
-                        const LockForceUnlockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

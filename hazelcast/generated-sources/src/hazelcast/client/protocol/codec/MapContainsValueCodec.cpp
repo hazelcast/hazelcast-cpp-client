@@ -62,10 +62,7 @@ namespace hazelcast {
                     return MapContainsValueCodec::ResponseParameters(clientMessage);
                 }
 
-                MapContainsValueCodec::ResponseParameters::ResponseParameters(
-                        const MapContainsValueCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

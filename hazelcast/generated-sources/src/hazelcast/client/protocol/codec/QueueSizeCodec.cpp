@@ -57,9 +57,7 @@ namespace hazelcast {
                     return QueueSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueSizeCodec::ResponseParameters::ResponseParameters(const QueueSizeCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

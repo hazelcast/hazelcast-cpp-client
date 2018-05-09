@@ -62,10 +62,7 @@ namespace hazelcast {
                     return ListLastIndexOfCodec::ResponseParameters(clientMessage);
                 }
 
-                ListLastIndexOfCodec::ResponseParameters::ResponseParameters(
-                        const ListLastIndexOfCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

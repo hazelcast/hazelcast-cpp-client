@@ -41,19 +41,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientPingCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                ClientPingCodec::ResponseParameters
-                ClientPingCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientPingCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientPingCodec::ResponseParameters::ResponseParameters(
-                        const ClientPingCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

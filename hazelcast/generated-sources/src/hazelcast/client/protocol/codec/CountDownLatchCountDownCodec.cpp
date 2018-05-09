@@ -45,19 +45,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                CountDownLatchCountDownCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                CountDownLatchCountDownCodec::ResponseParameters
-                CountDownLatchCountDownCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return CountDownLatchCountDownCodec::ResponseParameters(clientMessage);
-                }
-
-                CountDownLatchCountDownCodec::ResponseParameters::ResponseParameters(
-                        const CountDownLatchCountDownCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

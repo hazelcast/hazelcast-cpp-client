@@ -119,6 +119,7 @@ namespace hazelcast {
                     clientUnregisteredMembers = std::auto_ptr<std::vector<Member> >(
                             new std::vector<Member>(*rhs.clientUnregisteredMembers));
                 }
+
             }
         }
     }

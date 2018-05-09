@@ -65,10 +65,7 @@ namespace hazelcast {
                     return MapExecuteWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapExecuteWithPredicateCodec::ResponseParameters::ResponseParameters(
-                        const MapExecuteWithPredicateCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

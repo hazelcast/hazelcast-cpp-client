@@ -54,19 +54,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapForceUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapForceUnlockCodec::ResponseParameters
-                MapForceUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapForceUnlockCodec::ResponseParameters(clientMessage);
-                }
-
-                MapForceUnlockCodec::ResponseParameters::ResponseParameters(
-                        const MapForceUnlockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

@@ -54,19 +54,7 @@ namespace hazelcast {
                             const std::string &serviceName);
                     //************************ REQUEST ENDS ********************************************************************//
 
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
 
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                        // define copy constructor (needed for auto_ptr variables)
-                        ResponseParameters(const ResponseParameters &rhs);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
                 private:
                     // Preventing public access to constructors
                     ClientDestroyProxyCodec();

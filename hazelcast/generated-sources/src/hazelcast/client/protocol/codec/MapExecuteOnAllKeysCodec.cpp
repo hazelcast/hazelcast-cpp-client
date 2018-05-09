@@ -61,10 +61,7 @@ namespace hazelcast {
                     return MapExecuteOnAllKeysCodec::ResponseParameters(clientMessage);
                 }
 
-                MapExecuteOnAllKeysCodec::ResponseParameters::ResponseParameters(
-                        const MapExecuteOnAllKeysCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

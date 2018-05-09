@@ -66,9 +66,7 @@ namespace hazelcast {
                     return MapEvictCodec::ResponseParameters(clientMessage);
                 }
 
-                MapEvictCodec::ResponseParameters::ResponseParameters(const MapEvictCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

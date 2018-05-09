@@ -61,10 +61,7 @@ namespace hazelcast {
                     return QueueRemoveListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueRemoveListenerCodec::ResponseParameters::ResponseParameters(
-                        const QueueRemoveListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

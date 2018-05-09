@@ -82,6 +82,7 @@ namespace hazelcast {
                         const TransactionalMapPutCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
+
             }
         }
     }

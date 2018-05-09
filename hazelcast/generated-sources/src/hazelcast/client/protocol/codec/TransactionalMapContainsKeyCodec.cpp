@@ -70,10 +70,7 @@ namespace hazelcast {
                     return TransactionalMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapContainsKeyCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapContainsKeyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

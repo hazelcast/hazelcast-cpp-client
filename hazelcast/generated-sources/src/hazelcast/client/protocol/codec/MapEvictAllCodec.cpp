@@ -45,19 +45,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapEvictAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
 
-
-                }
-
-                MapEvictAllCodec::ResponseParameters
-                MapEvictAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapEvictAllCodec::ResponseParameters(clientMessage);
-                }
-
-                MapEvictAllCodec::ResponseParameters::ResponseParameters(
-                        const MapEvictAllCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }
