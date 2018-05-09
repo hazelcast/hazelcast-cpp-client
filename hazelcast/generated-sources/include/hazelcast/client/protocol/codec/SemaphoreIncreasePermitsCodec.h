@@ -43,31 +43,33 @@ namespace hazelcast {
                     static const SemaphoreMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
                     static const ResponseMessageConst RESPONSE_TYPE;
-                    //************************ REQUEST STARTS ******************************************************************//
-                        static std::auto_ptr<ClientMessage> encodeRequest(
-                                const std::string &name, 
-                                int32_t increase);
 
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                int32_t increase);
+                    //************************ REQUEST STARTS ******************************************************************//
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            int32_t increase);
+
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            int32_t increase);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
+                    public:
 
-                            static ResponseParameters decode(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        // define copy constructor (needed for auto_ptr variables)
+                        ResponseParameters(const ResponseParameters &rhs);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
-                    private:
-                        // Preventing public access to constructors
-                        SemaphoreIncreasePermitsCodec ();
+                private:
+                    // Preventing public access to constructors
+                    SemaphoreIncreasePermitsCodec();
                 };
             }
         }

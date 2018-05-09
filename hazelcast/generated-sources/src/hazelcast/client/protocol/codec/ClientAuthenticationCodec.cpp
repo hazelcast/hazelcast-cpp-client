@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientAuthenticationCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/Member.h"
 
@@ -79,12 +78,6 @@ namespace hazelcast {
                 }
 
                 ClientAuthenticationCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "ClientAuthenticationCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
-
                     serverHazelcastVersionExist = false;
                     clientUnregisteredMembersExist = false;
 

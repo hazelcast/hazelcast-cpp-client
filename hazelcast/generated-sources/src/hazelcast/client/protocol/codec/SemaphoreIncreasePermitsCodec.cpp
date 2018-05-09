@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreIncreasePermitsCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -29,11 +28,11 @@ namespace hazelcast {
                 const ResponseMessageConst SemaphoreIncreasePermitsCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
                 std::auto_ptr<ClientMessage> SemaphoreIncreasePermitsCodec::encodeRequest(
-                        const std::string &name, 
+                        const std::string &name,
                         int32_t increase) {
                     int32_t requiredDataSize = calculateDataSize(name, increase);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreIncreasePermitsCodec::REQUEST_TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreIncreasePermitsCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(increase);
@@ -42,7 +41,7 @@ namespace hazelcast {
                 }
 
                 int32_t SemaphoreIncreasePermitsCodec::calculateDataSize(
-                        const std::string &name, 
+                        const std::string &name,
                         int32_t increase) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -51,19 +50,17 @@ namespace hazelcast {
                 }
 
                 SemaphoreIncreasePermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreIncreasePermitsCodec::ResponseParameters::decode", clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-                    
-                    
+
                 }
 
-                SemaphoreIncreasePermitsCodec::ResponseParameters SemaphoreIncreasePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreIncreasePermitsCodec::ResponseParameters
+                SemaphoreIncreasePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreIncreasePermitsCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreIncreasePermitsCodec::ResponseParameters::ResponseParameters(const SemaphoreIncreasePermitsCodec::ResponseParameters &rhs) {
+                SemaphoreIncreasePermitsCodec::ResponseParameters::ResponseParameters(
+                        const SemaphoreIncreasePermitsCodec::ResponseParameters &rhs) {
                 }
             }
         }
