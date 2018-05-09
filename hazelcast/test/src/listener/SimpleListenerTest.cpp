@@ -42,6 +42,40 @@ namespace hazelcast {
                 SimpleListenerTest() {}
 
             protected:
+                class MyEntryListener : public EntryListener<int, int> {
+                public:
+                    virtual void entryAdded(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryRemoved(const EntryEvent<int, int> &event) {
+
+                    }
+
+                    virtual void entryUpdated(const EntryEvent<int, int> &event) {
+
+                    }
+
+                    virtual void entryEvicted(const EntryEvent<int, int> &event) {
+
+                    }
+
+                    virtual void entryExpired(const EntryEvent<int, int> &event) {
+
+                    }
+
+                    virtual void entryMerged(const EntryEvent<int, int> &event) {
+
+                    }
+
+                    virtual void mapEvicted(const MapEvent &event) {
+
+                    }
+
+                    virtual void mapCleared(const MapEvent &event) {
+
+                    }
+                };
+                
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
                     SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
@@ -228,6 +262,23 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(memberRemovedInit);
 
                 instance.shutdown();
+            }
+
+            TEST_P(SimpleListenerTest, testDeregisterListener) {
+                HazelcastServer instance(*g_srvFactory);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                HazelcastClient hazelcastClient(clientConfig);
+
+                IMap<int, int> map = hazelcastClient.getMap<int, int>(randomMapName());
+
+                ASSERT_FALSE(map.removeEntryListener("Unknown"));
+
+                MyEntryListener listener;
+                std::string listenerRegistrationId = map.addEntryListener(listener, true);
+
+                map.put(1, 1);
+
+                map.removeEntryListener(listenerRegistrationId);
             }
 
             INSTANTIATE_TEST_CASE_P(All,
