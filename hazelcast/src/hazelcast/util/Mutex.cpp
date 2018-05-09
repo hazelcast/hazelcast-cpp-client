@@ -76,15 +76,6 @@ namespace hazelcast {
             assert (error != EDEADLK);
         }
 
-        Mutex::status Mutex::tryLock() {
-            int error = pthread_mutex_trylock(&mutex);
-            assert (!(error == EINVAL || error == EAGAIN));
-            if (error == EBUSY) {
-                return Mutex::alreadyLocked;
-            }
-            return Mutex::ok;
-        }
-
         void Mutex::unlock() {
             int error = pthread_mutex_unlock(&mutex);
             (void)error;

@@ -34,10 +34,6 @@ namespace hazelcast {
 
             bool operator!();
 
-            bool operator ==(bool i);
-
-            bool operator !=(bool i);
-
             void operator =(bool i);
 
             operator bool();

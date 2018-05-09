@@ -63,17 +63,12 @@ namespace hazelcast {
 
         class Mutex {
         public:
-            enum status {
-                alreadyLocked, ok
-            };
 
             Mutex();
 
             ~Mutex();
 
             void lock();
-
-            Mutex::status tryLock();
 
             void unlock();
 
