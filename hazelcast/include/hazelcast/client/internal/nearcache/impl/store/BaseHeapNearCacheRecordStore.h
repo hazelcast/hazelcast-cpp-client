@@ -21,7 +21,6 @@
 #include "hazelcast/client/internal/nearcache/impl/store/HeapNearCacheRecordMap.h"
 #include "hazelcast/client/internal/nearcache/impl/store/AbstractNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/maxsize/EntryCountNearCacheMaxSizeChecker.h"
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

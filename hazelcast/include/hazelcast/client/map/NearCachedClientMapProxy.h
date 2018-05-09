@@ -25,7 +25,6 @@
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
-#include "hazelcast/client/internal/adapter/IMapDataStructureAdapter.h"
 #include "hazelcast/client/protocol/codec/MapAddNearCacheEntryListenerCodec.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -71,11 +70,9 @@ namespace hazelcast {
 
                     internal::nearcache::NearCacheManager &nearCacheManager = this->context->getNearCacheManager();
                     cacheLocalEntries = nearCacheConfig.isCacheLocalEntries();
-                    std::auto_ptr<internal::adapter::DataStructureAdapter<K, V> > adapter(
-                            new internal::adapter::IMapDataStructureAdapter<K, V>(*this));
                     int partitionCount = this->context->getPartitionService().getPartitionCount();
                     nearCache = nearCacheManager.getOrCreateNearCache<K, V, serialization::pimpl::Data>(
-                            proxy::ProxyImpl::getName(), nearCacheConfig, adapter);
+                            proxy::ProxyImpl::getName(), nearCacheConfig);
 
                     nearCache = impl::nearcache::InvalidationAwareWrapper<
                             serialization::pimpl::Data, V>::asInvalidationAware(nearCache, partitionCount);

@@ -82,6 +82,10 @@ namespace hazelcast {
             }
 
         private:
+            // prevent copy construction
+            AtomicArray(const AtomicArray &rhs);
+            void operator = (const AtomicArray &rhs);
+
             std::vector<T> array;
             util::Mutex *locks;
 

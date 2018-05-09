@@ -25,6 +25,10 @@
 
 #include "ClientTestSupportBase.h"
 
+#define assertEquals ASSERT_EQ
+#define assertTrue ASSERT_TRUE
+#define assertFalse ASSERT_FALSE
+
 namespace hazelcast {
     namespace client {
         class ClientConfig;

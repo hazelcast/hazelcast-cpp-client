@@ -50,6 +50,10 @@ namespace hazelcast {
                 // TODO: Change with secure uuid generator as in Java
                 return util::UuidUtil::newUnsecureUuidString();
             }
+
+            void ClientTestSupportBase::sleepSeconds(int32_t seconds) {
+                util::sleep(seconds);
+            }
         }
     }
 

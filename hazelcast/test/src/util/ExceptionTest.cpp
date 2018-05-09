@@ -16,7 +16,6 @@
 #include <gtest/gtest.h>
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/protocol/ClientExceptionFactory.h>
-#include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
 #include <hazelcast/util/IOUtil.h>
 
 namespace hazelcast {
@@ -38,7 +37,13 @@ namespace hazelcast {
                     ASSERT_THROW((exceptionCause->raise()), exception::IOException);
                     ASSERT_EQ(exceptionCause->getMessage(), cause->getMessage());
                     ASSERT_EQ(exceptionCause->getSource(), cause->getSource());
-                    ASSERT_EQ((exception::IException *)NULL, exceptionCause->getCause().get());
+                    ASSERT_EQ((exception::IException *) NULL, exceptionCause->getCause().get());
+                }
+
+                TEST_F(ExceptionTest, testExceptionBuilderBuildShared) {
+                    boost::shared_ptr<exception::IOException> sharedException = exception::ExceptionBuilder<exception::IOException>(
+                            "Exception from testExceptionBuilderBuildShared").buildShared();
+                    ASSERT_THROW(throw *sharedException, exception::IOException);
                 }
 
                 TEST_F(ExceptionTest, testExceptionStreaming) {
