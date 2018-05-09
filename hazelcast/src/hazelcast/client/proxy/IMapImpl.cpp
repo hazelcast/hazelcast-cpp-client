@@ -366,7 +366,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request =
                         protocol::codec::MapKeySetCodec::encodeRequest(getName());
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapKeySetWithPredicateCodec::ResponseParameters>(
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapKeySetCodec::ResponseParameters>(
                         request);
             }
 
@@ -397,7 +397,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapEntrySetCodec::encodeRequest(
                         getName());
 
-                return invokeAndGetResult<EntryVector, protocol::codec::MapEntriesWithPredicateCodec::ResponseParameters>(
+                return invokeAndGetResult<EntryVector, protocol::codec::MapEntrySetCodec::ResponseParameters>(
                         request);
             }
 
@@ -426,7 +426,7 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapValuesCodec::encodeRequest(
                         getName());
 
-                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapValuesWithPredicateCodec::ResponseParameters>(
+                return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::MapValuesCodec::ResponseParameters>(
                         request);
             }
 

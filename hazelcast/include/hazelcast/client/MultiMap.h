@@ -16,14 +16,13 @@
 #ifndef HAZELCAST_MULTI_MAP
 #define HAZELCAST_MULTI_MAP
 
+#include <string>
+#include <vector>
+
 #include "hazelcast/client/proxy/MultiMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
 #include "hazelcast/client/protocol/codec/MultiMapAddEntryListenerCodec.h"
-#include <string>
-#include <map>
-#include <set>
-#include <vector>
-#include <stdexcept>
+#include "hazelcast/client/protocol/codec/MultiMapAddEntryListenerToKeyCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -216,8 +215,8 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
-                impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                        new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
+                impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler> *entryEventHandler =
+                        new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler>(
                                 getName(), context->getClientClusterService(), context->getSerializationService(), listener,
                                 includeValue);
                 serialization::pimpl::Data keyData = toData(key);

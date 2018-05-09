@@ -27,6 +27,7 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
@@ -551,8 +552,8 @@ namespace hazelcast {
                 */
                 std::string addEntryListener(EntryListener <K, V> &listener, const K &key, bool includeValue) {
                     serialization::pimpl::Data keyData = toData(key);
-                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler> *entryEventHandler =
+                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
                                     getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
