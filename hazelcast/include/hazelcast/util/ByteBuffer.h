@@ -47,14 +47,7 @@ namespace hazelcast {
 
             size_t position() const;
 
-            void position(size_t );
-
             size_t readFrom(client::Socket &socket, int flag = 0);
-
-            /**
-            * returns number of bytes that could actually be read
-            */
-            size_t readFrom(client::Socket &socket, int numBytesToRead, int flag = 0);
 
             int readInt();
 
