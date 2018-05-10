@@ -13,12 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
-#include <ClientTestSupport.h>
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/LifecycleListener.h>
-#include <HazelcastServer.h>
 
 namespace hazelcast {
     namespace client {
@@ -60,6 +66,8 @@ namespace hazelcast {
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     /* TODO: Change to HazelcastClientOfflineException after https://github.com/hazelcast/hazelcast-cpp-client/issues/54 is solved*/
                     ASSERT_THROW(map.size(), exception::HazelcastClientNotActiveException);
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrueNoCluster_thenShutdown) {
@@ -68,6 +76,8 @@ namespace hazelcast {
                     client.shutdown();
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     ASSERT_THROW(map.size(), exception::HazelcastClientNotActiveException);
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testAsyncStartTrue) {
@@ -91,6 +101,8 @@ namespace hazelcast {
 
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.size();
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFSingleMember) {
@@ -111,6 +123,8 @@ namespace hazelcast {
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
                     ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeOFFTwoMembers) {
@@ -132,6 +146,8 @@ namespace hazelcast {
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
                     ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMemberInitiallyOffline) {
@@ -152,6 +168,8 @@ namespace hazelcast {
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
                     ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCSingleMember) {
@@ -198,6 +216,8 @@ namespace hazelcast {
 
                     IMap<int, int> map = client.getMap<int, int>(randomMapName());
                     map.size();
+
+                    client.shutdown();
                 }
 
                 TEST_F(ConfiguredBehaviourTest, testReconnectModeASYNCTwoMembers) {
@@ -235,6 +255,8 @@ namespace hazelcast {
                     assertOpenEventually(reconnectedLatch);
 
                     map.get(1);
+
+                    client.shutdown();
                 }
             }
         }
