@@ -29,7 +29,6 @@
 #include "hazelcast/client/protocol/codec/AddressCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
 #include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
-#include "hazelcast/client/protocol/codec/DistributedObjectInfoCodec.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
