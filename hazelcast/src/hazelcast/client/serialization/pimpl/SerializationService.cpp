@@ -34,10 +34,6 @@ namespace hazelcast {
             namespace pimpl {
                 ObjectType::ObjectType() : typeId(0), factoryId(-1), classId(-1) {}
 
-                ObjectType::ObjectType(int32_t typeId, int32_t factoryId, int32_t classId) : typeId(typeId),
-                                                                                             factoryId(factoryId),
-                                                                                             classId(classId) {}
-
                 std::ostream &operator<<(std::ostream &os, const ObjectType &type) {
                     os << "typeId: " << type.typeId << " factoryId: " << type.factoryId << " classId: "
                        << type.classId;

@@ -82,6 +82,9 @@ namespace hazelcast {
 
                 TypedData data = imap->get<int>(2);
                 ASSERT_EQ(123, data.getType().typeId);
+                std::ostringstream out;
+                out << data.getType();
+                ASSERT_TRUE(out.str().find("123") != std::string::npos);
                 std::auto_ptr<int> value = data.get<int>();
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
