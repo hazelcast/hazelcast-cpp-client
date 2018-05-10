@@ -28,6 +28,7 @@
 #define assertEquals ASSERT_EQ
 #define assertTrue ASSERT_TRUE
 #define assertFalse ASSERT_FALSE
+#define assertOpenEventually ASSERT_OPEN_EVENTUALLY
 
 namespace hazelcast {
     namespace client {
