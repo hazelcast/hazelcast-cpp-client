@@ -148,13 +148,12 @@ namespace hazelcast {
             }
 
             void Connection::handleClientMessage(const boost::shared_ptr<Connection> &connection,
-                                                 std::auto_ptr<protocol::ClientMessage> &message) {
+                                                 const boost::shared_ptr<protocol::ClientMessage> &message) {
                 incrementPendingPacketCount();
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     spi::impl::listener::AbstractClientListenerService &listenerService =
                             (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();
-                    listenerService.handleClientMessage(boost::shared_ptr<protocol::ClientMessage>(message),
-                                                        connection);
+                    listenerService.handleClientMessage(message, connection);
                 } else {
                     invocationService.handleClientMessage(connection, message);
                 }

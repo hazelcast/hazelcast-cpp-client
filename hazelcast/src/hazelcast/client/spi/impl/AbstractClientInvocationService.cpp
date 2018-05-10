@@ -90,9 +90,8 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::handleClientMessage(
                         const boost::shared_ptr<connection::Connection> &connection,
-                        std::auto_ptr<protocol::ClientMessage> &clientMessage) {
-                    responseThread.responseQueue.push(
-                            ClientPacket(connection, boost::shared_ptr<protocol::ClientMessage>(clientMessage)));
+                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
+                    responseThread.responseQueue.push(ClientPacket(connection, clientMessage));
                 }
 
                 boost::shared_ptr<ClientInvocation> AbstractClientInvocationService::deRegisterCallId(int64_t callId) {

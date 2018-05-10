@@ -27,9 +27,6 @@ namespace hazelcast {
             }
 
             ClientMessageBuilder::~ClientMessageBuilder() {
-                for (MessageMap::iterator it = partialMessages.begin(); it != partialMessages.end(); ++it) {
-                    delete it->second;
-                }
             }
 
             bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
@@ -51,7 +48,8 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            connection.handleClientMessage(connection.shared_from_this(), message);
+                            connection.handleClientMessage(connection.shared_from_this(),
+                                                           boost::shared_ptr<ClientMessage>(message));
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
@@ -71,7 +69,7 @@ namespace hazelcast {
 
             void ClientMessageBuilder::addToPartialMessages(std::auto_ptr<ClientMessage> message) {
                 int64_t id = message->getCorrelationId();
-                partialMessages[id] = message.release();
+                partialMessages[id] = message;
             }
 
             bool ClientMessageBuilder::appendExistingPartialMessage(std::auto_ptr<ClientMessage> message) {
@@ -82,7 +80,7 @@ namespace hazelcast {
                     foundItemIter->second->append(message.get());
                     if (message->isFlagSet(ClientMessage::END_FLAG)) {
                         // remove from message from map
-                        std::auto_ptr<ClientMessage> foundMessage(foundItemIter->second);
+                        boost::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 
@@ -96,10 +94,6 @@ namespace hazelcast {
                 }
 
                 return result;
-            }
-
-            void ClientMessageBuilder::reset() {
-                message.reset(NULL);
             }
         }
     }
