@@ -72,7 +72,7 @@ namespace hazelcast {
             */
             int getNumberOfEntriesAffected() const;
 
-            friend std::ostream &operator<<(std::ostream &os, const MapEvent &event);
+            friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const MapEvent &event);
 
         private:
             Member member;
