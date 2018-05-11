@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapLockCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -63,23 +62,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MultiMapLockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapLockCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                MultiMapLockCodec::ResponseParameters
-                MultiMapLockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MultiMapLockCodec::ResponseParameters(clientMessage);
-                }
-
-                MultiMapLockCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapLockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

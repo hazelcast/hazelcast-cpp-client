@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetContainsCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -52,10 +51,6 @@ namespace hazelcast {
                 }
 
                 SetContainsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetContainsCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -67,10 +62,7 @@ namespace hazelcast {
                     return SetContainsCodec::ResponseParameters(clientMessage);
                 }
 
-                SetContainsCodec::ResponseParameters::ResponseParameters(
-                        const SetContainsCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapPutIfAbsentCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -64,11 +63,6 @@ namespace hazelcast {
                 }
 
                 MapPutIfAbsentCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapPutIfAbsentCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getNullable<serialization::pimpl::Data>();
@@ -84,6 +78,7 @@ namespace hazelcast {
                         const MapPutIfAbsentCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
+
             }
         }
     }

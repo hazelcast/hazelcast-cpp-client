@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetIsEmptyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,10 +46,6 @@ namespace hazelcast {
                 }
 
                 SetIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetIsEmptyCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -62,10 +57,7 @@ namespace hazelcast {
                     return SetIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                SetIsEmptyCodec::ResponseParameters::ResponseParameters(
-                        const SetIsEmptyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

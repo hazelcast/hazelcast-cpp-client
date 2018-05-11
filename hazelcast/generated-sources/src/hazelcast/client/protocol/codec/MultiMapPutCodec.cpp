@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapPutCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -60,10 +59,6 @@ namespace hazelcast {
                 }
 
                 MultiMapPutCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapPutCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -75,10 +70,7 @@ namespace hazelcast {
                     return MultiMapPutCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapPutCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapPutCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

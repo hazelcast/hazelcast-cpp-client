@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapDeleteCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -59,24 +58,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionalMapDeleteCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                TransactionalMapDeleteCodec::ResponseParameters
-                TransactionalMapDeleteCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionalMapDeleteCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionalMapDeleteCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapDeleteCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

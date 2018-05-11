@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <string>
+#include <stdint.h>
 
 #include <TestHelperFunctions.h>
 #include <hazelcast/util/Runnable.h>
@@ -44,6 +45,8 @@ namespace hazelcast {
                 static std::string randomMapName();
 
                 static std::string randomString();
+
+                static void sleepSeconds(int32_t seconds);
             protected:
 
                 static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();

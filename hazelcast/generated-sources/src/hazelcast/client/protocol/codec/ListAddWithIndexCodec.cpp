@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListAddWithIndexCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -55,24 +54,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "ListAddWithIndexCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                ListAddWithIndexCodec::ResponseParameters
-                ListAddWithIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ListAddWithIndexCodec::ResponseParameters(clientMessage);
-                }
-
-                ListAddWithIndexCodec::ResponseParameters::ResponseParameters(
-                        const ListAddWithIndexCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

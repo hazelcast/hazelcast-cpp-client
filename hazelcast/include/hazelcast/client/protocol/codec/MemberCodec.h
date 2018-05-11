@@ -32,11 +32,7 @@ namespace hazelcast {
                 class HAZELCAST_API MemberCodec {
                 public:
                     static Member decode(ClientMessage &clientMessage);
-
-                    static void encode(const Member &Member, ClientMessage &clientMessage);
-
-                    static int calculateDataSize(const Member &member);
-                };
+                    };
             }
         }
     }

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
 
@@ -65,11 +64,6 @@ namespace hazelcast {
                 }
 
                 MapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapAddEntryListenerToKeyCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<std::string>();
@@ -81,10 +75,6 @@ namespace hazelcast {
                     return MapAddEntryListenerToKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapAddEntryListenerToKeyCodec::ResponseParameters::ResponseParameters(
-                        const MapAddEntryListenerToKeyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 MapAddEntryListenerToKeyCodec::AbstractEventHandler::~AbstractEventHandler() {

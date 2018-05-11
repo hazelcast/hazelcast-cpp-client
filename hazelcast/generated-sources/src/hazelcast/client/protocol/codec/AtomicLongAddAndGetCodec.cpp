@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,11 +50,6 @@ namespace hazelcast {
                 }
 
                 AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "AtomicLongAddAndGetCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<int64_t>();
@@ -67,10 +61,7 @@ namespace hazelcast {
                     return AtomicLongAddAndGetCodec::ResponseParameters(clientMessage);
                 }
 
-                AtomicLongAddAndGetCodec::ResponseParameters::ResponseParameters(
-                        const AtomicLongAddAndGetCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

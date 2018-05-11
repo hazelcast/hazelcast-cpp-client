@@ -29,8 +29,6 @@
 #include "hazelcast/client/protocol/codec/AddressCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
 #include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
-#include "hazelcast/client/protocol/codec/DistributedObjectInfoCodec.h"
-#include "hazelcast/client/impl/DistributedObjectInfo.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
@@ -120,49 +118,10 @@ namespace hazelcast {
                 setNullable<serialization::pimpl::Data>(value);
             }
 
-            void ClientMessage::set(const Address &value) {
-                codec::AddressCodec::encode(value, *this);
-            }
-
-            void ClientMessage::set(const Address *value) {
-                setNullable<Address>(value);
-            }
-
-            void ClientMessage::set(const util::UUID &value) {
-                codec::UUIDCodec::encode(value, *this);
-            }
-
-            void ClientMessage::set(const util::UUID *value) {
-                setNullable<util::UUID>(value);
-            }
-
-            void ClientMessage::set(const Member &value) {
-                codec::MemberCodec::encode(value, *this);
-            }
-
-            void ClientMessage::set(const Member *value) {
-                setNullable<Member>(value);
-            }
-
-            void ClientMessage::set(const map::DataEntryView &value) {
-                codec::DataEntryViewCodec::encode(value, *this);
-            }
-
-            void ClientMessage::set(const map::DataEntryView *value) {
-                setNullable<map::DataEntryView>(value);
-            }
-
-            void ClientMessage::set(const impl::DistributedObjectInfo &value) {
-                codec::DistributedObjectInfoCodec::encode(value, *this);
-            }
-
-            void ClientMessage::set(const impl::DistributedObjectInfo *value) {
-                setNullable<impl::DistributedObjectInfo>(value);
-            }
             //----- Setter methods end ---------------------
 
             int32_t ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, int32_t offset, int32_t frameLen) {
-                size_t numToRead = (size_t)(frameLen - offset);
+                size_t numToRead = (size_t) (frameLen - offset);
                 size_t numRead = byteBuff.readBytes(&buffer[offset], numToRead);
 
                 if (numRead == numToRead) {
@@ -227,26 +186,6 @@ namespace hazelcast {
             }
 
             template<>
-            int8_t ClientMessage::get() {
-                return getInt8();
-            }
-
-            template<>
-            int16_t ClientMessage::get() {
-                return getInt16();
-            }
-
-            template<>
-            uint16_t ClientMessage::get() {
-                return getUint16();
-            }
-
-            template<>
-            uint32_t ClientMessage::get() {
-                return getUint32();
-            }
-
-            template<>
             int32_t ClientMessage::get() {
                 return getInt32();
             }
@@ -254,11 +193,6 @@ namespace hazelcast {
             template<>
             int64_t ClientMessage::get() {
                 return getInt64();
-            }
-
-            template<>
-            uint64_t ClientMessage::get() {
-                return getUint64();
             }
 
             template<>
@@ -294,25 +228,16 @@ namespace hazelcast {
 
                 byte *start = ix();
                 std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(new std::vector<byte>(start,
-                                                                                                                  start + len));
+                                                                                                                  start +
+                                                                                                                  len));
                 index += len;
 
                 return serialization::pimpl::Data(bytes);
             }
 
             template<>
-            impl::DistributedObjectInfo ClientMessage::get() {
-                return codec::DistributedObjectInfoCodec::decode(*this);
-            }
-
-            template<>
             codec::StackTraceElement ClientMessage::get() {
                 return codec::StackTraceElementCodec::decode(*this);
-            }
-
-            template<>
-            std::vector<int32_t> ClientMessage::get() {
-                return getArray<int32_t>();
             }
 
             template<>
@@ -336,36 +261,16 @@ namespace hazelcast {
                 return UINT8_SIZE;
             }
 
-            int32_t ClientMessage::calculateDataSize(int8_t param) {
-                return INT8_SIZE;
-            }
-
             int32_t ClientMessage::calculateDataSize(bool param) {
                 return UINT8_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(int16_t param) {
-                return INT16_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(uint16_t param) {
-                return UINT16_SIZE;
             }
 
             int32_t ClientMessage::calculateDataSize(int32_t param) {
                 return INT32_SIZE;
             }
 
-            int32_t ClientMessage::calculateDataSize(uint32_t param) {
-                return UINT32_SIZE;
-            }
-
             int32_t ClientMessage::calculateDataSize(int64_t param) {
                 return INT64_SIZE;
-            }
-
-            int32_t ClientMessage::calculateDataSize(uint64_t param) {
-                return UINT64_SIZE;
             }
 
             int32_t ClientMessage::calculateDataSize(const std::string &param) {
@@ -384,46 +289,6 @@ namespace hazelcast {
 
             int32_t ClientMessage::calculateDataSize(const serialization::pimpl::Data *param) {
                 return calculateDataSizeNullable<serialization::pimpl::Data>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const Address &param) {
-                return codec::AddressCodec::calculateDataSize(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const Address *param) {
-                return calculateDataSizeNullable<Address>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const Member &param) {
-                return codec::MemberCodec::calculateDataSize(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const util::UUID *param) {
-                return calculateDataSizeNullable<util::UUID>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const util::UUID &param) {
-                return codec::UUIDCodec::calculateDataSize(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const Member *param) {
-                return calculateDataSizeNullable<Member>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const map::DataEntryView &param) {
-                return codec::DataEntryViewCodec::calculateDataSize(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const map::DataEntryView *param) {
-                return calculateDataSizeNullable<map::DataEntryView>(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const impl::DistributedObjectInfo &param) {
-                return codec::DistributedObjectInfoCodec::calculateDataSize(param);
-            }
-
-            int32_t ClientMessage::calculateDataSize(const impl::DistributedObjectInfo *param) {
-                return calculateDataSizeNullable<impl::DistributedObjectInfo>(param);
             }
             //----- Data size calculation functions END ---------
 
@@ -489,17 +354,14 @@ namespace hazelcast {
             }
 
             std::ostream &operator<<(std::ostream &os, const ClientMessage &message) {
-                int32_t len = message.getIndex();
-                os << "ClientMessage{length=" << len;
-                if (len >= message.HEADER_SIZE) {
-                    os << ", correlationId=" << message.getCorrelationId()
-                    << ", messageType=0x" << std::hex << message.getMessageType() << std::dec
-                    << ", partitionId=" << message.getPartitionId()
-                    << ", isComplete=" << message.isComplete()
-                    << ", isRetryable=" << message.isRetryable()
-                    << ", isEvent=" << message.isFlagSet(message.LISTENER_EVENT_FLAG);
-                }
-                os << "}";
+                os << "ClientMessage{length=" << message.getIndex()
+                   << ", correlationId=" << message.getCorrelationId()
+                   << ", messageType=0x" << std::hex << message.getMessageType() << std::dec
+                   << ", partitionId=" << message.getPartitionId()
+                   << ", isComplete=" << message.isComplete()
+                   << ", isRetryable=" << message.isRetryable()
+                   << ", isEvent=" << message.isFlagSet(message.LISTENER_EVENT_FLAG)
+                   << "}";
 
                 return os;
             }

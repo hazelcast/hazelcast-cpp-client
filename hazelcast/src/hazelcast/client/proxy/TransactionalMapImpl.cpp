@@ -70,6 +70,14 @@ namespace hazelcast {
                 return invokeAndGetResult<int, protocol::codec::TransactionalMapSizeCodec::ResponseParameters>(request);
             }
 
+            bool TransactionalMapImpl::isEmpty() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::TransactionalMapIsEmptyCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId());
+
+                return invokeAndGetResult<bool, protocol::codec::TransactionalMapIsEmptyCodec::ResponseParameters>(request);
+            }
+
             std::auto_ptr<serialization::pimpl::Data> TransactionalMapImpl::putData(
                     const serialization::pimpl::Data& key, const serialization::pimpl::Data& value) {
 

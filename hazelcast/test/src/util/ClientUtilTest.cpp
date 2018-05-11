@@ -155,6 +155,18 @@ namespace hazelcast {
                 ASSERT_THROW(future.get(), client::exception::IOException);
             }
 
+            TEST_F (ClientUtilTest, testFutureCancel) {
+                util::Future<int> future;
+
+                ASSERT_FALSE(future.isCancelled());
+
+                future.cancel();
+
+                ASSERT_TRUE(future.isCancelled());
+
+                ASSERT_THROW(future.get(), util::concurrent::CancellationException);
+            }
+
             TEST_F (ClientUtilTest, testFutureSetUnclonedIOException) {
                 util::Future<int> future;
 

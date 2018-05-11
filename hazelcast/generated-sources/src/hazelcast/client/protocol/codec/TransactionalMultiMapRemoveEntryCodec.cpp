@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveEntryCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -65,11 +64,6 @@ namespace hazelcast {
 
                 TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(
                         ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionalMultiMapRemoveEntryCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -81,10 +75,7 @@ namespace hazelcast {
                     return TransactionalMultiMapRemoveEntryCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapRemoveEntryCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMultiMapRemoveEntryCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapReplaceIfSameCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -64,11 +63,6 @@ namespace hazelcast {
                 }
 
                 MapReplaceIfSameCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapReplaceIfSameCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -80,10 +74,7 @@ namespace hazelcast {
                     return MapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                MapReplaceIfSameCodec::ResponseParameters::ResponseParameters(
-                        const MapReplaceIfSameCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

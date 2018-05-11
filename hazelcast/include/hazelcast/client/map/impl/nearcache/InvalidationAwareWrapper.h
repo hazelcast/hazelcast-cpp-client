@@ -16,7 +16,6 @@
 #ifndef HAZELCAST_MAP_IMPL_NEARCACHE_INVALIDATIONAWAREWRAPPER_H_
 #define HAZELCAST_MAP_IMPL_NEARCACHE_INVALIDATIONAWAREWRAPPER_H_
 
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"

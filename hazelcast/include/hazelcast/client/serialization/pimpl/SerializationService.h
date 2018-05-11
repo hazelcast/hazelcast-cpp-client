@@ -75,8 +75,6 @@ namespace hazelcast {
                 struct HAZELCAST_API ObjectType {
                     ObjectType();
 
-                    ObjectType(int32_t typeId, int32_t factoryId, int32_t classId);
-
                     int32_t typeId;
                     int32_t factoryId;
                     int32_t classId;

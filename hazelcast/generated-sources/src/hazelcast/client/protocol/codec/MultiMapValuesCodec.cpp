@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapValuesCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,11 +46,6 @@ namespace hazelcast {
                 }
 
                 MultiMapValuesCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MultiMapValuesCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<serialization::pimpl::Data>();
@@ -63,10 +57,7 @@ namespace hazelcast {
                     return MultiMapValuesCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapValuesCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapValuesCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

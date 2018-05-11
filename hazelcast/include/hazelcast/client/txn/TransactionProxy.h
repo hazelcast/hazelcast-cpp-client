@@ -85,6 +85,8 @@ namespace hazelcast {
 
                 TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
 
+                TransactionProxy(const TransactionProxy &rhs);
+
                 const std::string &getTxnId() const;
 
                 TxnState getState() const;
@@ -99,8 +101,6 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService& getSerializationService();
 
-                spi::ClientInvocationService& getInvocationService();
-
                 boost::shared_ptr<connection::Connection> getConnection();
 
                 spi::ClientContext &getClientContext() const;
@@ -110,13 +110,13 @@ namespace hazelcast {
                 spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
+                util::AtomicBoolean TRANSACTION_EXISTS;
+
                 int64_t threadId;
                 std::string txnId;
 
                 TxnState state;
-                time_t startTime;
-
-                void onTxnEnd();
+                int64_t startTime;
 
                 void checkThread();
 

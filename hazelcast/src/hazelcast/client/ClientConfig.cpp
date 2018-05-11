@@ -50,7 +50,7 @@ namespace hazelcast {
             return result;
         }
 
-        ClientConfig &ClientConfig::setGroupConfig(GroupConfig &groupConfig) {
+        ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
             return *this;
         }

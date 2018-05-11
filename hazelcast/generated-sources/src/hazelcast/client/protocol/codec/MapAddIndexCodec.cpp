@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapAddIndexCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -54,23 +53,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapAddIndexCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapAddIndexCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                MapAddIndexCodec::ResponseParameters
-                MapAddIndexCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapAddIndexCodec::ResponseParameters(clientMessage);
-                }
-
-                MapAddIndexCodec::ResponseParameters::ResponseParameters(
-                        const MapAddIndexCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

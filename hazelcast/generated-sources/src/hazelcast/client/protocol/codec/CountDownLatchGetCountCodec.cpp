@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/CountDownLatchGetCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,11 +46,6 @@ namespace hazelcast {
                 }
 
                 CountDownLatchGetCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "CountDownLatchGetCountCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<int32_t>();
@@ -63,10 +57,7 @@ namespace hazelcast {
                     return CountDownLatchGetCountCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchGetCountCodec::ResponseParameters::ResponseParameters(
-                        const CountDownLatchGetCountCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

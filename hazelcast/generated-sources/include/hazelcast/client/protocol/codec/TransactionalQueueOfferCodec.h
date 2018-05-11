@@ -73,13 +73,11 @@ namespace hazelcast {
 
                         static ResponseParameters decode(ClientMessage &clientMessage);
 
-                        // define copy constructor (needed for auto_ptr variables)
-                        ResponseParameters(const ResponseParameters &rhs);
-
                     private:
                         ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
+
                 private:
                     // Preventing public access to constructors
                     TransactionalQueueOfferCodec();

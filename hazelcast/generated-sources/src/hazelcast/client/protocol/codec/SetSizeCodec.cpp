@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetSizeCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,10 +46,6 @@ namespace hazelcast {
                 }
 
                 SetSizeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetSizeCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<int32_t>();
@@ -62,9 +57,7 @@ namespace hazelcast {
                     return SetSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                SetSizeCodec::ResponseParameters::ResponseParameters(const SetSizeCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

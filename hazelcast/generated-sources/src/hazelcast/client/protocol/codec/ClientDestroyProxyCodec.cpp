@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,24 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "ClientDestroyProxyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                ClientDestroyProxyCodec::ResponseParameters
-                ClientDestroyProxyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientDestroyProxyCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientDestroyProxyCodec::ResponseParameters::ResponseParameters(
-                        const ClientDestroyProxyCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

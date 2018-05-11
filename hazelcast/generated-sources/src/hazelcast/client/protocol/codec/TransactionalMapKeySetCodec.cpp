@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapKeySetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -55,11 +54,6 @@ namespace hazelcast {
                 }
 
                 TransactionalMapKeySetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionalMapKeySetCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<serialization::pimpl::Data>();
@@ -71,10 +65,7 @@ namespace hazelcast {
                     return TransactionalMapKeySetCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapKeySetCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapKeySetCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -55,11 +54,6 @@ namespace hazelcast {
                 }
 
                 MapExecuteOnKeysCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapExecuteOnKeysCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
@@ -71,10 +65,7 @@ namespace hazelcast {
                     return MapExecuteOnKeysCodec::ResponseParameters(clientMessage);
                 }
 
-                MapExecuteOnKeysCodec::ResponseParameters::ResponseParameters(
-                        const MapExecuteOnKeysCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

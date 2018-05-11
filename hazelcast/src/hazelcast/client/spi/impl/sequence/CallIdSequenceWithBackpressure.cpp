@@ -45,14 +45,14 @@ namespace hazelcast {
                         for (int64_t idleCount = 0;; idleCount++) {
                             int64_t elapsedNanos = (util::TimeUtil::getDurationSinceEpoch() - start).total_nanoseconds();
                             if (elapsedNanos > backoffTimeoutNanos) {
-                                exception::ExceptionBuilder<exception::HazelcastOverloadException>(
+                                throw (exception::ExceptionBuilder<exception::HazelcastOverloadException>(
                                         "CallIdSequenceWithBackpressure::handleNoSpaceLeft")
                                         << "Timed out trying to acquire another call ID."
                                         << " maxConcurrentInvocations = " << getMaxConcurrentInvocations()
                                         << ", backoffTimeout = " << boost::posix_time::microseconds(
                                         backoffTimeoutNanos / 1000).total_milliseconds() << " msecs, elapsed:"
                                         << boost::posix_time::microseconds(elapsedNanos / 1000).total_milliseconds()
-                                        << " msecs";
+                                        << " msecs").build();
                             }
                             IDLER->idle(idleCount);
                             if (hasSpace()) {

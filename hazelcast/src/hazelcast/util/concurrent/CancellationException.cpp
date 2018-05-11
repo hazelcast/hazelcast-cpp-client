@@ -21,6 +21,10 @@ namespace hazelcast {
         namespace concurrent {
             CancellationException::CancellationException(const std::string &source, const std::string &message)
                     : IllegalStateException(source, message) {}
+
+            void CancellationException::raise() const {
+                throw *this;
+            }
         }
     }
 }

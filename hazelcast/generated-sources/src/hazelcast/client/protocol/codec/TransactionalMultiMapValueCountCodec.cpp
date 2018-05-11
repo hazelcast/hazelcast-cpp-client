@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMultiMapValueCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -61,11 +60,6 @@ namespace hazelcast {
 
                 TransactionalMultiMapValueCountCodec::ResponseParameters::ResponseParameters(
                         ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionalMultiMapValueCountCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<int32_t>();
@@ -77,10 +71,7 @@ namespace hazelcast {
                     return TransactionalMultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapValueCountCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMultiMapValueCountCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

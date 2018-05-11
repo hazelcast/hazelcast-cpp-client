@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapRemoveAllCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -51,23 +50,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapRemoveAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapRemoveAllCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                MapRemoveAllCodec::ResponseParameters
-                MapRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapRemoveAllCodec::ResponseParameters(clientMessage);
-                }
-
-                MapRemoveAllCodec::ResponseParameters::ResponseParameters(
-                        const MapRemoveAllCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

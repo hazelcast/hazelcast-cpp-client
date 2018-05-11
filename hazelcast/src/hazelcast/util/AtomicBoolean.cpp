@@ -30,16 +30,6 @@ namespace hazelcast {
             return !v;
         }
 
-        bool AtomicBoolean::operator ==(bool i){
-            LockGuard lockGuard(mutex);
-            return v == i;
-        }
-
-        bool AtomicBoolean::operator !=(bool i){
-            LockGuard lockGuard(mutex);
-            return v != i;
-        }
-
         void AtomicBoolean::operator =(bool i){
             LockGuard lockGuard(mutex);
             v = i;

@@ -91,17 +91,13 @@ namespace hazelcast {
                 }
 
                 void DescribeInstances::checkKeysFromIamRoles() {
-                    if (!awsConfig.getAccessKey().empty() && awsConfig.getIamRole().empty()) {
-                        return;
-                    }
-                    // in case no IAM role has been defined, this will attempt to retrieve name of default role.
-                    tryGetDefaultIamRole();
-
-                    // if IAM role is still empty, one last attempt
-                    if (awsConfig.getIamRole().empty()) {
-                        getKeysFromIamTaskRole();
-                    } else {
-                        getKeysFromIamRole();
+                    if (awsConfig.getAccessKey().empty() || !awsConfig.getIamRole().empty()) {
+                        tryGetDefaultIamRole();
+                        if (!awsConfig.getIamRole().empty()) {
+                            getKeysFromIamRole();
+                        } else {
+                            getKeysFromIamTaskRole();
+                        }
                     }
                 }
 

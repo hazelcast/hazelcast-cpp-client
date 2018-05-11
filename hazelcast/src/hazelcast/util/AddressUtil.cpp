@@ -61,23 +61,8 @@ namespace hazelcast {
             return getAddressHolder(address, -1);
         }
 
-        bool AddressUtil::isIpV4(const std::string &scopedAddress) {
-            try {
-                asio::ip::address address = asio::ip::make_address(scopedAddress);
-                return address.is_v4();
-            } catch (asio::system_error &e) {
-                std::ostringstream out;
-                out << "Address " << scopedAddress << " ip number is not available. " << e.what();
-                throw client::exception::IllegalStateException("AddressUtil::isIpV4", out.str());
-            }
-        }
-
-        asio::ip::address AddressUtil::getByName(const std::string &host) {
+       asio::ip::address AddressUtil::getByName(const std::string &host) {
             return getByName(host, "");
-        }
-
-        asio::ip::address AddressUtil::getByName(const std::string &host, int port) {
-            return getByName(host, util::IOUtil::to_string<int>(port));
         }
 
         asio::ip::address AddressUtil::getByName(const std::string &host, const std::string &service) {

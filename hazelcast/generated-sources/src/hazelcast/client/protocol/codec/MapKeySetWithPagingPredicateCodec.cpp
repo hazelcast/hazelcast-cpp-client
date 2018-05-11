@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -52,11 +51,6 @@ namespace hazelcast {
 
                 MapKeySetWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
                         ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapKeySetWithPagingPredicateCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<serialization::pimpl::Data>();
@@ -68,10 +62,7 @@ namespace hazelcast {
                     return MapKeySetWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapKeySetWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
-                        const MapKeySetWithPagingPredicateCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

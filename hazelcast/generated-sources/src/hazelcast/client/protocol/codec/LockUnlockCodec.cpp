@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockUnlockCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -54,23 +53,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                LockUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockUnlockCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                LockUnlockCodec::ResponseParameters
-                LockUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockUnlockCodec::ResponseParameters(clientMessage);
-                }
-
-                LockUnlockCodec::ResponseParameters::ResponseParameters(
-                        const LockUnlockCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

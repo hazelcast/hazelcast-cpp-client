@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapGetAllCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,10 +50,6 @@ namespace hazelcast {
                 }
 
                 MapGetAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapGetAllCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
@@ -66,9 +61,7 @@ namespace hazelcast {
                     return MapGetAllCodec::ResponseParameters(clientMessage);
                 }
 
-                MapGetAllCodec::ResponseParameters::ResponseParameters(const MapGetAllCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

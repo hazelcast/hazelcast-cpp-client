@@ -186,26 +186,6 @@ namespace hazelcast {
 
                 void set(const serialization::pimpl::Data *data);
 
-                void set(const Address &value);
-
-                void set(const Address *value);
-
-                void set(const util::UUID &value);
-
-                void set(const util::UUID *value);
-
-                void set(const Member &value);
-
-                void set(const Member *value);
-
-                void set(const map::DataEntryView &value);
-
-                void set(const map::DataEntryView *value);
-
-                void set(const impl::DistributedObjectInfo &value);
-
-                void set(const impl::DistributedObjectInfo *value);
-
                 template<typename K, typename V>
                 void set(const std::pair<K, V> &entry) {
                     set(entry.first);

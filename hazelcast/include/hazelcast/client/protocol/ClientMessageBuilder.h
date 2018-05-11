@@ -62,11 +62,6 @@ namespace hazelcast {
                 */
                 bool onData(util::ByteBuffer &buffer);
 
-                /**
-                 * Reset the builder so that the message is null pointer
-                 */
-                void reset();
-
             private:
                 void addToPartialMessages(std::auto_ptr<ClientMessage> message);
 
@@ -75,7 +70,7 @@ namespace hazelcast {
                 */
                 bool appendExistingPartialMessage(std::auto_ptr<ClientMessage> message);
 
-                typedef std::map<int64_t, ClientMessage * > MessageMap;
+                typedef std::map<int64_t, boost::shared_ptr<ClientMessage> > MessageMap;
 
                 MessageMap partialMessages;
 

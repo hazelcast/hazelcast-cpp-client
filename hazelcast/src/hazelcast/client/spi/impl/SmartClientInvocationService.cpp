@@ -103,7 +103,7 @@ namespace hazelcast {
                     try {
                         Member member = loadBalancer.next();
                         address = boost::shared_ptr<Address>(new Address(member.getAddress()));
-                    } catch (exception::IOException &) {
+                    } catch (exception::IllegalStateException &) {
                         // do nothing, there is no available server
                     }
                     return address;

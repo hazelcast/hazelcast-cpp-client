@@ -37,6 +37,8 @@ namespace hazelcast {
 
                 int size();
 
+                bool isEmpty();
+
                 bool contains(const serialization::pimpl::Data& element);
 
                 std::vector<serialization::pimpl::Data> toArrayData();

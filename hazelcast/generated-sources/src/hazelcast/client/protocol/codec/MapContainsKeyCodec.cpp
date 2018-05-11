@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapContainsKeyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -56,11 +55,6 @@ namespace hazelcast {
                 }
 
                 MapContainsKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapContainsKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -72,10 +66,7 @@ namespace hazelcast {
                     return MapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapContainsKeyCodec::ResponseParameters::ResponseParameters(
-                        const MapContainsKeyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

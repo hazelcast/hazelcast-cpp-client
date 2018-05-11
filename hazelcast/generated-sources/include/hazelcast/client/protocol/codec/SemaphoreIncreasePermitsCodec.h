@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_CLIENTREMOVEDISTRIBUTEDOBJECTLISTENERCODEC_H_
-#define HAZELCAST_CLIENT_PROTOCOL_CODEC_CLIENTREMOVEDISTRIBUTEDOBJECTLISTENERCODEC_H_
+#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_SEMAPHOREINCREASEPERMITSCODEC_H_
+#define HAZELCAST_CLIENT_PROTOCOL_CODEC_SEMAPHOREINCREASEPERMITSCODEC_H_
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -25,7 +25,7 @@
 #include <string>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/protocol/codec/ClientMessageType.h"
+#include "hazelcast/client/protocol/codec/SemaphoreMessageType.h"
 #include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -38,38 +38,26 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API ClientRemoveDistributedObjectListenerCodec {
+                class HAZELCAST_API SemaphoreIncreasePermitsCodec {
                 public:
-                    static const ClientMessageType REQUEST_TYPE;
+                    static const SemaphoreMessageType REQUEST_TYPE;
                     static const bool RETRYABLE;
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
                     static std::auto_ptr<ClientMessage> encodeRequest(
-                            const std::string &registrationId);
+                            const std::string &name,
+                            int32_t increase);
 
                     static int32_t calculateDataSize(
-                            const std::string &registrationId);
+                            const std::string &name,
+                            int32_t increase);
                     //************************ REQUEST ENDS ********************************************************************//
 
-                    //************************ RESPONSE STARTS *****************************************************************//
-                    class HAZELCAST_API ResponseParameters {
-                    public:
-                        bool response;
 
-
-                        static ResponseParameters decode(ClientMessage &clientMessage);
-
-                        // define copy constructor (needed for auto_ptr variables)
-                        ResponseParameters(const ResponseParameters &rhs);
-
-                    private:
-                        ResponseParameters(ClientMessage &clientMessage);
-                    };
-                    //************************ RESPONSE ENDS *******************************************************************//
                 private:
                     // Preventing public access to constructors
-                    ClientRemoveDistributedObjectListenerCodec();
+                    SemaphoreIncreasePermitsCodec();
                 };
             }
         }
@@ -80,5 +68,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif /* HAZELCAST_CLIENT_PROTOCOL_CODEC_CLIENTREMOVEDISTRIBUTEDOBJECTLISTENERCODEC_H_ */
+#endif /* HAZELCAST_CLIENT_PROTOCOL_CODEC_SEMAPHOREINCREASEPERMITSCODEC_H_ */
 

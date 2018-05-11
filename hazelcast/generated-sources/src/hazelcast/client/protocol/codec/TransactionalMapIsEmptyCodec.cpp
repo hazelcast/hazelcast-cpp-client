@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapIsEmptyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -55,11 +54,6 @@ namespace hazelcast {
                 }
 
                 TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionalMapIsEmptyCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -71,10 +65,7 @@ namespace hazelcast {
                     return TransactionalMapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapIsEmptyCodec::ResponseParameters::ResponseParameters(
-                        const TransactionalMapIsEmptyCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

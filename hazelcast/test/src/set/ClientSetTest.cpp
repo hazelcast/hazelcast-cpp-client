@@ -198,6 +198,11 @@ namespace hazelcast {
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
 
+            TEST_F(ClientSetTest, testIsEmpty) {
+                ASSERT_TRUE(set->isEmpty());
+                ASSERT_TRUE(set->add("item1"));
+                ASSERT_FALSE(set->isEmpty());
+            }
         }
     }
 }

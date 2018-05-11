@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreReducePermitsCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,24 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                SemaphoreReducePermitsCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "SemaphoreReducePermitsCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                SemaphoreReducePermitsCodec::ResponseParameters
-                SemaphoreReducePermitsCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SemaphoreReducePermitsCodec::ResponseParameters(clientMessage);
-                }
-
-                SemaphoreReducePermitsCodec::ResponseParameters::ResponseParameters(
-                        const SemaphoreReducePermitsCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

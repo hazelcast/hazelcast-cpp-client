@@ -148,7 +148,7 @@ namespace hazelcast {
             }
             
             TEST_F(ClientQueueTest, testTake) {
-                ASSERT_TRUE(q->offer("peek 1"));
+                q->put("peek 1");
                 ASSERT_TRUE(q->offer("peek 2"));
                 ASSERT_TRUE(q->offer("peek 3"));
 
@@ -320,6 +320,17 @@ namespace hazelcast {
 
                 ASSERT_EQ(0, q->size());
                 ASSERT_EQ(q->poll().get(), (std::string *) NULL);
+            }
+
+            TEST_F(ClientQueueTest, testIsEmpty) {
+                ASSERT_TRUE(q->isEmpty());
+                ASSERT_TRUE(q->offer("item1"));
+                ASSERT_FALSE(q->isEmpty());
+            }
+
+            TEST_F(ClientQueueTest, testPut) {
+                q->put("item1");
+                ASSERT_EQ(1, q->size());
             }
         }
     }

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferRemainingCapacityCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -47,11 +46,6 @@ namespace hazelcast {
                 }
 
                 RingbufferRemainingCapacityCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "RingbufferRemainingCapacityCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<int64_t>();
@@ -63,10 +57,7 @@ namespace hazelcast {
                     return RingbufferRemainingCapacityCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferRemainingCapacityCodec::ResponseParameters::ResponseParameters(
-                        const RingbufferRemainingCapacityCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

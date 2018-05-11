@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientAddPartitionListenerCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
 
@@ -44,24 +43,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "ClientAddPartitionListenerCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
-
-
-                }
-
-                ClientAddPartitionListenerCodec::ResponseParameters
-                ClientAddPartitionListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientAddPartitionListenerCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientAddPartitionListenerCodec::ResponseParameters::ResponseParameters(
-                        const ClientAddPartitionListenerCodec::ResponseParameters &rhs) {
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 ClientAddPartitionListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

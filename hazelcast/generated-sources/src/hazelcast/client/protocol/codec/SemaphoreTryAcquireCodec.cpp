@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreTryAcquireCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -55,11 +54,6 @@ namespace hazelcast {
                 }
 
                 SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "SemaphoreTryAcquireCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -71,10 +65,7 @@ namespace hazelcast {
                     return SemaphoreTryAcquireCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(
-                        const SemaphoreTryAcquireCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

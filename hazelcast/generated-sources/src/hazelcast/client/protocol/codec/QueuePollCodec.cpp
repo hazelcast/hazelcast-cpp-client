@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueuePollCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
@@ -52,10 +51,6 @@ namespace hazelcast {
                 }
 
                 QueuePollCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueuePollCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getNullable<serialization::pimpl::Data>();
@@ -70,6 +65,7 @@ namespace hazelcast {
                 QueuePollCodec::ResponseParameters::ResponseParameters(const QueuePollCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
+
             }
         }
     }

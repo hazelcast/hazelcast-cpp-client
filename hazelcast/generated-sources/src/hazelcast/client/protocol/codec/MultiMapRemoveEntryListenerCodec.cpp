@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapRemoveEntryListenerCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,11 +50,6 @@ namespace hazelcast {
                 }
 
                 MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MultiMapRemoveEntryListenerCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<bool>();
@@ -67,10 +61,7 @@ namespace hazelcast {
                     return MultiMapRemoveEntryListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapRemoveEntryListenerCodec::ResponseParameters::ResponseParameters(
-                        const MultiMapRemoveEntryListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

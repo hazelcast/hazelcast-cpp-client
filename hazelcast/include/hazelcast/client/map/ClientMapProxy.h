@@ -27,6 +27,7 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
@@ -551,8 +552,8 @@ namespace hazelcast {
                 */
                 std::string addEntryListener(EntryListener <K, V> &listener, const K &key, bool includeValue) {
                     serialization::pimpl::Data keyData = toData(key);
-                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
-                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
+                    client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler> *entryEventHandler =
+                            new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
                                     getName(), context->getClientClusterService(), context->getSerializationService(),
                                     listener,
                                     includeValue);
@@ -1162,7 +1163,7 @@ namespace hazelcast {
 
                 virtual void tryPutTransientInternal(const serialization::pimpl::Data &keyData,
                                              const serialization::pimpl::Data &valueData, int ttlInMillis) {
-                    proxy::IMapImpl::tryPut(keyData, valueData, ttlInMillis);
+                    proxy::IMapImpl::putTransient(keyData, valueData, ttlInMillis);
                 }
 
                 virtual std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,

@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapEntriesWithPredicateCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -51,11 +50,6 @@ namespace hazelcast {
                 }
 
                 MapEntriesWithPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapEntriesWithPredicateCodec::ResponseParameters::decode",
-                                clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
@@ -67,10 +61,7 @@ namespace hazelcast {
                     return MapEntriesWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapEntriesWithPredicateCodec::ResponseParameters::ResponseParameters(
-                        const MapEntriesWithPredicateCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
+
             }
         }
     }

@@ -13,11 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-//  Created by ihsan demir on 9/9/15.
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
-
 #include "hazelcast/util/IOUtil.h"
 
 namespace hazelcast {
@@ -27,9 +22,7 @@ namespace hazelcast {
                 try {
                     closable->close(closeReason);
                 } catch (client::exception::IException& e) {
-                    std::stringstream message;
-                    message << "closeResource failed" << e.what();
-                    ILogger::getLogger().finest(message.str());
+                    ILogger::getLogger().finest() << "IOUtil::closeResource failed. Exception:" << e;
                 }
 
             }

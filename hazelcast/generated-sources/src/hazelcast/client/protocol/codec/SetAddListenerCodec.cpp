@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetAddListenerCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
 
@@ -57,11 +56,6 @@ namespace hazelcast {
                 }
 
                 SetAddListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "SetAddListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.get<std::string>();
@@ -73,10 +67,6 @@ namespace hazelcast {
                     return SetAddListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                SetAddListenerCodec::ResponseParameters::ResponseParameters(
-                        const SetAddListenerCodec::ResponseParameters &rhs) {
-                    response = rhs.response;
-                }
 
                 //************************ EVENTS START*************************************************************************//
                 SetAddListenerCodec::AbstractEventHandler::~AbstractEventHandler() {

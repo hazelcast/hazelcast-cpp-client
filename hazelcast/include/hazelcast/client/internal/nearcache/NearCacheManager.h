@@ -22,7 +22,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -60,12 +59,10 @@ namespace hazelcast {
                     /**
                      * Creates a new {@link NearCache} with given configurations or returns existing one.
                      *
-                     * Triggers the pre-loading of the created {@link NearCache} via the supplied {@link DataStructureAdapter}.
                      *
                      * @param name                 the name of the {@link NearCache}
                      *                             to be created or existing one
                      * @param nearCacheConfig      the {@link NearCacheConfig} of the {@link NearCache} to be created
-                     * @param dataStructureAdapter the {@link DataStructureAdapter} of the {@link NearCache} to be created
                      * @param <K>           the key type of the {@link NearCache}
                      * @param <KS>          the key type of the underlying cache store (this is usually Data)
                      * @param <V>                  the value type of the {@link NearCache}
@@ -73,8 +70,7 @@ namespace hazelcast {
                      */
                     template<typename K, typename V, typename KS>
                     boost::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
-                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig,
-                            std::auto_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
+                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig) {
                         boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {

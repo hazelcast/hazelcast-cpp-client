@@ -40,27 +40,6 @@ namespace hazelcast {
 
                     return Member(address, uuid, liteMember, attributes);
                 }
-
-                void MemberCodec::encode(const Member &member, ClientMessage &clientMessage) {
-                    clientMessage.set(member.getAddress());
-                    clientMessage.set(member.getUuid());
-                    clientMessage.set(member.isLiteMember());
-                    clientMessage.setMap<std::string, std::string>(member.getAttributes());
-                }
-
-                int MemberCodec::calculateDataSize(const Member &member) {
-                    int dataSize = ClientMessage::calculateDataSize(member.getAddress());
-                    dataSize += ClientMessage::calculateDataSize(member.getUuid());
-                    dataSize += ClientMessage::INT8_SIZE;
-                    dataSize += ClientMessage::INT32_SIZE;
-                    const std::map<std::string, std::string> &attributes = member.getAttributes();
-                    for (std::map<std::string, std::string>::const_iterator it = attributes.begin();
-                         attributes.end() != it; ++it) {
-                        dataSize += ClientMessage::calculateDataSize((*it).first);
-                        dataSize += ClientMessage::calculateDataSize((*it).second);
-                    }
-                    return dataSize;
-                }
             }
         }
     }

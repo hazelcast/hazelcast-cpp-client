@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionCommitCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -50,24 +49,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionCommitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "TransactionCommitCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                TransactionCommitCodec::ResponseParameters
-                TransactionCommitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionCommitCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionCommitCodec::ResponseParameters::ResponseParameters(
-                        const TransactionCommitCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

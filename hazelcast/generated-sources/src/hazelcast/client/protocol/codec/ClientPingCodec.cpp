@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientPingCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,23 +41,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                ClientPingCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientPingCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                ClientPingCodec::ResponseParameters
-                ClientPingCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientPingCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientPingCodec::ResponseParameters::ResponseParameters(
-                        const ClientPingCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

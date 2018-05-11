@@ -48,6 +48,17 @@ namespace hazelcast {
                 std::vector<Address> configuredAddressVector(configuredAddresses.begin(), configuredAddresses.end());
                 ASSERT_EQ(addresses, configuredAddressVector);
             }
+
+            TEST_F(ClientConfigTest, testSetGetGroupConfig) {
+                ClientConfig clientConfig;
+                std::string groupName("myGroup");
+                std::string password("myPass");
+                GroupConfig groupConfig(groupName, password);
+                clientConfig.setGroupConfig(groupConfig);
+                GroupConfig &clientGroupConfig = clientConfig.getGroupConfig();
+                ASSERT_EQ(groupName, clientGroupConfig.getName());
+                ASSERT_EQ(password, clientGroupConfig.getPassword());
+            }
         }
     }
 }

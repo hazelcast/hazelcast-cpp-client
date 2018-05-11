@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapClearCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
@@ -46,22 +45,7 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapClearCodec::ResponseParameters::decode",
-                                                                        clientMessage.getMessageType(), RESPONSE_TYPE);
-                    }
 
-
-                }
-
-                MapClearCodec::ResponseParameters
-                MapClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapClearCodec::ResponseParameters(clientMessage);
-                }
-
-                MapClearCodec::ResponseParameters::ResponseParameters(const MapClearCodec::ResponseParameters &rhs) {
-                }
             }
         }
     }

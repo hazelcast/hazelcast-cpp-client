@@ -18,7 +18,6 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapGetEntryViewCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
@@ -57,11 +56,6 @@ namespace hazelcast {
                 }
 
                 MapGetEntryViewCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (RESPONSE_TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException(
-                                "MapGetEntryViewCodec::ResponseParameters::decode", clientMessage.getMessageType(),
-                                RESPONSE_TYPE);
-                    }
 
 
                     response = clientMessage.getNullable<map::DataEntryView>();
@@ -77,6 +71,7 @@ namespace hazelcast {
                         const MapGetEntryViewCodec::ResponseParameters &rhs) {
                     response = std::auto_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
                 }
+
             }
         }
     }

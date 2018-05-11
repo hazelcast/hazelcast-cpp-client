@@ -30,11 +30,7 @@ namespace hazelcast {
 
             static AddressHolder getAddressHolder(const std::string &address, int defaultPort);
 
-            static bool isIpV4(const std::string &scopedAddress);
-
             static asio::ip::address getByName(const std::string &host);
-
-            static asio::ip::address getByName(const std::string &host, int port);
 
         private:
             static asio::ip::address getByName(const std::string &host, const std::string &service);

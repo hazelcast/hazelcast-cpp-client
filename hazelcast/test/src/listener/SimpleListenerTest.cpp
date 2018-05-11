@@ -23,6 +23,7 @@
 #include "HazelcastServer.h"
 
 #include <gtest/gtest.h>
+#include <ClientTestSupport.h>
 #include "ClientTestSupportBase.h"
 #include "HazelcastServerFactory.h"
 #include "hazelcast/util/CountDownLatch.h"
@@ -33,6 +34,7 @@
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/LifecycleListener.h"
+#include "hazelcast/util/CountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
@@ -42,6 +44,46 @@ namespace hazelcast {
                 SimpleListenerTest() {}
 
             protected:
+                class MyEntryListener : public EntryListener<int, int> {
+                public:
+                    MyEntryListener(util::CountDownLatch &mapClearedLatch) : mapClearedLatch(mapClearedLatch) {}
+
+                    virtual void entryAdded(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryRemoved(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryUpdated(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryEvicted(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryExpired(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void entryMerged(const EntryEvent<int, int> &event) {
+                    }
+
+                    virtual void mapEvicted(const MapEvent &event) {
+                    }
+
+                    virtual void mapCleared(const MapEvent &event) {
+                        assertEquals("testDeregisterListener", event.getName());
+                        assertEquals(EntryEventType::CLEAR_ALL, event.getEventType());
+                        std::string hostName = event.getMember().getAddress().getHost();
+                        assertTrue(hostName == "127.0.0.1" || hostName == "localhost");
+                        assertEquals(5701, event.getMember().getAddress().getPort());
+                        assertEquals(1, event.getNumberOfEntriesAffected());
+                        std::cout << "Map cleared event received:" << event << std::endl;
+                        mapClearedLatch.countDown();
+                    }
+
+                private:
+                    util::CountDownLatch &mapClearedLatch;
+                };
+                
                 class SampleInitialListener : public InitialMembershipListener {
                 public:
                     SampleInitialListener(util::CountDownLatch &_memberAdded, util::CountDownLatch &_attributeLatch,
@@ -228,6 +270,28 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(memberRemovedInit);
 
                 instance.shutdown();
+            }
+
+            TEST_P(SimpleListenerTest, testDeregisterListener) {
+                HazelcastServer instance(*g_srvFactory);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                HazelcastClient hazelcastClient(clientConfig);
+
+                IMap<int, int> map = hazelcastClient.getMap<int, int>("testDeregisterListener");
+
+                ASSERT_FALSE(map.removeEntryListener("Unknown"));
+
+                util::CountDownLatch mapClearedLatch(1);
+                MyEntryListener listener(mapClearedLatch);
+                std::string listenerRegistrationId = map.addEntryListener(listener, true);
+
+                map.put(1, 1);
+
+                map.clear();
+
+                assertOpenEventually(mapClearedLatch);
+
+                assertTrue(map.removeEntryListener(listenerRegistrationId));
             }
 
             INSTANTIATE_TEST_CASE_P(All,

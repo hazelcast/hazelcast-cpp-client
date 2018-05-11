@@ -101,6 +101,14 @@ namespace hazelcast {
                     util::CountDownLatch *shutdownLatch;
                 };
 
+                HazelcastServer startServer(ClientConfig &clientConfig) {
+                    if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
+                        return HazelcastServer(sslFactory);
+                    } else {
+                        return HazelcastServer(*g_srvFactory);
+                    }
+                }
+
             private:
                 HazelcastServerFactory sslFactory;
             };
@@ -128,9 +136,10 @@ namespace hazelcast {
             }
 
             TEST_P(ClusterTest, testAllClientStates) {
-                HazelcastServer instance(*g_srvFactory);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
 
-                ClientConfig clientConfig;
+                HazelcastServer instance = startServer(clientConfig);
+
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
                 util::CountDownLatch startingLatch(1);
@@ -172,9 +181,9 @@ namespace hazelcast {
             }
 
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
-                HazelcastServer instance(*g_srvFactory);
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+                HazelcastServer instance = startServer(clientConfig);
 
-                ClientConfig clientConfig;
                 util::CountDownLatch startingLatch(1);
                 util::CountDownLatch startedLatch(1);
                 util::CountDownLatch connectedLatch(1);
@@ -195,6 +204,15 @@ namespace hazelcast {
 
                 ASSERT_OPEN_EVENTUALLY(shuttingDownLatch);
                 ASSERT_OPEN_EVENTUALLY(shutdownLatch);
+            }
+
+            TEST_P(ClusterTest, testGroupConfig) {
+                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
+
+                HazelcastServer instance = startServer(clientConfig);
+
+                clientConfig.setGroupConfig(GroupConfig("dev", "dev-pass"));
+                HazelcastClient client(clientConfig);
             }
 
             #ifdef HZ_BUILD_WITH_SSL
