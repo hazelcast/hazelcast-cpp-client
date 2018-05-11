@@ -105,7 +105,7 @@ namespace hazelcast {
             * @param groupConfig
             * @return itself ClientConfig
             */
-            ClientConfig &setGroupConfig(GroupConfig &groupConfig);
+            ClientConfig &setGroupConfig(const GroupConfig &groupConfig);
 
             /**
             *

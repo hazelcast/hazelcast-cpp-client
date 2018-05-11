@@ -25,6 +25,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/EntryEvent.h"
 #include <string>
+#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,7 +72,8 @@ namespace hazelcast {
             */
             int getNumberOfEntriesAffected() const;
 
-            std::ostream &operator<<(std::ostream &out) const;
+            friend std::ostream &operator<<(std::ostream &os, const MapEvent &event);
+
         private:
             Member member;
             EntryEventType eventType;
@@ -80,8 +82,6 @@ namespace hazelcast {
         };
     }
 }
-
-std::ostream HAZELCAST_API &operator<<(std::ostream &out, const hazelcast::client::MapEvent &event);
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)

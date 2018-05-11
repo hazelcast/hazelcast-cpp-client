@@ -33,6 +33,31 @@ namespace hazelcast {
         namespace test {
             class ClientListTest : public ClientTestSupport {
             protected:
+                class MyListItemListener : public ItemListener<std::string> {
+                public:
+                    MyListItemListener(util::CountDownLatch& latch)
+                            : latch(latch) {
+
+                    }
+
+                    void itemAdded(const ItemEvent<std::string>& itemEvent) {
+                        int type = itemEvent.getEventType();
+                        assertEquals((int) ItemEventType::ADDED, type);
+                        assertEquals("MyList", itemEvent.getName());
+                        std::string host = itemEvent.getMember().getAddress().getHost();
+                        assertTrue(host == "localhost" || host == "127.0.0.1");
+                        assertEquals(5701, itemEvent.getMember().getAddress().getPort());
+                        assertEquals("item-1", itemEvent.getItem());
+                        latch.countDown();
+                    }
+
+                    void itemRemoved(const ItemEvent<std::string>& item) {
+                    }
+
+                private:
+                    util::CountDownLatch& latch;
+                };
+
                 virtual void TearDown() {
                     // clear list
                     list->clear();
@@ -202,33 +227,13 @@ namespace hazelcast {
 
             }
 
-            class MyListItemListener : public ItemListener<std::string> {
-            public:
-                MyListItemListener(util::CountDownLatch& latch)
-                : latch(latch) {
-
-                }
-
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
-                    latch.countDown();
-                }
-
-                void itemRemoved(const ItemEvent<std::string>& item) {
-                }
-
-            private:
-                util::CountDownLatch& latch;
-            };
-
             TEST_F(ClientListTest, testListener) {
-                util::CountDownLatch latch(5);
+                util::CountDownLatch latch(1);
 
                 MyListItemListener listener(latch);
                 std::string registrationId = list->addItemListener(listener, true);
 
-                for (int i = 0; i < 5; i++) {
-                    list->add(std::string("item") + util::IOUtil::to_string(i));
-                }
+                list->add("item-1");
 
                 ASSERT_TRUE(latch.await(20));
 
