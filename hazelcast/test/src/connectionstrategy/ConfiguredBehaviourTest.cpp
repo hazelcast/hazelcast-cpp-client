@@ -122,7 +122,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+                    ASSERT_THROW(map.put(1, 5), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -145,7 +145,7 @@ namespace hazelcast {
                     ownerServer.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+                    ASSERT_THROW(map.put(1, 5), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }
@@ -167,7 +167,7 @@ namespace hazelcast {
                     hazelcastInstance.shutdown();
                     ASSERT_OPEN_EVENTUALLY(shutdownLatch);
 
-                    ASSERT_THROW(map.put(1, 5), exception::HazelcastInstanceNotActiveException);
+                    ASSERT_THROW(map.put(1, 5), exception::HazelcastClientNotActiveException);
 
                     client.shutdown();
                 }

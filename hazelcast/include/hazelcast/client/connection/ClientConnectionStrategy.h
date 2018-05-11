@@ -61,7 +61,7 @@ namespace hazelcast {
                  * For all connection requests on {@link ConnectionManager} this method will be called.
                  *
                  * The build in retry mechanism can be stopped by throwing an instance of non retryable exceptions;
-                 * {@link IOException}, {@link HazelcastInstanceNotActiveException} or
+                 * {@link IOException}, {@link HazelcastClientNotActiveException} or
                  * {@link RetryableException}
                  *
                  * The thrown exception will be received on the blocking user. Any blocking invocation will exit by that exception.
@@ -74,7 +74,7 @@ namespace hazelcast {
                  * this method will be called.
                  *
                  * This request can be rejected by throwing an instance of non retryable exceptions;
-                 * {@link java.io.IOException}, {@link HazelcastInstanceNotActiveException} or
+                 * {@link java.io.IOException}, {@link HazelcastClientNotActiveException} or
                  * {@link RetryableException}
                  * @param target address of the requested connection
                  */
