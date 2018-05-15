@@ -55,7 +55,7 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("SerializerHolder::registerSerializer",
                                                                              out.str());
                         }
-                        throw exception::HazelcastInstanceNotActiveException("SerializerHolder::registerSerializer");
+                        throw exception::HazelcastClientNotActiveException("SerializerHolder::registerSerializer");
                     }
                     return serializer;
                 }
