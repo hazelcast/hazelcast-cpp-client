@@ -19,6 +19,15 @@
 
 #include "hazelcast/util/ConditionVariable.h"
 
+namespace hazelcast {
+    namespace util {
+        #define MILLIS_IN_A_SECOND 1000
+        #define NANOS_IN_A_SECOND (NANOS_IN_A_MILLISECOND * MILLIS_IN_A_SECOND)
+        #define NANOS_IN_A_MILLISECOND (NANOS_IN_A_USECOND * 1000)
+        #define NANOS_IN_A_USECOND 1000
+    }
+}
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 
 #include "hazelcast/util/Mutex.h"
@@ -26,10 +35,6 @@
 
 namespace hazelcast {
     namespace util {
-        #define NANOS_IN_A_SECOND 1000 * 1000 * 1000
-        #define MILLIS_IN_A_SECOND 1000
-        #define NANOS_IN_A_MILLISECOND 1000 * 1000
-        #define NANOS_IN_A_USECOND 1000
 
         ConditionVariable::ConditionVariable() {
             InitializeConditionVariable(&condition);
@@ -79,11 +84,6 @@ namespace hazelcast {
 
 namespace hazelcast {
     namespace util {
-        #define MILLIS_IN_A_SECOND 1000
-        #define NANOS_IN_A_SECOND (NANOS_IN_A_MILLISECOND * MILLIS_IN_A_SECOND)
-        #define NANOS_IN_A_MILLISECOND (NANOS_IN_A_USECOND * 1000)
-        #define NANOS_IN_A_USECOND 1000
-
         ConditionVariable::ConditionVariable() {
             int error = pthread_cond_init(&condition, NULL);
             (void)error;

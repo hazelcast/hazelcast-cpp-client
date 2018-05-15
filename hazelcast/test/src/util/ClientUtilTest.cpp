@@ -115,6 +115,18 @@ namespace hazelcast {
 
             }
 
+            TEST_F(ClientUtilTest, testConditionWaitMillisTimeout) {
+                util::Mutex mutex;
+                util::ConditionVariable conditionVariable;
+                ASSERT_FALSE(conditionVariable.waitFor(mutex, 100));
+            }
+
+            TEST_F(ClientUtilTest, testConditionWaitNanosTimeout) {
+                util::Mutex mutex;
+                util::ConditionVariable conditionVariable;
+                ASSERT_FALSE(conditionVariable.waitNanos(mutex, 1000));
+            }
+
             TEST_F(ClientUtilTest, testConditionVariableForEINVAL) {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
