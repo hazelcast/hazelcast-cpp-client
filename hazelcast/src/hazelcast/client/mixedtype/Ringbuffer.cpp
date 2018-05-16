@@ -30,6 +30,10 @@ namespace hazelcast {
                 partitionId = getPartitionId(toData(objectName));
             }
 
+            Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId), bufferCapacity(
+                    const_cast<Ringbuffer &>(rhs).bufferCapacity.get()) {
+            }
+
             Ringbuffer::~Ringbuffer() {
             }
 
@@ -46,7 +50,8 @@ namespace hazelcast {
             int64_t Ringbuffer::size() {
                 std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferSizeCodec::encodeRequest(
                         getName());
-                return invokeAndGetResult<int64_t, protocol::codec::RingbufferSizeCodec::ResponseParameters>(msg, partitionId);
+                return invokeAndGetResult<int64_t, protocol::codec::RingbufferSizeCodec::ResponseParameters>(msg,
+                                                                                                             partitionId);
             }
 
             int64_t Ringbuffer::tailSequence() {

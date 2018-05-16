@@ -20,8 +20,6 @@
 #ifndef HAZELCAST_AtomicInt
 #define HAZELCAST_AtomicInt
 
-#include <stdint.h>
-
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Atomic.h"
 
@@ -32,11 +30,15 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API AtomicInt : public Atomic<int32_t> {
+        class HAZELCAST_API AtomicInt : public Atomic<int> {
         public:
             AtomicInt();
 
-            AtomicInt(int value);
+            AtomicInt(const int &v);
+
+        private:
+            AtomicInt(const AtomicInt &rhs);
+            void operator=(const AtomicInt &rhs);
         };
     }
 }

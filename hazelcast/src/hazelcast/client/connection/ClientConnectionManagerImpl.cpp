@@ -456,7 +456,7 @@ namespace hazelcast {
             void
             ClientConnectionManagerImpl::setOwnerConnectionAddress(
                     const boost::shared_ptr<Address> &ownerConnectionAddress) {
-                previousOwnerConnectionAddress = this->ownerConnectionAddress;
+                previousOwnerConnectionAddress = this->ownerConnectionAddress.get();
                 ClientConnectionManagerImpl::ownerConnectionAddress = ownerConnectionAddress;
             }
 

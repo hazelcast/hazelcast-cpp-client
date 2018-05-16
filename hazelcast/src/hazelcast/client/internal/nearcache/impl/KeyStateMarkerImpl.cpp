@@ -23,6 +23,9 @@ namespace hazelcast {
             namespace nearcache {
                 namespace impl {
                     KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : markCount(count), marks(count) {
+                        for (int i = 0; i < count; ++i) {
+                            marks[i] = 0;
+                        }
                     }
 
                     KeyStateMarkerImpl::~KeyStateMarkerImpl() {

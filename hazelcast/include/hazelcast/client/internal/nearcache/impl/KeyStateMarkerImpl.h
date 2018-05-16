@@ -52,7 +52,7 @@ namespace hazelcast {
                         int getSlot(const serialization::pimpl::Data &key);
 
                         const int markCount;
-                        std::vector<util::AtomicInt> marks;
+                        std::vector<util::Atomic<int32_t> > marks;
                     };
                 }
             }

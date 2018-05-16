@@ -25,7 +25,6 @@
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/protocol/codec/ClientGetPartitionsCodec.h"
 #include "hazelcast/client/impl/BuildInfo.h"
-#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
@@ -48,16 +47,21 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onFailure(
                         const boost::shared_ptr<exception::IException> &t) {
                     if (partitionService.client.getLifecycleService().isRunning()) {
-                        partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:" << t;
+                        partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:"
+                                                          << t;
                     }
                 }
 
                 ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client) : client(client),
                                                                                                 logger(util::ILogger::getLogger()),
-                                                                                                clientExecutionService(client.getClientExecutionService()),
+                                                                                                clientExecutionService(
+                                                                                                        client.getClientExecutionService()),
                                                                                                 refreshTaskCallback(
                                                                                                         new RefreshTaskCallback(
-                                                                                                                *this)) {
+                                                                                                                *this)),
+                                                                                                partitionCount(0),
+                                                                                                lastPartitionStateVersion(
+                                                                                                        0) {
                 }
 
                 bool ClientPartitionServiceImpl::processPartitionResponse(
@@ -172,7 +176,8 @@ namespace hazelcast {
                                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters::decode(
                                             *responseMessage);
                             processPartitionResponse(response.partitions,
-                                                     response.partitionStateVersion, response.partitionStateVersionExist);
+                                                     response.partitionStateVersion,
+                                                     response.partitionStateVersionExist);
                         } catch (exception::IException &e) {
                             if (client.getLifecycleService().isRunning()) {
                                 logger.warning() << "Error while fetching cluster partition table!" << e;

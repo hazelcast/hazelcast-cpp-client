@@ -34,23 +34,12 @@ namespace hazelcast {
         template<typename T>
         class Atomic {
         public:
-            Atomic() {
-            }
+            Atomic() {}
 
-            Atomic(T v) : v(v) {
+            Atomic(const T &v) : v(v) {
             }
 
             virtual ~Atomic() {
-            }
-
-            Atomic(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
-            }
-
-            void operator=(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
             }
 
             T operator--(int) {
@@ -58,7 +47,7 @@ namespace hazelcast {
                 return v--;
             }
 
-            T operator-=(T &delta) {
+            T operator-=(const T &delta) {
                 LockGuard lockGuard(mutex);
                 v -= delta;
                 return v;
@@ -74,7 +63,7 @@ namespace hazelcast {
                 return ++v;
             }
 
-            T operator+=(T &delta) {
+            T operator+=(const T &delta) {
                 LockGuard lockGuard(mutex);
                 v += delta;
                 return v;
@@ -104,17 +93,17 @@ namespace hazelcast {
                 return --v;
             }
 
-            bool operator<=(T i) {
+            bool operator<=(const T &i) {
                 LockGuard lockGuard(mutex);
                 return v <= i;
             }
 
-            bool operator==(T i) {
+            bool operator==(const T &i) {
                 LockGuard lockGuard(mutex);
                 return i == v;
             }
 
-            bool operator!=(T i) {
+            bool operator!=(const T &i) {
                 LockGuard lockGuard(mutex);
                 return i != v;
             }
@@ -134,7 +123,11 @@ namespace hazelcast {
                 return out;
             }
         protected:
-            mutable Mutex mutex;
+            // prevent copy
+            Atomic(const Atomic<T> &rhs);
+            void operator=(const Atomic<T> &rhs);
+
+            Mutex mutex;
             T v;
         };
     }

@@ -33,6 +33,8 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API LocalMapStatsImpl : public LocalMapStats {
                 public:
+                    LocalMapStatsImpl();
+
                     virtual monitor::NearCacheStats *getNearCacheStats();
 
                     void setNearCacheStats(NearCacheStats &stats);
