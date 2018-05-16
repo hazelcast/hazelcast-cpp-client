@@ -20,7 +20,6 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Util.h"
@@ -136,14 +135,14 @@ public:
                 } catch (hazelcast::client::exception::IOException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
                             std::string("[SimpleMapTest IOException] ") + e.what());
-                } catch (hazelcast::client::exception::HazelcastInstanceNotActiveException &e) {
+                } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
-                            std::string("[SimpleMapTest HazelcastInstanceNotActiveException] ") + e.what());
+                            std::string("[SimpleMapTest::run] ") + e.what());
                 } catch (hazelcast::client::exception::IException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
-                            std::string("[SimpleMapTest IException] ") + e.what());
+                            std::string("[SimpleMapTest:run] ") + e.what());
                 } catch (...) {
-                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest unknown exception]");
+                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest:run] unknown exception!");
                     running = false;
                     throw;
                 }

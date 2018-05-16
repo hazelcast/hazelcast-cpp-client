@@ -115,6 +115,18 @@ namespace hazelcast {
 
             }
 
+            TEST_F(ClientUtilTest, testConditionWaitMillisTimeout) {
+                util::Mutex mutex;
+                util::ConditionVariable conditionVariable;
+                ASSERT_FALSE(conditionVariable.waitFor(mutex, 100));
+            }
+
+            TEST_F(ClientUtilTest, testConditionWaitNanosTimeout) {
+                util::Mutex mutex;
+                util::ConditionVariable conditionVariable;
+                ASSERT_FALSE(conditionVariable.waitNanos(mutex, 1000));
+            }
+
             TEST_F(ClientUtilTest, testConditionVariableForEINVAL) {
                 util::Mutex mutex;
                 util::ConditionVariable conditionVariable;
@@ -364,12 +376,13 @@ namespace hazelcast {
             }
 
             TEST_F (ClientUtilTest, testLockSupport) {
-                int64_t parkDuration = 1000 * 100;
+                // we can not set less then a millisecond since windows platform can not support less than a millisecond
+                int64_t parkDurationNanos = 1000 * 1000;
                 int64_t start = util::currentTimeNanos();
-                util::concurrent::locks::LockSupport::parkNanos(parkDuration);
+                util::concurrent::locks::LockSupport::parkNanos(parkDurationNanos);
                 int64_t end = util::currentTimeNanos();
                 int64_t actualDuration = end - start;
-                ASSERT_GE(actualDuration, parkDuration);
+                ASSERT_GE(actualDuration, parkDurationNanos);
             }
         }
     }
