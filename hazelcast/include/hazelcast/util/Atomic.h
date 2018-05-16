@@ -117,11 +117,6 @@ namespace hazelcast {
                 return false;
             }
 
-            std::ostream &operator<<(std::ostream &out) const {
-                LockGuard lockGuard(mutex);
-                out << v;
-                return out;
-            }
         protected:
             // prevent copy
             Atomic(const Atomic<T> &rhs);
