@@ -319,9 +319,7 @@ namespace hazelcast {
                 }
 
                 const std::string ClientInvocation::getName() const {
-                    std::ostringstream out;
-                    out << *this;
-                    return out.str();
+                    return "ClientInvocation";
                 }
 
                 void ClientInvocation::onComplete() {
