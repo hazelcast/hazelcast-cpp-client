@@ -105,7 +105,6 @@ namespace hazelcast {
             };
 
 			class HAZELCAST_API ClientMessage : public util::LittleEndianBufferWrapper {
-
             public:
                 /**
                 * Current protocol version

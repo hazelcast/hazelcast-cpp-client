@@ -144,7 +144,7 @@ namespace hazelcast {
                 }
 
                 bool AbstractClientInvocationService::isAllowedToSendRequest(connection::Connection &connection,
-                                                                             const ClientInvocation &invocation) {
+                                                                             ClientInvocation &invocation) {
                     if (!connection.isHeartBeating()) {
                         if (invocation.shouldBypassHeartbeatCheck()) {
                             // ping and removeAllListeners should be send even though heart is not beating
@@ -154,7 +154,7 @@ namespace hazelcast {
                         if (invocationLogger.isFinestEnabled()) {
                             invocationLogger.finest()
                                     << "Connection is not heart-beating, won't write client message -> "
-                                    << invocation.getClientMessage();
+                                    << *invocation.getClientMessage();
                         }
                         return false;
                     }
