@@ -144,7 +144,7 @@ namespace hazelcast {
 
                     void registerInvocation(const boost::shared_ptr<ClientInvocation> &clientInvocation);
 
-                    bool isAllowedToSendRequest(connection::Connection &connection, const ClientInvocation &invocation);
+                    bool isAllowedToSendRequest(connection::Connection &connection, ClientInvocation &invocation);
 
                     bool writeToConnection(connection::Connection &connection,
                                            const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
