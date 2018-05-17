@@ -40,6 +40,8 @@ namespace hazelcast {
             public:
                 RoundRobinLB();
 
+                RoundRobinLB(const RoundRobinLB &rhs);
+
                 void init(Cluster &cluster);
 
                 const Member next();

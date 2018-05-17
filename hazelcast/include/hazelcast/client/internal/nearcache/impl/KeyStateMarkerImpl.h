@@ -16,10 +16,11 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 
-#include <vector>
+#include <stdint.h>
+#include <boost/scoped_array.hpp>
 
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
-#include "hazelcast/util/AtomicInt.h"
+#include "hazelcast/util/Atomic.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -52,7 +53,7 @@ namespace hazelcast {
                         int getSlot(const serialization::pimpl::Data &key);
 
                         const int markCount;
-                        std::vector<util::AtomicInt> marks;
+                        boost::scoped_array<util::Atomic<int32_t> > marks;
                     };
                 }
             }

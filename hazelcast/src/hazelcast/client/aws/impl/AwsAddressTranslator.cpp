@@ -17,8 +17,6 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {

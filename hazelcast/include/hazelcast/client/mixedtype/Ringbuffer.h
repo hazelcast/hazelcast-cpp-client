@@ -63,9 +63,11 @@ namespace hazelcast {
              *
              */
             class HAZELCAST_API Ringbuffer : public proxy::ProxyImpl {
-                friend class client::impl::HazelcastClientInstanceImpl;;
+                friend class client::impl::HazelcastClientInstanceImpl;
 
             public:
+                Ringbuffer(const Ringbuffer &rhs);
+
                 virtual ~Ringbuffer();
 
                 /**

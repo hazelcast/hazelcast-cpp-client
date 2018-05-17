@@ -133,8 +133,8 @@ namespace hazelcast {
                     static const int64_t INITIAL_DELAY = 10 * 1000;
 
                     util::SynchronizedMap<int, Address> partitions;
-                    util::AtomicInt partitionCount;
-                    util::AtomicInt lastPartitionStateVersion;
+                    util::Atomic<int32_t> partitionCount;
+                    util::Atomic<int32_t> lastPartitionStateVersion;
                     util::Mutex lock;
 
                     void waitForPartitionsFetchedOnce();

@@ -21,6 +21,8 @@ namespace hazelcast {
     namespace client {
         namespace monitor {
             namespace impl {
+                LocalMapStatsImpl::LocalMapStatsImpl() : nearCacheStats(NULL) {}
+
                 NearCacheStats *LocalMapStatsImpl::getNearCacheStats() {
                     return nearCacheStats;
                 }
