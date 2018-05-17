@@ -22,15 +22,14 @@ namespace hazelcast {
         namespace internal {
             namespace nearcache {
                 namespace impl {
-                    KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : markCount(count) {
-                        marks = new util::Atomic<int32_t>[count];
+                    KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : markCount(count),
+                                                                        marks(new util::Atomic<int32_t>[count]) {
                         for (int i = 0; i < count; ++i) {
                             marks[i] = 0;
                         }
                     }
 
                     KeyStateMarkerImpl::~KeyStateMarkerImpl() {
-                        delete [] marks;
                     }
 
                     bool KeyStateMarkerImpl::tryMark(const serialization::pimpl::Data &key) {
