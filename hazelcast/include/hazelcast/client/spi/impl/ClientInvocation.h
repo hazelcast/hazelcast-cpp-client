@@ -108,7 +108,7 @@ namespace hazelcast {
                     void
                     setSendConnection(const boost::shared_ptr<connection::Connection> &sendConnection);
 
-                    const boost::shared_ptr<protocol::ClientMessage> &getClientMessage() const;
+                    const boost::shared_ptr<protocol::ClientMessage> getClientMessage();
 
                     bool shouldBypassHeartbeatCheck() const;
 
@@ -170,7 +170,7 @@ namespace hazelcast {
                     ClientClusterService &clientClusterService;
                     ClientInvocationService &invocationService;
                     ClientExecutionService &executionService;
-                    boost::shared_ptr<protocol::ClientMessage> clientMessage;
+                    util::Atomic<boost::shared_ptr<protocol::ClientMessage> > clientMessage;
                     sequence::CallIdSequence &callIdSequence;
                     boost::shared_ptr<Address> address;
                     int partitionId;
@@ -194,6 +194,8 @@ namespace hazelcast {
                     ClientInvocation(const ClientInvocation &rhs);
 
                     void operator=(const ClientInvocation &rhs);
+
+                    boost::shared_ptr<protocol::ClientMessage> copyMessage();
                 };
             }
         }
