@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <gtest/gtest.h>
+#include <TestHelperFunctions.h>
 
 #include "customSerialization/TestCustomSerializerX.h"
 #include "customSerialization/TestCustomXSerializable.h"
@@ -683,6 +684,9 @@ namespace hazelcast {
                 out.writeObject<double>(&d);
                 out.writeObject<std::string>(&str);
                 out.writeObject<std::string>(&utfStr);
+                out.writeInt(5);
+                out.writeUTF(NULL);
+                out.writeUTFArray(NULL);
 
                 std::auto_ptr<std::vector<byte> > buffer = dataOutput.toByteArray();
                 serialization::pimpl::DataInput dataInput(*buffer);
@@ -722,7 +726,9 @@ namespace hazelcast {
                 ASSERT_EQ(d, *in.readObject<double>());
                 ASSERT_EQ(str, *in.readObject<std::string>());
                 ASSERT_EQ(utfStr, *in.readObject<std::string>());
-
+                ASSERT_EQ(4, in.skipBytes(4));
+                ASSERT_NULL("Expected null string", in.readUTF().get(), std::string);
+                ASSERT_NULL("Expected null string array", in.readUTFArray().get(), std::vector<std::string>);
             }
 
             TEST_F(ClientSerializationTest, testGetUTF8CharCount) {

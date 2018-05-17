@@ -75,17 +75,6 @@ namespace hazelcast {
                     }
                 }
 
-                void SerializationConstants::checkClassType(int32_t expectedType, int32_t currentType) {
-                    if (expectedType != currentType) {
-                        char message[200];
-                        util::hz_snprintf(message, 200, "Received data of type %s(%d) but expected data type %s(%d)",
-                                          typeIdToName(currentType).c_str(), currentType,
-                                          typeIdToName(expectedType).c_str(), expectedType);
-
-                        util::ILogger::getLogger().severe(message);
-                        throw exception::ClassCastException("SerializationConstants::checkClassType", message);
-                    }
-                }
             }
         }
     }

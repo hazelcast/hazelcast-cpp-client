@@ -51,8 +51,6 @@ namespace hazelcast {
 
                     void readFully(std::vector<byte> &);
 
-                    void readFully(std::vector<char> &);
-
                     int skipBytes(int i);
 
                     bool readBoolean();
@@ -144,22 +142,6 @@ namespace hazelcast {
                     DataInput &operator = (const DataInput &);
 
                     void checkAvailable(size_t requestedLength);
-
-                    int getSize(byte *dummy);
-
-                    int getSize(char *dummy);
-
-                    int getSize(bool *dummy);
-
-                    int getSize(int16_t *dummy);
-
-                    int getSize(int32_t *dummy);
-
-                    int getSize(int64_t *dummy);
-
-                    int getSize(float *dummy);
-
-                    int getSize(double *dummy);
 
                     char readCharUnchecked();
 
