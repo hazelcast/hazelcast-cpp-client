@@ -26,7 +26,6 @@
 #include "HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 namespace hazelcast {
     namespace client {

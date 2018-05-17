@@ -20,7 +20,6 @@
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/IMap.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Util.h"
@@ -41,14 +40,12 @@ int PUT_PERCENTAGE = 40;
 
 class Stats {
 public:
-    Stats() {
+    Stats() : getCount(0), putCount(0), removeCount(0) {
     }
 
-    Stats(const Stats &rhs) {
-        Stats newOne;
-        getCount = (int) rhs.getCount;
-        putCount = (int) rhs.putCount;
-        removeCount = (int) rhs.removeCount;
+    Stats(const Stats &rhs) : getCount(const_cast<Stats &>(rhs).getCount.get()),
+                              putCount(const_cast<Stats &>(rhs).putCount.get()),
+                              removeCount(const_cast<Stats &>(rhs).removeCount.get()) {
     }
 
     Stats getAndReset() {
@@ -58,9 +55,10 @@ public:
         removeCount = 0;
         return newOne;
     }
-    mutable hazelcast::util::AtomicInt getCount;
-    mutable hazelcast::util::AtomicInt putCount;
-    mutable hazelcast::util::AtomicInt removeCount;
+
+    mutable hazelcast::util::Atomic<int64_t> getCount;
+    mutable hazelcast::util::Atomic<int64_t> putCount;
+    mutable hazelcast::util::Atomic<int64_t> removeCount;
 
     void print() const {
         std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = "
@@ -137,14 +135,14 @@ public:
                 } catch (hazelcast::client::exception::IOException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
                             std::string("[SimpleMapTest IOException] ") + e.what());
-                } catch (hazelcast::client::exception::HazelcastInstanceNotActiveException &e) {
+                } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
-                            std::string("[SimpleMapTest HazelcastInstanceNotActiveException] ") + e.what());
+                            std::string("[SimpleMapTest::run] ") + e.what());
                 } catch (hazelcast::client::exception::IException &e) {
                     hazelcast::util::ILogger::getLogger().warning(
-                            std::string("[SimpleMapTest IException] ") + e.what());
+                            std::string("[SimpleMapTest:run] ") + e.what());
                 } catch (...) {
-                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest unknown exception]");
+                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest:run] unknown exception!");
                     running = false;
                     throw;
                 }
@@ -201,8 +199,9 @@ public:
         std::vector<boost::shared_ptr<hazelcast::util::Thread> > threads;
 
         for (int i = 0; i < THREAD_COUNT; i++) {
-            boost::shared_ptr<hazelcast::util::Thread> thread = boost::shared_ptr<hazelcast::util::Thread>(new hazelcast::util::Thread(
-                                boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map))));
+            boost::shared_ptr<hazelcast::util::Thread> thread = boost::shared_ptr<hazelcast::util::Thread>(
+                    new hazelcast::util::Thread(
+                            boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map))));
             thread->start();
             threads.push_back(thread);
         }

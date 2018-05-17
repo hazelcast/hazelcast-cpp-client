@@ -41,7 +41,7 @@ namespace hazelcast {
                     static void Pop(hazelcast::util::ThreadArgs &args) {
                         hazelcast::util::BlockingConcurrentQueue<int> *q = (hazelcast::util::BlockingConcurrentQueue<int> *)args.arg0;
                         hazelcast::util::AtomicInt *val = (hazelcast::util::AtomicInt *)args.arg1;
-                        *val = q->pop();
+                        val->set(q->pop());
                     }
 
                     static void Interrupt(hazelcast::util::ThreadArgs &args) {

@@ -41,7 +41,6 @@
 #include "hazelcast/client/protocol/codec/ClientAuthenticationCustomCodec.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Executor.h"
@@ -456,7 +455,7 @@ namespace hazelcast {
             void
             ClientConnectionManagerImpl::setOwnerConnectionAddress(
                     const boost::shared_ptr<Address> &ownerConnectionAddress) {
-                previousOwnerConnectionAddress = this->ownerConnectionAddress;
+                previousOwnerConnectionAddress = this->ownerConnectionAddress.get();
                 ClientConnectionManagerImpl::ownerConnectionAddress = ownerConnectionAddress;
             }
 
