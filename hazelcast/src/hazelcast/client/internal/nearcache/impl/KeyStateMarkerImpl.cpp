@@ -30,6 +30,7 @@ namespace hazelcast {
                     }
 
                     KeyStateMarkerImpl::~KeyStateMarkerImpl() {
+                        delete[] marks;
                     }
 
                     bool KeyStateMarkerImpl::tryMark(const serialization::pimpl::Data &key) {
