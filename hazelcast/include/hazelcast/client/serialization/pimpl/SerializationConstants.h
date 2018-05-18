@@ -65,10 +65,6 @@ namespace hazelcast {
                         CONSTANT_TYPE_VOID_POINTER = INT32_MIN
                     };
                     // ------------------------------------------------------------
-
-                    static void checkClassType(int32_t expectedType, int32_t currentType);
-                private:
-                    static std::string typeIdToName(int32_t typeId);
                 };
             }
         }

@@ -46,13 +46,6 @@ namespace hazelcast {
                     pos += length;
                 }
 
-                void DataInput::readFully(std::vector<char> &chars) {
-                    size_t length = chars.size();
-                    checkAvailable(length);
-                    memcpy(&(chars[0]), &(buffer[pos]) , length);
-                    pos += length;
-                }
-
                 int DataInput::skipBytes(int i) {
                     checkAvailable(i);
                     pos += i;
@@ -266,38 +259,6 @@ namespace hazelcast {
                                           (unsigned long) available, (unsigned long) requestedLength);
                         throw exception::IOException("DataInput::checkBoundary", msg);
                     }
-                }
-
-                int DataInput::getSize(byte *dummy) {
-                    return util::Bits::BYTE_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(char *dummy) {
-                    return util::Bits::CHAR_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(bool *dummy) {
-                    return util::Bits::BOOLEAN_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(int16_t *dummy) {
-                    return util::Bits::SHORT_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(int32_t *dummy) {
-                    return util::Bits::INT_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(int64_t *dummy) {
-                    return util::Bits::LONG_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(float *dummy) {
-                    return util::Bits::FLOAT_SIZE_IN_BYTES;
-                }
-
-                int DataInput::getSize(double *dummy) {
-                    return util::Bits::DOUBLE_SIZE_IN_BYTES;
                 }
 
                 template <>
