@@ -17,7 +17,6 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 
 #include <stdint.h>
-#include <boost/scoped_array.hpp>
 
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
 #include "hazelcast/util/Atomic.h"
@@ -53,7 +52,7 @@ namespace hazelcast {
                         int getSlot(const serialization::pimpl::Data &key);
 
                         const int markCount;
-                        boost::scoped_array<util::Atomic<int32_t> > marks;
+                        util::Atomic<int32_t> *marks;
                     };
                 }
             }
