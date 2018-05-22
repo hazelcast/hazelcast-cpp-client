@@ -104,6 +104,100 @@ namespace hazelcast {
                 client.reset();
             }
 
+            TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
+                client->shutdown();
+                ASSERT_THROW(client->newTransactionContext(), exception::HazelcastClientNotActiveException);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitAfterClusterShutdown) {
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                server->shutdown();
+                second->shutdown();
+
+                ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommit) {
+                std::string queueName = randomString();
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitUniSocket) {
+                ClientConfig clientConfig;
+                clientConfig.getNetworkConfig().setSmartRouting(false);
+                HazelcastClient uniSocketClient(clientConfig);
+
+                std::string queueName = randomString();
+                TransactionContext context = uniSocketClient.newTransactionContext();
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = uniSocketClient.getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitWithOptions) {
+                std::string queueName = randomString();
+                TransactionOptions transactionOptions;
+                transactionOptions.setTransactionType(TransactionType::TWO_PHASE);
+                transactionOptions.setTimeout(60);
+                transactionOptions.setDurability(2);
+                TransactionContext context = client->newTransactionContext(transactionOptions);
+
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitAfterClientShutdown) {
+                std::string queueName = randomString();
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                client->shutdown();
+                try {
+                    context.commitTransaction();
+                } catch (exception::TransactionException &e) {
+                    boost::shared_ptr<exception::IException> cause = e.getCause();
+                    ASSERT_NOTNULL(cause.get(), exception::IException);
+                    ASSERT_EQ((int32_t) protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, cause->getErrorCode());
+                }
+            }
+
+
             TEST_F(ClientTxnTest, testTxnRollback) {
                 std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
