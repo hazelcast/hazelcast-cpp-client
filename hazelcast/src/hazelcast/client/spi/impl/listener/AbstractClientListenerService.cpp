@@ -80,8 +80,10 @@ namespace hazelcast {
                             }
 
                             eventHandler->handle(clientMessage);
+                            connection->decrementPendingPacketCount();
                         } catch (...) {
                             connection->decrementPendingPacketCount();
+                            throw;
                         }
                     }
 
