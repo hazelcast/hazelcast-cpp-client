@@ -91,7 +91,7 @@ namespace hazelcast {
                 void AbstractClientInvocationService::handleClientMessage(
                         const boost::shared_ptr<connection::Connection> &connection,
                         const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-                    responseThread.responseQueue.push(ClientPacket(connection, clientMessage));
+                    responseThread.responseQueue.push(clientMessage);
                 }
 
                 boost::shared_ptr<ClientInvocation> AbstractClientInvocationService::deRegisterCallId(int64_t callId) {
@@ -220,31 +220,6 @@ namespace hazelcast {
                     return "AbstractClientInvocationService::CleanResourcesTask";
                 }
 
-                AbstractClientInvocationService::ClientPacket::ClientPacket(
-                        const boost::shared_ptr<connection::Connection> &clientConnection,
-                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) : clientConnection(
-                        clientConnection), clientMessage(clientMessage) {
-                }
-
-                const boost::shared_ptr<connection::Connection> &
-                AbstractClientInvocationService::ClientPacket::getClientConnection() const {
-                    return clientConnection;
-                }
-
-                const boost::shared_ptr<protocol::ClientMessage> &
-                AbstractClientInvocationService::ClientPacket::getClientMessage() const {
-                    return clientMessage;
-                }
-
-                AbstractClientInvocationService::ClientPacket::ClientPacket() {}
-
-                std::ostream &
-                operator<<(std::ostream &os, const AbstractClientInvocationService::ClientPacket &packet) {
-                    os << "clientConnection: " << *packet.clientConnection << " clientMessage: "
-                       << *packet.clientMessage;
-                    return os;
-                }
-
                 AbstractClientInvocationService::~AbstractClientInvocationService() {
                 }
 
@@ -267,7 +242,7 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::ResponseThread::doRun() {
                     while (!invocationService.isShutdown) {
-                        ClientPacket task;
+                        boost::shared_ptr<protocol::ClientMessage> task;
                         try {
                             task = responseQueue.pop();
                         } catch (exception::InterruptedException &) {
@@ -278,16 +253,12 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::process(
-                        const AbstractClientInvocationService::ClientPacket &packet) {
-                    boost::shared_ptr<connection::Connection> conn = packet.getClientConnection();
+                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     try {
-                        handleClientMessage(packet.getClientMessage());
-                        conn->decrementPendingPacketCount();
+                        handleClientMessage(clientMessage);
                     } catch (exception::IException &e) {
-                        invocationLogger.severe() << "Failed to process task: " << packet << " on responseThread: "
+                        invocationLogger.severe() << "Failed to process task: " << clientMessage << " on responseThread: "
                                                   << getName() << e;
-                    } catch (...) {
-                        conn->decrementPendingPacketCount();
                     }
                 }
 

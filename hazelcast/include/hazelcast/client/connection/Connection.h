@@ -114,12 +114,6 @@ namespace hazelcast {
 
                 const std::string &getCloseReason() const;
 
-                void incrementPendingPacketCount();
-
-                void decrementPendingPacketCount();
-
-                int32_t getPendingPacketCount();
-
                 bool operator==(const Connection &rhs) const;
 
                 bool operator!=(const Connection &rhs) const;
@@ -153,7 +147,6 @@ namespace hazelcast {
                 std::string closeReason;
                 boost::shared_ptr<exception::IException> closeCause;
 
-                util::Atomic<int32_t> pendingPacketCount;
                 std::string connectedServerVersionString;
                 int connectedServerVersion;
 
