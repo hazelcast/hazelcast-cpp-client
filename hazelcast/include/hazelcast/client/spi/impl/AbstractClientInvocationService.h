@@ -41,26 +41,6 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API AbstractClientInvocationService : public ClientInvocationService {
                 public:
-                    class ClientPacket {
-                        friend class ResponseThread;
-
-                    public:
-                        ClientPacket();
-
-                        ClientPacket(const boost::shared_ptr<connection::Connection> &clientConnection,
-                                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
-
-                        const boost::shared_ptr<connection::Connection> &getClientConnection() const;
-
-                        const boost::shared_ptr<protocol::ClientMessage> &getClientMessage() const;
-
-                        friend std::ostream &operator<<(std::ostream &os, const ClientPacket &packet);
-
-                    private:
-                        boost::shared_ptr<connection::Connection> clientConnection;
-                        boost::shared_ptr<protocol::ClientMessage> clientMessage;
-                    };
-
                     AbstractClientInvocationService(ClientContext &client);
 
                     virtual ~AbstractClientInvocationService();
@@ -97,7 +77,7 @@ namespace hazelcast {
                         void start();
 
                         // TODO: implement java MPSCQueue and replace this
-                        util::BlockingConcurrentQueue<ClientPacket> responseQueue;
+                        util::BlockingConcurrentQueue<boost::shared_ptr<protocol::ClientMessage> > responseQueue;
                     private:
                         util::ILogger &invocationLogger;
                         AbstractClientInvocationService &invocationService;
@@ -106,7 +86,7 @@ namespace hazelcast {
 
                         void doRun();
 
-                        void process(const ClientPacket &packet);
+                        void process(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
 
                         void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
                     };
