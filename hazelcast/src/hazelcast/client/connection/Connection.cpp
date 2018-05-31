@@ -53,24 +53,12 @@ namespace hazelcast {
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
                       writeHandler(*this, oListener, 16 << 10),
-                      heartBeating(true), connectionId(connectionId), pendingPacketCount(0),
+                      heartBeating(true), connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
                 socket = socketFactory.create(address);
             }
 
             Connection::~Connection() {
-            }
-
-            void Connection::incrementPendingPacketCount() {
-                ++pendingPacketCount;
-            }
-
-            void Connection::decrementPendingPacketCount() {
-                --pendingPacketCount;
-            }
-
-            int32_t Connection::getPendingPacketCount() {
-                return pendingPacketCount;
             }
 
             void Connection::connect(int timeoutInMillis) {
@@ -149,7 +137,6 @@ namespace hazelcast {
 
             void Connection::handleClientMessage(const boost::shared_ptr<Connection> &connection,
                                                  const boost::shared_ptr<protocol::ClientMessage> &message) {
-                incrementPendingPacketCount();
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     spi::impl::listener::AbstractClientListenerService &listenerService =
                             (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();

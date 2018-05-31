@@ -279,15 +279,11 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::ResponseThread::process(
                         const AbstractClientInvocationService::ClientPacket &packet) {
-                    boost::shared_ptr<connection::Connection> conn = packet.getClientConnection();
                     try {
                         handleClientMessage(packet.getClientMessage());
-                        conn->decrementPendingPacketCount();
                     } catch (exception::IException &e) {
                         invocationLogger.severe() << "Failed to process task: " << packet << " on responseThread: "
                                                   << getName() << e;
-                    } catch (...) {
-                        conn->decrementPendingPacketCount();
                     }
                 }
 

@@ -69,20 +69,16 @@ namespace hazelcast {
                     }
 
                     void AbstractClientListenerService::ClientEventProcessor::run() {
-                        try {
-                            int64_t correlationId = clientMessage->getCorrelationId();
-                            boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
-                                    correlationId);
-                            if (eventHandler.get() == NULL) {
-                                logger.warning() << "No eventHandler for callId: " << correlationId << ", event: "
-                                                 << *clientMessage << ", connection: " << *connection;
-                                return;
-                            }
-
-                            eventHandler->handle(clientMessage);
-                        } catch (...) {
-                            connection->decrementPendingPacketCount();
+                        int64_t correlationId = clientMessage->getCorrelationId();
+                        boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
+                                correlationId);
+                        if (eventHandler.get() == NULL) {
+                            logger.warning() << "No eventHandler for callId: " << correlationId << ", event: "
+                                             << *clientMessage;
+                            return;
                         }
+
+                        eventHandler->handle(clientMessage);
                     }
 
                     const std::string AbstractClientListenerService::ClientEventProcessor::getName() const {
@@ -98,8 +94,7 @@ namespace hazelcast {
                             const boost::shared_ptr<connection::Connection> &connection,
                             util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > &eventHandlerMap,
                             util::ILogger &logger)
-                            : clientMessage(clientMessage), connection(connection), eventHandlerMap(eventHandlerMap),
-                              logger(logger) {
+                            : clientMessage(clientMessage), eventHandlerMap(eventHandlerMap), logger(logger) {
                     }
 
                     AbstractClientListenerService::ClientEventProcessor::~ClientEventProcessor() {

@@ -78,7 +78,6 @@ namespace hazelcast {
                                                  util::ILogger &logger);
 
                             const boost::shared_ptr<protocol::ClientMessage> clientMessage;
-                            const boost::shared_ptr<connection::Connection> connection;
                             util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > &eventHandlerMap;
                             util::ILogger &logger;
                         };
