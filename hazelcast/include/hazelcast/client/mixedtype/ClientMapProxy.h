@@ -1069,18 +1069,7 @@ namespace hazelcast {
 
                 virtual bool evictInternal(const serialization::pimpl::Data &keyData);
 
-                EntryVector getAllInternal(const PID_TO_KEY_MAP &partitionToKeyData) {
-                    std::map<int, std::vector<serialization::pimpl::Data> > datas;
-                    for (PID_TO_KEY_MAP::const_iterator it = partitionToKeyData.begin();
-                         it != partitionToKeyData.end(); ++it) {
-                        const std::vector<boost::shared_ptr<serialization::pimpl::Data> > &valueDatas = it->second;
-                        for (std::vector<boost::shared_ptr<serialization::pimpl::Data> >::const_iterator valueIt = valueDatas.begin();
-                             valueIt != valueDatas.end(); ++valueIt) {
-                            datas[it->first].push_back(*(*valueIt));
-                        }
-                    }
-                    return proxy::IMapImpl::getAllData(datas);
-                }
+                virtual EntryVector getAllInternal(const PID_TO_KEY_MAP &partitionToKeyData);
 
                 virtual std::auto_ptr<serialization::pimpl::Data>
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,

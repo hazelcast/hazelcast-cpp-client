@@ -210,12 +210,13 @@ namespace hazelcast {
                 return evicted;
             }
 
-            EntryVector NearCachedClientMapProxy::getAllInternal(ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData) {
+            EntryVector NearCachedClientMapProxy::getAllInternal(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData) {
                 MARKER_MAP markers;
                 try {
-                    EntryVector result = populateFromNearCache(pIdToKeyData, markers);
+                    ClientMapProxy::PID_TO_KEY_MAP nonCachedPidToKeyMap;
+                    EntryVector result = populateFromNearCache(pIdToKeyData, nonCachedPidToKeyMap, markers);
 
-                    EntryVector responses = ClientMapProxy::getAllInternal(pIdToKeyData);
+                    EntryVector responses = ClientMapProxy::getAllInternal(nonCachedPidToKeyMap);
                     BOOST_FOREACH(const EntryVector::value_type &entry, responses) {
                                     boost::shared_ptr<serialization::pimpl::Data> key = ClientMapProxy::toShared(
                                             entry.first);
@@ -342,11 +343,11 @@ namespace hazelcast {
             }
 
             EntryVector
-            NearCachedClientMapProxy::populateFromNearCache(ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData,
-                                                            MARKER_MAP &markers) {
+            NearCachedClientMapProxy::populateFromNearCache(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData,
+                                                            PID_TO_KEY_MAP &nonCachedPidToKeyMap, MARKER_MAP &markers) {
                 EntryVector result;
 
-                BOOST_FOREACH(ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas, pIdToKeyData) {
+                BOOST_FOREACH(const ClientMapProxy::PID_TO_KEY_MAP::value_type &partitionDatas, pIdToKeyData) {
                                 typedef std::vector<boost::shared_ptr<serialization::pimpl::Data> > SHARED_DATA_VECTOR;
                                 SHARED_DATA_VECTOR nonCachedData;
                                 BOOST_FOREACH(const SHARED_DATA_VECTOR::value_type &keyData, partitionDatas.second) {
@@ -361,7 +362,7 @@ namespace hazelcast {
                                                     nonCachedData.push_back(keyData);
                                                 }
                                             }
-                                partitionDatas.second = nonCachedData;
+                                nonCachedPidToKeyMap[partitionDatas.first] = nonCachedData;
                             }
                 return result;
             }

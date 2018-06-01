@@ -109,7 +109,7 @@ namespace hazelcast {
 
                 virtual bool evictInternal(const serialization::pimpl::Data &keyData);
 
-                EntryVector getAllInternal(ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData);
+                virtual EntryVector getAllInternal(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData);
 
                 virtual std::auto_ptr<serialization::pimpl::Data>
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
@@ -231,10 +231,12 @@ namespace hazelcast {
                  * Populates the result from near cache if the data was near cached for the key. Also removes, the cached
                  * entries from pIdToKeyData.
                  * @param pIdToKeyData Partition Id to key data vector mapping
+                 * @param nonCachedPidToKeyMap The key that are not cached.
                  * @param markers The markers to be used
                  * @return The found cached data entries.
                  */
-                EntryVector populateFromNearCache(PID_TO_KEY_MAP &pIdToKeyData, MARKER_MAP &markers);
+                EntryVector populateFromNearCache(const PID_TO_KEY_MAP &pIdToKeyData, PID_TO_KEY_MAP &nonCachedPidToKeyMap,
+                                                  MARKER_MAP &markers);
             };
         }
     }
