@@ -30,6 +30,7 @@
 #include <vector>
 #include <memory>
 #include <boost/shared_ptr.hpp>
+#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -133,6 +134,12 @@ namespace hazelcast {
                 */
                 void readData(pimpl::DataInput& dataInput);
 
+                bool operator==(const ClassDefinition &rhs) const;
+
+                bool operator!=(const ClassDefinition &rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const ClassDefinition &definition);
+
             private:
                 int factoryId;
                 int classId;
@@ -142,7 +149,6 @@ namespace hazelcast {
 
                 ClassDefinition& operator=(const ClassDefinition& rhs);
 
-                std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
 
                 std::auto_ptr<std::vector<byte> > binary;

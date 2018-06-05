@@ -80,6 +80,7 @@ namespace hazelcast {
                         std::string name((char *)&(chars[0]));
                         int fieldFactoryId = 0;
                         int fieldClassId = 0;
+                        int fieldVersion = version;
                         if (type == FieldTypes::TYPE_PORTABLE) {
                             // is null
                             if (in.readBoolean()) {
@@ -90,7 +91,7 @@ namespace hazelcast {
 
                             // TODO: what if there's a null inner Portable field
                             if (shouldRegister) {
-                                int fieldVersion = in.readInt();
+                                fieldVersion = in.readInt();
                                 readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
                             }
                         } else if (type == FieldTypes::TYPE_PORTABLE_ARRAY) {
@@ -103,14 +104,14 @@ namespace hazelcast {
                                 in.position(p);
 
                                 // TODO: what if there's a null inner Portable field
-                                int fieldVersion = in.readInt();
+                                fieldVersion = in.readInt();
                                 readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
                             } else {
                                 shouldRegister = false;
                             }
 
                         }
-                        FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId);
+                        FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId, fieldVersion);
                         builder.addField(fieldDef);
                     }
                     boost::shared_ptr<ClassDefinition> classDefinition = builder.build();
@@ -148,7 +149,7 @@ namespace hazelcast {
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
                     boost::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
                     if (value == NULL) {
-                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(this));
+                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
                         boost::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
                         if (current != NULL) {
                             value = current;

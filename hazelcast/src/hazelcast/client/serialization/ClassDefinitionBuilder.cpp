@@ -22,7 +22,6 @@
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/serialization/ClassDefinitionBuilder.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/client/exception/HazelcastSerializationException.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,16 +32,6 @@ namespace hazelcast {
             , version(version)
             , index(0)
             , done(false) {
-
-            }
-
-            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId)
-            : factoryId(factoryId)
-            , classId(classId)
-            , version(-1)
-            , index(0)
-            , done(false) {
-
 
             }
 
@@ -134,9 +123,11 @@ namespace hazelcast {
             ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
+                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                                                              "Portable class id cannot be zero!");
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(), def->getClassId());
+                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE, def->getFactoryId(),
+                                                def->getClassId(), def->getVersion());
                 fieldDefinitions.push_back(fieldDefinition);
                 return *this;
             }
@@ -144,9 +135,11 @@ namespace hazelcast {
             ClassDefinitionBuilder& ClassDefinitionBuilder::addPortableArrayField(const std::string& fieldName, boost::shared_ptr<ClassDefinition> def) {
                 check();
                 if (def->getClassId() == 0) {
-                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField", "Portable class id cannot be zero!");
+                    throw exception::IllegalArgumentException("ClassDefinitionBuilder::addPortableField",
+                                                              "Portable class id cannot be zero!");
                 }
-                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY, def->getFactoryId(), def->getClassId());
+                FieldDefinition fieldDefinition(index++, fieldName, FieldTypes::TYPE_PORTABLE_ARRAY,
+                                                def->getFactoryId(), def->getClassId(), def->getVersion());
                 fieldDefinitions.push_back(fieldDefinition);
                 return *this;
             }
@@ -184,7 +177,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::addField(const std::string& fieldName, FieldType const& fieldType) {
                 check();
-                FieldDefinition fieldDefinition(index++, fieldName, fieldType);
+                FieldDefinition fieldDefinition(index++, fieldName, fieldType, version);
                 fieldDefinitions.push_back(fieldDefinition);
             }
 
