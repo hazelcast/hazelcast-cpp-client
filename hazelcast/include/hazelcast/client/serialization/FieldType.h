@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_FIELD_TYPE
 #define HAZELCAST_FIELD_TYPE
 
+#include <ostream>
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -36,6 +37,8 @@ namespace hazelcast {
                 bool operator==(FieldType const& rhs) const;
 
                 bool operator!=(FieldType const& rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const FieldType &type);
 
                 byte id;
             };

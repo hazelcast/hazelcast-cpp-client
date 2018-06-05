@@ -44,12 +44,13 @@ namespace hazelcast {
             , factoryId(0) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId)
+            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId, int version)
             : index(index)
             , fieldName(fieldName)
             , type(type)
             , classId(classId)
-            , factoryId(factoryId) {
+            , factoryId(factoryId)
+            , version(version) {
             }
 
             const FieldType &FieldDefinition::getType() const {
@@ -72,7 +73,6 @@ namespace hazelcast {
                 return classId;
             }
 
-
             void FieldDefinition::writeData(pimpl::DataOutput& dataOutput) {
                 dataOutput.writeInt(index);
                 dataOutput.writeUTF(&fieldName);
@@ -87,6 +87,25 @@ namespace hazelcast {
                 type.id = dataInput.readByte();
                 factoryId = dataInput.readInt();
                 classId = dataInput.readInt();
+            }
+
+            bool FieldDefinition::operator==(const FieldDefinition &rhs) const {
+                return fieldName == rhs.fieldName &&
+                       type == rhs.type &&
+                       classId == rhs.classId &&
+                       factoryId == rhs.factoryId &&
+                       version == rhs.version;
+            }
+
+            bool FieldDefinition::operator!=(const FieldDefinition &rhs) const {
+                return !(rhs == *this);
+            }
+
+            std::ostream &operator<<(std::ostream &os, const FieldDefinition &definition) {
+                os << "FieldDefinition{" << "index: " << definition.index << " fieldName: " << definition.fieldName
+                   << " type: " << definition.type << " classId: " << definition.classId << " factoryId: "
+                   << definition.factoryId << " version: " << definition.version;
+                return os;
             }
 
         }

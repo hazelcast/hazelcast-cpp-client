@@ -26,7 +26,6 @@
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 
-
 namespace hazelcast {
     namespace client {
         namespace serialization {
@@ -41,7 +40,6 @@ namespace hazelcast {
             }
 
             void ClassDefinition::addFieldDef(FieldDefinition& fd) {
-                fieldDefinitions.push_back(fd);
                 fieldDefinitionsMap[fd.getName()] = fd;
             }
 
@@ -66,7 +64,7 @@ namespace hazelcast {
             }
 
             int ClassDefinition::getFieldCount() const {
-                return (int)fieldDefinitions.size();
+                return (int)fieldDefinitionsMap.size();
             }
 
 
@@ -92,10 +90,10 @@ namespace hazelcast {
                 dataOutput.writeInt(factoryId);
                 dataOutput.writeInt(classId);
                 dataOutput.writeInt(version);
-                dataOutput.writeShort(fieldDefinitions.size());
-                std::vector<FieldDefinition>::iterator it;
-                for (it = fieldDefinitions.begin(); it != fieldDefinitions.end(); ++it) {
-                    it->writeData(dataOutput);
+                dataOutput.writeShort(fieldDefinitionsMap.size());
+                for (std::map<std::string, FieldDefinition>::iterator it = fieldDefinitionsMap.begin();
+                     it != fieldDefinitionsMap.end(); ++it) {
+                    it->second.writeData(dataOutput);
                 }
             }
 
@@ -109,6 +107,28 @@ namespace hazelcast {
                     fieldDefinition.readData(dataInput);
                     addFieldDef(fieldDefinition);
                 }
+            }
+
+            bool ClassDefinition::operator==(const ClassDefinition &rhs) const {
+                return factoryId == rhs.factoryId &&
+                       classId == rhs.classId &&
+                       version == rhs.version &&
+                       fieldDefinitionsMap == rhs.fieldDefinitionsMap;
+            }
+
+            bool ClassDefinition::operator!=(const ClassDefinition &rhs) const {
+                return !(rhs == *this);
+            }
+
+            std::ostream &operator<<(std::ostream &os, const ClassDefinition &definition) {
+                os << "ClassDefinition{" << "factoryId: " << definition.factoryId << " classId: " << definition.classId << " version: "
+                   << definition.version << " fieldDefinitions: {";
+
+                for (std::map<std::string, FieldDefinition>::const_iterator it = definition.fieldDefinitionsMap.begin(); it != definition.fieldDefinitionsMap.end(); ++it) {
+                    os << it->second;
+                }
+                os << "} }";
+                return os;
             }
         }
     }

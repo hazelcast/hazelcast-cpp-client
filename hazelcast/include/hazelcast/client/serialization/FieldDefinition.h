@@ -26,6 +26,7 @@
 
 #include "hazelcast/client/serialization/FieldType.h"
 #include <string>
+#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -60,7 +61,8 @@ namespace hazelcast {
                 /**
                 * Constructor
                 */
-                FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId);
+                FieldDefinition(int index, const std::string &fieldName, FieldType const &type, int factoryId,
+                                int classId, int version);
 
                 /**
                 * @return field type
@@ -98,12 +100,19 @@ namespace hazelcast {
                 */
                 void readData(pimpl::DataInput& dataInput);
 
+                bool operator==(const FieldDefinition &rhs) const;
+
+                bool operator!=(const FieldDefinition &rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const FieldDefinition &definition);
+
             private:
                 int index;
                 std::string fieldName;
                 FieldType type;
                 int classId;
                 int factoryId;
+                int version;
             };
         }
     }

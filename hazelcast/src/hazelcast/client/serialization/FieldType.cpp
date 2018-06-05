@@ -50,6 +50,11 @@ namespace hazelcast {
                 if (id == rhs.id) return false;
                 return true;
             }
+
+            std::ostream &operator<<(std::ostream &os, const FieldType &type) {
+                os << "FieldType{id: " << type.id << "}";
+                return os;
+            }
         }
     }
 }
