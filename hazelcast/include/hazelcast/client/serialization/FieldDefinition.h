@@ -56,7 +56,7 @@ namespace hazelcast {
                 /**
                 * Constructor
                 */
-                FieldDefinition(int, const std::string&, FieldType const&);
+                FieldDefinition(int, const std::string&, FieldType const&type, int version);
 
                 /**
                 * Constructor

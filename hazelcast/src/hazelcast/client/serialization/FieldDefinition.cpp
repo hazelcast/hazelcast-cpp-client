@@ -32,19 +32,21 @@ namespace hazelcast {
             FieldDefinition::FieldDefinition()
             : index(0)
             , classId(0)
-            , factoryId(0) {
-
+            , factoryId(0)
+            , version(-1) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type)
+            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int version)
             : index(index)
             , fieldName(fieldName)
             , type(type)
             , classId(0)
-            , factoryId(0) {
+            , factoryId(0)
+            , version(version) {
             }
 
-            FieldDefinition::FieldDefinition(int index, const std::string& fieldName, FieldType const& type, int factoryId, int classId, int version)
+            FieldDefinition::FieldDefinition(int index, const std::string &fieldName, FieldType const &type,
+                                             int factoryId, int classId, int version)
             : index(index)
             , fieldName(fieldName)
             , type(type)

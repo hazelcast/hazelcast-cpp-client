@@ -46,8 +46,6 @@ namespace hazelcast {
             public:
                 ClassDefinitionBuilder(int factoryId, int classId, int version);
 
-                ClassDefinitionBuilder(int factoryId, int classId);
-
                 ClassDefinitionBuilder& addIntField(const std::string& fieldName);
 
                 ClassDefinitionBuilder& addLongField(const std::string& fieldName);

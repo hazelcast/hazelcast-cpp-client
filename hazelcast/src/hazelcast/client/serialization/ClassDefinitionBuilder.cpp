@@ -35,16 +35,6 @@ namespace hazelcast {
 
             }
 
-            ClassDefinitionBuilder::ClassDefinitionBuilder(int factoryId, int classId)
-            : factoryId(factoryId)
-            , classId(classId)
-            , version(-1)
-            , index(0)
-            , done(false) {
-
-
-            }
-
             ClassDefinitionBuilder& ClassDefinitionBuilder::addIntField(const std::string& fieldName) {
                 addField(fieldName, FieldTypes::TYPE_INT);
                 return *this;
@@ -187,7 +177,7 @@ namespace hazelcast {
 
             void ClassDefinitionBuilder::addField(const std::string& fieldName, FieldType const& fieldType) {
                 check();
-                FieldDefinition fieldDefinition(index++, fieldName, fieldType);
+                FieldDefinition fieldDefinition(index++, fieldName, fieldType, version);
                 fieldDefinitions.push_back(fieldDefinition);
             }
 
