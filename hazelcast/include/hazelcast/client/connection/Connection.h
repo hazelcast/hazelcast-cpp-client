@@ -89,16 +89,6 @@ namespace hazelcast {
 
                 WriteHandler& getWriteHandler();
 
-                bool isHeartBeating();
-
-                void onHeartbeatFailed();
-
-                void onHeartbeatResumed();
-
-                void onHeartbeatReceived();
-
-                void onHeartbeatRequested();
-
                 bool isAuthenticatedAsOwner();
 
                 void setIsAuthenticatedAsOwner();
@@ -132,16 +122,12 @@ namespace hazelcast {
 
             private:
                 util::Atomic<int64_t> closedTimeMillis;
-                util::Atomic<int64_t> lastHeartbeatRequestedMillis;
-                // the time in millis the last heartbeat was received. 0 indicates that no heartbeat has ever been received.
-                util::Atomic<int64_t> lastHeartbeatReceivedMillis;
                 spi::ClientContext& clientContext;
                 protocol::IMessageHandler &invocationService;
                 std::auto_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 util::AtomicBoolean authenticatedAsOwner;
-                util::AtomicBoolean heartBeating;
 
                 int connectionId;
                 std::string closeReason;

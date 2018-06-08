@@ -54,47 +54,16 @@ namespace hazelcast {
 
                 virtual const std::string getName() const;
 
-                void addConnectionHeartbeatListener(
-                        const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &connectionHeartbeatListener);
-
             private:
-                class HearbeatCallback : public impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
-                public:
-                    HearbeatCallback(const boost::shared_ptr<Connection> &connection, util::ILogger &logger);
-
-                    virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &response);
-
-                    virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
-
-                private:
-                    boost::shared_ptr<connection::Connection> connection;
-                    util::ILogger &logger;
-                };
-
-                class HeartbeatTask : public util::Runnable {
-                public:
-                    HeartbeatTask(HeartbeatManager &heartbeatManager);
-
-                    virtual void run();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    HeartbeatManager &heartbeatManager;
-                };
-
                 spi::ClientContext &client;
                 ClientConnectionManagerImpl &clientConnectionManager;
                 util::ILogger &logger;
                 int64_t heartbeatInterval;
                 int64_t heartbeatTimeout;
-                util::Atomic<std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > > heartbeatListeners;
 
                 void checkConnection(int64_t now, boost::shared_ptr<Connection> &connection);
 
-                void fireHeartbeatStopped(boost::shared_ptr<Connection> &connection);
-
-                void fireHeartbeatResumed(boost::shared_ptr<Connection> &connection);
+                void onHeartbeatStopped(boost::shared_ptr<Connection> &connection, const std::string &reason);
             };
         }
     }

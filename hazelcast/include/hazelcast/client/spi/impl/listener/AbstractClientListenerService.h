@@ -23,6 +23,8 @@
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/client/spi/ClientListenerService.h"
+#include "hazelcast/client/spi/impl/listener/ClientEventRegistration.h"
+#include "hazelcast/client/spi/impl/listener/ClientRegistrationKey.h"
 
 namespace hazelcast {
     namespace client {
@@ -33,6 +35,8 @@ namespace hazelcast {
         }
         namespace connection {
             class Connection;
+
+            class ClientConnectionManagerImpl;
         }
         namespace protocol {
             class ClientMessage;
@@ -42,12 +46,12 @@ namespace hazelcast {
 
             namespace impl {
                 namespace listener {
-                    class HAZELCAST_API AbstractClientListenerService : public ClientListenerService {
+                    class HAZELCAST_API AbstractClientListenerService
+                            : public ClientListenerService,
+                              public connection::ConnectionListener,
+                              public boost::enable_shared_from_this<AbstractClientListenerService> {
                     public:
                         virtual ~AbstractClientListenerService();
-
-                        AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
-                                                      int32_t eventQueueCapacity);
 
                         virtual void start();
 
@@ -59,9 +63,25 @@ namespace hazelcast {
                         void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                  const boost::shared_ptr<connection::Connection> &connection);
 
+                        virtual std::string
+                        registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                         const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+
+                        virtual bool deregisterListener(const std::string &registrationId);
+
+                        virtual void connectionAdded(const boost::shared_ptr<connection::Connection> &connection);
+
+                        virtual void connectionRemoved(const boost::shared_ptr<connection::Connection> &connection);
+
                     protected:
+                        AbstractClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
+                                                      int32_t eventQueueCapacity);
+
+                        virtual bool registersLocalOnly() const = 0;
+
                         class ClientEventProcessor : public util::StripedRunnable {
                             friend class AbstractClientListenerService;
+
                         public:
                             virtual ~ClientEventProcessor();
 
@@ -132,23 +152,62 @@ namespace hazelcast {
                             const boost::shared_ptr<connection::Connection> connection;
                         };
 
+                        class ConnectionRemovedTask : public util::Runnable {
+                        public:
+                            ConnectionRemovedTask(const std::string &taskName,
+                                                  const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                                                  const boost::shared_ptr<connection::Connection> &connection);
+
+                            virtual const std::string getName() const;
+
+                            virtual void run();
+
+                        private:
+                            std::string taskName;
+                            boost::shared_ptr<AbstractClientListenerService> listenerService;
+                            const boost::shared_ptr<connection::Connection> connection;
+                        };
+
+                        struct ConnectionPointerLessComparator {
+                            bool operator()(const boost::shared_ptr<connection::Connection> &lhs,
+                                            const boost::shared_ptr<connection::Connection> &rhs) const;
+                        };
+
+                        typedef std::map<boost::shared_ptr<connection::Connection>, ClientEventRegistration, ConnectionPointerLessComparator> ConnectionRegistrationsMap;
+                        typedef util::SynchronizedMap<ClientRegistrationKey, ConnectionRegistrationsMap> RegistrationsMap;
+
                         void removeEventHandler(int64_t callId);
 
-                        virtual std::string registerListenerInternal(
-                                const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
-                                const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) = 0;
+                        virtual std::string
+                        registerListenerInternal(const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
 
-                        virtual bool deregisterListenerInternal(const std::string &registrationId) = 0;
+                        virtual bool deregisterListenerInternal(const std::string &userRegistrationId);
 
                         virtual void
-                        connectionAddedInternal(const boost::shared_ptr<connection::Connection> &connection) = 0;
+                        connectionAddedInternal(const boost::shared_ptr<connection::Connection> &connection);
+
+                        virtual void
+                        connectionRemovedInternal(const boost::shared_ptr<connection::Connection> &connection);
+
+
+                        void invoke(const ClientRegistrationKey &registrationKey,
+                                    const boost::shared_ptr<connection::Connection> &connection);
 
                         util::SynchronizedMap<int64_t, EventHandler<protocol::ClientMessage> > eventHandlerMap;
                         ClientContext &clientContext;
                         serialization::pimpl::SerializationService &serializationService;
                         util::ILogger &logger;
+                        connection::ClientConnectionManagerImpl &clientConnectionManager;
                         util::impl::SimpleExecutorService eventExecutor;
                         util::impl::SimpleExecutorService registrationExecutor;
+                        int64_t invocationTimeoutMillis;
+                        int64_t invocationRetryPauseMillis;
+                        RegistrationsMap registrations;
+
+                    private:
+                        void invokeFromInternalThread(const ClientRegistrationKey &registrationKey,
+                                                      const boost::shared_ptr<connection::Connection> &connection);
                     };
                 }
             }

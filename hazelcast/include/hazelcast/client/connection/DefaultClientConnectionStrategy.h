@@ -52,10 +52,6 @@ namespace hazelcast {
 
                 virtual void onDisconnect(const boost::shared_ptr<Connection> &connection);
 
-                virtual void onHeartbeatStopped(const boost::shared_ptr<Connection> &connection);
-
-                virtual void onHeartbeatResumed(const boost::shared_ptr<Connection> &connection);
-
                 virtual void shutdown();
 
             private:

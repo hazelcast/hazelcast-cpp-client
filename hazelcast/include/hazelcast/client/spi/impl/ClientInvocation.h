@@ -110,10 +110,6 @@ namespace hazelcast {
 
                     const boost::shared_ptr<protocol::ClientMessage> getClientMessage();
 
-                    bool shouldBypassHeartbeatCheck() const;
-
-                    void setBypassHeartbeatCheck(bool bypassHeartbeatCheck);
-
                     const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &getEventHandler() const;
 
                     void setEventHandler(const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &eventHandler);
@@ -179,7 +175,6 @@ namespace hazelcast {
                     std::string objectName;
                     boost::shared_ptr<connection::Connection> connection;
                     util::Atomic<boost::shared_ptr<connection::Connection> > sendConnection;
-                    bool bypassHeartbeatCheck;
                     boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler;
                     util::Atomic<int64_t> invokeCount;
 

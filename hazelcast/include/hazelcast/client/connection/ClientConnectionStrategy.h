@@ -106,18 +106,6 @@ namespace hazelcast {
                 virtual void onDisconnect(const boost::shared_ptr<Connection> &connection) = 0;
 
                 /**
-                 * The {@link ConnectionManager} will inform this method that the provided connection's heartbeat stopped
-                 * @param connection the connection that heartbeat failed
-                 */
-                virtual void onHeartbeatStopped(const boost::shared_ptr<Connection> &connection) = 0;
-
-                /**
-                 * The {@link ConnectionManager} will inform this method that the provided connection's heartbeat resumed
-                 * @param connection the connection that heartbeat resumed
-                 */
-                virtual void onHeartbeatResumed(const boost::shared_ptr<Connection> &connection) = 0;
-
-                /**
                  * The {@link ConnectionManager} will call this method as a last step of its shutdown.
                  */
                 virtual void shutdown() = 0;

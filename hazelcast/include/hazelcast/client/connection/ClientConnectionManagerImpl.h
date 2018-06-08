@@ -28,7 +28,6 @@
 #include "hazelcast/util/ConcurrentSet.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/util/Future.h"
-#include "hazelcast/client/spi/impl/ConnectionHeartbeatListener.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/connection/InSelector.h"
@@ -82,8 +81,7 @@ namespace hazelcast {
             /**
             * Responsible for managing {@link Connection} objects.
             */
-            class HAZELCAST_API ClientConnectionManagerImpl : public spi::impl::ConnectionHeartbeatListener,
-                                                              public ConnectionListenable {
+            class HAZELCAST_API ClientConnectionManagerImpl : public ConnectionListenable {
             public:
                 ClientConnectionManagerImpl(spi::ClientContext &client,
                                             const boost::shared_ptr<AddressTranslator> &addressTranslator,
@@ -150,14 +148,7 @@ namespace hazelcast {
 
                 void onClose(Connection &connection);
 
-                virtual void heartbeatResumed(const boost::shared_ptr<Connection> &connection);
-
-                virtual void heartbeatStopped(const boost::shared_ptr<Connection> &connection);
-
                 virtual void addConnectionListener(const boost::shared_ptr<ConnectionListener> &connectionListener);
-
-                void addConnectionHeartbeatListener(
-                        const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &listener);
 
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;

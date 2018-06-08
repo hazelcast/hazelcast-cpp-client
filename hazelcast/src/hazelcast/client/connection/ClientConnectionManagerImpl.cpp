@@ -121,8 +121,6 @@ namespace hazelcast {
                 startEventLoopGroup();
                 heartbeat.reset(new HeartbeatManager(client));
                 heartbeat->start();
-                addConnectionHeartbeatListener(boost::shared_ptr<spi::impl::ConnectionHeartbeatListener>(
-                        new spi::impl::ConnectionHeartbeatListenerDelegator(*this)));
                 connectionStrategy->start();
 
                 return result;
@@ -583,11 +581,6 @@ namespace hazelcast {
                 return alive;
             }
 
-            void ClientConnectionManagerImpl::addConnectionHeartbeatListener(
-                    const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &listener) {
-                heartbeat->addConnectionHeartbeatListener(listener);
-            }
-
             void ClientConnectionManagerImpl::stopEventLoopGroup() {
                 inSelector.shutdown();
                 outSelector.shutdown();
@@ -595,16 +588,6 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::onClose(Connection &connection) {
                 removeFromActiveConnections(connection.shared_from_this());
-            }
-
-            void
-            ClientConnectionManagerImpl::heartbeatResumed(const boost::shared_ptr<Connection> &connection) {
-                connectionStrategy->onHeartbeatResumed(connection);
-            }
-
-            void
-            ClientConnectionManagerImpl::heartbeatStopped(const boost::shared_ptr<Connection> &connection) {
-                connectionStrategy->onHeartbeatStopped(connection);
             }
 
             boost::shared_ptr<Connection> ClientConnectionManagerImpl::getActiveConnection(int fileDescriptor) {

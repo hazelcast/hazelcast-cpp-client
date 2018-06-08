@@ -14,17 +14,95 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/exception/ProtocolExceptions.h"
-#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/spi/EventHandler.h"
+#include <hazelcast/client/spi/impl/AbstractClientInvocationService.h>
+#include <boost/foreach.hpp>
+#include <hazelcast/util/UuidUtil.h>
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
                 namespace listener {
+                    AbstractClientListenerService::AbstractClientListenerService(ClientContext &clientContext,
+                                                                                 int32_t eventThreadCount,
+                                                                                 int32_t eventQueueCapacity)
+                            : clientContext(clientContext),
+                              serializationService(clientContext.getSerializationService()),
+                              logger(util::ILogger::getLogger()),
+                              clientConnectionManager(clientContext.getConnectionManager()),
+                              eventExecutor(logger, clientContext.getName() + ".event-", eventThreadCount,
+                                            eventQueueCapacity),
+                              registrationExecutor(logger, clientContext.getName() + ".eventRegistration-", 1) {
+                        AbstractClientInvocationService &invocationService = (AbstractClientInvocationService &) clientContext.getInvocationService();
+                        invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
+                        invocationRetryPauseMillis = invocationService.getInvocationRetryPauseMillis();
+                    }
+
+                    AbstractClientListenerService::~AbstractClientListenerService() {
+                    }
+
+                    std::string
+                    AbstractClientListenerService::registerListener(
+                            const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
+                        //This method should not be called from registrationExecutor
+/*                      TODO
+                        assert (!Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        boost::shared_ptr<util::Callable<std::string> > task(
+                                new RegisterListenerTask("AbstractClientListenerService::registerListener",
+                                                         shared_from_this(), listenerMessageCodec, handler));
+                        return registrationExecutor.submit<std::string>(task)->get();
+                    }
+
+                    bool AbstractClientListenerService::deregisterListener(const std::string &registrationId) {
+                        //This method should not be called from registrationExecutor
+/*                      TODO
+                        assert (!Thread.currentThread().getName().contains("eventRegistration"));
+*/
+
+                        try {
+                            boost::shared_ptr<util::Future<bool> > future = registrationExecutor.submit(
+                                    boost::shared_ptr<util::Callable<bool> >(
+                                            new DeregisterListenerTask(
+                                                    "AbstractClientListenerService::deregisterListener",
+                                                    shared_from_this(), registrationId)));
+
+                            return future->get();
+                        } catch (exception::RejectedExecutionException &) {
+                            //RejectedExecutionException executor(hence the client) is already shutdown
+                            //listeners are cleaned up by the server side. We can ignore the exception and return true safely
+                            return true;
+                        }
+                    }
+
+                    void AbstractClientListenerService::connectionAdded(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(
+                                        new ConnectionAddedTask("AbstractClientListenerService::connectionAdded",
+                                                                shared_from_this(), connection)));
+                    }
+
+                    void AbstractClientListenerService::connectionRemoved(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+
+                        registrationExecutor.execute(
+                                boost::shared_ptr<util::Runnable>(
+                                        new ConnectionRemovedTask("AbstractClientListenerService::connectionRemoved",
+                                                                  shared_from_this(), connection)));
+                    }
+
                     void AbstractClientListenerService::addEventHandler(int64_t callId,
                                                                         const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
                         eventHandlerMap.put(callId, handler);
@@ -47,25 +125,13 @@ namespace hazelcast {
                         }
                     }
 
-                    AbstractClientListenerService::AbstractClientListenerService(ClientContext &clientContext,
-                                                                                 int32_t eventThreadCount,
-                                                                                 int32_t eventQueueCapacity)
-                            : clientContext(clientContext),
-                              serializationService(clientContext.getSerializationService()),
-                              logger(util::ILogger::getLogger()),
-                              eventExecutor(logger, clientContext.getName() + ".event-", eventThreadCount, eventQueueCapacity),
-                              registrationExecutor(logger, clientContext.getName() + ".eventRegistration-", 1) {
-                    }
-
                     void AbstractClientListenerService::shutdown() {
                         eventExecutor.shutdown();
                         registrationExecutor.shutdown();
                     }
 
                     void AbstractClientListenerService::start() {
-                    }
-
-                    AbstractClientListenerService::~AbstractClientListenerService() {
+                        clientConnectionManager.addConnectionListener(shared_from_this());
                     }
 
                     void AbstractClientListenerService::ClientEventProcessor::run() {
@@ -106,7 +172,7 @@ namespace hazelcast {
                             const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
                             const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) : taskName(
                             taskName), listenerService(listenerService), listenerMessageCodec(listenerMessageCodec),
-                                                                                                       handler(handler) {}
+                                                                                                        handler(handler) {}
 
                     std::string AbstractClientListenerService::RegisterListenerTask::call() {
                         return listenerService->registerListenerInternal(listenerMessageCodec, handler);
@@ -142,6 +208,193 @@ namespace hazelcast {
                     void AbstractClientListenerService::ConnectionAddedTask::run() {
                         listenerService->connectionAddedInternal(connection);
                     }
+
+
+                    AbstractClientListenerService::ConnectionRemovedTask::ConnectionRemovedTask(
+                            const std::string &taskName,
+                            const boost::shared_ptr<AbstractClientListenerService> &listenerService,
+                            const boost::shared_ptr<connection::Connection> &connection) : taskName(taskName),
+                                                                                           listenerService(
+                                                                                                   listenerService),
+                                                                                           connection(connection) {}
+
+                    const std::string AbstractClientListenerService::ConnectionRemovedTask::getName() const {
+                        return taskName;
+                    }
+
+                    void AbstractClientListenerService::ConnectionRemovedTask::run() {
+                        listenerService->connectionRemovedInternal(connection);
+                    }
+
+                    std::string AbstractClientListenerService::registerListenerInternal(
+                            const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
+                            const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
+                        std::string userRegistrationId = util::UuidUtil::newUnsecureUuidString();
+
+                        ClientRegistrationKey registrationKey(userRegistrationId, handler, listenerMessageCodec);
+                        registrations.put(registrationKey, boost::shared_ptr<ConnectionRegistrationsMap>(
+                                new ConnectionRegistrationsMap()));
+                        BOOST_FOREACH (const boost::shared_ptr<connection::Connection> &connection,
+                                       clientConnectionManager.getActiveConnections()) {
+                                        try {
+                                            invoke(registrationKey, connection);
+                                        } catch (exception::IException &e) {
+                                            if (connection->isAlive()) {
+                                                deregisterListenerInternal(userRegistrationId);
+                                                throw (exception::ExceptionBuilder<exception::HazelcastException>(
+                                                        "AbstractClientListenerService::RegisterListenerTask::call")
+                                                        << "Listener can not be added " << e).build();
+                                            }
+                                        }
+                                    }
+                        return userRegistrationId;
+                    }
+
+                    bool
+                    AbstractClientListenerService::deregisterListenerInternal(const std::string &userRegistrationId) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        ClientRegistrationKey key(userRegistrationId);
+                        boost::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrations.get(key);
+                        if (registrationMap.get() == NULL) {
+                            return false;
+                        }
+                        bool successful = true;
+
+                        for (ConnectionRegistrationsMap::iterator it = registrationMap->begin();
+                             it != registrationMap->end();) {
+                            ClientEventRegistration &registration = (*it).second;
+                            boost::shared_ptr<connection::Connection> subscriber = registration.getSubscriber();
+                            try {
+                                const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec = registration.getCodec();
+                                const std::string &serverRegistrationId = registration.getServerRegistrationId();
+                                std::auto_ptr<protocol::ClientMessage> request = listenerMessageCodec->encodeRemoveRequest(
+                                        serverRegistrationId);
+                                boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
+                                                                                                          request, "",
+                                                                                                          subscriber);
+                                invocation->invoke()->get();
+                                removeEventHandler(registration.getCallId());
+
+                                ConnectionRegistrationsMap::iterator oldEntry = it;
+                                ++it;
+                                registrationMap->erase(oldEntry);
+                            } catch (exception::IException &e) {
+                                ++it;
+
+                                if (subscriber->isAlive()) {
+                                    successful = false;
+                                    std::ostringstream endpoint;
+                                    if (subscriber->getRemoteEndpoint().get()) {
+                                        endpoint << *subscriber->getRemoteEndpoint();
+                                    } else {
+                                        endpoint << "null";
+                                    }
+                                    logger.warning() << "AbstractClientListenerService::deregisterListenerInternal"
+                                                     << "Deregistration of listener with ID " << userRegistrationId
+                                                     << " has failed to address " << subscriber->getRemoteEndpoint()
+                                                     << e;
+                                }
+                            }
+                        }
+                        if (successful) {
+                            registrations.remove(key);
+                        }
+                        return successful;
+                    }
+
+                    void AbstractClientListenerService::connectionAddedInternal(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        BOOST_FOREACH(const ClientRegistrationKey &registrationKey, registrations.keys()) {
+                                        invokeFromInternalThread(registrationKey, connection);
+                                    }
+                    }
+
+                    void AbstractClientListenerService::connectionRemovedInternal(
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        typedef std::vector<std::pair<ClientRegistrationKey, boost::shared_ptr<ConnectionRegistrationsMap> > > ENTRY_VECTOR;
+                        BOOST_FOREACH(const ENTRY_VECTOR::value_type &registrationMapEntry, registrations.entrySet()) {
+                                        boost::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrationMapEntry.second;
+                                        ConnectionRegistrationsMap::iterator foundRegistration = registrationMap->find(
+                                                connection);
+                                        if (foundRegistration != registrationMap->end()) {
+                                            removeEventHandler(foundRegistration->second.getCallId());
+                                            registrationMap->erase(foundRegistration);
+                                            registrations.put(registrationMapEntry.first,
+                                                              registrationMap);
+                                        }
+                                    }
+                    }
+
+                    void
+                    AbstractClientListenerService::invokeFromInternalThread(
+                            const ClientRegistrationKey &registrationKey,
+                            const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+                        try {
+                            invoke(registrationKey, connection);
+                        } catch (exception::IException &e) {
+                            logger.warning() << "Listener " << registrationKey
+                                             << " can not be added to a new connection: "
+                                             << *connection << ", reason: " << e.getMessage();
+                        }
+                    }
+
+                    void
+                    AbstractClientListenerService::invoke(const ClientRegistrationKey &registrationKey,
+                                                          const boost::shared_ptr<connection::Connection> &connection) {
+                        //This method should only be called from registrationExecutor
+/*                      TODO
+                        assert (Thread.currentThread().getName().contains("eventRegistration"));
+*/
+
+                        boost::shared_ptr<ConnectionRegistrationsMap> registrationMap = registrations.get(
+                                registrationKey);
+                        if (registrationMap->find(connection) != registrationMap->end()) {
+                            return;
+                        }
+
+                        const boost::shared_ptr<ListenerMessageCodec> &codec = registrationKey.getCodec();
+                        std::auto_ptr<protocol::ClientMessage> request = codec->encodeAddRequest(registersLocalOnly());
+                        boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler = registrationKey.getHandler();
+                        handler->beforeListenerRegister();
+
+                        boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(clientContext,
+                                                                                                  request, "",
+                                                                                                  connection);
+                        invocation->setEventHandler(handler);
+
+                        boost::shared_ptr<protocol::ClientMessage> clientMessage = invocation->invokeUrgent()->get();
+
+                        std::string serverRegistrationId = codec->decodeAddResponse(*clientMessage);
+                        handler->onListenerRegister();
+                        int64_t correlationId = invocation->getClientMessage()->getCorrelationId();
+                        ClientEventRegistration registration(serverRegistrationId, correlationId, connection, codec);
+
+                        (*registrationMap)[connection] = registration;
+                    }
+
+                    bool AbstractClientListenerService::ConnectionPointerLessComparator::operator()(
+                            const boost::shared_ptr<connection::Connection> &lhs,
+                            const boost::shared_ptr<connection::Connection> &rhs) const {
+                        if (lhs == rhs) {
+                            return false;
+                        }
+                        if (!lhs.get()) {
+                            return true;
+                        }
+                        if (!rhs.get()) {
+                            return false;
+                        }
+
+                        return *lhs < *rhs;
+                    }
+
                 }
             }
         }

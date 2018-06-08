@@ -17,14 +17,9 @@
 #include <boost/foreach.hpp>
 
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
-#include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
-#include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 
 namespace hazelcast {
@@ -107,8 +102,7 @@ namespace hazelcast {
                     registerInvocation(invocation);
 
                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage = invocation->getClientMessage();
-                    if (!isAllowedToSendRequest(*connection, *invocation) ||
-                        !writeToConnection(*connection, clientMessage)) {
+                    if (!writeToConnection(*connection, clientMessage)) {
                         int64_t callId = clientMessage->getCorrelationId();
                         boost::shared_ptr<ClientInvocation> clientInvocation = deRegisterCallId(callId);
                         if (clientInvocation.get() != NULL) {
@@ -143,24 +137,6 @@ namespace hazelcast {
                     }
                 }
 
-                bool AbstractClientInvocationService::isAllowedToSendRequest(connection::Connection &connection,
-                                                                             ClientInvocation &invocation) {
-                    if (!connection.isHeartBeating()) {
-                        if (invocation.shouldBypassHeartbeatCheck()) {
-                            // ping and removeAllListeners should be send even though heart is not beating
-                            return true;
-                        }
-
-                        if (invocationLogger.isFinestEnabled()) {
-                            invocationLogger.finest()
-                                    << "Connection is not heart-beating, won't write client message -> "
-                                    << *invocation.getClientMessage();
-                        }
-                        return false;
-                    }
-                    return true;
-                }
-
                 bool AbstractClientInvocationService::writeToConnection(connection::Connection &connection,
                                                                         const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     clientMessage->addFlag(protocol::ClientMessage::BEGIN_AND_END_FLAGS);
@@ -178,7 +154,7 @@ namespace hazelcast {
                                         continue;
                                     }
 
-                                    if (connection->isHeartBeating()) {
+                                    if (connection->isAlive()) {
                                         continue;
                                     }
 
@@ -194,22 +170,9 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::CleanResourcesTask::notifyException(ClientInvocation &invocation,
                                                                                           boost::shared_ptr<connection::Connection> &connection) {
-                    std::auto_ptr<exception::IException> ex;
-                    /**
-                     * Connection may be closed(e.g. remote member shutdown) in which case the isAlive is set to false or the
-                     * heartbeat failure occurs. The order of the following check matters. We need to first check for isAlive since
-                     * the connection.isHeartBeating also checks for isAlive as well.
-                     */
-                    if (!connection->isAlive()) {
-                        ex.reset(new exception::TargetDisconnectedException("CleanResourcesTask::notifyException",
-                                                                            connection->getCloseReason()));
-                    } else {
-                        std::ostringstream out;
-                        out << "Heartbeat timed out to " << connection;
-                        ex.reset(new exception::TargetDisconnectedException("CleanResourcesTask::notifyException",
-                                                                            out.str()));
-                    }
-
+                    std::auto_ptr<exception::IException> ex(
+                            new exception::TargetDisconnectedException("CleanResourcesTask::notifyException",
+                                                                       connection->getCloseReason()));
                     invocation.notifyException(*ex);
                 }
 
@@ -257,7 +220,8 @@ namespace hazelcast {
                     try {
                         handleClientMessage(clientMessage);
                     } catch (exception::IException &e) {
-                        invocationLogger.severe() << "Failed to process task: " << clientMessage << " on responseThread: "
+                        invocationLogger.severe() << "Failed to process task: " << clientMessage
+                                                  << " on responseThread: "
                                                   << getName() << e;
                     }
                 }

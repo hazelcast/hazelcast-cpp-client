@@ -21,7 +21,6 @@
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -69,10 +68,9 @@ namespace hazelcast {
                 }
 
                 if (now - connection->lastReadTimeMillis() > heartbeatTimeout) {
-                    if (connection->isHeartBeating()) {
+                    if (connection->isAlive()) {
                         logger.warning() << "Heartbeat failed over the connection: " << *connection;
-                        connection->onHeartbeatFailed();
-                        fireHeartbeatStopped(connection);
+                        onHeartbeatStopped(connection, "Heartbeat timed out");
                     }
                 }
 
@@ -80,80 +78,18 @@ namespace hazelcast {
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
                     boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, "", connection);
-                    clientInvocation->setBypassHeartbeatCheck(true);
-                    connection->onHeartbeatRequested();
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = clientInvocation->invokeUrgent();
-                    clientInvocationFuture->andThen(boost::shared_ptr<
-                            impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
-                            new HearbeatCallback(connection, logger)));
-                } else {
-                    if (!connection->isHeartBeating()) {
-                        logger.warning() << "Heartbeat is back to healthy for the connection: " << *connection;
-                        connection->onHeartbeatResumed();
-                        fireHeartbeatResumed(connection);
-                    }
+                    clientInvocation->invokeUrgent();
                 }
             }
 
-            void HeartbeatManager::fireHeartbeatStopped(boost::shared_ptr<Connection> &connection) {
-                std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > listeners = heartbeatListeners;
-                BOOST_FOREACH (boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> heartbeatListener, listeners) {
-                                heartbeatListener->heartbeatStopped(connection);
-                            }
-            }
-
-            void HeartbeatManager::fireHeartbeatResumed(boost::shared_ptr<Connection> &connection) {
-                std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > listeners = heartbeatListeners;
-                BOOST_FOREACH (boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> heartbeatListener, listeners) {
-                                heartbeatListener->heartbeatResumed(connection);
-                            }
-            }
-
-            void HeartbeatManager::addConnectionHeartbeatListener(
-                    const boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> &connectionHeartbeatListener) {
-                do {
-                    std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > listeners = heartbeatListeners;
-                    std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> > newListeners = listeners;
-                    newListeners.push_back(connectionHeartbeatListener);
-                    if (heartbeatListeners.compareAndSet(listeners, newListeners)) {
-                        break;
-                    }
-                } while (true);
+            void
+            HeartbeatManager::onHeartbeatStopped(boost::shared_ptr<Connection> &connection, const std::string &reason) {
+                connection->close(reason.c_str(), (exception::ExceptionBuilder<exception::TargetDisconnectedException>(
+                        "HeartbeatManager::onHeartbeatStopped") << "Heartbeat timed out to connection "
+                                                                << *connection).buildShared());
             }
 
             void HeartbeatManager::shutdown() {
-                heartbeatListeners = std::vector<boost::shared_ptr<spi::impl::ConnectionHeartbeatListener> >();
-            }
-
-            HeartbeatManager::HearbeatCallback::HearbeatCallback(const boost::shared_ptr<Connection> &connection,
-                                                                 util::ILogger &logger)
-                    : connection(connection), logger(logger) {}
-
-            void
-            HeartbeatManager::HearbeatCallback::onResponse(const boost::shared_ptr<protocol::ClientMessage> &response) {
-                if (connection->isAlive()) {
-                    connection->onHeartbeatReceived();
-                }
-            }
-
-            void HeartbeatManager::HearbeatCallback::onFailure(const boost::shared_ptr<exception::IException> &e) {
-                if (connection->isAlive()) {
-                    logger.warning() << "Error receiving ping answer from the connection: " << *connection << *e;
-                }
-            }
-
-            void HeartbeatManager::HeartbeatTask::run() {
-                while (heartbeatManager.clientConnectionManager.isAlive()) {
-                    heartbeatManager.run();
-                }
-            }
-
-            const std::string HeartbeatManager::HeartbeatTask::getName() const {
-                return "HeartbeatTask";
-            }
-
-            HeartbeatManager::HeartbeatTask::HeartbeatTask(HeartbeatManager &heartbeatManager) : heartbeatManager(
-                    heartbeatManager) {
             }
         }
     }

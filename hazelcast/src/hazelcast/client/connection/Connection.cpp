@@ -48,12 +48,12 @@ namespace hazelcast {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                                    InSelector &iListener, OutSelector &oListener,
                                    internal::socket::SocketFactory &socketFactory)
-                    : closedTimeMillis(0), lastHeartbeatRequestedMillis(0), lastHeartbeatReceivedMillis(0),
+                    : closedTimeMillis(0),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
                       writeHandler(*this, oListener, 16 << 10),
-                      heartBeating(true), connectionId(connectionId),
+                      connectionId(connectionId),
                       connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
                 socket = socketFactory.create(address);
             }
@@ -129,10 +129,6 @@ namespace hazelcast {
 
             WriteHandler &Connection::getWriteHandler() {
                 return writeHandler;
-            }
-
-            bool Connection::isHeartBeating() {
-                return isAlive() && heartBeating;
             }
 
             void Connection::handleClientMessage(const boost::shared_ptr<Connection> &connection,
@@ -222,22 +218,6 @@ namespace hazelcast {
                 return readHandler.getLastReadTimeMillis();
             }
 
-            void Connection::onHeartbeatFailed() {
-                heartBeating = false;
-            }
-
-            void Connection::onHeartbeatResumed() {
-                heartBeating = true;
-            }
-
-            void Connection::onHeartbeatReceived() {
-                lastHeartbeatReceivedMillis = util::currentTimeMillis();
-            }
-
-            void Connection::onHeartbeatRequested() {
-                lastHeartbeatRequestedMillis = util::currentTimeMillis();
-            }
-
             void Connection::innerClose() {
                 if (!socket.get()) {
                     return;;
@@ -250,8 +230,6 @@ namespace hazelcast {
                 Connection &conn = const_cast<Connection &>(connection);
                 int64_t lastRead = conn.lastReadTimeMillis();
                 int64_t closedTime = conn.closedTimeMillis;
-                int64_t lastHeartBeatRequestedTime = conn.lastHeartbeatRequestedMillis;
-                int64_t lastHeartBeatReceivedTime = conn.lastHeartbeatReceivedMillis;
                 os << "ClientConnection{"
                    << "alive=" << conn.isAlive()
                    << ", connectionId=" << connection.getConnectionId()
@@ -263,9 +241,6 @@ namespace hazelcast {
                 }
                 os << ", lastReadTime=" << util::StringUtil::timeToStringFriendly(lastRead)
                    << ", closedTime=" << util::StringUtil::timeToStringFriendly(closedTime)
-                   << ", lastHeartbeatRequested=" << util::StringUtil::timeToStringFriendly(lastHeartBeatRequestedTime)
-                   << ", lastHeartbeatReceived=" << util::StringUtil::timeToStringFriendly(lastHeartBeatReceivedTime)
-                   << ", isHeartbeating=" << conn.isHeartBeating()
                    << ", connected server version=" << conn.connectedServerVersionString
                    << '}';
 
