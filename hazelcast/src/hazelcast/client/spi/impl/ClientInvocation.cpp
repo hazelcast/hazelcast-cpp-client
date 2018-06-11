@@ -292,14 +292,6 @@ namespace hazelcast {
                     return clientMessage.get();
                 }
 
-                bool ClientInvocation::shouldBypassHeartbeatCheck() const {
-                    return bypassHeartbeatCheck;
-                }
-
-                void ClientInvocation::setBypassHeartbeatCheck(bool bypassHeartbeatCheck) {
-                    ClientInvocation::bypassHeartbeatCheck = bypassHeartbeatCheck;
-                }
-
                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &
                 ClientInvocation::getEventHandler() const {
                     return eventHandler;
