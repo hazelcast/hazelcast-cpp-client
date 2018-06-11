@@ -70,7 +70,7 @@ namespace hazelcast {
              * @throws java.lang.IllegalArgumentException if the value is negative.
              */
             template <typename T>
-            static int checkNotNegative(const T &value, const std::string &errorMessage) {
+            static const T &checkNotNegative(const T &value, const std::string &errorMessage) {
                 if (value < 0) {
                     throw client::exception::IllegalArgumentException(errorMessage);
                 }
