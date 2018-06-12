@@ -48,8 +48,7 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            connection.handleClientMessage(connection.shared_from_this(),
-                                                           boost::shared_ptr<ClientMessage>(message));
+                            connection.handleClientMessage(boost::shared_ptr<ClientMessage>(message));
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
@@ -84,7 +83,7 @@ namespace hazelcast {
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 
-                        connection.handleClientMessage(connection.shared_from_this(), foundMessage);
+                        connection.handleClientMessage(foundMessage);
 
                         result = true;
                     }

@@ -63,8 +63,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable, public protocol::IMessageHandler,
-                                             public boost::enable_shared_from_this<Connection> {
+            class HAZELCAST_API Connection : public util::Closeable, public boost::enable_shared_from_this<Connection> {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, int connectionId, InSelector& iListener,
                            OutSelector& listener, internal::socket::SocketFactory &socketFactory);
@@ -93,8 +92,7 @@ namespace hazelcast {
 
                 void setIsAuthenticatedAsOwner();
 
-                virtual void handleClientMessage(const boost::shared_ptr<Connection> &connection,
-                                                 const boost::shared_ptr<protocol::ClientMessage> &message);
+                virtual void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &message);
 
                 int getConnectionId() const;
 

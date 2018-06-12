@@ -147,7 +147,7 @@ namespace hazelcast {
                 void ClientInvocation::notifyException(exception::IException &exception) {
                     if (!lifecycleService.isRunning()) {
                         complete(exception::HazelcastClientNotActiveException(
-                                exception.getSource(), exception.getMessage(), exception));
+                                exception.getSource(), "Client is shutting down", exception));
                         return;
                     }
 

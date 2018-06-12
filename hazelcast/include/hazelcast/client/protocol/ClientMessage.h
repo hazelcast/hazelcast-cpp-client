@@ -323,21 +323,12 @@ namespace hazelcast {
                 //----- Data size calculation functions BEGIN -------
                 static int32_t calculateDataSize(uint8_t param);
 
-                static int32_t calculateDataSize(int8_t param);
-
                 static int32_t calculateDataSize(bool param);
-
-                static int32_t calculateDataSize(int16_t param);
-
-                static int32_t calculateDataSize(uint16_t param);
 
                 static int32_t calculateDataSize(int32_t param);
 
-                static int32_t calculateDataSize(uint32_t param);
-
                 static int32_t calculateDataSize(int64_t param);
 
-                static int32_t calculateDataSize(uint64_t param);
 
                 template<typename T>
                 static int32_t calculateDataSizeNullable(const T *param) {
@@ -355,26 +346,6 @@ namespace hazelcast {
                 static int32_t calculateDataSize(const serialization::pimpl::Data &param);
 
                 static int32_t calculateDataSize(const serialization::pimpl::Data *param);
-
-                static int32_t calculateDataSize(const Address &param);
-
-                static int32_t calculateDataSize(const Address *param);
-
-                static int32_t calculateDataSize(const util::UUID &param);
-
-                static int32_t calculateDataSize(const util::UUID *param);
-
-                static int32_t calculateDataSize(const Member &param);
-
-                static int32_t calculateDataSize(const Member *param);
-
-                static int32_t calculateDataSize(const map::DataEntryView &param);
-
-                static int32_t calculateDataSize(const map::DataEntryView *param);
-
-                static int32_t calculateDataSize(const impl::DistributedObjectInfo &param);
-
-                static int32_t calculateDataSize(const impl::DistributedObjectInfo *param);
 
                 template<typename K, typename V>
                 static int32_t calculateDataSize(const std::pair<K, V> &param) {
