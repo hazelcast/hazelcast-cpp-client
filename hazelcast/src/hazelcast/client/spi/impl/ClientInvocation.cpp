@@ -203,9 +203,18 @@ namespace hazelcast {
 
                 bool ClientInvocation::isRetrySafeException(exception::IException &exception) {
                     int32_t errorCode = exception.getErrorCode();
-                    return errorCode == protocol::IO ||
-                           errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE ||
-                           errorCode == protocol::RETRYABLE_HAZELCAST;
+                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE) {
+                        return true;
+                    }
+                    try {
+                        exception.raise();
+                    } catch (exception::RetryableHazelcastException &) {
+                        return true;
+                    } catch (exception::IException &) {
+                        return false;
+                    }
+
+                    return false;
                 }
 
                 exception::OperationTimeoutException
