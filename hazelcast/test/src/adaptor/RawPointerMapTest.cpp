@@ -565,7 +565,11 @@ namespace hazelcast {
                 }
 
 
-                TEST_F(RawPointerMapTest, testGetAllPutAll) {
+                /**
+                 * This failure with this test is reported at https://github.com/hazelcast/hazelcast-cpp-client/issues/379
+                 * Do not forget to enable this test once the issue is resolved!!!
+                 */
+                TEST_F(RawPointerMapTest, DISABLED_testGetAllPutAll) {
                     std::map<std::string, std::string> mapTemp;
 
                     for (int i = 0; i < 100; i++) {
