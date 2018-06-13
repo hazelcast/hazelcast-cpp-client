@@ -35,7 +35,7 @@ namespace hazelcast {
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onResponse(
                         const boost::shared_ptr<protocol::ClientMessage> &responseMessage) {
-                    if (responseMessage.get()) {
+                    if (!responseMessage.get()) {
                         return;
                     }
                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =

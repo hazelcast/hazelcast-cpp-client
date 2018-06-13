@@ -113,7 +113,6 @@ namespace hazelcast {
             */
             DEFINE_EXCEPTION_CLASS(StaleSequenceException, protocol::STALE_SEQUENCE);
             DEFINE_EXCEPTION_CLASS(TargetDisconnectedException, protocol::TARGET_DISCONNECTED);
-            DEFINE_EXCEPTION_CLASS(TargetNotMemberException, protocol::TARGET_NOT_MEMBER);
             DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT);
             DEFINE_EXCEPTION_CLASS(TopicOverloadException, protocol::TOPIC_OVERLOAD);
             DEFINE_EXCEPTION_CLASS(TopologyChangedException, protocol::TOPOLOGY_CHANGED);
@@ -146,6 +145,18 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE);
             DEFINE_EXCEPTION_CLASS(UnknownHostException, protocol::UNKNOWN_HOST);
             DEFINE_EXCEPTION_CLASS(FutureUninitialized, protocol::FUTURE_UNINITIALIZED);
+
+            class HAZELCAST_API TargetNotMemberException : public RetryableHazelcastException {
+            public:
+                TargetNotMemberException(const std::string &source, const std::string &message,
+                                         const std::string &details, int32_t causeCode);
+
+                TargetNotMemberException(const std::string &source, const std::string &message, int32_t causeCode);
+
+                TargetNotMemberException(const std::string &source, const std::string &message);
+
+
+            };
 
             class HAZELCAST_API UndefinedErrorCodeException : public IException {
             public:
