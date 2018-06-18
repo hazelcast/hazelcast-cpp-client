@@ -318,8 +318,6 @@ namespace hazelcast {
                 util::Atomic<boost::shared_ptr<protocol::Principal> > principal;
                 std::auto_ptr<ClientConnectionStrategy> connectionStrategy;
                 boost::shared_ptr<util::impl::SimpleExecutorService> clusterConnectionExecutor;
-                // This queue is used for avoiding memory leak
-                util::SynchronizedQueue<util::Thread> shutdownThreads;
                 int32_t connectionAttemptPeriod;
                 int32_t connectionAttemptLimit;
                 bool shuffleMemberList;
