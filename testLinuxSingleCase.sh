@@ -12,8 +12,6 @@ function cleanup {
     exit
 }
 
-set -e #abort the script at first failure
-
 # Disables printing security sensitive data to the logs
 set +x
 
@@ -31,6 +29,10 @@ rcPid=$!
 echo "Spawned remote controller with pid ${rcPid}"
 
 . scripts/build-linux.sh $1 $2 $3 $4
+if [ $? -ne 0 ]; then
+    echo "Build failed !"
+    exit 1
+fi
 
 DEFAULT_TIMEOUT=300 #seconds
 SERVER_PORT=9701

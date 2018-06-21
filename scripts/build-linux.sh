@@ -50,11 +50,6 @@ cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_T
 
 echo "Running make. Building the project."
 make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
-if [ $? -ne 0 ]
-then
-    echo "Client compilation failed!!!"
-    exit 1
-fi
 
 cd ..
 
