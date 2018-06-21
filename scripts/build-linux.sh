@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e #abort the script at first failure
-
 # Disables printing security sensitive data to the logs
 set +x
 
@@ -47,9 +45,18 @@ cd ${BUILD_DIR}
 
 echo "Running cmake to compose Makefiles for compilation."
 cmake .. -DHZ_LIB_TYPE=${HZ_LIB_TYPE} -DHZ_BIT=${HZ_BIT_VERSION} -DCMAKE_BUILD_TYPE=${HZ_BUILD_TYPE} ${HZ_COVERAGE_STRING} -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=${HZ_COMPILE_WITH_SSL}
+if [ $? -ne 0 ]; then
+    echo "Cmake failed !"
+    exit 1
+fi
+
 
 echo "Running make. Building the project."
 make -j 8 -l 4 VERBOSE=1  # run 8 jobs in parallel and a maximum load of 4
+if [ $? -ne 0 ]; then
+    echo "Build failed !"
+    exit 1
+fi
 
 cd ..
 
