@@ -794,18 +794,19 @@ namespace hazelcast {
             }
 
             ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
-                    : client(client) {}
+                    : client(client), name(client.getName() + ".clientShutdown-") {}
 
             void ClientConnectionManagerImpl::ShutdownTask::run() {
                 try {
                     client.getLifecycleService().shutdown();
                 } catch (exception::IException &exception) {
-                    util::ILogger::getLogger().severe() << "Exception during client shutdown: " << exception;
+                    util::ILogger::getLogger().severe() << "Exception during client shutdown task " <<
+                                                        name << ":" << exception;
                 }
             }
 
             const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                return client.getName() + ".clientShutdown-";
+                return name;
             }
 
             void ClientConnectionManagerImpl::TimeoutAuthenticationTask::run() {

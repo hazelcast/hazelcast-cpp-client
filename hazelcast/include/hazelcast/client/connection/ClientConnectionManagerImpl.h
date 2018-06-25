@@ -272,6 +272,7 @@ namespace hazelcast {
 
                 private:
                     spi::ClientContext &client;
+                    std::string name;
                 };
 
                 class TimeoutAuthenticationTask : public util::Runnable {
