@@ -85,7 +85,7 @@ namespace hazelcast {
 
                     // trying 8.8.8.8 address will delay the initial connection since no such server exist
                     clientConfig.getNetworkConfig().addAddress(Address("8.8.8.8", 5701))
-                            .addAddress(Address("127.0.0.1", 5701));
+                            .addAddress(Address("127.0.0.1", 5701)).setConnectionAttemptLimit(INT32_MAX);
                     clientConfig.setProperty("hazelcast.client.shuffle.member.list", "false");
                     LifecycleStateListener lifecycleListener(connectedLatch, LifecycleEvent::CLIENT_CONNECTED);
                     clientConfig.addListener(&lifecycleListener);
