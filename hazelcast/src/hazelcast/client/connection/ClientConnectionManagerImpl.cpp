@@ -774,10 +774,16 @@ namespace hazelcast {
                 } catch (exception::IException &e) {
                     connectionManager.logger.warning() << "Could not connect to cluster, shutting down the client. "
                                                        << e.getMessage();
-                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(
-                            boost::shared_ptr<util::Runnable>(new ShutdownTask(connectionManager.client))));
+                    /**
+                     * Allocate this thread on heap. Since we do not want this thread to be deleted while thread is
+                     * executing we can not keep it a shared pointer in the HazelcastClient (There is a possibility that
+                     * it may be deleted during client shutdown and the object being destructed.).
+                     *
+                     * TODO: Find a way not to leak this object and also manage the lifecycle of the destructed objects.
+                     */
+                    util::Thread *shutdownThread = new util::Thread(
+                            boost::shared_ptr<util::Runnable>(new ShutdownTask(connectionManager.client)));
                     shutdownThread->start();
-                    connectionManager.shutdownThreads.offer(shutdownThread);
 
                     throw;
                 }
@@ -788,18 +794,19 @@ namespace hazelcast {
             }
 
             ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
-                    : client(client) {}
+                    : client(client), name(client.getName() + ".clientShutdown-") {}
 
             void ClientConnectionManagerImpl::ShutdownTask::run() {
                 try {
                     client.getLifecycleService().shutdown();
                 } catch (exception::IException &exception) {
-                    util::ILogger::getLogger().severe() << "Exception during client shutdown: " << exception;
+                    util::ILogger::getLogger().severe() << "Exception during client shutdown task " <<
+                                                        name << ":" << exception;
                 }
             }
 
             const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                return client.getName() + ".clientShutdown-";
+                return name;
             }
 
             void ClientConnectionManagerImpl::TimeoutAuthenticationTask::run() {

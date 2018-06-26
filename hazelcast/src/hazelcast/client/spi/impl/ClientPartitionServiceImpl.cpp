@@ -48,7 +48,7 @@ namespace hazelcast {
                         const boost::shared_ptr<exception::IException> &t) {
                     if (partitionService.client.getLifecycleService().isRunning()) {
                         partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:"
-                                                          << t;
+                                                          << *t;
                     }
                 }
 
