@@ -35,6 +35,8 @@
 
 #include <ostream>
 
+#include <hazelcast/client/Address.h>
+
 using namespace std;
 
 namespace hazelcast {
@@ -56,6 +58,7 @@ namespace hazelcast {
 
                     const string &getUuid() const;
 
+                    Address getAddress() const;
                 private:
                     std::string uuid;
                     std::string ip;
@@ -71,6 +74,8 @@ namespace hazelcast {
                 bool setAttributes(int memberStartOrder);
 
                 bool shutdownServer(const MemberInfo &member);
+
+                bool terminateServer(const MemberInfo &member);
 
                 ~HazelcastServerFactory();
 

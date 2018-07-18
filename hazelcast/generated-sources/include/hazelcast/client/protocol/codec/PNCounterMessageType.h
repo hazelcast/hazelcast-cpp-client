@@ -13,36 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 27 May 2016.
+#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_PNCOUNTERMESSAGETYPE_H_
+#define HAZELCAST_CLIENT_PROTOCOL_CODEC_PNCOUNTERMESSAGETYPE_H_
 
-#ifndef HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
-#define HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
-        namespace cluster {
-            namespace impl {
-                enum ClusterDataSerializerHook {
-                    F_ID = 0,
+        namespace protocol {
+            namespace codec {
+                enum HAZELCAST_API PNCounterMessageType {
 
-                    ADDRESS = 1,
-
-                    VECTOR_CLOCK = 43
+                    HZ_PNCOUNTER_GET=0x2001,
+                    HZ_PNCOUNTER_ADD=0x2002,
+                    HZ_PNCOUNTER_GETCONFIGUREDREPLICACOUNT=0x2003
                 };
             }
         }
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
+#endif // HAZELCAST_CLIENT_PROTOCOL_CODEC_PNCOUNTERMESSAGETYPE_H_
 
-#endif //HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
+
+
 

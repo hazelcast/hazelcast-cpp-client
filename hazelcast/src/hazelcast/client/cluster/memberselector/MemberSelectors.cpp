@@ -13,36 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 27 May 2016.
-
-#ifndef HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
-#define HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/Member.h"
 
 namespace hazelcast {
     namespace client {
         namespace cluster {
-            namespace impl {
-                enum ClusterDataSerializerHook {
-                    F_ID = 0,
+            namespace memberselector {
+                bool MemberSelectors::DataMemberSelector::select(const Member &member) const {
+                    return !member.isLiteMember();
+                }
 
-                    ADDRESS = 1,
-
-                    VECTOR_CLOCK = 43
-                };
+                const std::auto_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
+                        new MemberSelectors::DataMemberSelector());
             }
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-#endif //HAZELCAST_CLIENT_CLUSTER_IMPL_CLUSTERDATASERIALIZERHOOK_H_
-

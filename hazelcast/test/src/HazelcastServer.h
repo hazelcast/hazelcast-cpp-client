@@ -46,9 +46,13 @@ namespace hazelcast {
 
                 bool shutdown();
 
+                bool terminate();
+
                 ~HazelcastServer();
 
                 bool setAttributes(int memberStartOrder);
+
+                const HazelcastServerFactory::MemberInfo &getMember() const;
 
             private:
                 HazelcastServerFactory & factory;

@@ -47,6 +47,21 @@ namespace hazelcast {
                 return std::auto_ptr<IException>(new UndefinedErrorCodeException(*this));
             }
 
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message,
+                                                               const std::string &details, int32_t causeCode)
+                    : HazelcastException(source, message, details, causeCode) {
+                errorCode = protocol::RETRYABLE_HAZELCAST;
+            }
+
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message)
+                    : HazelcastException(source, message) {
+                errorCode = protocol::RETRYABLE_HAZELCAST;
+            }
+
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message,
+                                                               int32_t causeCode) : HazelcastException(source, message,
+                                                                                                       causeCode) {}
+
             TargetNotMemberException::TargetNotMemberException(const std::string &source, const std::string &message,
                                                                const std::string &details, int32_t causeCode)
                     : RetryableHazelcastException(source, message, details, causeCode) {

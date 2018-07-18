@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
+#include "hazelcast/client/proxy/ClientPNCounterProxy.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/impl/SmartClientInvocationService.h"
@@ -281,6 +283,15 @@ namespace hazelcast {
             const boost::shared_ptr<ClientLockReferenceIdGenerator> &
             HazelcastClientInstanceImpl::getLockReferenceIdGenerator() const {
                 return lockReferenceIdGenerator;
+            }
+
+            boost::shared_ptr<crdt::pncounter::PNCounter>
+            HazelcastClientInstanceImpl::getPNCounter(const std::string &name) {
+                crdt::pncounter::impl::PNCounterProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
+
+                return boost::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
             }
         }
     }

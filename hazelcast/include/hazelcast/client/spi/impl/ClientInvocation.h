@@ -89,6 +89,10 @@ namespace hazelcast {
 
                     static boost::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
                                                                       std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                                      const std::string &objectName, const Address &address);
+
+                    static boost::shared_ptr<ClientInvocation> create(spi::ClientContext &clientContext,
+                                                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                       const std::string &objectName);
 
                     boost::shared_ptr<ClientInvocationFuture> invoke();
@@ -122,6 +126,7 @@ namespace hazelcast {
                     andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback);
 
                     virtual std::string invocationToString();
+
                 private:
                     class InternalDelegatingExecutionCallback
                             : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
@@ -139,18 +144,34 @@ namespace hazelcast {
                         sequence::CallIdSequence &callIdSequence;
                     };
 
+                    /**
+                     * Create an invocation that will be executed on owner of {@code partitionId}.
+                     */
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName, int partitionId);
 
+                    /**
+                     * Create an invocation that will be executed on given {@code connection}.
+                     */
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName,
                                      const boost::shared_ptr<connection::Connection> &connection);
 
+                    /**
+                     * Create an invocation that will be executed on random member.
+                     */
                     ClientInvocation(spi::ClientContext &clientContext,
                                      std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName);
+
+                    /**
+                     * Create an invocation that will be executed on member with given {@code address}.
+                     */
+                    ClientInvocation(spi::ClientContext &clientContext,
+                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                     const std::string &objectName, const Address &address);
 
                     static void invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation);
 

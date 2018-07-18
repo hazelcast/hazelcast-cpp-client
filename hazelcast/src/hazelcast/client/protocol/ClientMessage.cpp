@@ -110,6 +110,11 @@ namespace hazelcast {
                 setNullable<std::string>(value);
             }
 
+
+            void ClientMessage::set(const Address &data) {
+                codec::AddressCodec::encode(data, *this);
+            }
+
             void ClientMessage::set(const serialization::pimpl::Data &value) {
                 setArray<byte>(value.toByteArray());
             }
@@ -249,10 +254,22 @@ namespace hazelcast {
             }
 
             template<>
+            std::pair<Address, std::vector<int64_t> > ClientMessage::get() {
+                Address address = codec::AddressCodec::decode(*this);
+                std::vector<int64_t> values = getArray<int64_t>();
+                return std::make_pair(address, values);
+            }
+
+            template<>
             std::pair<Address, std::vector<int32_t> > ClientMessage::get() {
                 Address address = codec::AddressCodec::decode(*this);
                 std::vector<int32_t> partitions = getArray<int32_t>();
                 return std::make_pair(address, partitions);
+            }
+
+            template<>
+            std::pair<std::string, int64_t> ClientMessage::get() {
+                return std::make_pair(get<std::string>(), get<int64_t >());
             }
             //----- Getter methods end --------------------------
 
@@ -364,6 +381,10 @@ namespace hazelcast {
                    << "}";
 
                 return os;
+            }
+
+            int32_t ClientMessage::calculateDataSize(const Address &param) {
+                return codec::AddressCodec::calculateDataSize(param);
             }
         }
     }

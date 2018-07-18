@@ -64,7 +64,7 @@ namespace hazelcast {
         * @see TransactionalSet
         * @see TransactionalList
         */
-        class HAZELCAST_API DistributedObject : public IDistributedObject {
+        class HAZELCAST_API DistributedObject : public virtual IDistributedObject {
             friend class impl::HazelcastClientInstanceImpl;
 
         public:

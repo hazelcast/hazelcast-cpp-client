@@ -82,6 +82,24 @@ namespace hazelcast {
                         invokeCount(0) {
                 }
 
+                ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
+                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                   const std::string &objectName, const Address &address) :
+                        logger(util::ILogger::getLogger()),
+                        lifecycleService(clientContext.getLifecycleService()),
+                        clientClusterService(clientContext.getClientClusterService()),
+                        invocationService(clientContext.getInvocationService()),
+                        executionService(clientContext.getClientExecutionService()),
+                        clientMessage(boost::shared_ptr<protocol::ClientMessage>(clientMessage)),
+                        callIdSequence(clientContext.getCallIdSequence()),
+                        address(new Address(address)),
+                        partitionId(UNASSIGNED_PARTITION),
+                        startTimeMillis(util::currentTimeMillis()),
+                        retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
+                        objectName(objectName),
+                        invokeCount(0) {
+                }
+
                 ClientInvocation::~ClientInvocation() {
                 }
 
@@ -270,6 +288,16 @@ namespace hazelcast {
                                                                              const boost::shared_ptr<connection::Connection> &connection) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, clientMessage, objectName, connection));
+                    return invocation;
+                }
+
+
+                boost::shared_ptr<ClientInvocation> ClientInvocation::create(spi::ClientContext &clientContext,
+                                                                             std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                                             const std::string &objectName,
+                                                                             const Address &address) {
+                    boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
+                            new ClientInvocation(clientContext, clientMessage, objectName, address));
                     return invocation;
                 }
 

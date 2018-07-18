@@ -20,6 +20,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Collection.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 
@@ -30,6 +31,11 @@
 
 namespace hazelcast {
     namespace client {
+        namespace cluster {
+            namespace memberselector {
+                class MemberSelector;
+            }
+        }
         namespace spi {
             /**
              * Cluster service for Hazelcast clients.
@@ -63,6 +69,15 @@ namespace hazelcast {
                  * @return The collection of members.
                  */
                 virtual std::vector<Member> getMemberList() = 0;
+
+                /**
+                 * Returns a collection of the members that satisfy the given {@link com.hazelcast.core.MemberSelector}.
+                 *
+                 * @param selector {@link com.hazelcast.core.MemberSelector} instance to filter members to return
+                 * @return members that satisfy the given {@link com.hazelcast.core.MemberSelector}.
+                 */
+                virtual boost::shared_ptr<util::Collection<Member> >
+                getMembers(const cluster::memberselector::MemberSelector &selector) = 0;
 
                 /**
                  * @param listener The listener to be registered.
