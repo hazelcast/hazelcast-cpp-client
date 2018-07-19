@@ -269,7 +269,9 @@ namespace hazelcast {
 
             template<>
             std::pair<std::string, int64_t> ClientMessage::get() {
-                return std::make_pair(get<std::string>(), get<int64_t >());
+                std::string key = get<std::string>();
+                int64_t value = get<int64_t>();
+                return std::make_pair(key, value);
             }
             //----- Getter methods end --------------------------
 
