@@ -77,27 +77,6 @@ namespace hazelcast {
                     return true;
                 }
 
-                int VectorClock::getFactoryId() const {
-                    return F_ID;
-                }
-
-                int VectorClock::getClassId() const {
-                    return VECTOR_CLOCK;
-                }
-
-                void VectorClock::writeData(serialization::ObjectDataOutput &writer) const {
-                    // should not be executed since this is a client
-                    assert(0);
-                }
-
-                void VectorClock::readData(serialization::ObjectDataInput &in) {
-                    int32_t stateSize = in.readInt();
-                    for (int32_t i = 0; i < stateSize; i++) {
-                        std::auto_ptr<std::string> replicaId = in.readUTF();
-                        int64_t timestamp = in.readLong();
-                        replicaTimestamps.put(*replicaId, boost::shared_ptr<int64_t>(new int64_t(timestamp)));
-                    }
-                }
             }
         }
     }

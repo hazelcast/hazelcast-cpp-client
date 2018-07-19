@@ -21,7 +21,6 @@
 #include <stdint.h>
 
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +34,7 @@ namespace hazelcast {
                  * updates must be synchronized externally. There is no guarantee for
                  * concurrent updates.
                  */
-                class VectorClock : public serialization::IdentifiedDataSerializable {
+                class VectorClock {
                 public:
                     VectorClock();
 
@@ -64,14 +63,6 @@ namespace hazelcast {
                      * the latest update on the vector clock.
                      */
                     bool isAfter(VectorClock &other);
-
-                    virtual int getFactoryId() const;
-
-                    virtual int getClassId() const;
-
-                    virtual void writeData(serialization::ObjectDataOutput &writer) const;
-
-                    virtual void readData(serialization::ObjectDataInput &reader);
 
                 private:
                     bool containsAll(const std::vector<std::string> &replicas,
