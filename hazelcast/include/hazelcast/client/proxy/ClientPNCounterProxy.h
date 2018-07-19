@@ -68,7 +68,7 @@ namespace hazelcast {
                  * sending invocations.
                  */
                 // public for testing purposes
-                boost::shared_ptr<Address> getCurrentTargetReplicaAddress();
+                boost::shared_ptr<Address> HAZELCAST_API getCurrentTargetReplicaAddress();
 
             private:
                 static const boost::shared_ptr<std::set<Address> > EMPTY_ADDRESS_LIST;

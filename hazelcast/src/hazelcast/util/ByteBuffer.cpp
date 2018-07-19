@@ -17,11 +17,12 @@
 // Created by sancar koyunlu on 31/12/13.
 //
 
+#include <cassert>
+#include <string.h>
+
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/Socket.h"
-#include <cassert>
-#include <algorithm>
-#include <string.h>
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -122,7 +123,7 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::readBytes(byte *target, size_t len) {
-            size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
+            size_t numBytesToCopy = util::min<size_t>(lim - pos, len);
             memcpy(target, ix(), numBytesToCopy);
             pos += numBytesToCopy;
             return numBytesToCopy;

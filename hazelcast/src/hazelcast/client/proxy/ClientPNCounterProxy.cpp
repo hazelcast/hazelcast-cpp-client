@@ -23,6 +23,7 @@
 #include "hazelcast/client/protocol/codec/PNCounterGetCodec.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/cluster/impl/VectorClock.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -227,7 +228,7 @@ namespace hazelcast {
                 boost::shared_ptr<util::Collection<Member> > dataMembers = getContext().getClientClusterService().getMembers(
                         *cluster::memberselector::MemberSelectors::DATA_MEMBER_SELECTOR);
                 int32_t maxConfiguredReplicaCount = getMaxConfiguredReplicaCount();
-                int currentReplicaCount = std::min(maxConfiguredReplicaCount, dataMembers->size());
+                int currentReplicaCount = util::min<int>(maxConfiguredReplicaCount, dataMembers->size());
                 std::vector<Address> replicaAddresses;
                 boost::shared_ptr<util::Iterator<Member> > dataMemberIterator = dataMembers->iterator();
 
