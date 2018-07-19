@@ -278,7 +278,8 @@ namespace hazelcast {
                     }
                     excludedAddresses->insert(*target);
                     boost::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    return invokeGetInternal(excludedAddresses, e.clone(), newTarget);
+                    std::auto_ptr<exception::IException> exception = e.clone();
+                    return invokeGetInternal(excludedAddresses, exception, newTarget);
                 }
             }
 
@@ -311,7 +312,8 @@ namespace hazelcast {
                     }
                     excludedAddresses->insert(*target);
                     boost::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, e.clone(), newTarget);
+                    std::auto_ptr<exception::IException> exception = e.clone();
+                    return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, exception, newTarget);
                 }
             }
 
