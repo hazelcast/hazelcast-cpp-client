@@ -143,9 +143,11 @@ namespace hazelcast {
                 return -1;
             }
             return 0;
-            #elif defined(__llvm__)
+            #elif defined(__llvm__) && ! _GNU_SOURCE
+                /* XSI-compliant */
                 return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-            #elif defined(__GNUC__)
+            #else
+                /* GNU-specific */
                 char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
                 int result = util::hz_snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
                 if (result < 0) {
