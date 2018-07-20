@@ -65,9 +65,6 @@ namespace hazelcast {
                     bool isAfter(VectorClock &other);
 
                 private:
-                    bool containsAll(const std::vector<std::string> &replicas,
-                                     const std::vector<std::string> &searchedReplicas);
-
                     util::SynchronizedMap<std::string, int64_t> replicaTimestamps;
                 };
             }

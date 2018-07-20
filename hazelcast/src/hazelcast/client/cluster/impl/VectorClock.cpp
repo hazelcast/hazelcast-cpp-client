@@ -50,31 +50,18 @@ namespace hazelcast {
                         const boost::shared_ptr<int64_t> &otherReplicaTimestamp = otherEntry.second;
                         boost::shared_ptr<int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
 
-                        if (localReplicaTimestamp.get() == NULL || localReplicaTimestamp < otherReplicaTimestamp) {
+                        if (localReplicaTimestamp.get() == NULL || *localReplicaTimestamp < *otherReplicaTimestamp) {
                             return false;
                         } else if (*localReplicaTimestamp > *otherReplicaTimestamp) {
                             anyTimestampGreater = true;
                         }
                     }
                     // there is at least one local timestamp greater or local vector clock has additional timestamps
-                    return anyTimestampGreater || !containsAll(other.replicaTimestamps.keys(), replicaTimestamps.keys());
+                    return anyTimestampGreater ||  other.replicaTimestamps.size() < replicaTimestamps.size();
                 }
 
                 boost::shared_ptr<int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
                     return replicaTimestamps.get(replicaId);
-                }
-
-                bool VectorClock::containsAll(const std::vector<std::string> &replicas, const std::vector<std::string> &searchedReplicas) {
-                    std::set<std::string> currentReplicas;
-                    BOOST_FOREACH(const std::string &replicaId , replicas) {
-                        currentReplicas.insert(replicaId);
-                    }
-                    BOOST_FOREACH(const std::string &replicaId , searchedReplicas) {
-                        if (currentReplicas.find(replicaId) == currentReplicas.end()) {
-                            return false;
-                        }
-                    }
-                    return true;
                 }
 
             }

@@ -31,9 +31,7 @@ namespace hazelcast {
                 enum ClusterDataSerializerHook {
                     F_ID = 0,
 
-                    ADDRESS = 1,
-
-                    VECTOR_CLOCK = 43
+                    ADDRESS = 1
                 };
             }
         }

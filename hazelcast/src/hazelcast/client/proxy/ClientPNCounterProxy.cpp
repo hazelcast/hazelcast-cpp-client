@@ -33,13 +33,11 @@ namespace hazelcast {
                     new std::set<Address>());
 
             ClientPNCounterProxy::ClientPNCounterProxy(const std::string &serviceName, const std::string &objectName,
-                                                       spi::ClientContext *context) : ProxyImpl(serviceName, objectName,
-                                                                                                context),
-                                                                                      maxConfiguredReplicaCount(0),
-                                                                                      observedClock(
-                                                                                              boost::shared_ptr<cluster::impl::VectorClock>(
-                                                                                                      new cluster::impl::VectorClock())),
-                                                                                      logger(util::ILogger::getLogger()) {}
+                                                       spi::ClientContext *context)
+                    : ProxyImpl(serviceName, objectName, context), maxConfiguredReplicaCount(0),
+                      observedClock(boost::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
+                      logger(util::ILogger::getLogger()) {
+            }
 
             std::ostream &operator<<(std::ostream &os, const ClientPNCounterProxy &proxy) {
                 os << "PNCounter{name='" << proxy.getName() << "\'}";
