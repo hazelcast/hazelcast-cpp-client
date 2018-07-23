@@ -181,6 +181,8 @@ namespace hazelcast {
 
                 void set(const std::string *data);
 
+                void set(const Address &data);
+
                 void set(const serialization::pimpl::Data &data);
 
                 void set(const serialization::pimpl::Data *data);
@@ -210,28 +212,6 @@ namespace hazelcast {
                     if (!isNull) {
                         setArray<T>(*value);
                     }
-                }
-
-                template<typename K, typename V>
-                void setEntryArray(const std::vector<std::pair<K, V> > &values) {
-                    setArray<std::pair<K, V> >(values);
-                }
-
-                template<typename K, typename V>
-                void setMap(const std::map<K, V> &values) {
-                    int32_t len = (int32_t) values.size();
-                    set(len);
-
-                    if (len > 0) {
-                        for (typename std::map<K, V>::const_iterator it = values.begin(); it != values.end(); ++it) {
-                            set(*it);
-                        }
-                    }
-                }
-
-                template<typename K, typename V>
-                void setNullableEntryArray(const std::vector<std::pair<K, V> > *values) {
-                    setArray<std::pair<K, V> >(values);
                 }
                 //----- Setter methods end ---------------------
 
@@ -342,6 +322,8 @@ namespace hazelcast {
                 static int32_t calculateDataSize(const std::string &param);
 
                 static int32_t calculateDataSize(const std::string *param);
+
+                static int32_t calculateDataSize(const Address &param);
 
                 static int32_t calculateDataSize(const serialization::pimpl::Data &param);
 
@@ -487,6 +469,12 @@ namespace hazelcast {
 
             template<>
             std::pair<Address, std::vector<int32_t> > ClientMessage::get();
+
+            template<>
+            std::pair<Address, std::vector<int64_t> > ClientMessage::get();
+
+            template<>
+            std::pair<std::string, int64_t> ClientMessage::get();
 
         }
 

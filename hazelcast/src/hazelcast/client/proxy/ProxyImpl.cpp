@@ -92,6 +92,13 @@ namespace hazelcast {
                 return invocation->invoke()->get();
             }
 
+            boost::shared_ptr<protocol::ClientMessage>
+            ProxyImpl::invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request, const Address &address) {
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        *context, request, getName(), address);
+                return invocation->invoke()->get();
+            }
+
             std::vector<hazelcast::client::TypedData>
             ProxyImpl::toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values) const {
                 std::vector<hazelcast::client::TypedData> result;
@@ -122,6 +129,10 @@ namespace hazelcast {
 
             boost::shared_ptr<serialization::pimpl::Data> ProxyImpl::toShared(const serialization::pimpl::Data &data) {
                 return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+            }
+
+            spi::ClientContext &ProxyImpl::getContext() {
+                return *context;
             }
 
             ProxyImpl::EventHandlerDelegator::EventHandlerDelegator(impl::BaseEventHandler *handler) : handler(

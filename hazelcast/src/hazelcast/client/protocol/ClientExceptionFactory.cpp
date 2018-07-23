@@ -109,6 +109,7 @@ namespace hazelcast {
                 registerException(STACK_OVERFLOW_ERROR, new ExceptionFactoryImpl<exception::StackOverflowError>());
                 registerException(NATIVE_OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
                 registerException(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
+                registerException(CONSISTENCY_LOST, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
             }
 
             ClientExceptionFactory::~ClientExceptionFactory() {

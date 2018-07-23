@@ -103,7 +103,6 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(RejectedExecutionException, protocol::REJECTED_EXECUTION);
             DEFINE_EXCEPTION_CLASS(RemoteMapReduceException, protocol::REMOTE_MAP_REDUCE);
             DEFINE_EXCEPTION_CLASS(ResponseAlreadySentException, protocol::RESPONSE_ALREADY_SENT);
-            DEFINE_EXCEPTION_CLASS(RetryableHazelcastException, protocol::RETRYABLE_HAZELCAST);
             DEFINE_EXCEPTION_CLASS(RetryableIOException, protocol::RETRYABLE_IO);
             DEFINE_EXCEPTION_CLASS(RuntimeException, protocol::RUNTIME);
             DEFINE_EXCEPTION_CLASS(SecurityException, protocol::SECURITY);
@@ -145,6 +144,19 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE);
             DEFINE_EXCEPTION_CLASS(UnknownHostException, protocol::UNKNOWN_HOST);
             DEFINE_EXCEPTION_CLASS(FutureUninitialized, protocol::FUTURE_UNINITIALIZED);
+            DEFINE_EXCEPTION_CLASS(ConsistencyLostException, protocol::CONSISTENCY_LOST);
+
+            class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
+            public:
+                RetryableHazelcastException(const std::string &source, const std::string &message,
+                                            const std::string &details, int32_t causeCode);
+
+                RetryableHazelcastException(const std::string &source, const std::string &message, int32_t causeCode);
+
+                RetryableHazelcastException(const std::string &source, const std::string &message);
+
+
+            };
 
             class HAZELCAST_API TargetNotMemberException : public RetryableHazelcastException {
             public:

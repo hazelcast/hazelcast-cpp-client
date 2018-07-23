@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include <hazelcast/client/impl/HazelcastClientInstanceImpl.h>
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -520,6 +520,20 @@ namespace hazelcast {
             * @return IAtomicLong proxy for the given name
             */
             IAtomicLong getIAtomicLong(const std::string& name);
+
+            /**
+             * Obtain a {@link com.hazelcast.crdt.pncounter.PNCounter} with the given
+             * name.
+             * <p>
+             * The PN counter can be used as a counter with strong eventual consistency
+             * guarantees - if operations to the counters stop, the counter values
+             * of all replicas that can communicate with each other should eventually
+             * converge to the same value.
+             *
+             * @param name the name of the PN counter
+             * @return a {@link com.hazelcast.crdt.pncounter.PNCounter}
+             */
+            boost::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
             /**
             * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed

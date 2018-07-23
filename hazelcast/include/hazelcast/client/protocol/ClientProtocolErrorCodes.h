@@ -104,6 +104,7 @@ namespace hazelcast {
                 STACK_OVERFLOW_ERROR = 77,
                 NATIVE_OUT_OF_MEMORY_ERROR = 78,
                 SERVICE_NOT_FOUND = 79,
+                CONSISTENCY_LOST = 88,
 
                 // Non protocol exceptions, thrown locally
                 HAZELCAST_CLIENT_OFFLINE = -1,

@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
@@ -245,6 +246,20 @@ namespace hazelcast {
                 * @return IAtomicLong proxy for the given name
                 */
                 IAtomicLong getIAtomicLong(const std::string& name);
+
+                /**
+                 * Obtain a {@link com::hazelcast::crdt::pncounter::PNCounter} with the given
+                 * name.
+                 * <p>
+                 * The PN counter can be used as a counter with strong eventual consistency
+                 * guarantees - if operations to the counters stop, the counter values
+                 * of all replicas that can communicate with each other should eventually
+                 * converge to the same value.
+                 *
+                 * @param name the name of the PN counter
+                 * @return a {@link com::hazelcast::crdt::pncounter::PNCounter}
+                 */
+                boost::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
                 /**
                 * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed

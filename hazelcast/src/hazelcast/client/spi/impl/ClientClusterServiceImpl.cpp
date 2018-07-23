@@ -21,8 +21,8 @@
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
-#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/spi/impl/ClientMembershipListener.h"
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
 
 namespace hazelcast {
     namespace client {
@@ -163,6 +163,18 @@ namespace hazelcast {
 
                 bool ClientClusterServiceImpl::removeMembershipListener(const std::string &registrationId) {
                     return listeners.remove(registrationId).get() != NULL;
+                }
+
+                std::vector<Member>
+                ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) {
+                    std::vector<Member> result;
+                    BOOST_FOREACH(const Member &member , getMemberList()) {
+                        if (selector.select(member)) {
+                            result.push_back(member);
+                        }
+                    }
+
+                    return result;
                 }
             }
         }

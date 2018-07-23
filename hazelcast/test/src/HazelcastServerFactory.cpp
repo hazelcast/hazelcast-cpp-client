@@ -199,7 +199,23 @@ namespace hazelcast {
 
                 Py_DECREF(resultObj);
                 return true;
+            }
 
+            bool HazelcastServerFactory::terminateServer(const MemberInfo &member) {
+                PyObject *resultObj = PyObject_CallMethod(rcObject, const_cast<char *>("terminateMember"),
+                                                             const_cast<char *>("(ss)"), clusterId.c_str(),
+                                                          member.getUuid().c_str());
+
+                if (resultObj == NULL || resultObj == Py_False) {
+                    Py_XDECREF(resultObj);
+                    std::ostringstream out;
+                    out << "Failed to terminate the member " << member;
+                    logger.severe(out.str());
+                    return false;
+                }
+
+                Py_DECREF(resultObj);
+                return true;
             }
 
             const std::string &HazelcastServerFactory::getServerAddress() {
@@ -236,6 +252,10 @@ namespace hazelcast {
 
             const string &HazelcastServerFactory::MemberInfo::getUuid() const {
                 return uuid;
+            }
+
+            Address HazelcastServerFactory::MemberInfo::getAddress() const {
+                return Address(ip, port);
             }
         }
     }

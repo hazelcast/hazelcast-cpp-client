@@ -47,6 +47,11 @@ namespace hazelcast {
             return clientImpl->getIAtomicLong(name);
         }
 
+
+        boost::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
+            return clientImpl->getPNCounter(name);
+        }
+
         ICountDownLatch HazelcastClient::getICountDownLatch(const std::string &name) {
             return clientImpl->getICountDownLatch(name);
         }

@@ -66,6 +66,19 @@ namespace hazelcast {
                 return true;
             }
 
+            bool HazelcastServer::terminate() {
+                if (!isStarted) {
+                    return true;
+                }
+
+                if (!factory.terminateServer(member)) {
+                    return false;
+                }
+
+                isStarted = false;
+                return true;
+            }
+
             HazelcastServer::~HazelcastServer() {
                 shutdown();
             }
@@ -75,6 +88,10 @@ namespace hazelcast {
                     return false;
                 }
                 return factory.setAttributes(memberStartOrder);
+            }
+
+            const HazelcastServerFactory::MemberInfo &HazelcastServer::getMember() const {
+                return member;
             }
 
         }
