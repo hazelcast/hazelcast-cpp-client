@@ -16,13 +16,13 @@
 
 #include <boost/foreach.hpp>
 
-#include "hazelcast/client/internal/cluster/impl/MemberSelectingCollection.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/util/UuidUtil.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/spi/impl/ClientMembershipListener.h"
+#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
 
 namespace hazelcast {
     namespace client {
@@ -165,10 +165,16 @@ namespace hazelcast {
                     return listeners.remove(registrationId).get() != NULL;
                 }
 
-                boost::shared_ptr<util::Collection<Member> >
+                std::vector<Member>
                 ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) {
-                    return boost::shared_ptr<util::Collection<Member> >(
-                            new internal::cluster::impl::MemberSelectingCollection(getMemberList(), selector));
+                    std::vector<Member> result;
+                    BOOST_FOREACH(const Member &member , getMemberList()) {
+                        if (selector.select(member)) {
+                            result.push_back(member);
+                        }
+                    }
+
+                    return result;
                 }
             }
         }

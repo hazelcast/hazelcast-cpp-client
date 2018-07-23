@@ -223,15 +223,14 @@ namespace hazelcast {
             }
 
             std::vector<Address> ClientPNCounterProxy::getReplicaAddresses(const std::set<Address> &excludedAddresses) {
-                boost::shared_ptr<util::Collection<Member> > dataMembers = getContext().getClientClusterService().getMembers(
+                std::vector<Member> dataMembers = getContext().getClientClusterService().getMembers(
                         *cluster::memberselector::MemberSelectors::DATA_MEMBER_SELECTOR);
                 int32_t maxConfiguredReplicaCount = getMaxConfiguredReplicaCount();
-                int currentReplicaCount = util::min<int>(maxConfiguredReplicaCount, dataMembers->size());
-                std::vector<Address> replicaAddresses;
-                boost::shared_ptr<util::Iterator<Member> > dataMemberIterator = dataMembers->iterator();
+                int currentReplicaCount = util::min<int>(maxConfiguredReplicaCount, (int) dataMembers.size());
 
+                std::vector<Address> replicaAddresses;
                 for (int i = 0; i < currentReplicaCount; i++) {
-                    Address dataMemberAddress = dataMemberIterator->next()->getAddress();
+                    const Address &dataMemberAddress = dataMembers[i].getAddress();
                     if (excludedAddresses.find(dataMemberAddress) == excludedAddresses.end()) {
                         replicaAddresses.push_back(dataMemberAddress);
                     }

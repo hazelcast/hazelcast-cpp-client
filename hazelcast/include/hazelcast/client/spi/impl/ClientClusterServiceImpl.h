@@ -60,7 +60,7 @@ namespace hazelcast {
 
                     virtual std::vector<Member> getMemberList();
 
-                    virtual boost::shared_ptr<util::Collection<Member> > getMembers(
+                    virtual std::vector<Member> getMembers(
                             const cluster::memberselector::MemberSelector &selector);
 
                     virtual std::string addMembershipListener(const boost::shared_ptr<MembershipListener> &listener);

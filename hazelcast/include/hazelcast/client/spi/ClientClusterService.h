@@ -20,7 +20,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Collection.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 
@@ -76,7 +75,7 @@ namespace hazelcast {
                  * @param selector {@link com.hazelcast.core.MemberSelector} instance to filter members to return
                  * @return members that satisfy the given {@link com.hazelcast.core.MemberSelector}.
                  */
-                virtual boost::shared_ptr<util::Collection<Member> >
+                virtual std::vector<Member>
                 getMembers(const cluster::memberselector::MemberSelector &selector) = 0;
 
                 /**
