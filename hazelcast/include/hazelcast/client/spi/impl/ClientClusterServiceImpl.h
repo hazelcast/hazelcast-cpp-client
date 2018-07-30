@@ -20,6 +20,7 @@
 #include <map>
 #include <vector>
 
+#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/Address.h"

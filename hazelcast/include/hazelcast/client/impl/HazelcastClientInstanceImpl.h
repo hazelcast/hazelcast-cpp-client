@@ -44,6 +44,7 @@
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include "hazelcast/client/flakeidgen/FlakeIdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -246,6 +247,8 @@ namespace hazelcast {
                 * @return IAtomicLong proxy for the given name
                 */
                 IAtomicLong getIAtomicLong(const std::string& name);
+
+                boost::shared_ptr<flakeidgen::FlakeIdGenerator> getFlakeIdGenerator(const std::string& name);
 
                 /**
                  * Obtain a {@link com::hazelcast::crdt::pncounter::PNCounter} with the given

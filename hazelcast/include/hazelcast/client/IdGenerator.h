@@ -32,10 +32,6 @@ namespace hazelcast {
             class ClientContext;
         }
 
-        namespace impl {
-            class IdGeneratorSupport;
-        }
-
         /**
          * Cluster-wide unique id generator.
          */

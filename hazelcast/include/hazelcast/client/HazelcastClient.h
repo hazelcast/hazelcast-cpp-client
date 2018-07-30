@@ -513,6 +513,26 @@ namespace hazelcast {
             IdGenerator getIdGenerator(const std::string& name);
 
             /**
+             * Creates a cluster-wide unique ID generator. Generated IDs are {@code long} primitive values
+             * and are k-ordered (roughly ordered). IDs are in the range from {@code 0} to {@code
+             * Long.MAX_VALUE}.
+             * <p>
+             * The IDs contain timestamp component and a node ID component, which is assigned when the member
+             * joins the cluster. This allows the IDs to be ordered and unique without any coordination between
+             * members, which makes the generator safe even in split-brain scenario (for caveats,
+             * {@link com.hazelcast.internal.cluster.ClusterService#getMemberListJoinVersion() see here}).
+             * <p>
+             * For more details and caveats, see class documentation for {@link FlakeIdGenerator}.
+             * <p>
+             * Note: this implementation doesn't share namespace with {@link #getIdGenerator(String)}.
+             * That is, {@code getIdGenerator("a")} is distinct from {@code getFlakeIdGenerator("a")}.
+             *
+             * @param name name of the {@link FlakeIdGenerator}
+             * @return FlakeIdGenerator for the given name
+             */
+            boost::shared_ptr<flakeidgen::FlakeIdGenerator> getFlakeIdGenerator(const std::string& name);
+
+            /**
             * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed
             * implementation of <tt>java.util.concurrent.atomic.AtomicLong</tt>.
             *

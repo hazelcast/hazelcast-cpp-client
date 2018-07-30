@@ -93,6 +93,15 @@ namespace hazelcast {
              * HZ_BUILD_WITH_SSL flag but is trying to use a feature (e.g. TLS, AWS Cloud Discovery) that needs this flag.
              */
             static void checkSSL(const std::string &sourceMethod);
+
+            /**
+             * Tests whether the supplied expression is {@code true}.
+             *
+             * @param expression   the expression tested to see if it is {@code true}.
+             * @param errorMessage the errorMessage
+             * @throws client::Exception::IllegalArgumentException if the supplied expression is {@code false}.
+             */
+            static void checkTrue(bool expression, const std::string &errorMessage);
         };
     }
 }

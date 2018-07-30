@@ -43,7 +43,7 @@ namespace hazelcast {
                     template<typename K, typename V, typename KS>
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
-                        DefaultNearCache(const std::string &cacheName, const config::NearCacheConfig<K, V> &config,
+                        DefaultNearCache(const std::string &cacheName, const client::config::NearCacheConfig<K, V> &config,
                                          serialization::pimpl::SerializationService &ss)
                                 : name(cacheName), nearCacheConfig(config), serializationService(ss) {
                         }
@@ -118,7 +118,7 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        const config::InMemoryFormat getInMemoryFormat() const {
+                        const client::config::InMemoryFormat getInMemoryFormat() const {
                             return nearCacheConfig.getInMemoryFormat();
                         }
 
@@ -138,14 +138,14 @@ namespace hazelcast {
 
                     private:
                         std::auto_ptr<NearCacheRecordStore<KS, V> > createNearCacheRecordStore(const std::string &name,
-                                                                                               const config::NearCacheConfig<K, V> &nearCacheConfig) {
-                            config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
+                                                                                               const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                            client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
                             switch (inMemoryFormat) {
-                                case config::BINARY:
+                                case client::config::BINARY:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig,
                                                                                           serializationService));
-                                case config::OBJECT:
+                                case client::config::OBJECT:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig,
                                                                                             serializationService));
@@ -247,7 +247,7 @@ namespace hazelcast {
                         }
 
                         const std::string &name;
-                        const config::NearCacheConfig<K, V> &nearCacheConfig;
+                        const client::config::NearCacheConfig<K, V> &nearCacheConfig;
                         serialization::pimpl::SerializationService &serializationService;
 
                         std::auto_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;

@@ -50,13 +50,13 @@ namespace hazelcast {
                         class AbstractNearCacheRecordStore
                                 : public NearCacheRecordStore<KS, V>, public eviction::EvictionListener<KS, R> {
                         public:
-                            AbstractNearCacheRecordStore(const config::NearCacheConfig<K, V> &cacheConfig,
+                            AbstractNearCacheRecordStore(const client::config::NearCacheConfig<K, V> &cacheConfig,
                                                          serialization::pimpl::SerializationService &ss)
                                     : nearCacheConfig(cacheConfig),
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       maxIdleMillis(cacheConfig.getMaxIdleSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serializationService(ss) {
-                                const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
+                                const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
                                 if (NULL != evictionConfig.get()) {
                                     evictionPolicyType = evictionConfig->getEvictionPolicyType();
                                 }
@@ -64,7 +64,7 @@ namespace hazelcast {
 
                             //@override
                             void initialize() {
-                                const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
+                                const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
                                 this->records = createNearCacheRecordMap(nearCacheConfig);
                                 this->maxSizeChecker = createNearCacheMaxSizeChecker(evictionConfig, nearCacheConfig);
                                 this->evictionPolicyEvaluator = createEvictionPolicyEvaluator(evictionConfig);
@@ -213,14 +213,14 @@ namespace hazelcast {
                             }
                         protected:
                             virtual std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig,
-                                    const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 assert(0);
                                 return std::auto_ptr<eviction::MaxSizeChecker>();
                             }
 
                             virtual std::auto_ptr<NCRM> createNearCacheRecordMap(
-                                    const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 assert(0);
                                 return std::auto_ptr<NCRM>();
                             }
@@ -274,19 +274,19 @@ namespace hazelcast {
                             }
 
                             std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > createEvictionPolicyEvaluator(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig) {
+                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
                                 return eviction::EvictionPolicyEvaluatorProvider::getEvictionPolicyEvaluator<K, V, KS, R>(
                                         evictionConfig);
                             }
 
                             boost::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig) {
+                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
                                 return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::getEvictionStrategy(
                                         evictionConfig);
                             }
 
                             std::auto_ptr<eviction::EvictionChecker> createEvictionChecker(
-                                    const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 return std::auto_ptr<eviction::EvictionChecker>(
                                         new MaxSizeEvictionChecker(maxSizeChecker.get()));
                             }
@@ -431,7 +431,7 @@ namespace hazelcast {
                             /*
                         static const int REFERENCE_SIZE = MEM_AVAILABLE ? MEM.arrayIndexScale(Object[].class) : (Integer.SIZE / Byte.SIZE);
 */
-                            const config::NearCacheConfig<K, V> &nearCacheConfig;
+                            const client::config::NearCacheConfig<K, V> &nearCacheConfig;
                             const int64_t timeToLiveMillis;
                             const int64_t maxIdleMillis;
                             serialization::pimpl::SerializationService &serializationService;

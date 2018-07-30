@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 #include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
@@ -34,6 +35,7 @@
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
+#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -144,6 +146,16 @@ namespace hazelcast {
 
             IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &instanceName) {
                 return getDistributedObject<IAtomicLong>(instanceName);
+            }
+
+
+            boost::shared_ptr<flakeidgen::FlakeIdGenerator>
+            HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
+                flakeidgen::impl::FlakeIdGeneratorProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
+
+                return boost::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(proxy);
             }
 
             ICountDownLatch HazelcastClientInstanceImpl::getICountDownLatch(const std::string &instanceName) {

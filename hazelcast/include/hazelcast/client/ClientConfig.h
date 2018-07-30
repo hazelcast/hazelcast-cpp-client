@@ -20,7 +20,6 @@
 #include <set>
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
 #include "hazelcast/client/SerializationConfig.h"
@@ -29,10 +28,14 @@
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
+#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/internal/config/ConfigUtils.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -428,7 +431,8 @@ namespace hazelcast {
              */
             template <typename K, typename V>
             const boost::shared_ptr<config::NearCacheConfig<K, V> > getNearCacheConfig(const std::string &name) {
-                boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = lookupByPattern(name);
+                boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = internal::config::ConfigUtils::lookupByPattern<config::NearCacheConfigBase>(
+                        configPatternMatcher, nearCacheConfigMap, name);
                 if (nearCacheConfig.get() == NULL) {
                     nearCacheConfig = nearCacheConfigMap.get("default");
                 }
@@ -480,6 +484,60 @@ namespace hazelcast {
             ClientConfig &
             setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
 
+            /**
+             * Returns a {@link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
+             * <p>
+             * The name is matched by pattern to the configuration and by stripping the
+             * partition ID qualifier from the given {@code name}.
+             * If there is no config found by the name, it will return the configuration
+             * with the name {@code "default"}.
+             *
+             * @param name name of the flake ID generator config
+             * @return the flake ID generator configuration
+             * @throws ConfigurationException if ambiguous configurations are found
+             * @see com.hazelcast.partition.strategy.StringPartitioningStrategy#getBaseName(java.lang.String)
+             * @see #setConfigPatternMatcher(ConfigPatternMatcher)
+             * @see #getConfigPatternMatcher()
+             */
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> findFlakeIdGeneratorConfig(const std::string &name);
+
+            /**
+             * Returns the {@link ClientFlakeIdGeneratorConfig} for the given name, creating
+             * one if necessary and adding it to the collection of known configurations.
+             * <p>
+             * The configuration is found by matching the the configuration name
+             * pattern to the provided {@code name} without the partition qualifier
+             * (the part of the name after {@code '@'}).
+             * If no configuration matches, it will create one by cloning the
+             * {@code "default"} configuration and add it to the configuration
+             * collection.
+             * <p>
+             * This method is intended to easily and fluently create and add
+             * configurations more specific than the default configuration without
+             * explicitly adding it by invoking {@link #addFlakeIdGeneratorConfig(ClientFlakeIdGeneratorConfig)}.
+             * <p>
+             * Because it adds new configurations if they are not already present,
+             * this method is intended to be used before this config is used to
+             * create a hazelcast instance. Afterwards, newly added configurations
+             * may be ignored.
+             *
+             * @param name name of the flake ID generator config
+             * @return the cache configuration
+             * @throws ConfigurationException if ambiguous configurations are found
+             * @see StringPartitioningStrategy#getBaseName(java.lang.String)
+             */
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> getFlakeIdGeneratorConfig(const std::string &name);
+
+            /**
+             * Adds a flake ID generator configuration. The configuration is saved under the config
+             * name, which may be a pattern with which the configuration will be
+             * obtained in the future.
+             *
+             * @param config the flake ID configuration
+             * @return this config instance
+             */
+            ClientConfig &addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
+
         private:
             GroupConfig groupConfig;
 
@@ -517,7 +575,9 @@ namespace hazelcast {
 
             config::ClientConnectionStrategyConfig connectionStrategyConfig;
 
-            const boost::shared_ptr<config::NearCacheConfigBase> lookupByPattern(const std::string &name);
+            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
+
+            config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
         };
 
     }
