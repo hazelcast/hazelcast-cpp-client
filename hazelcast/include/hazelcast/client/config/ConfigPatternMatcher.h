@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_CONFIG_CONFIGPATTERNMATCHER_H_
 
 #include <string>
+#include <vector>
 #include <boost/shared_ptr.hpp>
 
 namespace hazelcast {

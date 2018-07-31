@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H
 #define HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_AUTOBATCHER_H
 
-#include <cstdint>
+#include <stdint.h>
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/Atomic.h"

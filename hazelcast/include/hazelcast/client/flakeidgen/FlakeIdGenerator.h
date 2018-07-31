@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_CLIENT_FLAKEIDGEN_FLAKEIDGENERATOR_H_
 #define HAZELCAST_CLIENT_FLAKEIDGEN_FLAKEIDGENERATOR_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 

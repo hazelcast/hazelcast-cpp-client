@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_FLAKEIDGEN_IMPL_IDBATCH_H
 
 
-#include <cstdint>
+#include <stdint.h>
 #include <iterator>
 
 namespace hazelcast {

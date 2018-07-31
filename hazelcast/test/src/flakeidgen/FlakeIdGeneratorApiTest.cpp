@@ -18,14 +18,17 @@
  * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
  * "_POSIX_C_SOURCE" redefined occurs.
  */
-#include <boost/foreach.hpp>
 #include "HazelcastServerFactory.h"
+
+#include <vector>
+#include <boost/foreach.hpp>
 
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
@@ -103,7 +106,7 @@ namespace hazelcast {
 
                 util::CountDownLatch startLatch(1);
                 std::vector<boost::shared_ptr<util::Thread> > threads(4);
-                std::vector<util::Atomic<boost::shared_ptr<std::set<int64_t> > > > ids(4);
+                util::Atomic<boost::shared_ptr<std::set<int64_t> > > ids[4];
 
                 for (int i = 0; i < 4; ++i) {
                     ids[i] = boost::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
@@ -128,11 +131,8 @@ namespace hazelcast {
                 }
 
                 // if there were duplicate IDs generated, there will be less items in the set than expected
-                 assertEquals(4 * 100000, allIds.size());
+                 assertEquals(4 * 100000, (int) allIds.size());
             }
         }
     }
 }
-
-
-
