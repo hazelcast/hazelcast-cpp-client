@@ -20,6 +20,8 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace config {
@@ -36,7 +38,7 @@ namespace hazelcast {
              * <p>
              * The default matcher is {@link hazelcast::config::matcher::MatchingPointConfigPatternMatcher}.
              */
-            class ConfigPatternMatcher {
+            class HAZELCAST_API ConfigPatternMatcher {
             public:
                 /**
                  * Returns the best match for an item name out of a list of configuration patterns.

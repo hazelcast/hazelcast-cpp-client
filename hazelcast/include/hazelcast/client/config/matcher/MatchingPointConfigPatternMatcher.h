@@ -32,7 +32,7 @@ namespace hazelcast {
                  * In addition the candidates are weighted by the best match. The best result is returned.
                  * Throws {@link exception::ConfigurationException} is multiple configurations are found.
                  */
-                class MatchingPointConfigPatternMatcher : public ConfigPatternMatcher {
+                class HAZELCAST_API MatchingPointConfigPatternMatcher : public ConfigPatternMatcher {
                 public:
                     virtual boost::shared_ptr<std::string>
                     matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const;

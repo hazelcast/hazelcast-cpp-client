@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace config {
@@ -27,7 +29,7 @@ namespace hazelcast {
              * regarding {@link HazelcastClient#getFlakeIdGenerator(const std::string &)
              * Flake ID Generator}.
              */
-            class ClientFlakeIdGeneratorConfig {
+            class HAZELCAST_API ClientFlakeIdGeneratorConfig {
             public:
                 /**
                  * Default value for {@link #getPrefetchCount()}.
