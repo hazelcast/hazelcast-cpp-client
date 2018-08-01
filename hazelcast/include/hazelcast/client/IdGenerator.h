@@ -40,7 +40,9 @@ namespace hazelcast {
             friend class impl::HazelcastClientInstanceImpl;
             friend class FlakeIdGenerator;
         public:
-            virtual bool init(int64_t id);
+        virtual ~IdGenerator();
+
+        virtual bool init(int64_t id);
 
             virtual  int64_t newId();
 

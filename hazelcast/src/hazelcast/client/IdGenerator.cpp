@@ -26,5 +26,8 @@ namespace hazelcast {
         }
 
         IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
+
+        IdGenerator::~IdGenerator() {
+        }
     }
 }
