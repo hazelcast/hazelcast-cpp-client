@@ -13,69 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_ID_GENERATOR
-#define HAZELCAST_ID_GENERATOR
+#ifndef HAZELCAST_CLIENT_IDGENERATOR_H_
+#define HAZELCAST_CLIENT_IDGENERATOR_H_
 
-#include "hazelcast/client/IAtomicLong.h"
-#include "hazelcast/util/AtomicInt.h"
+#include <stdint.h>
 #include <boost/shared_ptr.hpp>
-#include <string>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/impl/IdGeneratorInterface.h"
 
 namespace hazelcast {
     namespace client {
-        namespace spi {
-            class ClientContext;
+        namespace impl {
+            class HazelcastClientInstanceImpl;
         }
 
         /**
+         * @deprecated The implementation can produce duplicate IDs in case of network split, even with split-brain
+         * protection enabled (during short window while split-brain is detected). Use {@link
+         * HazelcastClient#getFlakeIdGenerator(const std::string &)} for an alternative implementation which does not
+         * suffer from this problem.
+         *
          * Cluster-wide unique id generator.
          */
-        class HAZELCAST_API IdGenerator : public proxy::ProxyImpl {
+    class HAZELCAST_API IdGenerator : public impl::IdGeneratorInterface {
             friend class impl::HazelcastClientInstanceImpl;
-
+            friend class FlakeIdGenerator;
         public:
-            enum {
-                BLOCK_SIZE = 1000
-            };
+            virtual bool init(int64_t id);
 
-            /**
-             * Try to initialize this IdGenerator instance with given id
-             *
-             * @return true if initialization success
-             */
-            bool init(long id);
-
-            /**
-             * Generates and returns cluster-wide unique id.
-             * Generated ids are guaranteed to be unique for the entire cluster
-             * as long as the cluster is live. If the cluster restarts then
-             * id generation will start from 0.
-             *
-             * @return cluster-wide new unique id
-             */
-            long newId();
+            virtual  int64_t newId();
 
         private:
+            IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl);
 
-            IAtomicLong atomicLong;
-            boost::shared_ptr<util::Atomic<int64_t> > local;
-            boost::shared_ptr<util::Atomic<int32_t> > residue;
-            boost::shared_ptr<util::Mutex> localLock;
-            IdGenerator(const std::string &instanceName, spi::ClientContext *context);
-
-            void onDestroy();
-
+            boost::shared_ptr<impl::IdGeneratorInterface> impl;
         };
     }
 }
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
-
-#endif /* HAZELCAST_ID_GENERATOR */
+#endif /* HAZELCAST_CLIENT_IDGENERATOR_H_ */

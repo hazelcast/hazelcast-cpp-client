@@ -43,7 +43,7 @@ namespace hazelcast {
             return clientImpl->getIdGenerator(name);
         }
 
-        boost::shared_ptr<flakeidgen::FlakeIdGenerator> HazelcastClient::getFlakeIdGenerator(const std::string &name) {
+        FlakeIdGenerator HazelcastClient::getFlakeIdGenerator(const std::string &name) {
             return clientImpl->getFlakeIdGenerator(name);
         }
 

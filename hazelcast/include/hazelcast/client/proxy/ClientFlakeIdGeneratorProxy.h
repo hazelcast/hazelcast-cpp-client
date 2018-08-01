@@ -19,7 +19,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
-#include "hazelcast/client/flakeidgen/FlakeIdGenerator.h"
+#include "hazelcast/client/impl/IdGeneratorInterface.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 
 namespace hazelcast {
@@ -28,14 +28,21 @@ namespace hazelcast {
             /**
              * Client proxy implementation for a {@link PNCounter}.
              */
-            class ClientFlakeIdGeneratorProxy : public flakeidgen::FlakeIdGenerator, public ProxyImpl {
+            class ClientFlakeIdGeneratorProxy : public impl::IdGeneratorInterface, public ProxyImpl {
             public:
                 static const std::string SERVICE_NAME;
 
-                ClientFlakeIdGeneratorProxy(const std::string &serviceName, const std::string &objectName,
-                                            spi::ClientContext *context);
+                static const int BITS_SEQUENCE = 6;
+                static const int BITS_NODE_ID = 16;
+
+                ClientFlakeIdGeneratorProxy(const std::string &objectName, spi::ClientContext *context);
 
                 flakeidgen::impl::IdBatch newIdBatch(int32_t batchSize);
+
+                virtual int64_t newId();
+
+                virtual bool init(int64_t id);
+
             private:
                 class FlakeIdBatchSupplier : public flakeidgen::impl::AutoBatcher::IdBatchSupplier {
                 public:
@@ -47,7 +54,7 @@ namespace hazelcast {
                     ClientFlakeIdGeneratorProxy &proxy;
                 };
 
-                virtual int64_t newId();
+            private:
 
                 boost::shared_ptr<flakeidgen::impl::AutoBatcher> batcher;
             };

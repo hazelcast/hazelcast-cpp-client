@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
-#include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
 #include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
-        namespace flakeidgen {
+        namespace idgen {
             namespace impl {
-                FlakeIdGeneratorProxyFactory::FlakeIdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                IdGeneratorProxyFactory::IdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
                         clientContext) {}
 
-                boost::shared_ptr<spi::ClientProxy> FlakeIdGeneratorProxyFactory::create(const std::string &id) {
+                boost::shared_ptr<spi::ClientProxy> IdGeneratorProxyFactory::create(const std::string &id) {
                     return boost::shared_ptr<spi::ClientProxy>(
-                            new proxy::ClientFlakeIdGeneratorProxy(id, clientContext));
+                            new proxy::ClientIdGeneratorProxy(id, clientContext));
                 }
             }
         }

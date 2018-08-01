@@ -530,7 +530,7 @@ namespace hazelcast {
              * @param name name of the {@link FlakeIdGenerator}
              * @return FlakeIdGenerator for the given name
              */
-            boost::shared_ptr<flakeidgen::FlakeIdGenerator> getFlakeIdGenerator(const std::string& name);
+            FlakeIdGenerator getFlakeIdGenerator(const std::string& name);
 
             /**
             * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed

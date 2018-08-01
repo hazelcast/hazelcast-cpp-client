@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 #include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
@@ -29,13 +28,15 @@
 #include "hazelcast/client/spi/impl/DefaultAddressProvider.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/spi/impl/DefaultAddressTranslator.h"
-#include "hazelcast/client/IdGenerator.h"
 #include "hazelcast/client/ICountDownLatch.h"
 #include "hazelcast/client/ISemaphore.h"
 #include "hazelcast/client/ILock.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/mixedtype/impl/HazelcastClientImpl.h"
 #include "hazelcast/client/flakeidgen/impl/FlakeIdGeneratorProxyFactory.h"
+#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
+#include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -140,22 +141,30 @@ namespace hazelcast {
                 lifecycleService.shutdown();
             }
 
-            IdGenerator HazelcastClientInstanceImpl::getIdGenerator(const std::string &instanceName) {
-                return getDistributedObject<IdGenerator>(instanceName);
+            IdGenerator HazelcastClientInstanceImpl::getIdGenerator(const std::string &name) {
+                idgen::impl::IdGeneratorProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(proxy::ClientIdGeneratorProxy::SERVICE_NAME, name, factory);
+
+                boost::shared_ptr<impl::IdGeneratorInterface> impl = boost::static_pointer_cast<proxy::ClientIdGeneratorProxy>(
+                        proxy);
+                
+                return IdGenerator(impl);
             }
 
             IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &instanceName) {
                 return getDistributedObject<IAtomicLong>(instanceName);
             }
 
-
-            boost::shared_ptr<flakeidgen::FlakeIdGenerator>
-            HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
+            FlakeIdGenerator HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
                 flakeidgen::impl::FlakeIdGeneratorProxyFactory factory(&clientContext);
                 boost::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
+                        getDistributedObjectForService(proxy::ClientFlakeIdGeneratorProxy::SERVICE_NAME, name, factory);
 
-                return boost::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(proxy);
+                boost::shared_ptr<impl::IdGeneratorInterface> impl = boost::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(
+                        proxy);
+
+                return FlakeIdGenerator(impl);
             }
 
             ICountDownLatch HazelcastClientInstanceImpl::getICountDownLatch(const std::string &instanceName) {

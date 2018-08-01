@@ -28,13 +28,15 @@
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Thread.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class FlakeIdGeneratorApiTest : public ClientTestSupport {
             public:
+                FlakeIdGeneratorApiTest() : flakeIdGenerator(
+                        client->getFlakeIdGenerator(testing::UnitTest::GetInstance()->current_test_info()->name())) {
+                }
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
@@ -59,7 +61,7 @@ namespace hazelcast {
             protected:
                 class SmokeRunner : public util::Runnable {
                 public:
-                    SmokeRunner(const boost::shared_ptr<flakeidgen::FlakeIdGenerator> &flakeIdGenerator,
+                    SmokeRunner(FlakeIdGenerator &flakeIdGenerator,
                                 util::CountDownLatch &startLatch, util::Atomic<boost::shared_ptr<set<int64_t> > > &ids)
                             : flakeIdGenerator(flakeIdGenerator), startLatch(startLatch), ids(ids) {}
 
@@ -71,14 +73,14 @@ namespace hazelcast {
                         boost::shared_ptr<std::set<int64_t> > localIds = ids;
                         startLatch.await();
                         for (int j = 0; j < 100000; ++j) {
-                            localIds->insert(flakeIdGenerator->newId());
+                            localIds->insert(flakeIdGenerator.newId());
                         }
 
                         ids = localIds;
                     }
 
                 private:
-                    boost::shared_ptr<flakeidgen::FlakeIdGenerator> flakeIdGenerator;
+                    FlakeIdGenerator &flakeIdGenerator;
                     util::CountDownLatch &startLatch;
                     util::Atomic<boost::shared_ptr<std::set<int64_t> > > &ids;
                 };
@@ -86,6 +88,8 @@ namespace hazelcast {
                 static HazelcastServer *instance;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
+
+                FlakeIdGenerator flakeIdGenerator;
             };
 
             HazelcastServer *FlakeIdGeneratorApiTest::instance = NULL;
@@ -93,17 +97,16 @@ namespace hazelcast {
             HazelcastClient *FlakeIdGeneratorApiTest::client = NULL;
 
             TEST_F (FlakeIdGeneratorApiTest, testStartingValue) {
-                const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                boost::shared_ptr<flakeidgen::FlakeIdGenerator> flakeIdGenerator = client->getFlakeIdGenerator(
-                        name);
-                flakeIdGenerator->newId();
+                flakeIdGenerator.newId();
+            }
+
+            TEST_F (FlakeIdGeneratorApiTest, testInit) {
+                int64_t currentId = flakeIdGenerator.newId();
+                        assertTrue(flakeIdGenerator.init(currentId / 2));
+                        assertFalse(flakeIdGenerator.init(currentId * 2));
             }
 
             TEST_F (FlakeIdGeneratorApiTest, testSmoke) {
-                const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                boost::shared_ptr<flakeidgen::FlakeIdGenerator> flakeIdGenerator = client->getFlakeIdGenerator(
-                        name);
-
                 util::CountDownLatch startLatch(1);
                 std::vector<boost::shared_ptr<util::Thread> > threads(4);
                 util::Atomic<boost::shared_ptr<std::set<int64_t> > > ids[4];
@@ -131,7 +134,7 @@ namespace hazelcast {
                 }
 
                 // if there were duplicate IDs generated, there will be less items in the set than expected
-                 assertEquals(4 * 100000, (int) allIds.size());
+                        assertEquals(4 * 100000, (int) allIds.size());
             }
         }
     }
