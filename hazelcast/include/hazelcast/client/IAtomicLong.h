@@ -16,16 +16,21 @@
 #ifndef HAZELCAST_ATOMIC_NUMBER
 #define HAZELCAST_ATOMIC_NUMBER
 
+#include <string>
+#include <stdint.h>
+
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include <string>
-#include <stdint.h>
 
 namespace hazelcast {
     namespace client {
         namespace spi {
             class ClientContext;
+        }
+
+        namespace proxy {
+            class ClientIdGeneratorProxy;
         }
 
         /**
@@ -36,8 +41,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API IAtomicLong : public proxy::ProxyImpl {
             friend class impl::HazelcastClientInstanceImpl;
-
-            friend class IdGenerator;
+            friend class proxy::ClientIdGeneratorProxy;
 
         public:
 

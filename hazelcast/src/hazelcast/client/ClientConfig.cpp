@@ -15,13 +15,11 @@
  */
 #include <boost/foreach.hpp>
 
+#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
+#include "hazelcast/client/internal/config/ConfigUtils.h"
 #include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 
 namespace hazelcast {
     namespace client {
@@ -244,11 +242,6 @@ namespace hazelcast {
             ClientConfig::instanceName = instanceName;
         }
 
-        const boost::shared_ptr<config::NearCacheConfigBase> ClientConfig::lookupByPattern(const std::string &name) {
-            // TODO: implement the lookup
-            return nearCacheConfigMap.get(name);
-        }
-
         int32_t ClientConfig::getExecutorPoolSize() const {
             return executorPoolSize;
         }
@@ -264,6 +257,40 @@ namespace hazelcast {
         ClientConfig &ClientConfig::setConnectionStrategyConfig(
                 const config::ClientConnectionStrategyConfig &connectionStrategyConfig) {
             ClientConfig::connectionStrategyConfig = connectionStrategyConfig;
+            return *this;
+        }
+
+        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+            if (config.get() != NULL) {
+                return config;
+            }
+            return getFlakeIdGeneratorConfig("default");
+        }
+
+
+        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+            if (config.get() != NULL) {
+                return config;
+            }
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
+            if (defConfig.get() == NULL) {
+                defConfig.reset(new config::ClientFlakeIdGeneratorConfig("default"));
+                flakeIdGeneratorConfigMap.put(defConfig->getName(), defConfig);
+            }
+            config.reset(new config::ClientFlakeIdGeneratorConfig(*defConfig));
+            config->setName(name);
+            flakeIdGeneratorConfigMap.put(config->getName(), config);
+            return config;
+        }
+
+        ClientConfig &ClientConfig::addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
+            flakeIdGeneratorConfigMap.put(config->getName(), config);
             return *this;
         }
 

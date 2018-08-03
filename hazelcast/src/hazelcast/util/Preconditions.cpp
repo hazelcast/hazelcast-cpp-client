@@ -37,6 +37,12 @@ namespace hazelcast {
                     "to link with the openssl library.");
             #endif
         }
+
+         void Preconditions::checkTrue(bool expression, const std::string &errorMessage) {
+            if (!expression) {
+                throw client::exception::IllegalArgumentException(errorMessage);
+            }
+        }
     }
 }
 

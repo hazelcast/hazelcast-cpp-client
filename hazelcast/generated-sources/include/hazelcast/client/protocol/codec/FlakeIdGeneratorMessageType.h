@@ -13,21 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/IdGenerator.h"
+#ifndef HAZELCAST_CLIENT_PROTOCOL_CODEC_FLAKEIDGENERATORMESSAGETYPE_H_
+#define HAZELCAST_CLIENT_PROTOCOL_CODEC_FLAKEIDGENERATORMESSAGETYPE_H_
+
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace client {
-        bool IdGenerator::init(int64_t id) {
-            return impl->init(id);
-        }
+        namespace protocol {
+            namespace codec {
+                enum HAZELCAST_API FlakeIdGeneratorMessageType {
 
-        int64_t IdGenerator::newId() {
-            return impl->newId();
-        }
-
-        IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
-
-        IdGenerator::~IdGenerator() {
+                    HZ_FLAKEIDGENERATOR_NEWIDBATCH=0x1f01
+                };
+            }
         }
     }
 }
+
+#endif // HAZELCAST_CLIENT_PROTOCOL_CODEC_FLAKEIDGENERATORMESSAGETYPE_H_
+
+
+
+

@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/IdGenerator.h"
+
+#include "hazelcast/client/FlakeIdGenerator.h"
 
 namespace hazelcast {
     namespace client {
-        bool IdGenerator::init(int64_t id) {
-            return impl->init(id);
+        FlakeIdGenerator::FlakeIdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(impl) {}
+
+        int64_t FlakeIdGenerator::newId() {
+            return IdGenerator::newId();
         }
 
-        int64_t IdGenerator::newId() {
-            return impl->newId();
-        }
-
-        IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
-
-        IdGenerator::~IdGenerator() {
+        bool FlakeIdGenerator::init(int64_t id) {
+            return IdGenerator::init(id);
         }
     }
 }

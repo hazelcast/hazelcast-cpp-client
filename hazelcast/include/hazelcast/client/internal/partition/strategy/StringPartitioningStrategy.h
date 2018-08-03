@@ -13,21 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/IdGenerator.h"
+
+#ifndef HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
+#define HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
+
+#include <string>
 
 namespace hazelcast {
     namespace client {
-        bool IdGenerator::init(int64_t id) {
-            return impl->init(id);
+        namespace internal {
+            namespace partition {
+                namespace strategy {
+                    class StringPartitioningStrategy {
+                    public:
+                        static std::string getBaseName(const std::string &name);
+                    };
+                }
+            }
         }
 
-        int64_t IdGenerator::newId() {
-            return impl->newId();
-        }
-
-        IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
-
-        IdGenerator::~IdGenerator() {
-        }
     }
 }
+
+#endif //HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
+

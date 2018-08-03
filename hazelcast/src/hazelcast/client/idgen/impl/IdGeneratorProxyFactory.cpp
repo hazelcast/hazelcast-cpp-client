@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/IdGenerator.h"
+
+#include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
+#include "hazelcast/client/spi/ClientContext.h"
 
 namespace hazelcast {
     namespace client {
-        bool IdGenerator::init(int64_t id) {
-            return impl->init(id);
-        }
+        namespace idgen {
+            namespace impl {
+                IdGeneratorProxyFactory::IdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                        clientContext) {}
 
-        int64_t IdGenerator::newId() {
-            return impl->newId();
-        }
-
-        IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
-
-        IdGenerator::~IdGenerator() {
+                boost::shared_ptr<spi::ClientProxy> IdGeneratorProxyFactory::create(const std::string &id) {
+                    return boost::shared_ptr<spi::ClientProxy>(
+                            new proxy::ClientIdGeneratorProxy(id, clientContext));
+                }
+            }
         }
     }
 }

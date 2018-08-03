@@ -43,6 +43,10 @@ namespace hazelcast {
             return clientImpl->getIdGenerator(name);
         }
 
+        FlakeIdGenerator HazelcastClient::getFlakeIdGenerator(const std::string &name) {
+            return clientImpl->getFlakeIdGenerator(name);
+        }
+
         IAtomicLong HazelcastClient::getIAtomicLong(const std::string &name) {
             return clientImpl->getIAtomicLong(name);
         }

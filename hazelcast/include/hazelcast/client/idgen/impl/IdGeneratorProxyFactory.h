@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_
-#define HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_
+#ifndef HAZELCAST_CLIENT_IDGEN_IMPL_IDGENERATORPROXYFACTORY_H
+#define HAZELCAST_CLIENT_IDGEN_IMPL_IDGENERATORPROXYFACTORY_H
 
 #include "hazelcast/client/spi/ClientProxyFactory.h"
 
@@ -23,22 +23,20 @@ namespace hazelcast {
         namespace spi {
             class ClientContext;
         }
-        namespace crdt {
-            namespace pncounter {
-                namespace impl {
-                    class PNCounterProxyFactory : public spi::ClientProxyFactory {
-                    public:
-                        PNCounterProxyFactory(spi::ClientContext *clientContext);
+        namespace idgen {
+            namespace impl {
+                class IdGeneratorProxyFactory : public spi::ClientProxyFactory {
+                public:
+                    IdGeneratorProxyFactory(spi::ClientContext *clientContext);
 
-                        virtual boost::shared_ptr<spi::ClientProxy> create(const std::string &id);
+                    virtual boost::shared_ptr<spi::ClientProxy> create(const std::string &id);
 
-                    private:
-                        spi::ClientContext *clientContext;
-                    };
-                }
+                private:
+                    spi::ClientContext *clientContext;
+                };
             }
         }
     }
 }
 
-#endif /* HAZELCAST_CLIENT_CRDT_PNCOUNTER_IMPL_PNCOUNTERPROXYFACTORY_H_ */
+#endif /* HAZELCAST_CLIENT_IDGEN_IMPL_IDGENERATORPROXYFACTORY_H */

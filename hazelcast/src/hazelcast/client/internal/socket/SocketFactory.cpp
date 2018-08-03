@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 bool SocketFactory::start() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    const config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
+                    const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
                         sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
                                 (asio::ssl::context_base::method) sslConfig.getProtocol()));
