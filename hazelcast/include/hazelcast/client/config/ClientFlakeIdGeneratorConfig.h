@@ -75,7 +75,7 @@ namespace hazelcast {
                  * Sets how many IDs are pre-fetched on the background when one call to
                  * {@link FlakeIdGenerator#newId()} is made. Default is 100.
                  *
-                 * @param prefetchCount the desired prefetch count, in the range 1..100,000.
+                 * @param prefetchCount the desired prefetch count, in the range 1..MAXIMUM_PREFETCH_COUNT.
                  * @return this instance for fluent API
                  */
                 ClientFlakeIdGeneratorConfig &setPrefetchCount(int32_t prefetchCount);
@@ -98,6 +98,8 @@ namespace hazelcast {
                  *
                  * @param prefetchValidityMs the desired ID validity or unlimited, if configured to 0.
                  * @return this instance for fluent API
+                 *
+                 * @throws client::exception::IllegalArgumentException if prefetchValidityMillis is negative.
                  */
                 ClientFlakeIdGeneratorConfig &setPrefetchValidityMillis(int64_t prefetchValidityMillis);
 

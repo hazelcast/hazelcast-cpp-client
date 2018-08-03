@@ -513,8 +513,8 @@ namespace hazelcast {
             IdGenerator getIdGenerator(const std::string& name);
 
             /**
-             * Creates a cluster-wide unique ID generator. Generated IDs are {@code long} primitive values
-             * and are k-ordered (roughly ordered). IDs are in the range from {@code 0} to {@code
+             * Returns a generator that creates a cluster-wide unique IDs. Generated IDs are {@code long}
+             * primitive values and are k-ordered (roughly ordered). IDs are in the range from {@code 0} to {@code
              * Long.MAX_VALUE}.
              * <p>
              * The IDs contain timestamp component and a node ID component, which is assigned when the member
