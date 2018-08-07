@@ -33,7 +33,7 @@
 * [Query API](#query-api)
 * [Ringbuffer](#ringbuffer)
 * [Reliable Topic](#reliable-topic)
-* [CRDT PNCounter](#crdt-pncounter)
+* [CRDT PN Counter](#crdt-pncounter)
 * [Map Near Cache](#map-near-cache)
 * [TLS Feature](#tls-feature)
 * [AWS Cloud Discovery](#aws-cloud-discovery)
@@ -668,10 +668,10 @@ The NearCacheConfig class has a number of options including the EvictionConfig w
 
 Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
-# CRDT PNCounter
+# CRDT PN Counter
 A Conflict-free Replicated Data Type (CRDT) is a distributed data structure that achieves high availability by relaxing consistency constraints. There may be several replicas for the same data and these replicas can be modified concurrently without coordination. This means that you may achieve high throughput and low latency when updating a CRDT data structure. (see http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter for details)
 
-Hazelcast offers a lightweight CRDT PN counter (Positive-Negative Counter) implementation where each Hazelcast instance can increment and decrement the counter value and these updates are propagated to all replicas. Simple usage example is:
+Hazelcast offers a lightweight CRDT PN Counter (Positive-Negative Counter) implementation where each Hazelcast instance can increment and decrement the counter value and these updates are propagated to all replicas. Simple usage example is:
 ```
     boost::shared_ptr<hazelcast::client::crdt::pncounter::PNCounter> pnCounter = hz.getPNCounter("pncounterexample");
     std::cout << "Counter started with value:" << pnCounter->get() << std::endl;
