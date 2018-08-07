@@ -107,7 +107,7 @@ namespace hazelcast {
                         t->start();
                         allThreads.push_back(t);
                     }
-                    ASSERT_TRUE(latch.await(1));
+                    ASSERT_OPEN_EVENTUALLY(latch);
                 }
             }
         }
