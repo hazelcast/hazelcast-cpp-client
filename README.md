@@ -34,6 +34,7 @@
 * [Ringbuffer](#ringbuffer)
 * [Reliable Topic](#reliable-topic)
 * [CRDT PN Counter](#crdt-pncounter)
+* [Flake Id Generator](#flakeidgenerator)
 * [Map Near Cache](#map-near-cache)
 * [TLS Feature](#tls-feature)
 * [AWS Cloud Discovery](#aws-cloud-discovery)
@@ -678,6 +679,16 @@ Hazelcast offers a lightweight CRDT PN Counter (Positive-Negative Counter) imple
     std::cout << "Counter new value after adding is: " << pnCounter->addAndGet(5) << std::endl;
 ```
 
+#Flake Id Generator
+Hazelcast Flake ID Generator is used to generate cluster-wide unique identifiers. Generated identifiers are int64_t primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to INT64_MAX. (See http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator for details of the generated ids.)
+
+You can use the id generator as in this example:
+```
+hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdGenerator");
+int64_t newId = generator.newId();
+```
+
+The IDs contain timestamp component and a node ID component, which is assigned when the member joins the cluster. This allows the IDs to be ordered and unique without any coordination between the members, which makes the generator safe even in split-brain scenarios
 # TLS Feature
 
 *Note: This is a Hazelcast IMDG Enterprise feature. You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library.

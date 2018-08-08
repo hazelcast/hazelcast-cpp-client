@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
- /**
-  * Pleasee NOTE that this id generator usage is deprecated in favor of using Flake Id Generator.
-  * See FlakeIdGenerator.cpp example.
-  */
-
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/IdGenerator.h>
+#include <hazelcast/client/FlakeIdGenerator.h>
 
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IdGenerator generator = hz.getIdGenerator("idGenerator");
+    hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdGenerator");
     for (int i = 0; i < 10000; ++i) {
         hazelcast::util::sleep(1);
-        std::cout << "Id : " << generator.newId() << std::endl;
+        int64_t newId = generator.newId();
+        std::cout << "Id : " << newId << std::endl;
     }
-
 
     std::cout << "Finished" << std::endl;
 
