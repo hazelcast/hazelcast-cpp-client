@@ -14,4 +14,3 @@
 # limitations under the License.
 #
 add_executable(CommandLineTool ./CommandLineTool.cpp)
-
