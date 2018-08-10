@@ -44,9 +44,9 @@ namespace hazelcast {
                     cancel();
                     join();
 
-                    int state = stateLatch.get();
+                    int state = stateLatch->get();
                     if (state == 1) {
-                        stateLatch.await(100);
+                        stateLatch->await(100);
                     }
 
                     CloseHandle(thread);
