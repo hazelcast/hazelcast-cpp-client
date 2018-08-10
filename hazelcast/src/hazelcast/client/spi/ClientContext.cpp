@@ -16,8 +16,8 @@
 //
 // Created by sancar koyunlu on 5/23/13.
 
-#include <hazelcast/client/HazelcastClient.h>
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
@@ -102,6 +102,12 @@ namespace hazelcast {
             const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
             ClientContext::getLockReferenceIdGenerator() {
                 return hazelcastClient.getLockReferenceIdGenerator();
+            }
+
+            boost::shared_ptr<client::impl::HazelcastClientInstanceImpl>
+                    ClientContext::getHazelcastClientImplementation() {
+                boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
+                return clientImpl.lock();
             }
 
         }

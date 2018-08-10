@@ -19,6 +19,7 @@
 #include <memory>
 #include <stdint.h>
 #include <vector>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
@@ -104,7 +105,8 @@ namespace hazelcast {
         namespace impl {
             class ClientLockReferenceIdGenerator;
 
-            class HAZELCAST_API HazelcastClientInstanceImpl {
+            class HAZELCAST_API HazelcastClientInstanceImpl
+                    : public boost::enable_shared_from_this<HazelcastClientInstanceImpl> {
                 friend class spi::ClientContext;
                 friend class mixedtype::impl::HazelcastClientImpl;
 

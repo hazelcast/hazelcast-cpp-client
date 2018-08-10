@@ -120,6 +120,8 @@ namespace hazelcast {
 
                 const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
 
+                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

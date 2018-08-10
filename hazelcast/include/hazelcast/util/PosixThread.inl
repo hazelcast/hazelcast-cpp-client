@@ -64,28 +64,32 @@ namespace hazelcast {
             }
 
             static void *runnableThread(void *args) {
-                Runnable *runnable = static_cast<Runnable *>(args);
+                RunnableInfo *info = static_cast<RunnableInfo *>(args);
                 ILogger &logger = ILogger::getLogger();
+
+                boost::shared_ptr<Runnable> target = info->target;
                 try {
-                    runnable->run();
+                    target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    logger.finest() << "Thread " << runnable->getName() << " is interrupted. " << e;
+                    logger.finest() << "Thread " << target->getName() << " is interrupted. " << e;
                 } catch (hazelcast::client::exception::IException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
+                    logger.warning() << "Thread " << target->getName() << " is cancelled with exception " << e;
                 } catch (...) {
-                    logger.warning() << "Thread " << runnable->getName()
+                    logger.warning() << "Thread " << target->getName()
                                      << " is cancelled with an unexpected exception";
+                    info->latch->countDown();
                     throw;
                 }
 
-                logger.finest() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << target->getName() << " is finished.";
 
+                info->latch->countDown();
+                
                 return NULL;
             }
 
-            void startInternal(Runnable *targetObject) {
-                pthread_create(&thread, &attr, runnableThread, targetObject);
-                started = true;
+            void startInternal(RunnableInfo *info) {
+                pthread_create(&thread, &attr, runnableThread, (void *) info);
             }
 
             virtual bool isCalledFromSameThread() {
