@@ -204,7 +204,7 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
-add_subdirectory(CommandLineTool)
+add_subdirectory(command-line-tool)
 add_subdirectory(transactions)
 add_subdirectory(spi)
 add_subdirectory(serialization)
