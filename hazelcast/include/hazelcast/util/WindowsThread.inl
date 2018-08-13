@@ -40,15 +40,9 @@ namespace hazelcast {
             }
 
             virtual ~Thread() {
-                if (started) {
-                    cancel();
-                    join();
+                cancel();
 
-                    int state = stateLatch->get();
-                    if (state == 1) {
-                        stateLatch->await(100);
-                    }
-
+                if (handleClosed.compareAndSet(false, true)) {
                     CloseHandle(thread);
                 }
             }
@@ -76,14 +70,14 @@ namespace hazelcast {
                 } catch (...) {
                     logger.warning() << "Thread " << target->getName() << " is cancelled with an unexpected exception";
 
-                    info->latch->countDown();
+                    info->finishWaitLatch->countDown();
 
                     return 1L;
                 }
 
                 logger.finest() << "Thread " << target->getName() << " is finished.";
 
-                info->latch->countDown();
+                info->finishWaitLatch->countDown();
 
                 return 0;
             }
@@ -106,6 +100,7 @@ namespace hazelcast {
 
             HANDLE thread;
             DWORD id;
+            util::AtomicBoolean handleClosed;
         };
     }
 }

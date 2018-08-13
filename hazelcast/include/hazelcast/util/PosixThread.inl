@@ -35,10 +35,7 @@ namespace hazelcast {
             }
 
             virtual ~Thread() {
-                if (started) {
-                    cancel();
-                    join();
-                }
+                cancel();
 
                 pthread_attr_destroy(&attr);
             }
@@ -77,14 +74,14 @@ namespace hazelcast {
                 } catch (...) {
                     logger.warning() << "Thread " << target->getName()
                                      << " is cancelled with an unexpected exception";
-                    info->latch->countDown();
+                    info->finishWaitLatch->countDown();
                     throw;
                 }
 
                 logger.finest() << "Thread " << target->getName() << " is finished.";
 
-                info->latch->countDown();
-                
+                info->finishWaitLatch->countDown();
+
                 return NULL;
             }
 
@@ -99,7 +96,6 @@ namespace hazelcast {
             virtual bool innerJoin() {
                 int err = pthread_join(thread, NULL);
                 if (EINVAL == err || ESRCH == err || EDEADLK == err) {
-                    isJoined = false;
                     return false;
                 }
                 return true;

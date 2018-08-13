@@ -72,12 +72,19 @@ namespace hazelcast {
                 const boost::shared_ptr<Runnable> &getTarget() const;
 
             protected:
+                enum ThreadState {
+                    UNSTARTED = 0,
+                    STARTED = 1,
+                    JOINED = 2,
+                    CANCELLED = 3
+                };
+
                 struct RunnableInfo {
                     RunnableInfo(const boost::shared_ptr<Runnable> &target,
                                  const boost::shared_ptr<CountDownLatch> &latch);
 
                     boost::shared_ptr<Runnable> target;
-                    boost::shared_ptr<util::CountDownLatch> latch;
+                    boost::shared_ptr<util::CountDownLatch> finishWaitLatch;
                 };
 
                 virtual void startInternal(RunnableInfo *info) = 0;
@@ -85,14 +92,16 @@ namespace hazelcast {
                 virtual bool innerJoin() = 0;
 
                 util::AtomicBoolean isJoined;
+                util::AtomicInt state;
                 util::AtomicBoolean started;
+                util::AtomicBoolean cancelled;
                 ConditionVariable wakeupCondition;
                 static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
 
                 Mutex wakeupMutex;
 
                 boost::shared_ptr<Runnable> target;
-                boost::shared_ptr<util::CountDownLatch> stateLatch;
+                boost::shared_ptr<util::CountDownLatch> finishedLatch;
             };
         }
     }
