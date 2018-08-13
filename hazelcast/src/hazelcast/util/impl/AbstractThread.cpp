@@ -24,8 +24,14 @@ namespace hazelcast {
         namespace impl {
             util::SynchronizedMap<int64_t, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
 
-            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable) : target(runnable) {
-                this->target = runnable;
+            /**
+             * Latch count is 2, because one is count down when thread started and the second one is decremented when
+             * thread exits. Derived classes should decrement this latch just before exiting the thread
+             * execution method.
+             * @param runnable The runnable to run when this thread is started.
+             */
+            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable)
+                        : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)) {
             }
 
             AbstractThread::~AbstractThread() {
@@ -40,14 +46,15 @@ namespace hazelcast {
             }
 
             void AbstractThread::start() {
-                if (!started.compareAndSet(false, true)) {
+                if (!state.compareAndSet(UNSTARTED, STARTED)) {
                     return;
                 }
                 if (target.get() == NULL) {
                     return;
                 }
 
-                startInternal(target.get());
+                RunnableInfo *info = new RunnableInfo(target, finishedLatch);
+                startInternal(info);
 
                 startedThreads.put(getThreadId(), boost::shared_ptr<UnmanagedAbstractThreadPointer>(
                         new UnmanagedAbstractThreadPointer(this)));
@@ -68,7 +75,7 @@ namespace hazelcast {
             }
 
             void AbstractThread::cancel() {
-                if (!started) {
+                if (!state.compareAndSet(STARTED, CANCELLED)) {
                     return;
                 }
 
@@ -81,26 +88,28 @@ namespace hazelcast {
                     return;
                 }
 
-                if (!isJoined) {
-                    wakeup();
+                int64_t threadId = getThreadId();
 
-                    // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
-                    // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
-                }
+                wakeup();
+
+                // Note: Do not force cancel since it may cause unreleased lock objects which causes deadlocks.
+                // Issue reported at: https://github.com/hazelcast/hazelcast-cpp-client/issues/339
+
+                finishedLatch->await();
+
+                innerJoin();
+
+                startedThreads.remove(threadId);
             }
 
             bool AbstractThread::join() {
-                if (!started) {
+                if (!state.compareAndSet(STARTED, JOINED)) {
                     return false;
                 }
 
                 if (isCalledFromSameThread()) {
                     // called from inside the thread, deadlock possibility
                     return false;
-                }
-
-                if (!isJoined.compareAndSet(false, true)) {
-                    return true;
                 }
 
                 int64_t threadId = getThreadId();
@@ -110,7 +119,6 @@ namespace hazelcast {
                 }
 
                 startedThreads.remove(threadId);
-                isJoined = true;
                 return true;
             }
 
@@ -120,7 +128,9 @@ namespace hazelcast {
                 if (currentThread.get()) {
                     currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
                 } else {
-                    util::ILogger::getLogger().warning() << "AbstractThread::sleep IS NOT interrupptible SLEEP!!! currentThreadId:" << currentThreadId;
+                    util::ILogger::getLogger().warning()
+                            << "AbstractThread::sleep IS NOT interrupptible SLEEP!!! currentThreadId:"
+                            << currentThreadId;
                     util::sleepmillis(timeInMilliseconds);
                 }
             }
@@ -135,6 +145,10 @@ namespace hazelcast {
             AbstractThread *AbstractThread::UnmanagedAbstractThreadPointer::getThread() const {
                 return thread;
             }
+
+            AbstractThread::RunnableInfo::RunnableInfo(const boost::shared_ptr<Runnable> &target,
+                                                       const boost::shared_ptr<CountDownLatch> &latch) : target(target),
+                                                                                                         finishWaitLatch(latch) {}
         }
     }
 }

@@ -49,6 +49,7 @@
 #include "hazelcast/client/config/ClientNetworkConfig.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/client/connection/HeartbeatManager.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -774,17 +775,14 @@ namespace hazelcast {
                 } catch (exception::IException &e) {
                     connectionManager.logger.warning() << "Could not connect to cluster, shutting down the client. "
                                                        << e.getMessage();
-                    /**
-                     * Allocate this thread on heap. Since we do not want this thread to be deleted while thread is
-                     * executing we can not keep it a shared pointer in the HazelcastClient (There is a possibility that
-                     * it may be deleted during client shutdown and the object being destructed.).
-                     *
-                     * TODO: Find a way not to leak this object and also manage the lifecycle of the destructed objects.
-                     */
-                    util::Thread *shutdownThread = new util::Thread(
-                            boost::shared_ptr<util::Runnable>(new ShutdownTask(connectionManager.client)));
-                    shutdownThread->start();
 
+                    boost::shared_ptr<ShutdownTask> task(new ShutdownTask(connectionManager.client));
+                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(task));
+                    shutdownThread->start();
+                    connectionManager.shutdownThreads.offer(shutdownThread);
+
+                    throw;
+                } catch (...) {
                     throw;
                 }
             }
@@ -793,20 +791,35 @@ namespace hazelcast {
                 return "ClientConnectionManagerImpl::ConnectToClusterTask";
             }
 
-            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
-                    : client(client), name(client.getName() + ".clientShutdown-") {}
+            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client) {
+                boost::shared_ptr<impl::HazelcastClientInstanceImpl> hazelcastClientImplementation =
+                        client.getHazelcastClientImplementation();
+                if (hazelcastClientImplementation.get()) {
+                    clientImpl = hazelcastClientImplementation;
+                }
+            }
 
             void ClientConnectionManagerImpl::ShutdownTask::run() {
+                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
+                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
+                    return;
+                }
+
                 try {
-                    client.getLifecycleService().shutdown();
+                    clientInstance->getLifecycleService().shutdown();
                 } catch (exception::IException &exception) {
-                    util::ILogger::getLogger().severe() << "Exception during client shutdown task " <<
-                                                        name << ":" << exception;
+                    util::ILogger::getLogger().severe() << "Exception during client shutdown task "
+                        << clientInstance->getName() + ".clientShutdown-" << ":" << exception;
                 }
             }
 
             const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                return name;
+                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
+                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
+                    return "ClientConnectionManagerImpl::ShutdownTask";
+                }
+
+                return clientInstance->getName();
             }
 
             void ClientConnectionManagerImpl::TimeoutAuthenticationTask::run() {

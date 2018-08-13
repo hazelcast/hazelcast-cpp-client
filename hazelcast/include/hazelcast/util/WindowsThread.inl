@@ -40,9 +40,9 @@ namespace hazelcast {
             }
 
             virtual ~Thread() {
-                if (started) {
-                    cancel();
-                    join();
+                cancel();
+
+                if (handleClosed.compareAndSet(false, true)) {
                     CloseHandle(thread);
                 }
             }
@@ -57,28 +57,33 @@ namespace hazelcast {
 
         protected:
             static DWORD WINAPI runnableThread(LPVOID args) {
-                Runnable *runnable = static_cast<Runnable *>(args);
+                RunnableInfo *info = static_cast<RunnableInfo *>(args);
                 ILogger &logger = ILogger::getLogger();
+
+                boost::shared_ptr<Runnable> target = info->target;
                 try {
-                    runnable->run();
+                    target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is interrupted. " << e;
+                    logger.warning() << "Thread " << target->getName() << " is interrupted. " << e;
                 } catch (hazelcast::client::exception::IException &e) {
-                    logger.warning() << "Thread " << runnable->getName() << " is cancelled with exception " << e;
+                    logger.warning() << "Thread " << target->getName() << " is cancelled with exception " << e;
                 } catch (...) {
-                    logger.warning() << "Thread " << runnable->getName()
-                                     << " is cancelled with an unexpected exception";
+                    logger.warning() << "Thread " << target->getName() << " is cancelled with an unexpected exception";
+
+                    info->finishWaitLatch->countDown();
+
                     return 1L;
                 }
 
-                logger.finest() << "Thread " << runnable->getName() << " is finished.";
+                logger.finest() << "Thread " << target->getName() << " is finished.";
+
+                info->finishWaitLatch->countDown();
 
                 return 0;
             }
 
-            void startInternal(Runnable *targetObject) {
-                thread = CreateThread(NULL, 0, runnableThread, targetObject, 0 , &id);
-                started = true;
+            void startInternal(RunnableInfo *info) {
+                thread = CreateThread(NULL, 0, runnableThread, info, 0 , &id);
             }
 
             virtual bool isCalledFromSameThread() {
@@ -95,6 +100,7 @@ namespace hazelcast {
 
             HANDLE thread;
             DWORD id;
+            util::AtomicBoolean handleClosed;
         };
     }
 }

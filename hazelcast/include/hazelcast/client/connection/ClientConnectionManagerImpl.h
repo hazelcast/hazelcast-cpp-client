@@ -65,6 +65,10 @@ namespace hazelcast {
             }
         }
 
+        namespace impl {
+            class HazelcastClientInstanceImpl;
+        }
+
         namespace connection {
             class Connection;
 
@@ -271,8 +275,8 @@ namespace hazelcast {
                     virtual const std::string getName() const;
 
                 private:
-                    spi::ClientContext &client;
-                    std::string name;
+                    // Keep weak_ptr for preventing cyclic dependency
+                    boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl;
                 };
 
                 class TimeoutAuthenticationTask : public util::Runnable {
@@ -329,6 +333,9 @@ namespace hazelcast {
 
                 util::Mutex lock;
                 std::auto_ptr<HeartbeatManager> heartbeat;
+
+                // This queue is used for avoiding memory leak
+                util::SynchronizedQueue<util::Thread> shutdownThreads;
             };
         }
     }

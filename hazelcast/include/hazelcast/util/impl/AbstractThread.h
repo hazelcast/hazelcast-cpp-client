@@ -25,6 +25,7 @@
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/util/CountDownLatch.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,18 +72,36 @@ namespace hazelcast {
                 const boost::shared_ptr<Runnable> &getTarget() const;
 
             protected:
-                virtual void startInternal(Runnable *targetObject) = 0;
+                enum ThreadState {
+                    UNSTARTED = 0,
+                    STARTED = 1,
+                    JOINED = 2,
+                    CANCELLED = 3
+                };
+
+                struct RunnableInfo {
+                    RunnableInfo(const boost::shared_ptr<Runnable> &target,
+                                 const boost::shared_ptr<CountDownLatch> &latch);
+
+                    boost::shared_ptr<Runnable> target;
+                    boost::shared_ptr<util::CountDownLatch> finishWaitLatch;
+                };
+
+                virtual void startInternal(RunnableInfo *info) = 0;
                 virtual bool isCalledFromSameThread() = 0;
                 virtual bool innerJoin() = 0;
 
                 util::AtomicBoolean isJoined;
+                util::AtomicInt state;
                 util::AtomicBoolean started;
+                util::AtomicBoolean cancelled;
                 ConditionVariable wakeupCondition;
                 static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
 
                 Mutex wakeupMutex;
 
                 boost::shared_ptr<Runnable> target;
+                boost::shared_ptr<util::CountDownLatch> finishedLatch;
             };
         }
     }
