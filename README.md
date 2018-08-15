@@ -33,8 +33,8 @@
 * [Query API](#query-api)
 * [Ringbuffer](#ringbuffer)
 * [Reliable Topic](#reliable-topic)
-* [CRDT PN Counter](#crdt-pncounter)
-* [Flake Id Generator](#flakeidgenerator)
+* [PN Counter](#pn-counter)
+* [Flake Id Generator](#flake-id-generator)
 * [Map Near Cache](#map-near-cache)
 * [TLS Feature](#tls-feature)
 * [AWS Cloud Discovery](#aws-cloud-discovery)
@@ -669,7 +669,7 @@ The NearCacheConfig class has a number of options including the EvictionConfig w
 
 Examples are also provided for some options at the near cache folder under examples (also can be see at https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
-# CRDT PN Counter
+# PN Counter
 A Conflict-free Replicated Data Type (CRDT) is a distributed data structure that achieves high availability by relaxing consistency constraints. There may be several replicas for the same data and these replicas can be modified concurrently without coordination. This means that you may achieve high throughput and low latency when updating a CRDT data structure. (see http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter for details)
 
 Hazelcast offers a lightweight CRDT PN Counter (Positive-Negative Counter) implementation where each Hazelcast instance can increment and decrement the counter value and these updates are propagated to all replicas. Simple usage example is:
@@ -679,7 +679,7 @@ Hazelcast offers a lightweight CRDT PN Counter (Positive-Negative Counter) imple
     std::cout << "Counter new value after adding is: " << pnCounter->addAndGet(5) << std::endl;
 ```
 
-#Flake Id Generator
+# Flake Id Generator
 Hazelcast Flake ID Generator is used to generate cluster-wide unique identifiers. Generated identifiers are int64_t primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to INT64_MAX. (See http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator for details of the generated ids.)
 
 You can use the id generator as in this example:
@@ -688,7 +688,7 @@ hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdG
 int64_t newId = generator.newId();
 ```
 
-The IDs contain timestamp component and a node ID component, which is assigned when the member joins the cluster. This allows the IDs to be ordered and unique without any coordination between the members, which makes the generator safe even in split-brain scenarios
+The IDs contain timestamp component and a node ID component, which is assigned when the member joins the cluster. This allows the IDs to be ordered and unique without any coordination between the members, which makes the generator safe even in split-brain scenarios.
 # TLS Feature
 
 *Note: This is a Hazelcast IMDG Enterprise feature. You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library.
