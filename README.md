@@ -688,7 +688,7 @@ hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdG
 int64_t newId = generator.newId();
 ```
 
-The IDs contain timestamp component and a node ID component, which is assigned when the member joins the cluster. This allows the IDs to be ordered and unique without any coordination between the members, which makes the generator safe even in split-brain scenarios
+The IDs contain timestamp component and a node ID component, which is assigned when the member joins the cluster. This allows the IDs to be ordered and unique without any coordination between the members, which makes the generator safe even in split-brain scenarios.
 # TLS Feature
 
 *Note: This is a Hazelcast IMDG Enterprise feature. You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library.
