@@ -56,7 +56,7 @@ namespace hazelcast {
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \
-                void raise() const { throw *this; } \
+                virtual void raise() const { throw *this; } \
             };\
 
             DEFINE_EXCEPTION_CLASS(ArrayIndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS);
@@ -155,7 +155,7 @@ namespace hazelcast {
 
                 RetryableHazelcastException(const std::string &source, const std::string &message);
 
-
+                virtual void raise() const;
             };
 
             class HAZELCAST_API TargetNotMemberException : public RetryableHazelcastException {
@@ -167,7 +167,7 @@ namespace hazelcast {
 
                 TargetNotMemberException(const std::string &source, const std::string &message);
 
-
+                virtual void raise() const;
             };
 
             class HAZELCAST_API UndefinedErrorCodeException : public IException {
@@ -185,6 +185,8 @@ namespace hazelcast {
                 const std::string &getDetailedErrorMessage() const;
 
                 virtual std::auto_ptr<IException> clone() const;
+
+                virtual void raise() const;
 
             private:
                 int32_t error;

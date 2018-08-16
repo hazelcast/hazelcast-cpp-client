@@ -233,8 +233,12 @@ namespace hazelcast {
                     try {
                         command->run();
                     } catch (client::exception::IException &e) {
-                        util::ILogger::getLogger().warning() << "Repeated runnable " << getName()
-                                                             << " run method caused exception:" << e;
+                        ILogger &iLogger = util::ILogger::getLogger();
+                        if (isNotRepeating) {
+                            iLogger.warning() << "Runnable " << getName() << " run method caused exception:" << e;
+                        } else {
+                            iLogger.warning() << "Repeated runnable " << getName() << " run method caused exception:" << e;
+                        }
                     }
 
                     if (isNotRepeating) {
