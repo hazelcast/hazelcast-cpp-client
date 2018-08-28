@@ -3,7 +3,7 @@
 set -e #abort the script at first failure
 
 HZ_INSTALL_DIR=$1
-HZ_VERSION="3.10.1-SNAPSHOT"
+HZ_VERSION="3.10.2-SNAPSHOT"
 HZ_BIT_VERSION=$2
 HZ_LIB_TYPE=$3
 
