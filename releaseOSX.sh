@@ -33,12 +33,6 @@ cp -R external/release_include cpp/external/include
 mkdir -p cpp/examples
 cp -r examples cpp/examples/src
 
-echo "Linking to external libraries and examples for 32-bit release"
-cd cpp/Mac_32
-ln -s ../examples .
-ln -s ../external .
-cd -
-
 echo "Linking to external libraries and examples for 64-bit release"
 cd cpp/Mac_64
 ln -s ../examples .
