@@ -51,6 +51,12 @@ namespace hazelcast {
                     class CallIdSequence {
                     public:
                         /**
+                         * Destructor
+                         */
+                        virtual ~CallIdSequence() {
+                        }
+
+                        /**
                          * Returns the maximum concurrent invocations supported. INT32_MAX means there is no max.
                          *
                          * @return the maximum concurrent invocation.
