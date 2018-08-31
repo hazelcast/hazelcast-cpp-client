@@ -34,6 +34,12 @@ namespace hazelcast {
             class HAZELCAST_API IdleStrategy {
             public:
                 /**
+                 * Destructor
+                 */
+                virtual ~IdleStrategy() {
+                }
+
+                /**
                  * Perform current idle strategy's step <i>n</i>.
                  *
                  * @param n number of times this method has been previously called with no intervening work done.
