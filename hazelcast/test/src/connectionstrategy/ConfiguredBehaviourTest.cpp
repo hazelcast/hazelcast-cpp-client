@@ -63,9 +63,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
                     HazelcastClient client(clientConfig);
 
-                    IMap<int, int> map = client.getMap<int, int>(randomMapName());
-                    /* TODO: Change to HazelcastClientOfflineException after https://github.com/hazelcast/hazelcast-cpp-client/issues/54 is solved*/
-                    ASSERT_THROW(map.size(), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW((client.getMap<int, int>(randomMapName())), exception::HazelcastClientOfflineException);
 
                     client.shutdown();
                 }
@@ -74,8 +72,7 @@ namespace hazelcast {
                     clientConfig.getConnectionStrategyConfig().setAsyncStart(true);
                     HazelcastClient client(clientConfig);
                     client.shutdown();
-                    IMap<int, int> map = client.getMap<int, int>(randomMapName());
-                    ASSERT_THROW(map.size(), exception::HazelcastClientNotActiveException);
+                    ASSERT_THROW((client.getMap<int, int>(randomMapName())), exception::HazelcastClientOfflineException);
 
                     client.shutdown();
                 }
