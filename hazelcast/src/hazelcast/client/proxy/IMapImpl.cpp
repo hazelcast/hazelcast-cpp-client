@@ -300,7 +300,7 @@ namespace hazelcast {
             }
 
             bool IMapImpl::removeEntryListener(const std::string &registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             std::string IMapImpl::addEntryListener(impl::BaseEventHandler *handler,
@@ -567,7 +567,7 @@ namespace hazelcast {
             void IMapImpl::onInitialize() {
                 ProxyImpl::onInitialize();
 
-                lockReferenceIdGenerator = context->getLockReferenceIdGenerator();
+                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
             }
 
             IMapImpl::MapEntryListenerMessageCodec::MapEntryListenerMessageCodec(const std::string &name,

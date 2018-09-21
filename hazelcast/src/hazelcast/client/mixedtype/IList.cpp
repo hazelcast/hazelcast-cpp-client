@@ -29,8 +29,8 @@ namespace hazelcast {
             std::string IList::addItemListener(MixedItemListener &listener, bool includeValue) {
                 impl::MixedItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedItemEventHandler<protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
-                                getName(), (spi::ClientClusterService &) context->getClientClusterService(),
-                                context->getSerializationService(), listener);
+                                getName(), (spi::ClientClusterService &) getContext().getClientClusterService(),
+                                getContext().getSerializationService(), listener);
                 return proxy::IListImpl::addItemListener(entryEventHandler, includeValue);
             }
 
@@ -55,11 +55,11 @@ namespace hazelcast {
             }
 
             TypedData IList::get(int index) {
-                return TypedData(proxy::IListImpl::getData(index), context->getSerializationService());
+                return TypedData(proxy::IListImpl::getData(index), getContext().getSerializationService());
             }
 
             TypedData IList::remove(int index) {
-                return TypedData(proxy::IListImpl::removeData(index), context->getSerializationService());
+                return TypedData(proxy::IListImpl::removeData(index), getContext().getSerializationService());
             }
 
             std::vector<TypedData> IList::subList(int fromIndex, int toIndex) {

@@ -75,6 +75,9 @@ namespace hazelcast {
                     void listenMembershipEvents(const boost::shared_ptr<connection::Connection> &ownerConnection);
 
                     void fireMemberAttributeEvent(const MemberAttributeEvent &event);
+
+                    virtual int getSize();
+
                 private:
                     ClientContext &client;
                     boost::shared_ptr<ClientMembershipListener> clientMembershipListener;

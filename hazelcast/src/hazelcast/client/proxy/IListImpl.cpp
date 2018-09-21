@@ -55,7 +55,7 @@ namespace hazelcast {
 
             IListImpl::IListImpl(const std::string &instanceName, spi::ClientContext *context)
                     : ProxyImpl("hz:impl:listService", instanceName, context) {
-                serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(
+                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(
                         &instanceName);
                 partitionId = getPartitionId(keyData);
             }
@@ -65,7 +65,7 @@ namespace hazelcast {
             }
 
             bool IListImpl::removeItemListener(const std::string &registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             int IListImpl::size() {

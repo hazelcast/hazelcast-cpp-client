@@ -30,7 +30,7 @@ namespace hazelcast {
             template<typename T>
             class RawPointerSet {
             public:
-                RawPointerSet(ISet<T> &s) : set(s), serializationService(s.context->getSerializationService()) {
+                RawPointerSet(ISet<T> &s) : set(s), serializationService(s.getContext().getSerializationService()) {
                 }
 
                 /**

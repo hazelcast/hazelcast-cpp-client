@@ -25,8 +25,8 @@ namespace hazelcast {
     namespace client {
         namespace mixedtype {
             std::string IQueue::addItemListener(MixedItemListener &listener, bool includeValue) {
-                spi::ClientClusterService &cs = context->getClientClusterService();
-                serialization::pimpl::SerializationService &ss = context->getSerializationService();
+                spi::ClientClusterService &cs = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
                 impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::MixedItemEventHandler<protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(
                                 getName(), cs, ss, listener);
@@ -51,7 +51,7 @@ namespace hazelcast {
 
             size_t IQueue::drainTo(std::vector<TypedData> &elements, int64_t maxElements) {
                 typedef std::vector<serialization::pimpl::Data> DATA_VECTOR;
-                serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
+                serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                 size_t numElements = 0;
                 BOOST_FOREACH(const DATA_VECTOR::value_type data , proxy::IQueueImpl::drainToData(maxElements)) {
                                 elements.push_back(TypedData(std::auto_ptr<serialization::pimpl::Data>(
@@ -66,11 +66,11 @@ namespace hazelcast {
             }
 
             TypedData IQueue::poll(long timeoutInMillis) {
-                return TypedData(proxy::IQueueImpl::pollData(timeoutInMillis), context->getSerializationService());
+                return TypedData(proxy::IQueueImpl::pollData(timeoutInMillis), getContext().getSerializationService());
             }
 
             TypedData IQueue::peek() {
-                return TypedData(proxy::IQueueImpl::peekData(), context->getSerializationService());
+                return TypedData(proxy::IQueueImpl::peekData(), getContext().getSerializationService());
             }
 
             int IQueue::size() {

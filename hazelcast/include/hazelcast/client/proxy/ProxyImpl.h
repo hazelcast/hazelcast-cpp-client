@@ -44,12 +44,6 @@ namespace hazelcast {
             }
         }
 
-        namespace protocol {
-            namespace codec {
-                class IAddListenerCodec;
-            }
-        }
-
         namespace spi {
             namespace impl {
                 class ClientInvocationFuture;
@@ -59,7 +53,7 @@ namespace hazelcast {
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
-            class HAZELCAST_API ProxyImpl : public DistributedObject, public spi::ClientProxy {
+            class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
             public:
                 /**
                 * Destroys this object cluster-wide.
@@ -69,7 +63,7 @@ namespace hazelcast {
 
                 template <typename T>
                 TypedData toTypedData(const T &key) {
-                    return TypedData(toHeapData<T>(key), context->getSerializationService());
+                    return TypedData(toHeapData<T>(key), getContext().getSerializationService());
                 }
 
             protected:
@@ -136,12 +130,12 @@ namespace hazelcast {
 
                 template<typename T>
                 serialization::pimpl::Data toData(const T &object) {
-                    return context->getSerializationService().template toData<T>(&object);
+                    return getContext().getSerializationService().template toData<T>(&object);
                 }
 
                 template<typename T>
                 std::auto_ptr<T> toObject(const serialization::pimpl::Data &data) {
-                    return context->getSerializationService().template toObject<T>(data);
+                    return getContext().getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
@@ -165,7 +159,7 @@ namespace hazelcast {
                 }
 
                 std::vector<TypedData>
-                toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values) const;
+                toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values);
 
                 template<typename T>
                 const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T> &elements) {
@@ -248,9 +242,6 @@ namespace hazelcast {
 
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
 
-                spi::ClientContext &getContext();
-
-                spi::ClientContext *context;
             private:
                 class EventHandlerDelegator : public spi::EventHandler<protocol::ClientMessage> {
                 public:
@@ -268,7 +259,7 @@ namespace hazelcast {
 
                 template <typename T>
                 std::auto_ptr<serialization::pimpl::Data> toHeapData(const T *key) {
-                    serialization::pimpl::Data data = context->getSerializationService().toData<T>(&key);
+                    serialization::pimpl::Data data = getContext().getSerializationService().toData<T>(&key);
                     return std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
             };

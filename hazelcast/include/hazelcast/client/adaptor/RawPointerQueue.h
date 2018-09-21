@@ -32,7 +32,7 @@ namespace hazelcast {
             template<typename T>
             class RawPointerQueue {
             public:
-                RawPointerQueue(IQueue<T> &q) : queue(q), serializationService(q.context->getSerializationService()) {
+                RawPointerQueue(IQueue<T> &q) : queue(q), serializationService(q.getContext().getSerializationService()) {
                 }
 
                 /**

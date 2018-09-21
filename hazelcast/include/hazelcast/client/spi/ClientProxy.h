@@ -13,13 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 30 Nov 2016.
 
 #ifndef HAZELCAST_CLIENT_SPI_CLIENTPROXY_H_
 #define HAZELCAST_CLIENT_SPI_CLIENTPROXY_H_
 
+#include <string>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/DistributedObject.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,14 +32,17 @@ namespace hazelcast {
         class IDistributedObject;
 
         namespace spi {
+            class ClientContext;
+
             /**
              * Base Interface for client proxies.
              *
              */
-            class HAZELCAST_API ClientProxy {
+            class HAZELCAST_API ClientProxy : public virtual DistributedObject {
             public:
-                virtual ~ClientProxy() {
-                }
+                ClientProxy(const std::string &name, const std::string &serviceName, ClientContext &context);
+
+                virtual ~ClientProxy();
 
                 /**
                  * Called when proxy is created.
@@ -46,6 +50,56 @@ namespace hazelcast {
                  * like registering a listener, creating a cleanup task etc.
                  */
                 virtual void onInitialize() = 0;
+
+                const std::string &getName() const;
+
+                const std::string &getServiceName() const;
+
+                ClientContext &getContext();
+
+                virtual void destroy();
+
+                /**
+                 * Destroys this client proxy instance locally without issuing distributed
+                 * object destroy request to the cluster as the {@link #destroy} method
+                 * does.
+                 * <p>
+                 * The local destruction operation still may perform some communication
+                 * with the cluster; for example, to unregister remote event subscriptions.
+                 */
+                void destroyLocally();
+
+
+                /**
+                 * Destroys the remote distributed object counterpart of this proxy by
+                 * issuing the destruction request to the cluster.
+                 */
+                void destroyRemotely();
+
+            protected:
+                /**
+                 * Called before proxy is destroyed and determines whether destroy should be done.
+                 *
+                 * @return <code>true</code> if destroy should be done, otherwise <code>false</code>
+                 */
+                bool preDestroy();
+
+                /**
+                 * Called before proxy is destroyed.
+                 * Overriding implementations should clean/release resources created during initialization.
+                 */
+                void onDestroy();
+
+                /**
+                 * Called after proxy is destroyed.
+                 */
+                void postDestroy();
+
+                const std::string name;
+
+            private:
+                const std::string serviceName;
+                spi::ClientContext &context;
             };
         }
     }

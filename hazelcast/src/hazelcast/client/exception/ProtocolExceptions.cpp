@@ -89,6 +89,27 @@ namespace hazelcast {
             void TargetNotMemberException::raise() const {
                 throw *this;
             }
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
+                                                     const std::string &details, int32_t causeCode)
+                    : ExecutionException(source, message, details, causeCode) {
+                errorCode = protocol::MEMBER_LEFT;
+            }
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
+                                                     int32_t causeCode) : ExecutionException(source, message,
+                                                                                             causeCode) {
+                errorCode = protocol::MEMBER_LEFT;
+            }
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message)
+                    : ExecutionException(source, message) {
+                errorCode = protocol::MEMBER_LEFT;
+            }
+
+            void MemberLeftException::raise() const {
+                throw *this;
+            }
         }
     }
 }

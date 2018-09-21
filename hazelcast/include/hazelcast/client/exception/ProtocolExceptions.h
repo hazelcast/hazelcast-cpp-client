@@ -89,7 +89,6 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(InterruptedException, protocol::INTERRUPTED);
             DEFINE_EXCEPTION_CLASS(InvalidAddressException, protocol::INVALID_ADDRESS);
             DEFINE_EXCEPTION_CLASS(InvalidConfigurationException, protocol::INVALID_CONFIGURATION);
-            DEFINE_EXCEPTION_CLASS(MemberLeftException, protocol::MEMBER_LEFT);
             DEFINE_EXCEPTION_CLASS(NegativeArraySizeException, protocol::NEGATIVE_ARRAY_SIZE);
             DEFINE_EXCEPTION_CLASS(NoSuchElementException, protocol::NO_SUCH_ELEMENT);
             DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE);
@@ -145,6 +144,18 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(UnknownHostException, protocol::UNKNOWN_HOST);
             DEFINE_EXCEPTION_CLASS(FutureUninitialized, protocol::FUTURE_UNINITIALIZED);
             DEFINE_EXCEPTION_CLASS(ConsistencyLostException, protocol::CONSISTENCY_LOST);
+
+            class MemberLeftException : public ExecutionException {
+            public:
+                MemberLeftException(const std::string &source, const std::string &message, const std::string &details,
+                                    int32_t causeCode);
+
+                MemberLeftException(const std::string &source, const std::string &message, int32_t causeCode);
+
+                MemberLeftException(const std::string &source, const std::string &message);
+
+                virtual void raise() const;
+            };
 
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:

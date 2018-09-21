@@ -56,7 +56,7 @@ namespace hazelcast {
             * @param message The message to be published
             */
             void publish(const E *message) {
-                serialization::pimpl::Data data = context->getSerializationService().toData<E>(message);
+                serialization::pimpl::Data data = getContext().getSerializationService().template toData<E>(message);
                 proxy::ReliableTopicImpl::publish(data);
             }
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                 int id = ++runnerCounter;
                 boost::shared_ptr<MessageRunner < E> >
                 runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
-                                            &context->getSerializationService(), config));
+                                            &getContext().getSerializationService(), config));
                 runnersMap.put(id, runner);
                 runner->next();
                 return util::IOUtil::to_string<int>(id);

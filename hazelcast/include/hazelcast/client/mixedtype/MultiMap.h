@@ -204,7 +204,7 @@ namespace hazelcast {
                 std::string addEntryListener(MixedEntryListener &listener, const K &key, bool includeValue) {
                     impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new impl::MixedEntryEventHandler<protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), context->getClientClusterService(), context->getSerializationService(), listener,
+                                    getName(), getContext().getClientClusterService(), getContext().getSerializationService(), listener,
                                     includeValue);
                     serialization::pimpl::Data keyData = toData(key);
                     return proxy::MultiMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);

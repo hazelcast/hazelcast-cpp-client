@@ -123,7 +123,7 @@ namespace hazelcast {
         void ILock::onInitialize() {
             ProxyImpl::onInitialize();
 
-            referenceIdGenerator = context->getLockReferenceIdGenerator();
+            referenceIdGenerator = getContext().getLockReferenceIdGenerator();
         }
     }
 }

@@ -395,6 +395,8 @@ namespace hazelcast {
 
                 const boost::shared_ptr<ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator() const;
 
+                spi::ProxyManager &getProxyManager();
+
             private:
                 boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
                                                                                    const std::string &name,

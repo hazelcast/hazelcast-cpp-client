@@ -127,6 +127,8 @@ namespace hazelcast {
 
                     virtual std::string invocationToString();
 
+                    static bool isRetrySafeException(exception::IException &exception);
+
                 private:
                     class InternalDelegatingExecutionCallback
                             : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
@@ -200,8 +202,6 @@ namespace hazelcast {
                     util::Atomic<int64_t> invokeCount;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
-
-                    bool isRetrySafeException(exception::IException &exception);
 
                     exception::OperationTimeoutException newOperationTimeoutException(exception::IException &exception);
 

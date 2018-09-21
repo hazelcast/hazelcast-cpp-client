@@ -21,7 +21,7 @@
 #include <memory>
 #include <stdint.h>
 
-#include "hazelcast/client/IDistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -64,7 +64,7 @@ namespace hazelcast {
          * @param <E>
          */
         template<typename E>
-        class Ringbuffer : public IDistributedObject {
+        class Ringbuffer : public DistributedObject {
         public:
             virtual ~Ringbuffer() {
             }

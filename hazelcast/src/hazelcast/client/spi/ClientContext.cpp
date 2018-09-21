@@ -110,6 +110,10 @@ namespace hazelcast {
                 return clientImpl.lock();
             }
 
+            spi::ProxyManager &ClientContext::getProxyManager() {
+                return hazelcastClient.getProxyManager();
+            }
+
         }
 
     }

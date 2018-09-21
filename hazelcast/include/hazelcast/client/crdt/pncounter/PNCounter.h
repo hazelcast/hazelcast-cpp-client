@@ -70,13 +70,13 @@
  *
  * @since 3.10
  */
-#include "hazelcast/client/IDistributedObject.h"
+#include "hazelcast/client/DistributedObject.h"
 
 namespace hazelcast {
     namespace client {
         namespace crdt {
             namespace pncounter {
-                class HAZELCAST_API PNCounter : public virtual IDistributedObject {
+                class HAZELCAST_API PNCounter : public virtual DistributedObject {
                 public:
                     /**
                      * Returns the current value of the counter.
