@@ -68,11 +68,11 @@ namespace hazelcast {
                 void onInitialize() {
                     ClientMapProxy<K, V>::onInitialize();
 
-                    internal::nearcache::NearCacheManager &nearCacheManager = this->context->getNearCacheManager();
+                    internal::nearcache::NearCacheManager &nearCacheManager = this->getContext().getNearCacheManager();
                     cacheLocalEntries = nearCacheConfig.isCacheLocalEntries();
-                    int partitionCount = this->context->getPartitionService().getPartitionCount();
+                    int partitionCount = this->getContext().getPartitionService().getPartitionCount();
                     nearCache = nearCacheManager.getOrCreateNearCache<K, V, serialization::pimpl::Data>(
-                            proxy::ProxyImpl::getName(), nearCacheConfig);
+                            spi::ClientProxy::getName(), nearCacheConfig);
 
                     nearCache = impl::nearcache::InvalidationAwareWrapper<
                             serialization::pimpl::Data, V>::asInvalidationAware(nearCache, partitionCount);
@@ -408,7 +408,7 @@ namespace hazelcast {
                 boost::shared_ptr<spi::impl::ListenerMessageCodec> createNearCacheEntryListenerCodec() {
                     int32_t listenerFlags = EntryEventType::INVALIDATION;
                     return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
-                            new NearCacheEntryListenerMessageCodec(DistributedObject::getName(), listenerFlags));
+                            new NearCacheEntryListenerMessageCodec(spi::ClientProxy::getName(), listenerFlags));
                 }
 
                 void resetToUnmarkedState(boost::shared_ptr<serialization::pimpl::Data> &key) {

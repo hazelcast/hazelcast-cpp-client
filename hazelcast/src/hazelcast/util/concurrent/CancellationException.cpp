@@ -20,7 +20,8 @@ namespace hazelcast {
     namespace util {
         namespace concurrent {
             CancellationException::CancellationException(const std::string &source, const std::string &message)
-                    : IllegalStateException(source, message) {}
+                    : IException("CancellationException", source, message, client::protocol::ILLEGAL_STATE),
+                      IllegalStateException(source, message) {}
 
             void CancellationException::raise() const {
                 throw *this;

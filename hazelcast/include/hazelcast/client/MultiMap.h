@@ -190,8 +190,8 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
-                spi::ClientClusterService &clusterService = context->getClientClusterService();
-                serialization::pimpl::SerializationService &ss = context->getSerializationService();
+                spi::ClientClusterService &clusterService = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService &ss = getContext().getSerializationService();
                 impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerCodec::AbstractEventHandler>(
                                 getName(), clusterService, ss, listener, includeValue);
@@ -217,7 +217,7 @@ namespace hazelcast {
             std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
                 impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::EntryEventHandler<K, V, protocol::codec::MultiMapAddEntryListenerToKeyCodec::AbstractEventHandler>(
-                                getName(), context->getClientClusterService(), context->getSerializationService(), listener,
+                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(), listener,
                                 includeValue);
                 serialization::pimpl::Data keyData = toData(key);
                 return proxy::MultiMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);

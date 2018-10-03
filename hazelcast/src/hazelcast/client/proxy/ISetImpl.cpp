@@ -42,7 +42,7 @@ namespace hazelcast {
         namespace proxy {
             ISetImpl::ISetImpl(const std::string& instanceName, spi::ClientContext *clientContext)
             : ProxyImpl("hz:impl:setService", instanceName, clientContext) {
-                serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&instanceName);
+                serialization::pimpl::Data keyData = getContext().getSerializationService().toData<std::string>(&instanceName);
                 partitionId = getPartitionId(keyData);
             }
 
@@ -51,7 +51,7 @@ namespace hazelcast {
             }
 
             bool ISetImpl::removeItemListener(const std::string& registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             int ISetImpl::size() {

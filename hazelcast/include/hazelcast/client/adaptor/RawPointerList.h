@@ -38,7 +38,7 @@ namespace hazelcast {
             class RawPointerList {
             public:
                 RawPointerList(IList<T> &listToBeAdopted): list(listToBeAdopted), serializationService(
-                        list.context->getSerializationService()) {
+                        list.getContext().getSerializationService()) {
                 }
 
                 /**

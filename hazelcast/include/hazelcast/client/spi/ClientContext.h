@@ -72,6 +72,8 @@ namespace hazelcast {
 
             class ClientClusterService;
 
+            class ProxyManager;
+
             namespace impl {
                 class ClientExecutionServiceImpl;
 
@@ -122,6 +124,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
 
+                spi::ProxyManager &getProxyManager();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

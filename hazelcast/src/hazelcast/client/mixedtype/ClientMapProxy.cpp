@@ -40,7 +40,7 @@ namespace hazelcast {
             std::string ClientMapProxy::addEntryListener(MixedEntryListener &listener, bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClientClusterService(), context->getSerializationService(),
+                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
@@ -51,7 +51,7 @@ namespace hazelcast {
                                        bool includeValue) {
                 impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::MixedEntryEventHandler<protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                getName(), context->getClientClusterService(), context->getSerializationService(),
+                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
                                 listener,
                                 includeValue);
                 return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
@@ -71,7 +71,7 @@ namespace hazelcast {
                 std::vector<TypedData> keys(size);
                 for (size_t i = 0; i < size; ++i) {
                     std::auto_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(dataResult[i]));
-                    keys[i] = TypedData(keyData, context->getSerializationService());
+                    keys[i] = TypedData(keyData, getContext().getSerializationService());
                 }
                 return keys;
             }
@@ -87,7 +87,7 @@ namespace hazelcast {
                 std::vector<TypedData> keys(size);
                 for (size_t i = 0; i < size; ++i) {
                     std::auto_ptr<serialization::pimpl::Data> keyData(new serialization::pimpl::Data(dataResult[i]));
-                    keys[i] = TypedData(keyData, context->getSerializationService());
+                    keys[i] = TypedData(keyData, getContext().getSerializationService());
                 }
                 return keys;
             }
@@ -98,7 +98,7 @@ namespace hazelcast {
                 std::vector<TypedData> values(size);
                 for (size_t i = 0; i < size; ++i) {
                     std::auto_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(dataResult[i]));
-                    values[i] = TypedData(valueData, context->getSerializationService());
+                    values[i] = TypedData(valueData, getContext().getSerializationService());
                 }
                 return values;
             }
@@ -114,7 +114,7 @@ namespace hazelcast {
                 std::vector<TypedData> values(size);
                 for (size_t i = 0; i < size; ++i) {
                     std::auto_ptr<serialization::pimpl::Data> valueData(new serialization::pimpl::Data(dataResult[i]));
-                    values[i] = TypedData(valueData, context->getSerializationService());
+                    values[i] = TypedData(valueData, getContext().getSerializationService());
                 }
                 return values;
             }
@@ -128,7 +128,7 @@ namespace hazelcast {
                             new serialization::pimpl::Data(dataResult[i].first));
                     std::auto_ptr<serialization::pimpl::Data> valueData(
                             new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
+                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                     entries[i] = std::make_pair(TypedData(keyData, serializationService), TypedData(valueData,
                                                                                                     serializationService));
                 }
@@ -146,7 +146,7 @@ namespace hazelcast {
                             new serialization::pimpl::Data(dataResult[i].first));
                     std::auto_ptr<serialization::pimpl::Data> valueData(
                             new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
+                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                     entries[i] = std::make_pair(TypedData(keyData, serializationService),
                                                 TypedData(valueData, serializationService));
                 }
@@ -163,7 +163,7 @@ namespace hazelcast {
                             new serialization::pimpl::Data(dataResult[i].first));
                     std::auto_ptr<serialization::pimpl::Data> valueData(
                             new serialization::pimpl::Data(dataResult[i].second));
-                    serialization::pimpl::SerializationService &serializationService = context->getSerializationService();
+                    serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                     entries[i] = std::make_pair(TypedData(keyData, serializationService),
                                                 TypedData(valueData, serializationService));
                 }
@@ -186,8 +186,8 @@ namespace hazelcast {
                 proxy::IMapImpl::clear();
             }
 
-            serialization::pimpl::SerializationService &ClientMapProxy::getSerializationService() const {
-                return context->getSerializationService();
+            serialization::pimpl::SerializationService &ClientMapProxy::getSerializationService() {
+                return getContext().getSerializationService();
             }
 
             monitor::LocalMapStats &ClientMapProxy::getLocalMapStats() {
@@ -196,7 +196,7 @@ namespace hazelcast {
 
             boost::shared_ptr<TypedData> ClientMapProxy::getInternal(serialization::pimpl::Data &keyData) {
                 std::auto_ptr<serialization::pimpl::Data> valueData = proxy::IMapImpl::getData(keyData);
-                return boost::shared_ptr<TypedData>(new TypedData(valueData, context->getSerializationService()));
+                return boost::shared_ptr<TypedData>(new TypedData(valueData, getContext().getSerializationService()));
             }
 
             bool ClientMapProxy::containsKeyInternal(const serialization::pimpl::Data &keyData) {

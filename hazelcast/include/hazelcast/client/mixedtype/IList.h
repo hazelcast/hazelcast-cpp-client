@@ -204,7 +204,7 @@ namespace hazelcast {
                 */
                 template <typename E>
                 TypedData set(int index, const E &element) {
-                    return TypedData(proxy::IListImpl::setData(index, toData(element)), context->getSerializationService());
+                    return TypedData(proxy::IListImpl::setData(index, toData(element)), getContext().getSerializationService());
                 }
 
                 /**

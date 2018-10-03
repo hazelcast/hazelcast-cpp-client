@@ -47,7 +47,7 @@ namespace hazelcast {
             }
 
             bool ITopicImpl::removeMessageListener(const std::string &registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             boost::shared_ptr<spi::impl::ListenerMessageCodec> ITopicImpl::createItemListenerCodec() {

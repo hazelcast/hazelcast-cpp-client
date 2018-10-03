@@ -86,12 +86,17 @@ namespace hazelcast {
 
                 std::vector<boost::shared_ptr<connection::AddressProvider> > addressProviders = createAddressProviders();
 
+
                 connectionManager = initConnectionManagerService(addressProviders);
+
+
 
                 partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext));
 
                 invocationService = initInvocationService();
                 listenerService = initListenerService();
+
+                proxyManager.init();
 
                 lockReferenceIdGenerator.reset(new impl::ClientLockReferenceIdGenerator());
 
@@ -313,6 +318,10 @@ namespace hazelcast {
                         getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
 
                 return boost::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
+            }
+
+            spi::ProxyManager &HazelcastClientInstanceImpl::getProxyManager() {
+                return proxyManager;
             }
         }
     }

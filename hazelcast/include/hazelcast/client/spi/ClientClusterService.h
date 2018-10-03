@@ -89,6 +89,13 @@ namespace hazelcast {
                  * @return true if successfully removed, false otherwise.
                  */
                 virtual bool removeMembershipListener(const std::string &registrationId) = 0;
+
+                /**
+                 * Gets the current number of members.
+                 *
+                 * @return The current number of members.
+                 */
+                virtual int getSize() = 0;
             };
         }
     }

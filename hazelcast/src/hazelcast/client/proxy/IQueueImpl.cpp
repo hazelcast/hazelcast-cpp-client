@@ -47,7 +47,7 @@ namespace hazelcast {
         namespace proxy {
             IQueueImpl::IQueueImpl(const std::string &instanceName, spi::ClientContext *context)
                     : ProxyImpl("hz:impl:queueService", instanceName, context) {
-                serialization::pimpl::Data data = context->getSerializationService().toData<std::string>(&instanceName);
+                serialization::pimpl::Data data = getContext().getSerializationService().toData<std::string>(&instanceName);
                 partitionId = getPartitionId(data);
             }
 
@@ -56,7 +56,7 @@ namespace hazelcast {
             }
 
             bool IQueueImpl::removeItemListener(const std::string &registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             bool IQueueImpl::offer(const serialization::pimpl::Data &element, long timeoutInMillis) {

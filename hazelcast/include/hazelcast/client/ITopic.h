@@ -79,8 +79,8 @@ namespace hazelcast {
             template<typename L>
             std::string addMessageListener(L& listener) {
                 impl::BaseEventHandler *topicEventHandler = new topic::impl::TopicEventHandlerImpl<E>(getName(),
-                                                                                                      context->getClientClusterService(),
-                                                                                                      context->getSerializationService(),
+                                                                                                      getContext().getClientClusterService(),
+                                                                                                      getContext().getSerializationService(),
                                                                                                       listener);
                 return proxy::ITopicImpl::addMessageListener(topicEventHandler);
             }

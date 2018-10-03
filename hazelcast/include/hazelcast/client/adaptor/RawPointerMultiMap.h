@@ -31,7 +31,7 @@ namespace hazelcast {
             template<typename K, typename V>
             class RawPointerMultiMap {
             public:
-                RawPointerMultiMap(MultiMap<K, V> &m) :map(m), serializationService(m.context->getSerializationService()) {
+                RawPointerMultiMap(MultiMap<K, V> &m) :map(m), serializationService(m.getContext().getSerializationService()) {
                 }
 
                 /**

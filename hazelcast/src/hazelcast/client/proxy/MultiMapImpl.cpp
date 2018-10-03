@@ -53,7 +53,7 @@ namespace hazelcast {
             MultiMapImpl::MultiMapImpl(const std::string &instanceName, spi::ClientContext *context)
                     : ProxyImpl("hz:impl:multiMapService", instanceName, context) {
                 // TODO: remove this line once the client instance getDistributedObject works as expected in Java for this proxy type
-                lockReferenceIdGenerator = context->getLockReferenceIdGenerator();
+                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
             }
 
             bool MultiMapImpl::put(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
@@ -176,7 +176,7 @@ namespace hazelcast {
             }
 
             bool MultiMapImpl::removeEntryListener(const std::string &registrationId) {
-                return context->getClientListenerService().deregisterListener(registrationId);
+                return getContext().getClientListenerService().deregisterListener(registrationId);
             }
 
             void MultiMapImpl::lock(const serialization::pimpl::Data &key) {
@@ -259,7 +259,7 @@ namespace hazelcast {
             void MultiMapImpl::onInitialize() {
                 ProxyImpl::onInitialize();
 
-                lockReferenceIdGenerator = context->getLockReferenceIdGenerator();
+                lockReferenceIdGenerator = getContext().getLockReferenceIdGenerator();
             }
 
             MultiMapImpl::MultiMapEntryListenerMessageCodec::MultiMapEntryListenerMessageCodec(const std::string &name,

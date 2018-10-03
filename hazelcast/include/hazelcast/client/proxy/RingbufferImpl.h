@@ -118,7 +118,7 @@ namespace hazelcast {
                     protocol::codec::RingbufferReadManyCodec::ResponseParameters responseParameters =
                             protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(*responseMsg);
                     return std::auto_ptr<DataArray<E> >(new impl::DataArrayImpl<E>(responseParameters.items,
-                                                                            context->getSerializationService()));
+                                                                            getContext().getSerializationService()));
                 }
 
                 const std::string& getServiceName() const {

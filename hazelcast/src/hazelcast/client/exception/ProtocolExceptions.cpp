@@ -51,44 +51,63 @@ namespace hazelcast {
                 throw *this;
             }
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message,
-                                                               const std::string &details, int32_t causeCode)
-                    : HazelcastException(source, message, details, causeCode) {
-                errorCode = protocol::RETRYABLE_HAZELCAST;
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
+                                                                     const std::string &message,
+                                                                     const std::string &details, int32_t causeCode)
+                    : IException("RetryableHazelcastException", source, message, details, protocol::RETRYABLE_HAZELCAST,
+                                 causeCode), HazelcastException(source, message, details, causeCode) {
             }
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message)
-                    : HazelcastException(source, message) {
-                errorCode = protocol::RETRYABLE_HAZELCAST;
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
+                                                                     const std::string &message)
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST),
+                      HazelcastException(source, message) {
             }
 
-            RetryableHazelcastException::RetryableHazelcastException(const std::string &source, const std::string &message,
-                                                               int32_t causeCode) : HazelcastException(source, message,
-                                                                                                       causeCode) {}
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
+                                                                     const std::string &message,
+                                                                     int32_t causeCode) : IException(
+                    "RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, causeCode),
+                                                                                          HazelcastException(source,
+                                                                                                             message,
+                                                                                                             causeCode) {}
 
-            void RetryableHazelcastException::raise() const {
+            RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
+                                                                     const std::string &message,
+                                                                     const boost::shared_ptr<IException> &cause)
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause),
+                      HazelcastException(source, message, cause) {}
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
+                                                     const std::string &details, int32_t causeCode)
+                    : IException("MemberLeftException", source, message, details, protocol::MEMBER_LEFT, causeCode),
+                      ExecutionException(source, message, details, causeCode),
+                      RetryableHazelcastException(source, message, details, causeCode) {
+            }
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
+                                                     int32_t causeCode) : IException("MemberLeftException", source,
+                                                                                     message, protocol::MEMBER_LEFT,
+                                                                                     causeCode),
+                                                                          ExecutionException(source, message,
+                                                                                             causeCode),
+                                                                          RetryableHazelcastException(source, message,
+                                                                                                      causeCode) {
+            }
+
+            MemberLeftException::MemberLeftException(const std::string &source, const std::string &message)
+                    : IException("MemberLeftException", source, message, protocol::MEMBER_LEFT),
+                      ExecutionException(source, message), RetryableHazelcastException(source, message) {
+            }
+
+            void MemberLeftException::raise() const {
                 throw *this;
             }
 
-            TargetNotMemberException::TargetNotMemberException(const std::string &source, const std::string &message,
-                                                               const std::string &details, int32_t causeCode)
-                    : RetryableHazelcastException(source, message, details, causeCode) {
-                errorCode = protocol::TARGET_NOT_MEMBER;
+            std::auto_ptr<IException> MemberLeftException::clone() const {
+                return std::auto_ptr<IException>(new MemberLeftException(*this));
             }
 
-            TargetNotMemberException::TargetNotMemberException(const std::string &source, const std::string &message)
-                    : RetryableHazelcastException(source, message) {
-                errorCode = protocol::TARGET_NOT_MEMBER;
-            }
-
-            TargetNotMemberException::TargetNotMemberException(const std::string &source, const std::string &message,
-                                                               int32_t causeCode) : RetryableHazelcastException(source,
-                                                                                                                message,
-                                                                                                                causeCode) {}
-
-            void TargetNotMemberException::raise() const {
-                throw *this;
-            }
         }
     }
 }

@@ -176,6 +176,10 @@ namespace hazelcast {
 
                     return result;
                 }
+
+                int ClientClusterServiceImpl::getSize() {
+                    return (int) getMemberList().size();
+                }
             }
         }
     }

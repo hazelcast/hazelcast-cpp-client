@@ -22,8 +22,8 @@ namespace hazelcast {
         namespace mixedtype {
             std::string ITopic::addMessageListener(topic::MessageListener &listener) {
                 client::impl::BaseEventHandler *topicEventHandler = new mixedtype::topic::impl::TopicEventHandlerImpl(
-                        getName(), context->getClientClusterService(),
-                        context->getSerializationService(),
+                        getName(), getContext().getClientClusterService(),
+                        getContext().getSerializationService(),
                         listener);
                 return proxy::ITopicImpl::addMessageListener(topicEventHandler);
             }

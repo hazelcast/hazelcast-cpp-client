@@ -83,7 +83,7 @@ namespace hazelcast {
                         std::auto_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
                         msg, partitionId);
 
-                return TypedData(itemData, context->getSerializationService());
+                return TypedData(itemData, getContext().getSerializationService());
             }
         }
     }

@@ -33,7 +33,7 @@ namespace hazelcast {
     namespace client {
         namespace exception {
 #define DEFINE_EXCEPTION_CLASS(ClassName, errorNo) \
-            class HAZELCAST_API ClassName : public IException {\
+            class HAZELCAST_API ClassName : public virtual IException {\
             public:\
                 static const int32_t ERROR_CODE = errorNo;\
                 ClassName(const std::string& source, const std::string& message, const std::string& details, \
@@ -63,7 +63,6 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(ArrayStoreException, protocol::ARRAY_STORE);
             DEFINE_EXCEPTION_CLASS(AuthenticationException, protocol::AUTHENTICATIONERROR);
             DEFINE_EXCEPTION_CLASS(CacheNotExistsException, protocol::CACHE_NOT_EXISTS);
-            DEFINE_EXCEPTION_CLASS(CallerNotMemberException, protocol::CALLER_NOT_MEMBER);
             DEFINE_EXCEPTION_CLASS(CancellationException, protocol::CANCELLATION);
             DEFINE_EXCEPTION_CLASS(ClassCastException, protocol::CLASS_CAST);
             DEFINE_EXCEPTION_CLASS(ClassNotFoundException, protocol::CLASS_NOT_FOUND);
@@ -89,13 +88,11 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(InterruptedException, protocol::INTERRUPTED);
             DEFINE_EXCEPTION_CLASS(InvalidAddressException, protocol::INVALID_ADDRESS);
             DEFINE_EXCEPTION_CLASS(InvalidConfigurationException, protocol::INVALID_CONFIGURATION);
-            DEFINE_EXCEPTION_CLASS(MemberLeftException, protocol::MEMBER_LEFT);
             DEFINE_EXCEPTION_CLASS(NegativeArraySizeException, protocol::NEGATIVE_ARRAY_SIZE);
             DEFINE_EXCEPTION_CLASS(NoSuchElementException, protocol::NO_SUCH_ELEMENT);
             DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE);
             DEFINE_EXCEPTION_CLASS(NullPointerException, protocol::NULL_POINTER);
             DEFINE_EXCEPTION_CLASS(OperationTimeoutException, protocol::OPERATION_TIMEOUT);
-            DEFINE_EXCEPTION_CLASS(PartitionMigratingException, protocol::PARTITION_MIGRATING);
             DEFINE_EXCEPTION_CLASS(QueryException, protocol::QUERY);
             DEFINE_EXCEPTION_CLASS(QueryResultSizeExceededException, protocol::QUERY_RESULT_SIZE_EXCEEDED);
             DEFINE_EXCEPTION_CLASS(QuorumException, protocol::QUORUM);
@@ -103,7 +100,6 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(RejectedExecutionException, protocol::REJECTED_EXECUTION);
             DEFINE_EXCEPTION_CLASS(RemoteMapReduceException, protocol::REMOTE_MAP_REDUCE);
             DEFINE_EXCEPTION_CLASS(ResponseAlreadySentException, protocol::RESPONSE_ALREADY_SENT);
-            DEFINE_EXCEPTION_CLASS(RetryableIOException, protocol::RETRYABLE_IO);
             DEFINE_EXCEPTION_CLASS(RuntimeException, protocol::RUNTIME);
             DEFINE_EXCEPTION_CLASS(SecurityException, protocol::SECURITY);
             DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCKET);
@@ -114,14 +110,12 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(TargetDisconnectedException, protocol::TARGET_DISCONNECTED);
             DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT);
             DEFINE_EXCEPTION_CLASS(TopicOverloadException, protocol::TOPIC_OVERLOAD);
-            DEFINE_EXCEPTION_CLASS(TopologyChangedException, protocol::TOPOLOGY_CHANGED);
             DEFINE_EXCEPTION_CLASS(TransactionException, protocol::TRANSACTION);
             DEFINE_EXCEPTION_CLASS(TransactionNotActiveException, protocol::TRANSACTION_NOT_ACTIVE);
             DEFINE_EXCEPTION_CLASS(TransactionTimedOutException, protocol::TRANSACTION_TIMED_OUT);
             DEFINE_EXCEPTION_CLASS(URISyntaxException, protocol::URI_SYNTAX);
             DEFINE_EXCEPTION_CLASS(UTFDataFormatException, protocol::UTF_DATA_FORMAT);
             DEFINE_EXCEPTION_CLASS(UnsupportedOperationException, protocol::UNSUPPORTED_OPERATION);
-            DEFINE_EXCEPTION_CLASS(WrongTargetException, protocol::WRONG_TARGET);
             DEFINE_EXCEPTION_CLASS(XAException, protocol::XA);
             DEFINE_EXCEPTION_CLASS(AccessControlException, protocol::ACCESS_CONTROL);
             DEFINE_EXCEPTION_CLASS(LoginException, protocol::LOGIN);
@@ -155,19 +149,54 @@ namespace hazelcast {
 
                 RetryableHazelcastException(const std::string &source, const std::string &message);
 
-                virtual void raise() const;
+                RetryableHazelcastException(const std::string &source, const std::string &message,
+                                            const boost::shared_ptr<IException> &cause);
             };
 
-            class HAZELCAST_API TargetNotMemberException : public RetryableHazelcastException {
+#define DEFINE_RETRYABLE_EXCEPTION_CLASS(ClassName, errorNo) \
+            class HAZELCAST_API ClassName : public RetryableHazelcastException {\
+            public:\
+                static const int32_t ERROR_CODE = errorNo;\
+                ClassName(const std::string& source, const std::string& message, const std::string& details, \
+                        int32_t causeCode) \
+                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode), RetryableHazelcastException(source, message, details, causeCode) {\
+                }\
+                ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
+                    : IException(#ClassName, source, message, ERROR_CODE, causeCode), RetryableHazelcastException(source, message, causeCode) {\
+                }\
+                ClassName(const std::string& source, const std::string& message) \
+                    : IException(#ClassName, source, message, ERROR_CODE), RetryableHazelcastException(source, message) {\
+                }\
+                ClassName(const std::string &source, const std::string &message, \
+                            const boost::shared_ptr<IException> &cause) \
+                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause->clone())), RetryableHazelcastException(source, message, cause) {}\
+                virtual std::auto_ptr<IException> clone() const {\
+                    return std::auto_ptr<IException>(new ClassName(*this));\
+                } \
+                virtual void raise() const { throw *this; } \
+            };\
+
+            /** List of Retryable exceptions **/
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(CallerNotMemberException, protocol::CALLER_NOT_MEMBER);
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(TopologyChangedException, protocol::TOPOLOGY_CHANGED);
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(PartitionMigratingException, protocol::PARTITION_MIGRATING);
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(RetryableIOException, protocol::RETRYABLE_IO);
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(TargetNotMemberException, protocol::TARGET_NOT_MEMBER);
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(WrongTargetException, protocol::WRONG_TARGET);
+
+            class MemberLeftException : public ExecutionException, public RetryableHazelcastException {
             public:
-                TargetNotMemberException(const std::string &source, const std::string &message,
-                                         const std::string &details, int32_t causeCode);
+                MemberLeftException(const std::string &source, const std::string &message, const std::string &details,
+                                    int32_t causeCode);
 
-                TargetNotMemberException(const std::string &source, const std::string &message, int32_t causeCode);
+                MemberLeftException(const std::string &source, const std::string &message, int32_t causeCode);
 
-                TargetNotMemberException(const std::string &source, const std::string &message);
+                MemberLeftException(const std::string &source, const std::string &message);
 
                 virtual void raise() const;
+
+                virtual std::auto_ptr<IException> clone() const;
+
             };
 
             class HAZELCAST_API UndefinedErrorCodeException : public IException {

@@ -51,7 +51,7 @@ namespace hazelcast {
             std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
                 impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::SetAddListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClientClusterService(), context->getSerializationService(), listener,
+                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(), listener,
                                 includeValue);
                 return proxy::ISetImpl::addItemListener(itemEventHandler, includeValue);
             }

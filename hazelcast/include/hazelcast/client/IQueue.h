@@ -56,8 +56,8 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                spi::ClientClusterService &cs = context->getClientClusterService();
-                serialization::pimpl::SerializationService& ss = context->getSerializationService();
+                spi::ClientClusterService &cs = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService& ss = getContext().getSerializationService();
                 impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(getName(), cs, ss, listener, includeValue);
                 return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
@@ -161,7 +161,7 @@ namespace hazelcast {
             size_t drainTo(std::vector<E>& elements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData();
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    std::auto_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
+                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
@@ -177,7 +177,7 @@ namespace hazelcast {
             size_t drainTo(std::vector<E>& elements, size_t maxElements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    std::auto_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
+                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();

@@ -50,9 +50,9 @@ namespace hazelcast {
             void NearCachedClientMapProxy::onInitialize() {
                 ClientMapProxy::onInitialize();
 
-                internal::nearcache::NearCacheManager &nearCacheManager = context->getNearCacheManager();
+                internal::nearcache::NearCacheManager &nearCacheManager = getContext().getNearCacheManager();
                 cacheLocalEntries = nearCacheConfig.isCacheLocalEntries();
-                int partitionCount = context->getPartitionService().getPartitionCount();
+                int partitionCount = getContext().getPartitionService().getPartitionCount();
                 nearCache = nearCacheManager.getOrCreateNearCache<TypedData, TypedData, serialization::pimpl::Data>(
                         proxy::ProxyImpl::getName(), nearCacheConfig);
 
