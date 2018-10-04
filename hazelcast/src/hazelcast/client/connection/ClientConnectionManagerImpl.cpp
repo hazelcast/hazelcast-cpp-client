@@ -607,6 +607,7 @@ namespace hazelcast {
             }
 
             ClientConnectionManagerImpl::~ClientConnectionManagerImpl() {
+                shutdown();
             }
 
             ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,

@@ -74,13 +74,19 @@ namespace hazelcast {
                 } catch (...) {
                     logger.warning() << "Thread " << target->getName()
                                      << " is cancelled with an unexpected exception";
+
                     info->finishWaitLatch->countDown();
+
+                    delete info;
+
                     throw;
                 }
 
                 logger.finest() << "Thread " << target->getName() << " is finished.";
 
                 info->finishWaitLatch->countDown();
+
+                delete info;
 
                 return NULL;
             }
