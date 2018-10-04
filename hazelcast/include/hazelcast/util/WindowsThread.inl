@@ -72,12 +72,16 @@ namespace hazelcast {
 
                     info->finishWaitLatch->countDown();
 
+                    delete info;
+
                     return 1L;
                 }
 
                 logger.finest() << "Thread " << target->getName() << " is finished.";
 
                 info->finishWaitLatch->countDown();
+
+                delete info;
 
                 return 0;
             }
