@@ -323,34 +323,18 @@ namespace hazelcast {
                     }
 
                     void entryAdded(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryAdded] " << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         addLatch.countDown();
                     }
 
                     void entryRemoved(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryRemoved] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         removeLatch.countDown();
                     }
 
                     void entryUpdated(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryUpdated] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         updateLatch.countDown();
                     }
 
                     void entryEvicted(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryEvicted] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         evictLatch.countDown();
                     }
 

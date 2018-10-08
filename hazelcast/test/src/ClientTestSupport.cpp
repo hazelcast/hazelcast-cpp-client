@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/util/IOUtil.h"
+
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
-    namespace util {
-        void IOUtil::closeResource(Closeable *closable, const char *closeReason) {
-            if (closable != NULL) {
-                try {
-                    closable->close(closeReason);
-                } catch (client::exception::IException &) {
-                    // suppress
-                }
+    namespace client {
+        namespace test {
+            ClientTestSupport::ClientTestSupport() {
+                const char *testName = testing::UnitTest::GetInstance()->current_test_info()->name();
+                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
+            }
 
+            util::ILogger &ClientTestSupport::getLogger() {
+                return *logger;
             }
         }
     }
 }
-

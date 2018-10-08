@@ -103,7 +103,8 @@ namespace hazelcast {
                     std::vector<boost::shared_ptr<util::Thread> > allThreads;
                     for (int i = 0; i < n; i++) {
                         boost::shared_ptr<util::Thread> t(
-                                new util::Thread(boost::shared_ptr<util::Runnable>(new GetRemoveTestTask(mm, latch))));
+                                new util::Thread(boost::shared_ptr<util::Runnable>(new GetRemoveTestTask(mm, latch)),
+                                        getLogger()));
                         t->start();
                         allThreads.push_back(t);
                     }

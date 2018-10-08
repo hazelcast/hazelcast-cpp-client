@@ -27,6 +27,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -34,13 +37,14 @@ namespace hazelcast {
         namespace aws {
             class HAZELCAST_API AWSClient {
             public:
-                AWSClient(config::ClientAwsConfig &awsConfig);
+                AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
 
                 std::map<std::string, std::string> getAddresses();
 
             private:
                 config::ClientAwsConfig &awsConfig;
                 std::string endpoint;
+                util::ILogger &logger;
             };
         }
     }

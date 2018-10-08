@@ -25,6 +25,9 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
 
         class Cluster;
@@ -125,6 +128,8 @@ namespace hazelcast {
                 boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
 
                 spi::ProxyManager &getProxyManager();
+
+                util::ILogger &getLogger();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };

@@ -111,7 +111,6 @@ namespace hazelcast {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
-                util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
             }
 
             TEST_F(ClientQueueTest, testOfferPoll) {

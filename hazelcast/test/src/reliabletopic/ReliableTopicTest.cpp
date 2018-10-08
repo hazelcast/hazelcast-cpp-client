@@ -65,16 +65,6 @@ namespace hazelcast {
                     virtual void onMessage(std::auto_ptr<topic::Message<T> > message) {
                         ++numberOfMessagesReceived;
 
-                        const T *object = message->getMessageObject();
-                        std::ostringstream out;
-                        if (NULL != object) {
-                            out << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
-                            " for topic:" << message->getName();
-                        } else {
-                            out << "[GenericListener::onMessage] Received message with NULL object for topic:" << message->getName();
-                        }
-                        util::ILogger::getLogger().info(out.str());
-
                         messages.offer(message.release());
 
                         latch.countDown();

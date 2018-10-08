@@ -30,6 +30,8 @@
 
 namespace hazelcast {
     namespace util {
+        class ILogger;
+
         /**
          * Holds address
          */
@@ -57,13 +59,13 @@ namespace hazelcast {
          */
         class HAZELCAST_API AddressHelper {
         public:
-            static std::vector<client::Address> getSocketAddresses(const std::string &address);
+            static std::vector<client::Address> getSocketAddresses(const std::string &address, ILogger &logger);
         private:
             static const int MAX_PORT_TRIES;
             static const int INITIAL_FIRST_PORT;
 
             static std::vector<client::Address>
-            getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount);
+            getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, ILogger &logger);
         };
     }
 }

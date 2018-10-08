@@ -36,7 +36,7 @@ namespace hazelcast {
                                                        spi::ClientContext *context)
                     : ProxyImpl(serviceName, objectName, context), maxConfiguredReplicaCount(0),
                       observedClock(boost::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
-                      logger(util::ILogger::getLogger()) {
+                      logger(context->getLogger()) {
             }
 
             std::ostream &operator<<(std::ostream &os, const ClientPNCounterProxy &proxy) {

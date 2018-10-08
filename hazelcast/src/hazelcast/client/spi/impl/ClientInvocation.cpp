@@ -32,7 +32,8 @@ namespace hazelcast {
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
                                                    int partitionId) :
-                        logger(util::ILogger::getLogger()),
+                        ClientInvocationFuture(clientContext.getLogger()),
+                        logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
@@ -50,7 +51,8 @@ namespace hazelcast {
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
                                                    const boost::shared_ptr<connection::Connection> &connection) :
-                        logger(util::ILogger::getLogger()),
+                        ClientInvocationFuture(clientContext.getLogger()),
+                        logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
@@ -68,7 +70,8 @@ namespace hazelcast {
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName) :
-                        logger(util::ILogger::getLogger()),
+                        ClientInvocationFuture(clientContext.getLogger()),
+                        logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
@@ -85,7 +88,8 @@ namespace hazelcast {
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
                                                    std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName, const Address &address) :
-                        logger(util::ILogger::getLogger()),
+                        ClientInvocationFuture(clientContext.getLogger()),
+                        logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),

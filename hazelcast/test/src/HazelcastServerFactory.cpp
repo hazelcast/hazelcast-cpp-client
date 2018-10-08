@@ -85,7 +85,8 @@ namespace hazelcast {
             }
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
-                    : logger(util::ILogger::getLogger()) {
+                    : logger(new util::ILogger("HazelcastServerFactory", "HazelcastServerFactory", "testversion",
+                            config::LoggerConfig())) {
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 
                 PyObject *clusterObject = PyObject_CallMethod(rcObject, const_cast<char *>("createCluster"),
@@ -115,7 +116,7 @@ namespace hazelcast {
                 if (resultObj == NULL || resultObj == Py_False) {
                     std::ostringstream out;
                     out << "Failed to shutdown the cluster with id " << clusterId;
-                    logger.severe(out.str());
+                    logger->severe(out.str());
                 }
 
                 Py_XDECREF(resultObj);
@@ -175,7 +176,7 @@ namespace hazelcast {
 
                     std::ostringstream out;
                     out << "Failed to execute script " << script.str() << " on member " << memberStartOrder;
-                    logger.severe(out.str());
+                    logger->severe(out.str());
                 }
 
                 Py_DECREF(responseObj);
@@ -193,7 +194,7 @@ namespace hazelcast {
                     Py_XDECREF(resultObj);
                     std::ostringstream out;
                     out << "Failed to shutdown the member " << member;
-                    logger.severe(out.str());
+                    logger->severe(out.str());
                     return false;
                 }
 
@@ -210,7 +211,7 @@ namespace hazelcast {
                     Py_XDECREF(resultObj);
                     std::ostringstream out;
                     out << "Failed to terminate the member " << member;
-                    logger.severe(out.str());
+                    logger->severe(out.str());
                     return false;
                 }
 

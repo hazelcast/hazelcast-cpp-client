@@ -114,7 +114,7 @@ namespace hazelcast {
                 for (int i = 0; i < 4; ++i) {
                     ids[i] = boost::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
                     boost::shared_ptr<util::Thread> t(new util::Thread(boost::shared_ptr<util::Runnable>(
-                            new SmokeRunner(flakeIdGenerator, startLatch, ids[i]))));
+                            new SmokeRunner(flakeIdGenerator, startLatch, ids[i])), getLogger()));
                     t->start();
                     threads[i] = t;
                 }

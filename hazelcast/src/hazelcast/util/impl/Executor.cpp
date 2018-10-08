@@ -111,8 +111,8 @@ namespace hazelcast {
                                                                         "Executor is terminated!");
                 }
 
-                boost::shared_ptr<DelayedRunner> delayedRunner(new DelayedRunner(command, initialDelayInMillis));
-                boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner));
+                boost::shared_ptr<DelayedRunner> delayedRunner(new DelayedRunner(command, initialDelayInMillis, logger));
+                boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner, logger));
                 delayedRunner->setStartTimeMillis(thread.get());
                 thread->start();
                 delayedRunners.offer(thread);
@@ -131,8 +131,8 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<RepeatingRunner> repeatingRunner(
-                        new RepeatingRunner(command, initialDelayInMillis, periodInMillis));
-                boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner));
+                        new RepeatingRunner(command, initialDelayInMillis, periodInMillis, logger));
+                boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner, logger));
                 repeatingRunner->setStartTimeMillis(thread.get());
                 thread->start();
                 delayedRunners.offer(thread);
@@ -184,15 +184,14 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity)
-                    :
-                    executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
+                    : executorService(executorService), name(generateThreadName(executorService.threadNamePrefix)),
                     workQueue((size_t) maximumQueueCapacity),
-                    thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
+                    thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), executorService.logger) {
             }
 
             SimpleExecutorService::RepeatingRunner::RepeatingRunner(
                     const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                    int64_t periodInMillis) : DelayedRunner(command, initialDelayInMillis, periodInMillis) {
+                    int64_t periodInMillis, util::ILogger &logger) : DelayedRunner(command, initialDelayInMillis, periodInMillis, logger) {
             }
 
             const std::string SimpleExecutorService::RepeatingRunner::getName() const {
@@ -200,19 +199,17 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(
-                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) : command(
-                    command), initialDelayInMillis(initialDelayInMillis), periodInMillis(-1), live(true),
-                                                                                                      startTimeMillis(
-                                                                                                              0),
-                                                                                                      runnerThread(
-                                                                                                              NULL) {
+                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                    util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
+                                             periodInMillis(-1), live(true), startTimeMillis(0), runnerThread(NULL),
+                                             logger(logger) {
             }
 
             SimpleExecutorService::DelayedRunner::DelayedRunner(
                     const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                    int64_t periodInMillis) : command(command), initialDelayInMillis(initialDelayInMillis),
+                    int64_t periodInMillis, util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
                                               periodInMillis(periodInMillis), live(true), startTimeMillis(0),
-                                              runnerThread(NULL) {}
+                                              runnerThread(NULL), logger(logger) {}
 
             void SimpleExecutorService::DelayedRunner::shutdown() {
                 live = false;
@@ -233,11 +230,10 @@ namespace hazelcast {
                     try {
                         command->run();
                     } catch (client::exception::IException &e) {
-                        ILogger &iLogger = util::ILogger::getLogger();
                         if (isNotRepeating) {
-                            iLogger.warning() << "Runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning() << "Runnable " << getName() << " run method caused exception:" << e;
                         } else {
-                            iLogger.warning() << "Repeated runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning() << "Repeated runnable " << getName() << " run method caused exception:" << e;
                         }
                     }
 
@@ -260,9 +256,9 @@ namespace hazelcast {
 
         }
 
-        boost::shared_ptr<ExecutorService> Executors::newSingleThreadExecutor(const std::string &name) {
-            return boost::shared_ptr<ExecutorService>(
-                    new impl::SimpleExecutorService(util::ILogger::getLogger(), name, 1));
+        boost::shared_ptr<ExecutorService> Executors::newSingleThreadExecutor(const std::string &name,
+                util::ILogger &logger) {
+            return boost::shared_ptr<ExecutorService>(new impl::SimpleExecutorService(logger, name, 1));
         }
 
     }

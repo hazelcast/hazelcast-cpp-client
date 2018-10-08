@@ -81,7 +81,7 @@ namespace hazelcast {
                 int id = ++runnerCounter;
                 boost::shared_ptr<MessageRunner < E> >
                 runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
-                                            &getContext().getSerializationService(), config));
+                                            &getContext().getSerializationService(), config, logger));
                 runnersMap.put(id, runner);
                 runner->next();
                 return util::IOUtil::to_string<int>(id);
@@ -131,8 +131,8 @@ namespace hazelcast {
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,
                               const std::string &topicName, serialization::pimpl::SerializationService *service,
-                              const config::ReliableTopicConfig *reliableTopicConfig)
-                        : cancelled(false), logger(util::ILogger::getLogger()), name(topicName), executor(*rb),
+                              const config::ReliableTopicConfig *reliableTopicConfig, util::ILogger &logger)
+                        : cancelled(false), logger(logger), name(topicName), executor(*rb, logger),
                           serializationService(service), config(reliableTopicConfig) {
                     this->id = id;
                     this->listener = listener;

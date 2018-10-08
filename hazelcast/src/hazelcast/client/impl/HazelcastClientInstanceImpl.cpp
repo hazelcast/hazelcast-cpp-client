@@ -47,6 +47,8 @@
 #pragma warning(disable: 4355) //for strerror	
 #endif
 
+_INITIALIZE_EASYLOGGINGPP
+
 namespace hazelcast {
     namespace client {
         namespace impl {
@@ -54,8 +56,7 @@ namespace hazelcast {
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(ClientConfig &config)
                     : clientConfig(config), clientProperties(clientConfig), shutdownLatch(1), clientContext(*this),
-                      serializationService(clientConfig.getSerializationConfig()),
-                      nearCacheManager(serializationService), clusterService(clientContext),
+                      serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()),
                       cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
@@ -70,10 +71,9 @@ namespace hazelcast {
                     instanceName = out.str();
                 }
 
-                std::stringstream prefix;
-                prefix << instanceName << "[" << clientConfig.getGroupConfig().getName() << "] [" << HAZELCAST_VERSION
-                       << "]";
-                util::ILogger::getLogger().setPrefix(prefix.str());
+                initLogger();
+
+                initalizeNearCacheManager();
 
                 executionService = initExecutionService();
 
@@ -113,6 +113,11 @@ namespace hazelcast {
                     throw;
                 }
                 mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
+            }
+
+            void HazelcastClientInstanceImpl::initLogger() {
+                logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
+                        clientConfig.getLoggerConfig()));
             }
 
             HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
@@ -194,7 +199,7 @@ namespace hazelcast {
             }
 
             internal::nearcache::NearCacheManager &HazelcastClientInstanceImpl::getNearCacheManager() {
-                return nearCacheManager;
+                return *nearCacheManager;
             }
 
             serialization::pimpl::SerializationService &HazelcastClientInstanceImpl::getSerializationService() {
@@ -244,7 +249,7 @@ namespace hazelcast {
             std::auto_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
                 return std::auto_ptr<spi::impl::ClientExecutionServiceImpl>(
                         new spi::impl::ClientExecutionServiceImpl(instanceName, clientProperties,
-                                                                  clientConfig.getExecutorPoolSize()));
+                                                                  clientConfig.getExecutorPoolSize(), *logger));
             }
 
             std::auto_ptr<connection::ClientConnectionManagerImpl>
@@ -254,9 +259,9 @@ namespace hazelcast {
                 boost::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.isEnabled()) {
                     try {
-                        addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig));
+                        addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig, *logger));
                     } catch (exception::InvalidConfigurationException &e) {
-                        util::ILogger::getLogger().warning(std::string("Invalid aws configuration! ") + e.what());
+                        logger->warning(std::string("Invalid aws configuration! ") + e.what());
                         throw;
                     }
                 } else {
@@ -289,7 +294,7 @@ namespace hazelcast {
                                                                                        << " is not a valid port number. It should be between 0-65535 inclusive.").build();
                     }
                     addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(
-                            new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, util::ILogger::getLogger())));
+                            new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, *logger)));
                 }
 
                 addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(
@@ -322,6 +327,10 @@ namespace hazelcast {
 
             spi::ProxyManager &HazelcastClientInstanceImpl::getProxyManager() {
                 return proxyManager;
+            }
+
+            void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
+                nearCacheManager.reset(new internal::nearcache::NearCacheManager(serializationService, *logger));
             }
         }
     }

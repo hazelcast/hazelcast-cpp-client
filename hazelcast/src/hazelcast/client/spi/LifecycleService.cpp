@@ -98,7 +98,7 @@ namespace hazelcast {
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 util::LockGuard lg(listenerLock);
-                util::ILogger &logger = util::ILogger::getLogger();
+                util::ILogger &logger = clientContext.getLogger();
                 switch (lifecycleEvent.getState()) {
                     case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420

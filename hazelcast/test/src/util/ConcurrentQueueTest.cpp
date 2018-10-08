@@ -19,7 +19,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <gtest/gtest.h>
+#include <ClientTestSupport.h>
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
@@ -31,7 +31,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace util {
-                class ConcurentQueueTest : public ::testing::Test
+                class ConcurentQueueTest : public ClientTestSupport
                 {
                 protected:
                     class ConcurrentQueueTask : public hazelcast::util::Runnable {
@@ -126,7 +126,8 @@ namespace hazelcast {
                     for (int i = 0; i < numThreads; i++) {
                         boost::shared_ptr<hazelcast::util::Thread> t(
                                 new hazelcast::util::Thread(boost::shared_ptr<hazelcast::util::Runnable>(
-                                        new ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue))));
+                                        new ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue)),
+                                                getLogger()));
                         t->start();
                         allThreads.push_back(t);
                     }
@@ -137,11 +138,6 @@ namespace hazelcast {
                     int numRemoved = q.removeAll(&removalValue);
 
                     int numRemaining = numThreads - numRemoved;
-
-                    char msg[200];
-                    hazelcast::util::hz_snprintf(msg, 200, "Was able to remove %d items and left %d items",
-                                                 (numThreads - numRemaining), numRemaining);
-                    hazelcast::util::ILogger::getLogger().info(msg);
 
                     for (int j = 0; j < numRemaining; ++j) {
                         ASSERT_NE((int *)NULL, q.poll());

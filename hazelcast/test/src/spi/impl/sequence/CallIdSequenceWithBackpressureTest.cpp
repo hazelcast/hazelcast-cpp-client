@@ -83,7 +83,7 @@ namespace hazelcast {
                 util::CountDownLatch nextCalledLatch(1);
 
                 util::Thread t(boost::shared_ptr<util::Runnable>(
-                        new ThreeSecondDelayCompleteOperation(sequence, nextCalledLatch)));
+                        new ThreeSecondDelayCompleteOperation(sequence, nextCalledLatch)), getLogger());
                 t.start();
 
                 ASSERT_OPEN_EVENTUALLY(nextCalledLatch);

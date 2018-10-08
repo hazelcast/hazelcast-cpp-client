@@ -32,6 +32,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         class Socket;
 
@@ -72,6 +75,7 @@ namespace hazelcast {
                 int wakeUpListenerSocketId;
                 ClientConnectionManagerImpl &connectionManager;
                 std::auto_ptr<Socket> sleepingSocket;
+                util::ILogger &logger;
 
                 virtual void listenInternal() = 0;
 

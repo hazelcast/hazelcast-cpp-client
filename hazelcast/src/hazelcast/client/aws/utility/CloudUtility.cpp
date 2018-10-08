@@ -26,14 +26,15 @@ namespace hazelcast {
     namespace client {
         namespace aws {
             namespace utility {
-                std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream) {
+                std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
+                        util::ILogger &logger) {
                     std::map<std::string, std::string> privatePublicPairs;
 
                     pt::ptree tree;
                     try {
                         pt::read_xml(stream, tree);
                     } catch (pt::xml_parser_error &e) {
-                        util::ILogger::getLogger().warning(
+                        logger.warning(
                                 std::string("The parsed xml stream has errors: ") + e.what());
                         return privatePublicPairs;
                     }
@@ -53,7 +54,6 @@ namespace hazelcast {
 
                                                     if (privateIp) {
                                                         privatePublicPairs[prIp] = pubIp;
-                                                        util::ILogger &logger = util::ILogger::getLogger();
                                                         if (logger.isFinestEnabled()) {
                                                             boost::optional<std::string> instanceName = instanceItem.second.get_optional<std::string>(
                                                                     "tagset.item.value");

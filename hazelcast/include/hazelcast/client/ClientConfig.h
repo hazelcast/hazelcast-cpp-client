@@ -36,6 +36,7 @@
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 #include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
 #include "hazelcast/client/internal/config/ConfigUtils.h"
+#include "hazelcast/client/config/LoggerConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -538,6 +539,13 @@ namespace hazelcast {
              */
             ClientConfig &addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
 
+
+            /**
+             *
+             * @return The logger configuration.
+             */
+            const config::LoggerConfig &getLoggerConfig() const;
+
         private:
             GroupConfig groupConfig;
 
@@ -578,6 +586,8 @@ namespace hazelcast {
             util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
 
             config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
+
+            config::LoggerConfig loggerConfig;
         };
 
     }

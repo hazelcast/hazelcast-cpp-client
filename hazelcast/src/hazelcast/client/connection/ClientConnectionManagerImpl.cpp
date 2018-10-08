@@ -65,11 +65,11 @@ namespace hazelcast {
             ClientConnectionManagerImpl::ClientConnectionManagerImpl(spi::ClientContext &client,
                                                                      const boost::shared_ptr<AddressTranslator> &addressTranslator,
                                                                      const std::vector<boost::shared_ptr<AddressProvider> > &addressProviders)
-                    : logger(util::ILogger::getLogger()), client(client),
+                    : logger(client.getLogger()), client(client),
                       socketInterceptor(client.getClientConfig().getSocketInterceptor()), inSelector(*this),
                       outSelector(*this),
-                      inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector))),
-                      outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector))),
+                      inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector)), logger),
+                      outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector)), logger),
                       executionService(client.getClientExecutionService()),
                       translator(addressTranslator), connectionIdGen(0), socketFactory(client) {
                 config::ClientNetworkConfig &networkConfig = client.getClientConfig().getNetworkConfig();
@@ -448,7 +448,7 @@ namespace hazelcast {
             boost::shared_ptr<util::impl::SimpleExecutorService>
             ClientConnectionManagerImpl::createSingleThreadExecutorService(spi::ClientContext &client) {
                 return boost::static_pointer_cast<util::impl::SimpleExecutorService>(
-                        util::Executors::newSingleThreadExecutor(client.getName() + ".cluster-"));
+                        util::Executors::newSingleThreadExecutor(client.getName() + ".cluster-", logger));
             }
 
             void
@@ -610,19 +610,24 @@ namespace hazelcast {
                 shutdown();
             }
 
+            util::ILogger &ClientConnectionManagerImpl::getLogger() {
+                return client.getLogger();
+            }
+
             ClientConnectionManagerImpl::InitConnectionTask::InitConnectionTask(const Address &target,
                                                                                 const bool asOwner,
                                                                                 const boost::shared_ptr<AuthenticationFuture> &future,
                                                                                 ClientConnectionManagerImpl &connectionManager)
                     : target(
-                    target), asOwner(asOwner), future(future), connectionManager(connectionManager) {}
+                    target), asOwner(asOwner), future(future), connectionManager(connectionManager),
+                    logger(connectionManager.getLogger()) {}
 
             void ClientConnectionManagerImpl::InitConnectionTask::run() {
                 boost::shared_ptr<Connection> connection;
                 try {
                     connection = getConnection(target);
                 } catch (exception::IException &e) {
-                    util::ILogger::getLogger().finest() << e;
+                    logger.finest() << e;
                     future->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
                     connectionManager.connectionsInProgress.remove(target);
                     return;
@@ -778,7 +783,7 @@ namespace hazelcast {
                                                        << e.getMessage();
 
                     boost::shared_ptr<ShutdownTask> task(new ShutdownTask(connectionManager.client));
-                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(task));
+                    boost::shared_ptr<util::Thread> shutdownThread(new util::Thread(task, connectionManager.getLogger()));
                     shutdownThread->start();
                     connectionManager.shutdownThreads.offer(shutdownThread);
 
@@ -792,7 +797,8 @@ namespace hazelcast {
                 return "ClientConnectionManagerImpl::ConnectToClusterTask";
             }
 
-            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client) {
+            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(spi::ClientContext &client)
+            : logger(client.getLogger()) {
                 boost::shared_ptr<impl::HazelcastClientInstanceImpl> hazelcastClientImplementation =
                         client.getHazelcastClientImplementation();
                 if (hazelcastClientImplementation.get()) {
@@ -809,7 +815,7 @@ namespace hazelcast {
                 try {
                     clientInstance->getLifecycleService().shutdown();
                 } catch (exception::IException &exception) {
-                    util::ILogger::getLogger().severe() << "Exception during client shutdown task "
+                    logger.severe() << "Exception during client shutdown task "
                         << clientInstance->getName() + ".clientShutdown-" << ":" << exception;
                 }
             }

@@ -23,8 +23,8 @@ namespace hazelcast {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb)
-                    : ringbuffer(rb), runnerThread(boost::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown))),
+                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb, util::ILogger &logger)
+                    : ringbuffer(rb), runnerThread(boost::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
                       q(10), shutdown(false) {
                     }
 
