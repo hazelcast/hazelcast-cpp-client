@@ -20,6 +20,11 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         class HAZELCAST_API LoggerLevel {
@@ -27,8 +32,6 @@ namespace hazelcast {
             enum Level {
                 SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
             };
-
-            static const char *getLevelString(const Level &level);
         };
 
         enum LogLevel {
@@ -110,5 +113,9 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_CLIENT_CONFIG_LOGGERCONFIG_H_ */

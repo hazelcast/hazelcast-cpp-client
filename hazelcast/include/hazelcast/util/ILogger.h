@@ -23,8 +23,15 @@
 #include <string>
 #include <iostream>
 #include <sstream>
-#include <boost/enable_shared_from_this.hpp>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// We need to include this header before easylogging++/easylogging++.h
+#include <winsock2.h>
+#endif
 #include <easylogging++/easylogging++.h>
+
+
+#include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/LoggerConfig.h"
