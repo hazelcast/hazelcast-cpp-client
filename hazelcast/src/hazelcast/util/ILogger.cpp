@@ -57,10 +57,7 @@ namespace hazelcast {
                 defaultConf.setAll(easyloggingpp::ConfigurationType::ToStandardOutput, "true");
             }
 
-            if (!configurationFileName.empty()) {
-                defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "true");
-                defaultConf.setAll(easyloggingpp::ConfigurationType::Filename, configurationFileName);
-            }
+            defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "false");
 
             // Disable all levels first and then enable the desired levels
             defaultConf.setAll(easyloggingpp::ConfigurationType::Enabled, "false");
