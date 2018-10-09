@@ -2404,6 +2404,7 @@ public:
             hostname_(internal::utilities::OSUtils::currentHost()),
             counters_(new internal::RegisteredCounters()) {
         defaultConfigurations_.setToDefault();
+/*
         Configurations conf;
         conf.setToDefault();
         conf.parseFromText(constants_->DEFAULT_LOGGER_CONFIGURATION);
@@ -2414,6 +2415,7 @@ public:
         confPerformance.setToDefault();
         confPerformance.setAll(ConfigurationType::PerformanceTracking, "true");
         registerNew(new Logger("performance", constants_, confPerformance));
+*/
     }
 
     virtual ~RegisteredLoggers(void) {
