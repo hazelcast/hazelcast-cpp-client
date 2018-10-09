@@ -88,7 +88,7 @@ namespace hazelcast {
                             protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
                     txnId = result.response;
                     state = TxnState::ACTIVE;
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     TRANSACTION_EXISTS = false;
                     throw;
                 }

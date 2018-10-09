@@ -16,6 +16,11 @@
 
 #ifdef HZ_BUILD_WITH_SSL
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4996) //for unsafe getenv
+#endif
+
 #include <cmath>
 #include <gtest/gtest.h>
 
@@ -103,4 +108,9 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif // HZ_BUILD_WITH_SSL

@@ -19,11 +19,6 @@
 
 #include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -41,7 +36,7 @@ namespace hazelcast {
                      * The latter cause is not a problem since the capacity is exceeded temporarily and it isn't sustainable.
                      * So perhaps there are a few threads that at the same time see that the there is space and do a next.
                      */
-                    class HAZELCAST_API FailFastCallIdSequence : public AbstractCallIdSequence {
+                    class FailFastCallIdSequence : public AbstractCallIdSequence {
                     public:
                         FailFastCallIdSequence(int32_t maxConcurrentInvocations);
 
@@ -53,9 +48,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_FILFASTCALLIDSEQUENCE_H_

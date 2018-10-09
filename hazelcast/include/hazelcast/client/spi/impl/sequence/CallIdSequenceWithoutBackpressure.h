@@ -22,17 +22,12 @@
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 #include "hazelcast/util/Atomic.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
                 namespace sequence {
-                    class HAZELCAST_API CallIdSequenceWithoutBackpressure : public CallIdSequence {
+                    class CallIdSequenceWithoutBackpressure : public CallIdSequence {
                     public:
                         CallIdSequenceWithoutBackpressure();
 
@@ -56,9 +51,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHOUTBACKPRESSURE_H_

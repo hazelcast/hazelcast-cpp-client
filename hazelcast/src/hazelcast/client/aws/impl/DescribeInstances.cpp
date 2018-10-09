@@ -22,7 +22,6 @@
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/aws/impl/Filter.h"
 #include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/util/SyncHttpsClient.h"

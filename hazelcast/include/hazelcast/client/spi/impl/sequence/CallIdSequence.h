@@ -48,7 +48,7 @@ namespace hazelcast {
                      * <li>not always being able to fully utilize the number of invocations.</li>
                      * </ol>
                      */
-                    class CallIdSequence {
+                    class HAZELCAST_API CallIdSequence {
                     public:
                         /**
                          * Destructor

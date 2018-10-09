@@ -20,11 +20,6 @@
 #include "hazelcast/client/spi/impl/sequence/AbstractCallIdSequence.h"
 #include "hazelcast/util/concurrent/IdleStrategy.h"
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -43,7 +38,7 @@ namespace hazelcast {
                      * So perhaps there are a few threads that at the same time see that the there is space and do a next.
                      * But any following invocation needs to wait till there is is capacity.
                      */
-                    class HAZELCAST_API CallIdSequenceWithBackpressure : public AbstractCallIdSequence {
+                    class CallIdSequenceWithBackpressure : public AbstractCallIdSequence {
                     public:
                         CallIdSequenceWithBackpressure(int32_t maxConcurrentInvocations, int64_t backoffTimeoutMs);
 
@@ -60,9 +55,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif //HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHBACKPRESSURE_H_

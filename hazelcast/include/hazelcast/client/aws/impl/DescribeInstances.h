@@ -21,6 +21,8 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,7 +31,6 @@
 
 namespace hazelcast {
     namespace util {
-        class SyncHttpsClient;
         class ILogger;
     }
     namespace client {
@@ -37,9 +38,6 @@ namespace hazelcast {
             class ClientAwsConfig;
         }
         namespace aws {
-            namespace security {
-                class EC2RequestSigner;
-            }
             namespace impl {
                 /**
                  * See http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
