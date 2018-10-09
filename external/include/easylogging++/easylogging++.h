@@ -692,6 +692,11 @@ inline std::string getCurrentThreadId(void) {
 #else
 #   if (_ELPP_OS_WINDOWS)
     ss << GetCurrentThreadId();
+#   elif _ELPP_OS_UNIX
+            int64_t threadId = 0;
+            pthread_t thread = pthread_self();
+            memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
+            ss << "0x" << std::hex << threadId;
 #   endif // (_ELPP_OS_WINDOWS)
 #endif
     return ss.str();
