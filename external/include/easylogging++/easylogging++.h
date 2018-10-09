@@ -1762,7 +1762,7 @@ public:
     const Configurations& configurations(void) const {
         return configurations_;
     }
-private:
+public:
     internal::ConfigurationMap<bool> enabledMap_;
     internal::ConfigurationMap<bool> toFileMap_;
     internal::ConfigurationMap<std::string> filenameMap_;
@@ -2262,7 +2262,7 @@ public:
     private:
         std::string id_;
     };
-private:
+public:
     std::string id_;
     internal::Constants* constants_;
     Configurations userConfigurations_;

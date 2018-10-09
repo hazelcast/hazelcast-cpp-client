@@ -39,6 +39,13 @@ namespace hazelcast {
         }
 
         void ILogger::init() {
+            std::string configurationFileName = loggerConfig.getConfigurationFileName();
+            if (!configurationFileName.empty()) {
+                easyloggingpp::Configurations confFromFile(configurationFileName);
+                easyloggingpp::Loggers::reconfigureLogger(easyLogger, confFromFile);
+                return;
+            }
+
             easyloggingpp::Configurations defaultConf;
 
             defaultConf.setToDefault();
@@ -50,9 +57,9 @@ namespace hazelcast {
                 defaultConf.setAll(easyloggingpp::ConfigurationType::ToStandardOutput, "true");
             }
 
-            if (!loggerConfig.getFileName().empty()) {
+            if (!configurationFileName.empty()) {
                 defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "true");
-                defaultConf.setAll(easyloggingpp::ConfigurationType::Filename, loggerConfig.getFileName());
+                defaultConf.setAll(easyloggingpp::ConfigurationType::Filename, configurationFileName);
             }
 
             // Disable all levels first and then enable the desired levels

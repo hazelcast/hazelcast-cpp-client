@@ -19,12 +19,12 @@ namespace hazelcast {
     namespace client {
         namespace config {
 
-            const std::string &LoggerConfig::getFileName() const {
-                return fileName;
+            const std::string &LoggerConfig::getConfigurationFileName() const {
+                return configurationFileName;
             }
 
-            void LoggerConfig::setFileName(const std::string &fileName) {
-                LoggerConfig::fileName = fileName;
+            void LoggerConfig::setConfigurationFileName(const std::string &fileName) {
+                LoggerConfig::configurationFileName = fileName;
             }
 
             bool LoggerConfig::isEnabledStandardOutput() const {

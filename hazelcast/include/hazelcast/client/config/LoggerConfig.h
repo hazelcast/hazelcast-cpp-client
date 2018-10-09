@@ -64,17 +64,18 @@ namespace hazelcast {
 
                 /**
                  *
-                 * @return The logger filename to be used for logging to a file. If this is filled, then file logging
-                 * is enabled.
+                 * @return The logger configuration file. If this file is configured, no other configuration will be
+                 * applied but only what is configured in the file will be applied. All log levels will work based on
+                 * the provided configuration and setLogLevel will not be effective (You can enable disable any level
+                 * in the configuration file).
                  */
-                const std::string &getFileName() const;
+                const std::string &getConfigurationFileName() const;
 
                 /**
                  *
-                 * @param fileName The file name into which the logs will be printed. This is a relative path to the
-                 * process working directory or or an absolute path. File logging is closed by default.
+                 * @param fileName configuration file for the logger.
                  */
-                void setFileName(const std::string &fileName);
+                void setConfigurationFileName(const std::string &fileName);
 
                 /**
                  *
@@ -102,7 +103,7 @@ namespace hazelcast {
 
             private:
                 Type::LoggerType type;
-                std::string fileName;
+                std::string configurationFileName;
                 bool enabledStandardOutput;
                 LoggerLevel::Level logLevel;
             };

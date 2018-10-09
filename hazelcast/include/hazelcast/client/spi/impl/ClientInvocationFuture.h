@@ -34,7 +34,8 @@ namespace hazelcast {
                 class HAZELCAST_API ClientInvocationFuture
                         : public util::Future<boost::shared_ptr<protocol::ClientMessage> > {
                 public:
-                    ClientInvocationFuture(util::ILogger &logger) : Future(logger) {}
+                    ClientInvocationFuture(util::ILogger &logger)
+                        : util::Future<boost::shared_ptr<protocol::ClientMessage> >(logger) {}
 
                     virtual void
                     andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback) = 0;
