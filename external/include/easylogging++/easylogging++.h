@@ -2403,8 +2403,8 @@ public:
             username_(internal::utilities::OSUtils::currentUser()),
             hostname_(internal::utilities::OSUtils::currentHost()),
             counters_(new internal::RegisteredCounters()) {
-        defaultConfigurations_.setToDefault();
 /*
+        defaultConfigurations_.setToDefault();
         Configurations conf;
         conf.setToDefault();
         conf.parseFromText(constants_->DEFAULT_LOGGER_CONFIGURATION);

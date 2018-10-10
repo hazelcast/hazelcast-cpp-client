@@ -48,8 +48,6 @@ namespace hazelcast {
 
             easyloggingpp::Configurations defaultConf;
 
-            defaultConf.setToDefault();
-
             defaultConf.setAll(easyloggingpp::ConfigurationType::Format,
                     std::string("%datetime %level: [%thread] ") + prefix + " %log");
 
