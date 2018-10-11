@@ -1767,6 +1767,9 @@ public:
     const Configurations& configurations(void) const {
         return configurations_;
     }
+    /**
+     * CHANGED orginal code private to public below to make the code compile for gcc 3.4.6
+     */
 public:
     internal::ConfigurationMap<bool> enabledMap_;
     internal::ConfigurationMap<bool> toFileMap_;
@@ -2267,6 +2270,9 @@ public:
     private:
         std::string id_;
     };
+    /**
+     * CHANGED orginal code private to public below to make the code compile for gcc 3.4.6
+     */
 public:
     std::string id_;
     internal::Constants* constants_;
@@ -2404,6 +2410,8 @@ public:
             hostname_(internal::utilities::OSUtils::currentHost()),
             counters_(new internal::RegisteredCounters()) {
 /*
+ *      COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
+ *
         defaultConfigurations_.setToDefault();
         Configurations conf;
         conf.setToDefault();

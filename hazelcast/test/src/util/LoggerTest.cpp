@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-#include <hazelcast/util/ILogger.h>
 #include <ostream>
+#include <vector>
+#include <hazelcast/util/ILogger.h>
 #include <ClientTestSupport.h>
 
 namespace hazelcast {
