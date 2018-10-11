@@ -65,7 +65,7 @@ namespace hazelcast {
                 const std::string log("First finest log");
                 logger->finest(log);
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(1, lines.size());
+                ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
@@ -77,7 +77,7 @@ namespace hazelcast {
                     logger->info() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(1, lines.size());
+                ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
@@ -87,7 +87,7 @@ namespace hazelcast {
                 const std::string log("First info log");
                 logger->info(log);
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(1, lines.size());
+                ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
@@ -99,7 +99,7 @@ namespace hazelcast {
                     logger->info() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(1, lines.size());
+                ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
@@ -109,7 +109,7 @@ namespace hazelcast {
                 const std::string log("First warning log");
                 logger->warning(log);
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(0, lines.size());
+                ASSERT_EQ(0U, lines.size());
             }
 
             TEST_F(LoggerConfigFromFileTest, testWarning2) {
@@ -118,7 +118,7 @@ namespace hazelcast {
                     logger->warning() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(0, lines.size());
+                ASSERT_EQ(0U, lines.size());
             }
 
             TEST_F(LoggerConfigFromFileTest, testMultipleLinesLog) {
@@ -132,7 +132,7 @@ namespace hazelcast {
                 logger->severe(firstFatalLog);
 
                 std::vector<std::string> lines = getLogLines();
-                ASSERT_EQ(3, lines.size());
+                ASSERT_EQ(3U, lines.size());
 
                 ASSERT_NE(std::string::npos, lines[0].find(infoLog));
 
@@ -145,11 +145,11 @@ namespace hazelcast {
                 }
 
                 lines = getLogLines();
-                ASSERT_EQ(3, lines.size());
+                ASSERT_EQ(3U, lines.size());
 
                 logger->warning("This log should not be printed");
                 lines = getLogLines();
-                ASSERT_EQ(3, lines.size());
+                ASSERT_EQ(3U, lines.size());
 
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
