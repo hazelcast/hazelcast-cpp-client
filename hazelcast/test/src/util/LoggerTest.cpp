@@ -54,7 +54,6 @@ namespace hazelcast {
                 util::ILogger &logger;
                 std::stringstream buffer;
                 std::streambuf *originalStdout;
-                LoggerLevel::Level originalLogLevel;
             };
 
             TEST_F(LoggerTest, testPrintObject) {

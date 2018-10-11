@@ -51,6 +51,8 @@ namespace hazelcast {
             defaultConf.setAll(easyloggingpp::ConfigurationType::Format,
                     std::string("%datetime %level: [%thread] ") + prefix + " %log");
 
+            defaultConf.setAll(easyloggingpp::ConfigurationType::ToStandardOutput, "true");
+
             defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "false");
 
             // Disable all levels first and then enable the desired levels

@@ -20,7 +20,6 @@
 #define HAZELCAST_DistributedObject
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/DistributedObjectInfo.h"
 
 #include <string>
 
