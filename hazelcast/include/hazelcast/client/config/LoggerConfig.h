@@ -82,18 +82,6 @@ namespace hazelcast {
 
                 /**
                  *
-                 * @return true if printing to the standard output is enabled. This is enabled by default.
-                 */
-                bool isEnabledStandardOutput() const;
-
-                /**
-                 *
-                 * @param enabledStandardOutput Enable/disable standard output logging
-                 */
-                void setEnabledStandardOutput(bool enabledStandardOutput);
-
-                /**
-                 *
                  * @return The level for which the logs will be printed.
                  */
                 LoggerLevel::Level getLogLevel() const;
@@ -107,7 +95,6 @@ namespace hazelcast {
             private:
                 Type::LoggerType type;
                 std::string configurationFileName;
-                bool enabledStandardOutput;
                 LoggerLevel::Level logLevel;
             };
         }

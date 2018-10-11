@@ -544,7 +544,7 @@ namespace hazelcast {
              *
              * @return The logger configuration.
              */
-            const config::LoggerConfig &getLoggerConfig() const;
+            config::LoggerConfig &getLoggerConfig();
 
         private:
             GroupConfig groupConfig;

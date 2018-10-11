@@ -180,7 +180,7 @@
 #   if (defined(_STOP_ON_FIRST_ELPP_ASSERTION))
 #      define __EASYLOGGINGPP_ASSERT(expr, msg) if (!(expr)) { std::cerr << "EASYLOGGING++ ASSERTION FAILED (LINE: " << __LINE__ << ") [" #expr << "] with message \"" << msg << "\"" << std::endl; exit(1); }
 #   else
-#      define __EASYLOGGINGPP_ASSERT(expr, msg) if (!(expr)) { std::cerr << "EASYLOGGING++ ASSERTION FAILED (LINE: " << __LINE__ << ") [" #expr << "] with message \"" << msg << "\"" << std::endl; }
+#      define __EASYLOGGINGPP_ASSERT(expr, msg) if (!(expr)) { std::ostringstream out; out << "EASYLOGGING++ ASSERTION FAILED (LINE: " << __LINE__ << ") [" #expr << "] with message \"" << msg << "\""; throw std::invalid_argument(out.str()); } // CHANGED FROM original code base
 #   endif // (defined(_STOP_ON_FIRST_ELPP_ASSERTION))
 #else
 #   define __EASYLOGGINGPP_ASSERT(x, y)

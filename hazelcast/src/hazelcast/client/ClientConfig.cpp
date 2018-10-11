@@ -111,7 +111,7 @@ namespace hazelcast {
             return *this;
         }
 
-        const config::LoggerConfig &ClientConfig::getLoggerConfig() const {
+        config::LoggerConfig &ClientConfig::getLoggerConfig() {
             return loggerConfig;
         }
 

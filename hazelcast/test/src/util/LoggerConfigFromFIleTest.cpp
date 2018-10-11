@@ -17,6 +17,7 @@
 #include <ostream>
 #include <vector>
 #include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/HazelcastClient.h>
 #include <ClientTestSupport.h>
 
 namespace hazelcast {
@@ -154,6 +155,18 @@ namespace hazelcast {
                 // make sure that nothing is printed to stdout
                 ASSERT_TRUE(buffer.str().empty());
 
+            }
+
+            TEST_F(LoggerConfigFromFileTest, testNonExistingConfigurationFileFailFast) {
+                ClientConfig clientConfig;
+                clientConfig.getLoggerConfig().setConfigurationFileName("NonExistent");
+                ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
+            }
+
+             TEST_F(LoggerConfigFromFileTest, testInvalidConfigurationFileFailFast) {
+                ClientConfig clientConfig;
+                clientConfig.getLoggerConfig().setConfigurationFileName("hazelcast/test/resources/invalid-logger-config.txt");
+                ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 
         }

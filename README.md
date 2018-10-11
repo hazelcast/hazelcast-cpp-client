@@ -27,6 +27,7 @@
     * [Configure Client Reconnect Strategy](#configure-client-reconnect-strategy)
     * [Shuffle Cluster Connection Member List](#shuffle-cluster-connection-member-list)
 * [Listener Events](#listener-events)
+* [Logger Configuration](#logger-configuration)
 * [Raw Pointer API](#raw-pointer-api)
 * [Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastclient)
   * [TypedData API](#typeddata-api) 
@@ -457,6 +458,22 @@ config.setProperty("hazelcast.client.event.thread.count", "7");
 ```
 
 By default, the event thread count is 5. You may set the number of event threads for your application needs. For most of the cases, you do not need to change this value.
+
+# Logger Configuration
+By default, the Hazelcast logger prints out the INFO level and above logs to the standard output. The following log levels exist:
+- FINEST (DEBUG)
+- INFO
+- WARNING
+- SEVERE (FATAL)
+
+The order is in increasing order. Hence, for INFO level configuration the INFO, WARNING and SEVERE logs are written.
+
+In some applications you may want to use your custom logging statements, you may want to direct the logs to a file instead of standard output, and enable/disable certain log levels. This can be done using the LoggerConfig in the ClientConfig object which is used to configure the client. Each client may have a separate configuration. The customized options needs to be configured using a configuration file. E.g.:
+
+```
+clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
+```
+The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
 
 # Raw Pointer API
 

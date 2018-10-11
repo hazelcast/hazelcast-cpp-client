@@ -116,8 +116,12 @@ namespace hazelcast {
             }
 
             void HazelcastClientInstanceImpl::initLogger() {
-                logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
-                        clientConfig.getLoggerConfig()));
+                try {
+                    logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
+                                                   clientConfig.getLoggerConfig()));
+                } catch (std::invalid_argument &ia) {
+                    throw exception::IllegalStateException("HazelcastClientInstanceImpl::initLogger", ia.what());
+                }
             }
 
             HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {

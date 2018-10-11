@@ -27,16 +27,7 @@ namespace hazelcast {
                 LoggerConfig::configurationFileName = fileName;
             }
 
-            bool LoggerConfig::isEnabledStandardOutput() const {
-                return enabledStandardOutput;
-            }
-
-            void LoggerConfig::setEnabledStandardOutput(bool enabledStandardOutput) {
-                LoggerConfig::enabledStandardOutput = enabledStandardOutput;
-            }
-
-            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), enabledStandardOutput(true),
-                                           logLevel(LoggerLevel::INFO) {}
+            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), logLevel(LoggerLevel::INFO) {}
 
             LoggerConfig::Type::LoggerType LoggerConfig::getType() const {
                 return type;
