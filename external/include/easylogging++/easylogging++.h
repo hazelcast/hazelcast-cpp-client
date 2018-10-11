@@ -251,6 +251,8 @@
 #include <cstdlib>
 #include <cctype>
 #include <cwchar>
+// CHANGED FROM ORIGINAL CODE: Added the following line
+#include <stdexcept>
 #if _ELPP_NDK
 #   include <sys/system_properties.h>
 #endif // _ELPP_NDK

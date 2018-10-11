@@ -475,7 +475,9 @@ clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
 ```
 The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
 
-If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem. 
+If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem.
+
+**Important Note:** If you configured the logger configuration file, then the ClientConfig::setLogLevel will not be effective since the levels will be controlled from the configuration file.
 
 # Raw Pointer API
 
