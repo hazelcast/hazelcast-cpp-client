@@ -26,7 +26,7 @@ namespace hazelcast {
         const int AddressHelper::MAX_PORT_TRIES = 3;
         const int AddressHelper::INITIAL_FIRST_PORT = 5701;
 
-        std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address) {
+        std::vector<client::Address> AddressHelper::getSocketAddresses(const std::string &address, ILogger &logger) {
             const AddressHolder addressHolder = AddressUtil::getAddressHolder(address, -1);
             const std::string scopedAddress = !addressHolder.getScopeId().empty()
                                          ? addressHolder.getAddress() + '%' + addressHolder.getScopeId()
@@ -37,16 +37,16 @@ namespace hazelcast {
             if (port == -1) {
                 maxPortTryCount = MAX_PORT_TRIES;
             }
-            return getPossibleSocketAddresses(port, scopedAddress, maxPortTryCount);
+            return getPossibleSocketAddresses(port, scopedAddress, maxPortTryCount, logger);
         }
 
         std::vector<client::Address>
-        AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount) {
+        AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, ILogger &logger) {
             std::auto_ptr<asio::ip::address> inetAddress;
             try {
                 inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {
-                ILogger::getLogger().getLogger().finest() << "Address " << scopedAddress << " ip number is not available"
+                logger.finest() << "Address " << scopedAddress << " ip number is not available"
                                                           << ignored.what();
             }
 
@@ -63,7 +63,7 @@ namespace hazelcast {
                     } catch (client::exception::UnknownHostException &ignored) {
                         std::ostringstream out;
                         out << "Address [" << scopedAddress << "] ip number is not available." << ignored.what();
-                        util::ILogger::getLogger().finest(out.str());
+                        logger.finest(out.str());
                     }
                 }
             } else if (inetAddress->is_v4() || inetAddress->is_v6()) {

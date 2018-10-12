@@ -27,6 +27,7 @@
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,7 +39,8 @@ namespace hazelcast {
         namespace connection {
 
             IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager)
-            :connectionManager(connectionManager) {
+            : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
+            logger(connectionManager.getLogger()) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
             }
@@ -56,7 +58,7 @@ namespace hazelcast {
                 try {
                     wakeUpSocket->send(&wakeUpSignal, sizeof(int), MSG_WAITALL);
                 } catch(exception::IOException &e) {
-                    util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
+                    logger.warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw;
                 }
             }
@@ -67,7 +69,7 @@ namespace hazelcast {
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException &e){
-                        util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
+                        logger.warning(std::string("Exception at IOSelector::listen() ") + e.what());
                     }
                 }
             }
@@ -91,7 +93,7 @@ namespace hazelcast {
                     isAlive = true;
                     return true;
                 } else {
-                    util::ILogger::getLogger().severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
+                    logger.severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
                     return false;
                 }
             }
@@ -134,15 +136,15 @@ namespace hazelcast {
                 if (numSelected == SOCKET_ERROR) {
                     int error = WSAGetLastError();
                     if (WSAENOTSOCK == error) {
-                        if (util::ILogger::getLogger().isEnabled(FINEST)) {
+                        if (logger.isEnabled(FINEST)) {
                             char errorMsg[200];
                             util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            util::ILogger::getLogger().finest(errorMsg);
+                            logger.finest(errorMsg);
                         }
                     } else {
                         char errorMsg[200];
                         util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        util::ILogger::getLogger().severe(errorMsg);
+                        logger.severe(errorMsg);
                     }
                     return true;
                 }
@@ -150,15 +152,15 @@ namespace hazelcast {
                 if (numSelected == -1) {
                     int error = errno;
                     if (EINTR == error || EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
-                        if (util::ILogger::getLogger().isEnabled(FINEST)) {
+                        if (logger.isEnabled(FINEST)) {
                             char errorMsg[200];
                             util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            util::ILogger::getLogger().finest(errorMsg);
+                            logger.finest(errorMsg);
                         }
                     } else{
                         char errorMsg[200];
                         util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        util::ILogger::getLogger().severe(errorMsg);
+                        logger.severe(errorMsg);
                     }
                     return true;
                 }

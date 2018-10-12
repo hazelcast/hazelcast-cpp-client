@@ -24,6 +24,7 @@
 #include <string>
 #include <memory>
 #include "hazelcast/client/spi/EventHandler.h"
+#include "hazelcast/util/ILogger.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,6 +39,8 @@ namespace hazelcast {
         namespace impl {
             class HAZELCAST_API BaseEventHandler : public spi::EventHandler<protocol::ClientMessage> {
             public:
+                BaseEventHandler();
+
                 virtual ~BaseEventHandler();
                 
                 virtual void handle(std::auto_ptr<protocol::ClientMessage> message) = 0;
@@ -64,6 +67,13 @@ namespace hazelcast {
                  */
                 virtual void onListenerRegister() {
                 }
+
+                void setLogger(util::ILogger *logger);
+
+                util::ILogger *getLogger() const;
+
+            protected:
+                util::ILogger *logger;
             };
         }
     }

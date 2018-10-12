@@ -235,13 +235,7 @@ namespace hazelcast {
 
                 virtual void TearDown() {
                     // clear maps
-                    try {
-                        mixedMap->clear();
-                    } catch (exception::IException &e) {
-                        std::ostringstream out;
-                        out << "[TearDown] An exception occured in tear down:" << e.what();
-                        util::ILogger::getLogger().warning(out.str());
-                    }
+                    mixedMap->clear();
                 }
 
                 static void SetUpTestCase() {

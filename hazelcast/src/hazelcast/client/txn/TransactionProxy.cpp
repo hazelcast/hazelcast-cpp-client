@@ -88,7 +88,7 @@ namespace hazelcast {
                             protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
                     txnId = result.response;
                     state = TxnState::ACTIVE;
-                } catch (exception::IException &e) {
+                } catch (exception::IException &) {
                     TRANSACTION_EXISTS = false;
                     throw;
                 }
@@ -131,7 +131,7 @@ namespace hazelcast {
 
                         invoke(request);
                     } catch (exception::IException &exception) {
-                        util::ILogger::getLogger().warning()
+                        clientContext.getLogger().warning()
                                 << "Exception while rolling back the transaction. Exception:" << exception;
                     }
                     state = TxnState::ROLLED_BACK;

@@ -34,6 +34,8 @@
 
 namespace hazelcast {
     namespace util {
+        class ILogger;
+
         namespace impl {
             class HAZELCAST_API AbstractThread {
             public:
@@ -47,7 +49,7 @@ namespace hazelcast {
                     AbstractThread *thread;
                 };
 
-                AbstractThread(const boost::shared_ptr<Runnable> &runnable);
+                AbstractThread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger);
 
                 virtual ~AbstractThread();
 
@@ -81,10 +83,12 @@ namespace hazelcast {
 
                 struct RunnableInfo {
                     RunnableInfo(const boost::shared_ptr<Runnable> &target,
-                                 const boost::shared_ptr<CountDownLatch> &latch);
+                                 const boost::shared_ptr<CountDownLatch> &finishWaitLatch,
+                                 const boost::shared_ptr<ILogger> &logger);
 
                     boost::shared_ptr<Runnable> target;
                     boost::shared_ptr<util::CountDownLatch> finishWaitLatch;
+                    boost::shared_ptr<util::ILogger> logger;
                 };
 
                 virtual void startInternal(RunnableInfo *info) = 0;
@@ -97,11 +101,10 @@ namespace hazelcast {
                 util::AtomicBoolean cancelled;
                 ConditionVariable wakeupCondition;
                 static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
-
                 Mutex wakeupMutex;
-
                 boost::shared_ptr<Runnable> target;
                 boost::shared_ptr<util::CountDownLatch> finishedLatch;
+                util::ILogger &logger;
             };
         }
     }

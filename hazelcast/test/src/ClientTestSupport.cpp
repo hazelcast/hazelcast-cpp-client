@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-//  Created by ihsan demir on 9/9/15.
-//  Copyright (c) 2015 ihsan demir. All rights reserved.
-//
 
-#include "hazelcast/client/serialization/VersionedPortable.h"
+#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
-        namespace serialization {
-            VersionedPortable::~VersionedPortable(){
+        namespace test {
+            ClientTestSupport::ClientTestSupport() {
+                const char *testName = testing::UnitTest::GetInstance()->current_test_info()->name();
+                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
+            }
+
+            util::ILogger &ClientTestSupport::getLogger() {
+                return *logger;
             }
         }
     }
 }
-

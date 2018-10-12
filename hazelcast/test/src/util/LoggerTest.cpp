@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <hazelcast/util/ILogger.h>
 #include <ostream>
+#include <vector>
+#include <hazelcast/util/ILogger.h>
+#include <ClientTestSupport.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class LoggerTest : public ::testing::Test {
+            class LoggerTest : public ClientTestSupport {
             public:
-                LoggerTest() : logger(util::ILogger::getLogger()) {
+                LoggerTest() : logger(getLogger()) {
                 }
 
             protected:
@@ -35,7 +36,6 @@ namespace hazelcast {
 
                 virtual void TearDown() {
                     std::cout.rdbuf(originalStdout);
-                    logger.setLogLevel(LoggerLevel::INFO);
                 }
 
                 class TestObject {
@@ -54,7 +54,6 @@ namespace hazelcast {
                 util::ILogger &logger;
                 std::stringstream buffer;
                 std::streambuf *originalStdout;
-                LoggerLevel::Level originalLogLevel;
             };
 
             TEST_F(LoggerTest, testPrintObject) {
@@ -88,24 +87,27 @@ namespace hazelcast {
             }
 
             TEST_F(LoggerTest, testLogLevel) {
-                logger.setLogLevel(client::LoggerLevel::WARNING);
+                const char *testName = testing::UnitTest::GetInstance()->current_test_info()->name();
+                config::LoggerConfig loggerConfig;
+                loggerConfig.setLogLevel(client::LoggerLevel::WARNING);
+                boost::shared_ptr<util::ILogger> logger(new util::ILogger(testName, testName, "TestVersion", loggerConfig));
 
-                ASSERT_FALSE(logger.isFinestEnabled());
-                ASSERT_FALSE(logger.isEnabled(client::LoggerLevel::FINEST));
-                ASSERT_FALSE(logger.isEnabled(client::LoggerLevel::INFO));
-                ASSERT_TRUE(logger.isEnabled(client::LoggerLevel::WARNING));
-                ASSERT_TRUE(logger.isEnabled(client::LoggerLevel::SEVERE));
+                ASSERT_FALSE(logger->isFinestEnabled());
+                ASSERT_FALSE(logger->isEnabled(client::LoggerLevel::FINEST));
+                ASSERT_FALSE(logger->isEnabled(client::LoggerLevel::INFO));
+                ASSERT_TRUE(logger->isEnabled(client::LoggerLevel::WARNING));
+                ASSERT_TRUE(logger->isEnabled(client::LoggerLevel::SEVERE));
 
-                logger.finest("Warning level message");
+                logger->finest("Warning level message");
                 ASSERT_TRUE(buffer.str().empty());
 
-                logger.info("info message");
+                logger->info("info message");
                 ASSERT_TRUE(buffer.str().empty());
 
-                logger.warning("warning message");
+                logger->warning("warning message");
                 ASSERT_NE(std::string::npos, buffer.str().find("warning message"));
 
-                logger.severe("severe message");
+                logger->severe("severe message");
                 ASSERT_NE(std::string::npos, buffer.str().find("severe message"));
             }
         }

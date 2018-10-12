@@ -42,6 +42,7 @@ namespace hazelcast {
 
             std::string ProxyImpl::registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
                                                     impl::BaseEventHandler *handler) {
+                handler->setLogger(&getContext().getLogger());
                 return getContext().getClientListenerService().registerListener(codec,
                                                                             boost::shared_ptr<spi::EventHandler<protocol::ClientMessage> >(
                                                                                     new EventHandlerDelegator(

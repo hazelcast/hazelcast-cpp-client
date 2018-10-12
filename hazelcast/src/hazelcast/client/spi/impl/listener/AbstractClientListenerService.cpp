@@ -30,7 +30,7 @@ namespace hazelcast {
                                                                                  int32_t eventQueueCapacity)
                             : clientContext(clientContext),
                               serializationService(clientContext.getSerializationService()),
-                              logger(util::ILogger::getLogger()),
+                              logger(clientContext.getLogger()),
                               clientConnectionManager(clientContext.getConnectionManager()),
                               eventExecutor(logger, clientContext.getName() + ".event-", eventThreadCount,
                                             eventQueueCapacity),

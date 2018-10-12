@@ -37,7 +37,6 @@
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/Future.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
-#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)

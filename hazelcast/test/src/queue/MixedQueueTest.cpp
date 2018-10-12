@@ -62,7 +62,6 @@ namespace hazelcast {
                     mixedtype::IQueue *q = (mixedtype::IQueue *) args.arg0;
                     util::sleep(2);
                     q->offer<std::string>("item1");
-                    util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
                 }
 
                 static HazelcastServer *instance;

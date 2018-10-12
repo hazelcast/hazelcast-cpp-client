@@ -117,7 +117,7 @@ namespace hazelcast {
                         std::vector<boost::shared_ptr<util::Thread> > futures;
                         for (int i = 0; i < parallelism; i++) {
                             futures.push_back(boost::shared_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
-                                    new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)))));
+                                    new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)), getLogger())));
                         }
 
                         BOOST_FOREACH(const boost::shared_ptr<util::Thread> &future , futures) {

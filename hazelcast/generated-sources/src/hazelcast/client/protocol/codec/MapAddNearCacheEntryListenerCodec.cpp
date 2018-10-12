@@ -113,7 +113,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            util::ILogger::getLogger().warning()
+                            getLogger()->warning()
                                     << "[MapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle] Unknown message type ("
                                     << messageType << ") received on event handler.";
                     }

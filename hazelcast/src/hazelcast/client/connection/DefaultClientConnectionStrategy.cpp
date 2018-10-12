@@ -99,7 +99,7 @@ namespace hazelcast {
 
             void DefaultClientConnectionStrategy::shutdownWithExternalThread() {
                 boost::shared_ptr<util::Thread> shutdownThread(
-                        new util::Thread(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext))));
+                        new util::Thread(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)),logger));
                 shutdownThread->start();
                 shutdownThreads.offer(shutdownThread);
             }
@@ -111,7 +111,7 @@ namespace hazelcast {
                 try {
                     clientContext.getLifecycleService().shutdown();
                 } catch (exception::IException &exception) {
-                    util::ILogger::getLogger().severe() << "Exception during client shutdown " << exception;
+                    clientContext.getLogger().severe() << "Exception during client shutdown " << exception;
                 }
             }
 

@@ -44,10 +44,6 @@ namespace hazelcast {
                         if (configPatternKey.get() != NULL) {
                             return configPatterns.get(*configPatternKey);
                         }
-                        if ("default" != itemName && itemName.find("hz:") != 0) {
-                            util::ILogger::getLogger().finest() << "No configuration found for " << itemName
-                                                                << ", using default config!";
-                        }
                         return boost::shared_ptr<T>();
                     }
                 };

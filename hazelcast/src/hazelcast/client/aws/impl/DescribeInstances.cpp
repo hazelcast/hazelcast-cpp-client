@@ -22,7 +22,6 @@
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/aws/impl/Filter.h"
 #include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/util/SyncHttpsClient.h"
@@ -43,9 +42,9 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_ROLE_QUERY = "/latest/meta-data/iam/security-credentials/";
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
-                DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig,
-                                                     const std::string &endpoint) : awsConfig(awsConfig),
-                                                                                    endpoint(endpoint) {
+                DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
+                                                     util::ILogger &logger) : awsConfig(awsConfig), endpoint(endpoint),
+                                                                              logger(logger) {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
@@ -69,7 +68,7 @@ namespace hazelcast {
                     attributes["X-Amz-Signature"] = signature;
 
                     std::istream &stream = callService();
-                    return utility::CloudUtility::unmarshalTheResponse(stream);
+                    return utility::CloudUtility::unmarshalTheResponse(stream, logger);
                 }
 
                 std::string DescribeInstances::getFormattedTimestamp() {

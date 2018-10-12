@@ -20,7 +20,6 @@
 #define HAZELCAST_DistributedObject
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/DistributedObjectInfo.h"
 
 #include <string>
 
@@ -63,7 +62,7 @@ namespace hazelcast {
             /**
             * Returns the service name for this object.
             */
-            virtual  const std::string& getServiceName() const = 0;
+            virtual const std::string& getServiceName() const = 0;
 
             /**
             * Returns the unique name for this DistributedObject.

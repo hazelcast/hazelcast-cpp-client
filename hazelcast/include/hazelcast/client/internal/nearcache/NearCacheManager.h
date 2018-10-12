@@ -38,9 +38,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API NearCacheManager {
                 public:
-                    NearCacheManager(serialization::pimpl::SerializationService &ss)
-                            : serializationService(ss) {
-                    }
+                    NearCacheManager(serialization::pimpl::SerializationService &ss, util::ILogger &logger);
 
                     /**
                      * Gets the {@link NearCache} instance associated with given {@code name}.
@@ -103,24 +101,12 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be cleared
                      * @return {@code true} if {@link NearCache} was found and cleared, {@code false} otherwise
                      */
-                    bool clearNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
-                        if (nearCache.get() != NULL) {
-                            nearCache->clear();
-                        }
-                        return nearCache.get() != NULL;
-                    }
+                    bool clearNearCache(const std::string &name);
 
                     /**
                      * Clears all defined {@link NearCache} instances.
                      */
-                    void clearAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
-                             it != caches.end(); ++it) {
-                            (*it)->clear();
-                        }
-                    }
+                    void clearAllNearCaches();
 
                     /**
                      * Destroys {@link NearCache} instance associated with given {@code name} and also removes it.
@@ -128,34 +114,23 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be destroyed
                      * @return {@code true} if {@link NearCache} was found and destroyed, {@code false} otherwise
                      */
-                    bool destroyNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.remove(name);
-                        if (nearCache.get() != NULL) {
-                            nearCache->destroy();
-                        }
-                        return nearCache.get() != NULL;
-                    }
+                    bool destroyNearCache(const std::string &name);
 
                     /**
                      * Destroys all defined {@link NearCache} instances.
                      */
-                    void destroyAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
-                             it != caches.end(); ++it) {
-                            (*it)->destroy();
-                        }
-                    }
+                    void destroyAllNearCaches();
                 protected:
                     template<typename K, typename V, typename KS>
                     std::auto_ptr<NearCache<KS, V> > createNearCache(
                             const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                         return std::auto_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, serializationService));
+                                        name, nearCacheConfig, serializationService, logger));
                     }
                 private:
                     serialization::pimpl::SerializationService &serializationService;
+                    util::ILogger &logger;
                     util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
                     util::Mutex mutex;
                 };

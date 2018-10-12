@@ -24,7 +24,17 @@
 #include <iostream>
 #include <sstream>
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// We need to include this header before easylogging++/easylogging++.h
+#include <winsock2.h>
+#endif
+#include <easylogging++/easylogging++.h>
+
+
+#include <boost/enable_shared_from_this.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/config/LoggerConfig.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
 
@@ -34,42 +44,25 @@
 #endif
 
 namespace hazelcast {
-    namespace client {
-        class HAZELCAST_API LoggerLevel {
-        public:
-            enum Level {
-                SEVERE = 100, WARNING = 90, INFO = 50, FINEST = 20
-            };
-
-            static const char *getLevelString(const Level &level);
-        };
-
-        enum LogLevel {
-            SEVERE = LoggerLevel::SEVERE, WARNING = LoggerLevel::WARNING, INFO = LoggerLevel::INFO, FINEST = LoggerLevel::FINEST
-        };
-    }
-
     namespace util {
-        #define TIME_STRING_LENGTH 25
-
         class LeveledLogger;
 
-        class HAZELCAST_API ILogger {
+        class HAZELCAST_API ILogger : public boost::enable_shared_from_this<ILogger> {
             friend class LeveledLogger;
+
         public:
-            static ILogger& getLogger();
+            ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
+                    const client::config::LoggerConfig &loggerConfig);
 
-            void setLogLevel(const client::LoggerLevel::Level &logLevel);
+            ~ILogger();
 
-            void severe(const std::string& message);
+            void severe(const std::string &message);
 
-            void warning(const std::string& message);
+            void warning(const std::string &message);
 
-            void info(const std::string& message);
+            void info(const std::string &message);
 
-            void finest(const std::string& message);
-
-            void setPrefix(const std::string& prefix);
+            void finest(const std::string &message);
 
             LeveledLogger finest();
 
@@ -89,31 +82,21 @@ namespace hazelcast {
             bool isEnabled(int logLevel) const;
 
             bool isFinestEnabled() const;
+
         private:
-            client::LoggerLevel::Level logLevel;
+            const std::string instanceName;
+            const std::string groupName;
+            const std::string version;
             std::string prefix;
+            easyloggingpp::Logger *easyLogger;
+            client::config::LoggerConfig loggerConfig;
 
-            ILogger();
+            void init();
 
-            ~ILogger();
+            ILogger(const ILogger &);
 
-            const char *getTime(char * buffer, size_t length) const;
+            ILogger &operator=(const ILogger &);
 
-            const char *getLevelString(client::LoggerLevel::Level logLevel) const;
-
-            void printMessagePrefix(client::LoggerLevel::Level logLevel) const;
-
-            void printMessagePrefix(client::LoggerLevel::Level logLevel, std::ostream &out) const;
-
-            ILogger(const ILogger&);
-
-            ILogger& operator=(const ILogger&);
-
-            util::Mutex lockMutex;
-
-            static ILogger singletonLogger;
-
-            void printLog(client::LoggerLevel::Level level, const std::string &message, bool printPrefix = true);
         };
 
         /**
@@ -127,9 +110,9 @@ namespace hazelcast {
 
             virtual ~LeveledLogger();
 
-            template <typename T>
+            template<typename T>
             LeveledLogger &operator<<(const T &value) {
-                if (logger.isEnabled(logger.logLevel)) {
+                if (logger.isEnabled(requestedLogLevel)) {
                     out << value;
                 }
                 return *this;

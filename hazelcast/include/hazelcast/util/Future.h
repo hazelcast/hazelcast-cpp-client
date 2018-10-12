@@ -110,9 +110,6 @@ namespace hazelcast {
 
             Future(ILogger &logger) : resultReady(false), exceptionReady(false), cancelled(false), logger(logger) {}
 
-            Future() : resultReady(false), exceptionReady(false), cancelled(false), logger(util::ILogger::getLogger()) {
-            }
-
             virtual ~Future() {
             }
 

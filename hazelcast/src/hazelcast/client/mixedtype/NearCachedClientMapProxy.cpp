@@ -287,7 +287,7 @@ namespace hazelcast {
                     std::ostringstream out;
                     out << "-----------------\n Near Cache is not initialized!!! \n-----------------";
                     out << e.what();
-                    util::ILogger::getLogger().severe(out.str());
+                    getContext().getLogger().severe(out.str());
                 }
             }
 

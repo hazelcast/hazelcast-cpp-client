@@ -31,6 +31,16 @@ namespace hazelcast {
                 std::auto_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
                 handle(e);
             }
+
+            BaseEventHandler::BaseEventHandler() : logger(NULL) {}
+
+            void BaseEventHandler::setLogger(util::ILogger *logger) {
+                BaseEventHandler::logger = logger;
+            }
+
+            util::ILogger *BaseEventHandler::getLogger() const {
+                return logger;
+            }
         }
     }
 }

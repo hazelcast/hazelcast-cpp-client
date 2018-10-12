@@ -35,8 +35,12 @@
 
 namespace hazelcast {
     namespace util {
+        class ILogger;
+
         class SocketSet {
         public:
+            SocketSet(ILogger &logger);
+
             struct FdRange {
                 int min;
                 int max;
@@ -53,6 +57,7 @@ namespace hazelcast {
         private:
             std::set<int> sockets;
             util::Mutex accessLock;
+            util::ILogger &logger;
         };
 
     }

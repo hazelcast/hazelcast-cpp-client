@@ -21,8 +21,8 @@ namespace hazelcast {
             if (closable != NULL) {
                 try {
                     closable->close(closeReason);
-                } catch (client::exception::IException& e) {
-                    ILogger::getLogger().finest() << "IOUtil::closeResource failed. Exception:" << e;
+                } catch (client::exception::IException &) {
+                    // suppress
                 }
 
             }

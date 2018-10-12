@@ -19,13 +19,7 @@
 
 #include <string>
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/util/HazelcastDll.h"
-#include "EventHandler.h"
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
+#include "hazelcast/client/spi/EventHandler.h"
 
 namespace hazelcast {
     namespace client {
@@ -39,7 +33,7 @@ namespace hazelcast {
              * For smart client, it registers local  listeners to all nodes in cluster.
              * For dummy client, it registers global listener to one node.
              */
-            class HAZELCAST_API ClientListenerService {
+            class ClientListenerService {
             public:
                 virtual std::string
                 registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
@@ -50,10 +44,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif
 

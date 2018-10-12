@@ -41,11 +41,6 @@ namespace hazelcast {
                 */
                 virtual int getClassVersion() const = 0;
 
-                /**
-                * Destructor
-                */
-                virtual ~VersionedPortable();
-
             };
         }
     }

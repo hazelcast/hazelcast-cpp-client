@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
+#include <ClientTestSupport.h>
 #include <hazelcast/util/AddressHelper.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class AddressHelperTest : public ::testing::Test {
+            class AddressHelperTest : public ClientTestSupport {
             };
 
             TEST_F(AddressHelperTest, testGetPossibleSocketAddresses) {
                 std::string address("10.2.3.1");
-                std::vector<Address> addresses = util::AddressHelper::getSocketAddresses(address);
+                std::vector<Address> addresses = util::AddressHelper::getSocketAddresses(address, getLogger());
                 ASSERT_EQ(3U, addresses.size());
                 std::set<Address> socketAddresses;
                 socketAddresses.insert(addresses.begin(), addresses.end());

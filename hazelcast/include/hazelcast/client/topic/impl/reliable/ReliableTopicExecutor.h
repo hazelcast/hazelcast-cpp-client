@@ -54,7 +54,7 @@ namespace hazelcast {
                                     DataArray<topic::impl::reliable::ReliableTopicMessage> > > *callback;
                         };
 
-                        ReliableTopicExecutor(Ringbuffer <ReliableTopicMessage> &rb);
+                        ReliableTopicExecutor(Ringbuffer <ReliableTopicMessage> &rb, util::ILogger &logger);
 
                         virtual ~ReliableTopicExecutor();
 

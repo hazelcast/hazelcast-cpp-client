@@ -39,13 +39,7 @@ namespace hazelcast {
             protected:
                 virtual void TearDown() {
                     // clear maps
-                    try {
-                        imap->clear();
-                    } catch (exception::IException &e) {
-                        std::ostringstream out;
-                        out << "[TearDown] An exception occured in tear down:" << e.what();
-                        util::ILogger::getLogger().warning(out.str());
-                    }
+                    imap->clear();
                 }
 
                 static void SetUpTestCase() {
@@ -108,15 +102,7 @@ namespace hazelcast {
                 std::string registrationId = imap->addEntryListener(expirationListener, true);
 
                 for (int i = 0; i < numberOfPutOperations; i++) {
-                    time_t start = time(NULL);
                     imap->put(i, i, 100);
-                    time_t diff = time(NULL) - start;
-                    if (diff > 1) { // more than 1 sec
-                        char msg[200];
-                        util::hz_snprintf(msg, 200, "[notified_afterExpirationOfEntries] put for %d took %lld secs", i,
-                                          diff);
-                        util::ILogger::getLogger().warning(msg);
-                    }
                 }
 
                 // wait expiration of entries.
@@ -127,7 +113,7 @@ namespace hazelcast {
                     imap->get(i);
                 }
 
-                ASSERT_TRUE(expirationEventArrivalCount.await(120));
+                ASSERT_OPEN_EVENTUALLY(expirationEventArrivalCount);
                 ASSERT_TRUE(imap->removeEntryListener(registrationId));
             }
 

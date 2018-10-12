@@ -46,7 +46,7 @@ namespace hazelcast {
 
             namespace impl {
                 namespace listener {
-                    class HAZELCAST_API AbstractClientListenerService
+                    class AbstractClientListenerService
                             : public ClientListenerService,
                               public connection::ConnectionListener,
                               public boost::enable_shared_from_this<AbstractClientListenerService> {
