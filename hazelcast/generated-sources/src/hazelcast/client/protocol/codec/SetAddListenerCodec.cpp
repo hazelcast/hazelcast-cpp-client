@@ -88,7 +88,7 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            util::ILogger::getLogger().warning()
+                            getLogger()->warning()
                                     << "[SetAddListenerCodec::AbstractEventHandler::handle] Unknown message type ("
                                     << messageType << ") received on event handler.";
                     }

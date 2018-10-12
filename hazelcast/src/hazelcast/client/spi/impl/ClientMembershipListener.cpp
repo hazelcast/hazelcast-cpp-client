@@ -34,7 +34,7 @@ namespace hazelcast {
                 int ClientMembershipListener::INITIAL_MEMBERS_TIMEOUT_SECONDS = 5;
 
                 ClientMembershipListener::ClientMembershipListener(ClientContext &client)
-                        : client(client), logger(util::ILogger::getLogger()),
+                        : client(client), logger(client.getLogger()),
                           clusterService(static_cast<ClientClusterServiceImpl &>(client.getClientClusterService())),
                           partitionService((ClientPartitionServiceImpl &) client.getPartitionService()),
                           connectionManager(client.getConnectionManager()) {}

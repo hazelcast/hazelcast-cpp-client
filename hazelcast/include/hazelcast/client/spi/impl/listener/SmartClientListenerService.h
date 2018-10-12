@@ -17,11 +17,6 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_LISTENER_SMARTCLIENTLISTERNERSERVICE_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_LISTENER_SMARTCLIENTLISTERNERSERVICE_H_
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#endif
-
 #include "hazelcast/client/spi/impl/listener/AbstractClientListenerService.h"
 #include "hazelcast/client/spi/EventHandler.h"
 
@@ -34,7 +29,7 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 namespace listener {
-                    class HAZELCAST_API SmartClientListenerService : public AbstractClientListenerService {
+                    class SmartClientListenerService : public AbstractClientListenerService {
                     public:
                         SmartClientListenerService(ClientContext &clientContext, int32_t eventThreadCount,
                                                    int32_t eventQueueCapacity);
@@ -82,9 +77,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif // HAZELCAST_CLIENT_SPI_IMPL_LISTENER_SMARTCLIENTLISTERNERSERVICE_H_

@@ -29,7 +29,7 @@ namespace hazelcast {
 
                 AwsAddressProvider::AwsAddressProvider(config::ClientAwsConfig &awsConfig, int awsMemberPort,
                                                        util::ILogger &logger) : awsMemberPort(
-                        util::IOUtil::to_string<int>(awsMemberPort)), logger(logger), awsClient(awsConfig) {
+                        util::IOUtil::to_string<int>(awsMemberPort)), logger(logger), awsClient(awsConfig, logger) {
                 }
 
                 std::vector<Address> AwsAddressProvider::loadAddresses() {
@@ -40,7 +40,7 @@ namespace hazelcast {
                     typedef std::map<std::string, std::string> LookupTable;
                     BOOST_FOREACH(const LookupTable::value_type &privateAddress, lookupTable) {
                                     std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
-                                            privateAddress.first + ":" + awsMemberPort);
+                                            privateAddress.first + ":" + awsMemberPort, logger);
                                     addresses.insert(addresses.begin(), possibleAddresses.begin(),
                                                      possibleAddresses.end());
                                 }

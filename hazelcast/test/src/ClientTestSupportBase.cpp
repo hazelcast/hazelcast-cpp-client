@@ -16,9 +16,8 @@
 
 #include "ClientTestSupportBase.h"
 
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include <hazelcast/util/Thread.h>
+#include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/util/UuidUtil.h>
 
 namespace hazelcast {
@@ -54,13 +53,17 @@ namespace hazelcast {
             void ClientTestSupportBase::sleepSeconds(int32_t seconds) {
                 util::sleep(seconds);
             }
+
+            ClientTestSupportBase::ClientTestSupportBase() {
+            }
         }
     }
 
     namespace util {
         StartedThread::StartedThread(const std::string &name, void (*func)(ThreadArgs &),
                                      void *arg0, void *arg1, void *arg2, void *arg3)
-                : name(name) {
+                : name(name), logger(new util::ILogger("StartedThread", "StartedThread", "testversion",
+                                                       client::config::LoggerConfig())) {
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -69,7 +72,8 @@ namespace hazelcast {
                                      void *arg1,
                                      void *arg2,
                                      void *arg3)
-                : name("hz.unnamed") {
+                : name("hz.unnamed"), logger(new util::ILogger("StartedThread", "StartedThread", "testversion",
+                                                               client::config::LoggerConfig())) {
             init(func, arg0, arg1, arg2, arg3);
         }
 
@@ -79,7 +83,8 @@ namespace hazelcast {
             threadArgs.arg2 = arg2;
             threadArgs.arg3 = arg3;
             threadArgs.func = func;
-            thread.reset(new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))));
+            thread.reset(
+                    new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), *logger));
             threadArgs.currentThread = thread.get();
             thread->start();
         }

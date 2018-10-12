@@ -58,6 +58,7 @@ namespace hazelcast {
                 HazelcastServerFactory & factory;
                 bool isStarted;
                 HazelcastServerFactory::MemberInfo member;
+                boost::shared_ptr<util::ILogger> logger;
             };
         }
     }

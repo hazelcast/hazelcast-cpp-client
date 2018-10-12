@@ -26,6 +26,7 @@
 
 #include <TestHelperFunctions.h>
 #include <hazelcast/util/Runnable.h>
+#include <hazelcast/util/ILogger.h>
 
 namespace hazelcast {
     namespace client {
@@ -40,6 +41,8 @@ namespace hazelcast {
 
             class ClientTestSupportBase {
             public:
+                ClientTestSupportBase();
+
                 static std::string getCAFilePath();
 
                 static std::string randomMapName();
@@ -54,6 +57,7 @@ namespace hazelcast {
                 static std::auto_ptr<HazelcastClient> getNewClient();
 
                 static const std::string getSslFilePath();
+
             };
         }
     }
@@ -98,6 +102,7 @@ namespace hazelcast {
             ThreadArgs threadArgs;
             std::string name;
             std::auto_ptr<util::Thread> thread;
+            boost::shared_ptr<util::ILogger> logger;
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);
         };

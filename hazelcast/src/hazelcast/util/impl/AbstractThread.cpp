@@ -25,13 +25,10 @@ namespace hazelcast {
             util::SynchronizedMap<int64_t, AbstractThread::UnmanagedAbstractThreadPointer> AbstractThread::startedThreads;
 
             /**
-             * Latch count is 2, because one is count down when thread started and the second one is decremented when
-             * thread exits. Derived classes should decrement this latch just before exiting the thread
-             * execution method.
              * @param runnable The runnable to run when this thread is started.
              */
-            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable)
-                        : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)) {
+            AbstractThread::AbstractThread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+                        : state(UNSTARTED), target(runnable), finishedLatch(new util::CountDownLatch(1)), logger(logger) {
             }
 
             AbstractThread::~AbstractThread() {
@@ -53,7 +50,7 @@ namespace hazelcast {
                     return;
                 }
 
-                RunnableInfo *info = new RunnableInfo(target, finishedLatch);
+                RunnableInfo *info = new RunnableInfo(target, finishedLatch, logger.shared_from_this());
                 startInternal(info);
 
                 startedThreads.put(getThreadId(), boost::shared_ptr<UnmanagedAbstractThreadPointer>(
@@ -128,9 +125,6 @@ namespace hazelcast {
                 if (currentThread.get()) {
                     currentThread->getThread()->interruptibleSleepMillis(timeInMilliseconds);
                 } else {
-                    util::ILogger::getLogger().warning()
-                            << "AbstractThread::sleep IS NOT interrupptible SLEEP!!! currentThreadId:"
-                            << currentThreadId;
                     util::sleepmillis(timeInMilliseconds);
                 }
             }
@@ -147,8 +141,11 @@ namespace hazelcast {
             }
 
             AbstractThread::RunnableInfo::RunnableInfo(const boost::shared_ptr<Runnable> &target,
-                                                       const boost::shared_ptr<CountDownLatch> &latch) : target(target),
-                                                                                                         finishWaitLatch(latch) {}
+                                                       const boost::shared_ptr<CountDownLatch> &finishWaitLatch,
+                                                       const boost::shared_ptr<ILogger> &logger) : target(target),
+                                                                                                   finishWaitLatch(
+                                                                                                           finishWaitLatch),
+                                                                                                   logger(logger) {}
         }
     }
 }

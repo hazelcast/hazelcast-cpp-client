@@ -30,6 +30,9 @@
 namespace pt = boost::property_tree;
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -44,9 +47,11 @@ namespace hazelcast {
                      * If there is an exception while unmarshalling the response, returns an empty map.
                      *
                      * @param stream    the response XML stream
+                     * @param logger the logger to be used for logging any warnings during unmarshal.
                      * @return map from private to public IP or empty map in case of exceptions
                      */
-                    static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream);
+                    static std::map<std::string, std::string> unmarshalTheResponse(std::istream &stream,
+                            util::ILogger &logger);
 
                     static void unmarshalJsonResponse(std::istream &stream, config::ClientAwsConfig &awsConfig,
                                                       std::map<std::string, std::string> &attributes);

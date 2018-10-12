@@ -41,7 +41,7 @@ namespace hazelcast {
                 char msg[200];
                 util::hz_snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
                                   socketId);
-                util::ILogger::getLogger().warning(msg);
+                logger.warning(msg);
             }
         }
 
@@ -67,7 +67,7 @@ namespace hazelcast {
             }
 
             if (!found) {
-                util::ILogger::getLogger().finest() << "[SocketSet::removeSocket] Socket with id " << socketId
+                logger.finest() << "[SocketSet::removeSocket] Socket with id " << socketId
                                                     << "  was not found among the sockets.";
             }
         }
@@ -91,5 +91,7 @@ namespace hazelcast {
 
             return result;
         }
+
+        SocketSet::SocketSet(ILogger &logger) : logger(logger) {}
     }
 }

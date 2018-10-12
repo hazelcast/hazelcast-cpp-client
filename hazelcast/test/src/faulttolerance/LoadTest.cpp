@@ -93,7 +93,7 @@ namespace hazelcast {
 
                     void addThread(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) {
                         boost::shared_ptr<util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
-                        threads.push_back(boost::shared_ptr<util::Thread>(new util::Thread(task)));
+                        threads.push_back(boost::shared_ptr<util::Thread>(new util::Thread(task, getLogger())));
                     }
 
                     void startThreads() {
@@ -104,8 +104,6 @@ namespace hazelcast {
 
                     void waitForThreadsToFinish() {
                         BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
-                                        util::ILogger::getLogger().info() << "Waiting to join for thread "
-                                                                          << t->getThreadId();
                                         t->join();
                                     }
                     }
@@ -135,17 +133,10 @@ namespace hazelcast {
 
                     startLatch.await(20);
 
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 1");
                     instance1.shutdown();
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 2");
                     instance2.shutdown();
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 3");
                     instance3.shutdown();
 
-                    util::ILogger::getLogger().info("[LoadTest::loadIntMapTestWithConfig] Starting server instance 5");
                     HazelcastServer instance5(*g_srvFactory);
 
                     /*Note: Could not shutdown instance 5 here, since there may be some incomplete synchronization
@@ -153,8 +144,6 @@ namespace hazelcast {
 
                     test.waitForThreadsToFinish();
 
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Finished the test successfully :)");
                 }
 
                 TEST_F(LoadTest, DISABLED_testIntMapSmartClientServerRestart) {

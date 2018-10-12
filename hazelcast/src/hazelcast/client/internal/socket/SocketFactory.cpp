@@ -47,12 +47,13 @@ namespace hazelcast {
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                         bool success = true;
+                        util::ILogger &logger = clientContext.getLogger();
                         for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                              ++it) {
                             asio::error_code ec;
                             sslContext->load_verify_file(*it, ec);
                             if (ec) {
-                                util::ILogger::getLogger().warning(
+                                logger.warning(
                                         std::string("SocketFactory::start: Failed to load CA "
                                                             "verify file at ") + *it + " "
                                         + ec.message());
@@ -62,7 +63,7 @@ namespace hazelcast {
 
                         if (!success) {
                             sslContext.reset();
-                            util::ILogger::getLogger().warning("SocketFactory::start: Failed to load one or more "
+                            logger.warning("SocketFactory::start: Failed to load one or more "
                                                                        "configured CA verify files (PEM files). Please "
                                                                        "correct the files and retry.");
                             return false;
@@ -72,7 +73,7 @@ namespace hazelcast {
                         const std::string &cipherList = sslConfig.getCipherList();
                         if (!cipherList.empty()) {
                             if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                                util::ILogger::getLogger().warning(
+                                logger.warning(
                                         std::string("SocketFactory::start: Could not load any "
                                                             "of the ciphers in the config provided "
                                                             "ciphers:") + cipherList);

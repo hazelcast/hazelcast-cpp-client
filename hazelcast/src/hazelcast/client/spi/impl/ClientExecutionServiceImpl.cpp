@@ -31,8 +31,8 @@ namespace hazelcast {
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &clientProperties,
-                                                                       int32_t poolSize)
-                        : logger(util::ILogger::getLogger()) {
+                                                                       int32_t poolSize, util::ILogger &logger)
+                        : logger(logger) {
 
                     int internalPoolSize = clientProperties.getInternalExecutorPoolSize().getInteger();
                     if (internalPoolSize <= 0) {

@@ -51,7 +51,8 @@ namespace hazelcast {
                 NearCachedClientMapProxy(const std::string &instanceName, spi::ClientContext *context,
                                          const config::NearCacheConfig<K, V> &config)
                         : ClientMapProxy<K, V>(instanceName, context), cacheLocalEntries(false),
-                          invalidateOnChange(false), keyStateMarker(NULL), nearCacheConfig(config) {
+                          invalidateOnChange(false), keyStateMarker(NULL), nearCacheConfig(config),
+                          logger(context->getLogger()) {
                 }
 
                 virtual monitor::LocalMapStats &getLocalMapStats() {
@@ -311,7 +312,7 @@ namespace hazelcast {
                         std::ostringstream out;
                         out << "-----------------\n Near Cache is not initialized!!! \n-----------------";
                         out << e.what();
-                        util::ILogger::getLogger().severe(out.str());
+                        logger.severe(out.str());
                     }
                 }
 
@@ -470,6 +471,7 @@ namespace hazelcast {
                 boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > nearCache;
                 // since we don't have atomic support in the project yet, using shared_ptr
                 boost::shared_ptr<std::string> invalidationListenerId;
+                util::ILogger &logger;
             };
         }
     }

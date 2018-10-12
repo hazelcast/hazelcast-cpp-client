@@ -154,6 +154,7 @@ namespace hazelcast {
 
                 virtual void addConnectionListener(const boost::shared_ptr<ConnectionListener> &connectionListener);
 
+                util::ILogger &getLogger();
             private:
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_SYNC;
                 static int DEFAULT_CONNECTION_ATTEMPT_LIMIT_ASYNC;
@@ -215,6 +216,7 @@ namespace hazelcast {
                     const bool asOwner;
                     boost::shared_ptr<AuthenticationFuture> future;
                     ClientConnectionManagerImpl &connectionManager;
+                    util::ILogger &logger;
                 };
 
                 class AuthCallback : public impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
@@ -277,6 +279,7 @@ namespace hazelcast {
                 private:
                     // Keep weak_ptr for preventing cyclic dependency
                     boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl;
+                    util::ILogger &logger;
                 };
 
                 class TimeoutAuthenticationTask : public util::Runnable {

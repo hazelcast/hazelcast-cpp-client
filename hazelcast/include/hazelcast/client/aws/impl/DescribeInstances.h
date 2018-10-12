@@ -21,6 +21,8 @@
 #include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/aws/security/EC2RequestSigner.h"
+#include "hazelcast/util/SyncHttpsClient.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,16 +31,13 @@
 
 namespace hazelcast {
     namespace util {
-        class SyncHttpsClient;
+        class ILogger;
     }
     namespace client {
         namespace config {
             class ClientAwsConfig;
         }
         namespace aws {
-            namespace security {
-                class EC2RequestSigner;
-            }
             namespace impl {
                 /**
                  * See http://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html
@@ -46,7 +45,8 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API DescribeInstances {
                 public:
-                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint);
+                    DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
+                                      util::ILogger &logger);
 
                     virtual ~DescribeInstances();
 
@@ -80,6 +80,7 @@ namespace hazelcast {
                     const std::string &endpoint;
                     std::map<std::string, std::string> attributes;
                     std::auto_ptr<util::SyncHttpsClient> httpsClient;
+                    util::ILogger &logger;
 
                     static const std::string QUERY_PREFIX;
                     static const std::string IAM_ROLE_ENDPOINT;

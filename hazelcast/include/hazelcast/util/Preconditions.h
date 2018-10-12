@@ -38,7 +38,7 @@ namespace hazelcast {
              * @throws IllegalArgumentException if the value is not positive.
              */
             template <typename T>
-            static int checkPositive(const T &value, const std::string &errorMessage) {
+            static const T &checkPositive(const T &value, const std::string &errorMessage) {
                 if (value <= 0) {
                     throw client::exception::IllegalArgumentException("Preconditions::checkPositive", errorMessage);
                 }

@@ -100,7 +100,7 @@ namespace hazelcast {
                 try {
                     innerClose();
                 } catch (exception::IException &e) {
-                    util::ILogger::getLogger().warning() << "Exception while closing connection" << e.getMessage();
+                    clientContext.getLogger().warning() << "Exception while closing connection" << e.getMessage();
                 }
 
                 clientContext.getConnectionManager().onClose(*this);
@@ -164,7 +164,7 @@ namespace hazelcast {
                     message << "Socket explicitly closed";
                 }
 
-                util::ILogger &logger = util::ILogger::getLogger();
+                util::ILogger &logger = clientContext.getLogger();
                 if (clientContext.getLifecycleService().isRunning()) {
                     if (!closeCause.get()) {
                         logger.info() << message.str();

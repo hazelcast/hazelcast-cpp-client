@@ -35,14 +35,12 @@
 
 #include <ostream>
 
+#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Address.h>
 
 using namespace std;
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
     namespace client {
         namespace test {
 
@@ -82,7 +80,7 @@ namespace hazelcast {
                 static void init(const std::string &server);
 
             private:
-                util::ILogger &logger;
+                boost::shared_ptr<util::ILogger> logger;
                 static std::string serverAddress;
                 static PyObject *rcObject;
                 std::string clusterId;

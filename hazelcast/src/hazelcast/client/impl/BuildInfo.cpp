@@ -27,26 +27,21 @@ namespace hazelcast {
             int BuildInfo::calculateVersion(const std::string &version) {
                 std::vector<std::string> versionTokens = util::StringUtil::tokenizeVersionString(version);
                 if (!versionTokens.empty()) {
-                    try {
-                        int calculatedVersion = MAJOR_VERSION_MULTIPLIER * util::IOUtil::to_value<int>(versionTokens[0])
-                                                + MINOR_VERSION_MULTIPLIER *
-                                                  util::IOUtil::to_value<int>(versionTokens[1]);
-                        if (versionTokens.size() > PATCH_TOKEN_INDEX) {
-                            size_t snapshotStartPosition = versionTokens[PATCH_TOKEN_INDEX].find("-");
-                            if (snapshotStartPosition == std::string::npos) {
-                                calculatedVersion += util::IOUtil::to_value<int>(versionTokens[PATCH_TOKEN_INDEX]);
-                            }
-
-                            if (snapshotStartPosition > 0) {
-                                calculatedVersion += util::IOUtil::to_value<int>(
-                                        versionTokens[PATCH_TOKEN_INDEX].substr(0, snapshotStartPosition));
-                            }
+                    int calculatedVersion = MAJOR_VERSION_MULTIPLIER * util::IOUtil::to_value<int>(versionTokens[0])
+                                            + MINOR_VERSION_MULTIPLIER *
+                                              util::IOUtil::to_value<int>(versionTokens[1]);
+                    if (versionTokens.size() > PATCH_TOKEN_INDEX) {
+                        size_t snapshotStartPosition = versionTokens[PATCH_TOKEN_INDEX].find("-");
+                        if (snapshotStartPosition == std::string::npos) {
+                            calculatedVersion += util::IOUtil::to_value<int>(versionTokens[PATCH_TOKEN_INDEX]);
                         }
-                        return calculatedVersion;
-                    } catch (exception::IException &e) {
-                        util::ILogger::getLogger().warning() << "Failed to calculate version using version string "
-                                                             << version << e;
+
+                        if (snapshotStartPosition > 0) {
+                            calculatedVersion += util::IOUtil::to_value<int>(
+                                    versionTokens[PATCH_TOKEN_INDEX].substr(0, snapshotStartPosition));
+                        }
                     }
+                    return calculatedVersion;
                 }
 
                 return UNKNOWN_HAZELCAST_VERSION;

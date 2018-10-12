@@ -41,7 +41,7 @@ namespace hazelcast {
                 class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService {
                 public:
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
-                                               int32_t poolSize);
+                                               int32_t poolSize, util::ILogger &logger);
 
                     void execute(const boost::shared_ptr<util::Runnable> &command);
 

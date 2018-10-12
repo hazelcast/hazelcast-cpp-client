@@ -87,7 +87,7 @@ public:
         }
     }
 
-    virtual const string getName() const {
+    virtual const std::string getName() const {
         return "StatPrinterTask";
     }
 
@@ -107,7 +107,11 @@ public:
 
     class Task : public hazelcast::util::Runnable {
     public:
-        Task(Stats &stats, IMap<int, vector<char> > &map) : stats(stats), map(map) {}
+        Task(Stats &stats, IMap<int, std::vector<char> > &map) : stats(stats), map(map),
+                                                                 logger(new hazelcast::util::ILogger("SimpleMapTest",
+                                                                                          "SimpleMapTest",
+                                                                                          "testversion",
+                                                                                          config::LoggerConfig())) {}
 
         virtual void run() {
             std::vector<char> value(VALUE_SIZE);
@@ -133,23 +137,23 @@ public:
                     }
                     updateStats(updateIntervalCount, getCount, putCount, removeCount);
                 } catch (hazelcast::client::exception::IOException &e) {
-                    hazelcast::util::ILogger::getLogger().warning(
+                    logger->warning(
                             std::string("[SimpleMapTest IOException] ") + e.what());
                 } catch (hazelcast::client::exception::HazelcastClientNotActiveException &e) {
-                    hazelcast::util::ILogger::getLogger().warning(
+                    logger->warning(
                             std::string("[SimpleMapTest::run] ") + e.what());
                 } catch (hazelcast::client::exception::IException &e) {
-                    hazelcast::util::ILogger::getLogger().warning(
+                    logger->warning(
                             std::string("[SimpleMapTest:run] ") + e.what());
                 } catch (...) {
-                    hazelcast::util::ILogger::getLogger().warning("[SimpleMapTest:run] unknown exception!");
+                    logger->warning("[SimpleMapTest:run] unknown exception!");
                     running = false;
                     throw;
                 }
             }
         }
 
-        virtual const string getName() const {
+        virtual const std::string getName() const {
             return "SimpleMapTest Task";
         }
 
@@ -172,6 +176,7 @@ public:
 
         Stats &stats;
         IMap<int, std::vector<char> > &map;
+        boost::shared_ptr<hazelcast::util::ILogger> logger;
     };
 
 
@@ -190,7 +195,10 @@ public:
         clientConfig.setLogLevel(FINEST);
 
         Stats stats;
-        hazelcast::util::Thread monitor(boost::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)));
+        boost::shared_ptr<hazelcast::util::ILogger> logger(
+                new hazelcast::util::ILogger("SimpleMapTest", "SimpleMapTest", "testversion", config::LoggerConfig()));
+        hazelcast::util::Thread monitor(boost::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)),
+                                        *logger);
 
         HazelcastClient hazelcastClient(clientConfig);
 
@@ -201,7 +209,7 @@ public:
         for (int i = 0; i < THREAD_COUNT; i++) {
             boost::shared_ptr<hazelcast::util::Thread> thread = boost::shared_ptr<hazelcast::util::Thread>(
                     new hazelcast::util::Thread(
-                            boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map))));
+                            boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map)), *logger));
             thread->start();
             threads.push_back(thread);
         }

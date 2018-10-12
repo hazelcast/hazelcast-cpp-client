@@ -75,7 +75,7 @@ namespace hazelcast {
                  */
                 template<typename T>
                 boost::shared_ptr<Future<T> > submit(const boost::shared_ptr<Callable<T> > &task) {
-                    boost::shared_ptr<CallableRunnableAdaptor<T> > runnable(new CallableRunnableAdaptor<T>(task));
+                    boost::shared_ptr<CallableRunnableAdaptor<T> > runnable(new CallableRunnableAdaptor<T>(task, logger));
                     execute(runnable);
                     return runnable->getFuture();
                 }
@@ -99,8 +99,8 @@ namespace hazelcast {
                 template<typename T>
                 class CallableRunnableAdaptor : public Runnable {
                 public:
-                    CallableRunnableAdaptor(const boost::shared_ptr<Callable<T> > &callable) : callable(callable),
-                                                                                               future(new Future<T>()) {
+                    CallableRunnableAdaptor(const boost::shared_ptr<Callable<T> > &callable, util::ILogger &logger)
+                            : callable(callable), future(new Future<T>(logger)) {
                     }
 
                     virtual ~CallableRunnableAdaptor() {
@@ -159,10 +159,11 @@ namespace hazelcast {
 
                 class DelayedRunner : public util::Runnable {
                 public:
-                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis);
+                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
+                            util::ILogger &logger);
 
                     DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
-                                   int64_t periodInMillis);
+                                   int64_t periodInMillis, util::ILogger &logger);
 
                     virtual void run();
 
@@ -179,12 +180,13 @@ namespace hazelcast {
                     util::AtomicBoolean live;
                     int64_t startTimeMillis;
                     util::Thread *runnerThread;
+                    util::ILogger &logger;
                 };
 
                 class RepeatingRunner : public DelayedRunner {
                 public:
                     RepeatingRunner(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                                    int64_t periodInMillis);
+                                    int64_t periodInMillis, util::ILogger &logger);
 
                     virtual const std::string getName() const;
                 };
@@ -207,7 +209,8 @@ namespace hazelcast {
 
         class HAZELCAST_API Executors {
         public:
-            static boost::shared_ptr<ExecutorService> newSingleThreadExecutor(const std::string &name);
+            static boost::shared_ptr<ExecutorService> newSingleThreadExecutor(const std::string &name,
+                    util::ILogger &logger);
         };
 
     }

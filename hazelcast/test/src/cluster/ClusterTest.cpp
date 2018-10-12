@@ -101,11 +101,11 @@ namespace hazelcast {
                     util::CountDownLatch *shutdownLatch;
                 };
 
-                HazelcastServer startServer(ClientConfig &clientConfig) {
+                std::auto_ptr<HazelcastServer> startServer(ClientConfig &clientConfig) {
                     if (clientConfig.getNetworkConfig().getSSLConfig().isEnabled()) {
-                        return HazelcastServer(sslFactory);
+                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(sslFactory));
                     } else {
-                        return HazelcastServer(*g_srvFactory);
+                        return std::auto_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory));
                     }
                 }
 
@@ -138,7 +138,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testAllClientStates) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
 
-                HazelcastServer instance = startServer(clientConfig);
+                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 clientConfig.setAttemptPeriod(1000);
                 clientConfig.setConnectionAttemptLimit(1);
@@ -158,7 +158,7 @@ namespace hazelcast {
                 ASSERT_TRUE(startedLatch.await(0));
                 ASSERT_TRUE(connectedLatch.await(0));
 
-                instance.shutdown();
+                instance->shutdown();
 
                 ASSERT_OPEN_EVENTUALLY(disconnectedLatch);
                 ASSERT_OPEN_EVENTUALLY(shuttingDownLatch);
@@ -182,7 +182,7 @@ namespace hazelcast {
 
             TEST_P(ClusterTest, testAllClientStatesWhenUserShutdown) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-                HazelcastServer instance = startServer(clientConfig);
+                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 util::CountDownLatch startingLatch(1);
                 util::CountDownLatch startedLatch(1);
@@ -209,7 +209,7 @@ namespace hazelcast {
             TEST_P(ClusterTest, testGroupConfig) {
                 ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
 
-                HazelcastServer instance = startServer(clientConfig);
+                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
 
                 clientConfig.setGroupConfig(GroupConfig("dev", "dev-pass"));
                 HazelcastClient client(clientConfig);

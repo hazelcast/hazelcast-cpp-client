@@ -22,17 +22,18 @@
 //
 
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
-#include <sstream>
 
-#include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/exception/IllegalStateException.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
-            :factory(factory), isStarted(false) {
+            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) : factory(factory), isStarted(false),
+                                                                                logger(new util::ILogger(
+                                                                                        "HazelcastServer",
+                                                                                        "HazelcastServer",
+                                                                                        "testversion",
+                                                                                        config::LoggerConfig())) {
                 start();
             }
 
@@ -48,7 +49,7 @@ namespace hazelcast {
                 } catch (exception::IllegalStateException &illegalStateException) {
                     std::ostringstream out;
                     out << "Could not start new member!!! " << illegalStateException.what();
-                    util::ILogger::getLogger().severe(out.str());
+                    logger->severe(out.str());
                     return false;
                 }
             }

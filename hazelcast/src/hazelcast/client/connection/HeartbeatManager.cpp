@@ -27,7 +27,7 @@ namespace hazelcast {
         namespace connection {
 
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client) : client(client), clientConnectionManager(
-                    client.getConnectionManager()), logger(util::ILogger::getLogger()) {
+                    client.getConnectionManager()), logger(client.getLogger()) {
                 ClientProperties &clientProperties = client.getClientProperties();
                 int timeoutSeconds = clientProperties.getHeartbeatTimeout().getInteger();
                 heartbeatTimeout = timeoutSeconds > 0 ? timeoutSeconds * 1000 : util::IOUtil::to_value<int>(

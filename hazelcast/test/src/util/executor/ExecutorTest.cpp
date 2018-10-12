@@ -20,6 +20,7 @@
 #include <hazelcast/util/Util.h>
 #include <hazelcast/util/impl/SimpleExecutorService.h>
 #include <TestHelperFunctions.h>
+#include <ClientTestSupport.h>
 
 using namespace hazelcast::util;
 
@@ -28,7 +29,7 @@ namespace hazelcast {
         namespace test {
             namespace util {
                 namespace executor {
-                    class ExecutorTest : public ::testing::Test {
+                    class ExecutorTest : public ClientTestSupport {
                     protected:
                         class StripedIntRunable : public StripedRunnable {
                         public:
@@ -130,7 +131,7 @@ namespace hazelcast {
 
                     TEST_F(ExecutorTest, testSingleThreadSequentialExecution) {
                         boost::shared_ptr<ExecutorService> singleThreadExecutor = Executors::newSingleThreadExecutor(
-                                "testGetPossibleSocketAddresses");
+                                "testGetPossibleSocketAddresses", getLogger());
 
                         int numThreads = 10;
                         CountDownLatch latch(numThreads);
@@ -145,7 +146,7 @@ namespace hazelcast {
 
                     TEST_F(ExecutorTest, testMultiThreadExecution) {
                         int32_t numThreads = 10;
-                        hazelcast::util::impl::SimpleExecutorService executorService(ILogger::getLogger(),
+                        hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                      "testMultiThreadExecution",
                                                                                      numThreads);
 
@@ -162,7 +163,7 @@ namespace hazelcast {
 
                     TEST_F(ExecutorTest, testRejectExecuteAfterShutdown) {
                         int32_t numThreads = 10;
-                        hazelcast::util::impl::SimpleExecutorService executorService(ILogger::getLogger(),
+                        hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                      "testRejectExecuteAfterShutdown",
                                                                                      numThreads);
                         executorService.shutdown();
@@ -177,7 +178,7 @@ namespace hazelcast {
                     TEST_F(ExecutorTest, testExecutorSubmit) {
                         int32_t numThreads = 10;
                         int32_t numJobs = 5 * numThreads;
-                        hazelcast::util::impl::SimpleExecutorService executorService(ILogger::getLogger(),
+                        hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                      "testExecutorSubmit",
                                                                                      numThreads);
 
@@ -196,7 +197,7 @@ namespace hazelcast {
 
                     TEST_F(ExecutorTest, testStripedExecutorAlwaysRunsAtTheSameThread) {
                         int32_t numThreads = 10;
-                        hazelcast::util::impl::SimpleExecutorService executorService(ILogger::getLogger(),
+                        hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                       "testMultiThreadExecution",
                                                                                       numThreads);
 

@@ -398,17 +398,13 @@ namespace hazelcast {
                 spi::ProxyManager &getProxyManager();
 
             private:
-                boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
-                                                                                   const std::string &name,
-                                                                                   spi::ClientProxyFactory &factory);
-
                 ClientConfig clientConfig;
                 ClientProperties clientProperties;
                 util::CountDownLatch shutdownLatch;
                 spi::ClientContext clientContext;
                 serialization::pimpl::SerializationService serializationService;
                 std::auto_ptr<connection::ClientConnectionManagerImpl> connectionManager;
-                internal::nearcache::NearCacheManager nearCacheManager;
+                std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
                 spi::impl::ClientClusterServiceImpl clusterService;
                 boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
                 std::auto_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
@@ -425,12 +421,15 @@ namespace hazelcast {
                 static util::Atomic<int32_t> CLIENT_ID;
                 int32_t id;
                 boost::shared_ptr<ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
-
+                const std::string TOPIC_RB_PREFIX;
+                boost::shared_ptr<util::ILogger> logger;
                 HazelcastClientInstanceImpl(const HazelcastClientInstanceImpl& rhs);
 
                 void operator=(const HazelcastClientInstanceImpl& rhs);
 
-                const std::string TOPIC_RB_PREFIX;
+                boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
+                                                                                   const std::string &name,
+                                                                                   spi::ClientProxyFactory &factory);
 
                 boost::shared_ptr<spi::ClientListenerService> initListenerService();
 
@@ -442,6 +441,10 @@ namespace hazelcast {
                         const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);
 
                 std::vector<boost::shared_ptr<connection::AddressProvider> > createAddressProviders();
+
+                void initLogger();
+
+                void initalizeNearCacheManager();
             };
         }
     }

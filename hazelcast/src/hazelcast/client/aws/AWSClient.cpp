@@ -23,7 +23,8 @@
 namespace hazelcast {
     namespace client {
         namespace aws {
-            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
+            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger) : awsConfig(awsConfig),
+            logger(logger) {
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
@@ -35,7 +36,7 @@ namespace hazelcast {
             }
 
             std::map<std::string, std::string> AWSClient::getAddresses() {
-                return impl::DescribeInstances(awsConfig, endpoint).execute();
+                return impl::DescribeInstances(awsConfig, endpoint, logger).execute();
             }
         }
     }

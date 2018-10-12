@@ -68,7 +68,7 @@ namespace hazelcast {
             }
 
             internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
-                return hazelcastClient.nearCacheManager;
+                return *hazelcastClient.nearCacheManager;
             }
 
             ClientProperties &ClientContext::getClientProperties() {
@@ -112,6 +112,10 @@ namespace hazelcast {
 
             spi::ProxyManager &ClientContext::getProxyManager() {
                 return hazelcastClient.getProxyManager();
+            }
+
+            util::ILogger &ClientContext::getLogger() {
+                return *hazelcastClient.logger;
             }
 
         }

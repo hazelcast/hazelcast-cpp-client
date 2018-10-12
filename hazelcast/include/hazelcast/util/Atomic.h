@@ -20,6 +20,7 @@
 #define HAZELCAST_UTIL_ATOMIC_H_
 
 #include <ostream>
+#include <boost/noncopyable.hpp>
 
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
@@ -32,7 +33,7 @@
 namespace hazelcast {
     namespace util {
         template<typename T>
-        class Atomic {
+        class Atomic : private boost::noncopyable {
         public:
             Atomic() {}
 
@@ -118,9 +119,6 @@ namespace hazelcast {
             }
 
         protected:
-            // prevent copy
-            Atomic(const Atomic<T> &rhs);
-            void operator=(const Atomic<T> &rhs);
 
             Mutex mutex;
             T v;

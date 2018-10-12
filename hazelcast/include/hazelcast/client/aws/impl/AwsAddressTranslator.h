@@ -30,12 +30,15 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         namespace aws {
             namespace impl {
                 class HAZELCAST_API AwsAddressTranslator : public connection::AddressTranslator {
                 public:
-                    AwsAddressTranslator(config::ClientAwsConfig &awsConfig);
+                    AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
 
                     /**
                      * Translates an IP address from the private AWS network to the public network.
@@ -57,6 +60,7 @@ namespace hazelcast {
 
                     std::auto_ptr<AWSClient> awsClient;
                     util::Atomic<boost::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
+                    util::ILogger &logger;
                 };
             };
         }

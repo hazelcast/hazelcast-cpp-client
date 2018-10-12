@@ -75,9 +75,6 @@ namespace hazelcast {
                         return boost::shared_ptr<StreamSerializer>();
                     }
 
-                    std::ostringstream out;
-                    out << "Registering global serializer for: " << typeId;
-                    util::ILogger::getLogger().finest(out.str());
                     serializers.putIfAbsent(typeId, globalSerializer);
                     return globalSerializer;
                 }

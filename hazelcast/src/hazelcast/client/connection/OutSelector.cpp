@@ -34,7 +34,7 @@ namespace hazelcast {
         namespace connection {
 
             OutSelector::OutSelector(ClientConnectionManagerImpl &connectionManager)
-            :IOSelector(connectionManager) {
+            :IOSelector(connectionManager), wakeUpSocketSet(connectionManager.getLogger()) {
 
             }
 

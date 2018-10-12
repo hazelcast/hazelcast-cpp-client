@@ -28,7 +28,7 @@ namespace hazelcast {
             namespace impl {
                 AbstractClientInvocationService::AbstractClientInvocationService(ClientContext &client)
                         : CLEAN_RESOURCES_MILLIS(client.getClientProperties().getCleanResourcesPeriodMillis()),
-                          client(client), invocationLogger(util::ILogger::getLogger()),
+                          client(client), invocationLogger(client.getLogger()),
                           connectionManager(NULL),
                           partitionService(client.getPartitionService()),
                           clientListenerService(NULL),
@@ -192,7 +192,7 @@ namespace hazelcast {
                                                                                 ClientContext &clientContext)
                         : responseQueue(100000), invocationLogger(invocationLogger),
                           invocationService(invocationService), client(clientContext),
-                          worker(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this))) {
+                          worker(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), invocationLogger) {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::run() {

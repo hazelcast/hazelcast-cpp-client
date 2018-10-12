@@ -25,6 +25,8 @@
 
 #include "ClientTestSupportBase.h"
 
+#include <hazelcast/util/ILogger.h>
+
 #define assertEquals ASSERT_EQ
 #define assertTrue ASSERT_TRUE
 #define assertFalse ASSERT_FALSE
@@ -41,7 +43,14 @@ namespace hazelcast {
 
             extern HazelcastServerFactory *g_srvFactory;
 
-            class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
+        class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
+            public:
+                ClientTestSupport();
+
+            protected:
+                util::ILogger &getLogger();
+
+                boost::shared_ptr<hazelcast::util::ILogger> logger;
             };
         }
     }

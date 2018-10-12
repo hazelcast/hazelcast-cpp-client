@@ -19,10 +19,12 @@
 
 #include <stdint.h>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class IdGeneratorInterface {
+            class HAZELCAST_API IdGeneratorInterface {
             public:
                  virtual int64_t newId() = 0;
 

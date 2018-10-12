@@ -17,8 +17,8 @@
 #ifdef HZ_BUILD_WITH_SSL
 
 #include <stdlib.h>
-#include <gtest/gtest.h>
 
+#include "ClientTestSupport.h"
 #include <hazelcast/client/config/ClientAwsConfig.h>
 #include <hazelcast/client/aws/impl/DescribeInstances.h>
 
@@ -31,14 +31,14 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class DescribeInstancesTest : public ::testing::Test {
+                class DescribeInstancesTest : public ClientTestSupport {
                 };
 
                 TEST_F (DescribeInstancesTest, testDescribeInstancesTagAndValueSet) {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -48,7 +48,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag").setTagValue("non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -57,7 +57,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("aws-test-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -67,7 +67,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagKey("non-existent-tag");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -76,7 +76,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("aws-tag-value-1");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -86,7 +86,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setTagValue("non-existent-value");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
@@ -95,7 +95,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("launch-wizard-147");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_EQ(results.size(), 1U);
                     ASSERT_NE(results.end(), results.find(getenv("HZ_TEST_AWS_INSTANCE_PRIVATE_IP")));
@@ -105,7 +105,7 @@ namespace hazelcast {
                     client::config::ClientAwsConfig awsConfig;
                     awsConfig.setEnabled(true).setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(
                             getenv("AWS_SECRET_ACCESS_KEY")).setSecurityGroupName("non-existent-group");
-                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader());
+                    client::aws::impl::DescribeInstances desc(awsConfig, awsConfig.getHostHeader(), getLogger());
                     std::map<std::string, std::string> results = desc.execute();
                     ASSERT_TRUE(results.empty());
                 }
