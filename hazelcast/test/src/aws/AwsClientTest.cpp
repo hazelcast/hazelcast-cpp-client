@@ -18,6 +18,7 @@
 
 #include <cmath>
 #include <gtest/gtest.h>
+#include <openssl/crypto.h>
 
 #include <hazelcast/client/HazelcastClient.h>
 
@@ -68,6 +69,31 @@ namespace hazelcast {
 
                     HazelcastClient hazelcastClient(clientConfig);
 
+                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
+                    map.put(5, 20);
+                    boost::shared_ptr<int> val = map.get(5);
+                    ASSERT_NE((int *) NULL, val.get());
+                    ASSERT_EQ(20, *val);
+                }
+
+                TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
+
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    #else
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
+                    #endif
+
+                    // Turn Fips mode on
+                    FIPS_mode_set(1);
+
+                    HazelcastClient hazelcastClient(clientConfig);
                     IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
                     map.put(5, 20);
                     boost::shared_ptr<int> val = map.get(5);
