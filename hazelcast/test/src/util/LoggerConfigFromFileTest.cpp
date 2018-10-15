@@ -45,8 +45,22 @@ namespace hazelcast {
                     std::cout.rdbuf(originalStdout);
                 }
 
+                void forceSyncToFileSystem(const std::string &filename) {
+                    FILE *fhandle = fopen(filename.c_str(), "r");
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    FlushFileBuffers(fhandle);
+                    #else
+                        fsync(fileno(fhandle));
+                    #endif
+                    fclose(fhandle);
+                }
+
                 std::vector<std::string> getLogLines() {
-                    std::ifstream logFile("testLog.txt");
+                    std::string logFileName("testLog.txt");
+
+                    forceSyncToFileSystem(logFileName);
+
+                    std::ifstream logFile(logFileName);
                     std::vector<std::string> lines;
                     std::string line;
                     while (std::getline(logFile, line)) {
