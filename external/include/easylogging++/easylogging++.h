@@ -71,7 +71,7 @@
                                + __GNUC_PATCHLEVEL__)
 #   if defined(__GXX_EXPERIMENTAL_CXX0X__)
 #      define _ELPP_CXX0X 1
-#   elif (_ELPP_GCC_VERSION >= 40801)
+#   elif (_ELPP_GCC_VERSION >= 40801) && (__STDC_VERSION >= 20112L) // CHANGED FROM ORIGINAL SOURCE to handle -std=c99 correctly
 #      define _ELPP_CXX11 1
 #   endif // defined(__GXX_EXPERIMENTAL_CXX0X__)
 #endif // defined(__GNUC__)
@@ -84,7 +84,7 @@
 #   endif // (_MSC_VER >= 1400)
 #   if (_MSC_VER == 1600)
 #      define _ELPP_CXX0X 1
-#   elif (_MSC_VER == 1700)
+#   elif (_MSC_VER == 1700) && (__STDC_VERSION >= 20112L) // CHANGED FROM ORIGINAL SOURCE to handle -std=c99 correctly
 #      define _ELPP_CXX11 1
 #   endif // (_MSC_VER == 1600)
 #else
@@ -95,7 +95,7 @@
 #   define _ELPP_CLANG_VERSION (__clang_major__ * 10000 \
                                 + __clang_minor__ * 100 \
                                 + __clang_patchlevel__)
-#   if (_ELPP_CLANG_VERSION >= 30300)
+#   if (_ELPP_CLANG_VERSION >= 30300) && (__STDC_VERSION >= 20112L) // CHANGED FROM ORIGINAL SOURCE to handle -std=c99 correctly
 #      define _ELPP_CXX11 1
 #   endif // (_ELPP_CLANG_VERSION >= 30300)
 #endif // defined(__clang__) && (__clang__ == 1)
