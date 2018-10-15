@@ -60,7 +60,7 @@ namespace hazelcast {
 
                     forceSyncToFileSystem(logFileName);
 
-                    std::ifstream logFile(logFileName);
+                    std::ifstream logFile(logFileName.c_str());
                     std::vector<std::string> lines;
                     std::string line;
                     while (std::getline(logFile, line)) {
