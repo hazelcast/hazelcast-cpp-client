@@ -195,7 +195,7 @@
 #else
 #   define _ELPP_ENABLE_MUTEX 0
 #endif // (!defined(_DISABLE_MUTEX) && (_ENABLE_EASYLOGGING))
-#if (!defined(_DISABLE_DEBUG_LOGS) && (_ENABLE_EASYLOGGING) && ((defined(_DEBUG)) || (!defined(NDEBUG))))
+#if (!defined(_DISABLE_DEBUG_LOGS) && (_ENABLE_EASYLOGGING)) // && ((defined(_DEBUG)) || (!defined(NDEBUG)))) CHANGED FROM ORIGINAL SOURCE CODE SO THAT DEBUG LOG WORKS WITH RELEASE BUILDS
 #   define _ELPP_DEBUG_LOG 1
 #else
 #   define _ELPP_DEBUG_LOG 0
@@ -1494,6 +1494,8 @@ public:
     //!
     void setToDefault(void) {
         setAll(ConfigurationType::Enabled, "true");
+
+/* CHANGED FROM ORIGINAL SOURCE CODE. Disabled file logging by default. This causes unneeded file operations
 #if _ELPP_OS_UNIX
 #   if _ELPP_NDK
         setAll(ConfigurationType::Filename, "/data/local/tmp/myeasylog.txt");
@@ -1503,7 +1505,9 @@ public:
 #elif _ELPP_OS_WINDOWS
         setAll(ConfigurationType::Filename, "logs\\myeasylog.log");
 #endif // _ELPP_OS_UNIX
-        setAll(ConfigurationType::ToFile, "true");
+*/
+        /* CHANGED FROM ORIGINAL SOURCE CODE. Disabled file writing by default. */
+        setAll(ConfigurationType::ToFile, "false");
         setAll(ConfigurationType::ToStandardOutput, "true");
         setAll(ConfigurationType::MillisecondsWidth, "3");
         setAll(ConfigurationType::PerformanceTracking, "false");
@@ -2411,10 +2415,9 @@ public:
             username_(internal::utilities::OSUtils::currentUser()),
             hostname_(internal::utilities::OSUtils::currentHost()),
             counters_(new internal::RegisteredCounters()) {
-/*
- *      COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
- *
         defaultConfigurations_.setToDefault();
+/*
+ *  CHANGED FROM ORIGINAL CODE. COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
         Configurations conf;
         conf.setToDefault();
         conf.parseFromText(constants_->DEFAULT_LOGGER_CONFIGURATION);

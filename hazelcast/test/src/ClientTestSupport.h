@@ -50,6 +50,7 @@ namespace hazelcast {
             protected:
                 util::ILogger &getLogger();
 
+            private:
                 boost::shared_ptr<hazelcast::util::ILogger> logger;
             };
         }
