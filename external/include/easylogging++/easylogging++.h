@@ -1494,6 +1494,8 @@ public:
     //!
     void setToDefault(void) {
         setAll(ConfigurationType::Enabled, "true");
+
+/* CHANGED FROM ORIGINAL SOURCE CODE. Disabled file logging by default. This causes unneeded file operations
 #if _ELPP_OS_UNIX
 #   if _ELPP_NDK
         setAll(ConfigurationType::Filename, "/data/local/tmp/myeasylog.txt");
@@ -1503,7 +1505,9 @@ public:
 #elif _ELPP_OS_WINDOWS
         setAll(ConfigurationType::Filename, "logs\\myeasylog.log");
 #endif // _ELPP_OS_UNIX
-        setAll(ConfigurationType::ToFile, "true");
+*/
+        /* CHANGED FROM ORIGINAL SOURCE CODE. Disabled file writing by default. */
+        setAll(ConfigurationType::ToFile, "false");
         setAll(ConfigurationType::ToStandardOutput, "true");
         setAll(ConfigurationType::MillisecondsWidth, "3");
         setAll(ConfigurationType::PerformanceTracking, "false");
@@ -2413,7 +2417,7 @@ public:
             counters_(new internal::RegisteredCounters()) {
         defaultConfigurations_.setToDefault();
 /*
- *  COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
+ *  CHANGED FROM ORIGINAL CODE. COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
         Configurations conf;
         conf.setToDefault();
         conf.parseFromText(constants_->DEFAULT_LOGGER_CONFIGURATION);
