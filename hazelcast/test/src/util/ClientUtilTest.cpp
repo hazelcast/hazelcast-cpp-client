@@ -225,7 +225,7 @@ namespace hazelcast {
                 util::Future<int> future(getLogger());
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService(*logger, "testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
                 future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -240,7 +240,7 @@ namespace hazelcast {
                 util::Future<int> future(getLogger());
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService(*logger, "testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
 
                 int value = 5;
                 future.set_value(value);
@@ -254,7 +254,7 @@ namespace hazelcast {
                 util::Future<int> future(getLogger());
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService(*logger, "testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
                 future.andThen(boost::shared_ptr<impl::ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -269,7 +269,7 @@ namespace hazelcast {
                 util::Future<int> future(getLogger());
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
-                util::impl::SimpleExecutorService executorService(*logger, "testFutureAndThen", 3);
+                util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
 
                 future.set_exception(std::auto_ptr<client::exception::IException>(
                         new exception::IOException("exceptionName", "details")));

@@ -195,7 +195,7 @@
 #else
 #   define _ELPP_ENABLE_MUTEX 0
 #endif // (!defined(_DISABLE_MUTEX) && (_ENABLE_EASYLOGGING))
-#if (!defined(_DISABLE_DEBUG_LOGS) && (_ENABLE_EASYLOGGING) && ((defined(_DEBUG)) || (!defined(NDEBUG))))
+#if (!defined(_DISABLE_DEBUG_LOGS) && (_ENABLE_EASYLOGGING)) // && ((defined(_DEBUG)) || (!defined(NDEBUG)))) CHANGED FROM ORIGINAL SOURCE CODE SO THAT DEBUG LOG WORKS WITH RELEASE BUILDS
 #   define _ELPP_DEBUG_LOG 1
 #else
 #   define _ELPP_DEBUG_LOG 0
@@ -2411,10 +2411,9 @@ public:
             username_(internal::utilities::OSUtils::currentUser()),
             hostname_(internal::utilities::OSUtils::currentHost()),
             counters_(new internal::RegisteredCounters()) {
-/*
- *      COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
- *
         defaultConfigurations_.setToDefault();
+/*
+ *  COMMENTED OUT FROM ORIGINAL SOURCE CODE to disable built-in loggers
         Configurations conf;
         conf.setToDefault();
         conf.parseFromText(constants_->DEFAULT_LOGGER_CONFIGURATION);
