@@ -51,6 +51,8 @@ namespace hazelcast {
                  * @return the owner member of the partition
                  */
                 virtual boost::shared_ptr<Member> getOwner() const = 0;
+
+                virtual ~Partition(){};
             };
         }
     }
