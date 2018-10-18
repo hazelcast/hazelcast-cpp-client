@@ -34,6 +34,8 @@ namespace hazelcast {
                  * @return The possible member addresses to connect to.
                  */
                 virtual std::vector<Address> loadAddresses() = 0;
+
+                virtual ~AddressProvider(){};
             };
         }
     }

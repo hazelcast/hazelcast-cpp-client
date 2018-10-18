@@ -51,6 +51,8 @@ namespace hazelcast {
                      * @return true if the member should take part in the operation, false otherwise
                      */
                     virtual bool select(const Member &member) const = 0;
+
+                    virtual ~MemberSelector(){};
                 };
 
                 /**
