@@ -896,7 +896,7 @@ namespace hazelcast {
             * specified map.  The behavior of this operation is undefined if the
             * specified map is modified while the operation is in progress.
             *
-            * @param m mappings to be stored in this map
+            * @param entries mappings to be stored in this map
             */
             void putAll(const std::map<K, V> &entries) {
                 return mapImpl->putAll(entries);

@@ -116,13 +116,19 @@ namespace hazelcast {
             , mergingValue(mergingValue) {
             }
 
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType)
+                    : name(name)
+                    , member(member)
+                    , eventType(eventType) {
+            }
+
             /**
              *
              * Returns the key of the entry event
              *
              * @return the key
              */
-            const K *getKeyObject() const {
+            virtual const K *getKeyObject() const {
                 return key.get();
             }
 
@@ -146,7 +152,7 @@ namespace hazelcast {
              * @return the key
              */
             const K &getKey() const {
-                return *key;
+                return *getKeyObject();
             }
 
             /**
@@ -154,7 +160,7 @@ namespace hazelcast {
              *
              * @return The older value for the entry
              */
-            const V *getOldValueObject() const {
+            virtual const V *getOldValueObject() const {
                 return oldValue.get();
             }
 
@@ -179,7 +185,7 @@ namespace hazelcast {
              * @return The older value for the entry
              */
             const V &getOldValue() const {
-                return *oldValue;
+                return *getOldValueObject();
             }
 
             /**
@@ -187,7 +193,7 @@ namespace hazelcast {
              *
              * @return The value for the entry
              */
-            const V *getValueObject() const {
+            virtual const V *getValueObject() const {
                 return value.get();
             }
 
@@ -212,7 +218,7 @@ namespace hazelcast {
              * @return The value of for the entry
              */
             const V &getValue() const {
-                return *value;
+                return *getValueObject();
             }
 
             /**
@@ -220,7 +226,7 @@ namespace hazelcast {
             *
             * @return The merging value
             */
-            const V *getMergingValueObject() const {
+            virtual const V *getMergingValueObject() const {
                 return mergingValue.get();
             }
 
@@ -245,7 +251,7 @@ namespace hazelcast {
             * @return merging value
             */
             const V &getMergingValue() const {
-                return *mergingValue;
+                return *getMergingValueObject();
             }
 
             /**
@@ -289,7 +295,7 @@ namespace hazelcast {
                 }
                 return out;
             }
-        private:
+        protected:
             std::string name;
             Member member;
             EntryEventType eventType;

@@ -99,6 +99,13 @@ namespace hazelcast {
                             return nearCacheRecordStore->remove(key);
                         }
 
+
+                        bool invalidate(const boost::shared_ptr<KS> &key) {
+                            util::Preconditions::checkNotNull(key, "key cannot be null on invalidate!");
+
+                            return nearCacheRecordStore->invalidate(key);
+                        }
+
                         //@Override
                         bool isInvalidatedOnChange() const {
                             return nearCacheConfig.isInvalidateOnChange();

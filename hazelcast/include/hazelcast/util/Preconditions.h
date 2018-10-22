@@ -53,10 +53,28 @@ namespace hazelcast {
              * @throws NullPointerException if argument is null
              */
             template<typename T>
-            static boost::shared_ptr<T> checkNotNull(const boost::shared_ptr<T> &argument,
+            static const boost::shared_ptr<T> &checkNotNull(const boost::shared_ptr<T> &argument,
                                                      const std::string &errorMessage) {
                 if (argument == NULL) {
                     throw client::exception::NullPointerException(errorMessage);
+                }
+                return argument;
+            }
+
+            /**
+             * Tests if an argument is not null.
+             *
+             * @param argument the argument tested to see if it is not null.
+             * @param argName  the string name (used in message if an error is thrown).
+             * @return the string argument that was tested.
+             * @throws IllegalArgumentException if the argument is null.
+             */
+            template<typename T>
+            static const boost::shared_ptr<T> &isNotNull(const boost::shared_ptr<T> &argument,
+                                                     const std::string argName) {
+                if (argument == NULL) {
+                    throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>("")
+                            << "argument " << argName << " can't be null").build();
                 }
                 return argument;
             }

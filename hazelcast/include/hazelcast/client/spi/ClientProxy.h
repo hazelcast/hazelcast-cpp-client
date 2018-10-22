@@ -18,9 +18,12 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTPROXY_H_
 
 #include <string>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
+#include "hazelcast/client/spi/EventHandler.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,7 +32,9 @@
 
 namespace hazelcast {
     namespace client {
-        class IDistributedObject;
+        namespace impl {
+            class BaseEventHandler;
+        }
 
         namespace spi {
             class ClientContext;
@@ -76,6 +81,30 @@ namespace hazelcast {
                  */
                 void destroyRemotely();
 
+                /**
+                * Internal API.
+                *
+                * @param codec The codec used for listener register/deregister
+                * @param handler Event handler for the listener
+                */
+                std::string registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
+                                             client::impl::BaseEventHandler *handler);
+
+                /**
+                * Internal API.
+                *
+                * @param listenerMessageCodec The codec used for listener register/deregister
+                * @param handler Event handler for the listener
+                */
+                std::string registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                             const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+
+                /**
+                * Internal API.
+                *
+                * @param registrationId The registration id for the listener to be unregistered.
+                */
+                bool deregisterListener(const std::string &registrationId);
             protected:
                 /**
                  * Called before proxy is destroyed and determines whether destroy should be done.
@@ -90,7 +119,7 @@ namespace hazelcast {
                  */
                 void onDestroy();
 
-                /**
+                virtual /**
                  * Called after proxy is destroyed.
                  */
                 void postDestroy();
@@ -98,6 +127,20 @@ namespace hazelcast {
                 const std::string name;
 
             private:
+                class EventHandlerDelegator : public spi::EventHandler<protocol::ClientMessage> {
+                public:
+                    EventHandlerDelegator(client::impl::BaseEventHandler *handler);
+
+                    virtual void handle(const boost::shared_ptr<protocol::ClientMessage> &event);
+
+                    virtual void beforeListenerRegister();
+
+                    virtual void onListenerRegister();
+
+                private:
+                    client::impl::BaseEventHandler *handler;
+                };
+
                 const std::string serviceName;
                 spi::ClientContext &context;
             };

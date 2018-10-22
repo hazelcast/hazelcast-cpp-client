@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-#include "ClientTestSupport.h"
+#include "hazelcast/client/map/impl/DataAwareEntryEvent.h"
 
 namespace hazelcast {
     namespace client {
-        namespace test {
-            ClientTestSupport::ClientTestSupport() {
-                testName = testing::UnitTest::GetInstance()->current_test_info()->name();
-                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
-            }
+        namespace map{
+            namespace impl {
 
-            util::ILogger &ClientTestSupport::getLogger() {
-                return *logger;
-            }
-
-            const std::string &ClientTestSupport::getTestName() const {
-                return testName;
             }
         }
     }
 }
+
