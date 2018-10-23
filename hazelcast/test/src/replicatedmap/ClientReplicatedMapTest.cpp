@@ -446,19 +446,19 @@ namespace hazelcast {
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
-                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
                     out << "foo-" << i;
                     map1->put(out.str(), "bar");
                 }
 
-                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
                     out << "foo-" << i;
                     ASSERT_TRUE(map2->containsKey(out.str()));
                 }
 
-                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
                     out << "foo-" << i;
                     ASSERT_TRUE(map1->containsKey(out.str()));
@@ -543,13 +543,13 @@ namespace hazelcast {
                 boost::shared_ptr<EntryArray<int, int> > entrySet1 = map1->entrySet();
                 boost::shared_ptr<EntryArray<int, int> > entrySet2 = map2->entrySet();
 
-                for (int j = 0; j < entrySet2->size(); ++j) {
+                for (size_t j = 0; j < entrySet2->size(); ++j) {
                     int value;
                     ASSERT_TRUE(findValueForKey(*entrySet2->getKey(j), testValues, value));
                     ASSERT_EQ(value, *entrySet2->getValue(j));
                 }
 
-                for (int j = 0; j < entrySet1->size(); ++j) {
+                for (size_t j = 0; j < entrySet1->size(); ++j) {
                     int value;
                     ASSERT_TRUE(findValueForKey(*entrySet1->getKey(j), testValues, value));
                     ASSERT_EQ(value, *entrySet1->getValue(j));
