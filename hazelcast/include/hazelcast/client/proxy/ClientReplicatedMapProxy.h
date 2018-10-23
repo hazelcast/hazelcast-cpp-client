@@ -101,7 +101,7 @@ namespace hazelcast {
                 }
 
                 virtual bool containsKey(const K &key) {
-                    Data keyData = toData<K>(key);
+                    serialization::pimpl::Data keyData = toData<K>(key);
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapContainsKeyCodec::encodeRequest(
                             name, keyData);
                     return invokeAndGetResult<bool, protocol::codec::ReplicatedMapContainsKeyCodec::ResponseParameters>(
@@ -109,7 +109,7 @@ namespace hazelcast {
                 }
 
                 virtual bool containsValue(const V &value) {
-                    Data valueData = toData<K>(value);
+                    serialization::pimpl::Data valueData = toData<V>(value);
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapContainsValueCodec::encodeRequest(
                             name, valueData);
                     return invokeAndGetResult<bool, protocol::codec::ReplicatedMapContainsKeyCodec::ResponseParameters>(

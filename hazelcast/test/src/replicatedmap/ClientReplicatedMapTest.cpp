@@ -19,12 +19,14 @@
  */
 #include "HazelcastServerFactory.h"
 
-#include <vector>
+#include <boost/foreach.hpp>
 
 #include "../ClientTestSupport.h"
 #include "../HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/serialization/PortableWriter.h"
+#include "hazelcast/client/serialization/PortableReader.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,8 +36,66 @@ namespace hazelcast {
             protected:
                 static const int OPERATION_COUNT;
 
-                std::vector<std::pair<int, int> > buildTestValues() {
-                    std::vector<std::pair<int, int> > testValues;
+                typedef std::vector<std::pair<int, int> > TEST_VALUES_TYPE;
+
+                class SamplePortable : public serialization::Portable {
+                public:
+                    SamplePortable(int a) : a(a) {}
+
+                    SamplePortable() {}
+
+                    virtual int getFactoryId() const {
+                        return 5;
+                    }
+
+                    virtual int getClassId() const {
+                        return 6;
+                    }
+
+                    virtual void writePortable(serialization::PortableWriter &writer) const {
+                        writer.writeInt("a", a);
+                    }
+
+                    virtual void readPortable(serialization::PortableReader &reader) {
+                        a = reader.readInt("a");
+                    }
+
+                    bool operator<(const SamplePortable &rhs) const {
+                        return a < rhs.a;
+                    }
+
+                    int32_t a;
+                };
+
+                class SamplePortableFactory : public serialization::PortableFactory {
+                public:
+                    virtual auto_ptr<serialization::Portable> create(int32_t classId) const {
+                        return auto_ptr<serialization::Portable>(new SamplePortable());
+                    }
+                };
+
+                bool findValueForKey(int key, TEST_VALUES_TYPE &testValues, int &value) {
+                    BOOST_FOREACH(const TEST_VALUES_TYPE::value_type &entry, testValues) {
+                                    if (key == entry.first) {
+                                        value = entry.second;
+                                        return true;
+                                    }
+                                }
+                    return false;
+                }
+
+                template<typename T>
+                bool contains(boost::shared_ptr<DataArray<T> > &values, const T &value) {
+                    for (size_t i = 0; i < values->size(); ++i) {
+                        if (*values->get(i) == value) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                TEST_VALUES_TYPE buildTestValues() {
+                    TEST_VALUES_TYPE testValues;
                     for (int i = 0; i < 100; ++i) {
                         testValues.push_back(std::make_pair(rand(), rand()));
                     }
@@ -46,10 +106,11 @@ namespace hazelcast {
                 }
 
                 static void SetUpTestCase() {
-                    instance1 = new HazelcastServer(*g_srvFactory);
-                    instance2 = new HazelcastServer(*g_srvFactory);
+                    factory = new HazelcastServerFactory("hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
+                    instance1 = new HazelcastServer(*factory);
+                    instance2 = new HazelcastServer(*factory);
                     clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                    clientConfig->addAddress(Address(factory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
                     client2 = new HazelcastClient(*clientConfig);
                 }
@@ -60,12 +121,21 @@ namespace hazelcast {
                     delete clientConfig;
                     delete instance1;
                     delete instance2;
+                    delete factory;
 
                     client = NULL;
                     client2 = NULL;
                     clientConfig = NULL;
                     instance1 = NULL;
                     instance2 = NULL;
+                    factory = NULL;
+                }
+
+                static ClientConfig getClientConfigWithNearCacheInvalidationEnabled() {
+                    boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(
+                            new config::NearCacheConfig<int, int>());
+                    nearCacheConfig->setInvalidateOnChange(true).setInMemoryFormat(config::BINARY);
+                    return ClientConfig().addNearCacheConfig(nearCacheConfig);
                 }
 
                 static HazelcastServer *instance1;
@@ -73,6 +143,7 @@ namespace hazelcast {
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static HazelcastClient *client2;
+                static HazelcastServerFactory *factory;
             };
 
             HazelcastServer *ClientReplicatedMapTest::instance1 = NULL;
@@ -80,6 +151,7 @@ namespace hazelcast {
             ClientConfig *ClientReplicatedMapTest::clientConfig = NULL;
             HazelcastClient *ClientReplicatedMapTest::client = NULL;
             HazelcastClient *ClientReplicatedMapTest::client2 = NULL;
+            HazelcastServerFactory *ClientReplicatedMapTest::factory = NULL;
             const int ClientReplicatedMapTest::OPERATION_COUNT = 100;
 
             TEST_F(ClientReplicatedMapTest, testEmptyMapIsEmpty) {
@@ -132,8 +204,10 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapTest, testGet) {
-                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map1 = client->getReplicatedMap<std::string, std::string>(getTestName());
-                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 = client->getReplicatedMap<std::string, std::string>(getTestName());
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map1 = client->getReplicatedMap<std::string, std::string>(
+                        getTestName());
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 = client->getReplicatedMap<std::string, std::string>(
+                        getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -353,10 +427,8 @@ namespace hazelcast {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
                 boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
 
-
-                std::vector<std::pair<int, int> > testValues = buildTestValues();
+                TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
-
                 for (size_t i = 0; i < testValues.size(); i++) {
                     boost::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
                     std::pair<int, int> &entry = testValues[i];
@@ -367,6 +439,168 @@ namespace hazelcast {
                 ASSERT_EQ((int32_t) testValues.size(), map2->size());
             }
 
+            TEST_F(ClientReplicatedMapTest, testContainsKey) {
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map1 =
+                        client->getReplicatedMap<std::string, std::string>(getTestName());
+
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
+                        client->getReplicatedMap<std::string, std::string>(getTestName());
+
+                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                    std::ostringstream out;
+                    out << "foo-" << i;
+                    map1->put(out.str(), "bar");
+                }
+
+                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                    std::ostringstream out;
+                    out << "foo-" << i;
+                    ASSERT_TRUE(map2->containsKey(out.str()));
+                }
+
+                for (size_t i = 0; i < OPERATION_COUNT; i++) {
+                    std::ostringstream out;
+                    out << "foo-" << i;
+                    ASSERT_TRUE(map1->containsKey(out.str()));
+                }
+            }
+
+            TEST_F(ClientReplicatedMapTest, testContainsValue) {
+                boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+
+                TEST_VALUES_TYPE testValues = buildTestValues();
+                size_t half = testValues.size() / 2;
+                for (size_t i = 0; i < testValues.size(); i++) {
+                    boost::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    std::pair<int, int> &entry = testValues[i];
+                    map->put(entry.first, entry.second);
+                }
+
+                BOOST_FOREACH(TEST_VALUES_TYPE::value_type & entry, testValues) {
+                                ASSERT_TRUE(map2->containsValue(entry.second));
+                            }
+
+                BOOST_FOREACH(TEST_VALUES_TYPE::value_type & entry, testValues) {
+                                ASSERT_TRUE(map1->containsValue(entry.second));
+                            }
+            }
+
+            TEST_F(ClientReplicatedMapTest, testValues) {
+                boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+
+                TEST_VALUES_TYPE testValues = buildTestValues();
+                size_t half = testValues.size() / 2;
+                for (size_t i = 0; i < testValues.size(); i++) {
+                    boost::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    std::pair<int, int> &entry = testValues[i];
+                    map->put(entry.first, entry.second);
+                }
+
+                boost::shared_ptr<DataArray<int> > values1 = map1->values();
+                boost::shared_ptr<DataArray<int> > values2 = map2->values();
+
+                BOOST_FOREACH(TEST_VALUES_TYPE::value_type & entry, testValues) {
+                                ASSERT_TRUE(contains(values1, entry.second));
+                                ASSERT_TRUE(contains(values2, entry.second));
+                            }
+            }
+
+            TEST_F(ClientReplicatedMapTest, testKeySet) {
+                boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+
+                TEST_VALUES_TYPE testValues = buildTestValues();
+                size_t half = testValues.size() / 2;
+                for (size_t i = 0; i < testValues.size(); i++) {
+                    boost::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    std::pair<int, int> &entry = testValues[i];
+                    map->put(entry.first, entry.second);
+                }
+
+                boost::shared_ptr<DataArray<int> > keys1 = map1->keySet();
+                boost::shared_ptr<DataArray<int> > keys2 = map2->keySet();
+
+                BOOST_FOREACH(TEST_VALUES_TYPE::value_type & entry, testValues) {
+                                ASSERT_TRUE(contains(keys1, entry.first));
+                                ASSERT_TRUE(contains(keys2, entry.first));
+                            }
+            }
+
+            TEST_F(ClientReplicatedMapTest, testEntrySet) {
+                boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+
+                TEST_VALUES_TYPE testValues = buildTestValues();
+                size_t half = testValues.size() / 2;
+                for (size_t i = 0; i < testValues.size(); i++) {
+                    boost::shared_ptr<ReplicatedMap<int, int> > map = i < half ? map1 : map2;
+                    std::pair<int, int> &entry = testValues[i];
+                    map->put(entry.first, entry.second);
+                }
+
+                boost::shared_ptr<EntryArray<int, int> > entrySet1 = map1->entrySet();
+                boost::shared_ptr<EntryArray<int, int> > entrySet2 = map2->entrySet();
+
+                for (int j = 0; j < entrySet2->size(); ++j) {
+                    int value;
+                    ASSERT_TRUE(findValueForKey(*entrySet2->getKey(j), testValues, value));
+                    ASSERT_EQ(value, *entrySet2->getValue(j));
+                }
+
+                for (int j = 0; j < entrySet1->size(); ++j) {
+                    int value;
+                    ASSERT_TRUE(findValueForKey(*entrySet1->getKey(j), testValues, value));
+                    ASSERT_EQ(value, *entrySet1->getValue(j));
+                }
+            }
+
+            TEST_F(ClientReplicatedMapTest, testRetrieveUnknownValue) {
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map =
+                        client->getReplicatedMap<std::string, std::string>(getTestName());
+
+                boost::shared_ptr<std::string> value = map->get("foo");
+                ASSERT_NULL("No entry with key foo should exist", value.get(), std::string);
+            }
+
+            TEST_F(ClientReplicatedMapTest, testNearCacheInvalidation) {
+                std::string mapName = randomString();
+
+                ClientConfig clientConfig = getClientConfigWithNearCacheInvalidationEnabled();
+                HazelcastClient client1(clientConfig);
+                HazelcastClient client2(clientConfig);
+
+                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap1 = client1.getReplicatedMap<int, int>(
+                        mapName);
+
+                replicatedMap1->put(1, 1);
+                // puts key 1 to Near Cache
+                replicatedMap1->get(1);
+
+                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap2 = client2.getReplicatedMap<int, int>(
+                        mapName);
+                // this should invalidate Near Cache of replicatedMap1
+                replicatedMap2->clear();
+
+                ASSERT_NULL_EVENTUALLY(replicatedMap1->get(1).get(), int);
+            }
+
+            TEST_F(ClientReplicatedMapTest, testClientPortableWithoutRegisteringToNode) {
+                ClientConfig clientConfig;
+                SerializationConfig serializationConfig;
+                serializationConfig.addPortableFactory(5, boost::shared_ptr<serialization::PortableFactory>(
+                        new SamplePortableFactory()));
+                clientConfig.setSerializationConfig(serializationConfig);
+
+                HazelcastClient client(clientConfig);
+                boost::shared_ptr<ReplicatedMap<int, SamplePortable> > sampleMap = client.getReplicatedMap<int, SamplePortable>(
+                        getTestName());
+                sampleMap->put(1, SamplePortable(666));
+                boost::shared_ptr<SamplePortable> samplePortable = sampleMap->get(1);
+                ASSERT_NOTNULL(samplePortable.get(), SamplePortable);
+                ASSERT_EQ(666, samplePortable->a);
+            }
         }
     }
 }
