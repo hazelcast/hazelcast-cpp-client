@@ -363,12 +363,10 @@ namespace hazelcast {
                     map->put(entry.first, entry.second);
                 }
 
-                ASSERT_EQ(testValues.size(), map1->size());
-                ASSERT_EQ(testValues.size(), map2->size());
-
+                ASSERT_EQ((int32_t) testValues.size(), map1->size());
+                ASSERT_EQ((int32_t) testValues.size(), map2->size());
             }
 
         }
     }
 }
-
