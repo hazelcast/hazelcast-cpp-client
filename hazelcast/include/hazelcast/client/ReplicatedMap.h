@@ -22,7 +22,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/query/Predicate.h"
@@ -51,7 +50,7 @@ namespace hazelcast {
          * @param <V> the type of mapped values
          */
         template <typename K, typename V>
-        class HAZELCAST_API ReplicatedMap : public virtual DistributedObject {
+        class ReplicatedMap : public virtual DistributedObject {
         public:
             /**
              * <p>Associates a given value to the specified key and replicates it to the

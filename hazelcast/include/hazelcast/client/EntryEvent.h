@@ -122,6 +122,8 @@ namespace hazelcast {
                     , eventType(eventType) {
             }
 
+            virtual ~EntryEvent() {}
+
             /**
              *
              * Returns the key of the entry event

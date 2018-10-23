@@ -112,7 +112,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -122,7 +122,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -184,7 +184,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -194,7 +194,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -220,7 +220,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -230,15 +230,15 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
                 }
 
                 map1->clear();
-                ASSERT_EQ(0, map1->size());
-                ASSERT_EQ(0, map2->size());
+                ASSERT_EQ(0U, map1->size());
+                ASSERT_EQ(0U, map2->size());
             }
 
             TEST_F(ClientReplicatedMapTest, testUpdate) {
@@ -260,7 +260,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -270,7 +270,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -317,7 +317,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
@@ -327,7 +327,7 @@ namespace hazelcast {
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
-                    ASSERT_EQ(0, entries->getKey(j)->find("foo-"));
+                    ASSERT_EQ(0U, entries->getKey(j)->find("foo-"));
                     const string *value = entries->getValue(j);
                     ASSERT_NOTNULL(value, std::string);
                     ASSERT_EQ("bar", *value);
