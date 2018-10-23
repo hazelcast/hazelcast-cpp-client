@@ -237,8 +237,8 @@ namespace hazelcast {
                 }
 
                 map1->clear();
-                ASSERT_EQ(0U, map1->size());
-                ASSERT_EQ(0U, map2->size());
+                ASSERT_EQ(0, map1->size());
+                ASSERT_EQ(0, map2->size());
             }
 
             TEST_F(ClientReplicatedMapTest, testUpdate) {
