@@ -79,6 +79,8 @@ namespace hazelcast {
                         std::auto_ptr<serialization::pimpl::Data> response = invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapPutCodec::ResponseParameters>(
                                 request, *keyData);
 
+                        invalidate(keyData);
+
                         return toSharedObject<V>(response);
                     } catch (...) {
                         invalidate(keyData);
@@ -157,6 +159,9 @@ namespace hazelcast {
                                 name, *keyData);
                         std::auto_ptr<serialization::pimpl::Data> result = invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapRemoveCodec::ResponseParameters>(
                                 request, *keyData);
+
+                        invalidate(keyData);
+
                         return toSharedObject<V>(result);
                     } catch (...) {
                         invalidate(keyData);
@@ -172,6 +177,13 @@ namespace hazelcast {
                         std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapPutAllCodec::encodeRequest(
                                 name, dataEntries);
                         invoke(request);
+
+                        boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > cache = nearCache.get();
+                        if (cache.get() != NULL) {
+                            for (EntryVector::const_iterator it = dataEntries.begin(); it != dataEntries.end(); ++it) {
+                                invalidate(toShared(it->first));
+                            }
+                        }
                     } catch (...) {
                         boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > cache = nearCache.get();
                         if (cache.get() != NULL) {
@@ -189,6 +201,11 @@ namespace hazelcast {
                         std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapClearCodec::encodeRequest(
                                 name);
                         invoke(request);
+
+                        boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > cache = nearCache.get();
+                        if (cache.get() != NULL) {
+                            cache->clear();
+                        }
                     } catch (...) {
                         boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > cache = nearCache.get();
                         if (cache.get() != NULL) {
@@ -269,6 +286,22 @@ namespace hazelcast {
                             new impl::EntryArrayImpl<K, V>(result.response, getContext().getSerializationService()));
                 }
 
+                /**
+                 * Get the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor near cache statistics.
+                 *
+                 * This method is implemented for testing purposes.
+                 *
+                 * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
+                 */
+                monitor::NearCacheStats *getNearCacheStats() {
+                    boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, V> > cache = nearCache.get();
+                    if (!cache.get()) {
+                        return NULL;
+                    }
+
+                    return &cache->getNearCacheStats();
+                }
+
             protected:
                 virtual void onInitialize() {
                     ProxyImpl::onInitialize();
@@ -285,6 +318,8 @@ namespace hazelcast {
                             removeNearCacheInvalidationListener();
                             getContext().getNearCacheManager().destroyNearCache(name);
                         }
+
+                        ClientProxy::postDestroy();
                     } catch (...) {
                         ClientProxy::postDestroy();
                         throw;

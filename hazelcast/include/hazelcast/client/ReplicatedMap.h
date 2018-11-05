@@ -27,6 +27,7 @@
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/DataArray.h"
 #include "hazelcast/client/EntryArray.h"
+#include "hazelcast/client/monitor/LocalMapStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -180,18 +181,52 @@ namespace hazelcast {
              */
             virtual boost::shared_ptr<DataArray<K> > keySet() = 0;
 
+            /**
+             *
+             * @return The number of the replicated map entries in the cluster.
+             */
             virtual int32_t size() = 0;
 
+            /**
+             *
+             * @return true if the replicated map is empty, false otherwise
+             */
             virtual bool isEmpty() = 0;
 
+            /**
+             *
+             * @param key The key to be checked for existence
+             * @return true if the entry with the key exist in the replicated map.
+             */
             virtual bool containsKey(const K &key) = 0;
 
+            /**
+             *
+             * @param value The value to check in the replicated map for existence.
+             * @return true if the value exist in the replicated map.
+             */
             virtual bool containsValue(const V &value) = 0;
 
+            /**
+             *
+             * @param key The key to be used to query from replicated map.
+             * @return The value of the key if the key exist, null pointer otherwise.
+             */
             virtual boost::shared_ptr<V> get(const K &key) = 0;
 
+            /**
+             *
+             * @param key The key to be put into the replicated map.
+             * @param value The value of the key
+             * @return The previous value if the key existed in the map or null pointer otherwise.
+             */
             virtual boost::shared_ptr<V> put(const K &key, const V &value) = 0;
 
+            /**
+             *
+             * @param key The key of the entry to be removed.
+             * @return The value associated with the removed key.
+             */
             virtual boost::shared_ptr<V> remove(const K &key) = 0;
         };
     }
