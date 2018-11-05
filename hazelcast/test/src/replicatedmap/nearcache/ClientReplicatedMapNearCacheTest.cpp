@@ -39,6 +39,25 @@ namespace hazelcast {
                  */
                 static const std::string DEFAULT_NEAR_CACHE_NAME;
 
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    instance2 = new HazelcastServer(*g_srvFactory);
+                }
+
+                static void TearDownTestCase() {
+                    delete instance2;
+                    delete instance;
+                    instance2 = NULL;
+                    instance = NULL;
+                }
+
+
+                virtual void TearDown() {
+                    if (map.get()) {
+                        map->destroy();
+                    }
+                }
+
                 boost::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
                     boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
                     nearCacheConfig->setInMemoryFormat(config::OBJECT);
@@ -58,8 +77,6 @@ namespace hazelcast {
                 boost::shared_ptr<ReplicatedMap<int, int> > getNearCachedMapFromClient(
                         boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
-                    servers.push_back(
-                            boost::shared_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
 
                     nearCacheConfig->setName(mapName);
 
@@ -67,7 +84,8 @@ namespace hazelcast {
                     clientConfig->addNearCacheConfig(nearCacheConfig);
 
                     client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
-                    return client->getReplicatedMap<int, int>(mapName);
+                    map = client->getReplicatedMap<int, int>(mapName);
+                    return map;
                 }
 
                 monitor::NearCacheStats *getNearCacheStats(ReplicatedMap<int, int> &map) {
@@ -81,10 +99,14 @@ namespace hazelcast {
                 std::auto_ptr<ClientConfig> clientConfig;
                 boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::vector<boost::shared_ptr<HazelcastServer> > servers;
+                boost::shared_ptr<ReplicatedMap<int, int> > map;
+                static HazelcastServer *instance;
+                static HazelcastServer *instance2;
             };
 
             const std::string ClientReplicatedMapNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
+            HazelcastServer *ClientReplicatedMapNearCacheTest::instance = NULL;
+            HazelcastServer *ClientReplicatedMapNearCacheTest::instance2 = NULL;
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllChecksNearCacheFirst) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());

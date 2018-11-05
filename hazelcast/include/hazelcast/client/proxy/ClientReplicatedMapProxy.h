@@ -133,7 +133,15 @@ namespace hazelcast {
                         std::auto_ptr<serialization::pimpl::Data> result = invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::ReplicatedMapGetCodec::ResponseParameters>(
                                 request, *keyData);
 
+                        if (!result.get()) {
+                            return boost::shared_ptr<V>();
+                        }
+
                         boost::shared_ptr<V> value = toSharedObject<V>(result);
+
+                        if (!value.get()) {
+                            return boost::shared_ptr<V>();
+                        }
 
                         boost::shared_ptr<internal::nearcache::NearCache<Data, V> > cache = nearCache.get();
                         if (cache.get()) {
