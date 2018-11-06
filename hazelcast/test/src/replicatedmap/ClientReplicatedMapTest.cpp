@@ -60,10 +60,6 @@ namespace hazelcast {
                         a = reader.readInt("a");
                     }
 
-                    bool operator<(const SamplePortable &rhs) const {
-                        return a < rhs.a;
-                    }
-
                     int32_t a;
                 };
 
@@ -180,7 +176,7 @@ namespace hazelcast {
                 }
                 map1->putAll(mapTest);
                 ASSERT_EQ((int32_t) mapTest.size(), map1->size());
-                boost::shared_ptr<EntryArray<std::string, std::string> > entries = map1->entrySet();
+                boost::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map1->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
@@ -254,7 +250,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(OPERATION_COUNT, map2->size());
 
-                boost::shared_ptr<EntryArray<std::string, std::string> > entries = map2->entrySet();
+                boost::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
@@ -290,7 +286,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(OPERATION_COUNT, map2->size());
 
-                boost::shared_ptr<EntryArray<std::string, std::string> > entries = map2->entrySet();
+                boost::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
@@ -330,7 +326,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(OPERATION_COUNT, map2->size());
 
-                boost::shared_ptr<EntryArray<std::string, std::string> > entries = map2->entrySet();
+                boost::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
@@ -387,7 +383,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(OPERATION_COUNT, map2->size());
 
-                boost::shared_ptr<EntryArray<std::string, std::string> > entries = map2->entrySet();
+                boost::shared_ptr<LazyEntryArray<std::string, std::string> > entries = map2->entrySet();
                 for (size_t j = 0; j < entries->size(); ++j) {
                     const string *key = entries->getKey(j);
                     ASSERT_NOTNULL(key, std::string);
@@ -540,8 +536,8 @@ namespace hazelcast {
                     map->put(entry.first, entry.second);
                 }
 
-                boost::shared_ptr<EntryArray<int, int> > entrySet1 = map1->entrySet();
-                boost::shared_ptr<EntryArray<int, int> > entrySet2 = map2->entrySet();
+                boost::shared_ptr<LazyEntryArray<int, int> > entrySet1 = map1->entrySet();
+                boost::shared_ptr<LazyEntryArray<int, int> > entrySet2 = map2->entrySet();
 
                 for (size_t j = 0; j < entrySet2->size(); ++j) {
                     int value;

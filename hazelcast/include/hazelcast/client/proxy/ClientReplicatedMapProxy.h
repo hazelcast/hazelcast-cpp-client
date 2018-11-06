@@ -29,7 +29,7 @@
 #include "hazelcast/client/map/impl/DataAwareEntryEvent.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/impl/DataArrayImpl.h"
-#include "hazelcast/client/impl/EntryArrayImpl.h"
+#include "hazelcast/client/impl/LazyEntryArrayImpl.h"
 
 #include "hazelcast/client/protocol/codec/ReplicatedMapAddNearCacheEntryListenerCodec.h"
 #include "hazelcast/client/protocol/codec/ReplicatedMapPutCodec.h"
@@ -284,14 +284,14 @@ namespace hazelcast {
                             new impl::DataArrayImpl<V>(result.response, getContext().getSerializationService()));
                 }
 
-                virtual boost::shared_ptr<EntryArray<K, V> > entrySet() {
+                virtual boost::shared_ptr<LazyEntryArray<K, V> > entrySet() {
                     std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ReplicatedMapEntrySetCodec::encodeRequest(
                             name);
                     boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, targetPartitionId);
                     protocol::codec::ReplicatedMapEntrySetCodec::ResponseParameters result = protocol::codec::ReplicatedMapEntrySetCodec::ResponseParameters::decode(
                             *response);
-                    return boost::shared_ptr<EntryArray<K, V> >(
-                            new impl::EntryArrayImpl<K, V>(result.response, getContext().getSerializationService()));
+                    return boost::shared_ptr<LazyEntryArray<K, V> >(
+                            new impl::LazyEntryArrayImpl<K, V>(result.response, getContext().getSerializationService()));
                 }
 
                 /**

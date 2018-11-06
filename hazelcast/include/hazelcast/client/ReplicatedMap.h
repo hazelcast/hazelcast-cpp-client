@@ -26,8 +26,7 @@
 #include "hazelcast/client/EntryListener.h"
 #include "hazelcast/client/query/Predicate.h"
 #include "hazelcast/client/DataArray.h"
-#include "hazelcast/client/EntryArray.h"
-#include "hazelcast/client/monitor/LocalMapStats.h"
+#include "hazelcast/client/LazyEntryArray.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -154,7 +153,7 @@ namespace hazelcast {
             virtual boost::shared_ptr<DataArray<V> > values() = 0;
 
             /**
-             * Returns a lazy {@link EntryArray} view of the mappings contained in this map.<br/>
+             * Returns a lazy {@link LazyEntryArray} view of the mappings contained in this map.<br/>
              * Due to the lazy nature of the returned array, changes to the map (addition,
              * removal, update) might be reflected on the array.<br/>
              * Changes on the map are <b>NOT</b> reflected on the set on the <b>CLIENT</b> or vice versa.
@@ -165,7 +164,7 @@ namespace hazelcast {
              *
              * @return A lazy set view of the mappings contained in this map.
              */
-            virtual boost::shared_ptr<EntryArray<K, V> > entrySet() = 0;
+            virtual boost::shared_ptr<LazyEntryArray<K, V> > entrySet() = 0;
 
             /**
              * Returns a lazy {@link DataArray} view of the key contained in this map.<br/>
