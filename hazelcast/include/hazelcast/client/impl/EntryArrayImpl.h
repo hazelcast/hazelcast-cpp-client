@@ -38,28 +38,6 @@ namespace hazelcast {
                  * Modifies the array. Do not use the array after this call but just use the new object
                  */
                 EntryArrayImpl(EntryArrayImpl &array, size_t begin, size_t end) : LazyEntryArrayImpl<K, V>(array, begin, end) {
-                    if (end < begin) {
-                        throw exception::IllegalArgumentException("EntryArrayImpl", "end should be greater than begin!");
-                    }
-
-                    size_t size = array.size();
-                    if (end > size) {
-                        throw exception::IllegalArgumentException("EntryArrayImpl", "end should not be greater than array size!");
-                    }
-
-                    // make sure that items are deserialized
-                    for (size_t i = 0; i < size; ++i) {
-                        array[i];
-                    }
-
-                    for (size_t i = begin; i < end; ++i) {
-                        typename LazyEntryArrayImpl<K, V>::Item &item = array.deserializedEntries[i];
-                        LazyEntryArrayImpl<K, V>::dataEntries.push_back(*item.data);
-                        LazyEntryArrayImpl<K, V>::deserializedEntries.push_back(item);
-                        // invalidate the entry at the original array
-                        item.isValueDeserialized = false;
-                        item.isKeyDeserialized = false;
-                    }
                 }
 
                 /**
