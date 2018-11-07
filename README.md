@@ -990,7 +990,7 @@ Its default value is `2`.
 
 ## 5.6. Setting Connection Attempt Period
 
-Connection timeout period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig::getConnectionAttemptLimit()`.
+Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig::getConnectionAttemptLimit()`.
  
 The following is an example configuration.
 
@@ -1617,10 +1617,10 @@ The `memberAttributeChanged` has its own type of event named as `MemberAttribute
 
 The `LifecycleListener` interface notifies for the following events:
 
-* `starting`: A client is starting.
-* `started`: A client has started.
-* `shuttingDown`: A client is shutting down.
-* `shutdown`: A client’s shutdown has completed.
+* `starting`: The client is starting.
+* `started`: The client has started.
+* `shuttingDown`: The client is shutting down.
+* `shutdown`: The client’s shutdown has completed.
 * `clientConnected`: The client is connected to the cluster.
 * `clientConnected`: The client is disconnected from the cluster.
 
@@ -1945,6 +1945,8 @@ Hazelcast partitions your data and spreads it across cluster of members. You can
 3. The predicate requester merges all the results coming from each member into a single set.
 
 Distributed query is highly scalable. If you add new members to the cluster, the partition count for each member is reduced and thus the time spent by each member on iterating its entries is reduced. In addition, the pool of partition threads evaluates the entries concurrently in each member, and the network traffic is also reduced since only filtered data is sent to the requester.
+
+If queried item is Portable, it can be queried for the fields without deserializing the data at the server side and hence no server side implementation of the queried object class will be needed. 
 
 **Built-in Predicates For Query**
 
