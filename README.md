@@ -933,7 +933,7 @@ The provided list is shuffled and tried in a random order. If no address is adde
 Smart routing defines whether the client mode is smart or unisocket. See [C++ Client Operation Modes section](#cpp-client-operation-modes)
 for the description of smart and unisocket modes.
  
-The following is example configuration.
+The following is an example configuration.
 
 **Programmatic:**
 
@@ -1118,7 +1118,7 @@ You can set the protocol as one of the following values:
 ```
 sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
 ```
-The SSLConfig.setEnabled should be called explicitly to enable the SSL. The path of the certificate should be correctly provided. 
+The `SSLConfig.setEnabled` method should be called explicitly to enable the SSL. The path of the certificate should be correctly provided. 
 
 # 7. Using C++ Client with Hazelcast IMDG
 
