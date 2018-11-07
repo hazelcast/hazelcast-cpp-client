@@ -45,10 +45,9 @@
   * [7.3. Handling Failures](#73-handling-failures)
     * [7.3.1. Handling Client Connection Failure](#731-handling-client-connection-failure)
     * [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)    
-    * [7.3.3. Backpressure](#732-backpressure)
-    * [7.3.4. Client Connection Strategy](#732-client-connection-strategy)
-    * [7.3.4. Client Reconnect Strategy](#732-client-reconnection-strategy)
-  * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
+    * [7.3.3. Backpressure](#733-backpressure)
+    * [7.3.4. Client Connection Strategy](#734-client-connection-strategy)
+        * [7.3.4.1. Configure Client Reconnect Strategy](#7341-configure-client-reconnect-strategy)
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
     * [7.4.1. Using Map](#741-using-map)
     * [7.4.2. Using MultiMap](#742-using-multimap)
@@ -78,16 +77,16 @@
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
-  * [7.8 Raw Pointer API](#raw-pointer-api)
-  * [7.9 Mixed Object Types Supporting HazelcastClient](#mixed-object-types-supporting-hazelcastclient)
-    * [7.9.1 TypedData API](#typeddata-api) 
+  * [7.8 Raw Pointer API](#78-raw-pointer-api)
+  * [7.9 Mixed Object Types Supporting HazelcastClient](#79-mixed-object-types-supporting-hazelcastclient)
+    * [7.9.1 TypedData API](#791-typeddata-api) 
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
-  * [8.1.1 Mac](#811-mac)
-  * [8.1.2 Linux](#811-linux)
-  * [8.1.3 Windows](#811-windows)
+      * [8.1.1 Mac](#811-mac)
+      * [8.1.2 Linux](#812-linux)
+      * [8.1.3 Windows](#813-windows)
   * [8.2. Testing](#82-testing)
-  * [8.2.1 Tested Platforms](#811-tested-platforms)
+    * [8.2.1 Tested Platforms](#821-tested-platforms)
   * [8.3. Reproducing Released Libraries](#83-reproducing-released-libraries)
 * [9. Getting Help](#9-getting-help)
 * [10. Contributing](#10-contributing)
@@ -217,63 +216,63 @@ You can find more information about the `hazelcast-member` tool at its GitHub [r
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
 ## 1.3. Downloading and Installing
-Download the latest C++ client library from [Hazelcast C++ Client Website](https://hazelcast.org/clients/cplusplus/). You need to download the zip file for your platform. For Linux and Windows, 32 and 64-bit libraries exist while for MacOS only has the 64-bit version. 
+Download the latest C++ client library from [Hazelcast C++ Client Website](https://hazelcast.org/clients/cplusplus/). You need to download the zip file for your platform. For Linux and Windows, 32- and 64-bit libraries exist. For MacOS, there is only 64-bit version. 
 
-Unzip the file. Below is the directory structure for "Linux 64-bit ZIP" and the others are similar: 
+Unzip the file. Following is the directory structure for Linux 64-bit zip. The structure is similar for the other C++ client distributions.
 
-- cpp/Linux_64/ :
-    - hazelcast :
-        - lib : The shared and static library folder.
-            - tls : Contains the library with TLS (SSL) support enabled.
-        - include : The include folder you need to include when compiling your project.
-    - external/include : External folder that you need to include when compiling your project. Currently the only dependency is `boost/shared_ptr.hpp`.
-        - boost : The external boost files for boost/shared_ptr.       
-
-    - examples : There are a number of examples in this folder for each feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.
-
+- `cpp/Linux_64`
+    - `hazelcast`:
+        - `lib`: Shared and static library directory.
+            - `tls`: Contains the library with TLS (SSL) support enabled.
+        - `include`: Directory you need to include when compiling your project.
+    - `external/include`: External directory that you need to include when compiling your project. Currently the only dependency is `boost/shared_ptr.hpp`.
+        - `boost`: External boost files for `boost/shared_ptr`.
+    - `examples`: Contains various examples for each C++ client feature. Each example produces an executable which you can run in a cluster. You may need to set the server IP addresses for the examples to run.
+    
 ### 1.3.1 Compiling Your Project
 
-For compilation, you need to include the `hazelcast/include` and `external/include` folders in your distribution. You also need to link your application to the appropriate static or shared library. 
+For compilation, you need to include the `hazelcast/include` and `external/include` directories in your in your distribution. You also need to link your application to the appropriate static or shared library. 
 
-If you want to use tls feature, use the lib directory similar to: cpp/Linux_64/hazelcast/lib/tls
+If you want to use the TLS feature, use the `lib` directory with TLS support enabled, e.g., `cpp/Linux_64/hazelcast/lib/tls`.
 
 #### 1.3.1.1 Mac Client
 
-For Mac, there is one distribution: 64 bit.
+For Mac, there is only 64-bit distribution.
 
-Here is an example script to build with static library:
+Here is an example script to build with the static library:
 
 `g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
-Here is an example script to build with shared library:
+Here is an example script to build with the shared library:
 
 `g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClientShared_64`
 
 #### 1.3.1.2 Linux Client
 
-For Linux, there are two distributions: 32 bit and 64 bit.
+For Linux, there are 32- and 64-bit distributions.
 
-Here is an example script to build with static library:
+Here is an example script to build with the static library:
 
 `g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include
       cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
-Here is an example script to build with shared library:
+Here is an example script to build with the shared library:
 
 `g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClientShared_64`
 
-Please add the **__STDC_LIMIT_MACROS** and **__STDC_CONSTANT_MACROS** compilation flags for environments for which the compilation fails with error "INT32_MAX" could not be determined. For example:
+Please add the `__STDC_LIMIT_MACROS` and `__STDC_CONSTANT_MACROS` compilation flags for the environments for which the compilation fails with the error `INT32_MAX could not be determined`. The following is an example command to add these flags:
 
 `g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
 
 
 #### 1.3.1.3 Windows Client
 
-For Windows, there are two distributions; 32 bit and 64 bit. The static library is located in a folder named "static" while the dynamic library(dll) is in the folder named as "shared".
+For Windows, there are 32- and 64-bit distributions. The static library is in the `static` directory and the dynamic library (`dll`) is in the `shared` directory.
 
-When compiling for Windows environment the user should specify one of the following flags:
-    HAZELCAST_USE_STATIC: You want the application to use the static Hazelcast library.
-    HAZELCAST_USE_SHARED: You want the application to use the shared Hazelcast library.
+When compiling for Windows environment, you should specify one of the following flags:
+
+- `HAZELCAST_USE_STATIC`: You want the application to use the static Hazelcast library.
+- `HAZELCAST_USE_SHARED`: You want the application to use the shared Hazelcast library.
 
 ## 1.4. Basic Configuration
 
@@ -432,11 +431,13 @@ Congratulations! You just started a Hazelcast C++ Client.
 
 Let's manipulate a distributed map on a cluster using the client.
 
-Save the following file as `IT.cpp`, compile it using a command similar to (Linux g++ compilation is used for demonstration):
+Save the following file as `IT.cpp` and compile it using a command similar to the following (Linux g++ compilation is used for demonstration):
+
 ```C++
 g++ IT.cpp -o IT -lpthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClient3.10.1_64
 ```
-Then, you can run the application as 
+Then, you can run the application using the following command:
+ 
 ```
 ./IT
 ```
@@ -475,7 +476,7 @@ Bob is in IT department
 
 You see this example puts all the IT personnel into a cluster-wide `personnelMap` and then prints all the known personnel.
 
-Now create a`Sales.cpp` and compile and run it.
+Now create a `Sales.cpp` file, compile and run it as shown below.
 
 **Compile:**
 
@@ -483,7 +484,9 @@ Now create a`Sales.cpp` and compile and run it.
 g++ Sales.cpp -o Sales -lpthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClient3.10.1_64
 ```
 **Run**
-You can run the application using the following command: 
+
+Then, you can run the application using the following command:
+
 ```
 ./Sales
 ```
@@ -531,9 +534,9 @@ That is because our map lives in the cluster and no matter which client we use, 
 
 ## 1.6. Code Samples
 
-See Hazelcast C++ [code samples](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples) for more examples.
+See the Hazelcast C++ [code samples](https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples) for more examples.
 
-You can also see the Hazelcast C++ [API Documentation](https://docs.hazelcast.org/docs/clients/cpp/3.10.1/html/).
+You can also see the Hazelcast C++ client [API Documentation](https://docs.hazelcast.org/docs/clients/cpp/3.10.1/html/).
 
 # 2. Features
 
@@ -590,7 +593,7 @@ desired aspects. An example is shown below.
     hazelcast::client::HazelcastClient hz(config); // Connects to the cluster
 ```
 
-See the `ClientConfig` class documentation at [Hazelcast C++ Client API Docs](https://docs.hazelcast.org/docs/clients/cpp/3.10.1/html/) for details.
+See the `ClientConfig` class reference at the Hazelcast C++ client [API Documentation](https://docs.hazelcast.org/docs/clients/cpp/3.10.1/html/classhazelcast_1_1client_1_1_client_config.html) for details.
 
 # 4. Serialization
 
@@ -613,19 +616,19 @@ Hazelcast serializes all your objects before sending them to the server. The `un
 
 Vector of the above types can be serialized as `boolean[]`, `byte[]`, `short[]`, `int[]`, `float[]`, `double[]`, `long[]` and `string[]` for the Java server side, respectively. 
 
-If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`IdentifiedDataSerializable` Serialization](#1-identifieddataserializable-serialization) and [`Portable` Serialization](#2-portable-serialization).
+If you want the serialization to work faster or you use the clients in different languages, Hazelcast offers its own native serialization types, such as [`IdentifiedDataSerializable` Serialization](#41-identifieddataserializable-serialization) and [`Portable` Serialization](#42-portable-serialization).
 
-On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#3-custom-serialization).
+On top of all, if you want to use your own serialization type, you can use a [Custom Serialization](#43-custom-serialization).
 
 When Hazelcast serializes an object into Data (byte array):
 
 1. It first checks whether the object pointer is NULL.
 
-2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type id for the built-in types such as int32_t, bool, short, byte, etc. If it does not match the buil-in types, it may match the Hazelcast serialization types IdentifiedDataSerializable, Portable or custom types. The matching is done based on method parameter matching. 
+2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as int32_t, bool, short and byte. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
 
 3. If the above check fails, Hazelcast will use the registered Global Serializer if one exists.
 
-If all the above fails, then `exception::HazelcastSerializationException` exception is thrown.
+If all the above fails, then `exception::HazelcastSerializationException` is thrown.
 
 ## 4.1. IdentifiedDataSerializable Serialization
 
@@ -834,7 +837,9 @@ public:
 };
 ```
 
-Note that the serializer `getHazelcastTypeId` method must must return a unique id as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object. Now the last required step is to register the `MusicianSerializer` to the configuration.
+Note that the serializer `getHazelcastTypeId` method must return a unique `id` as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object.
+
+Now the last required step is to register the `MusicianSerializer` to the configuration.
 
 **Programmatic Configuration:**
 
@@ -890,7 +895,7 @@ You should register the global serializer in the configuration.
 
 # 5. Setting Up Client Network
 
-All network related configuration of Hazelcast C++ client is performed via the `ClientNetworkConfig` when using programmatic configuration. Let’s first give an example.
+All network related configuration of Hazelcast C++ client is performed programmatically via the `ClientNetworkConfig` object. The following is an example configuration.
 
 ### Programmatic Client Network Configuration
 
@@ -1001,9 +1006,9 @@ Its default value is `3000` milliseconds.
 ## 5.7. Enabling Client TLS/SSL
 
 You can use TLS/SSL to secure the connection between the clients and members. If you want to enable TLS/SSL
-for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#1-tlsssl).
+for the client-cluster connection, you should set an SSL configuration. Please see [TLS/SSL section](#61-tlsssl).
 
-As explained in the [TLS/SSL section](#1-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
+As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
 
 # 6. Securing Client Connection
 
@@ -1020,11 +1025,19 @@ You should set `keyStore` and `trustStore` before starting the members. See the 
 
 #### 6.1.1. TLS/SSL for Hazelcast Members
 
-Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members).
+Hazelcast allows you to encrypt socket level communication between Hazelcast members and between Hazelcast clients and members, for end to end encryption. To use it, see the [TLS/SSL for Hazelcast Members section](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#tls-ssl-for-hazelcast-members) in the Hazelcast IMDG Reference Manual.
 
 #### 6.1.2. TLS/SSL for Hazelcast C++ Clients
 
-You need to provide compile flag -DHZ_BUILD_WITH_SSL when compiling since TLS feature depends on openssl library. You need the openssl development library installed in your development environment. You need to enable the SSL config in client network config. Furthermore, you should specify a correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory. You can set the protocol type. The default protocol is TLSv1.2. The SSL config also lets you set the cipher suite to be used.
+To use TLS/SSL with your Hazelcast C++ client, you should perform the following:
+
+* Provide the compile flag `-DHZ_BUILD_WITH_SSL` when compiling, since the TLS feature depends on OpenSSL library.
+* Install the OpenSSL library to your development environment.
+* Enable the SSL in the client network configuration.
+* Specify the correct path to the CA verification file for the trusted server. This path can be relative to the executable working directory.
+* If needed, set the cipher suite to be used via the SSL configuration.
+
+You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv1.2) as the default protocol type and version..
 
 The following is an example configuration.
 
@@ -1105,8 +1118,7 @@ You can set the protocol as one of the following values:
 ```
 sslv2, sslv3, tlsv1, sslv23, tlsv11, tlsv12
 ```
-The default value for the protocol if not set is tlsv12. The SSLConfig.setEnabled should be called explicitly to enable the SSL.
-The path of the certificate should be correctly provided. 
+The SSLConfig.setEnabled should be called explicitly to enable the SSL. The path of the certificate should be correctly provided. 
 
 # 7. Using C++ Client with Hazelcast IMDG
 
@@ -1114,11 +1126,11 @@ The path of the certificate should be correctly provided.
 
 This chapter provides information on how you can use Hazelcast IMDG's data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
 
-Most of the C++ API are synchronous methods. The failures are communicated via exceptions. All exceptions are derived from hazelcast::client::exception::IException base method. There are also asynchronous versions of some of the API. The asynchronous API uses hazelcast::client::Future<T> future object. It works similar to the std::future.  
+Most of the methods in C++ API are synchronous. The failures are communicated via exceptions. All exceptions are derived from the `hazelcast::client::exception::IException` base method. There are also asynchronous versions of some methods in the API. The asynchronous ones use the `hazelcast::client::Future<T>` future object. It works similar to the `std::future`.
 
 If you are ready to go, let's start to use Hazelcast C++ client!
 
-The first step is the configuration. You can configure the C++ client programmatically. See the [Programmatic Configuration section](#programmatic-configuration) for details. 
+The first step is the configuration. You can configure the C++ client programmatically. See the [Programmatic Configuration section](#311-programmatic-configuration) for details. 
 
 The following is an example on how to create a `ClientConfig` object and configure it programmatically:
 
@@ -1182,13 +1194,13 @@ There are two main failure cases you should be aware of. Below sections explain 
 
 While the client is trying to connect initially to one of the members in the `ClientNetworkConfig::getAddresses()`, all the members might not be available. Instead of giving up, throwing an error and stopping the client, the client will retry as many as `connectionAttemptLimit` times. 
 
-You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#5-setting-connection-attempt-limit).
+You can configure `connectionAttemptLimit` for the number of times you want the client to retry connecting. See the [Setting Connection Attempt Limit section](#55-setting-connection-attempt-limit).
 
 The client executes each operation through the already established connection to the cluster. If this connection(s) disconnects or drops, the client will try to reconnect as configured.
 
 ### 7.3.2. Handling Retry-able Operation Failure
 
-While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#3-enabling-redo-operation).
+While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retrying for the other operations, you can set the `redoOperation` to `true`. See the [Enabling Redo Operation section](#53-enabling-redo-operation).
 
 You can set a timeout for retrying the operations sent to a member. This can be provided by using the property `hazelcast.client.invocation.timeout.seconds` in `ClientConfig.properties`. The client will retry an operation within this given period, of course, if it is a read-only operation or you enabled the `redoOperation` as stated in the above paragraph. This timeout value is important when there is a failure resulted by either of the following causes:
 
@@ -1199,27 +1211,28 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 ## 7.3.4 Client Connection Strategy
-Hazelcast client-cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured by:
+Hazelcast client-cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured as follows:
 
 ```
 ClientConfig::getConnectionStrategyConfig().setAsyncStart(bool);
 ```
 
-When this config is set true, the client creation won't wait to connect to cluster. The client instance will throw exception for any request, until it connects to cluster and become ready.
-If it is set to false (the default case), <code>HazelcastClient(const ClientConfig)</code> will block until a cluster connection is established and it's ready to use client instance.
+When this configuration is set to true, the client creation won't wait to connect to cluster. The client instance will throw an exception for any request, until it connects to the cluster and become ready.
 
-## 7.3.5 Configure Client Reconnect Strategy
-You can configure how the client should act when the client disconnects from the cluster for any reason. This is configured using the following configuration:
+If it is set to false (the default case), `HazelcastClient(const ClientConfig)` will block until a cluster connection is established and it's ready to use the client instance.
+
+### 7.3.4.1 Configure Client Reconnect Strategy
+You can configure how the client should act when the client disconnects from the cluster for any reason. This is configured as follows:
 
 ```
 ClientConfig::getConnectionStrategyConfig().setReconnectMode(const hazelcast::client::config::ClientConnectionStrategyConfig::ReconnectMode &);
 ```
 
-Possible values for the ReconnectMode are:
+Possible values for `ReconnectMode` are:
 
-- OFF: Prevents reconnect to cluster after a disconnect.
-- ON: Reconnect to cluster by blocking invocations.
-- ASYNC: Reconnect to cluster without blocking invocations. Invocations will receive <code>HazelcastClientOfflineException</code>.
+- `OFF`: Prevents reconnection to the cluster after a disconnect.
+- `ON`: Reconnects to the cluster by blocking invocations.
+- `ASYNC`: Reconnects to the cluster without blocking invocations. Invocations will receive `HazelcastClientOfflineException`.
 
 ## 7.4. Using Distributed Data Structures
 
@@ -1831,7 +1844,7 @@ private:
 };
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
 
 The following is the Java equivalent of the entry processor in C++ client given above:
 
@@ -1935,7 +1948,7 @@ Distributed query is highly scalable. If you add new members to the cluster, the
 
 **Built-in Predicates For Query**
 
-There for many built-in `Predicate` implementations for your query requirements. Some of them are explained below.
+There are many built-in `Predicate` implementations for your query requirements. Some of them are explained below.
 
 * `TruePredicate`: This predicate returns true and hence includes all the entries on the response.
 * `FalsePredicate`: This predicate returns false and hence filters out all the entries in the response.
@@ -1954,7 +1967,7 @@ There for many built-in `Predicate` implementations for your query requirements.
 
 Hazelcast offers the following ways for distributed query purposes:
 
-* Combining Predicates: AndPredicate, OrPredicate, NotPredicate.
+* Combining predicates with `AndPredicate`, `OrPredicate` and `NotPredicate`
 * Distributed SQL Query
 
 #### 7.7.1.1. Employee Map Query Example
@@ -2017,7 +2030,7 @@ Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want
 </hazelcast>
 ```
 
-Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath).
+Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
 
 > **NOTE: You can also make this object `Portable` and implement its Java equivalent and portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
@@ -2031,7 +2044,7 @@ You can combine predicates by using the `AndPredicate`, `OrPredicate` and `NotPr
     std::vector<Employee> activeEmployeesLessThan30 = employees.values(andPredicate);
 ```
 
-In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the IMap::values(const query::Predicate &predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them. 
+In the above example code, `predicate` verifies whether the entry is active and its `age` value is less than 30. This `predicate` is applied to the `employee` map using the `IMap::values(const query::Predicate &predicate)` method. This method sends the predicate to all cluster members and merges the results coming from them. 
 
 > **NOTE: Predicates can also be applied to `keySet` and `entrySet` of the Hazelcast IMDG's distributed map.**
 
@@ -2150,7 +2163,7 @@ Also, you can access a specific page more easily with the help of the `setPage` 
 
 When using C++ client you can have the ownership of raw pointers for the objects you create and return. This allows you to keep the objects in your library/application without any need for copy.
 
-For each container you can use the adapter classes, whose names start with `RawPointer`, to access the raw pointers of the created objects. These adapter classes are found in `hazelcast::client::adaptor` namespace and listed below:
+For each container, you can use the adapter classes, whose names start with `RawPointer`, to access the raw pointers of the created objects. These adapter classes are found in the `hazelcast::client::adaptor` namespace and listed below:
 
 - `RawPointerList`
 - `RawPointerQueue`
@@ -2190,7 +2203,7 @@ for (size_t i = 0; i < entries->size(); ++i) {
     std::cout << "Finished" << std::endl;
 ```
 
-Raw pointer API uses the DataArray and EntryArray interfaces which allow late deserialization of objects. The entry in the returned array is deserialized only when it is accessed. Please see the example code below:
+Raw pointer API uses the `DataArray` and `EntryArray` interfaces which allow late deserialization of objects. The entry in the returned array is deserialized only when it is accessed. Please see the example code below:
 
 ```
 // No deserialization here
@@ -2212,7 +2225,7 @@ std::auto_ptr<std::string> releasedValue = vals->release(0);
 value = vals->get(0);
 ```
 
-Using raw pointer based API may improve performance if you are using the API to return multiple values such as values, keySet, and entrySet. In this case, cost of deserialization is delayed until the item is actually accessed.
+Using the raw pointer based API may improve the performance if you are using the API to return multiple values such as `values`, `keySet` and `entrySet`. In this case, the cost of deserialization is delayed until the item is actually accessed.
 
 ## 7.9. Mixed Object Types Supporting HazelcastClient
 Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted `HazelcastClient`. You can adopt the client in this way:
@@ -2221,7 +2234,7 @@ Sometimes, you may need to use Hazelcast data structures with objects of differe
     HazelcastClient client(config);
     mixedtype::HazelcastClient &hazelcastClient = client.toMixedType();
 ``` 
-The `mixedtype::HazelcastClient` interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each map.put call. An example usage is shown below:
+The `mixedtype::HazelcastClient` interface is designed to provide you the data structures which allows you to work with any object types in a mixed manner. For example, the interface allows you to provide the key and value type differently for each `map.put` call. An example usage is shown below:
 ```
     mixedtype::IMap map = hazelcastClient.getMap("MyMap");
 
@@ -2231,14 +2244,15 @@ The `mixedtype::HazelcastClient` interface is designed to provide you the data s
     TypedData result = map.get<int>(3);
 ``` 
 
-As you can see in the above code snippet, we are putting `int`, `string` and MyCustomObject to the same map. Both the key and value can be of different type for each map.put call.
+As you can see in the above code snippet, we are putting `int`, `string` and `MyCustomObject` to the same map. Both the key and value can be of different type for each `map.put` call.
 
-If you want to use mixed type map with near cache, then you should use the MixedNearCacheConfig class and add config to the ClientConfig using the addMixedNearCacheConfig method. See the below example:
+If you want to use a mixed type map with near cache, then you should use the `MixedNearCacheConfig` class and add this configuration to the `ClientConfig` using the `addMixedNearCacheConfig` method. See the below example:
+
 ```
    boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
    clientConfig.addMixedNearCacheConfig(nearCacheConfig);
 ```
-Mixed type support for near cache only exists when the in-memory format is BINARY. The OBJECT in-memory format is not supported for MixedNearCacheConfig;
+Mixed type support for near cache only exists when the in-memory format is BINARY. The OBJECT in-memory format is not supported for `MixedNearCacheConfig`.
 
 The mixed type API uses the TypedData class at the user interface.
 
@@ -2287,23 +2301,23 @@ tweak the implementation to your application's needs, you can follow the steps i
 
 For compiling with SSL support: 
 
-- You need to have the openssl (version 1.0.2) installed in your development environment: (i) Add openssl `include` directory to include directories, (ii) Add openssl `library` directory to the link directories list (This is the directory named `tls`. e.g. `cpp/Linux_64/hazelcast/lib/tls`), (iii) Set the openssl libraries to link.
+- You need to have the OpenSSL (version 1.0.2) installed in your development environment: (i) add OpenSSL `include` directory to include directories, (ii) add OpenSSL `library` directory to the link directories list (this is the directory named `tls`, e.g., `cpp/Linux_64/hazelcast/lib/tls`), and (iii) set the OpenSSL libraries to link.
  
-- You can provide your openssl installation directory to cmake using the following flags: 
-    - -DHZ_OPENSSL_INCLUDE_DIR="Path to open installation include directory" 
-    - -DHZ_OPENSSL_LIB_DIR="Path to openssl lib directory"
+- You can provide your OpenSSL installation directory to cmake using the following flags:
+    - -DHZ_OPENSSL_INCLUDE_DIR="Path to OpenSSL installation include directory" 
+    - -DHZ_OPENSSL_LIB_DIR="Path to OpenSSL lib directory"
 
 - Use -DHZ_COMPILE_WITH_SSL=ON
 
-- Check the top level CMakeLists.txt file to see which libraries we link for openssl in which environment. 
-    - For Mac OS and Linux, we link with "ssl" and "crypto" 
-    - For Windows, install also the 1.1.x version of the openssl library. An example linkage for 64 bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
+- Check the top level CMakeLists.txt file to see which libraries we link for OpenSSL in which environment. 
+    - For Mac OS and Linux, we link with "ssl" and "crypto".
+    - For Windows, install also the 1.1.x version of the OpenSSL library. An example linkage for 64-bit library and release build: "libeay32MD ssleay32MD libcrypto64MD libSSL64MD".
 
 
 Follow the below steps to build and install Hazelcast C++ client from its source:
 
-1. Clone the project from github: `git clone --recursive git@github.com:hazelcast/hazelcast-cpp-client.git` We use --recursive flag for our dependency on googletest framework.
-2. Create a build directory (e.g. build) from the root of the project. In the build directory, run the cmake command depending on your environment as depicted in the next sections.
+1. Clone the project from GitHub using the following command: `git clone --recursive git@github.com:hazelcast/hazelcast-cpp-client.git`.  We use the `--recursive` flag for our dependency on the googletest framework.
+2. Create a build directory, e.g., `build`, from the root of the project. In the build directory, run the cmake command depending on your environment as depicted in the next sections.
 
 ### 8.1.1 Mac
 
@@ -2376,10 +2390,10 @@ In order to test Hazelcast C++ client locally, you will need the following:
 * Java 6 or newer
 * Maven
 * cmake
-* openssl
+* OpenSSL
 * Python 2 and pip (Needed for RemoteController used for controlling server instances)
 
-You can also pull our test docker images from docker hub using the command: `docker pull ihsan/gcc_346_ssl` This images has all the tools for building the project. 
+You can also pull our test docker images from the docker hub using the following command: `docker pull ihsan/gcc_346_ssl`. These images have all the tools for building the project.
 
 Following command builds and runs the tests:
 
@@ -2388,7 +2402,7 @@ Following command builds and runs the tests:
 - Windows: `./testWindowsSingleCase.bat 64 SHARED Debug`
 
 ### 8.2.1 Tested Platforms
-Our CI tests are run continuously on the following platforms and compilers:
+Our CI tests run continuously on the following platforms and compilers:
 - Linux: CentOs5 gcc 3.4.6, CentOs5.11 gcc 4.1.2, centos 7 gcc 4.8.2
 - Windows: Visual Studio 12
 - Mac OS: Apple LLVM version 7.3.0 (clang-703.0.31)
@@ -2398,7 +2412,7 @@ Our CI tests are run continuously on the following platforms and compilers:
 Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
 
 Note: 
-- The default release scripts require that you have openssl (version 1.0.2) installed in your development environment.
+- The default release scripts require that you have OpenSSL (version 1.0.2) installed in your development environment.
 
 ## Mac
 
