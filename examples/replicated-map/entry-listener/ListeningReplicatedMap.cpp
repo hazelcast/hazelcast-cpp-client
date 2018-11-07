@@ -15,29 +15,29 @@
  */
 #include <hazelcast/client/HazelcastClient.h>
 
-class MyEntryListener : public hazelcast::client::EntryListener<int, int> {
+class MyEntryListener : public hazelcast::client::EntryListener<std::string, std::string> {
 public:
-    void entryAdded(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryAdded(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryRemoved(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryRemoved(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryRemoved] " << event << std::endl;
     }
 
-    void entryUpdated(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryUpdated(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryAdded] " << event << std::endl;
     }
 
-    void entryEvicted(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryEvicted(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryUpdated] " << event << std::endl;
     }
 
-    void entryExpired(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryExpired(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryExpired] " << event << std::endl;
     }
 
-    void entryMerged(const hazelcast::client::EntryEvent<int, int> &event) {
+    void entryMerged(const hazelcast::client::EntryEvent<std::string, std::string> &event) {
         std::cout << "[entryMerged] " << event << std::endl;
     }
 
