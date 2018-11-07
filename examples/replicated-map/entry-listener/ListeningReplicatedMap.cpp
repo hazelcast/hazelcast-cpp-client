@@ -13,12 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/query/GreaterLessPredicate.h>
-#include <hazelcast/client/query/QueryConstants.h>
 
 class MyEntryListener : public hazelcast::client::EntryListener<int, int> {
 public:
@@ -59,31 +54,14 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("somemap");
+    boost::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
+            "map");
 
-    MyEntryListener listener;
+    boost::shared_ptr<hazelcast::client::EntryListener<std::string, std::string> > listener(new MyEntryListener());
 
-    std::string listenerId = map.addEntryListener(listener, true);
+    std::string listenerId = map->addEntryListener(listener);
 
-    std::cout << "EntryListener registered" << std::endl;
-
-    // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
-
-    map.removeEntryListener(listenerId);
-
-    // Continuous Query example
-    // Register listener with predicate
-    // Only listen events for entries with key >= 7
-    listenerId = map.addEntryListener(listener, hazelcast::client::query::GreaterLessPredicate<int>(
-            hazelcast::client::query::QueryConstants::getKeyAttributeName(), 7, true, false), true);
-
-    // wait for modifymap executable to run
-    hazelcast::util::sleep(10);
-
-    map.removeEntryListener(listenerId);
-
-    std::cout << "Finished" << std::endl;
+    std::cout << "EntryListener registered with id " << listenerId << std::endl;
 
     return 0;
 }
