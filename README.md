@@ -77,9 +77,12 @@
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
-  * [7.8 Raw Pointer API](#78-raw-pointer-api)
-  * [7.9 Mixed Object Types Supporting HazelcastClient](#79-mixed-object-types-supporting-hazelcastclient)
-    * [7.9.1 TypedData API](#791-typeddata-api) 
+  * [7.8. Performance](#78-performance)
+  * [7.8.1. Partition Aware](#781-partition-aware)
+  * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
+  * [7.10 Raw Pointer API](#710-raw-pointer-api)
+  * [7.11 Mixed Object Types Supporting HazelcastClient](#711-mixed-object-types-supporting-hazelcastclient)
+    * [7.11.1 TypedData API](#7111-typeddata-api) 
 * [8. Development and Testing](#8-development-and-testing)
   * [8.1. Building and Using Client From Sources](#81-building-and-using-client-from-sources)
       * [8.1.1 Mac](#811-mac)
@@ -140,7 +143,8 @@ In order to use Hazelcast C++ client, we first need to setup a Hazelcast IMDG cl
 There are following options to start a Hazelcast IMDG cluster easily:
 
 * You can run standalone members by downloading and running JAR files from the website.
-* You can embed members to your Java projects. The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool) if you have brew installed in your computer.
+* You can embed members to your Java projects. 
+* The easiest way is to use [hazelcast-member tool](https://github.com/hazelcast/hazelcast-member-tool) if you have brew installed in your computer.
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
@@ -241,28 +245,28 @@ For Mac, there is only 64-bit distribution.
 
 Here is an example script to build with the static library:
 
-`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcastClientStatic_64.a`
+`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcast3.10.1_64.a`
 
 Here is an example script to build with the shared library:
 
-`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClientShared_64`
+`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClient3.10.1_64`
 
 #### 1.3.1.2 Linux Client
 
-For Linux, there are 32- and 64-bit distributions.
+For Linux, there are 32- and 64-bit distributions. You need to link with pthread library when compiling in Linux.
 
 Here is an example script to build with the static library:
 
 `g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include
-      cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
+      cpp/Linux_64/hazelcast/lib/libHazelcastClient3.10.1_64.a`
 
 Here is an example script to build with the shared library:
 
-`g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClientShared_64`
+`g++ main.cpp -lpthread -Wl,–no-as-needed -lrt -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -Lcpp/Linux_64/hazelcast/lib -lHazelcastClient3.10.1_64`
 
 Please add the `__STDC_LIMIT_MACROS` and `__STDC_CONSTANT_MACROS` compilation flags for the environments for which the compilation fails with the error `INT32_MAX could not be determined`. The following is an example command to add these flags:
 
-`g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS cpp/Linux_64/hazelcast/lib/libHazelcastClientStatic_64.a`
+`g++ main.cpp -pthread -Icpp/Linux_64/hazelcast/external/include -Icpp/Linux_64/hazelcast/include -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS cpp/Linux_64/hazelcast/lib/libHazelcastClient3.10.1_64.a`
 
 
 #### 1.3.1.3 Windows Client
@@ -286,7 +290,7 @@ This section describes the most common configuration elements to get you started
 It discusses some member side configuration options to ease the understanding of Hazelcast's ecosystem. Then, the client side configuration options
 regarding the cluster connection are discussed. The configurations for the Hazelcast IMDG data structures that can be used in the C++ client are discussed in the following sections.
 
-See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#configuration-overview) for more information.
+See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html) and [Configuration Overview section](#3-configuration-overview) for more information.
 
 ### 1.4.1. Configuring Hazelcast IMDG
 
@@ -339,7 +343,7 @@ live in the same network without disturbing each other. Note that the cluster na
  to the same cluster. `<password>` tag is not in use since Hazelcast 3.9. It is there for backward compatibility
 purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 - `<network>`
-    - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701 You can specify another port number, and if
+    - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701. You can specify another port number, and if
      you set `auto-increment` to `true`, then Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
     - `<join>`: Specifies the strategies to be used by the member to find other cluster members. Choose which strategy you want to
     use by setting its `enabled` attribute to `true` and the others to `false`.
@@ -356,15 +360,13 @@ These configuration elements are enough for most connection scenarios. Now we wi
 
 You can configure Hazelcast C++ Client programatically.
 
-This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#configuration-overview)
+This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
 and the following sections for information about detailed network configurations and/or additional features of Hazelcast C++ client configuration.
-
-An easy way to configure your Hazelcast C++ Client is to create a `ClientConfig` object and set the appropriate options. Then you can
-supply this object to your client at the startup. 
 
 **Programmatic configuration**
 
-You need to create a `ClientConfig` object and adjust its properties. Then you can pass this object to the client when starting it.
+An easy way to configure your Hazelcast C++ Client is to create a `ClientConfig` object and set the appropriate options. Then you need to
+supply this object to your client at the startup.
 
 ```C++
     hazelcast::client::ClientConfig config;
@@ -624,7 +626,7 @@ When Hazelcast serializes an object into Data (byte array):
 
 1. It first checks whether the object pointer is NULL.
 
-2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as int32_t, bool, short and byte. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
+2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as `byte`, `char`, `int32_t`, `bool`, `int64_t`, etc. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
 
 3. If the above check fails, Hazelcast will use the registered Global Serializer if one exists.
 
@@ -777,9 +779,9 @@ Note that the ID that is passed to the `SerializationConfig` is same as the `fac
 
 ## 4.3. Custom Serialization
 
-Hazelcast lets you plug a custom serializer to be used for serialization of objects.
+Hazelcast lets you plug a custom serializer to be used for serialization of objects. Custom serialization lets you use your existing classes without any modification in code for serialization purposes. They will be serialized/deserialized without any code change to already existing classes.
 
-Let's say you have an object `Musician` and you would like to customize the serialization. The reason might be that you want to use an external serializer for only one object.
+Let's say you have an object `Musician` and you would like to customize the serialization. The reason might be that you want to use an external serializer for your object.
 
 ```C++
 class C++ {
@@ -838,6 +840,8 @@ public:
 ```
 
 Note that the serializer `getHazelcastTypeId` method must return a unique `id` as Hazelcast will use it to lookup the `MusicianSerializer` while it deserializes the object.
+
+You should provide the free function `int getHazelcastTypeId(const MusicianSerializer *);` in the same namespace to which `MusicianSerializer` class belongs. This function should return the same id with its serializer. This id is used to determine which serializer needs to be used for your classes. 
 
 Now the last required step is to register the `MusicianSerializer` to the configuration.
 
@@ -926,11 +930,11 @@ list to find an alive member. Although it may be enough to give only one address
     clientConfig.getNetworkConfig().addAddress(Address("10.1.1.22", 5703));
 ```
 
-The provided list is shuffled and tried in a random order. If no address is added to the `ClientNetworConfig`, then `127.0.0.1:5701` is tried by default.
+The provided list is shuffled and tried in a random order. If no address is added to the `ClientNetworkConfig`, then `127.0.0.1:5701` is tried by default.
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See [C++ Client Operation Modes section](#cpp-client-operation-modes)
+Smart routing defines whether the client mode is smart or unisocket. See [C++ Client Operation Modes section](#72-cpp-client-operation-modes)
 for the description of smart and unisocket modes.
  
 The following is an example configuration.
@@ -990,7 +994,7 @@ Its default value is `2`.
 
 ## 5.6. Setting Connection Attempt Period
 
-Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig::getConnectionAttemptLimit()`.
+Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig::getConnectionAttemptPeriod()`.
  
 The following is an example configuration.
 
@@ -1145,7 +1149,6 @@ The second step is initializing the `HazelcastClient` to be connected to the clu
 ```C++
     HazelcastClient client(clientConfig);
     // some operation
-});
 ```
 
 **This client object is your gateway to access all the Hazelcast distributed objects.**
@@ -1185,6 +1188,12 @@ In the smart mode, the clients connect to each cluster member. Since each data p
 For some cases, the clients can be required to connect to a single member instead of each member in the cluster. Firewalls, security or some custom networking issues can be the reason for these cases.
 
 In the unisocket client mode, the client will only connect to one of the configured addresses. This single member will behave as a gateway to the other members. For any operation requested from the client, it will redirect the request to the relevant member and return the response back to the client returned from this member.
+
+You can set the unisocket client mode in the `ClientConfig` as shown below.
+
+```C++
+    clientConfig.getNetworkConfig().setSmartRouting(false);
+```
 
 ## 7.3. Handling Failures
 
@@ -1541,13 +1550,11 @@ You can add event listeners to a Hazelcast C++ client. You can configure the fol
 
 #### 7.5.1.1. Listening for Member Events
 
-You can add the following types of member events to the `ClusterService`.
+You can listen the following types of member events in the `Cluster`.
 
 * `memberAdded`: A new member is added to the cluster.
 * `memberRemoved`: An existing member leaves the cluster.
 * `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
-
-The `ClusterService` object exposes an `ClusterService.on()` function that allows one or more functions to be attached to the member events emitted by the object.
 
 You can use `Cluster` (`HazelcastClient::getCluster()`) object to register for the membership listeners. There two type of listeners, InitialMembershipListener and MembershipListener. The difference is that InitialMembershipListener also gets notified when the client connects to the cluster and retrieves the whole membership list. You need to implement one of these two interfaces and register an instance of the listener to the cluster.
 
@@ -1622,7 +1629,7 @@ The `LifecycleListener` interface notifies for the following events:
 * `shuttingDown`: The client is shutting down.
 * `shutdown`: The client’s shutdown has completed.
 * `clientConnected`: The client is connected to the cluster.
-* `clientConnected`: The client is disconnected from the cluster.
+* `clientDisconnected`: The client is disconnected from the cluster.
 
 The following is an example of the `LifecycleListener` that is added to the `ClientConfig` object and its output.
 
@@ -1682,7 +1689,7 @@ You can add event listeners to the distributed data structures.
 
 You can listen to map-wide or entry-based events by using the functions in the `EntryListener` interface. To listen to these events, you need to implement the relevant `EntryListener` interface. 
 
-An entry-based event is fired after the operations that affect a specific entry. For example, `IMap::put()`, `IMap::remove()` or `IMap::evict()`. You should use the `EntryListener` type to listen these events. An `EntryEvent` object is passed to the listener function.
+An entry-based event is fired after the operations that affect a specific entry. For example, `IMap::put()`, `IMap::remove()` or `IMap::evict()`. You should use the `EntryListener` type to listen these events. An `EntryEvent` object is passed to the listener callback method.
 
 See the following example.
 
@@ -1734,7 +1741,7 @@ int main() {
 }
 ```
 
-A map-wide event is fired as a result of a map-wide operation. For example, `IMap::clear()` or `IMap::evictAll()`. You should use the `EntryListener` type to listen to these events. A `MapEvent` object is passed to the listener function.
+A map-wide event is fired as a result of a map-wide operation. For example, `IMap::clear()` or `IMap::evictAll()`. You should use the `EntryListener` type to listen to these events. A `MapEvent` object is passed to the listener method.
 
 See the following example.
 
@@ -1977,13 +1984,13 @@ Hazelcast offers the following ways for distributed query purposes:
 Assume that you have an `employee` map containing the values of `Employee` objects, as coded below. 
 
 ```C++
-class Employee : public serialization::IdentifiedDataSerializable {
+class Employee : public serialization::Portable {
 public:
     static const int TYPE_ID = 100;
 
     Employee() : active(false), salary(0.0) {}
 
-    Employee(int id, const std::string &name, bool active, double salary) : id(id), name(name), active(active),
+    Employee(int32_t id, const std::string &name, bool active, double salary) : id(id), name(name), active(active),
                                                                             salary(salary) {}
 
     virtual int getFactoryId() const {
@@ -1994,14 +2001,14 @@ public:
         return TYPE_ID;
     }
 
-    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+    virtual void writePortable(serialization::PortableWriter &writer) const {
         writer.writeInt(id);
         writer.writeUTF(&name);
         writer.writeBoolean(active);
         writer.writeDouble(salary);
     }
 
-    virtual void readData(serialization::ObjectDataInput &reader) {
+    virtual void readPortable(serialization::PortableReader &reader) {
         id = reader.readInt();
         name = *reader.readUTF();
         active = reader.readBoolean();
@@ -2009,32 +2016,19 @@ public:
     }
 
 private:
-    int id;
+    int32_t id;
     std::string name;
     bool active;
     double salary;
 };
 ```
 
-Note that `Employee` is an `IdentifiedDataSerializable` object. If you just want to save the `Employee` objects as byte arrays on the map, you don't need to implement its equivalent on the server-side. However, if you want to query on the `employee` map, the server needs the `Employee` objects rather than byte array formats. Therefore, you need to implement its Java equivalent and its data serializable factory on the server side for server to reconstitute the objects from binary formats. After implementing the Java class and its factory, you need to add the factory to the data serializable factories or the portable factories by giving a factory `id`. The following is an example declarative configuration on the server.
+Note that `Employee` is implementing `Portable`. As portable types are not deserialized on server side for querying, you don't need to implement its Java equivalent on the server side.
 
-```xml
-<hazelcast>
-    ...
-    <serialization>
-        <data-serializable-factories>
-            <data-serializable-factory factory-id="1">
-                mypackage.MyIdentifiedFactory
-            </data-serializable-factory>
-        </data-serializable-factories>
-    </serialization>
-    ...
-</hazelcast>
-```
+For type that are not of portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
+In this case before starting the server, you need to compile the `Employee` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
 
-Note that before starting the server, you need to compile the `Employee` and `MyIdentifiedFactory` classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
-
-> **NOTE: You can also make this object `Portable` and implement its Java equivalent and portable factory on the server side. Note that querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
+> **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
 #### 7.7.1.2. Querying by Combining Predicates with AND, OR, NOT
 
@@ -2161,7 +2155,13 @@ If you want to sort the result before paging, you need to specify a comparator o
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
-## 7.8. Raw Pointer API
+## 7.8. Performance
+
+### 7.8.1. Partition Aware
+
+## 7.9. Monitoring and Logging
+
+## 7.10. Raw Pointer API
 
 When using C++ client you can have the ownership of raw pointers for the objects you create and return. This allows you to keep the objects in your library/application without any need for copy.
 
@@ -2229,7 +2229,7 @@ value = vals->get(0);
 
 Using the raw pointer based API may improve the performance if you are using the API to return multiple values such as `values`, `keySet` and `entrySet`. In this case, the cost of deserialization is delayed until the item is actually accessed.
 
-## 7.9. Mixed Object Types Supporting HazelcastClient
+## 7.11. Mixed Object Types Supporting HazelcastClient
 Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted `HazelcastClient`. You can adopt the client in this way:
 ```
     ClientConfig config;
@@ -2258,7 +2258,7 @@ Mixed type support for near cache only exists when the in-memory format is BINAR
 
 The mixed type API uses the TypedData class at the user interface.
 
-### 7.9.1. TypedData API
+### 7.11.1. TypedData API
 The TypedData class is a wrapper class for the serialized binary data. It presents the following user APIs:
 ```
             /**
