@@ -19,23 +19,17 @@
 #ifndef HAZELCAST_ProxyImpl
 #define HAZELCAST_ProxyImpl
 
-#include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/TypedData.h"
-#include "hazelcast/client/spi/EventHandler.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             class Connection;
-        }
-
-        namespace impl {
-            class BaseEventHandler;
         }
 
         namespace serialization {
@@ -113,14 +107,6 @@ namespace hazelcast {
 
                 boost::shared_ptr<protocol::ClientMessage> invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request,
                                                                   const Address &address);
-                /**
-                * Internal API.
-                *
-                * @param registrationRequest ClientMessage ptr.
-                * @param handler
-                */
-                std::string registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
-                                             impl::BaseEventHandler *handler);
 
                 /**
                 * Internal API.
@@ -131,6 +117,11 @@ namespace hazelcast {
                 template<typename T>
                 serialization::pimpl::Data toData(const T &object) {
                     return getContext().getSerializationService().template toData<T>(&object);
+                }
+
+                template<typename T>
+                boost::shared_ptr<serialization::pimpl::Data> toSharedData(const T &object) {
+                    return toShared(toData<T>(object));
                 }
 
                 template<typename T>
@@ -145,6 +136,11 @@ namespace hazelcast {
                     } else {
                         return toObject<T>(*data);
                     }
+                }
+
+                template <typename T>
+                boost::shared_ptr<T> toSharedObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                    return boost::shared_ptr<T>(toObject<T>(data));
                 }
 
                 template<typename V>
@@ -243,19 +239,6 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
 
             private:
-                class EventHandlerDelegator : public spi::EventHandler<protocol::ClientMessage> {
-                public:
-                    EventHandlerDelegator(impl::BaseEventHandler *handler);
-
-                    virtual void handle(const boost::shared_ptr<protocol::ClientMessage> &event);
-
-                    virtual void beforeListenerRegister();
-
-                    virtual void onListenerRegister();
-
-                private:
-                    impl::BaseEventHandler *handler;
-                };
 
                 template <typename T>
                 std::auto_ptr<serialization::pimpl::Data> toHeapData(const T *key) {

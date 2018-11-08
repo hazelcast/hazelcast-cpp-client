@@ -24,10 +24,13 @@
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
+#include "hazelcast/client/map/impl/ReplicatedMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/proxy/RingbufferImpl.h"
+#include "hazelcast/client/proxy/ClientReplicatedMapProxy.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MultiMap.h"
+#include "hazelcast/client/ReplicatedMap.h"
 #include "hazelcast/client/IQueue.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/IList.h"
@@ -169,6 +172,15 @@ namespace hazelcast {
                 template<typename K, typename V>
                 MultiMap<K, V> getMultiMap(const std::string& name) {
                     return getDistributedObject<MultiMap<K, V> >(name);
+                }
+
+                template<typename K, typename V>
+                boost::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
+                    map::impl::ReplicatedMapProxyFactory<K, V> factory(&clientContext);
+                    boost::shared_ptr<spi::ClientProxy> proxy =
+                            getDistributedObjectForService(proxy::ClientReplicatedMapProxy<K, V>::SERVICE_NAME, name, factory);
+
+                    return boost::static_pointer_cast<ReplicatedMap<K, V> >(boost::static_pointer_cast<proxy::ClientReplicatedMapProxy<K, V> >(proxy));
                 }
 
                 /**

@@ -13,76 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 25 02, 2016.
-//
 #ifndef HAZELCAST_CLIENT_ENTRYARRAY_H_
 #define HAZELCAST_CLIENT_ENTRYARRAY_H_
 
-#include <vector>
-
-#include "hazelcast/util/Util.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 #include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/query/PagingPredicate.h"
-#include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "DataArray.h"
+#include "hazelcast/client/LazyEntryArray.h"
 
 namespace hazelcast {
     namespace client {
         template<typename K, typename V>
-        class EntryArray {
+        class EntryArray : virtual public LazyEntryArray<K, V> {
         public:
-            virtual ~EntryArray() { }
-
-            /**
-             * @return Returns the number of data items
-             */
-            virtual size_t size() const = 0;
-
-            /**
-             * Please note that this operation is costly due to de-serialization. It caches deserialized data.
-             *
-             * @param index The index of the desired item in the array.
-             * @return Deserializes the data and returns the key object for the data at the provided index.
-             * @throws IllegalArgumentException If provided index is greater than the maximum array index.
-             */
-            virtual const K *getKey(size_t index) = 0;
-
-            /**
-             * Please note that this operation MAY(if not deserialized previously) be costly due to de-serialization.
-             * It will NOT cache the de-serialized data.
-             *
-             * @param index The index of the desired item in the array.
-             * @return Deserializes the data and returns the key object for the data at the provided index.
-             * @throws IllegalArgumentException If provided index is greater than the maximum array index.
-             */
-            virtual std::auto_ptr<K> releaseKey(size_t index) = 0;
-
-            /**
-             * Please note that this operation is costly due to de-serialization. It will cache the de-serialized data.
-             *
-             * @param index The index of the desired item in the array.
-             * @return Deserializes the data and returns the value object for the data at the provided index.
-             * @throws IllegalArgumentException If provided index is greater than the maximum array index.
-             */
-            virtual const V *getValue(size_t index) = 0;
-
-            /**
-             * Please note that this operation is costly due to de-serialization. It will NOT cache the de-serialized data.
-             *
-             * @param index The index of the desired item in the array.
-             * @return Deserializes the data and returns the value object for the data at the provided index.
-             * @throws IllegalArgumentException If provided index is greater than the maximum array index.
-             */
-            virtual std::auto_ptr<V> releaseValue(size_t index) = 0;
-
-            /**
-             * @param index The index of the desired item in the array.
-             * @return The key value pointer pair is returned
-             */
-            virtual std::pair<const K *, const V *> operator[](size_t index) = 0;
-
             /**
              * Sorts the entries using the comparator if comparator is not null. Otherwise, sorts based on the provided
              * iterationType value.

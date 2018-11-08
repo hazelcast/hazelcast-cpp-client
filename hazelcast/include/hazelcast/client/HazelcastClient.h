@@ -444,6 +444,11 @@ namespace hazelcast {
                 return clientImpl->getMultiMap<K, V>(name);
             }
 
+            template<typename K, typename V>
+            boost::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
+                return clientImpl->getReplicatedMap<K, V>(name);
+            }
+
             /**
             * Returns the distributed queue instance with the specified name and entry type E.
             *
