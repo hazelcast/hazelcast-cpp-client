@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/spi/ClientProxy.h>
+
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/client/spi/ClientListenerService.h"
 
 namespace hazelcast {
     namespace client {
@@ -71,6 +74,42 @@ namespace hazelcast {
                         getName(), getServiceName());
                 spi::impl::ClientInvocation::create(getContext(), clientMessage, getName())->invoke().get();
             }
+
+            ClientProxy::EventHandlerDelegator::EventHandlerDelegator(client::impl::BaseEventHandler *handler) : handler(
+                    handler) {}
+
+            void ClientProxy::EventHandlerDelegator::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
+                handler->handle(event);
+            }
+
+            void ClientProxy::EventHandlerDelegator::beforeListenerRegister() {
+                handler->beforeListenerRegister();
+            }
+
+            void ClientProxy::EventHandlerDelegator::onListenerRegister() {
+                handler->onListenerRegister();
+            }
+
+            std::string ClientProxy::registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
+                                                    client::impl::BaseEventHandler *handler) {
+                handler->setLogger(&getContext().getLogger());
+                return getContext().getClientListenerService().registerListener(codec,
+                                                                                boost::shared_ptr<spi::EventHandler<protocol::ClientMessage> >(
+                                                                                        new EventHandlerDelegator(
+                                                                                                handler)));
+            }
+
+            std::string
+            ClientProxy::registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                          const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler) {
+                boost::static_pointer_cast<client::impl::BaseEventHandler>(handler)->setLogger(&getContext().getLogger());
+                return getContext().getClientListenerService().registerListener(listenerMessageCodec, handler);
+            }
+
+            bool ClientProxy::deregisterListener(const std::string &registrationId) {
+                return getContext().getClientListenerService().deregisterListener(registrationId);
+            }
+
         }
     }
 }

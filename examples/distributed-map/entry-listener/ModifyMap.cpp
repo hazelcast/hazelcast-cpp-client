@@ -26,10 +26,11 @@ int main() {
 
     std::ostringstream out;
     out << time(NULL);
+    const std::string &key = out.str();
 
-    map.put(out.str(), "1");
-    map.put(out.str(), "2");
-    map.deleteEntry(out.str());
+    map.put(key, "1");
+    map.put(key, "2");
+    map.deleteEntry(key);
 
     std::cout << "Finished" << std::endl;
 

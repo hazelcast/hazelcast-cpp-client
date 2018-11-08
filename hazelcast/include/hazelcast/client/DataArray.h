@@ -19,13 +19,8 @@
 #ifndef HAZELCAST_CLIENT_DATAARRAY_H_
 #define HAZELCAST_CLIENT_DATAARRAY_H_
 
-#include <vector>
-
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "EntryArray.h"
 
 namespace hazelcast {
     namespace client {

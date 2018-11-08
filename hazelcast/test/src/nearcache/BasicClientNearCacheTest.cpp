@@ -32,11 +32,29 @@ namespace hazelcast {
             class BasicClientNearCacheTest
                     : public ClientTestSupport, public ::testing::WithParamInterface<config::InMemoryFormat> {
             public:
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    instance2 = new HazelcastServer(*g_srvFactory);
+                }
+
+                static void TearDownTestCase() {
+                    delete instance2;
+                    delete instance;
+                    instance2 = NULL;
+                    instance = NULL;
+                }
+
                 virtual void SetUp() {
                     nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam());
                 }
 
                 virtual void TearDown() {
+                    if (nearCachedMap.get()) {
+                        nearCachedMap->destroy();
+                    }
+                    if (noNearCacheMap.get()) {
+                        noNearCacheMap->destroy();
+                    }
                     if (NULL != client.get()) {
                         client->shutdown();
                     }
@@ -155,8 +173,6 @@ namespace hazelcast {
                 }
 
                 void createNoNearCacheContext() {
-                    servers.push_back(boost::shared_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
-                    servers.push_back(boost::shared_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
                     clientConfig = getConfig();
                     client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
                     noNearCacheMap = std::auto_ptr<IMap<int, std::string> >(
@@ -302,11 +318,14 @@ namespace hazelcast {
                 internal::nearcache::NearCacheManager *nearCacheManager;
                 boost::shared_ptr<internal::nearcache::NearCache<serialization::pimpl::Data, std::string> > nearCache;
                 monitor::NearCacheStats *stats;
-                std::vector<boost::shared_ptr<HazelcastServer> > servers;
+                static HazelcastServer *instance;
+                static HazelcastServer *instance2;
             };
 
             const std::string BasicClientNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
             const int BasicClientNearCacheTest::DEFAULT_RECORD_COUNT = 1000;
+            HazelcastServer *BasicClientNearCacheTest::instance = NULL;
+            HazelcastServer *BasicClientNearCacheTest::instance2 = NULL;
 
             /**
              * Checks that the Near Cache keys are correctly checked when {@link DataStructureAdapter#containsKey(Object)} is used.

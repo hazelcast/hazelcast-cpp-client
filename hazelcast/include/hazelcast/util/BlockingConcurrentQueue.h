@@ -93,6 +93,10 @@ namespace hazelcast {
                 return internalQueue.empty();
             }
 
+            size_t size() {
+                util::LockGuard lg(m);
+                return internalQueue.size();
+            }
         private:
             util::Mutex m;
             /**
