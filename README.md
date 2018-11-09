@@ -12,6 +12,8 @@
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
+        * [1.4.2.1. Group Settings](#1421-group-settings)
+        * [1.4.2.2. Network Settings](#1422-network-settings)
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
@@ -376,7 +378,7 @@ supply this object to your client at the startup.
 If you run the Hazelcast IMDG members in a different server than the client, you most probably have configured the members' ports and cluster
 names as explained in the previous section. If you did, then you need to make certain changes to the network settings of your client.
 
-### Group Settings
+### 1.4.2.1 Group Settings
 
 **Programmatic:**
 ```C++
@@ -384,7 +386,7 @@ names as explained in the previous section. If you did, then you need to make ce
     config.getGroupConfig().setName("group name of your cluster");
 ```
 
-### Network Settings
+### 1.4.2.2. Network Settings
 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
