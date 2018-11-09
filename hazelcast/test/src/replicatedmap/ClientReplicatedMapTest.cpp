@@ -104,7 +104,6 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     factory = new HazelcastServerFactory("hazelcast/test/resources/replicated-map-binary-in-memory-config-hazelcast.xml");
                     instance1 = new HazelcastServer(*factory);
-                    instance2 = new HazelcastServer(*factory);
                     clientConfig = new ClientConfig();
                     clientConfig->addAddress(Address(factory->getServerAddress(), 5701));
                     client = new HazelcastClient(*clientConfig);
@@ -116,14 +115,12 @@ namespace hazelcast {
                     delete client2;
                     delete clientConfig;
                     delete instance1;
-                    delete instance2;
                     delete factory;
 
                     client = NULL;
                     client2 = NULL;
                     clientConfig = NULL;
                     instance1 = NULL;
-                    instance2 = NULL;
                     factory = NULL;
                 }
 
@@ -135,7 +132,6 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance1;
-                static HazelcastServer *instance2;
                 static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static HazelcastClient *client2;
@@ -143,7 +139,6 @@ namespace hazelcast {
             };
 
             HazelcastServer *ClientReplicatedMapTest::instance1 = NULL;
-            HazelcastServer *ClientReplicatedMapTest::instance2 = NULL;
             ClientConfig *ClientReplicatedMapTest::clientConfig = NULL;
             HazelcastClient *ClientReplicatedMapTest::client = NULL;
             HazelcastClient *ClientReplicatedMapTest::client2 = NULL;
