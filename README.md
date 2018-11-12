@@ -1579,6 +1579,12 @@ You can create a `TransactionContext` object using the C++ client to begin, comm
                 }
 ```
 
+In a transaction, operations will not be executed immediately. Their changes will be local to the `TransactionContext` until committed. However, they will ensure the changes via locks.
+
+For the above example, when `map.put` is executed, no data will be put in the map but the key will be locked against changes. While committing, operations will be executed, the value will be put to the map and the key will be unlocked.
+
+The isolation level in Hazelcast Transactions is `READ_COMMITTED` on the level of a single partition. If you are in a transaction, you can read the data in your transaction and the data that is already committed. If you are not in a transaction, you can only read the committed data.
+
 ## 7.5. Distributed Events
 
 This chapter explains when various events are fired and describes how you can add event listeners on a Hazelcast C++ client. These events can be categorized as cluster and distributed data structure events.
