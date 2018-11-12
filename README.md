@@ -64,6 +64,7 @@
     * [7.4.11. Using Semaphore](#7411-using-semaphore)
     * [7.4.12. Using PN Counter](#7412-using-pn-counter)
     * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
+    * [7.4.14. Using Transactions](#7414-using-transactions)
   * [7.5. Distributed Events](#75-distributed-events)
     * [7.5.1. Cluster Events](#751-cluster-events)
       * [7.5.1.1. Listening for Member Events](#7511-listening-for-member-events)
@@ -561,6 +562,11 @@ Hazelcast C++ client supports the following data structures and features:
 * Flake Id Generator
 * Event Listeners
 * Entry Processor
+* Transactional Map
+* Transactional MultiMap
+* Transactional Queue
+* Transactional List
+* Transactional Set
 * Query (Predicates)
 * Paging Predicate
 * Built-in Predicates
@@ -1322,7 +1328,7 @@ A Queue usage example is shown below.
     std::cout << *queue.take() << std::endl; // Will print yetanotheritem
 ```
 
-## 7.4.5. Using Set
+### 7.4.5. Using Set
 
 Hazelcast Set (`ISet`) is a distributed set which does not allow duplicate elements. For details, see the [Set section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#set) in the Hazelcast IMDG Reference Manual.
 
@@ -1345,7 +1351,7 @@ A Set usage example is shown below.
     }
 ```
 
-## 7.4.6. Using List
+### 7.4.6. Using List
 
 Hazelcast List (`IList`) is a distributed list which allows duplicate elements and preserves the order of elements. For details, see the [List section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#list) in the Hazelcast IMDG Reference Manual.
 
@@ -1366,7 +1372,7 @@ A List usage example is shown below.
     list.clear();
 ```
 
-## 7.4.7. Using Ringbuffer
+### 7.4.7. Using Ringbuffer
 
 Hazelcast `Ringbuffer` is a replicated but not partitioned data structure that stores its data in a ring-like structure. You can think of it as a circular array with a given capacity. Each Ringbuffer has a tail and a head. The tail is where the items are added and the head is where the items are overwritten or expired. You can reach each element in a Ringbuffer using a sequence ID, which is mapped to the elements between the head and tail (inclusive) of the Ringbuffer. For details, see the [Ringbuffer section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#ringbuffer) in the Hazelcast IMDG Reference Manual.
 
@@ -1385,7 +1391,7 @@ A Ringbuffer usage example is shown below.
     std::cout << *rb->readOne(sequence) << std::endl;
 ```
 
-## 7.4.8. Using Reliable Topic
+### 7.4.8. Using Reliable Topic
 
 Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
 
@@ -1460,7 +1466,7 @@ int main() {
 }
 ```
 
-## 7.4.9 Using Lock
+### 7.4.9 Using Lock
 
 Hazelcast Lock (`ILock`) is a distributed lock implementation. You can synchronize Hazelcast members and clients using a Lock. For details, see the [Lock section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#lock) in the Hazelcast IMDG Reference Manual.
 
@@ -1479,7 +1485,7 @@ A Lock usage example is shown below.
     }
 ```
 
-## 7.4.10 Using Atomic Long
+### 7.4.10 Using Atomic Long
 
 Hazelcast Atomic Long (`IAtomicLong`) is the distributed long which offers most of the operations such as `get`, `set`, `getAndSet`, `compareAndSet` and `incrementAndGet`. For details, see the [Atomic Long section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#iatomiclong) in the Hazelcast IMDG Reference Manual.
 
@@ -1495,7 +1501,7 @@ An Atomic Long usage example is shown below.
     std::cout << "Count is:" << counter.get() << std::endl; // Counter is 1000000
 ```
 
-## 7.4.11 Using Semaphore
+### 7.4.11 Using Semaphore
 
 Hazelcast Semaphore (`ISemaphore`) is a distributed semaphore implementation. For details, see the [Semaphore section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#isemaphore) in the Hazelcast IMDG Reference Manual.
 
@@ -1508,7 +1514,7 @@ A Semaphore usage example is shown below.
     std::cout << "Number of available permits: " << semaphore.availablePermits() << std::endl; // Number of available permits: 5
 ```
 
-## 7.4.12 Using PN Counter
+### 7.4.12 Using PN Counter
 
 Hazelcast `PNCounter` (Positive-Negative Counter) is a CRDT positive-negative counter implementation. It is an eventually consistent counter given there is no member failure. For details, see the [PN Counter section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#pn-counter) in the Hazelcast IMDG Reference Manual.
 
@@ -1528,7 +1534,7 @@ A PN Counter usage example is shown below.
     std::cout << "Decremented counter by one to: " << pnCounter->decrementAndGet() << std::endl; // Decremented counter by one to: 6
 ```
 
-## 7.4.13 Using Flake ID Generator
+### 7.4.13 Using Flake ID Generator
 
 Hazelcast `FlakeIdGenerator` is used to generate cluster-wide unique identifiers. Generated identifiers are long primitive values and are k-ordered (roughly ordered). IDs are in the range from 0 to `2^63-1` (maximum signed long value). For details, see the [FlakeIdGenerator section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#flakeidgenerator) in the Hazelcast IMDG Reference Manual.
 
@@ -1537,6 +1543,40 @@ A Flake ID Generator usage example is shown below.
 ```C++
     hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdGenerator");
     std::cout << "Id : " << generator.newId() << std::endl; // Id : <some unique number>
+```
+
+### 7.4.14. Using Transactions
+
+Hazelcast C++ client provides transactional operations like beginning transactions, committing transactions and retrieving transactional data structures like the `TransactionalMap`, `TransactionalSet`, `TransactionalList`, `TransactionalQueue` and `TransactionalMultiMap`.
+
+You can create a `TransactionContext` object using the C++ client to begin, commit and rollback a transaction. You can obtain transaction-aware instances of queues, maps, sets, lists and multimaps via the `TransactionContext` object, work with them and commit or rollback in one shot. For details, see the [Transactions section](https://docs.hazelcast.org//docs/latest/manual/html-single/index.html#transactions) in the Hazelcast IMDG Reference Manual.
+
+```C++
+                // Create a Transaction object and begin the transaction
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                // Get transactional distributed data structures
+                TransactionalMap<std::string, std::string> txnMap = context.getMap<std::string, std::string>("transactional-map");
+                TransactionalMultiMap<std::string, std::string> txnMultiMap = context.getMultiMap<std::string, std::string>("transactional-multimap");
+                TransactionalQueue<std::string> txnQueue = context.getQueue<std::string>("transactional-queue");
+                TransactionalSet<std::string> txnSet = context.getSet<std::string>("transactional-set");
+
+                try {
+                    boost::shared_ptr<std::string> obj = txnQueue.poll();
+                    //process object
+                    txnMap.put( "1", "value1" );
+                    txnMultiMap.put("2", "value2_1");
+                    txnMultiMap.put("2", "value2_2");
+                    txnSet.add( "value" );
+                    //do other things
+
+                    // Commit the above changes done in the cluster.
+                    context.commitTransaction();
+                } catch (...) {
+                    context.rollbackTransaction();
+                    throw;
+                }
 ```
 
 ## 7.5. Distributed Events
