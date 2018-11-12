@@ -93,7 +93,7 @@ namespace hazelcast {
                 TEST_VALUES_TYPE buildTestValues() {
                     TEST_VALUES_TYPE testValues;
                     for (int i = 0; i < 100; ++i) {
-                        testValues.push_back(std::make_pair(rand(), rand()));
+                        testValues.push_back(std::make_pair(i, i * i));
                     }
                     return testValues;
                 }
@@ -161,7 +161,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 std::map<std::string, std::string> mapTest;
                 for (int i = 0; i < OPERATION_COUNT; i++) {
@@ -197,7 +197,7 @@ namespace hazelcast {
             TEST_F(ClientReplicatedMapTest, testGet) {
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map1 = client->getReplicatedMap<std::string, std::string>(
                         getTestName());
-                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 = client->getReplicatedMap<std::string, std::string>(
+                boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 = client2->getReplicatedMap<std::string, std::string>(
                         getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
@@ -235,7 +235,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -271,7 +271,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -311,7 +311,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -368,7 +368,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -416,7 +416,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapTest, testSize) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
@@ -435,7 +435,7 @@ namespace hazelcast {
                         client->getReplicatedMap<std::string, std::string>(getTestName());
 
                 boost::shared_ptr<ReplicatedMap<std::string, std::string> > map2 =
-                        client->getReplicatedMap<std::string, std::string>(getTestName());
+                        client2->getReplicatedMap<std::string, std::string>(getTestName());
 
                 for (int i = 0; i < OPERATION_COUNT; i++) {
                     std::ostringstream out;
@@ -458,7 +458,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapTest, testContainsValue) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
@@ -479,7 +479,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapTest, testValues) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
@@ -500,7 +500,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapTest, testKeySet) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
@@ -521,7 +521,7 @@ namespace hazelcast {
 
             TEST_F(ClientReplicatedMapTest, testEntrySet) {
                 boost::shared_ptr<ReplicatedMap<int, int> > map1 = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client->getReplicatedMap<int, int>(getTestName());
+                boost::shared_ptr<ReplicatedMap<int, int> > map2 = client2->getReplicatedMap<int, int>(getTestName());
 
                 TEST_VALUES_TYPE testValues = buildTestValues();
                 size_t half = testValues.size() / 2;
