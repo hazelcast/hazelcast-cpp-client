@@ -23,7 +23,7 @@
 #define ASSERT_EQ_EVENTUALLY(expected, actual) do{              \
             bool result = false;                                \
             for(int i = 0 ; i < 120 * 5 && !result ; i++ ) {    \
-                if (expected == actual) {                       \
+                if ((expected) == (actual)) {                       \
                     result = true;                              \
                 } else {                                        \
                     util::sleepmillis(200);                     \
@@ -38,29 +38,20 @@
             }                                                   \
       }while(0)                                                 \
 
-#define WAIT_FALSE_EVENTUALLY(expression) WAIT_TRUE_EVENTUALLY(false == expression)
-#define WAIT_EQ_EVENTUALLY(expected, expression) WAIT_TRUE_EVENTUALLY(expected == expression)
-#define WAIT_NE_EVENTUALLY(expected, expression) WAIT_NE_EVENTUALLY(expected != expression)
-
-#define ASSERT_NE_EVENTUALLY(expected, actual) do{              \
-            bool result = false;                                \
-            for(int i = 0 ; i < 120 * 5 && !result ; i++ ) {    \
-                if (expected != actual) {                       \
-                    result = true;                              \
-                } else {                                        \
-                    util::sleepmillis(200);                     \
-                }                                               \
+#define ASSERT_TRUE_ALL_THE_TIME(expression, seconds) do{       \
+            for(int i = 0; i < seconds ; i++ ) {                \
+                ASSERT_TRUE(expression);                        \
+                util::sleepmillis(1000);                        \
             }                                                   \
-            ASSERT_TRUE(result);                                \
-      }while(0)                                                 \
+      } while(0)                                                \
 
+#define WAIT_EQ_EVENTUALLY(expected, expression) WAIT_TRUE_EVENTUALLY((expected) == (expression))
+#define WAIT_NE_EVENTUALLY(expected, expression) WAIT_NE_EVENTUALLY((expected) != (expression))
 
 #define ASSERT_NULL(msg, value, type) ASSERT_EQ((type *) NULL, value) << msg
 #define ASSERT_NOTNULL(value, type) ASSERT_NE((type *) NULL, value)
 #define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, true)
-#define ASSERT_FALSE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, false)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
-#define ASSERT_NOTNULL_EVENTUALLY(value) ASSERT_NE_EVENTUALLY(value, NULL)
 #define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE(latch.await(120))
 
 #endif //HAZELCAST_TestHelperFunctions

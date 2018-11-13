@@ -53,6 +53,8 @@ namespace hazelcast {
                  *  and re-registering to a second node.
                  */
                 virtual void onListenerRegister() = 0;
+
+                virtual ~EventHandler(){};
             };
         }
     }

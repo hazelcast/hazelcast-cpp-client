@@ -26,10 +26,13 @@ namespace hazelcast {
             class LoggerConfigFromFileTest : public ClientTestSupport {
             public:
                 LoggerConfigFromFileTest() {
+                    // Clear file content before test starts
+                    std::ofstream logOutFile("testLog.txt", std::ifstream::trunc);
+
                     config::LoggerConfig loggerConfig;
                     loggerConfig.setConfigurationFileName("hazelcast/test/resources/logger-config.txt");
 
-                    logger.reset(new util::ILogger("testConfigureFromFile", "testConfigureFromFile", "testversion",
+                    testLogger.reset(new util::ILogger("testConfigureFromFile", "testConfigureFromFile", "testversion",
                                                    loggerConfig));
 
                 }
@@ -46,7 +49,9 @@ namespace hazelcast {
                 }
 
                 std::vector<std::string> getLogLines() {
-                    std::ifstream logFile("testLog.txt");
+                    std::string logFileName("testLog.txt");
+
+                    std::ifstream logFile(logFileName.c_str());
                     std::vector<std::string> lines;
                     std::string line;
                     while (std::getline(logFile, line)) {
@@ -64,7 +69,7 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testFinest) {
                 const std::string log("First finest log");
-                logger->finest(log);
+                testLogger->finest(log);
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
@@ -75,7 +80,7 @@ namespace hazelcast {
             TEST_F(LoggerConfigFromFileTest, testFinest2) {
                 const std::string log("First finest log");
                 {
-                    logger->info() << log;
+                    testLogger->info() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
@@ -86,7 +91,7 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testInfo) {
                 const std::string log("First info log");
-                logger->info(log);
+                testLogger->info(log);
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
@@ -97,7 +102,7 @@ namespace hazelcast {
             TEST_F(LoggerConfigFromFileTest, testInfo2) {
                 const std::string log("First info log");
                 {
-                    logger->info() << log;
+                    testLogger->info() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
@@ -108,7 +113,7 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testWarning) {
                 const std::string log("First warning log");
-                logger->warning(log);
+                testLogger->warning(log);
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(0U, lines.size());
             }
@@ -116,7 +121,7 @@ namespace hazelcast {
             TEST_F(LoggerConfigFromFileTest, testWarning2) {
                 const std::string log("First warning log");
                 {
-                    logger->warning() << log;
+                    testLogger->warning() << log;
                 }
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(0U, lines.size());
@@ -124,13 +129,13 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testMultipleLinesLog) {
                 const std::string infoLog("First Info log");
-                logger->info(infoLog);
+                testLogger->info(infoLog);
 
                 const std::string debugLog("First debug log");
-                logger->finest(debugLog);
+                testLogger->finest(debugLog);
 
                 const std::string firstFatalLog("First fatal log");
-                logger->severe(firstFatalLog);
+                testLogger->severe(firstFatalLog);
 
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(3U, lines.size());
@@ -142,13 +147,13 @@ namespace hazelcast {
                 ASSERT_NE(std::string::npos, lines[2].find(firstFatalLog));
 
                 {
-                    logger->warning() << "This log should not be printed";
+                    testLogger->warning() << "This log should not be printed";
                 }
 
                 lines = getLogLines();
                 ASSERT_EQ(3U, lines.size());
 
-                logger->warning("This log should not be printed");
+                testLogger->warning("This log should not be printed");
                 lines = getLogLines();
                 ASSERT_EQ(3U, lines.size());
 

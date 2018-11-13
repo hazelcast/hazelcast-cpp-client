@@ -162,6 +162,20 @@ namespace hazelcast {
                             }
 
                             //@Override
+                            bool invalidate(const boost::shared_ptr<KS> &key) {
+                                try {
+                                    bool removed = remove(key);
+                                    if (removed) {
+                                        nearCacheStats.incrementInvalidations();
+                                    }
+                                    return removed;
+                                } catch (...) {
+                                        nearCacheStats.incrementInvalidationRequests();
+                                        throw;
+                                }
+                            }
+
+                            //@Override
                             void clear() {
                                 checkAvailable();
 

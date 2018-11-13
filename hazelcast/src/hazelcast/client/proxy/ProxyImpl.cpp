@@ -23,7 +23,6 @@
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
-#include "hazelcast/client/spi/ClientListenerService.h"
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
@@ -38,15 +37,6 @@ namespace hazelcast {
             }
 
             ProxyImpl::~ProxyImpl() {
-            }
-
-            std::string ProxyImpl::registerListener(const boost::shared_ptr<spi::impl::ListenerMessageCodec> &codec,
-                                                    impl::BaseEventHandler *handler) {
-                handler->setLogger(&getContext().getLogger());
-                return getContext().getClientListenerService().registerListener(codec,
-                                                                            boost::shared_ptr<spi::EventHandler<protocol::ClientMessage> >(
-                                                                                    new EventHandlerDelegator(
-                                                                                            handler)));
             }
 
             int ProxyImpl::getPartitionId(const serialization::pimpl::Data &key) {
@@ -132,20 +122,6 @@ namespace hazelcast {
                 return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
             }
 
-            ProxyImpl::EventHandlerDelegator::EventHandlerDelegator(impl::BaseEventHandler *handler) : handler(
-                    handler) {}
-
-            void ProxyImpl::EventHandlerDelegator::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
-                handler->handle(event);
-            }
-
-            void ProxyImpl::EventHandlerDelegator::beforeListenerRegister() {
-                handler->beforeListenerRegister();
-            }
-
-            void ProxyImpl::EventHandlerDelegator::onListenerRegister() {
-                handler->onListenerRegister();
-            }
         }
     }
 }

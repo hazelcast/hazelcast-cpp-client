@@ -31,6 +31,8 @@ namespace hazelcast {
                                                            misses(0),
                                                            evictions(0),
                                                            expirations(0),
+                                                           invalidations(0),
+                                                           invalidationRequests(0),
                                                            persistenceCount(0),
                                                            lastPersistenceTime(0),
                                                            lastPersistenceDuration(0),
@@ -129,6 +131,22 @@ namespace hazelcast {
                     ++expirations;
                 }
 
+                int64_t NearCacheStatsImpl::getInvalidations() {
+                    return invalidations.get();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidations() {
+                    ++invalidations;
+                }
+
+                int64_t NearCacheStatsImpl::getInvalidationRequests() {
+                    return invalidationRequests.get();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidationRequests() {
+                    ++invalidationRequests;
+                }
+
                 int64_t NearCacheStatsImpl::getPersistenceCount() {
                     return persistenceCount;
                 }
@@ -174,6 +192,8 @@ namespace hazelcast {
                     << ", ratio=" << std::setprecision(1) << getRatio()
                     << ", evictions=" << evictions
                     << ", expirations=" << expirations
+                    << ", invalidations=" << invalidations.get()
+                    << ", invalidationRequests=" << invalidationRequests.get()
                     << ", lastPersistenceTime=" << lastPersistenceTime
                     << ", persistenceCount=" << persistenceCount
                     << ", lastPersistenceDuration=" << lastPersistenceDuration

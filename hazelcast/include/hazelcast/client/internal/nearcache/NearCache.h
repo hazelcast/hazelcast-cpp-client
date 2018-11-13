@@ -142,6 +142,17 @@ namespace hazelcast {
                     }
 
                     /**
+                     * Removes the value associated with the given {@code key}
+                     * and increases the invalidation statistics.
+                     *
+                     * @param key the key of the value will be invalidated
+                     */
+                    virtual bool invalidate(const boost::shared_ptr<K> &key) {
+                        assert(0);
+                        return false;
+                    }
+
+                    /**
                      * @return
                      */
                     virtual bool isInvalidatedOnChange() const {

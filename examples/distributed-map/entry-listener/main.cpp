@@ -21,7 +21,6 @@
 #include <hazelcast/client/query/QueryConstants.h>
 
 class MyEntryListener : public hazelcast::client::EntryListener<int, int> {
-
 public:
     void entryAdded(const hazelcast::client::EntryEvent<int, int> &event) {
         std::cout << "[entryAdded] " << event << std::endl;

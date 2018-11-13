@@ -35,6 +35,8 @@ namespace hazelcast {
                     class IdBatchSupplier {
                     public:
                         virtual IdBatch newIdBatch(int32_t batchSize) = 0;
+
+                        virtual ~IdBatchSupplier(){};
                     };
 
                     AutoBatcher(int32_t batchSize, int64_t validity,
