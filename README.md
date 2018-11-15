@@ -5,9 +5,9 @@
   * [1.1. Requirements](#11-requirements)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
-    * [1.2.2. Running Standalone Jars](#122-running-standalone-jars)
-    * [1.2.3. Adding User Library to CLASSPATH](#123-adding-user-library-to-classpath)
-    * [1.2.4. Using hazelcast-member Tool](#124-using-hazelcast-member-tool)
+      * [1.2.1.1. Running Standalone Jars](#1211-running-standalone-jars)
+      * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
+      * [1.2.1.3. Using hazelcast-member Tool](#1213-using-hazelcast-member-tool)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
   * [1.4. Basic Configuration](#14-basic-configuration)
     * [1.4.1. Configuring Hazelcast IMDG](#141-configuring-hazelcast-imdg)
@@ -82,7 +82,10 @@
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
   * [7.8. Performance](#78-performance)
   * [7.8.1. Partition Aware](#781-partition-aware)
+  * [7.8.2. Near Cache](#782-near-cache)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
+      * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
+      * [7.9.2. Logging Configuration](#792-logging-configuration)
   * [7.10 Raw Pointer API](#710-raw-pointer-api)
   * [7.11 Mixed Object Types Supporting HazelcastClient](#711-mixed-object-types-supporting-hazelcastclient)
     * [7.11.1 TypedData API](#7111-typeddata-api) 
@@ -151,7 +154,7 @@ There are following options to start a Hazelcast IMDG cluster easily:
 
 We are going to download JARs from the website and run a standalone member for this guide.
 
-#### 1.2.2. Running Standalone JARs
+#### 1.2.1.1. Running Standalone JARs
 
 Follow the instructions below to create a Hazelcast IMDG cluster:
 
@@ -174,7 +177,7 @@ Sep 06, 2018 10:50:23 AM com.hazelcast.core.LifecycleService
 INFO: [192.168.0.3]:5701 [dev] [3.10.4] [192.168.0.3]:5701 is STARTED
 ```
 
-#### 1.2.3. Adding User Library to CLASSPATH
+#### 1.2.1.2. Adding User Library to CLASSPATH
 
 When you want to use features such as querying and language interoperability, you might need to add your own Java classes to the Hazelcast member in order to use them from your C++ client. This can be done by adding your own compiled code to the `CLASSPATH`. To do this, compile your code with the `CLASSPATH` and add the compiled files to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). Then, you can start your Hazelcast member by using the start scripts in the `bin` directory. The start scripts will automatically add your compiled classes to the `CLASSPATH`.
 
@@ -197,7 +200,7 @@ The following is an example configuration when you are adding an `IdentifiedData
 ```
 If you want to add a `Portable` class, you should use `<portable-factories>` instead of `<data-serializable-factories>` in the above configuration.
 
-#### 1.2.4. Using hazelcast-member Tool
+#### 1.2.1.3. Using hazelcast-member Tool
 
 `hazelcast-member` is a tool to download and run Hazelcast IMDG members easily. If you have brew installed, run the following commands to instal this tool:
 
@@ -343,11 +346,11 @@ We will go over some important configuration elements in the rest of this sectio
 - `<group>`: Specifies which cluster this member belongs to. A member connects only to the other members that are in the same group as
 itself. As shown in the above configuration sample, there are `<name>` and `<password>` tags under the `<group>` element with some pre-configured values. You may give your clusters different names so that they can
 live in the same network without disturbing each other. Note that the cluster name should be the same across all members and clients that belong
- to the same cluster. `<password>` tag is not in use since Hazelcast 3.9. It is there for backward compatibility
+ to the same cluster. The `<password>` tag is not in use since Hazelcast 3.9. It is there for backward compatibility
 purposes. You can remove or leave it as it is if you use Hazelcast 3.9 or later.
 - `<network>`
     - `<port>`: Specifies the port number to be used by the member when it starts. Its default value is 5701. You can specify another port number, and if
-     you set `auto-increment` to `true`, then Hazelcast will try subsequent ports until it finds an available port or `port-count` is reached.
+     you set `auto-increment` to `true`, then Hazelcast will try the subsequent ports until it finds an available port or the `port-count` is reached.
     - `<join>`: Specifies the strategies to be used by the member to find other cluster members. Choose which strategy you want to
     use by setting its `enabled` attribute to `true` and the others to `false`.
         - `<multicast>`: Members find each other by sending multicast requests to the specified address and port. It is very useful if IP addresses
@@ -369,7 +372,7 @@ and the following sections for information about detailed network configurations
 **Programmatic configuration**
 
 An easy way to configure your Hazelcast C++ Client is to create a `ClientConfig` object and set the appropriate options. Then you need to
-supply this object to your client at the startup.
+pass this object to the client when starting it.
 
 ```C++
     hazelcast::client::ClientConfig config;
@@ -2207,7 +2210,133 @@ Also, you can access a specific page more easily with the help of the `setPage` 
 
 ### 7.8.1. Partition Aware
 
+Partition Aware ensures that the related entries exist on the same member. If the related data is on the same member, operations can be executed without the cost of extra network calls and extra wire data, and this improves the performance. This feature is provided by using the same partition keys for related data.
+
+Hazelcast has a standard way of finding out which member owns/manages each key object. The following operations are routed to the same member, since all of them are operating based on the same key `'key1'`.
+
+```C++
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hazelcastInstance(config);
+
+    hazelcast::client::IMap<int, int> mapA = hazelcastInstance.getMap<int, int>("mapA");
+    hazelcast::client::IMap<int, int> mapB = hazelcastInstance.getMap<int, int>("mapB");
+    hazelcast::client::IMap<int, int> mapC = hazelcastInstance.getMap<int, int>("mapC");
+
+    // since map names are different, operation will be manipulating
+    // different entries, but the operation will take place on the
+    // same member since the keys ("key1") are the same
+    mapA.put("key1", value);
+    mapB.get("key1");
+    mapC.remove("key1");
+```
+
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderId`s `PartitionAware`.
+
+```C++
+class OrderKey : public hazelcast::client::PartitionAware<int64_t>,
+          public hazelcast::client::serialization::IdentifiedDataSerializable {
+public:
+    static const std::string desiredPartitionString;
+
+    OrderKey() {
+    }
+
+    OrderKey(int64_t orderId, int64_t customerId) : orderId(orderId), customerId(customerId) {}
+
+    int64_t getOrderId() const {
+        return orderId;
+    }
+
+    virtual const int64_t *getPartitionKey() const {
+        return &customerId;
+    }
+
+    virtual int getFactoryId() const {
+        return 1;
+    }
+
+    virtual int getClassId() const {
+        return 10;
+    }
+
+    virtual void writeData(hazelcast::client::serialization::ObjectDataOutput &writer) const {
+        writer.writeLong(orderId);
+        writer.writeLong(customerId);
+    }
+
+    virtual void readData(hazelcast::client::serialization::ObjectDataInput &reader) {
+        orderId = reader.readLong();
+        customerId = reader.readLong();
+    }
+
+private:
+    int64_t orderId;
+    int64_t customerId;
+};
+```
+
+Notice that `OrderKey` implements `PartitionAware` interface and that `getPartitionKey()` returns the `customerId`. This will make sure that the `Customer` entry and its `Order`s will be stored on the same member.
+
+```C++
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hazelcastInstance(config);
+
+    hazelcast::client::IMap<int64_t, Customer> mapCustomers = hazelcastInstance.getMap<int64_t, Customer>( "customers" );
+    hazelcast::client::IMap<OrderKey, Order> mapOrders = hazelcastInstance.getMap<OrderKey, Order>( "orders" );
+
+    // create the customer entry with customer id = 1
+    mapCustomers.put( 1, customer );
+
+    // now create the orders for this customer
+    mapOrders.put( new OrderKey( 21, 1 ), order );
+    mapOrders.put( new OrderKey( 22, 1 ), order );
+    mapOrders.put( new OrderKey( 23, 1 ), order );
+```  
+
+For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
+
+### 7.8.2. Near Cache
+
 ## 7.9. Monitoring and Logging
+
+### 7.9.1. Enabling Client Statistics
+
+You can enable the client statistics before starting your clients. There are two properties related to client statistics:
+
+- `hazelcast.client.statistics.enabled`: If set to `true`, it enables collecting the client statistics and sending them to the cluster. When it is `true` you can monitor the clients that are connected to your Hazelcast cluster, using Hazelcast Management Center. Its default value is `false`.
+
+- `hazelcast.client.statistics.period.seconds`: Period in seconds the client statistics are collected and sent to the cluster. Its default value is `3`.
+
+You can enable client statistics and set a non-default period in seconds as follows:
+
+```C++
+    hazelcast::client::ClientConfig config;
+    config.setProperty(hazelcast::client::ClientProperties::STATISTICS_ENABLED, "true");
+    config.setProperty(hazelcast::client::ClientProperties::STATISTICS_PERIOD_SECONDS, "4");
+```
+
+After enabling the client statistics, you can monitor your clients using Hazelcast Management Center. Please refer to the [Monitoring Clients section](https://docs.hazelcast.org/docs/management-center/latest/manual/html/index.html#monitoring-clients) in the Hazelcast Management Center Reference Manual for more information on the client statistics.
+
+### 7.9.2. Logging Configuration
+
+By default, the Hazelcast logger prints out the INFO level and above logs to the standard output. The following log levels exist:
+- FINEST (DEBUG)
+- INFO
+- WARNING
+- SEVERE (FATAL)
+
+The order is in increasing order. Hence, for INFO level configuration the INFO, WARNING and SEVERE logs are written.
+
+In some applications you may want to use your custom logging statements, you may want to direct the logs to a file instead of standard output, and enable/disable certain log levels. This can be done using the LoggerConfig in the ClientConfig object which is used to configure the client. Each client may have a separate configuration. The customized options needs to be configured using a configuration file. E.g.:
+
+```
+clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
+```
+The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
+
+If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem.
+
+**Important Note:** If you configured the logger configuration file, then the ClientConfig::setLogLevel will not be effective since the levels will be controlled from the configuration file.
 
 ## 7.10. Raw Pointer API
 
