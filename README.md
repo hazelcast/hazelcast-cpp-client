@@ -81,8 +81,8 @@
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
       * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
   * [7.8. Performance](#78-performance)
-  * [7.8.1. Partition Aware](#781-partition-aware)
-  * [7.8.2. Near Cache](#782-near-cache)
+      * [7.8.1. Partition Aware](#781-partition-aware)
+      * [7.8.2. Near Cache](#782-near-cache)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
       * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
       * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -637,7 +637,7 @@ When Hazelcast serializes an object into Data (byte array):
 
 1. It first checks whether the object pointer is NULL.
 
-2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as `byte`, `char`, `int32_t`, `bool`, `int64_t`, etc. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
+2. If the above check fails, then the object is serialized using the serializer that matches the object type. The object type is determined using the free function `int32_t getHazelcastTypeId(const T *object);`. This method returns the constant built-int serializer type ID for the built-in types such as `byte`, `char`, `int32_t`, `bool` and `int64_t`, etc. If it does not match any of the built-in types, it may match the types offered by Hazelcast, i.e., IdentifiedDataSerializable, Portable or custom. The matching is done based on method parameter matching. 
 
 3. If the above check fails, Hazelcast will use the registered Global Serializer if one exists.
 
@@ -2074,9 +2074,9 @@ private:
 };
 ```
 
-Note that `Employee` is implementing `Portable`. As portable types are not deserialized on server side for querying, you don't need to implement its Java equivalent on the server side.
+Note that `Employee` is implementing `Portable`. As portable types are not deserialized on server side for querying, you don't need to implement its Java equivalent on the server side for querying.
 
-For type that are not of portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
+For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
 In this case before starting the server, you need to compile the `Employee` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
