@@ -14,6 +14,7 @@
     * [1.4.2. Configuring Hazelcast C++ Client](#142-configuring-hazelcast-cpp-client)
         * [1.4.2.1. Group Settings](#1421-group-settings)
         * [1.4.2.2. Network Settings](#1422-network-settings)
+    * [1.4.3. Client System Properties](#143-client-system-properties)        
   * [1.5. Basic Usage](#15-basic-usage)
   * [1.6. Code Samples](#16-code-samples)
 * [2. Features](#2-features)
@@ -451,6 +452,39 @@ You need to provide the IP address and port of at least one member in your clust
     hazelcast::client::ClientConfig config;
     config.getNetworkConfig().addAddress(hazelcast::client::Address("your server ip", 5701 /* your server port*/));
 ```
+### 1.4.3. Client System Properties
+
+While configuring your C++ client, you can use various system properties provided by Hazelcast to tune its clients. These properties can be set programmatically through `config.SetProperty` or by using an environment variable.
+The value of this property will be:
+
+* the programmatically configured value, if programmatically set,
+* the environment variable value, if the environment variable is set,
+* the default value, if none of the above is set.
+
+See the following for an example client system property configuration:
+
+**Programmatically:**
+
+```C++
+config.setProperty(hazelcast::client::ClientProperties::INVOCATION_TIMEOUT_SECONDS, "2") // Sets invocation timeout as 2 seconds
+```
+
+or 
+
+```C++
+config.SetProperty("hazelcast.client.invocation.timeout.seconds", "2") // Sets invocation timeout as 2 seconds
+```
+
+**By using an environment variable at Linux:** 
+
+```C++
+export hazelcast.client.invocation.timeout.seconds=2
+```
+
+If you set a property both programmatically and via an environment variable, the programmatically
+set value will be used.
+
+See the [complete list of system properties](https://github.com/hazelcast/hazelcast-cpp-client/blob/master/hazelcast/include/hazelcast/client/ClientProperties.h), along with their descriptions, which can be used to configure your Hazelcast C++ client.
 
 ## 1.5. Basic Usage
 
