@@ -5,7 +5,7 @@
   * [1.1. Requirements](#11-requirements)
   * [1.2. Working with Hazelcast IMDG Clusters](#12-working-with-hazelcast-imdg-clusters)
     * [1.2.1. Setting Up a Hazelcast IMDG Cluster](#121-setting-up-a-hazelcast-imdg-cluster)
-      * [1.2.1.1. Running Standalone Jars](#1211-running-standalone-jars)
+      * [1.2.1.1. Running Standalone JARs](#1211-running-standalone-jars)
       * [1.2.1.2. Adding User Library to CLASSPATH](#1212-adding-user-library-to-classpath)
       * [1.2.1.3. Using hazelcast-member Tool](#1213-using-hazelcast-member-tool)
   * [1.3. Downloading and Installing](#13-downloading-and-installing)
@@ -49,7 +49,7 @@
     * [7.3.2. Handling Retry-able Operation Failure](#732-handling-retry-able-operation-failure)    
     * [7.3.3. Backpressure](#733-backpressure)
     * [7.3.4. Client Connection Strategy](#734-client-connection-strategy)
-        * [7.3.4.1. Configure Client Reconnect Strategy](#7341-configure-client-reconnect-strategy)
+        * [7.3.4.1. Configuring Client Reconnect Strategy](#7341-configuring-client-reconnect-strategy)
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
     * [7.4.1. Using Map](#741-using-map)
     * [7.4.2. Using MultiMap](#742-using-multimap)
@@ -202,14 +202,66 @@ If you want to add a `Portable` class, you should use `<portable-factories>` ins
 
 #### 1.2.1.3. Using hazelcast-member Tool
 
-`hazelcast-member` is a tool to download and run Hazelcast IMDG members easily. If you have brew installed, run the following commands to instal this tool:
+`hazelcast-member` is a tool to download and run Hazelcast IMDG members easily. You can find the installation instructions for various platforms in the following sections.
+
+##### Installing on Mac OS X
+
+If you have brew installed, run the following commands to install this tool:
 
 ```
 brew tap hazelcast/homebrew-hazelcast
 brew install hazelcast-member
 ```
 
-Now, you can start a member by running the following command:
+##### Installing on Ubuntu and Debian
+
+To resolve the `.deb` artifacts from Bintray, follow the below instructions.
+
+First, you need to import the Bintray's GPG key using the following command:
+
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 379CE192D401AB61
+```
+
+Then, run the following commands to add the `.deb` artifact to your system configuration file and update the lists of packages:
+
+```
+echo "deb https://dl.bintray.com/hazelcast/deb stable main" | sudo tee -a /etc/apt/sources.list
+sudo apt-get update
+``` 
+
+Finally, run the following command to install the `hazelcast-member` tool:
+
+```
+sudo apt-get install hazelcast-member
+```
+
+##### Installing on Red Hat and CentOS
+
+To resolve the `RPM` artifacts from Bintray, follow the below instructions.
+
+First, run the following command to get a generated `.repo` file:
+
+```
+wget https://bintray.com/hazelcast/rpm/rpm -O bintray-hazelcast-rpm.repo
+```
+
+Then, install the `.repo` file using the following command:
+
+
+```
+sudo mv bintray-hazelcast-rpm.repo /etc/yum.repos.d/
+```
+
+Finally, run the following command to install the `hazelcast-member` tool:
+
+```
+sudo yum install hazelcast-member
+```
+
+---
+
+After successfully installing the `hazelcast-member` tool, you can start a member by running the following command:
 
 ```
 hazelcast-member start
@@ -226,6 +278,7 @@ You can find more information about the `hazelcast-member` tool at its GitHub [r
 See the [Hazelcast IMDG Reference Manual](http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#getting-started) for more information on setting up the clusters.
 
 ## 1.3. Downloading and Installing
+
 Download the latest C++ client library from [Hazelcast C++ Client Website](https://hazelcast.org/clients/cplusplus/). You need to download the zip file for your platform. For Linux and Windows, 32- and 64-bit libraries exist. For MacOS, there is only 64-bit version. 
 
 Unzip the file. Following is the directory structure for Linux 64-bit zip. The structure is similar for the other C++ client distributions.
@@ -303,7 +356,7 @@ See the [Hazelcast IMDG Reference Manual](https://docs.hazelcast.org/docs/latest
 Hazelcast IMDG aims to run out-of-the-box for most common scenarios. However if you have limitations on your network such as multicast being disabled,
 you may have to configure your Hazelcast IMDG members so that they can find each other on the network. Also, since most of the distributed data structures are configurable, you may want to configure them according to your needs. We will show you the basics about network configuration here.
 
-There are two ways to configure Hazelcast IMDG:
+You can use the following options to configure Hazelcast IMDG:
 
 * Using the `hazelcast.xml` configuration file.
 * Programmatically configuring the member before starting it from the Java code.
@@ -369,10 +422,8 @@ You can configure Hazelcast C++ Client programatically.
 This section describes some network configuration settings to cover common use cases in connecting the client to a cluster. See the [Configuration Overview section](#3-configuration-overview)
 and the following sections for information about detailed network configurations and/or additional features of Hazelcast C++ client configuration.
 
-**Programmatic configuration**
-
 An easy way to configure your Hazelcast C++ Client is to create a `ClientConfig` object and set the appropriate options. Then you need to
-pass this object to the client when starting it.
+pass this object to the client when starting it, as shown below.
 
 ```C++
     hazelcast::client::ClientConfig config;
@@ -384,7 +435,8 @@ names as explained in the previous section. If you did, then you need to make ce
 
 ### 1.4.2.1 Group Settings
 
-**Programmatic:**
+You need to provide the group name of the cluster, if it is defined on the server side, to which you want the client to connect.
+
 ```C++
     hazelcast::client::ClientConfig config;
     config.getGroupConfig().setName("group name of your cluster");
@@ -394,7 +446,6 @@ names as explained in the previous section. If you did, then you need to make ce
 
 You need to provide the IP address and port of at least one member in your cluster so the client can find it.
 
-**Programmatic:**
 ```C++
     hazelcast::client::ClientConfig config;
     config.getNetworkConfig().addAddress(hazelcast::client::Address("your server ip", 5701 /* your server port*/));
@@ -451,6 +502,7 @@ Then, you can run the application using the following command:
 ```
 
 **main.cpp**
+
 ```C++
 #include <hazelcast/client/HazelcastClient.h>
 int main() {
@@ -698,7 +750,6 @@ public:
 
 The last step is to register the `IdentifiedDataSerializableFactory` to the `SerializationConfig`.
 
-**Programmatic Configuration:**
 ```C++
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().addDataSerializableFactory(SampleDataSerializableFactory::FACTORY_ID,
@@ -778,7 +829,6 @@ public:
 
 The last step is to register the `PortableFactory` to the `SerializationConfig`.
 
-**Programmatic Configuration:**
 ```C++
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().addPortableFactory(SamplePortableFactory::FACTORY_ID,
@@ -792,7 +842,7 @@ Note that the ID that is passed to the `SerializationConfig` is same as the `fac
 
 Hazelcast lets you plug a custom serializer to be used for serialization of objects. Custom serialization lets you use your existing classes without any modification in code for serialization purposes. They will be serialized/deserialized without any code change to already existing classes.
 
-Let's say you have an object `Musician` and you would like to customize the serialization. The reason might be that you want to use an external serializer for your object.
+Let's say you have an object `Musician` and you would like to customize the serialization, since you may want to use an external serializer for your object.
 
 ```C++
 class C++ {
@@ -856,8 +906,6 @@ You should provide the free function `int getHazelcastTypeId(const MusicianSeria
 
 Now the last required step is to register the `MusicianSerializer` to the configuration.
 
-**Programmatic Configuration:**
-
 ```C++
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().registerSerializer(
@@ -873,7 +921,7 @@ The global serializer is identical to custom serializers from the implementation
 
 By default, global serializer is used if the object is not `IdentifiedDataSerializable` or `Portable` or there is no custom serializer for it.
 
-You can use the global serialization for the following cases:
+**Use Cases:**
 
 * Third party serialization frameworks can be integrated using the global serializer.
 * For your custom objects, you can implement a single serializer to handle all of them.
@@ -900,8 +948,6 @@ public:
 
 You should register the global serializer in the configuration.
 
-**Programmatic Configuration:**
-
 ```C++
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().setGlobalSerializer(
@@ -911,8 +957,6 @@ You should register the global serializer in the configuration.
 # 5. Setting Up Client Network
 
 All network related configuration of Hazelcast C++ client is performed programmatically via the `ClientNetworkConfig` object. The following is an example configuration.
-
-### Programmatic Client Network Configuration
 
 Here is an example of configuring the network for C++ Client programmatically.
 
@@ -933,8 +977,6 @@ Address list is the initial list of cluster addresses which the client will conn
 list to find an alive member. Although it may be enough to give only one address of a member in the cluster
 (since all members communicate with each other), it is recommended that you give the addresses for all the members.
 
-**Programmatic:**
-
 ```C++
     ClientConfig clientConfig;
     clientConfig.getNetworkConfig().addAddress(Address("10.1.1.21", 5701));
@@ -945,12 +987,10 @@ The provided list is shuffled and tried in a random order. If no address is adde
 
 ## 5.2. Setting Smart Routing
 
-Smart routing defines whether the client mode is smart or unisocket. See [C++ Client Operation Modes section](#72-cpp-client-operation-modes)
+Smart routing defines whether the client mode is smart or unisocket. See the [C++ Client Operation Modes section](#72-cpp-client-operation-modes)
 for the description of smart and unisocket modes.
  
 The following is an example configuration.
-
-**Programmatic:**
 
 ```C++
     ClientConfig clientConfig;
@@ -962,8 +1002,6 @@ Its default value is `true` (smart client mode).
 ## 5.3. Enabling Redo Operation
 
 It enables/disables redo-able operations. While sending the requests to the related members, the operations can fail due to various reasons. Read-only operations are retried by default. If you want to enable retry for the other operations, you can set the `redoOperation` to `true`.
-
-**Programmatic:**
 
 ```C++
     ClientConfig clientConfig;
@@ -979,8 +1017,6 @@ If the member does not respond within the timeout, the client will retry to conn
  
 The following is an example configuration.
 
-**Programmatic:**
-
 ```C++
     ClientConfig clientConfig;
     clientConfig.getNetworkConfig().setConnectionTimeout(6000);
@@ -994,8 +1030,6 @@ While the client is trying to connect initially to one of the members in the `Cl
 
 The following is an example configuration.
 
-**Programmatic:**
-
 ```C++
     ClientConfig clientConfig;
     clientConfig.getNetworkConfig().setConnectionAttemptLimit(5);
@@ -1008,8 +1042,6 @@ Its default value is `2`.
 Connection attempt period is the duration in milliseconds between the connection attempts defined by `ClientNetworkConfig::getConnectionAttemptPeriod()`.
  
 The following is an example configuration.
-
-**Programmatic:**
 
 ```C++
     ClientConfig clientConfig;
@@ -1137,6 +1169,8 @@ The `SSLConfig.setEnabled` method should be called explicitly to enable the SSL.
 
 # 7. Using C++ Client with Hazelcast IMDG
 
+This chapter provides information on how you can use Hazelcast IMDG's data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
+
 ## 7.1. C++ Client API Overview
 
 This chapter provides information on how you can use Hazelcast IMDG's data structures in the C++ client, after giving some basic information including an overview to the client API, operation modes of the client and how it handles the failures.
@@ -1231,6 +1265,7 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
 
 ## 7.3.4 Client Connection Strategy
+
 Hazelcast client-cluster connection and reconnection strategy can be configured. Sometimes, you may not want your application to wait for the client to connect to the cluster, you may just want to get the client and let the client connect in the background. This is configured as follows:
 
 ```
@@ -1241,7 +1276,8 @@ When this configuration is set to true, the client creation won't wait to connec
 
 If it is set to false (the default case), `HazelcastClient(const ClientConfig)` will block until a cluster connection is established and it's ready to use the client instance.
 
-### 7.3.4.1 Configure Client Reconnect Strategy
+### 7.3.4.1 Configuring Client Reconnect Strategy
+
 You can configure how the client should act when the client disconnects from the cluster for any reason. This is configured as follows:
 
 ```
@@ -1607,9 +1643,9 @@ You can listen the following types of member events in the `Cluster`.
 * `memberRemoved`: An existing member leaves the cluster.
 * `memberAttributeChanged`: An attribute of a member is changed. See the [Defining Member Attributes section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#defining-member-attributes) in the Hazelcast IMDG Reference Manual to learn about member attributes.
 
-You can use `Cluster` (`HazelcastClient::getCluster()`) object to register for the membership listeners. There two type of listeners, InitialMembershipListener and MembershipListener. The difference is that InitialMembershipListener also gets notified when the client connects to the cluster and retrieves the whole membership list. You need to implement one of these two interfaces and register an instance of the listener to the cluster.
+You can use `Cluster` (`HazelcastClient::getCluster()`) object to register for the membership listeners. There are two types of listeners: `InitialMembershipListener` and `MembershipListener`. The difference is that `InitialMembershipListener` also gets notified when the client connects to the cluster and retrieves the whole membership list. You need to implement one of these two interfaces and register an instance of the listener to the cluster.
 
-The following example demonstrates both initial and regular membership listener registration.
+The following example demonstrates both initial and regular membership listener registrations.
 
 ```C++
         class MyInitialMemberListener : public hazelcast::client::InitialMembershipListener {
@@ -1902,7 +1938,7 @@ private:
 };
 ```
 
-Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
+Now, you need to make sure that the Hazelcast member recognizes the entry processor. For this, you need to implement the Java equivalent of your entry processor and its factory, and create your own compiled class or JAR files. For adding your own compiled class or JAR files to the server's `CLASSPATH`, see the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 The following is the Java equivalent of the entry processor in C++ client given above:
 
@@ -2074,10 +2110,10 @@ private:
 };
 ```
 
-Note that `Employee` is implementing `Portable`. As portable types are not deserialized on server side for querying, you don't need to implement its Java equivalent on the server side for querying.
+Note that `Employee` is implementing `Portable`. As portable types are not deserialized on the server side for querying, you don't need to implement its Java equivalent on the server side for querying.
 
 For the non-portable types, you need to implement its Java equivalent and its serializable factory on the server side for server to reconstitute the objects from binary formats. 
-In this case before starting the server, you need to compile the `Employee` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#123-adding-user-library-to-classpath).
+In this case before starting the server, you need to compile the `Employee` and related factory classes with server's `CLASSPATH` and add them to the `user-lib` directory in the extracted `hazelcast-<version>.zip` (or `tar`). See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath).
 
 > **NOTE: Querying with `Portable` object is faster as compared to `IdentifiedDataSerializable`.**
 
@@ -2202,7 +2238,7 @@ The C++ client provides paging for defined predicates. With its `PagingPredicate
     //...
 ```
 
-If you want to sort the result before paging, you need to specify a comparator object that implements the `query::EntryComparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable` or `Custom serializable`. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#adding-user-library-to-classpath). 
+If you want to sort the result before paging, you need to specify a comparator object that implements the `query::EntryComparator` interface. Also, this comparator object should be one of `IdentifiedDataSerializable` or `Portable` or `Custom serializable`. After implementing After implementing this object in C++, you need to implement the Java equivalent of it and its factory. The Java equivalent of the comparator should implement `java.util.Comparator`. Note that the `compare` function of `Comparator` on the Java side is the equivalent of the `sort` function of `Comparator` on the C++ side. When you implement the `Comparator` and its factory, you can add them to the `CLASSPATH` of the server side.  See the [Adding User Library to CLASSPATH section](#1212-adding-user-library-to-classpath). 
 
 Also, you can access a specific page more easily with the help of the `setPage` function. This way, if you make a query for the 100th page, for example, it will get all 100 pages at once instead of reaching the 100th page one by one using the `nextPage` function.
 
@@ -2230,7 +2266,7 @@ Hazelcast has a standard way of finding out which member owns/manages each key o
     mapC.remove("key1");
 ```
 
-When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderId`s `PartitionAware`.
+When the keys are the same, entries are stored on the same member. However, we sometimes want to have the related entries stored on the same member, such as a customer and his/her order entries. We would have a customers map with `customerId` as the key and an orders map with `orderId` as the key. Since `customerId` and `orderId` are different keys, a customer and his/her orders may fall into different members in your cluster. So how can we have them stored on the same member? We create an affinity between the customer and orders. If we make them part of the same partition then these entries will be co-located. We achieve this by making `orderKey` s `PartitionAware`.
 
 ```C++
 class OrderKey : public hazelcast::client::PartitionAware<int64_t>,
@@ -2320,10 +2356,11 @@ After enabling the client statistics, you can monitor your clients using Hazelca
 ### 7.9.2. Logging Configuration
 
 By default, the Hazelcast logger prints out the INFO level and above logs to the standard output. The following log levels exist:
-- FINEST (DEBUG)
-- INFO
-- WARNING
-- SEVERE (FATAL)
+
+* FINEST (DEBUG)
+* INFO
+* WARNING
+* SEVERE (FATAL)
 
 The order is in increasing order. Hence, for INFO level configuration the INFO, WARNING and SEVERE logs are written.
 
@@ -2332,11 +2369,12 @@ In some applications you may want to use your custom logging statements, you may
 ```
 clientConfig.getLoggerConfig().setConfigurationFileName("logger-config.txt");
 ```
+
 The file name is relative path to the application working directory or should be an absolute path. The configuration file will use the format as supported by the configured logger type. Currently, only the easylogging++ (https://github.com/muflihun/easyloggingpp/tree/v8.91) logger is supported, hence the configuration should be done in accordance with the easylogging++ configuration: https://github.com/muflihun/easyloggingpp/tree/v8.91#configuration-file 
 
 If you provide a non-existent or invalid logger configuration file, the library will fail fast by throwing exception::IllegalStateException with the cause of the problem.
 
-**Important Note:** If you configured the logger configuration file, then the ClientConfig::setLogLevel will not be effective since the levels will be controlled from the configuration file.
+> **IMPORTANT NOTE: If you configured the logger configuration file, then the `ClientConfig::setLogLevel` will not be effective since the levels will be controlled from the configuration file.**
 
 ## 7.10. Raw Pointer API
 
@@ -2407,6 +2445,7 @@ value = vals->get(0);
 Using the raw pointer based API may improve the performance if you are using the API to return multiple values such as `values`, `keySet` and `entrySet`. In this case, the cost of deserialization is delayed until the item is actually accessed.
 
 ## 7.11. Mixed Object Types Supporting HazelcastClient
+
 Sometimes, you may need to use Hazelcast data structures with objects of different types. For example, you may want to put `int`, `string`, `IdentifiedDataSerializable`, etc. objects into the same Hazelcast `IMap` data structure. You can do this by using the mixed type adopted `HazelcastClient`. You can adopt the client in this way:
 ```
     ClientConfig config;
@@ -2436,6 +2475,7 @@ Mixed type support for near cache only exists when the in-memory format is BINAR
 The mixed type API uses the TypedData class at the user interface.
 
 ### 7.11.1. TypedData API
+
 The TypedData class is a wrapper class for the serialized binary data. It presents the following user APIs:
 ```
             /**
@@ -2565,7 +2605,9 @@ Follow the below steps to build and install Hazelcast C++ client from its source
 	MSBuild.exe HazelcastClient.sln /property:TreatWarningsAsErrors=true /property:Configuration=Debug
 
 ## 8.2. Testing
+
 In order to test Hazelcast C++ client locally, you will need the following:
+
 * Java 6 or newer
 * Maven
 * cmake
@@ -2576,22 +2618,23 @@ You can also pull our test docker images from the docker hub using the following
 
 Following command builds and runs the tests:
 
-- Linux: `./testLinuxSingleCase.sh 64 SHARED Debug`
-- MacOS: `./testLinuxSingleCase.sh 64 SHARED Debug`
-- Windows: `./testWindowsSingleCase.bat 64 SHARED Debug`
+* Linux: `./testLinuxSingleCase.sh 64 SHARED Debug`
+* MacOS: `./testLinuxSingleCase.sh 64 SHARED Debug`
+* Windows: `./testWindowsSingleCase.bat 64 SHARED Debug`
 
 ### 8.2.1 Tested Platforms
+
 Our CI tests run continuously on the following platforms and compilers:
-- Linux: CentOs5 gcc 3.4.6, CentOs5.11 gcc 4.1.2, centos 7 gcc 4.8.2
-- Windows: Visual Studio 12
-- Mac OS: Apple LLVM version 7.3.0 (clang-703.0.31)
+
+* Linux: CentOs5 gcc 3.4.6, CentOs5.11 gcc 4.1.2, centos 7 gcc 4.8.2
+* Windows: Visual Studio 12
+* Mac OS: Apple LLVM version 7.3.0 (clang-703.0.31)
 
 ## 8.3 Reproducing Released Libraries
 
 Sometimes you may want to reproduce the released library for your own compiler environment. You need to run the release script and it will produce a release folder named "cpp".
 
-Note: 
-- The default release scripts require that you have OpenSSL (version 1.0.2) installed in your development environment.
+Note: The default release scripts require that you have OpenSSL (version 1.0.2) installed in your development environment.
 
 ## Mac
 
