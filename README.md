@@ -33,7 +33,7 @@
   * [5.5. Setting Connection Attempt Limit](#55-setting-connection-attempt-limit)
   * [5.6. Setting Connection Attempt Period](#56-setting-connection-attempt-period)
   * [5.7. Enabling Client TLS/SSL](#57-enabling-client-tlsssl)
-  * [5.8. Enabling Hazelcast Cloud Discovery](#58-enabling-hazelcast-cloud-discovery)
+  * [5.8. Enabling Hazelcast AWS Cloud Discovery](#58-enabling-hazelcast-aws-cloud-discovery)
 * [6. Securing Client Connection](#6-securing-client-connection)
   * [6.1. TLS/SSL](#61-tlsssl)
     * [6.1.1. TLS/SSL for Hazelcast Members](#611-tlsssl-for-hazelcast-members)
@@ -83,6 +83,7 @@
   * [7.8. Performance](#78-performance)
       * [7.8.1. Partition Aware](#781-partition-aware)
       * [7.8.2. Near Cache](#782-near-cache)
+        * [7.8.2.1 Configuring Near CacheConfiguring Near Cache](#7821-configuring-near-cache)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
       * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
       * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -1057,6 +1058,22 @@ for the client-cluster connection, you should set an SSL configuration. Please s
 
 As explained in the [TLS/SSL section](#61-tlsssl), Hazelcast members have key stores used to identify themselves (to other members) and Hazelcast C++ clients have certificate authorities used to define which members they can trust. 
 
+## 5.8. Enabling Hazelcast AWS Cloud Discovery
+
+The C++ client can discover the exiting Hazelcast servers in the Amazon AWS environment. The client queries the Amazon AWS environment using the [describe-instances] (http://docs.aws.amazon.com/cli/latest/reference/ec2/describe-instances.html) query of AWS. The client finds only the up and running instances and filters them based on the filter config provided at the ClientAwsConfig configuration.
+ 
+An example configuration:
+
+```C++
+clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setSecurityGroupName("MySecureGroup").setRegion("us-east-1");
+```
+
+You need to enable the discovery by calling setEnabled(true). You can set your access key and secret in the config as shown in this example. You can filter the instances by setting which tags they have or by the security group setting. You can set the region for which the instances will be retrieved from, the default is to use us-east-1.
+ 
+The C++ client works the same way as the Java client. For details, see [AWSClient] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md) and [Hazelcast AWS Plugin] (https://github.com/hazelcast/hazelcast-aws/blob/master/README.md). 
+
 # 6. Securing Client Connection
 
 This chapter describes the security features of Hazelcast C++ client. These include using TLS/SSL for connections between members and between clients and members. These security features require **Hazelcast IMDG Enterprise** edition.
@@ -1263,6 +1280,35 @@ You can set a timeout for retrying the operations sent to a member. This can be 
 * Client’s heartbeat requests are timed out.
 
 When a connection problem occurs, an operation is retried if it is certain that it has not run on the member yet or if it is idempotent such as a read-only operation, i.e., retrying does not have a side effect. If it is not certain whether the operation has run on the member, then the non-idempotent operations are not retried. However, as explained in the first paragraph of this section, you can force all the client operations to be retried (`redoOperation`) when there is a connection failure between the client and member. But in this case, you should know that some operations may run multiple times causing conflicts. For example, assume that your client sent a `queue.offer` operation to the member and then the connection is lost. Since there will be no response for this operation, you will not know whether it has run on the member or not. If you enabled `redoOperation`, it means this operation may run again, which may cause two instances of the same object in the queue.
+
+When invocation is being retried, the client may wait some time before it retries again. This retry wait time is configurable with this configuration property:
+
+```
+config.setProperty(“hazelcast.client.invocation.retry.pause.millis”, “500");
+```
+The default retry wait time is 1 second.
+
+## 7.3.3 Client Backpressure
+
+Hazelcast uses operations to make remote calls. For example, a `map.get` is an operation and a `map.put` is one operation for the primary
+and one operation for each of the backups, i.e. `map.put` is executed for the primary and also for each backup. In most cases, there will be a natural balance between the number of threads performing operations
+and the number of operations being executed. However, there are two situations where this balance and operations
+can pile up and eventually lead to Out of Memory Exception (OOME):
+
+- Asynchronous calls: With async calls, the system may be flooded with the requests.
+- Asynchronous backups: The asynchronous backups may be piling up.
+
+To prevent the system from crashing, Hazelcast provides back pressure. Back pressure works by:
+
+- limiting the number of concurrent operation invocations,
+- periodically making an async backup sync.
+
+Sometimes, e.g., when your servers are overloaded, you may want to slow down the client operations to the cluster. Then the client can be configured to wait until number of outstanding invocations whose reponses are not received to become less than a certain number. This is called "Client Backpressure". By default, the backpressure is disabled. There are a few properties which control the backpressure. These client configuration properties are:
+
+- `hazelcast.client.max.concurrent.invocations`: The maximum number of concurrent invocations allowed. To prevent the system from overloading, you can apply a constraint on the number of concurrent invocations. If the maximum number of concurrent invocations has been exceeded and a new invocation comes in, then Hazelcast will throw HazelcastOverloadException. By default this property is configured as INT32_MAX.
+- `hazelcast.client.invocation.backoff.timeout.millis`: Controls the maximum timeout in millis to wait for an invocation space to be available. If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done to give the system time to deal with the backlog of invocations. This property controls how long an invocation is allowed to wait before getting `HazelcastOverloadException`. When set to -1 then `HazelcastOverloadException` is thrown immediately without any waiting. This is the default value.
+
+For details of backpressure, see the [Backpressure section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#back-pressure) in the Hazelcast IMDG Reference Manual.
 
 ## 7.3.4 Client Connection Strategy
 
@@ -2332,6 +2378,38 @@ Notice that `OrderKey` implements `PartitionAware` interface and that `getPartit
 For more details, see the [PartitionAware section](https://docs.hazelcast.org/docs/latest/manual/html-single/#partitionaware) in the Hazelcast IMDG Reference Manual.
 
 ### 7.8.2. Near Cache
+
+Map  entries in Hazelcast are partitioned across the cluster members. Hazelcast clients do not have local data at all. Suppose you read the key `k` a number of times from a Hazelcast client or `k` is owned by another member in your cluster. Then each `map.get(k)` or `cache.get(k)` will be a remote operation, which creates a lot of network trips. If you have a data structure that is mostly read, then you should consider creating a local Near Cache, so that reads are sped up and less network traffic is created.
+
+These benefits do not come for free, please consider the following trade-offs:
+
+- Members with a Near Cache will have to hold the extra cached data, which increases memory consumption.
+- If invalidation is enabled and entries are updated frequently, then invalidations will be costly.
+- Near Cache breaks the strong consistency guarantees; you might be reading stale data.
+
+Near Cache is highly recommended for data structures that are mostly read.
+
+In a client/server system you must enable the Near Cache separately on the client, without the need to configure it on the server. Please note that Near Cache configuration is specific to the server or client itself: a data structure on a server may not have Near Cache configured while the same data structure on a client may have Near Cache configured. They also can have different Near Cache configurations.
+
+If you are using Near Cache, you should take into account that your hits to the keys in the Near Cache are not reflected as hits to the original keys on the primary members. This has for example an impact on IMap's maximum idle seconds or time-to-live seconds expiration. Therefore, even though there is a hit on a key in Near Cache, your original key on the primary member may expire.
+
+NOTE: Near Cache works only when you access data via `map.get(k)` or `cache.get(k)` methods. Data returned using a predicate is not stored in the Near Cache.
+
+A Near Cache can have its own `in-memory-format` which is independent of the `in-memory-format` of the data structure.
+
+#### 7.8.2.1 Configuring Near Cache
+
+Hazelcast Map can be configured to work with near cache enabled. You can enable the near cache for a map by adding a near cache configuration for that map. An example configuration for `myMap` is shown below.
+
+```
+boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>("myMap"));
+clientConfig.addNearCacheConfig(nearCacheConfig);
+```
+
+The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. See details at [IMDG Near Cache ] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#near-cache) and [Map-Eviction] (http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map-eviction).
+
+For example configurations, See [C++ client Near Cache examples] (https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
 
 ## 7.9. Monitoring and Logging
 
