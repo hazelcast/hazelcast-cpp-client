@@ -84,7 +84,11 @@
   * [7.8. Performance](#78-performance)
       * [7.8.1. Partition Aware](#781-partition-aware)
       * [7.8.2. Near Cache](#782-near-cache)
-        * [7.8.2.1 Configuring Near CacheConfiguring Near Cache](#7821-configuring-near-cache)
+          * [7.8.2.1. Configuring Near Cache](#7821-configuring-near-cache)
+          * [7.8.2.2. Near Cache Example for Map](7822-near-cache-example-for-map)
+          * [7.8.2.3. Near Cache Eviction](7823-near-cache-eviction)
+          * [7.8.2.4. Near Cache Expiration](7824-near-cache-expiration)
+          * [7.8.2.5. Near Cache Invalidation](7825-near-cache-invalidation)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
       * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
       * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -2435,15 +2439,68 @@ A Near Cache can have its own `in-memory-format` which is independent of the `in
 
 Hazelcast Map can be configured to work with near cache enabled. You can enable the near cache for a map by adding a near cache configuration for that map. An example configuration for `myMap` is shown below.
 
-```
-boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
-            new config::NearCacheConfig<int, std::string>("myMap"));
-clientConfig.addNearCacheConfig(nearCacheConfig);
+```C++
+    ClientConfig config;
+    const char *mapName = "myMap";
+    boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
+    nearCacheConfig->setInvalidateOnChange(true);
+    nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::LRU)
+            .setMaximumSizePolicy(config::EvictionConfig<int, std::string>::ENTRY_COUNT).setSize(100);
+    nearCacheConfig->setTimeToLiveSeconds(1);
+    nearCacheConfig->setMaxIdleSeconds(2);
+    config.addNearCacheConfig(nearCacheConfig);
 ```
 
-The NearCacheConfig class has a number of options including the EvictionConfig which determines the eviction strategy used. The options work exactly the same way as the Java client options. See details at [IMDG Near Cache ] (https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#near-cache) and [Map-Eviction] (http://docs.hazelcast.org/docs/latest/manual/html-single/index.html#map-eviction).
+Following are the descriptions of all configuration elements:
+ - `setInMemoryFormat`: Specifies in which format data will be stored in your Near Cache. Note that a map’s in-memory format can be different from that of its Near Cache. Available values are as follows:
+  - `BINARY`: Data will be stored in serialized binary format (default value).
+  - `OBJECT`: Data will be stored in deserialized form.
+ - `setInvalidateOnChange`: Specifies whether the cached entries are evicted when the entries are updated or removed in members. Its default value is true.
+ - `setTimeToLiveSeconds`: Maximum number of seconds for each entry to stay in the Near Cache. Entries that are older than this period are automatically evicted from the Near Cache. Regardless of the eviction policy used, `timeToLiveSeconds` still applies. Any integer between 0 and `INT32_MAX`. 0 means infinite. Its default value is 0.
+ - `setMaxIdleSeconds`: Maximum number of seconds each entry can stay in the Near Cache as untouched (not read). Entries that are not read more than this period are removed from the Near Cache. Any integer between 0 and `INT32_MAX`. 0 means infinite. Its default value is 0. 
+ - `setEvictionConfig`: Eviction policy configuration. The following can be set on this config:
+    - `setEviction`: Specifies the eviction behavior when you use High-Density Memory Store for your Near Cache. It has the following attributes:
+        - `setEvictionPolicy`: Eviction policy configuration. Available values are as follows:
+            - `LRU`: Least Recently Used (default value).
+            - `LFU`: Least Frequently Used.
+            - `NONE`: No items will be evicted and the property max-size will be ignored. You still can combine it with `time-to-live-seconds` and `max-idle-seconds` to evict items from the Near Cache.
+            - `RANDOM`: A random item will be evicted.
+        - `setMaxSizePolicy`: Maximum size policy for eviction of the Near Cache. Available values are as follows:
+            - `ENTRY_COUNT`: Maximum size based on the entry count in the Near Cache (default value).
+        - `setSize`: Maximum size of the Near Cache used for `max-size-policy`. When this is reached the Near Cache is evicted based on the policy defined. Any integer between `1` and `INT32_MAX`. Default is `INT32_MAX`.
+- `setLocalUpdatePolicy`: Specifies the update policy of the local Near Cache. It is available on JCache clients. Available values are as follows:
+    - `INVALIDATE`: Removes the Near Cache entry on mutation. After the mutative call to the member completes but before the operation returns to the caller, the Near Cache entry is removed. Until the mutative operation completes, the readers still continue to read the old value. But as soon as the update completes the Near Cache entry is removed. Any threads reading the key after this point will have a Near Cache miss and call through to the member, obtaining the new entry. This setting provides read-your-writes consistency. This is the default setting.
+    - `CACHE_ON_UPDATE`: Updates the Near Cache entry on mutation. After the mutative call to the member completes but before the put returns to the caller, the Near Cache entry is updated. So a remove will remove it and one of the put methods will update it to the new value. Until the update/remove operation completes, the entry's old value can still be read from the Near Cache. But before the call completes the Near Cache entry is updated. Any threads reading the key after this point will read the new entry. If the mutative operation was a remove, the key will no longer exist in the cache, both the Near Cache and the original copy in the member. The member will initiate an invalidate event to any other Near Caches, however the caller Near Cache is not invalidated as it already has the new value. This setting also provides read-your-writes consistency.
 
-For example configurations, See [C++ client Near Cache examples] (https://github.com/hazelcast/hazelcast-cpp-client/tree/master/examples).
+#### 7.8.2.2. Near Cache Example for Map
+The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `object`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `lru` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
+```C++
+    boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+            new config::NearCacheConfig<int, std::string>("mostlyReadMap", config::OBJECT));
+    nearCacheConfig->setInvalidateOnChange(true);
+    nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::LRU).setSize(5000);
+    config.addNearCacheConfig(nearCacheConfig);
+```
+
+#### 7.8.2.3. Near Cache Eviction
+In the scope of Near Cache, eviction means evicting (clearing) the entries selected according to the given `evictionPolicy` when the specified `size` has been reached.
+
+The `EvictionConfig::setSize` defines the entry count when the Near Cache is full and determines whether the eviction should be triggered. 
+
+Once the eviction is triggered the configured `evictionPolicy` determines which, if any, entries must be evicted.
+ 
+#### 7.8.2.4. Near Cache Expiration
+Expiration means the eviction of expired records. A record is expired:
+
+- if it is not touched (accessed/read) for `maxIdleSeconds`
+- `timeToLiveSeconds` passed since it is put to Near Cache
+
+The actual expiration is performed when a record is accessed: it is checked if the record is expired or not. If it is expired, it is evicted and the value shall be looked up from the cluster.
+
+#### 7.8.2.5. Near Cache Invalidation
+
+Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original data structure (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
 ## 7.9. Monitoring and Logging
 
