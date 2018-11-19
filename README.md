@@ -85,7 +85,7 @@
       * [7.8.1. Partition Aware](#781-partition-aware)
       * [7.8.2. Near Cache](#782-near-cache)
           * [7.8.2.1. Configuring Near Cache](#7821-configuring-near-cache)
-          * [7.8.2.2. Near Cache Example for Map](7822-near-cache-example-for-map)
+          * [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
           * [7.8.2.3. Near Cache Eviction](7823-near-cache-eviction)
           * [7.8.2.4. Near Cache Expiration](7824-near-cache-expiration)
           * [7.8.2.5. Near Cache Invalidation](7825-near-cache-invalidation)
@@ -2422,8 +2422,12 @@ Map  entries in Hazelcast are partitioned across the cluster members. Hazelcast 
 These benefits do not come for free, please consider the following trade-offs:
 
 - Members with a Near Cache will have to hold the extra cached data, which increases memory consumption.
+
 - If invalidation is enabled and entries are updated frequently, then invalidations will be costly.
+
 - Near Cache breaks the strong consistency guarantees; you might be reading stale data.
+
+Clients with a Near Cache will have to hold the extra cached data, which increases memory consumption.
 
 Near Cache is highly recommended for maps that are mostly read.
 
@@ -2474,7 +2478,7 @@ Following are the descriptions of all configuration elements:
     - `CACHE_ON_UPDATE`: Updates the Near Cache entry on mutation. After the mutative call to the member completes but before the put returns to the caller, the Near Cache entry is updated. So a remove will remove it and one of the put methods will update it to the new value. Until the update/remove operation completes, the entry's old value can still be read from the Near Cache. But before the call completes the Near Cache entry is updated. Any threads reading the key after this point will read the new entry. If the mutative operation was a remove, the key will no longer exist in the cache, both the Near Cache and the original copy in the member. The member will initiate an invalidate event to any other Near Caches, however the caller Near Cache is not invalidated as it already has the new value. This setting also provides read-your-writes consistency.
 
 #### 7.8.2.2. Near Cache Example for Map
-The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `object`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `lru` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
+The following is an example configuration for a Near Cache defined in the `mostlyReadMap` map. According to this configuration, the entries are stored as `OBJECT`'s in this Near Cache and eviction starts when the count of entries reaches `5000`; entries are evicted based on the `LRU` (Least Recently Used) policy. In addition, when an entry is updated or removed on the member side, it is eventually evicted on the client side.
 ```C++
     boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
             new config::NearCacheConfig<int, std::string>("mostlyReadMap", config::OBJECT));
@@ -2500,7 +2504,7 @@ The actual expiration is performed when a record is accessed: it is checked if t
 
 #### 7.8.2.5. Near Cache Invalidation
 
-Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original data structure (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
+Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
 
 ## 7.9. Monitoring and Logging
 
