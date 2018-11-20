@@ -86,9 +86,9 @@
       * [7.8.2. Near Cache](#782-near-cache)
           * [7.8.2.1. Configuring Near Cache](#7821-configuring-near-cache)
           * [7.8.2.2. Near Cache Example for Map](#7822-near-cache-example-for-map)
-          * [7.8.2.3. Near Cache Eviction](7823-near-cache-eviction)
-          * [7.8.2.4. Near Cache Expiration](7824-near-cache-expiration)
-          * [7.8.2.5. Near Cache Invalidation](7825-near-cache-invalidation)
+          * [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
+          * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
+          * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
       * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
       * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -2421,13 +2421,11 @@ Map  entries in Hazelcast are partitioned across the cluster members. Hazelcast 
 
 These benefits do not come for free, please consider the following trade-offs:
 
-- Members with a Near Cache will have to hold the extra cached data, which increases memory consumption.
+- Clients with a Near Cache will have to hold the extra cached data, which increases memory consumption.
 
 - If invalidation is enabled and entries are updated frequently, then invalidations will be costly.
 
 - Near Cache breaks the strong consistency guarantees; you might be reading stale data.
-
-Clients with a Near Cache will have to hold the extra cached data, which increases memory consumption.
 
 Near Cache is highly recommended for maps that are mostly read.
 
