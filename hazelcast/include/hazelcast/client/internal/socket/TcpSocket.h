@@ -47,6 +47,11 @@ typedef int socklen_t;
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 #if !defined(MSG_NOSIGNAL)
 #  define MSG_NOSIGNAL 0
 #endif
@@ -58,7 +63,7 @@ namespace hazelcast {
                 /**
                  * c Sockets wrapper class.
                  */
-                class TcpSocket : public Socket {
+                class HAZELCAST_API TcpSocket : public Socket {
                 public:
                     /**
                      * Constructor
@@ -142,5 +147,9 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_ */
