@@ -96,21 +96,33 @@ namespace hazelcast {
                 /**
                  * Enable/disable SO_LINGER with the specified linger time in seconds
                  *
+                 * if set to a value of 0 or less then it is disabled.
+                 *
+                 * Default value is 3.
+                 *
                  * @param lingerSeconds value in seconds
                  * @return SocketOptions configured
                  */
                 SocketOptions &setLingerSeconds(int lingerSeconds);
 
                 /**
-                 * Gets the SO_SNDBUF and SO_RCVBUF options to the specified value in KB
-                 * @return bufferSize KB value
+                 * If set to 0 or less, then it is not set on the socket.
+                 *
+                 * The default value is DEFAULT_BUFFER_SIZE_BYTE
+                 *
+                 * Gets the SO_SNDBUF and SO_RCVBUF options value in bytes
+                 * @return bufferSize Number of bytes
                  */
                 int getBufferSize() const;
 
                 /**
-                 * Sets the SO_SNDBUF and SO_RCVBUF options to the specified value in KB
+                 * If set to 0 or less, then it is not set on the socket.
                  *
-                 * @param bufferSize KB value
+                 * The default value is DEFAULT_BUFFER_SIZE_BYTE
+                 *
+                 * Sets the SO_SNDBUF and SO_RCVBUF options to the specified value in bytes
+                 *
+                 * @param bufferSize Number of bytes
                  * @return SocketOptions configured
                  */
                 SocketOptions &setBufferSize(int bufferSize);

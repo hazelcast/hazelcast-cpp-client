@@ -299,8 +299,8 @@ namespace hazelcast {
                     }
 
                     optionValue = socketOptions.isKeepAlive();
-                    if (::setsockopt(socketId, SOL_SOCKET, TCP_KEEPALIVE, &optionValue, sizeof(optionValue))) {
-                        throwIOException("setSocketOptions", "Failed to set TCP_KEEPALIVE option on the socket.");
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set SO_KEEPALIVE option on the socket.");
                     }
 
                     optionValue = socketOptions.isReuseAddress();
