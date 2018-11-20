@@ -85,23 +85,20 @@ namespace hazelcast {
                     #else
                     (void) clientContext;
                     #endif
-                    
+
                     return true;
                 }
 
                 std::auto_ptr<Socket> SocketFactory::create(const Address &address) const {
-                    std::auto_ptr<internal::socket::SocketInterface> socket;
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        socket.reset(new internal::socket::SSLSocket(address, *sslContext));
-                    } else {
-                        socket.reset(new internal::socket::TcpSocket(address));
+                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
+                                clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
                     #endif
 
-                    socket->setSocketOptions(clientContext.getClientConfig().getNetworkConfig().getSocketOptions());
-
-                    return std::auto_ptr<Socket>(socket);
+                    return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address,
+                            &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                 }
             }
         }

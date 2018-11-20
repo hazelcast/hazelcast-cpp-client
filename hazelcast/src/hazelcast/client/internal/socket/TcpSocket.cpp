@@ -32,7 +32,8 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                TcpSocket::TcpSocket(const client::Address &address) : configAddress(address) {
+                TcpSocket::TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions)
+                        : configAddress(address) {
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                     int n = WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
@@ -57,6 +58,11 @@ namespace hazelcast {
                     if (-1 == socketId) {
                         throwIOException("TcpSocket", "[TcpSocket::TcpSocket] Failed to obtain socket.");
                     }
+
+                    if (socketOptions) {
+                        setSocketOptions(*socketOptions);
+                    }
+
                     isOpen = true;
                 }
 
@@ -284,7 +290,7 @@ namespace hazelcast {
                     }
                 }
 
-                SocketInterface &TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
+                void TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
                     int optionValue = socketOptions.getBufferSize();
                     if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("setSocketOptions", "Failed to set socket receive buffer size.");
@@ -294,17 +300,17 @@ namespace hazelcast {
                     }
 
                     optionValue = socketOptions.isTcpNoDelay();
-                    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (void *) &optionValue, sizeof(optionValue))) {
+                    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("setSocketOptions", "Failed to set TCP_NODELAY option on the socket.");
                     }
 
                     optionValue = socketOptions.isKeepAlive();
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, &optionValue, sizeof(optionValue))) {
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("setSocketOptions", "Failed to set SO_KEEPALIVE option on the socket.");
                     }
 
                     optionValue = socketOptions.isReuseAddress();
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, &optionValue, sizeof(optionValue))) {
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("setSocketOptions", "Failed to set SO_REUSEADDR option on the socket.");
                     }
 
@@ -314,19 +320,18 @@ namespace hazelcast {
                         so_linger.l_onoff = 1;
                         so_linger.l_linger = optionValue;
 
-                        if (::setsockopt(socketId, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger))) {
+                        if (::setsockopt(socketId, SOL_SOCKET, SO_LINGER, (char *) &so_linger, sizeof(so_linger))) {
                             throwIOException("setSocketOptions", "Failed to set SO_LINGER option on the socket.");
                         }
                     }
 
                     #if defined(SO_NOSIGPIPE)
                     optionValue = 1;
-                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &optionValue, sizeof(optionValue))) {
+                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("TcpSocket", "Failed to set socket option SO_NOSIGPIPE.");
                     }
                     #endif
 
-                    return *this;
                 }
             }
         }

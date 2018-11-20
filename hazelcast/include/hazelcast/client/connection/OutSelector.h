@@ -34,7 +34,7 @@ namespace hazelcast {
         namespace connection {
             class HAZELCAST_API OutSelector : public IOSelector {
             public:
-                OutSelector(ClientConnectionManagerImpl &connectionManager);
+                OutSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions);
 
                 void listenInternal();
 

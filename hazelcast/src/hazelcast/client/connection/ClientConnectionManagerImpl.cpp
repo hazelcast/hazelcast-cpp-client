@@ -66,8 +66,9 @@ namespace hazelcast {
                                                                      const boost::shared_ptr<AddressTranslator> &addressTranslator,
                                                                      const std::vector<boost::shared_ptr<AddressProvider> > &addressProviders)
                     : logger(client.getLogger()), client(client),
-                      socketInterceptor(client.getClientConfig().getSocketInterceptor()), inSelector(*this),
-                      outSelector(*this),
+                      socketInterceptor(client.getClientConfig().getSocketInterceptor()),
+                      inSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
+                      outSelector(*this, client.getClientConfig().getNetworkConfig().getSocketOptions()),
                       inSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(inSelector)), logger),
                       outSelectorThread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(outSelector)), logger),
                       executionService(client.getClientExecutionService()),
