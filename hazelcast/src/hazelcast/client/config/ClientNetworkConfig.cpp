@@ -108,6 +108,10 @@ namespace hazelcast {
                 addressList.push_back(address);
                 return *this;
             }
+
+            SocketOptions &ClientNetworkConfig::getSocketOptions() {
+                return socketOptions;
+            }
         }
     }
 }

@@ -35,20 +35,16 @@ typedef int socklen_t;
 #include <sys/errno.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <netinet/tcp.h>
 
 #endif
 
-#include "hazelcast/client/Socket.h"
-
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/AtomicBoolean.h"
 #include <string>
 #include <boost/shared_ptr.hpp>
 
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif
+#include "hazelcast/client/internal/socket/SocketInterface.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/AtomicBoolean.h"
 
 #if !defined(MSG_NOSIGNAL)
 #  define MSG_NOSIGNAL 0
@@ -61,7 +57,7 @@ namespace hazelcast {
                 /**
                  * c Sockets wrapper class.
                  */
-                class HAZELCAST_API TcpSocket : public Socket {
+                class TcpSocket : public SocketInterface {
                 public:
                     /**
                      * Constructor
@@ -119,6 +115,9 @@ namespace hazelcast {
                     void setBlocking(bool blocking);
 
                     std::auto_ptr<Address> localSocketAddress() const;
+
+                    virtual SocketInterface &setSocketOptions(const client::config::SocketOptions &socketOptions);
+
                 private:
                     TcpSocket(const Socket &rhs);
 
@@ -142,9 +141,5 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif /* HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_ */

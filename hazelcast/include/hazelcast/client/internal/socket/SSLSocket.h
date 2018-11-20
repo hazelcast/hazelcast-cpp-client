@@ -21,18 +21,12 @@
 #include <asio.hpp>
 #include <asio/ssl.hpp>
 
-#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/internal/socket/SocketInterface.h"
 #include "hazelcast/client/Address.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
 #if !defined(MSG_NOSIGNAL)
 #  define MSG_NOSIGNAL 0
-#endif
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export
-#pragma warning(disable: 4003) //for  not enough actual parameters for macro 'min' in asio wait_traits
 #endif
 
 namespace hazelcast {
@@ -42,7 +36,7 @@ namespace hazelcast {
                 /**
                  * SSL Socket using asio library
                  */
-                class HAZELCAST_API SSLSocket : public Socket {
+                class SSLSocket : public SocketInterface {
                 public:
                     struct CipherInfo {
                         std::string name;
@@ -107,6 +101,9 @@ namespace hazelcast {
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
                     std::auto_ptr<Address> localSocketAddress() const;
+
+                    virtual SocketInterface &setSocketOptions(const client::config::SocketOptions &socketOptions);
+
                 private:
                     SSLSocket(const Socket &rhs);
 
@@ -152,10 +149,6 @@ namespace hazelcast {
         }
     }
 }
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(pop)
-#endif
 
 #endif /* HZ_BUILD_WITH_SSL */
 

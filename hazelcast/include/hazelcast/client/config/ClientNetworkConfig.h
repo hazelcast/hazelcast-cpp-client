@@ -22,6 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/SocketOptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -180,6 +181,8 @@ namespace hazelcast {
                 */
                 ClientNetworkConfig &addAddress(const Address &address);
 
+                SocketOptions &getSocketOptions();
+
             private:
                 static int32_t CONNECTION_ATTEMPT_PERIOD;
 
@@ -194,6 +197,7 @@ namespace hazelcast {
 
                 std::vector<Address> addressList;
 
+                SocketOptions socketOptions;
             };
         }
     }
