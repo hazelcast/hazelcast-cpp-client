@@ -33,7 +33,8 @@ namespace hazelcast {
                 HazelcastServer instance(*g_srvFactory);
 
                 ClientConfig clientConfig;
-                clientConfig.getNetworkConfig().getSocketOptions().setKeepAlive(false).setReuseAddress(true).setTcpNoDelay(false).setLingerSeconds(5).setBufferSize(2 * 1024);
+                clientConfig.getNetworkConfig().getSocketOptions().setKeepAlive(false).setReuseAddress(
+                        true).setTcpNoDelay(false).setLingerSeconds(5).setBufferSizeInBytes(2 * 1024);
 
                 HazelcastClient client(clientConfig);
             }

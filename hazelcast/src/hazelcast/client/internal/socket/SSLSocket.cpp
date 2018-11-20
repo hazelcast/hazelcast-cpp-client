@@ -253,7 +253,7 @@ namespace hazelcast {
                         lowestLayer.set_option(asio::socket_base::linger(true, lingerSeconds));
                     }
 
-                    int bufferSize = socketOptions.getBufferSize();
+                    int bufferSize = socketOptions.getBufferSizeInBytes();
                     if (bufferSize > 0) {
                         lowestLayer.set_option(asio::socket_base::receive_buffer_size(bufferSize));
                         lowestLayer.set_option(asio::socket_base::send_buffer_size(bufferSize));

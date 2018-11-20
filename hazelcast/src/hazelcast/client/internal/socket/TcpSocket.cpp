@@ -291,7 +291,7 @@ namespace hazelcast {
                 }
 
                 void TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
-                    int optionValue = socketOptions.getBufferSize();
+                    int optionValue = socketOptions.getBufferSizeInBytes();
                     if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &optionValue, sizeof(optionValue))) {
                         throwIOException("setSocketOptions", "Failed to set socket receive buffer size.");
                     }

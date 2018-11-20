@@ -113,7 +113,7 @@ namespace hazelcast {
                  * Gets the SO_SNDBUF and SO_RCVBUF options value in bytes
                  * @return bufferSize Number of bytes
                  */
-                int getBufferSize() const;
+                int getBufferSizeInBytes() const;
 
                 /**
                  * If set to 0 or less, then it is not set on the socket.
@@ -125,7 +125,7 @@ namespace hazelcast {
                  * @param bufferSize Number of bytes
                  * @return SocketOptions configured
                  */
-                SocketOptions &setBufferSize(int bufferSize);
+                SocketOptions &setBufferSizeInBytes(int bufferSize);
 
             private:
                 // socket options

@@ -57,11 +57,11 @@ namespace hazelcast {
                 return *this;
             }
 
-            int SocketOptions::getBufferSize() const {
+            int SocketOptions::getBufferSizeInBytes() const {
                 return bufferSize;
             }
 
-            SocketOptions &SocketOptions::setBufferSize(int bufferSize) {
+            SocketOptions &SocketOptions::setBufferSizeInBytes(int bufferSize) {
                 SocketOptions::bufferSize = bufferSize;
                 return *this;
             }
