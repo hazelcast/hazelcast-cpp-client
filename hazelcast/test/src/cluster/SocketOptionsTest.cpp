@@ -32,11 +32,18 @@ namespace hazelcast {
             TEST_F(SocketOptionsTest, testConfiguration) {
                 HazelcastServer instance(*g_srvFactory);
 
+                const int bufferSize = 2 * 1024;
                 ClientConfig clientConfig;
                 clientConfig.getNetworkConfig().getSocketOptions().setKeepAlive(false).setReuseAddress(
-                        true).setTcpNoDelay(false).setLingerSeconds(5).setBufferSizeInBytes(2 * 1024);
+                        true).setTcpNoDelay(false).setLingerSeconds(5).setBufferSizeInBytes(bufferSize);
 
                 HazelcastClient client(clientConfig);
+
+                config::SocketOptions &socketOptions = client.getClientConfig().getNetworkConfig().getSocketOptions();
+                ASSERT_FALSE(socketOptions.isKeepAlive());
+                ASSERT_TRUE(socketOptions.isTcpNoDelay());
+                ASSERT_EQ(5, socketOptions.getLingerSeconds());
+                ASSERT_EQ(bufferSize, socketOptions.getBufferSizeInBytes());
             }
         }
     }
