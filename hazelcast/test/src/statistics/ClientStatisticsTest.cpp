@@ -306,9 +306,8 @@ namespace hazelcast {
 
                 ASSERT_EQ(1U, statsMap.count("lastStatisticsCollectionTime"))
                                             << "lastStatisticsCollectionTime stat should exist (" << stats << ")";
-                int64_t lastCollectionTime;
                 std::string lastStatisticsCollectionTimeString = statsMap["lastStatisticsCollectionTime"];
-                ASSERT_NO_THROW((lastCollectionTime = boost::lexical_cast<int64_t>(lastStatisticsCollectionTimeString)))
+                ASSERT_NO_THROW((boost::lexical_cast<int64_t>(lastStatisticsCollectionTimeString)))
                                             << "lastStatisticsCollectionTime value is not in correct (" << stats << ")";
 
                 // this creates empty map statistics
