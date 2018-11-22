@@ -46,6 +46,20 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
+                enum Lang {
+                    JAVASCRIPT = 1,
+                    GROOVY = 2,
+                    PYTHON = 3,
+                    RUBY = 4
+                };
+
+                struct Response {
+                    bool success;
+                    std::string message;
+                    std::string result;
+                    /*3:binary result;*/
+                };
+
                 class MemberInfo {
                 public:
                     MemberInfo();
@@ -78,6 +92,8 @@ namespace hazelcast {
                 ~HazelcastServerFactory();
 
                 static void init(const std::string &server);
+
+                Response executeOnController(const std::string &script, Lang language);
 
             private:
                 boost::shared_ptr<util::ILogger> logger;

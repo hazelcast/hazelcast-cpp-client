@@ -56,6 +56,10 @@ namespace hazelcast {
                     }
                 }
 
+                std::vector<boost::shared_ptr<BaseNearCache> > NearCacheManager::listAllNearCaches() {
+                    return nearCacheMap.values();
+                }
+
             }
         }
     }

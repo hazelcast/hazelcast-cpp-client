@@ -28,6 +28,7 @@
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
 
 namespace hazelcast {
     namespace client {
@@ -65,6 +66,8 @@ namespace hazelcast {
                 ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
 
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
+
+                clientContext.getClientstatistics().start();
 
                 return true;
             }

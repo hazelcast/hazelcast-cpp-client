@@ -120,6 +120,13 @@ namespace hazelcast {
                      * Destroys all defined {@link NearCache} instances.
                      */
                     void destroyAllNearCaches();
+
+                    /**
+                     * Lists all existing {@link NearCache} instances.
+                     *
+                     * @return all existing {@link NearCache} instances
+                     */
+                    std::vector<boost::shared_ptr<BaseNearCache> > listAllNearCaches();
                 protected:
                     template<typename K, typename V, typename KS>
                     std::auto_ptr<NearCache<KS, V> > createNearCache(
