@@ -57,7 +57,7 @@ namespace hazelcast {
                                 clientProperties.getStatisticsPeriodSeconds().getDefaultValue());
                         logger.warning() << "Provided client statistics "
                                          << clientProperties.getStatisticsPeriodSeconds().getName()
-                                         << " can not be less than or equal to 0. You provided " << periodSeconds
+                                         << " cannot be less than or equal to 0. You provided " << periodSeconds
                                          << " seconds as the configuration. Client will use the default value of "
                                          << defaultValue << " instead.";
                         periodSeconds = defaultValue;
