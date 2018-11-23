@@ -87,15 +87,6 @@ namespace hazelcast {
                     }
 
                     /**
-                     * Lists all existing {@link NearCache} instances.
-                     *
-                     * @return all existing {@link NearCache} instances
-                     */
-/*
-                    virtual std::vector<boost::shared_ptr<NearCache<K, V> > > listAllNearCaches() const = 0;
-*/
-
-                    /**
                      * Clears {@link NearCache} instance associated with given {@code name} but not removes it.
                      *
                      * @param name name of the {@link NearCache} to be cleared
