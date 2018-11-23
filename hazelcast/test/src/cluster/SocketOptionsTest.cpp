@@ -41,7 +41,7 @@ namespace hazelcast {
 
                 config::SocketOptions &socketOptions = client.getClientConfig().getNetworkConfig().getSocketOptions();
                 ASSERT_FALSE(socketOptions.isKeepAlive());
-                ASSERT_TRUE(socketOptions.isTcpNoDelay());
+                ASSERT_FALSE(socketOptions.isTcpNoDelay());
                 ASSERT_EQ(5, socketOptions.getLingerSeconds());
                 ASSERT_EQ(bufferSize, socketOptions.getBufferSizeInBytes());
             }
