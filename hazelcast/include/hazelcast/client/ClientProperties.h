@@ -239,7 +239,7 @@ namespace hazelcast {
             static const std::string STATISTICS_ENABLED_DEFAULT;
 
             /**
-             * The period in seconds the statistics run.
+             * The period in seconds the statistics sent to the cluster.
              */
             static const std::string STATISTICS_PERIOD_SECONDS;
             static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;

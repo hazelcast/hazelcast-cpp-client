@@ -55,7 +55,7 @@ namespace hazelcast {
                         : public spi::InitializingObject, public util::Clearable, public util::Destroyable {
                 public:
                     /**
-                     * Get the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
+                     * Gets the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
                      *
                      * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
                      */

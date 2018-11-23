@@ -72,7 +72,7 @@ namespace hazelcast {
                 void Statistics::schedulePeriodicStatisticsSendTask(int64_t periodSeconds) {
                     clientContext.getClientExecutionService().scheduleWithRepetition(
                             boost::shared_ptr<util::Runnable>(new CollectStatisticsTask(*this)), 0,
-                            periodSeconds * 1000);
+                            periodSeconds * MILLIS_IN_A_SECOND);
                 }
 
                 boost::shared_ptr<connection::Connection> Statistics::getOwnerConnection() {
@@ -82,22 +82,22 @@ namespace hazelcast {
                         return boost::shared_ptr<connection::Connection>();
                     }
 
-                    boost::shared_ptr<Address> ownerConnectionAddress = connectionManager.getOwnerConnectionAddress();
+                    boost::shared_ptr<Address> currentOwnerAddr = connectionManager.getOwnerConnectionAddress();
                     int serverVersion = connection->getConnectedServerVersion();
                     if (serverVersion < FEATURE_SUPPORTED_SINCE_VERSION) {
                         // do not print too many logs if connected to an old version server
-                        const boost::shared_ptr<Address> ownerAddr = ownerAddress.get();
+                        const boost::shared_ptr<Address> ownerAddr = lastOwnerAddr.get();
                         if (ownerAddr.get() == NULL ||
-                            (ownerConnectionAddress.get() && *ownerConnectionAddress != *ownerAddr)) {
+                            (currentOwnerAddr.get() && *currentOwnerAddr != *ownerAddr)) {
                             if (logger.isFinestEnabled()) {
                                 logger.finest() << "Client statistics can not be sent to server "
-                                                << *ownerConnectionAddress
+                                                << *currentOwnerAddr
                                                 << " since, connected owner server version is less than the minimum supported server version "
                                                 << FEATURE_SUPPORTED_SINCE_VERSION_STRING;
                             }
                         }
                         // cache the last connected server address for decreasing the log prints
-                        ownerAddress = ownerConnectionAddress;
+                        lastOwnerAddr = currentOwnerAddr;
                         return boost::shared_ptr<connection::Connection>();
                     }
 
@@ -149,7 +149,7 @@ namespace hazelcast {
                     addStat(stats, "enterprise", false);
                     addStat(stats, "clientType", protocol::ClientTypes::CPP);
                     addStat(stats, "clientVersion", HAZELCAST_VERSION);
-                    addStat(stats, "clusterConnectionTimestamp", ownerConnection->getStartTime());
+                    addStat(stats, "clusterConnectionTimestamp", ownerConnection->getStartTimeInMillis());
 
                     std::auto_ptr<Address> localSocketAddress = ownerConnection->getLocalSocketAddress();
                     stats << STAT_SEPARATOR << "clientAddress" << KEY_VALUE_SEPARATOR;

@@ -116,12 +116,12 @@ namespace hazelcast {
 
                 int getConnectedServerVersion() const;
 
-                int64_t getStartTime() const;
+                int64_t getStartTimeInMillis() const;
 
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
             private:
-                int64_t startTime;
+                int64_t startTimeInMillis;
                 util::Atomic<int64_t> closedTimeMillis;
                 spi::ClientContext& clientContext;
                 protocol::IMessageHandler &invocationService;

@@ -57,7 +57,7 @@ namespace hazelcast {
                     static const int FEATURE_SUPPORTED_SINCE_VERSION;
                     static const char STAT_SEPARATOR = ',';
                     static const char KEY_VALUE_SEPARATOR = '=';
-                    static const char ESCAPE_CHAR = '\\';
+                    static const int MILLIS_IN_A_SECOND = 1000;
 
                     class PeriodicStatistics {
                     public:
@@ -114,7 +114,7 @@ namespace hazelcast {
                     util::ILogger &logger;
                     bool enabled;
                     PeriodicStatistics periodicStats;
-                    util::Atomic<boost::shared_ptr<Address> > ownerAddress;
+                    util::Atomic<boost::shared_ptr<Address> > lastOwnerAddr;
                 };
 
                 template<>
