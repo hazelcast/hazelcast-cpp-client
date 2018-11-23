@@ -32,9 +32,10 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                TcpSocket::TcpSocket(const client::Address &address) : configAddress(address) {
+                TcpSocket::TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions)
+                        : configAddress(address) {
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+                    int n = WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
                     #endif
                     struct addrinfo hints;
@@ -57,20 +58,12 @@ namespace hazelcast {
                     if (-1 == socketId) {
                         throwIOException("TcpSocket", "[TcpSocket::TcpSocket] Failed to obtain socket.");
                     }
+
+                    if (socketOptions) {
+                        setSocketOptions(*socketOptions);
+                    }
+
                     isOpen = true;
-                    int size = 32 * 1024;
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size))) {
-                        throwIOException("Socket", "Failed set socket receive buffer size.");
-                    }
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size))) {
-                        throwIOException("TcpSocket", "Failed set socket send buffer size.");
-                    }
-                    #if defined(SO_NOSIGPIPE)
-                    int on = 1;
-                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int))) {
-                        throwIOException("TcpSocket", "Failed set socket option SO_NOSIGPIPE.");
-                    }
-                    #endif
                 }
 
                 TcpSocket::TcpSocket(int socketId)
@@ -295,6 +288,50 @@ namespace hazelcast {
                     } else {
                         return std::auto_ptr<Address>();
                     }
+                }
+
+                void TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
+                    int optionValue = socketOptions.getBufferSizeInBytes();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set socket receive buffer size.");
+                    }
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set socket send buffer size.");
+                    }
+
+                    optionValue = socketOptions.isTcpNoDelay();
+                    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set TCP_NODELAY option on the socket.");
+                    }
+
+                    optionValue = socketOptions.isKeepAlive();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set SO_KEEPALIVE option on the socket.");
+                    }
+
+                    optionValue = socketOptions.isReuseAddress();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set SO_REUSEADDR option on the socket.");
+                    }
+
+                    optionValue = socketOptions.getLingerSeconds();
+                    if (optionValue > 0) {
+                        struct linger so_linger;
+                        so_linger.l_onoff = 1;
+                        so_linger.l_linger = optionValue;
+
+                        if (::setsockopt(socketId, SOL_SOCKET, SO_LINGER, (char *) &so_linger, sizeof(so_linger))) {
+                            throwIOException("setSocketOptions", "Failed to set SO_LINGER option on the socket.");
+                        }
+                    }
+
+                    #if defined(SO_NOSIGPIPE)
+                    optionValue = 1;
+                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("TcpSocket", "Failed to set socket option SO_NOSIGPIPE.");
+                    }
+                    #endif
+
                 }
             }
         }

@@ -23,6 +23,7 @@
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/config/SocketOptions.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
 #if !defined(MSG_NOSIGNAL)
@@ -54,7 +55,8 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    SSLSocket(const client::Address &address, asio::ssl::context &sslContext);
+                    SSLSocket(const client::Address &address, asio::ssl::context &sslContext,
+                            client::config::SocketOptions &socketOptions);
 
                     /**
                      * Destructor
@@ -107,6 +109,7 @@ namespace hazelcast {
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
                     std::auto_ptr<Address> localSocketAddress() const;
+
                 private:
                     SSLSocket(const Socket &rhs);
 
@@ -137,6 +140,8 @@ namespace hazelcast {
 
                     void checkDeadline(const asio::error_code &ec);
 
+                    void setSocketOptions();
+
                     client::Address remoteEndpoint;
 
                     asio::io_service ioService;
@@ -145,6 +150,7 @@ namespace hazelcast {
                     asio::deadline_timer deadline;
                     asio::error_code errorCode;
                     int socketId;
+                    const client::config::SocketOptions &socketOptions;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);
