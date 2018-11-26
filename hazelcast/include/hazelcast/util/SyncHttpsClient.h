@@ -21,8 +21,8 @@
 #include <asio.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/asio/include/asio/ssl/context.hpp>
-#include <asio/asio/include/asio/ssl/stream.hpp>
+#include <asio/ssl/context.hpp>
+#include <asio/ssl/stream.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/HazelcastDll.h"
