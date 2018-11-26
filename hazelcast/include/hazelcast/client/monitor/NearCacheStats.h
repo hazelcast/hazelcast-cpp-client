@@ -102,6 +102,13 @@ namespace hazelcast {
                 virtual int64_t getExpirations() = 0;
 
                 /**
+                 * Returns the number of invalidations of Near Cache entries owned by this member.
+                 *
+                 * @return number of invalidations of Near Cache entries owned by this member
+                 */
+                virtual int64_t getInvalidations() = 0;
+
+                /**
                  * Returns the number of Near Cache key persistences (when the pre-load feature is enabled).
                  *
                  * @return the number of Near Cache key persistences

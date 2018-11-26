@@ -68,6 +68,12 @@ namespace hazelcast {
         const std::string ClientProperties::BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS = "hazelcast.client.invocation.backoff.timeout.millis";
         const std::string ClientProperties::BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT = "-1";
 
+        const std::string ClientProperties::STATISTICS_ENABLED = "hazelcast.client.statistics.enabled";
+        const std::string ClientProperties::STATISTICS_ENABLED_DEFAULT = "false";
+
+        const std::string ClientProperties::STATISTICS_PERIOD_SECONDS = "hazelcast.client.statistics.period.seconds";
+        const std::string ClientProperties::STATISTICS_PERIOD_SECONDS_DEFAULT = "3";
+
         ClientProperty::ClientProperty(ClientConfig &config, const std::string &name, const std::string &defaultValue)
                 : name(name), defaultValue(defaultValue) {
             if (config.getProperties().count(name) > 0) {
@@ -89,10 +95,6 @@ namespace hazelcast {
 
         int ClientProperty::getInteger() const {
             return get<int>();
-        }
-
-        byte ClientProperty::getByte() const {
-            return get<byte>();
         }
 
         bool ClientProperty::getBoolean() const {
@@ -127,7 +129,9 @@ namespace hazelcast {
                   maxConcurrentInvocations(clientConfig, MAX_CONCURRENT_INVOCATIONS,
                                            MAX_CONCURRENT_INVOCATIONS_DEFAULT),
                   backpressureBackoffTimeoutMillis(clientConfig, BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS,
-                                                   BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT) {
+                                                   BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
+                  statisticsEnabled(clientConfig, STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
+                  statisticsPeriodSeconds(clientConfig, STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT) {
         }
 
         const ClientProperty &ClientProperties::getHeartbeatTimeout() const {
@@ -136,14 +140,6 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getHeartbeatInterval() const {
             return heartbeatInterval;
-        }
-
-        const ClientProperty &ClientProperties::getRetryCount() const {
-            return retryCount;
-        }
-
-        const ClientProperty &ClientProperties::getRetryWaitTime() const {
-            return retryWaitTime;
         }
 
         const ClientProperty &ClientProperties::getAwsMemberPort() const {
@@ -184,6 +180,14 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getBackpressureBackoffTimeoutMillis() const {
             return backpressureBackoffTimeoutMillis;
+        }
+
+        const ClientProperty &ClientProperties::getStatisticsEnabled() const {
+            return statisticsEnabled;
+        }
+
+        const ClientProperty &ClientProperties::getStatisticsPeriodSeconds() const {
+            return statisticsPeriodSeconds;
         }
     }
 }

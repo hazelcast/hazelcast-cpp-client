@@ -48,7 +48,7 @@ namespace hazelcast {
             Connection::Connection(const Address &address, spi::ClientContext &clientContext, int connectionId,
                                    InSelector &iListener, OutSelector &oListener,
                                    internal::socket::SocketFactory &socketFactory)
-                    : closedTimeMillis(0),
+                    : startTimeInMillis(util::currentTimeMillis()), closedTimeMillis(0),
                       clientContext(clientContext),
                       invocationService(clientContext.getInvocationService()),
                       readHandler(*this, iListener, 16 << 10, clientContext),
@@ -248,6 +248,10 @@ namespace hazelcast {
 
             bool Connection::operator<(const Connection &rhs) const {
                 return connectionId < rhs.connectionId;
+            }
+
+            int64_t Connection::getStartTimeInMillis() const {
+                return startTimeInMillis;
             }
         }
     }

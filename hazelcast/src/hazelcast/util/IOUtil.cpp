@@ -27,6 +27,11 @@ namespace hazelcast {
 
             }
         }
+
+        template<>
+        bool IOUtil::to_value(const std::string& str) {
+            return str == "true" || str == "1";
+        }
     }
 }
 

@@ -46,6 +46,10 @@ namespace hazelcast {
         namespace impl {
             class HazelcastClientInstanceImpl;
             class ClientLockReferenceIdGenerator;
+
+            namespace statistics {
+                class Statistics;
+            }
         }
 
         namespace connection {
@@ -62,6 +66,7 @@ namespace hazelcast {
         namespace protocol {
             class ClientExceptionFactory;
         }
+
         namespace spi {
             class ClientInvocationService;
 
@@ -107,7 +112,7 @@ namespace hazelcast {
 
                 connection::ClientConnectionManagerImpl &getConnectionManager();
 
-                internal::nearcache::NearCacheManager &getNearCacheManager() const;
+                internal::nearcache::NearCacheManager &getNearCacheManager();
 
                 ClientProperties &getClientProperties();
 
@@ -130,6 +135,8 @@ namespace hazelcast {
                 spi::ProxyManager &getProxyManager();
 
                 util::ILogger &getLogger();
+
+                client::impl::statistics::Statistics &getClientstatistics();
             private:
                 client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };
