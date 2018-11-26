@@ -38,9 +38,9 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SSLSocket::SSLSocket(const client::Address &address, asio::ssl::context &context)
-                        : remoteEndpoint(address), sslContext(context),
-                          deadline(ioService), socketId(-1) {
+                SSLSocket::SSLSocket(const client::Address &address, asio::ssl::context &context,
+                        client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
+                        sslContext(context), deadline(ioService), socketId(-1), socketOptions(socketOptions) {
                     socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                             new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
                 }
@@ -136,12 +136,7 @@ namespace hazelcast {
 
                         socket->handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
 
-                        int size = 32 * 1024;
-                        socket->lowest_layer().set_option(asio::socket_base::receive_buffer_size(size));
-                        socket->lowest_layer().set_option(asio::socket_base::send_buffer_size(size));
-
-                        // SO_NOSIGPIPE seems to be internally handled by asio on connect and accept. no such option
-                        // is defined at the api, hence not setting this option
+                        setSocketOptions();
 
                         setBlocking(false);
                         socketId = socket->lowest_layer().native_handle();
@@ -241,6 +236,31 @@ namespace hazelcast {
                         throw exception::IOException(source, error.message());
                     }
                     return (int) numBytes;
+                }
+
+                void SSLSocket::setSocketOptions() {
+                    asio::basic_socket<asio::ip::tcp, asio::stream_socket_service<asio::ip::tcp> > &lowestLayer =
+                            socket->lowest_layer();
+
+                    lowestLayer.set_option(asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
+
+                    lowestLayer.set_option(asio::socket_base::keep_alive(socketOptions.isKeepAlive()));
+
+                    lowestLayer.set_option(asio::socket_base::reuse_address(socketOptions.isReuseAddress()));
+
+                    int lingerSeconds = socketOptions.getLingerSeconds();
+                    if (lingerSeconds > 0) {
+                        lowestLayer.set_option(asio::socket_base::linger(true, lingerSeconds));
+                    }
+
+                    int bufferSize = socketOptions.getBufferSizeInBytes();
+                    if (bufferSize > 0) {
+                        lowestLayer.set_option(asio::socket_base::receive_buffer_size(bufferSize));
+                        lowestLayer.set_option(asio::socket_base::send_buffer_size(bufferSize));
+                    }
+
+                    // SO_NOSIGPIPE seems to be internally handled by asio on connect and accept. no such option
+                    // is defined at the api, hence not setting this option
                 }
 
                 SSLSocket::ReadHandler::ReadHandler(size_t &numRead, asio::error_code &ec) : numRead(numRead),

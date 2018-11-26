@@ -38,6 +38,9 @@ namespace hazelcast {
     namespace client {
         class Socket;
 
+        namespace config {
+            class SocketOptions;
+        }
         namespace connection {
             class ListenerTask;
 
@@ -47,7 +50,7 @@ namespace hazelcast {
 
             class HAZELCAST_API IOSelector : public util::Runnable {
             public:
-                IOSelector(ClientConnectionManagerImpl &connectionManager);
+                IOSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions);
 
                 virtual ~IOSelector();
 
@@ -89,6 +92,7 @@ namespace hazelcast {
                 std::auto_ptr<Socket> wakeUpSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
                 util::AtomicBoolean isAlive;
+                const config::SocketOptions &socketOptions;
             };
         }
     }
