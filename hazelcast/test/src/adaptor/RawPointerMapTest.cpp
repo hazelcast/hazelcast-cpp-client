@@ -616,11 +616,8 @@ namespace hazelcast {
                     // put an entry that will expire in 1 milliseconds
                     imap->put("short_entry", "short living value", 1);
 
-                    util::sleepmillis(500);
-
-                    view = imap->getEntryView("short_entry");
-
-                    ASSERT_EQ((MapEntryView<std::string, std::string> *) NULL, view.get());
+                    ASSERT_EQ_EVENTUALLY((MapEntryView<std::string, std::string> *) NULL,
+                            (imap->getEntryView("short_entry").get()));
                 }
 
                 TEST_F(RawPointerMapTest, testPutTtl) {
