@@ -82,26 +82,33 @@ namespace hazelcast {
                         return boost::shared_ptr<connection::Connection>();
                     }
 
-                    boost::shared_ptr<Address> currentOwnerAddr = connectionManager.getOwnerConnectionAddress();
+                    boost::shared_ptr<Address> currentOwnerAddress = connectionManager.getOwnerConnectionAddress();
                     int serverVersion = connection->getConnectedServerVersion();
                     if (serverVersion < FEATURE_SUPPORTED_SINCE_VERSION) {
                         // do not print too many logs if connected to an old version server
-                        const boost::shared_ptr<Address> ownerAddr = lastOwnerAddr.get();
-                        if (ownerAddr.get() == NULL ||
-                            (currentOwnerAddr.get() && *currentOwnerAddr != *ownerAddr)) {
+                        if (!isSameWithCachedOwnerAddress(currentOwnerAddress)) {
                             if (logger.isFinestEnabled()) {
-                                logger.finest() << "Client statistics can not be sent to server "
-                                                << *currentOwnerAddr
+                                logger.finest() << "Client statistics cannot be sent to server "
+                                                << *currentOwnerAddress
                                                 << " since, connected owner server version is less than the minimum supported server version "
                                                 << FEATURE_SUPPORTED_SINCE_VERSION_STRING;
                             }
                         }
+
                         // cache the last connected server address for decreasing the log prints
-                        lastOwnerAddr = currentOwnerAddr;
+                        cachedOwnerAddress = currentOwnerAddress;
                         return boost::shared_ptr<connection::Connection>();
                     }
 
                     return connection;
+                }
+
+                bool Statistics::isSameWithCachedOwnerAddress(const boost::shared_ptr<Address> &currentOwnerAddress) {
+                    const boost::shared_ptr<Address> cachedAddress = cachedOwnerAddress.get();
+                    if (NULL == cachedAddress.get() && NULL == currentOwnerAddress.get()) {
+                        return true;
+                    }
+                    return cachedAddress.get() && currentOwnerAddress.get() && *currentOwnerAddress == *cachedAddress;
                 }
 
                 void Statistics::sendStats(const std::string &newStats,
@@ -118,7 +125,6 @@ namespace hazelcast {
                     }
                 }
 
-
                 const std::string Statistics::CollectStatisticsTask::getName() const {
                     return std::string();
                 }
@@ -127,7 +133,7 @@ namespace hazelcast {
                     boost::shared_ptr<connection::Connection> ownerConnection = statistics.getOwnerConnection();
                     if (NULL == ownerConnection.get()) {
                         statistics.logger.finest()
-                                << "Can not send client statistics to the server. No owner connection.";
+                                << "Cannot send client statistics to the server. No owner connection.";
                         return;
                     }
 
@@ -208,18 +214,16 @@ namespace hazelcast {
 
                 Statistics::PeriodicStatistics::PeriodicStatistics(Statistics &statistics) : statistics(statistics) {}
 
-                void Statistics::PeriodicStatistics::getNameWithPrefix(const std::string &name, std::ostringstream &out) {
-                    out << NEAR_CACHE_CATEGORY_PREFIX;
-
+                std::string Statistics::escapeSpecialCharacters(const std::string &name) {
                     std::string escapedName = boost::replace_all_copy(name, ",", "\\,");
                     boost::replace_all(escapedName, "=", "\\=");
                     boost::replace_all(escapedName, "\\", "\\\\");
 
-                    if (name[0] == '/') {
-                        out << escapedName.substr(1);
-                    } else {
-                        out << escapedName;
-                    }
+                    return name[0] == '/' ? escapedName.substr(1) : escapedName;
+                }
+
+                void Statistics::PeriodicStatistics::getNameWithPrefix(const std::string &name, std::ostringstream &out) {
+                    out << NEAR_CACHE_CATEGORY_PREFIX << Statistics::escapeSpecialCharacters(name);
                 }
 
                 template<>

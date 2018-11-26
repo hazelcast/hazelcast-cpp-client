@@ -109,12 +109,16 @@ namespace hazelcast {
                     void sendStats(const std::string &newStats,
                                    const boost::shared_ptr<connection::Connection> &ownerConnection);
 
+                    bool isSameWithCachedOwnerAddress(const boost::shared_ptr<Address> &currentOwnerAddress);
+
+                    static std::string escapeSpecialCharacters(const std::string &name);
+
                     spi::ClientContext &clientContext;
                     ClientProperties &clientProperties;
                     util::ILogger &logger;
                     bool enabled;
                     PeriodicStatistics periodicStats;
-                    util::Atomic<boost::shared_ptr<Address> > lastOwnerAddr;
+                    util::Atomic<boost::shared_ptr<Address> > cachedOwnerAddress;
                 };
 
                 template<>
