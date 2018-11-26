@@ -19,13 +19,19 @@
 
 using namespace hazelcast::client;
 
+/**
+ * Important note: Please make sure a cluster is running and management center is enabled at the members and url's
+ * point to the management center url where the management center is started. See the example configuration file
+ * `hazelcast-management-center-enabled.xml` for member configuration.
+ *
+ */
 int main() {
     ClientConfig config;
 
     config.setProperty(ClientProperties::STATISTICS_ENABLED, "true");
 
     /**
-     * Collect and statistics every 5 seconds
+     * Collect and send statistics every 5 seconds
      */
     config.setProperty(ClientProperties::STATISTICS_PERIOD_SECONDS, "5");
 
@@ -43,10 +49,9 @@ int main() {
     map.get(2);
     map.get(2);
 
-    // sleep more than the statistics collection time and keep the client running
-    sleep(100);
-
-    // Statistics is now populated at the member side, so you can see it e.g. in Management Center.
+    // sleep more than the statistics collection time and keep the client running. Statistics is now populated at the
+    // member side, so you can see them at the Management Center.
+    hazelcast::util::sleep(100);
 
     std::cout << "Finished" << std::endl;
 
