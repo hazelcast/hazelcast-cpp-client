@@ -712,11 +712,8 @@ namespace hazelcast {
                     // put an entry that will expire in 1 milliseconds
                     imap->put<std::string, std::string>("short_entry", "short living value", 1);
 
-                    util::sleepmillis(500);
-
-                    view = imap->getEntryView<std::string>("short_entry");
-
-                    ASSERT_EQ((EntryView<TypedData, TypedData> *)NULL, view.get());
+                    ASSERT_EQ_EVENTUALLY((EntryView<TypedData, TypedData> *)NULL,
+                            (imap->getEntryView<std::string>("short_entry").get()));
                 }
 
                 TEST_P(MixedMapAPITest, testPutTtl) {

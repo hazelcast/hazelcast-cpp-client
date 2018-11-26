@@ -54,8 +54,6 @@ namespace hazelcast {
 
             int getInteger() const;
 
-            byte getByte() const;
-
             bool getBoolean() const;
 
             int64_t getLong() const;
@@ -82,10 +80,6 @@ namespace hazelcast {
 
             const ClientProperty& getHeartbeatInterval() const;
 
-            const ClientProperty& getRetryCount() const;
-
-            const ClientProperty& getRetryWaitTime() const;
-
             const ClientProperty& getAwsMemberPort() const;
 
             const ClientProperty &getCleanResourcesPeriodMillis() const;
@@ -105,6 +99,10 @@ namespace hazelcast {
             const ClientProperty &getMaxConcurrentInvocations() const;
 
             const ClientProperty &getBackpressureBackoffTimeoutMillis() const;
+
+            const ClientProperty &getStatisticsEnabled() const;
+
+            const ClientProperty &getStatisticsPeriodSeconds() const;
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
@@ -232,6 +230,21 @@ namespace hazelcast {
             static const std::string BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS;
             static const std::string BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT;
 
+            /**
+             * Use to enable the client statistics collection.
+             * <p>
+             * The default is false.
+             */
+            static const std::string STATISTICS_ENABLED;
+            static const std::string STATISTICS_ENABLED_DEFAULT;
+
+            /**
+             * The period in seconds the statistics sent to the cluster.
+             */
+            static const std::string STATISTICS_PERIOD_SECONDS;
+            static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;
+
+
         private:
             ClientProperty heartbeatTimeout;
             ClientProperty heartbeatInterval;
@@ -247,6 +260,8 @@ namespace hazelcast {
             ClientProperty shuffleMemberList;
             ClientProperty maxConcurrentInvocations;
             ClientProperty backpressureBackoffTimeoutMillis;
+            ClientProperty statisticsEnabled;
+            ClientProperty statisticsPeriodSeconds;
         };
 
     }

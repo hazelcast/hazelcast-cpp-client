@@ -48,6 +48,7 @@
 #include "hazelcast/client/protocol/ClientExceptionFactory.h"
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/FlakeIdGenerator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -428,6 +429,7 @@ namespace hazelcast {
                 spi::ProxyManager proxyManager;
                 std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
                 std::auto_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
+                std::auto_ptr<statistics::Statistics> statistics;
                 protocol::ClientExceptionFactory exceptionFactory;
                 std::string instanceName;
                 static util::Atomic<int32_t> CLIENT_ID;

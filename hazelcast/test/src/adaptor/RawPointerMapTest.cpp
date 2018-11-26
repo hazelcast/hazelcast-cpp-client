@@ -616,11 +616,8 @@ namespace hazelcast {
                     // put an entry that will expire in 1 milliseconds
                     imap->put("short_entry", "short living value", 1);
 
-                    util::sleepmillis(500);
-
-                    view = imap->getEntryView("short_entry");
-
-                    ASSERT_EQ((MapEntryView<std::string, std::string> *) NULL, view.get());
+                    ASSERT_EQ_EVENTUALLY((MapEntryView<std::string, std::string> *) NULL,
+                            (imap->getEntryView("short_entry").get()));
                 }
 
                 TEST_F(RawPointerMapTest, testPutTtl) {
@@ -669,11 +666,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testPutIfAbsentTtl) {
-                    ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *) NULL);
-                    ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
+                    ASSERT_EQ(imap->putIfAbsent("key1", "value1", 5000).get(), (std::string *) NULL);
+                    ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 5000)));
 
-                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get(), std::string);
-                    ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
+                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 5000).get(), std::string);
+                    ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 5000)));
                 }
 
                 TEST_F(RawPointerMapTest, testSet) {

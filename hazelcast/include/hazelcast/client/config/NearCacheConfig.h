@@ -80,7 +80,7 @@ namespace hazelcast {
                                     evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(DEFAULT_MEMORY_FORMAT),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
@@ -88,7 +88,7 @@ namespace hazelcast {
                                                          evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(memoryFormat),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
