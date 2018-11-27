@@ -28,12 +28,12 @@ using namespace hazelcast::client;
 int main() {
     ClientConfig config;
 
-    config.setProperty(ClientProperties::STATISTICS_ENABLED, "true");
+    config.setProperty("hazelcast.client.statistics.enabled", "true");
 
     /**
      * Collect and send statistics every 5 seconds
      */
-    config.setProperty(ClientProperties::STATISTICS_PERIOD_SECONDS, "5");
+    config.setProperty("hazelcast.client.statistics.period.seconds", "5");
 
     config.addNearCacheConfig(boost::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>("MyMap")));
     hazelcast::client::HazelcastClient hz(config);
