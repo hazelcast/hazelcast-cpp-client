@@ -152,7 +152,11 @@ namespace hazelcast {
                                     if (record.get() != NULL) {
                                         removed = true;
                                         nearCacheStats.decrementOwnedEntryCount();
+                                        nearCacheStats.decrementOwnedEntryMemoryCost(
+                                                getTotalStorageMemoryCost(key.get(), record.get()));
+                                        nearCacheStats.incrementInvalidations();
                                     }
+                                    nearCacheStats.incrementInvalidationRequests();
                                     onRemove(key, record, removed);
                                     return record.get() != NULL;
                                 } catch (exception::IException &error) {
@@ -163,16 +167,7 @@ namespace hazelcast {
 
                             //@Override
                             bool invalidate(const boost::shared_ptr<KS> &key) {
-                                try {
-                                    bool removed = remove(key);
-                                    if (removed) {
-                                        nearCacheStats.incrementInvalidations();
-                                    }
-                                    return removed;
-                                } catch (...) {
-                                        nearCacheStats.incrementInvalidationRequests();
-                                        throw;
-                                }
+                                return remove(key);
                             }
 
                             //@Override
@@ -242,6 +237,10 @@ namespace hazelcast {
                             virtual int64_t getKeyStorageMemoryCost(KS *key) const = 0;
 
                             virtual int64_t getRecordStorageMemoryCost(R *record) const = 0;
+
+                            int64_t getTotalStorageMemoryCost(KS *key, R *record) const {
+                                return getKeyStorageMemoryCost(key) + getRecordStorageMemoryCost(record);
+                            }
 
                             virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<V> &value) {
                                 assert(0);

@@ -95,9 +95,12 @@ namespace hazelcast {
             if (result < 0) {
                 return len > 0 ? len - 1 : 0;
             }
+            va_end(args);
             return result;
             #else
-            return vsnprintf(str, len, format, args);
+            int result = vsnprintf(str, len, format, args);
+            va_end(args);
+            return result;
             #endif
         }
 

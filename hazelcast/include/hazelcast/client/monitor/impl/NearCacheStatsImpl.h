@@ -85,6 +85,8 @@ namespace hazelcast {
 
                     void incrementInvalidationRequests();
 
+                    void resetInvalidationEvents();
+
                     virtual int64_t getPersistenceCount();
 
                     void addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
