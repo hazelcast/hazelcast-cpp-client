@@ -83,7 +83,7 @@ namespace hazelcast {
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                                 boost::shared_ptr<serialization::pimpl::Data> key = getSharedKey(i);
-                                ASSERT_TRUE(nearCacheRecordStore->remove(key));
+                                ASSERT_TRUE(nearCacheRecordStore->invalidate(key));
                                 ASSERT_NULL("Should not exist", nearCacheRecordStore->get(key).get(), std::string);
                             }
 
@@ -162,7 +162,7 @@ namespace hazelcast {
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                                 int selectedKey = i * 3;
-                                if (nearCacheRecordStore->remove(getSharedKey(selectedKey))) {
+                                if (nearCacheRecordStore->invalidate(getSharedKey(selectedKey))) {
                                     expectedEntryCount--;
                                 }
                             }

@@ -110,7 +110,7 @@ namespace hazelcast {
                                     record = getRecord(key);
                                     if (record.get() != NULL) {
                                         if (isRecordExpired(record)) {
-                                            remove(key);
+                                            invalidate(key);
                                             onExpire(key, record);
                                             return boost::shared_ptr<V>();
                                         }
@@ -142,7 +142,7 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            bool remove(const boost::shared_ptr<KS> &key) {
+                            bool invalidate(const boost::shared_ptr<KS> &key) {
                                 checkAvailable();
 
                                 boost::shared_ptr<R> record;
@@ -152,26 +152,16 @@ namespace hazelcast {
                                     if (record.get() != NULL) {
                                         removed = true;
                                         nearCacheStats.decrementOwnedEntryCount();
+                                        nearCacheStats.decrementOwnedEntryMemoryCost(
+                                                getTotalStorageMemoryCost(key.get(), record.get()));
+                                        nearCacheStats.incrementInvalidations();
                                     }
+                                    nearCacheStats.incrementInvalidationRequests();
                                     onRemove(key, record, removed);
                                     return record.get() != NULL;
                                 } catch (exception::IException &error) {
                                     onRemoveError(key, record, removed, error);
                                     throw;
-                                }
-                            }
-
-                            //@Override
-                            bool invalidate(const boost::shared_ptr<KS> &key) {
-                                try {
-                                    bool removed = remove(key);
-                                    if (removed) {
-                                        nearCacheStats.incrementInvalidations();
-                                    }
-                                    return removed;
-                                } catch (...) {
-                                        nearCacheStats.incrementInvalidationRequests();
-                                        throw;
                                 }
                             }
 
@@ -242,6 +232,10 @@ namespace hazelcast {
                             virtual int64_t getKeyStorageMemoryCost(KS *key) const = 0;
 
                             virtual int64_t getRecordStorageMemoryCost(R *record) const = 0;
+
+                            int64_t getTotalStorageMemoryCost(KS *key, R *record) const {
+                                return getKeyStorageMemoryCost(key) + getRecordStorageMemoryCost(record);
+                            }
 
                             virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<V> &value) {
                                 assert(0);
@@ -496,9 +490,6 @@ namespace hazelcast {
                                     oldRecord = putRecord(key, record);
                                     if (oldRecord.get() == NULL) {
                                         nearCacheStats.incrementOwnedEntryCount();
-                                    } else {
-                                        int64_t oldRecordMemoryCost = getTotalStorageMemoryCost(key, oldRecord);
-                                        nearCacheStats.decrementOwnedEntryMemoryCost(oldRecordMemoryCost);
                                     }
                                     onPut(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {

@@ -84,9 +84,9 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        bool remove(const boost::shared_ptr<K> &key) {
+                        bool invalidate(const boost::shared_ptr<K> &key) {
                             keyStateMarker->tryRemove(*key);
-                            return nearCache->remove(key);
+                            return nearCache->invalidate(key);
                         }
 
                         //@Override
