@@ -755,7 +755,7 @@ namespace hazelcast {
                         ASSERT_EQ(*temp, "value1");
                     }
                     // trigger eviction
-                    ASSERT_NULL_EVENTUALLY(map.get("key1").get<std::string>().get(), std::string);
+                    ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
