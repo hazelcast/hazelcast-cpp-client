@@ -706,7 +706,10 @@ namespace hazelcast {
 
                 map.put("key1", "value1");
                 boost::shared_ptr<std::string> temp = map.get("key1");
-                ASSERT_EQ(*temp, "value1");
+                // If the server response comes later than 1 second after put, the entry may have expired already.
+                if (temp.get()) {
+                    ASSERT_EQ(*temp, "value1");
+                }
                 // trigger eviction
                 ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(5));

@@ -750,11 +750,12 @@ namespace hazelcast {
 
                     map.put<std::string, std::string>("key1", "value1");
                     std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
+                    // If the server response comes later than 1 second, the entry may have expired already.
+                    if (temp.get()) {
+                        ASSERT_EQ(*temp, "value1");
+                    }
                     // trigger eviction
-                    std::auto_ptr<std::string> temp2 = map.get<std::string>("key1").get<std::string>();
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
