@@ -39,6 +39,8 @@ namespace hazelcast {
                         public:
                             typedef AbstractNearCacheRecordStore<K, V, KS, record::NearCacheDataRecord, HeapNearCacheRecordMap<K, V, KS, record::NearCacheDataRecord> > ANCRS;
 
+                            static const int64_t REFERENCE_SIZE = sizeof(boost::shared_ptr<serialization::pimpl::Data>);
+
                             NearCacheDataRecordStore(const std::string &name,
                                                      const client::config::NearCacheConfig<K, V> &config,
                                                      serialization::pimpl::SerializationService &ss)
@@ -47,25 +49,15 @@ namespace hazelcast {
                         protected:
                             //@Override
                         virtual int64_t getKeyStorageMemoryCost(KS *key) const {
-/*TODO
-                                if (key instanceof Data) {
-                                    return
-                                        // reference to this key data inside map ("store" field)
-                                            REFERENCE_SIZE
-                                            // heap cost of this key data
-                                            + ((Data) key).getHeapCost();
-                                } else {
-                                    // memory cost for non-data typed instance is not supported
-                                    return 0L;
-                                }
-*/
-                                return 1L;
+                                return
+                                    // reference to this key data inside map ("store" field)
+                                        REFERENCE_SIZE
+                                        // cost of this key data
+                                        + (key != NULL ? key->totalSize() : 0);
                             }
 
                             //@Override
                             virtual int64_t getRecordStorageMemoryCost(record::NearCacheDataRecord *record) const {
-                                return 1L;
-/*TODO
                                 if (record == NULL) {
                                     return 0L;
                                 }
@@ -76,14 +68,13 @@ namespace hazelcast {
                                         // reference to "value" field
                                         + REFERENCE_SIZE
                                         // heap cost of this value data
-                                        + (value != null ? value.getHeapCost() : 0)
+                                        + (value.get() != NULL ? (int64_t) value->totalSize() : 0)
                                         // 3 primitive int64_t typed fields: "creationTime", "expirationTime" and "accessTime"
-                                        + (3 * (Long.SIZE / Byte.SIZE))
+                                        + (3 * (sizeof(hazelcast::util::Atomic<int64_t>)))
                                         // reference to "accessHit" field
                                         + REFERENCE_SIZE
                                         // primitive int typed "value" field in "AtomicInteger" typed "accessHit" field
-                                        + (Integer.SIZE / Byte.SIZE);
-*/
+                                        + (sizeof(hazelcast::util::Atomic<int32_t>));
                             }
 
                             //@Override

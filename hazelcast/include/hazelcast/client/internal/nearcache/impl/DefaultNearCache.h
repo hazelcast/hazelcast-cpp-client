@@ -92,14 +92,6 @@ namespace hazelcast {
                             nearCacheRecordStore->put(key, value);
                         }
 
-                        //@Override
-                        bool remove(const boost::shared_ptr<KS> &key) {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on remove!");
-
-                            return nearCacheRecordStore->remove(key);
-                        }
-
-
                         bool invalidate(const boost::shared_ptr<KS> &key) {
                             util::Preconditions::checkNotNull(key, "key cannot be null on invalidate!");
 

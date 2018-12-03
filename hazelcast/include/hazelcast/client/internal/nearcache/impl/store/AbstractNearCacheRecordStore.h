@@ -110,7 +110,7 @@ namespace hazelcast {
                                     record = getRecord(key);
                                     if (record.get() != NULL) {
                                         if (isRecordExpired(record)) {
-                                            remove(key);
+                                            invalidate(key);
                                             onExpire(key, record);
                                             return boost::shared_ptr<V>();
                                         }
@@ -142,7 +142,7 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            bool remove(const boost::shared_ptr<KS> &key) {
+                            bool invalidate(const boost::shared_ptr<KS> &key) {
                                 checkAvailable();
 
                                 boost::shared_ptr<R> record;
@@ -163,11 +163,6 @@ namespace hazelcast {
                                     onRemoveError(key, record, removed, error);
                                     throw;
                                 }
-                            }
-
-                            //@Override
-                            bool invalidate(const boost::shared_ptr<KS> &key) {
-                                return remove(key);
                             }
 
                             //@Override
@@ -495,9 +490,6 @@ namespace hazelcast {
                                     oldRecord = putRecord(key, record);
                                     if (oldRecord.get() == NULL) {
                                         nearCacheStats.incrementOwnedEntryCount();
-                                    } else {
-                                        int64_t oldRecordMemoryCost = getTotalStorageMemoryCost(key, oldRecord);
-                                        nearCacheStats.decrementOwnedEntryMemoryCost(oldRecordMemoryCost);
                                     }
                                     onPut(key, value, record, oldRecord);
                                 } catch (exception::IException &error) {

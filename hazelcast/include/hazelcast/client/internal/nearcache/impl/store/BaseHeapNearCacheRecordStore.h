@@ -69,7 +69,7 @@ namespace hazelcast {
                                     const boost::shared_ptr<KS> &key = entry.first;
                                     const boost::shared_ptr<R> &value = entry.second;
                                     if (ANCRS::isRecordExpired(value)) {
-                                        ANCRS::remove(key);
+                                        ANCRS::invalidate(key);
                                         ANCRS::onExpire(key, value);
                                     }
                                 }
@@ -107,17 +107,16 @@ namespace hazelcast {
                                 boost::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
                                 ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
+                                if (oldRecord.get() != NULL) {
+                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                            ANCRS::getTotalStorageMemoryCost(key, oldRecord));
+                                }
                                 return oldRecord;
                             }
 
                             //@OverrideR
                             boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
-                                boost::shared_ptr<R> removedRecord = ANCRS::records->remove(key);
-                                if (removedRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
-                                            ANCRS::getTotalStorageMemoryCost(key, removedRecord));
-                                }
-                                return removedRecord;
+                                return ANCRS::records->remove(key);
                             }
 
                             //@Override
