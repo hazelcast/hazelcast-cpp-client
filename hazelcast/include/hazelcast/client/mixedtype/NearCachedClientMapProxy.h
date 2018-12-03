@@ -149,7 +149,7 @@ namespace hazelcast {
                         if (key.get() == NULL) {
                             nearCache->clear();
                         } else {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(key));
+                            nearCache->invalidate(boost::shared_ptr<serialization::pimpl::Data>(key));
                         }
                     }
 
@@ -157,7 +157,7 @@ namespace hazelcast {
                     virtual void handleIMapBatchInvalidationEventV10(const std::vector<Data> &keys) {
                         for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
                              it != keys.end(); ++it) {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(
+                            nearCache->invalidate(boost::shared_ptr<serialization::pimpl::Data>(
                                     new serialization::pimpl::Data(*it)));
                         }
                     }

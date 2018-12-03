@@ -45,7 +45,7 @@ namespace hazelcast {
                 }
 
                 virtual void SetUp() {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam());
+                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(), getTestName());
                 }
 
                 virtual void TearDown() {
@@ -62,6 +62,7 @@ namespace hazelcast {
                         nearCachedClient->shutdown();
                     }
                 }
+
             protected:
                 /**
                  * Provides utility methods for unified Near Cache tests.
@@ -76,13 +77,11 @@ namespace hazelcast {
                      */
                     template<typename K, typename V>
                     static boost::shared_ptr<config::NearCacheConfig<K, V> > createNearCacheConfig(
-                            config::InMemoryFormat inMemoryFormat) {
+                            config::InMemoryFormat inMemoryFormat, const std::string &mapName) {
                         boost::shared_ptr<config::NearCacheConfig<K, V> > nearCacheConfig(
                                 new config::NearCacheConfig<K, V>());
 
-                        nearCacheConfig->setName(BasicClientNearCacheTest::DEFAULT_NEAR_CACHE_NAME)
-                                .setInMemoryFormat(inMemoryFormat)
-                                .setInvalidateOnChange(true);
+                        nearCacheConfig->setName(mapName).setInMemoryFormat(inMemoryFormat).setInvalidateOnChange(true);
 
                         return nearCacheConfig;
                     }
@@ -159,10 +158,6 @@ namespace hazelcast {
                 };
 
                 /**
-                 * The default name used for the data structures which have a Near Cache.
-                 */
-                static const std::string DEFAULT_NEAR_CACHE_NAME;
-                /**
                  * The default count to be inserted into the Near Caches.
                  */
                 static const int DEFAULT_RECORD_COUNT;
@@ -176,7 +171,7 @@ namespace hazelcast {
                     clientConfig = getConfig();
                     client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
                     noNearCacheMap = std::auto_ptr<IMap<int, std::string> >(
-                            new IMap<int, std::string>(client->getMap<int, std::string>(DEFAULT_NEAR_CACHE_NAME)));
+                            new IMap<int, std::string>(client->getMap<int, std::string>(getTestName())));
                 }
 
                 void createNearCacheContext() {
@@ -184,11 +179,11 @@ namespace hazelcast {
                     nearCachedClientConfig->addNearCacheConfig(nearCacheConfig);
                     nearCachedClient = std::auto_ptr<HazelcastClient>(new HazelcastClient(*nearCachedClientConfig));
                     nearCachedMap = std::auto_ptr<IMap<int, std::string> >(new IMap<int, std::string>(
-                            nearCachedClient->getMap<int, std::string>(DEFAULT_NEAR_CACHE_NAME)));
+                            nearCachedClient->getMap<int, std::string>(getTestName())));
                     spi::ClientContext clientContext(*nearCachedClient);
                     nearCacheManager = &clientContext.getNearCacheManager();
                     nearCache = nearCacheManager->
-                            getNearCache<int, std::string, serialization::pimpl::Data>(DEFAULT_NEAR_CACHE_NAME);
+                            getNearCache<int, std::string, serialization::pimpl::Data>(getTestName());
                     this->stats = (nearCache.get() == NULL) ? NULL : &nearCache->getNearCacheStats();
                 }
 
@@ -229,19 +224,32 @@ namespace hazelcast {
                            nearCachedMap->containsKey(3) && !nearCachedMap->containsKey(5);
                 }
 
+                void
+                assertNearCacheInvalidationRequests(monitor::NearCacheStats &stats, int64_t invalidationRequests) {
+                    if (nearCacheConfig->isInvalidateOnChange() && invalidationRequests > 0) {
+                        monitor::impl::NearCacheStatsImpl &nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl &) stats;
+                        ASSERT_EQ_EVENTUALLY(invalidationRequests, nearCacheStatsImpl.getInvalidationRequests());
+                        nearCacheStatsImpl.resetInvalidationEvents();
+                    }
+                }
+
                 void populateMap() {
                     char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                         util::hz_snprintf(buf, 30, "value-%d", i);
                         noNearCacheMap->put(i, buf);
                     }
-                    // let enough time to finish invalidation event propagation
-                    util::sleep(3);
+
+                    assertNearCacheInvalidationRequests(*stats, DEFAULT_RECORD_COUNT);
                 }
 
                 void populateNearCache() {
+                    char buf[30];
                     for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
-                        nearCachedMap->get(i);
+                        boost::shared_ptr<string> value = nearCachedMap->get(i);
+                        ASSERT_NOTNULL(value.get(), std::string);
+                        util::hz_snprintf(buf, 30, "value-%d", i);
+                        ASSERT_EQ(buf, *value);
                     }
                 }
 
@@ -287,9 +295,10 @@ namespace hazelcast {
                 void whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(bool useNearCacheAdapter) {
                     createNoNearCacheContext();
 
+                    createNearCacheContext();
+
                     populateMap();
 
-                    createNearCacheContext();
                     populateNearCache();
 
                     std::map<int, std::string> invalidationMap;
@@ -322,7 +331,6 @@ namespace hazelcast {
                 static HazelcastServer *instance2;
             };
 
-            const std::string BasicClientNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
             const int BasicClientNearCacheTest::DEFAULT_RECORD_COUNT = 1000;
             HazelcastServer *BasicClientNearCacheTest::instance = NULL;
             HazelcastServer *BasicClientNearCacheTest::instance2 = NULL;
@@ -385,9 +393,11 @@ namespace hazelcast {
                                                                         config::EvictionConfig<int, std::string>::ENTRY_COUNT,
                                                                         size);
                 createNoNearCacheContext();
-                populateMap();
 
                 createNearCacheContext();
+
+                populateMap();
+
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
@@ -425,9 +435,11 @@ namespace hazelcast {
                 nearCacheConfig->setInvalidateOnChange(true);
 
                 createNoNearCacheContext();
-                populateMap();
 
                 createNearCacheContext();
+
+                populateMap();
+
                 populateNearCache();
 
                 ASSERT_EQ(size, nearCache->size());
@@ -472,10 +484,10 @@ namespace hazelcast {
             TEST_P(BasicClientNearCacheTest, testNearCacheStats) {
                 createNoNearCacheContext();
 
+                createNearCacheContext();
+
                 // populate map
                 populateMap();
-
-                createNearCacheContext();
 
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is empty");
@@ -503,6 +515,8 @@ namespace hazelcast {
                                                                         DEFAULT_RECORD_COUNT);
                 createNoNearCacheContext();
 
+                createNearCacheContext();
+
                 // all Near Cache implementations use the same eviction algorithm, which evicts a single entry
                 int64_t expectedEvictions = 1;
 
@@ -511,8 +525,6 @@ namespace hazelcast {
                 char buf[20];
                 util::hz_snprintf(buf, 20, "value-%d", DEFAULT_RECORD_COUNT);
                 noNearCacheMap->put(DEFAULT_RECORD_COUNT, buf);
-
-                createNearCacheContext();
 
                 // populate Near Caches
                 populateNearCache();

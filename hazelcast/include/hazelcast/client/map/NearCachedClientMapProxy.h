@@ -340,7 +340,7 @@ namespace hazelcast {
                         if (key.get() == NULL) {
                             nearCache->clear();
                         } else {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(key));
+                            nearCache->invalidate(boost::shared_ptr<serialization::pimpl::Data>(key));
                         }
                     }
 
@@ -348,7 +348,7 @@ namespace hazelcast {
                     virtual void handleIMapBatchInvalidationEventV10(const std::vector<Data> &keys) {
                         for (std::vector<serialization::pimpl::Data>::const_iterator it = keys.begin();
                              it != keys.end(); ++it) {
-                            nearCache->remove(boost::shared_ptr<serialization::pimpl::Data>(
+                            nearCache->invalidate(boost::shared_ptr<serialization::pimpl::Data>(
                                     new serialization::pimpl::Data(*it)));
                         }
                     }
@@ -457,11 +457,11 @@ namespace hazelcast {
                  * @param key The key for which to invalidate the near cache
                  */
                 void invalidateNearCache(const serialization::pimpl::Data &key) {
-                    nearCache->remove(ClientMapProxy<K, V>::toShared(key));
+                    nearCache->invalidate(ClientMapProxy<K, V>::toShared(key));
                 }
 
                 void invalidateNearCache(boost::shared_ptr<serialization::pimpl::Data> key) {
-                    nearCache->remove(key);
+                    nearCache->invalidate(key);
                 }
 
                 bool cacheLocalEntries;

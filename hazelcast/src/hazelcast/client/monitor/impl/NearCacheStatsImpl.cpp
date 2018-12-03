@@ -147,6 +147,10 @@ namespace hazelcast {
                     ++invalidationRequests;
                 }
 
+                void NearCacheStatsImpl::resetInvalidationEvents() {
+                    invalidationRequests = 0;
+                }
+
                 int64_t NearCacheStatsImpl::getPersistenceCount() {
                     return persistenceCount;
                 }
