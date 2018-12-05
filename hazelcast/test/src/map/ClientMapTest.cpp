@@ -677,7 +677,7 @@ namespace hazelcast {
                         dummy, dummy, dummy, evict);
                 std::string id = ClientMapTest<TypeParam>::imap->addEntryListener(sampleEntryListener, false);
 
-                ClientMapTest<TypeParam>::imap->put("key1", "value1", 2000);
+                ClientMapTest<TypeParam>::imap->put("key1", "value1", 1000);
                 boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_EQ(*temp, "value1");
                 util::sleep(2);
@@ -752,7 +752,7 @@ namespace hazelcast {
 
             TYPED_TEST(ClientMapTest, testSetTtl) {
                 IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
-                        "OneSecondTtlMap");
+                        ClientTestSupport::getTestName());
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
                 typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
@@ -761,11 +761,12 @@ namespace hazelcast {
 
                 map.set("key1", "value1", 1000);
                 boost::shared_ptr<std::string> temp = map.get("key1");
-                ASSERT_EQ(*temp, "value1");
-                util::sleep(2);
+                // If the server response comes later than 1 second, the entry may have expired already.
+                if (temp.get()) {
+                    ASSERT_EQ(*temp, "value1");
+                }
                 // trigger eviction
-                boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_NULL("The value for key1 needs to be null", temp2.get(), std::string);
+                ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -781,6 +782,12 @@ namespace hazelcast {
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
                 map.set("key1", "value1");
+
+                boost::shared_ptr<std::string> temp = map.get("key1");
+                // If the server response comes later than 1 second, the entry may have expired already.
+                if (temp.get()) {
+                    ASSERT_EQ(*temp, "value1");
+                }
                 // trigger eviction
                 ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                 ASSERT_TRUE(evict.await(5));
