@@ -93,7 +93,11 @@ namespace hazelcast {
                  * <p>
                  * If there is any pending work, it will be thrown away.
                  */
-                void shutdown();
+                virtual void shutdown();
+
+                virtual bool awaitTerminationSeconds(int timeoutSeconds);
+
+                virtual bool awaitTerminationMilliseconds(int64_t timeoutMilliseconds);
 
             protected:
                 template<typename T>
@@ -147,6 +151,9 @@ namespace hazelcast {
                     void start();
 
                     void shutdown();
+
+                    Thread &getThread();
+
                 private:
                     std::string generateThreadName(const std::string &prefix);
 
@@ -159,11 +166,11 @@ namespace hazelcast {
 
                 class DelayedRunner : public util::Runnable {
                 public:
-                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
-                            util::ILogger &logger);
+                    DelayedRunner(SimpleExecutorService &executorService, const boost::shared_ptr<Runnable> &command,
+                            int64_t initialDelayInMillis, util::ILogger &logger);
 
-                    DelayedRunner(const boost::shared_ptr<Runnable> &command, int64_t initialDelayInMillis,
-                                   int64_t periodInMillis, util::ILogger &logger);
+                    DelayedRunner(SimpleExecutorService &executorService, const boost::shared_ptr<Runnable> &command,
+                            int64_t initialDelayInMillis, int64_t periodInMillis, util::ILogger &logger);
 
                     virtual void run();
 
@@ -181,28 +188,30 @@ namespace hazelcast {
                     int64_t startTimeMillis;
                     util::Thread *runnerThread;
                     util::ILogger &logger;
+                    SimpleExecutorService &executorService;
                 };
 
                 class RepeatingRunner : public DelayedRunner {
                 public:
-                    RepeatingRunner(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                                    int64_t periodInMillis, util::ILogger &logger);
+                    RepeatingRunner(SimpleExecutorService &executorService,
+                            const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
+                            int64_t periodInMillis, util::ILogger &logger);
 
                     virtual const std::string getName() const;
                 };
 
+                virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
+
+                void startWorkers() ;
+
                 util::ILogger &logger;
-                const std::string &threadNamePrefix;
+                const std::string threadNamePrefix;
                 int threadCount;
                 util::AtomicBoolean live;
                 util::Atomic<int64_t> threadIdGenerator;
                 std::vector<boost::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
                 util::SynchronizedQueue<util::Thread> delayedRunners;
-
-                virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
-
-                void startWorkers() ;
             };
 
         }

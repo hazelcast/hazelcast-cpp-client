@@ -28,6 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
+                const int ClientExecutionServiceImpl::TERMINATE_TIMEOUT_SECONDS = 30;
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &clientProperties,
@@ -57,19 +58,15 @@ namespace hazelcast {
                 ClientExecutionServiceImpl::shutdownExecutor(const std::string &name, util::ExecutorService &executor,
                                                              util::ILogger &logger) {
                     executor.shutdown();
-                    // TODO: implement await
-/*
                     try {
-                        bool success = executor.awaitTermination(TERMINATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                        bool success = executor.awaitTerminationSeconds(TERMINATE_TIMEOUT_SECONDS);
                         if (!success) {
-                            logger.warning(name + " executor awaitTermination could not complete in " + TERMINATE_TIMEOUT_SECONDS
-                                           + " seconds");
+                            logger.warning() << name << " executor awaitTermination could not be completed in "
+                                << TERMINATE_TIMEOUT_SECONDS << " seconds";
                         }
-                    } catch (InterruptedException e) {
-                        logger.warning(name + " executor await termination is interrupted", e);
+                    } catch (exception::InterruptedException &e) {
+                        logger.warning() << name << " executor await termination is interrupted. "<< e;
                     }
-*/
-
                 }
 
                 void

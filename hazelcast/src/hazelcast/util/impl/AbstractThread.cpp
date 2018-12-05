@@ -133,6 +133,10 @@ namespace hazelcast {
                 return target;
             }
 
+            bool AbstractThread::waitMilliseconds(int64_t milliseconds) {
+                return finishedLatch->awaitMillis(milliseconds);
+            }
+
             AbstractThread::UnmanagedAbstractThreadPointer::UnmanagedAbstractThreadPointer(AbstractThread *thread)
                     : thread(thread) {}
 
