@@ -59,10 +59,14 @@ namespace hazelcast {
                                                              util::ILogger &logger) {
                     executor.shutdown();
                     try {
-                        bool success = executor.awaitTerminationSeconds(TERMINATE_TIMEOUT_SECONDS);
-                        if (!success) {
-                            logger.warning() << name << " executor awaitTermination could not be completed in "
-                                << TERMINATE_TIMEOUT_SECONDS << " seconds";
+                        bool success = false;
+                        // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
+                        while (!success) {
+                            success = executor.awaitTerminationSeconds(TERMINATE_TIMEOUT_SECONDS);
+                            if (!success) {
+                                logger.warning() << name << " executor awaitTermination could not be completed in "
+                                                 << TERMINATE_TIMEOUT_SECONDS << " seconds";
+                            }
                         }
                     } catch (exception::InterruptedException &e) {
                         logger.warning() << name << " executor await termination is interrupted. "<< e;

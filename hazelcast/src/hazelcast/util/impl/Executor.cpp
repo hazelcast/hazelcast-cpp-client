@@ -236,16 +236,6 @@ namespace hazelcast {
                 return thread;
             }
 
-            SimpleExecutorService::RepeatingRunner::RepeatingRunner(SimpleExecutorService &executorService,
-                    const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                    int64_t periodInMillis, util::ILogger &logger) : DelayedRunner(executorService, command,
-                            initialDelayInMillis, periodInMillis, logger) {
-            }
-
-            const std::string SimpleExecutorService::RepeatingRunner::getName() const {
-                return command->getName();
-            }
-
             SimpleExecutorService::DelayedRunner::DelayedRunner(SimpleExecutorService &executorService,
                     const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                     util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),

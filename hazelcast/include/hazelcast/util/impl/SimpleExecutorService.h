@@ -191,15 +191,6 @@ namespace hazelcast {
                     SimpleExecutorService &executorService;
                 };
 
-                class RepeatingRunner : public DelayedRunner {
-                public:
-                    RepeatingRunner(SimpleExecutorService &executorService,
-                            const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
-                            int64_t periodInMillis, util::ILogger &logger);
-
-                    virtual const std::string getName() const;
-                };
-
                 virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
 
                 void startWorkers() ;
