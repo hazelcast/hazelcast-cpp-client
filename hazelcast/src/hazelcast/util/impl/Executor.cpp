@@ -108,10 +108,10 @@ namespace hazelcast {
             }
 
             bool SimpleExecutorService::awaitTerminationMilliseconds(int64_t timeoutMilliseconds) {
-                int64_t endTime = currentTimeMillis() + timeoutMilliseconds;
+                int64_t endTimeMilliseconds = currentTimeMillis() + timeoutMilliseconds;
 
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
-                                int64_t waitMilliseconds = endTime - currentTimeMillis();
+                                int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 logger.finest() << "ExecutorService is waiting worker thread " << worker->getName()
                                                 << " for a maximum of " << waitMilliseconds << " msecs.";
@@ -125,7 +125,7 @@ namespace hazelcast {
                             }
 
                 BOOST_FOREACH(const boost::shared_ptr<Thread> &t, delayedRunners.values()) {
-                                int64_t waitMilliseconds = endTime - currentTimeMillis();
+                                int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 logger.finest() << "ExecutorService is waiting delayed runner thread " << t->getName()
                                                 << " for a maximum of " << waitMilliseconds << " msecs.";
