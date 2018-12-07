@@ -38,6 +38,7 @@ namespace hazelcast {
         class HAZELCAST_API CountDownLatch {
         public:
             static const size_t CHECK_INTERVAL = 100; //msecs
+            static const size_t MILLISECONDS_IN_A_SECOND = 1000;
 
             CountDownLatch(int count);
 
@@ -60,7 +61,6 @@ namespace hazelcast {
 
         private:
             util::AtomicInt count;
-            static const size_t MILLISECONDS_IN_A_SECOND = 1000;
             static const size_t HZ_INFINITE = UINT_MAX;
         };
 

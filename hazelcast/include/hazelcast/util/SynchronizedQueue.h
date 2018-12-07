@@ -22,6 +22,7 @@
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/Mutex.h"
 #include <deque>
+#include <vector>
 #include <iostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -48,6 +49,21 @@ namespace hazelcast {
                     internalQueue.pop_front();
                 }
                 return e;
+            }
+
+            size_t size() {
+                util::LockGuard lg(m);
+                return internalQueue.size();
+            }
+
+            std::vector<boost::shared_ptr<T> > values() {
+                util::LockGuard lg(m);
+                std::vector<boost::shared_ptr<T> > values;
+                for (typename std::deque<boost::shared_ptr<T> >::const_iterator it = internalQueue.begin();
+                     it != internalQueue.end(); ++it) {
+                    values.push_back(*it);
+                }
+                return values;
             }
 
         private:
