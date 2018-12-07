@@ -73,6 +73,8 @@ namespace hazelcast {
 
                 const boost::shared_ptr<Runnable> &getTarget() const;
 
+                bool waitMilliseconds(int64_t milliseconds);
+
             protected:
                 enum ThreadState {
                     UNSTARTED = 0,
