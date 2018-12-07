@@ -28,6 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
+                const int ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS = 30;
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &clientProperties,
@@ -57,19 +58,20 @@ namespace hazelcast {
                 ClientExecutionServiceImpl::shutdownExecutor(const std::string &name, util::ExecutorService &executor,
                                                              util::ILogger &logger) {
                     executor.shutdown();
-                    // TODO: implement await
-/*
                     try {
-                        bool success = executor.awaitTermination(TERMINATE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                        if (!success) {
-                            logger.warning(name + " executor awaitTermination could not complete in " + TERMINATE_TIMEOUT_SECONDS
-                                           + " seconds");
+                        int64_t startTimeMilliseconds = util::currentTimeMillis();
+                        bool success = false;
+                        // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
+                        while (!success) {
+                            success = executor.awaitTerminationSeconds(SHUTDOWN_CHECK_INTERVAL_SECONDS);
+                            if (!success) {
+                                logger.warning() << name << " executor awaitTermination could not be completed in "
+                                                 << (util::currentTimeMillis() - startTimeMilliseconds) << " msecs.";
+                            }
                         }
-                    } catch (InterruptedException e) {
-                        logger.warning(name + " executor await termination is interrupted", e);
+                    } catch (exception::InterruptedException &e) {
+                        logger.warning() << name << " executor await termination is interrupted. "<< e;
                     }
-*/
-
                 }
 
                 void

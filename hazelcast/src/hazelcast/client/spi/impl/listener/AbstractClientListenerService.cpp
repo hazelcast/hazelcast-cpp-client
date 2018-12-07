@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-#include <hazelcast/client/spi/impl/AbstractClientInvocationService.h>
 #include <boost/foreach.hpp>
-#include <hazelcast/util/UuidUtil.h>
+
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/util/UuidUtil.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
@@ -127,7 +129,11 @@ namespace hazelcast {
 
                     void AbstractClientListenerService::shutdown() {
                         eventExecutor.shutdown();
+                        eventExecutor.awaitTerminationSeconds(
+                                ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS);
                         registrationExecutor.shutdown();
+                        registrationExecutor.awaitTerminationSeconds(
+                                ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS);
                     }
 
                     void AbstractClientListenerService::start() {

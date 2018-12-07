@@ -40,6 +40,8 @@ namespace hazelcast {
             namespace impl {
                 class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService {
                 public:
+                    static const int SHUTDOWN_CHECK_INTERVAL_SECONDS;
+
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
                                                int32_t poolSize, util::ILogger &logger);
 
