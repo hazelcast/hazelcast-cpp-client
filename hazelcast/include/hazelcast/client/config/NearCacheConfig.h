@@ -80,7 +80,7 @@ namespace hazelcast {
                                     evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(DEFAULT_MEMORY_FORMAT),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
@@ -88,7 +88,7 @@ namespace hazelcast {
                                                          evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(memoryFormat),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
@@ -161,7 +161,7 @@ namespace hazelcast {
                 /**
                  * Sets the maximum number of seconds for each entry to stay in the Near Cache. Entries that are
                  * older than time-to-live-seconds will get automatically evicted from the Near Cache.
-                 * Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+                 * Any integer between 0 and INT32_MAX. 0 means infinite. Default is 0.
                  *
                  * @param timeToLiveSeconds The maximum number of seconds for each entry to stay in the Near Cache.
                  * @return This Near Cache config instance.
@@ -188,7 +188,7 @@ namespace hazelcast {
                  * Maximum number of seconds each entry can stay in the Near Cache as untouched (not-read).
                  * Entries that are not read (touched) more than max-idle-seconds value will get removed
                  * from the Near Cache.
-                 * Any integer between 0 and Integer.MAX_VALUE. 0 means Integer.MAX_VALUE. Default is 0.
+                 * Any integer between 0 and Integer.MAX_VALUE. 0 means INT32_MAX. Default is 0.
                  *
                  * @param maxIdleSeconds Maximum number of seconds each entry can stay in the Near Cache as
                  *                       untouched (not-read).

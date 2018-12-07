@@ -20,9 +20,10 @@
 #ifndef HAZELCAST_TestHelperFunctions
 #define HAZELCAST_TestHelperFunctions
 
-#define ASSERT_EQ_EVENTUALLY(expected, actual) do{              \
+#define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, 120)
+#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, timeoutSeconds) do{              \
             bool result = false;                                \
-            for(int i = 0 ; i < 120 * 5 && !result ; i++ ) {    \
+            for(int i = 0 ; i < timeoutSeconds * 5 && !result ; i++ ) {    \
                 if ((expected) == (actual)) {                       \
                     result = true;                              \
                 } else {                                        \
@@ -51,6 +52,7 @@
 #define ASSERT_NULL(msg, value, type) ASSERT_EQ((type *) NULL, value) << msg
 #define ASSERT_NOTNULL(value, type) ASSERT_NE((type *) NULL, value)
 #define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, true)
+#define ASSERT_TRUE_EVENTUALLY_WITH_TIMEOUT(value, timeout) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(value, true, timeout)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
 #define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE(latch.await(120))
 

@@ -163,26 +163,9 @@ namespace hazelcast {
                         " result=attrs(); ";
 
 
-                PyObject *responseObj = PyObject_CallMethod(rcObject, const_cast<char *>("executeOnController"),
-                                                          const_cast<char *>("(ssi)"), clusterId.c_str(),
-                                                          script.str().c_str(), 1);
+                Response response = executeOnController(script.str().c_str(), JAVASCRIPT);
 
-                PyObject *successObjAttrName = PyString_FromString("success");
-                PyObject *isSuccessObj = PyObject_GenericGetAttr(responseObj, successObjAttrName);
-
-                bool result = true;
-                if (isSuccessObj == NULL || isSuccessObj == Py_False) {
-                    result = false;
-
-                    std::ostringstream out;
-                    out << "Failed to execute script " << script.str() << " on member " << memberStartOrder;
-                    logger->severe(out.str());
-                }
-
-                Py_DECREF(responseObj);
-                Py_DECREF(successObjAttrName);
-                Py_XDECREF(isSuccessObj);
-                return result;
+                return response.success;
             }
 
             bool HazelcastServerFactory::shutdownServer(const MemberInfo &member) {
@@ -247,6 +230,52 @@ namespace hazelcast {
                 xmlFile.close();
 
                 return buffer.str();
+            }
+
+            HazelcastServerFactory::Response HazelcastServerFactory::executeOnController(const std::string &script,
+                                                                                         HazelcastServerFactory::Lang language) {
+                PyObject *responseObj = PyObject_CallMethod(rcObject, const_cast<char *>("executeOnController"),
+                                                            const_cast<char *>("(ssi)"), clusterId.c_str(),
+                                                            script.c_str(), language);
+
+                PyObject *successObjAttrName = PyString_FromString("success");
+                PyObject *isSuccessObj = PyObject_GenericGetAttr(responseObj, successObjAttrName);
+
+                HazelcastServerFactory::Response response;
+                if (isSuccessObj == NULL || isSuccessObj == Py_False) {
+                    response.success = false;
+
+                    logger->severe() << "Failed to execute script " << script << " on cluster " << clusterId;
+                } else {
+                    response.success = true;
+
+                    PyObject *messageObjAttrName = PyString_FromString("message");
+                    PyObject *messageObj = PyObject_GenericGetAttr(responseObj, messageObjAttrName);
+
+                    if (messageObj != NULL && messageObj != Py_None) {
+                        response.message = PyString_AsString(messageObj);
+                    }
+
+                    PyObject *resultObjAttrName = PyString_FromString("result");
+                    PyObject *resultObj = PyObject_GenericGetAttr(responseObj, resultObjAttrName);
+
+                    if (resultObj != NULL && resultObj != Py_None) {
+                        PyObject *byteArrayObj = PyByteArray_FromObject(resultObj);
+                        response.result = PyByteArray_AsString(byteArrayObj);
+                        Py_DECREF(byteArrayObj);
+                    }
+
+                    Py_XDECREF(resultObj);
+                    Py_DECREF(resultObjAttrName);
+
+                    Py_XDECREF(messageObj);
+                    Py_DECREF(messageObjAttrName);
+                }
+
+                Py_DECREF(responseObj);
+                Py_DECREF(successObjAttrName);
+                Py_XDECREF(isSuccessObj);
+                return response;
             }
 
             HazelcastServerFactory::MemberInfo::MemberInfo() : port(-1) {}

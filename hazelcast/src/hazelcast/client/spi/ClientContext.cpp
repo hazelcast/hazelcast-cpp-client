@@ -67,7 +67,7 @@ namespace hazelcast {
                 return *hazelcastClient.connectionManager;
             }
 
-            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
+            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() {
                 return *hazelcastClient.nearCacheManager;
             }
 
@@ -116,6 +116,10 @@ namespace hazelcast {
 
             util::ILogger &ClientContext::getLogger() {
                 return *hazelcastClient.logger;
+            }
+
+            client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
+                return *hazelcastClient.statistics;
             }
 
         }

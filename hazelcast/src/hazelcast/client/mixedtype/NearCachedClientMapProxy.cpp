@@ -335,11 +335,11 @@ namespace hazelcast {
              * @param key The key for which to invalidate the near cache
              */
             void NearCachedClientMapProxy::invalidateNearCache(const serialization::pimpl::Data &key) {
-                nearCache->remove(ClientMapProxy::toShared(key));
+                nearCache->invalidate(ClientMapProxy::toShared(key));
             }
 
             void NearCachedClientMapProxy::invalidateNearCache(boost::shared_ptr<serialization::pimpl::Data> key) {
-                nearCache->remove(key);
+                nearCache->invalidate(key);
             }
 
             EntryVector

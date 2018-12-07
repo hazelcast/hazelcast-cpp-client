@@ -100,6 +100,8 @@ namespace hazelcast {
 
                 lockReferenceIdGenerator.reset(new impl::ClientLockReferenceIdGenerator());
 
+                statistics.reset(new statistics::Statistics(clientContext));
+
                 lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
 
                 try {

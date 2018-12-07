@@ -53,6 +53,20 @@ namespace hazelcast {
             namespace nearcache {
                 class HAZELCAST_API BaseNearCache
                         : public spi::InitializingObject, public util::Clearable, public util::Destroyable {
+                public:
+                    /**
+                     * Gets the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
+                     *
+                     * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
+                     */
+                    virtual monitor::NearCacheStats &getNearCacheStats() = 0;
+
+                    /**
+                     * Gets the name of this {@link NearCache} instance.
+                     *
+                     * @return the name of this {@link NearCache} instance
+                     */
+                    virtual const std::string &getName() const = 0;
                 };
 
                 /**
@@ -90,16 +104,6 @@ namespace hazelcast {
                     static const int DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS = 5;
 
                     /**
-                     * Gets the name of the <code>this</code> {@link com.hazelcast.cache.impl.nearcache.NearCache} instance.
-                     *
-                     * @return the name of the <code>this</code> {@link com.hazelcast.cache.impl.nearcache.NearCache} instance
-                     */
-                    virtual const std::string &getName() const {
-                        assert(0);
-                        return *(new std::string(""));
-                    }
-
-                    /**
                      * Gets the value associated with the given <code>key</code>.
                      *
                      * @param key the key of the requested value
@@ -132,16 +136,6 @@ namespace hazelcast {
                     }
 
                     /**
-                     * Removes the value associated with the given <code>key</code>.
-                     *
-                     * @param key the key of the value will be removed
-                     */
-                    virtual bool remove(const boost::shared_ptr<K> &key) {
-                        assert(0);
-                        return false;
-                    }
-
-                    /**
                      * Removes the value associated with the given {@code key}
                      * and increases the invalidation statistics.
                      *
@@ -169,13 +163,6 @@ namespace hazelcast {
                         assert(0);
                         return client::config::BINARY;
                     }
-
-                    /**
-                     * Get the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store.
-                     *
-                     * @return the {@link com.hazelcast.monitor.NearCacheStats} instance to monitor this store
-                     */
-                    virtual monitor::NearCacheStats &getNearCacheStats() = 0;
 
                     /**
                      * Gets the count of stored records.

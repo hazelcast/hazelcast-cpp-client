@@ -47,8 +47,11 @@ namespace hazelcast {
             }
 
             static void closeResource(Closeable *closable, const char *closeReason = NULL);
-
         };
+
+        template<>
+        bool IOUtil::to_value(const std::string& str);
+
     }
 }
 

@@ -616,11 +616,8 @@ namespace hazelcast {
                     // put an entry that will expire in 1 milliseconds
                     imap->put("short_entry", "short living value", 1);
 
-                    util::sleepmillis(500);
-
-                    view = imap->getEntryView("short_entry");
-
-                    ASSERT_EQ((MapEntryView<std::string, std::string> *) NULL, view.get());
+                    ASSERT_EQ_EVENTUALLY((MapEntryView<std::string, std::string> *) NULL,
+                            (imap->getEntryView("short_entry").get()));
                 }
 
                 TEST_F(RawPointerMapTest, testPutTtl) {
@@ -629,14 +626,15 @@ namespace hazelcast {
                     CountdownListener<std::string, std::string> sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = imap->addEntryListener(sampleEntryListener, false);
 
-                    imap->put("key1", "value1", 2000);
+                    imap->put("key1", "value1", 1000);
                     std::auto_ptr<std::string> temp = imap->get("key1");
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
+                    // If the server response comes later than 1 second, the entry may have expired already.
+                    if (temp.get()) {
+                        ASSERT_EQ(*temp, "value1");
+                    }
                     // trigger eviction
-                    std::auto_ptr<std::string> temp2 = imap->get("key1");
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
-                    ASSERT_TRUE(evict.await(20));
+                    ASSERT_NULL_EVENTUALLY(imap->get("key1").get(), std::string);
+                    ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(imap->removeEntryListener(id));
                 }
@@ -652,11 +650,12 @@ namespace hazelcast {
 
                     map.put("key1", "value1");
                     std::auto_ptr<std::string> temp = map.get("key1");
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
+                    // If the server response comes later than 1 second after put, the entry may have expired already.
+                    if (temp.get()) {
+                        ASSERT_EQ(*temp, "value1");
+                    }
                     // trigger eviction
-                    std::auto_ptr<std::string> temp2 = map.get("key1");
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
@@ -669,11 +668,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testPutIfAbsentTtl) {
-                    ASSERT_EQ(imap->putIfAbsent("key1", "value1", 1000).get(), (std::string *) NULL);
-                    ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 1000)));
+                    ASSERT_EQ(imap->putIfAbsent("key1", "value1", 5000).get(), (std::string *) NULL);
+                    ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3", 5000)));
 
-                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 1000).get(), std::string);
-                    ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 1000)));
+                    ASSERT_NULL_EVENTUALLY(imap->putIfAbsent("key1", "value3", 5000).get(), std::string);
+                    ASSERT_EQ("value3", *(imap->putIfAbsent("key1", "value4", 5000)));
                 }
 
                 TEST_F(RawPointerMapTest, testSet) {
@@ -691,7 +690,7 @@ namespace hazelcast {
 
                 TEST_F(RawPointerMapTest, testSetTtl) {
                     IMap<std::string, std::string> oneSecMap = client->getMap<std::string, std::string>(
-                            "OneSecondTtlMap");
+                            getTestName());
                     hazelcast::client::adaptor::RawPointerMap<std::string, std::string> map(oneSecMap);
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
@@ -700,11 +699,12 @@ namespace hazelcast {
 
                     map.set("key1", "value1", 1000);
                     std::auto_ptr<std::string> temp = map.get("key1");
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
+                    // If the server response comes later than 1 second, the entry may have expired already.
+                    if (temp.get()) {
+                        ASSERT_EQ(*temp, "value1");
+                    }
                     // trigger eviction
-                    std::auto_ptr<std::string> temp2 = map.get("key1");
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
@@ -721,11 +721,12 @@ namespace hazelcast {
 
                     map.set("key1", "value1");
                     std::auto_ptr<std::string> temp = map.get("key1");
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
+                    // If the server response comes later than 1 second, the entry may have expired already.
+                    if (temp.get()) {
+                        ASSERT_EQ(*temp, "value1");
+                    }
                     // trigger eviction
-                    std::auto_ptr<std::string> temp2 = map.get("key1");
-                    ASSERT_EQ(temp2.get(), (std::string *) NULL);
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));

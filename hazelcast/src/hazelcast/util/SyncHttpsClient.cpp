@@ -22,7 +22,7 @@
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/asio/include/asio/ssl/rfc2818_verification.hpp>
+#include <asio/ssl/rfc2818_verification.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/Preconditions.h"

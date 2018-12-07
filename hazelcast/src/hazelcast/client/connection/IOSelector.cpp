@@ -38,9 +38,9 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager)
+            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions)
             : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
-            logger(connectionManager.getLogger()) {
+            logger(connectionManager.getLogger()), socketOptions(socketOptions) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
             }
@@ -83,7 +83,7 @@ namespace hazelcast {
                 else
                     localAddress = "::1";
 
-                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p)));
+                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p), NULL));
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
