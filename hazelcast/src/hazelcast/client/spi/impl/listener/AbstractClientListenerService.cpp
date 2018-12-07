@@ -129,9 +129,11 @@ namespace hazelcast {
 
                     void AbstractClientListenerService::shutdown() {
                         eventExecutor.shutdown();
-                        eventExecutor.awaitTerminationSeconds(ClientExecutionServiceImpl::TERMINATE_TIMEOUT_SECONDS);
+                        eventExecutor.awaitTerminationSeconds(
+                                ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS);
                         registrationExecutor.shutdown();
-                        registrationExecutor.awaitTerminationSeconds(ClientExecutionServiceImpl::TERMINATE_TIMEOUT_SECONDS);
+                        registrationExecutor.awaitTerminationSeconds(
+                                ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS);
                     }
 
                     void AbstractClientListenerService::start() {

@@ -28,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
-                const int ClientExecutionServiceImpl::TERMINATE_TIMEOUT_SECONDS = 30;
+                const int ClientExecutionServiceImpl::SHUTDOWN_CHECK_INTERVAL_SECONDS = 30;
 
                 ClientExecutionServiceImpl::ClientExecutionServiceImpl(const std::string &name,
                                                                        const ClientProperties &clientProperties,
@@ -62,10 +62,10 @@ namespace hazelcast {
                         bool success = false;
                         // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
                         while (!success) {
-                            success = executor.awaitTerminationSeconds(TERMINATE_TIMEOUT_SECONDS);
+                            success = executor.awaitTerminationSeconds(SHUTDOWN_CHECK_INTERVAL_SECONDS);
                             if (!success) {
                                 logger.warning() << name << " executor awaitTermination could not be completed in "
-                                                 << TERMINATE_TIMEOUT_SECONDS << " seconds";
+                                                 << SHUTDOWN_CHECK_INTERVAL_SECONDS << " seconds";
                             }
                         }
                     } catch (exception::InterruptedException &e) {
