@@ -59,13 +59,14 @@ namespace hazelcast {
                                                              util::ILogger &logger) {
                     executor.shutdown();
                     try {
+                        int64_t startTimeMilliseconds = util::currentTimeMillis();
                         bool success = false;
                         // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
                         while (!success) {
                             success = executor.awaitTerminationSeconds(SHUTDOWN_CHECK_INTERVAL_SECONDS);
                             if (!success) {
                                 logger.warning() << name << " executor awaitTermination could not be completed in "
-                                                 << SHUTDOWN_CHECK_INTERVAL_SECONDS << " seconds";
+                                                 << (util::currentTimeMillis() - startTimeMilliseconds) << " msecs.";
                             }
                         }
                     } catch (exception::InterruptedException &e) {
