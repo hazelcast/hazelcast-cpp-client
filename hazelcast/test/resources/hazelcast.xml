@@ -57,6 +57,10 @@ https://hazelcast.org/documentation/.
 
     <management-center enabled="false">http://localhost:8080/mancenter</management-center>
 
+    <properties>
+        <property name="hazelcast.map.invalidation.batch.enabled">false</property>
+    </properties>
+
     <network>
         <port auto-increment="true" port-count="100">5701</port>
         <outbound-ports>

@@ -60,13 +60,6 @@ namespace hazelcast {
 
                     virtual ~MapClientConfig() {
                     }
-
-                    /**
-                     * @return true if expiry at the server side should be seen by the client
-                     */
-                    virtual bool shouldExpireWhenTLLExpiresAtServer() {
-                        return true;
-                    }
                 };
 
                 class NearCachedDataMapClientConfig : public MapClientConfig {
@@ -75,14 +68,10 @@ namespace hazelcast {
                         boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig(
                                 new mixedtype::config::MixedNearCacheConfig("MixedMapTestMap"));
                         addMixedNearCacheConfig(nearCacheConfig);
+
+                        addNearCacheConfig<std::string, std::string>(boost::shared_ptr<config::NearCacheConfig<std::string, std::string> >(new config::NearCacheConfig<std::string, std::string>("OneSecondTtlMap")));
                     }
 
-                    /**
-                     * @return true if expiry at the server side should be seen by the client
-                     */
-                    virtual bool shouldExpireWhenTLLExpiresAtServer() {
-                        return false;
-                    }
                 };
 
                 class MixedMapAPITest : public ClientTestSupport, public ::testing::WithParamInterface<MapClientConfig *> {
@@ -122,6 +111,7 @@ namespace hazelcast {
                 protected:
                     virtual void TearDown() {
                         imap->destroy();
+                        client->toMixedType().getMap("OneSecondTtlMap").destroy();
                     }
 
                     class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
@@ -717,27 +707,39 @@ namespace hazelcast {
                 }
 
                 TEST_P(MixedMapAPITest, testPutTtl) {
+                    mixedtype::IMap &map = *imap;
+
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
-                    std::string id = imap->addEntryListener(sampleEntryListener, false);
+                    std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    imap->put<std::string, std::string>("key1", "value1", 1000);
-                    std::auto_ptr<std::string> temp = imap->get<std::string>("key1").get<std::string>();
-                    ASSERT_EQ(*temp, "value1");
-                    util::sleep(2);
-                    // trigger eviction
-                    std::auto_ptr<std::string> temp2 = imap->get<std::string>("key1").get<std::string>();
+                    monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
 
-                    // When ttl expires at server, the server does not send near cache invalidation
-                    if (clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
-                        ASSERT_NULL_EVENTUALLY(imap->get<std::string>("key1").get<std::string>().get(), std::string);
-                        ASSERT_TRUE(evict.await(10));
-                    } else {
-                        temp = imap->get<std::string>("key1").get<std::string>();
-                        ASSERT_EQ(*temp, "value1");
+                    int64_t initialInvalidationRequests = 0;
+                    if (nearCacheStatsImpl) {
+                        initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
 
+                    // put will cause an invalidation event sent from the server to the client
+                    map.put<std::string, std::string>("key1", "value1", 1000);
+
+                    // if near cache is enabled
+                    if (nearCacheStatsImpl) {
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                        // populate near cache
+                        map.get<std::string>("key1");
+
+                        // When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                    } else {
+                        // trigger eviction
+                        ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+                    }
+
+                    ASSERT_TRUE(evict.await(5));
+                    
                     ASSERT_TRUE(imap->removeEntryListener(id));
                 }
 
@@ -748,14 +750,30 @@ namespace hazelcast {
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    map.put<std::string, std::string>("key1", "value1");
-                    std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
-                    // If the server response comes later than 1 second, the entry may have expired already.
-                    if (temp.get()) {
-                        ASSERT_EQ(*temp, "value1");
+                    monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                    int64_t initialInvalidationRequests = 0;
+                    if (nearCacheStatsImpl) {
+                        initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
-                    // trigger eviction
-                    ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+
+                    // put will cause an invalidation event sent from the server to the client
+                    map.put<std::string, std::string>("key1", "value1");
+
+                    // if near cache is enabled
+                    if (nearCacheStatsImpl) {
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                        // populate near cache
+                        map.get<std::string>("key1");
+
+                        // When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                    } else {
+                        // trigger eviction
+                        ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+                    }
+
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
@@ -781,33 +799,40 @@ namespace hazelcast {
 
                     imap->IMap::set<std::string, std::string>("key1", "value2");
                     ASSERT_EQ("value2", *(imap->get<std::string>("key1").get<std::string>()));
-
-                    imap->IMap::set<std::string, std::string>("key1", "value3", 1000);
-                    ASSERT_EQ("value3", *(imap->get<std::string>("key1").get<std::string>()));
-                    // When ttl expires at server, the server does not send near cache invalidation
-                    if (clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
-                        ASSERT_NULL_EVENTUALLY(imap->get<std::string>("key1").get<std::string>().get(), std::string);
-                    } else {
-                        util::sleep(2);
-                        ASSERT_EQ("value3", *(imap->get<std::string>("key1").get<std::string>()));
-                    }
                 }
 
                 TEST_P(MixedMapAPITest, testSetTtl) {
-                    mixedtype::IMap map = client->toMixedType().getMap(getTestName());
+                    mixedtype::IMap &map = *imap;
+                    
                     util::CountDownLatch dummy(10);
                     util::CountDownLatch evict(1);
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    map.IMap::set<std::string, std::string>("key1", "value1", 1000);
-                    std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
-                    // If the server response comes later than 1 second, the entry may have expired already.
-                    if (temp.get()) {
-                        ASSERT_EQ(*temp, "value1");
+                    monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                    int64_t initialInvalidationRequests = 0;
+                    if (nearCacheStatsImpl) {
+                        initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
-                    // trigger eviction
-                    ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+
+                    // set will cause an invalidation event sent from the server to the client
+                    map.IMap::set<std::string, std::string>("key1", "value1", 1000);
+
+                    // if near cache is enabled
+                    if (nearCacheStatsImpl) {
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                        // populate near cache
+                        map.get<std::string>("key1");
+
+                        // When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                    } else {
+                        // trigger eviction
+                        ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+                    }
+
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
@@ -820,14 +845,30 @@ namespace hazelcast {
                     CountdownListener sampleEntryListener(dummy, dummy, dummy, evict);
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
-                    map.IMap::set<std::string, std::string>("key1", "value1");
-                    std::auto_ptr<std::string> temp = map.get<std::string>("key1").get<std::string>();
-                    // If the server response comes later than 1 second, the entry may have expired already.
-                    if (temp.get()) {
-                        ASSERT_EQ(*temp, "value1");
+                    monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                    int64_t initialInvalidationRequests = 0;
+                    if (nearCacheStatsImpl) {
+                        initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                     }
-                    // trigger eviction
-                    ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+
+                    // set will cause an invalidation event sent from the server to the client
+                    map.IMap::set<std::string, std::string>("key1", "value1");
+
+                    // if near cache is enabled
+                    if (nearCacheStatsImpl) {
+                        ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                        // populate near cache
+                        map.get<std::string>("key1");
+
+                        // When ttl expires at server, the server does not send near cache invalidation.
+                        ASSERT_TRUE_ALL_THE_TIME((map.get<std::string>("key1").get<std::string>().get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                    } else {
+                        // trigger eviction
+                        ASSERT_NULL_EVENTUALLY(map.get<std::string>("key1").get<std::string>().get(), std::string);
+                    }
+
                     ASSERT_TRUE(evict.await(5));
 
                     ASSERT_TRUE(map.removeEntryListener(id));
