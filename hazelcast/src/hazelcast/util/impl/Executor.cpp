@@ -52,7 +52,9 @@ namespace hazelcast {
                     workers[i]->start();
                 }
 
-                logger.finest() << "ExecutorService " << threadNamePrefix << " started " << threadCount << " workers.";
+                if (logger.isFinestEnabled()) {
+                    logger.finest() << "ExecutorService " << threadNamePrefix << " started " << threadCount << " workers.";
+                }
             }
 
             void SimpleExecutorService::execute(const boost::shared_ptr<Runnable> &command) {
@@ -89,8 +91,10 @@ namespace hazelcast {
                 size_t numberOfWorkers = workers.size();
                 size_t numberOfDelayedRunners = delayedRunners.size();
 
-                logger.finest() << "ExecutorService " << threadNamePrefix << " has " << numberOfWorkers << " workers and "
-                              << numberOfDelayedRunners << " delayed runners " << " to shutdown.";
+                if (logger.isFinestEnabled()) {
+                    logger.finest() << "ExecutorService " << threadNamePrefix << " has " << numberOfWorkers << " workers and "
+                                    << numberOfDelayedRunners << " delayed runners " << " to shutdown.";
+                }
 
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 worker->shutdown();
@@ -113,8 +117,10 @@ namespace hazelcast {
                 BOOST_FOREACH(boost::shared_ptr<Worker> &worker, workers) {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
-                                logger.finest() << "ExecutorService is waiting worker thread " << worker->getName()
-                                                << " for a maximum of " << waitMilliseconds << " msecs.";
+                                if (logger.isFinestEnabled()) {
+                                    logger.finest() << "ExecutorService is waiting worker thread " << worker->getName()
+                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                }
 
                                 if (!worker->getThread().waitMilliseconds(waitMilliseconds)) {
                                     logger.warning() << "ExecutorService could not stop worker thread " << worker->getName()
@@ -127,8 +133,10 @@ namespace hazelcast {
                 BOOST_FOREACH(const boost::shared_ptr<Thread> &t, delayedRunners.values()) {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
-                                logger.finest() << "ExecutorService is waiting delayed runner thread " << t->getName()
-                                                << " for a maximum of " << waitMilliseconds << " msecs.";
+                                if (logger.isFinestEnabled()) {
+                                    logger.finest() << "ExecutorService is waiting delayed runner thread " << t->getName()
+                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                }
 
                                 if (!t->waitMilliseconds(waitMilliseconds)) {
                                     logger.warning() << "ExecutorService could not stop delayed runner thread " << t->getName()
@@ -156,7 +164,8 @@ namespace hazelcast {
                                                                         "Executor is terminated!");
                 }
 
-                boost::shared_ptr<DelayedRunner> delayedRunner(new DelayedRunner(*this, command, initialDelayInMillis, logger));
+                boost::shared_ptr<DelayedRunner> delayedRunner(
+                        new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, logger));
                 boost::shared_ptr<util::Thread> thread(new util::Thread(delayedRunner, logger));
                 delayedRunner->setStartTimeMillis(thread.get());
                 thread->start();
@@ -176,7 +185,7 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<DelayedRunner> repeatingRunner(
-                        new DelayedRunner(*this, command, initialDelayInMillis, periodInMillis, logger));
+                        new DelayedRunner(threadNamePrefix, command, initialDelayInMillis, periodInMillis, logger));
                 boost::shared_ptr<util::Thread> thread(new util::Thread(repeatingRunner, logger));
                 repeatingRunner->setStartTimeMillis(thread.get());
                 thread->start();
@@ -192,7 +201,9 @@ namespace hazelcast {
                             task->run();
                         }
                     } catch (client::exception::InterruptedException &) {
-                        executorService.logger.finest() << getName() << " is interrupted.";
+                        if (executorService.logger.isFinestEnabled()) {
+                            executorService.logger.finest() << getName() << " is interrupted.";
+                        }
                     } catch (client::exception::IException &t) {
                         executorService.logger.warning() << getName() << " caused an exception" << t;
                     }
@@ -236,18 +247,18 @@ namespace hazelcast {
                 return thread;
             }
 
-            SimpleExecutorService::DelayedRunner::DelayedRunner(SimpleExecutorService &executorService,
+            SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
                     const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                     util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
                                              periodInMillis(-1), live(true), startTimeMillis(0), runnerThread(NULL),
-                                             logger(logger), executorService(executorService) {
+                                             logger(logger), threadNamePrefix(threadNamePrefix) {
             }
 
-            SimpleExecutorService::DelayedRunner::DelayedRunner(SimpleExecutorService &executorService,
+            SimpleExecutorService::DelayedRunner::DelayedRunner(const std::string &threadNamePrefix,
                                                                 const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                     int64_t periodInMillis, util::ILogger &logger) : command(command), initialDelayInMillis(initialDelayInMillis),
                                               periodInMillis(periodInMillis), live(true), startTimeMillis(0),
-                                              runnerThread(NULL), logger(logger), executorService(executorService) {}
+                                              runnerThread(NULL), logger(logger), threadNamePrefix(threadNamePrefix) {}
 
             void SimpleExecutorService::DelayedRunner::shutdown() {
                 live = false;
@@ -284,7 +295,7 @@ namespace hazelcast {
             }
 
             const std::string SimpleExecutorService::DelayedRunner::getName() const {
-                return executorService.threadNamePrefix + command->getName();
+                return threadNamePrefix + command->getName();
             }
 
             void SimpleExecutorService::DelayedRunner::setStartTimeMillis(Thread *pThread) {

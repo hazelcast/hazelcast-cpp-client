@@ -166,10 +166,10 @@ namespace hazelcast {
 
                 class DelayedRunner : public util::Runnable {
                 public:
-                    DelayedRunner(SimpleExecutorService &executorService, const boost::shared_ptr<Runnable> &command,
+                    DelayedRunner(const std::string &threadNamePrefix, const boost::shared_ptr<Runnable> &command,
                             int64_t initialDelayInMillis, util::ILogger &logger);
 
-                    DelayedRunner(SimpleExecutorService &executorService, const boost::shared_ptr<Runnable> &command,
+                    DelayedRunner(const std::string &threadNamePrefix, const boost::shared_ptr<Runnable> &command,
                             int64_t initialDelayInMillis, int64_t periodInMillis, util::ILogger &logger);
 
                     virtual void run();
@@ -188,7 +188,7 @@ namespace hazelcast {
                     int64_t startTimeMillis;
                     util::Thread *runnerThread;
                     util::ILogger &logger;
-                    SimpleExecutorService &executorService;
+                    const std::string threadNamePrefix;
                 };
 
                 virtual boost::shared_ptr<Worker> getWorker(const boost::shared_ptr<Runnable> &runnable);
