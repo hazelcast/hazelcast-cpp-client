@@ -88,7 +88,23 @@ FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
 include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include)
-include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/external/include/ ${PROJECT_SOURCE_DIR}/external/include/asio/asio/include/)
+
+if (HZ_FIND_EXTERNAL_BOOST)
+	find_package(Boost REQUIRED)
+	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
+else ()
+	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/)
+endif(HZ_FIND_EXTERNAL_BOOST)
+
+include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
+message(STATUS "Using HZ_BOOST_INCLUDE_DIR: ${HZ_BOOST_INCLUDE_DIR}")
+
+if ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
+	set(HZ_ASIO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/asio/asio/include/)
+endif ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
+
+include_directories(SYSTEM ${HZ_ASIO_INCLUDE_DIR})
+message(STATUS "Using HZ_ASIO_INCLUDE_DIR: ${HZ_ASIO_INCLUDE_DIR}")
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
