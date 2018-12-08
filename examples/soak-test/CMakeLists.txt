@@ -3,6 +3,8 @@ project(performance_test)
 
 set(CMAKE_CXX_STANDARD 98)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
+
 if (NOT HAZELCAST_INSTALL_DIR)
     message(FATAL_ERROR "You have to specify HAZELCAST_INSTALL_DIR variable!")
 endif()
