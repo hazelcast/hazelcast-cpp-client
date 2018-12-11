@@ -69,7 +69,7 @@ namespace hazelcast {
 
                 TEST_F(ExceptionTest, testRaiseException) {
                     std::string source("testException");
-                    std::string originalMessage("original message");
+                    std::auto_ptr<std::string> originalMessage(new std::string("original message"));
                     std::string details("detail message");
                     int32_t code = protocol::IO;
                     int32_t causeCode = protocol::ILLEGAL_STATE;
@@ -84,7 +84,7 @@ namespace hazelcast {
                         exception->raise();
                     } catch (exception::IOException &e) {
                         ASSERT_EQ(source, e.getSource());
-                        ASSERT_EQ(originalMessage + ". Details:" + details, e.getMessage());
+                        ASSERT_EQ(*originalMessage + ". Details:" + details, e.getMessage());
                         ASSERT_EQ(code, e.getErrorCode());
                         ASSERT_EQ(causeCode, e.getCauseErrorCode());
                     }

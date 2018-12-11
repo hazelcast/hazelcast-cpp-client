@@ -41,7 +41,7 @@ namespace hazelcast {
                 virtual ~ExceptionFactory();
 
                 virtual std::auto_ptr<exception::IException> createException(const std::string &source,
-                                                                             const std::string &message,
+                                                                             const std::auto_ptr<std::string> &message,
                                                                              const std::string &details,
                                                                              int32_t causeErrorCode) = 0;
             };
@@ -50,10 +50,11 @@ namespace hazelcast {
             class ExceptionFactoryImpl : public ExceptionFactory {
             public:
                 std::auto_ptr<exception::IException>
-                createException(const std::string &source, const std::string &message, const std::string &details,
-                                int32_t causeErrorCode) {
+                createException(const std::string &source, const std::auto_ptr<std::string> &message,
+                        const std::string &details, int32_t causeErrorCode) {
                     return std::auto_ptr<exception::IException>(
-                            new EXCEPTION(source, message + ". Details:" + details, causeErrorCode));
+                            new EXCEPTION(source, (message.get() ? (*message + ". Details:") : ". Details:") + details,
+                                    causeErrorCode));
                 }
             };
 

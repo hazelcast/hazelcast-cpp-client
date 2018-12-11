@@ -59,12 +59,9 @@ namespace hazelcast {
 
                     out << std::endl << "Cause error code:" << causeErrorCode << std::endl;
                     if (NULL != causeClassName.get()) {
-                        out << "Caused by:";
-                        if (NULL != causeClassName.get()) {
-                            out << *causeClassName;
-                        }
-                        out << std::endl;
+                        out << "Caused by:" << *causeClassName;
                     }
+
                     return out.str();
                 }
 
