@@ -5,12 +5,14 @@
 #include <hazelcast/client/HazelcastAll.h>
 #include <hazelcast/client/query/BetweenPredicate.h>
 #include <hazelcast/client/query/QueryConstants.h>
+#include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/spi/ClientContext.h>
 
-using namespace hazelcast;
+using namespace hazelcast::util;
 using namespace hazelcast::client;
 using namespace std;
 
-class UpdateEntryProcessor : public client::serialization::IdentifiedDataSerializable {
+class UpdateEntryProcessor : public serialization::IdentifiedDataSerializable {
 public:
     UpdateEntryProcessor(const string &value) : value(new string(value)) {}
 
@@ -27,7 +29,7 @@ public:
     }
 
     virtual void readData(serialization::ObjectDataInput &reader) {
-        throw client::exception::IllegalStateException(
+        throw hazelcast::client::exception::IllegalStateException(
                 "UpdateEntryProcessor readData should not be called at client side");
     }
 
@@ -35,18 +37,18 @@ private:
     auto_ptr<string> value;
 };
 
-util::AtomicBoolean isCancelled;
+AtomicBoolean isCancelled;
 
-class SoakTestTask : public util::Runnable {
+class SoakTestTask : public Runnable {
 public:
-    SoakTestTask(const IMap<string, string> &map, util::ILogger &logger) : map(map), logger(logger) {}
+    SoakTestTask(const IMap<string, string> &map, ILogger &logger) : map(map), logger(logger) {}
 
     virtual const string getName() const {
         return "SoakTestTask";
     }
 
     virtual void run() {
-        logger.info() << "Thread " << util::getCurrentThreadId() << " is started.";
+        logger.info() << "Thread " << getCurrentThreadId() << " is started.";
 
         int64_t getCount = 0;
         int64_t putCount = 0;
@@ -80,7 +82,7 @@ public:
 
                 int64_t totalCount = putCount + getCount + valuesCount + executeOnKeyCount;
                 if (totalCount % 10000 == 0) {
-                    logger.info() << "Thread " << util::getCurrentThreadId() << " --> Total:" << totalCount
+                    logger.info() << "Thread " << getCurrentThreadId() << " --> Total:" << totalCount
                                   << ":{getCount:" << getCount << ", putCount:" << putCount << ", valuesCount:"
                                   << valuesCount << ", executeOnKeyCount:" << executeOnKeyCount << "}";
                 }
@@ -90,18 +92,18 @@ public:
         }
 
         int64_t totalCount = putCount + getCount + valuesCount + executeOnKeyCount;
-        logger.info() << "Thread " << util::getCurrentThreadId() << " is ending." << " --> Total:" << totalCount
+        logger.info() << "Thread " << getCurrentThreadId() << " is ending." << " --> Total:" << totalCount
                       << ":{getCount:" << getCount << ", putCount:" << putCount << ", valuesCount:" << valuesCount
                       << ", executeOnKeyCount:" << executeOnKeyCount << "}";
     }
 
 private:
     IMap<string, string> map;
-    util::ILogger &logger;
+    ILogger &logger;
 };
 
 void signalHandler(int s) {
-    util::ILogger::getLogger().warning() << "Caught signal: " << s;
+    cerr << "Caught signal: " << s << endl;
     isCancelled = true;
 }
 
@@ -116,31 +118,32 @@ void registerSignalHandler() {
 }
 
 int main(int argc, char *args[]) {
-    util::ILogger &logger = util::ILogger::getLogger();
-
     if (argc != 3) {
-        logger.severe() << "USAGE: SoakTest threadCount server_address";
+        cerr << "USAGE: SoakTest threadCount server_address" << endl;
         return -1;
     }
 
     const int threadCount = atoi(args[1]);
     const string address = args[2];
-    logger.info() << "Soak test is starting with the following parameters: " << "threadCount = " << threadCount
-                  << ", server address = " << address;
 
     ClientConfig config;
     config.addAddress(Address(address, 5701));
 
     HazelcastClient hazelcastInstance(config);
+    spi::ClientContext context(hazelcastInstance);
+    ILogger &logger = context.getLogger();
     IMap<string, string> map = hazelcastInstance.getMap<string, string>("test");
+
+    logger.info() << "Soak test is starting with the following parameters: " << "threadCount = " << threadCount
+                  << ", server address = " << address;
 
     registerSignalHandler();
 
-    vector<boost::shared_ptr<util::Thread> > threads(threadCount);
+    vector<boost::shared_ptr<Thread> > threads(threadCount);
 
     for (int i = 0; i < threadCount; i++) {
-        boost::shared_ptr<util::Thread> thread(
-                new util::Thread(boost::shared_ptr<util::Runnable>(new SoakTestTask(map, logger))));
+        boost::shared_ptr<Thread> thread(
+                new Thread(boost::shared_ptr<Runnable>(new SoakTestTask(map, logger)), logger));
         threads[i] = thread;
         thread->start();
     }
