@@ -133,7 +133,7 @@ namespace hazelcast {
                                                                        error.toString()));
                 }
 
-                return it->second->createException(source, *error.message, error.toString(), error.causeErrorCode);
+                return it->second->createException(source, error.message, error.toString(), error.causeErrorCode);
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
