@@ -43,7 +43,6 @@ namespace hazelcast {
                     std::auto_ptr<hazelcast::client::ClientConfig> getLoadTestConfig() {
                         std::auto_ptr<ClientConfig> config = ClientTestSupport::getConfig();
                         config->setRedoOperation(true);
-                        config->setLogLevel(FINEST);
                         return config;
                     }
 
