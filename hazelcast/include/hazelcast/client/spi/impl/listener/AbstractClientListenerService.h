@@ -109,7 +109,7 @@ namespace hazelcast {
                                                  const boost::shared_ptr<ListenerMessageCodec> &listenerMessageCodec,
                                                  const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
 
-                            virtual std::string call();
+                            virtual boost::shared_ptr<std::string> call();
 
                             virtual const std::string getName() const;
 
@@ -126,7 +126,7 @@ namespace hazelcast {
                                                    const boost::shared_ptr<AbstractClientListenerService> &listenerService,
                                                    const std::string &registrationId);
 
-                            virtual bool call();
+                            virtual boost::shared_ptr<bool> call();
 
                             virtual const std::string getName() const;
 

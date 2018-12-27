@@ -49,12 +49,6 @@ namespace hazelcast {
         namespace proxy {
             class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
             public:
-                /**
-                * Destroys this object cluster-wide.
-                * Clears and releases all resources for this object.
-                */
-                virtual void destroy();
-
                 template <typename T>
                 TypedData toTypedData(const T &key) {
                     return TypedData(toHeapData<T>(key), getContext().getSerializationService());

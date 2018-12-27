@@ -219,7 +219,7 @@ namespace hazelcast {
                     util::ILogger &logger;
                 };
 
-                class AuthCallback : public impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
+                class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
                 public:
                     AuthCallback(const boost::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
                                  boost::shared_ptr<AuthenticationFuture> &future,
@@ -260,7 +260,7 @@ namespace hazelcast {
                 public:
                     ConnectToClusterTask(ClientConnectionManagerImpl &connectionManager);
 
-                    virtual bool call();
+                    virtual boost::shared_ptr<bool> call();
 
                     virtual const std::string getName() const;
 

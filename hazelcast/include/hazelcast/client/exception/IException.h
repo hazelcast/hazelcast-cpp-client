@@ -88,7 +88,7 @@ namespace hazelcast {
 
                 const std::string &getDetails() const;
 
-                int32_t getErrorCode() const;
+                virtual int32_t getErrorCode() const;
 
                 int32_t getCauseErrorCode() const;
 

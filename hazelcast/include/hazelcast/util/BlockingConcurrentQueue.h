@@ -61,7 +61,7 @@ namespace hazelcast {
                     // wait for notEmpty condition
                     notEmpty.wait(m);
                     if (isInterrupted) {
-                        throw client::exception::InterruptedException("BlockingConcurrentQueue::push");
+                        throw client::exception::InterruptedException("BlockingConcurrentQueue::pop");
                     }
                 }
                 T element = internalQueue.front();

@@ -64,8 +64,9 @@ namespace hazelcast {
 
                     typedef std::vector<std::pair<int64_t, boost::shared_ptr<ClientInvocation> > > InvocationEntriesVector;
                     InvocationEntriesVector allEntries = invocations.clear();
-                    exception::HazelcastClientNotActiveException notActiveException(
-                            "AbstractClientInvocationService::shutdown", "Client is shutting down");
+                    boost::shared_ptr<exception::HazelcastClientNotActiveException> notActiveException(
+                            new exception::HazelcastClientNotActiveException("AbstractClientInvocationService::shutdown",
+                                    "Client is shutting down"));
                     BOOST_FOREACH (InvocationEntriesVector::value_type & entry, allEntries) {
                                     entry.second->notifyException(notActiveException);
                                 }
@@ -170,10 +171,10 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::CleanResourcesTask::notifyException(ClientInvocation &invocation,
                                                                                           boost::shared_ptr<connection::Connection> &connection) {
-                    std::auto_ptr<exception::IException> ex(
+                    boost::shared_ptr<exception::IException> ex(
                             new exception::TargetDisconnectedException("CleanResourcesTask::notifyException",
                                                                        connection->getCloseReason()));
-                    invocation.notifyException(*ex);
+                    invocation.notifyException(ex);
                 }
 
                 AbstractClientInvocationService::CleanResourcesTask::CleanResourcesTask(
@@ -237,9 +238,9 @@ namespace hazelcast {
                         return;
                     }
                     if (protocol::codec::ErrorCodec::TYPE == clientMessage->getMessageType()) {
-                        std::auto_ptr<exception::IException> exception = client.getClientExceptionFactory().createException(
-                                "AbstractClientInvocationService::ResponseThread::handleClientMessage", *clientMessage);
-                        future->notifyException(*exception);
+                        boost::shared_ptr<exception::IException> exception(client.getClientExceptionFactory().createException(
+                                "AbstractClientInvocationService::ResponseThread::handleClientMessage", *clientMessage));
+                        future->notifyException(exception);
                     } else {
                         future->notify(clientMessage);
                     }

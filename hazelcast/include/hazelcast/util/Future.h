@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 31/03/14.
-//
 
 #ifndef HAZELCAST_UTIL_FUTURE_H_
 #define HAZELCAST_UTIL_FUTURE_H_
@@ -26,7 +23,6 @@
 #include <boost/shared_ptr.hpp>
 #include <ostream>
 
-#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/ILogger.h"
@@ -35,8 +31,9 @@
 #include "hazelcast/util/Executor.h"
 #include "hazelcast/util/concurrent/Cancellable.h"
 #include "hazelcast/util/concurrent/CancellationException.h"
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/IFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,12 +43,12 @@
 namespace hazelcast {
     namespace util {
         template<typename T>
-        class Future {
+        class Future : public IFuture<T> {
         public:
             class SuccessCallbackRunner : public Runnable {
             public:
-                SuccessCallbackRunner(T &sharedObj,
-                                      const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback,
+                SuccessCallbackRunner(const boost::shared_ptr<T> &sharedObj,
+                                      const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
                                       ILogger &logger, Future &future) : sharedObj(sharedObj), callback(callback),
                                                                          logger(logger), future(future) {}
 
@@ -72,8 +69,8 @@ namespace hazelcast {
                 }
 
             private:
-                T sharedObj;
-                const boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
+                boost::shared_ptr<T> sharedObj;
+                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
                 util::ILogger &logger;
                 Future<T> &future;
             };
@@ -81,7 +78,7 @@ namespace hazelcast {
             class ExceptionCallbackRunner : public Runnable {
             public:
                 ExceptionCallbackRunner(const boost::shared_ptr<client::exception::IException> &exception,
-                                        const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback,
+                                        const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
                                         ILogger &logger, Future &future)
                         : exception(exception), callback(callback), logger(logger), future(future) {}
 
@@ -103,7 +100,7 @@ namespace hazelcast {
 
             private:
                 boost::shared_ptr<client::exception::IException> exception;
-                const boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
+                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
                 util::ILogger &logger;
                 Future<T> &future;
             };
@@ -113,7 +110,7 @@ namespace hazelcast {
             virtual ~Future() {
             }
 
-            void set_value(const T &value) {
+            void set_value(const boost::shared_ptr<T> &value) {
                 LockGuard guard(mutex);
                 if (cancelled) {
                     return;
@@ -159,7 +156,7 @@ namespace hazelcast {
                 onComplete();
             }
 
-            void complete(const T &value) {
+            void complete(const boost::shared_ptr<T> &value) {
                 set_value(value);
             }
 
@@ -178,7 +175,7 @@ namespace hazelcast {
              * @throws InterruptedException if the current thread was interrupted
              * while waiting
              */
-            T get() {
+            boost::shared_ptr<T> get() {
                 LockGuard guard(mutex);
 
                 if (resultReady) {
@@ -203,6 +200,11 @@ namespace hazelcast {
                 return sharedObject;
             }
 
+            virtual boost::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
+                waitFor(unit.toMillis(timeout));
+                return get();
+            }
+
             /**
              *
              * @return true if result or exception is ready. git pufalse otherwise when timeout expires.
@@ -221,7 +223,7 @@ namespace hazelcast {
             }
 
             void
-            andThen(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, util::Executor &executor) {
+            andThen(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);
                 if (resultReady) {
                     executor.execute(boost::shared_ptr<Runnable>(
@@ -257,7 +259,7 @@ namespace hazelcast {
              * typically because it has already completed normally;
              * {@code true} otherwise
              */
-            bool cancel() {
+            bool cancel(bool mayInterruptIfRunning = false) {
                 LockGuard guard(mutex);
                 if (resultReady || exceptionReady) {
                     return false;
@@ -304,10 +306,10 @@ namespace hazelcast {
         protected:
             class CallbackInfo {
             public:
-                CallbackInfo(const boost::shared_ptr<client::impl::ExecutionCallback<T> > &callback, Executor *executor)
+                CallbackInfo(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, Executor *executor)
                         : callback(callback), executor(executor) {}
 
-                const boost::shared_ptr<client::impl::ExecutionCallback<T> > &getCallback() const {
+                const boost::shared_ptr<client::ExecutionCallback<T> > &getCallback() const {
                     return callback;
                 }
 
@@ -316,7 +318,7 @@ namespace hazelcast {
                 }
 
             private:
-                boost::shared_ptr<client::impl::ExecutionCallback<T> > callback;
+                boost::shared_ptr<client::ExecutionCallback<T> > callback;
                 Executor *executor;
             };
 
@@ -325,7 +327,7 @@ namespace hazelcast {
             bool cancelled;
             ConditionVariable conditionVariable;
             Mutex mutex;
-            T sharedObject;
+            boost::shared_ptr<T> sharedObject;
             boost::shared_ptr<client::exception::IException> exception;
             std::vector<CallbackInfo> callbacks;
             ILogger &logger;

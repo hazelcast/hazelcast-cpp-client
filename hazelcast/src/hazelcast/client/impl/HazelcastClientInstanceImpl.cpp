@@ -338,6 +338,18 @@ namespace hazelcast {
             void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
                 nearCacheManager.reset(new internal::nearcache::NearCacheManager(serializationService, *logger));
             }
+
+            boost::shared_ptr<IExecutorService>
+            HazelcastClientInstanceImpl::getExecutorService(const std::string &name) {
+/*
+                crdt::pncounter::impl::PNCounterProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
+
+                return boost::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
+*/
+                return boost::shared_ptr<IExecutorService>();
+            }
         }
     }
 }
