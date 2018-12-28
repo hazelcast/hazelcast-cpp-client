@@ -194,9 +194,9 @@ namespace hazelcast {
                 }
 
                 try {
-                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS);
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
                     return future_status::ready;
-                } catch (exception::TimeoutException &e) {
+                } catch (exception::TimeoutException &) {
                     return future_status::timeout;
                 }
             }
@@ -322,7 +322,7 @@ namespace hazelcast {
                 }
 
                 try {
-                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS);
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
                     return future_status::ready;
                 } catch (exception::TimeoutException &e) {
                     return future_status::timeout;

@@ -21,12 +21,41 @@
 namespace hazelcast {
     namespace util {
         namespace concurrent {
-            const NanoSeconds TimeUnit::NANOSECONDS;
-            const MicroSeconds TimeUnit::MICROSECONDS;
-            const MilliSeconds TimeUnit::MILLISECONDS;
-            const Seconds TimeUnit::SECONDS;
-            const Minutes TimeUnit::MINUTES;
-            const Days TimeUnit::DAYS;
+            const NanoSeconds TimeUnit::NANOS;
+            const MicroSeconds TimeUnit::MICROS;
+            const MilliSeconds TimeUnit::MILLIS;
+            const Seconds TimeUnit::SECS;
+            const Minutes TimeUnit::MINS;
+            const Hours TimeUnit::HRS;
+            const Days TimeUnit::DS;
+
+            const TimeUnit &TimeUnit::NANOSECONDS() {
+                return TimeUnit::NANOS;
+            }
+
+            const TimeUnit &TimeUnit::MICROSECONDS() {
+                return TimeUnit::MICROS;
+            }
+
+            const TimeUnit &TimeUnit::MILLISECONDS() {
+                return TimeUnit::MILLIS;
+            }
+
+            const TimeUnit &TimeUnit::SECONDS() {
+                return TimeUnit::SECS;
+            }
+
+            const TimeUnit &TimeUnit::MINUTES() {
+                return TimeUnit::MINS;
+            }
+
+            const TimeUnit &TimeUnit::HOURS() {
+                return TimeUnit::HRS;
+            }
+
+            const TimeUnit &TimeUnit::DAYS() {
+                return TimeUnit::DS;
+            }
 
             /**
              * Scale d by m, checking for overflow.

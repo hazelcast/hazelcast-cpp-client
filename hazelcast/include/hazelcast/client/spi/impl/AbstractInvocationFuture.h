@@ -147,6 +147,8 @@ namespace hazelcast {
                     }
 
                 protected:
+                    typedef ExecutionCallback<T> CALLBACKTYPE;
+                    
                     class BaseState {
                     public:
                         enum Type {
@@ -220,15 +222,15 @@ namespace hazelcast {
 
                     class ExecutionCallbackState : public BaseState {
                     public:
-                        ExecutionCallbackState(const boost::shared_ptr<ExecutionCallback<T> > &callback)
+                        ExecutionCallbackState(const boost::shared_ptr<CALLBACKTYPE> &callback)
                                 : BaseState(BaseState::ExecutionCallback), callback(callback) {}
 
-                        const boost::shared_ptr<ExecutionCallback<T> > &getCallback() const {
+                        const boost::shared_ptr<CALLBACKTYPE> &getCallback() const {
                             return callback;
                         }
 
                     private:
-                        const boost::shared_ptr<ExecutionCallback<T> > callback;
+                        const boost::shared_ptr<CALLBACKTYPE> callback;
                     };
 
                     class VoidState : public BaseState {
@@ -397,7 +399,7 @@ namespace hazelcast {
                     class CallbackRunner : public Runnable {
                     public:
                         CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
-                                       const boost::shared_ptr<ExecutionCallback<T> > &callback) : future(future),
+                                       const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
                                                                                                    callback(callback) {}
 
                         virtual const std::string getName() const {
@@ -426,10 +428,10 @@ namespace hazelcast {
 
                     private:
                         const boost::shared_ptr<AbstractInvocationFuture> future;
-                        const boost::shared_ptr<ExecutionCallback<T> > callback;
+                        const boost::shared_ptr<CALLBACKTYPE> callback;
                     };
 
-                    void unblock(const boost::shared_ptr<ExecutionCallback<T> > &callback,
+                    void unblock(const boost::shared_ptr<CALLBACKTYPE> &callback,
                                  const boost::shared_ptr<Executor> &executor) {
                         try {
                             executor->execute(boost::shared_ptr<Runnable>(

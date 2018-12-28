@@ -33,17 +33,11 @@ namespace hazelcast {
             class MilliSeconds;
             class Seconds;
             class Minutes;
+            class Hours;
             class Days;
 
             class HAZELCAST_API TimeUnit {
             public:
-                static const NanoSeconds NANOSECONDS;
-                static const MicroSeconds MICROSECONDS;
-                static const MilliSeconds MILLISECONDS;
-                static const Seconds SECONDS;
-                static const Minutes MINUTES;
-                static const Days DAYS;
-
                 // To maintain full signature compatibility with 1.5, and to improve the
                 // clarity of the generated javadoc (see 6287639: Abstract methods in
                 // enum classes should not be listed as abstract), method convert
@@ -56,7 +50,7 @@ namespace hazelcast {
                  * to seconds results in {@code 0}. Conversions from coarser to
                  * finer granularities with arguments that would numerically
                  * overflow saturate to {@code INT64_MIN} if negative or
-                 * {@code Long.MAX_VALUE} if positive.
+                 * {@code INT64_MAX} if positive.
                  *
                  * <p>For example, to convert 10 minutes to milliseconds, use:
                  * {@code TimeUnit::MILLISECONDS::convert(10L, TimeUnit::MINUTES)}
@@ -64,8 +58,8 @@ namespace hazelcast {
                  * @param sourceDuration the time duration in the given {@code sourceUnit}
                  * @param sourceUnit the unit of the {@code sourceDuration} argument
                  * @return the converted duration in this unit,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t convert(int64_t sourceDuration, const TimeUnit &sourceUnit) const = 0;
 
@@ -74,8 +68,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) NANOSECONDS.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toNanos(int64_t duration) const = 0;
 
@@ -84,8 +78,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) MICROSECONDS.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toMicros(int64_t duration) const = 0;
 
@@ -94,8 +88,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) MILLISECONDS.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toMillis(int64_t duration) const = 0;
 
@@ -104,8 +98,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) SECONDS.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toSeconds(int64_t duration) const = 0;
 
@@ -114,8 +108,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) MINUTES.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toMinutes(int64_t duration) const = 0;
 
@@ -124,8 +118,8 @@ namespace hazelcast {
                  * {@link #convert(int64_t, TimeUnit) HOURS.convert(duration, this)}.
                  * @param duration the duration
                  * @return the converted duration,
-                 * or {@code Long.MIN_VALUE} if conversion would negatively
-                 * overflow, or {@code Long.MAX_VALUE} if it would positively overflow.
+                 * or {@code INT64_MIN} if conversion would negatively
+                 * overflow, or {@code INT64_MAX} if it would positively overflow.
                  */
                 virtual int64_t toHours(int64_t duration) const = 0;
 
@@ -136,7 +130,15 @@ namespace hazelcast {
                  * @return the converted duration
                  */
                 virtual int64_t toDays(int64_t duration) const = 0;
-                
+
+                static const TimeUnit &NANOSECONDS();
+                static const TimeUnit &MICROSECONDS();
+                static const TimeUnit &MILLISECONDS();
+                static const TimeUnit &SECONDS();
+                static const TimeUnit &MINUTES();
+                static const TimeUnit &HOURS();
+                static const TimeUnit &DAYS();
+
             protected:
                 // Handy constants for conversion methods
                 static const int64_t C0 = 1L;
@@ -146,6 +148,14 @@ namespace hazelcast {
                 static const int64_t C4 = C3 * 60L;
                 static const int64_t C5 = C4 * 60L;
                 static const int64_t C6 = C5 * 24L;
+
+                static const NanoSeconds NANOS;
+                static const MicroSeconds MICROS;
+                static const MilliSeconds MILLIS;
+                static const Seconds SECS;
+                static const Minutes MINS;
+                static const Hours HRS;
+                static const Days DS;
 
                 static const int64_t MAX = INT64_MAX;
 
@@ -305,7 +315,6 @@ namespace hazelcast {
 
                 virtual int64_t toDays(int64_t duration) const;
             };
-
         }
     }
 }
