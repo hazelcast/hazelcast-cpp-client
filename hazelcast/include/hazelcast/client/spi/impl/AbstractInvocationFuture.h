@@ -46,6 +46,9 @@ namespace hazelcast {
                         : public InternalCompletableFuture<T>,
                           public boost::enable_shared_from_this<AbstractInvocationFuture<T> > {
                 public:
+                    virtual ~AbstractInvocationFuture() {
+                    }
+
                     virtual void andThen(const boost::shared_ptr<ExecutionCallback<T> > &callback) {
                         andThen(callback, defaultExecutor);
                     }

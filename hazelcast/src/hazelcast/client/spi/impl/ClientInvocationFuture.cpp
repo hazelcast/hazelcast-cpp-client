@@ -26,7 +26,7 @@ namespace hazelcast {
                                                                ILogger &logger,
                                                                const boost::shared_ptr<protocol::ClientMessage> &request,
                                                                const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence)
-                        : AbstractInvocationFuture(defaultExecutor, logger), request(request),
+                        : AbstractInvocationFuture<protocol::ClientMessage>(defaultExecutor, logger), request(request),
                           callIdSequence(callIdSequence) {}
 
                 std::string ClientInvocationFuture::invocationToString() const {
@@ -38,14 +38,14 @@ namespace hazelcast {
                 void ClientInvocationFuture::andThen(
                         const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback,
                         const boost::shared_ptr<Executor> &executor) {
-                    AbstractInvocationFuture::andThen(
+                    AbstractInvocationFuture<protocol::ClientMessage>::andThen(
                             boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> >(
                                     new InternalDelegatingExecutionCallback(callback, callIdSequence)), executor);
                 }
 
                 void ClientInvocationFuture::andThen(
                         const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback) {
-                    AbstractInvocationFuture::andThen(callback);
+                    AbstractInvocationFuture<protocol::ClientMessage>::andThen(callback);
                 }
 
                 void ClientInvocationFuture::onComplete() {
@@ -64,7 +64,7 @@ namespace hazelcast {
                             exception->raise();
                         }
 
-                        throw ExecutionException("AbstractInvocationFuture::resolveAndThrowIfException",
+                        throw ExecutionException("ClientInvocationFuture::resolveAndThrowIfException",
                                                  "ExecutionException occured.", exception);
                     }
                     boost::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::ValueState> valueState =
