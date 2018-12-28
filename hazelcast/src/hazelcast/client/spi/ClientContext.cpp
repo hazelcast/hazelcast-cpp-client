@@ -79,8 +79,8 @@ namespace hazelcast {
                 return hazelcastClient.cluster;
             }
 
-            impl::sequence::CallIdSequence &ClientContext::getCallIdSequence() const {
-                return *hazelcastClient.callIdSequence;
+            boost::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
+                return hazelcastClient.callIdSequence;
             }
 
             const protocol::ClientExceptionFactory &ClientContext::getClientExceptionFactory() const {

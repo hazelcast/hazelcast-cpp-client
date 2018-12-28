@@ -26,6 +26,10 @@ namespace hazelcast {
             void CancellationException::raise() const {
                 throw *this;
             }
+
+            int32_t CancellationException::getErrorCode() const {
+                return client::protocol::CANCELLATION;
+            }
         }
     }
 }

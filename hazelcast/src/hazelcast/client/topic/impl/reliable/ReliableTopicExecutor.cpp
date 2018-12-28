@@ -66,7 +66,7 @@ namespace hazelcast {
                                 boost::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
                                 boost::shared_ptr<protocol::ClientMessage> responseMsg;
                                 do {
-                                    if (future->waitFor(1000)) {
+                                    if (future->get(1000, TimeUnit::MILLISECONDS)) {
                                         responseMsg = future->get(); // every one second
                                     }
                                 } while (!shutdown && (protocol::ClientMessage *)NULL == responseMsg.get());

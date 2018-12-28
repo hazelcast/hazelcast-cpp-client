@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 01 June 2016.
-//
 
-#ifndef HAZELCAST_CLIENT_IMPL_EXECUTIONCALLBACK_H_
-#define HAZELCAST_CLIENT_IMPL_EXECUTIONCALLBACK_H_
+#ifndef HAZELCAST_CLIENT_EXECUTIONCALLBACK_H_
+#define HAZELCAST_CLIENT_EXECUTIONCALLBACK_H_
 
 #include <boost/shared_ptr.hpp>
 
@@ -34,32 +31,30 @@ namespace hazelcast {
         namespace exception {
             class IException;
         }
-        namespace impl {
+        /**
+         * ExecutionCallback allows to asynchronously get notified when the execution is completed,
+         * either successfully or with error.
+         *
+         * @param <V> value
+         */
+        template <typename V>
+        class ExecutionCallback {
+        public:
+            virtual ~ExecutionCallback() { }
+
             /**
-             * ExecutionCallback allows to asynchronously get notified when the execution is completed,
-             * either successfully or with error.
+             * Called when an execution is completed successfully.
              *
-             * @param <V> value
+             * @param response the result of the successful execution
              */
-            template <typename V>
-            class ExecutionCallback {
-            public:
-                virtual ~ExecutionCallback() { }
+            virtual void onResponse(const boost::shared_ptr<V> &response) = 0;
 
-                /**
-                 * Called when an execution is completed successfully.
-                 *
-                 * @param response the result of the successful execution
-                 */
-                virtual void onResponse(const V &response) = 0;
-
-                /**
-                 * Called when an execution is completed with an error.
-                 * @param e the exception that is thrown
-                 */
-                virtual void onFailure(const boost::shared_ptr<exception::IException> &e) = 0;
-            };
-        }
+            /**
+             * Called when an execution is completed with an error.
+             * @param e the exception that is thrown
+             */
+            virtual void onFailure(const boost::shared_ptr<exception::IException> &e) = 0;
+        };
     }
 }
 
@@ -67,5 +62,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_CLIENT_IMPL_EXECUTIONCALLBACK_H_
+#endif //HAZELCAST_CLIENT_EXECUTIONCALLBACK_H_
 

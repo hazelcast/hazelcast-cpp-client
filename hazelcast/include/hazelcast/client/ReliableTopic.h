@@ -126,7 +126,7 @@ namespace hazelcast {
 
             template<typename T>
             class MessageRunner
-                    : impl::ExecutionCallback<boost::shared_ptr<DataArray<topic::impl::reliable::ReliableTopicMessage> > > {
+                    : ExecutionCallback<DataArray<topic::impl::reliable::ReliableTopicMessage> > {
             public:
                 MessageRunner(int id, topic::ReliableMessageListener<T> *listener,
                               Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb,

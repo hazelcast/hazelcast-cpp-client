@@ -75,9 +75,9 @@ namespace hazelcast {
 
                         class ValueReflector : public Callable<int> {
                         public:
-                            ValueReflector(int returnValue) : returnValue(returnValue) {}
+                            ValueReflector(int returnValue) : returnValue(new int(returnValue)) {}
 
-                            virtual int call() {
+                            virtual boost::shared_ptr<int> call() {
                                 return returnValue;
                             }
 
@@ -86,7 +86,7 @@ namespace hazelcast {
                             }
 
                         protected:
-                            int returnValue;
+                            boost::shared_ptr<int> returnValue;
                         };
 
                         class LatchDecrementer : public Runnable {
@@ -191,7 +191,7 @@ namespace hazelcast {
                         }
 
                         for (int i = 0; i < numJobs; ++i) {
-                            ASSERT_EQ(i, futures[i]->get());
+                            ASSERT_EQ(i, *futures[i]->get());
                         }
                     }
 

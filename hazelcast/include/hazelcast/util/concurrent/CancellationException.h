@@ -36,6 +36,8 @@ namespace hazelcast {
                 CancellationException(const std::string &source, const std::string &message);
 
                 virtual void raise() const;
+
+                virtual int32_t getErrorCode() const;
             };
         }
     }

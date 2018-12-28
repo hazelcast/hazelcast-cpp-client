@@ -17,6 +17,8 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 
+#include <boost/enable_shared_from_this.hpp>
+
 #include "hazelcast/client/spi/ClientExecutionService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -38,7 +40,8 @@ namespace hazelcast {
 
         namespace spi {
             namespace impl {
-                class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService {
+            class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService,
+                    public boost::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
                     static const int SHUTDOWN_CHECK_INTERVAL_SECONDS;
 

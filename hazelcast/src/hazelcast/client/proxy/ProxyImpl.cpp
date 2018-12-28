@@ -18,8 +18,9 @@
 //
 
 #include <boost/foreach.hpp>
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
@@ -63,17 +64,6 @@ namespace hazelcast {
                 boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName());
                 return invocation->invoke()->get();
-            }
-
-            void ProxyImpl::destroy() {
-                onDestroy();
-
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
-                        getName(), getServiceName());
-
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName());
-                invocation->invoke()->get();
             }
 
             boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request,

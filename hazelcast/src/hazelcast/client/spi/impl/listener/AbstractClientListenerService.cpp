@@ -56,7 +56,7 @@ namespace hazelcast {
                         boost::shared_ptr<util::Callable<std::string> > task(
                                 new RegisterListenerTask("AbstractClientListenerService::registerListener",
                                                          shared_from_this(), listenerMessageCodec, handler));
-                        return registrationExecutor.submit<std::string>(task)->get();
+                        return *registrationExecutor.submit<std::string>(task)->get();
                     }
 
                     bool AbstractClientListenerService::deregisterListener(const std::string &registrationId) {
@@ -72,7 +72,7 @@ namespace hazelcast {
                                                     "AbstractClientListenerService::deregisterListener",
                                                     shared_from_this(), registrationId)));
 
-                            return future->get();
+                            return *future->get();
                         } catch (exception::RejectedExecutionException &) {
                             //RejectedExecutionException executor(hence the client) is already shutdown
                             //listeners are cleaned up by the server side. We can ignore the exception and return true safely
@@ -180,8 +180,8 @@ namespace hazelcast {
                             taskName), listenerService(listenerService), listenerMessageCodec(listenerMessageCodec),
                                                                                                         handler(handler) {}
 
-                    std::string AbstractClientListenerService::RegisterListenerTask::call() {
-                        return listenerService->registerListenerInternal(listenerMessageCodec, handler);
+                    boost::shared_ptr<std::string> AbstractClientListenerService::RegisterListenerTask::call() {
+                        return boost::shared_ptr<std::string>(new std::string(listenerService->registerListenerInternal(listenerMessageCodec, handler)));
                     }
 
                     const std::string AbstractClientListenerService::RegisterListenerTask::getName() const {
@@ -194,8 +194,8 @@ namespace hazelcast {
                             const std::string &registrationId) : taskName(taskName), listenerService(listenerService),
                                                                  registrationId(registrationId) {}
 
-                    bool AbstractClientListenerService::DeregisterListenerTask::call() {
-                        return listenerService->deregisterListenerInternal(registrationId);
+                    boost::shared_ptr<bool> AbstractClientListenerService::DeregisterListenerTask::call() {
+                        return boost::shared_ptr<bool>(new bool(listenerService->deregisterListenerInternal(registrationId)));
                     }
 
                     const std::string AbstractClientListenerService::DeregisterListenerTask::getName() const {
