@@ -58,6 +58,7 @@ namespace hazelcast {
                         boost::shared_ptr<ExceptionState> exceptionState = boost::static_pointer_cast<ExceptionState>(
                                 response);
                         boost::shared_ptr<IException> exception = exceptionState->getException();
+/*
                         int32_t errorCode = exception->getErrorCode();
                         if (errorCode == ExecutionException::ERROR_CODE || errorCode == protocol::CANCELLATION ||
                             errorCode == protocol::INTERRUPTED) {
@@ -66,6 +67,8 @@ namespace hazelcast {
 
                         throw ExecutionException("ClientInvocationFuture::resolveAndThrowIfException",
                                                  "ExecutionException occured.", exception);
+*/
+                        exception->raise();
                     }
                     boost::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::ValueState> valueState =
                             boost::static_pointer_cast<AbstractInvocationFuture<protocol::ClientMessage>::ValueState>(
