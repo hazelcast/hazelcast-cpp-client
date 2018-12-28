@@ -172,8 +172,11 @@ namespace hazelcast {
 
                 void ClientInvocation::notifyException(const boost::shared_ptr<exception::IException> &exception) {
                     if (!lifecycleService.isRunning()) {
-                        boost::shared_ptr<exception::IException>(new exception::HazelcastClientNotActiveException(
-                                exception->getSource(), "Client is shutting down", exception));
+                        boost::shared_ptr<exception::IException> notActiveException(
+                                new exception::HazelcastClientNotActiveException(exception->getSource(),
+                                                                                 "Client is shutting down", exception));
+
+                        clientInvocationFuture->complete(notActiveException);
                         return;
                     }
 
