@@ -182,6 +182,8 @@ namespace hazelcast {
             private:
                 Ringbuffer(const std::string &objectName, spi::ClientContext *context);
 
+                static void checkSequence(int64_t sequence);
+
                 /**
                  * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
                  * but there is 0 remaining capacity.

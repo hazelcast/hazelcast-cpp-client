@@ -148,7 +148,7 @@ namespace hazelcast {
 
                 protected:
                     typedef ExecutionCallback<T> CALLBACKTYPE;
-                    
+
                     class BaseState {
                     public:
                         enum Type {
@@ -161,6 +161,9 @@ namespace hazelcast {
                         };
 
                         BaseState(Type type) : type(type) {}
+
+                        virtual ~BaseState() {
+                        }
 
                         Type getType() const {
                             return type;
@@ -300,6 +303,16 @@ namespace hazelcast {
                     virtual void onComplete() {
                     }
 
+                    // this method should not be needed; but there is a difference between client and server how it handles async throwables
+                    static boost::shared_ptr<exception::IException>
+                    unwrap(const boost::shared_ptr<exception::IException> &throwable) {
+                        if (throwable->getErrorCode() == exception::ExecutionException::ERROR_CODE &&
+                            throwable->getCause().get() != NULL) {
+                            return throwable->getCause();
+                        }
+                        return throwable;
+                    }
+
                     const boost::shared_ptr<Executor> defaultExecutor;
                     util::ILogger &logger;
 
@@ -400,7 +413,7 @@ namespace hazelcast {
                     public:
                         CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
                                        const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
-                                                                                                   callback(callback) {}
+                                                                                          callback(callback) {}
 
                         virtual const std::string getName() const {
                             return "ExecutionCallback Runner for Future";
@@ -412,7 +425,10 @@ namespace hazelcast {
                                 if (value->getType() == BaseState::Exception) {
                                     boost::shared_ptr<ExceptionState> exceptionState = boost::static_pointer_cast<ExceptionState>(
                                             value);
-                                    callback->onFailure(exceptionState->getException());
+
+                                    boost::shared_ptr<exception::IException> error = AbstractInvocationFuture<T>::unwrap(
+                                            exceptionState->getException());
+                                    callback->onFailure(error);
                                 } else {
                                     boost::shared_ptr<ValueState> valueState = boost::static_pointer_cast<ValueState>(
                                             value);

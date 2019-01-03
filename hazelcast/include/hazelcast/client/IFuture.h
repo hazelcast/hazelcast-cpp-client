@@ -44,15 +44,14 @@ namespace hazelcast {
          * computation has completed, the computation cannot be cancelled.
          *
          *
-         * <p>Memory consistency effects: Actions taken by the asynchronous computation
-         * <a href="package-summary.html#MemoryVisibility"> <i>happen-before</i></a>
-         * actions following the corresponding {@code Future::get()} in another thread.
-         *
          * @param <V> The result type returned by this Future's {@code get} method
          */
         template<typename V>
         class IFuture {
         public:
+            virtual ~IFuture() {
+            }
+
             /**
              * Attempts to cancel execution of this task.  This attempt will
              * fail if the task has already completed, has already been cancelled,

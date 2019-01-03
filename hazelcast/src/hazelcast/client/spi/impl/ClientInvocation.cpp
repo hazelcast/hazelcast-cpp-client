@@ -372,10 +372,6 @@ namespace hazelcast {
                     return "ClientInvocation";
                 }
 
-                void ClientInvocation::onComplete() {
-                    callIdSequence->complete();
-                }
-
                 boost::shared_ptr<protocol::ClientMessage> ClientInvocation::copyMessage() {
                     return boost::shared_ptr<protocol::ClientMessage>(new protocol::ClientMessage(*clientMessage.get()));
                 }

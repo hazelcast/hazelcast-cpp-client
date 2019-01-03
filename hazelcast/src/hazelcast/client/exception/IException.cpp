@@ -23,8 +23,8 @@ namespace hazelcast {
         namespace exception {
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, const std::string &details,
-                                   int32_t errorNo, int32_t causeCode) : src(source), msg(message), details(details),
-                                                                         errorCode(errorNo), causeErrorCode(causeCode) {
+                                   int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), details(details),
+                                                                         errorCode(errorNo), causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << ". Details:" << details << " Error code:" << errorNo
                     << ", Cause error code:" << causeCode << "} at " + source;
@@ -33,8 +33,8 @@ namespace hazelcast {
 
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, int32_t errorNo,
-                                   int32_t causeCode) : src(source), msg(message), errorCode(errorNo),
-                                                        causeErrorCode(causeCode) {
+                                   int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), errorCode(errorNo),
+                                                        causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << ", Cause error code:"
                     << causeCode << "} at " + source;
@@ -42,8 +42,8 @@ namespace hazelcast {
             }
 
             IException::IException(const std::string &exceptionName, const std::string &source,
-                                   const std::string &message, int32_t errorNo) : src(
-                    source), msg(message), errorCode(errorNo) {
+                                   const std::string &message, int32_t errorNo, bool isRuntime, bool retryable) : src(
+                    source), msg(message), errorCode(errorNo), runtimeException(isRuntime), retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << "} at " + source;
                 report = out.str();
@@ -51,8 +51,8 @@ namespace hazelcast {
 
             IException::IException(const std::string &exceptionName, const std::string &source,
                                    const std::string &message, int32_t errorNo,
-                                   const boost::shared_ptr<IException> &cause) : src(source), msg(message),
-                                                                                 errorCode(errorNo), cause(cause) {
+                                   const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(source), msg(message),
+                                                                                 errorCode(errorNo), cause(cause), runtimeException(isRuntime), retryable(retryable) {
                 std::ostringstream out;
                 out << exceptionName << " {" << message << " Error code:" << errorNo << ", Caused by:" << *cause
                     << "} at " + source;
@@ -102,6 +102,14 @@ namespace hazelcast {
 
             int32_t IException::getCauseErrorCode() const {
                 return causeErrorCode;
+            }
+
+            bool IException::isRuntimeException() const {
+                return runtimeException;
+            }
+
+            bool IException::isRetryable() const {
+                return retryable;
             }
         }
     }

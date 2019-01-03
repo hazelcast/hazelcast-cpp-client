@@ -53,16 +53,16 @@ namespace hazelcast {
             class HAZELCAST_API IException : public std::exception {
             public:
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           const std::string &details, int32_t errorNo, int32_t causeCode);
+                           const std::string &details, int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
 
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, int32_t causeCode);
+                           int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
 
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo);
+                           int32_t errorNo, bool isRuntime, bool retryable = false);
 
                 IException(const std::string &exceptionName, const std::string &source, const std::string &message,
-                           int32_t errorNo, const boost::shared_ptr<IException> &cause);
+                           int32_t errorNo, const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable = false);
 
                 virtual ~IException() throw();
 
@@ -88,11 +88,15 @@ namespace hazelcast {
 
                 const std::string &getDetails() const;
 
-                virtual int32_t getErrorCode() const;
+                int32_t getErrorCode() const;
 
                 int32_t getCauseErrorCode() const;
 
                 const boost::shared_ptr<IException> &getCause() const;
+
+                bool isRuntimeException() const;
+
+                bool isRetryable() const;
 
                 friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
 
@@ -104,6 +108,8 @@ namespace hazelcast {
                 int32_t errorCode;
                 int32_t causeErrorCode;
                 boost::shared_ptr<IException> cause;
+                bool runtimeException;
+                bool retryable;
             };
 
             std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);

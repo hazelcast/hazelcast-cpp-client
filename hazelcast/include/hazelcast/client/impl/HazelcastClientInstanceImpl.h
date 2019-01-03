@@ -449,7 +449,7 @@ namespace hazelcast {
 
                 std::auto_ptr<spi::ClientInvocationService> initInvocationService();
 
-                std::auto_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 
                 std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
                         const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);

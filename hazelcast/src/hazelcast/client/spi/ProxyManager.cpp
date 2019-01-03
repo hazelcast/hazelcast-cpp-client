@@ -45,8 +45,7 @@ namespace hazelcast {
                 }
 
                 proxyFuture.reset(new util::Future<ClientProxy>(client.getLogger()));
-                boost::shared_ptr<util::Future<ClientProxy> > current = proxies.putIfAbsent(ns,
-                                                                                                                proxyFuture);
+                boost::shared_ptr<util::Future<ClientProxy> > current = proxies.putIfAbsent(ns, proxyFuture);
                 if (current.get()) {
                     return current->get();
                 }

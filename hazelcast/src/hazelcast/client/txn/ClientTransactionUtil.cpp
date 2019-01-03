@@ -20,6 +20,8 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
+            const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> ClientTransactionUtil::exceptionFactory(
+                    new TransactionExceptionFactory());
 
             boost::shared_ptr<protocol::ClientMessage>
             ClientTransactionUtil::invoke(std::auto_ptr<protocol::ClientMessage> &request,
@@ -32,9 +34,20 @@ namespace hazelcast {
                     boost::shared_ptr<spi::impl::ClientInvocationFuture> future = clientInvocation->invoke();
                     return future->get();
                 } catch (exception::IException &e) {
-                    throw exception::TransactionException("ClientTransactionUtil::invoke", "Transaction exception.",
-                                                          boost::shared_ptr<exception::IException>(e.clone()));
+                    util::ExceptionUtil::rethrow(e, TRANSACTION_EXCEPTION_FACTORY());
                 }
+                return boost::shared_ptr<protocol::ClientMessage>();
+            }
+
+            const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+            ClientTransactionUtil::TRANSACTION_EXCEPTION_FACTORY() {
+                return exceptionFactory;
+            }
+
+            void ClientTransactionUtil::TransactionExceptionFactory::rethrow(const client::exception::IException &throwable,
+                                                                       const std::string &message) {
+                throw TransactionException("TransactionExceptionFactory::create", message,
+                                     boost::shared_ptr<IException>(throwable.clone()));
             }
         }
     }

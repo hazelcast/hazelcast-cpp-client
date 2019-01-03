@@ -19,6 +19,7 @@
 #ifndef HAZELCAST_CLIENT_PROXY_RINGBUFFERIMPL_H_
 #define HAZELCAST_CLIENT_PROXY_RINGBUFFERIMPL_H_
 
+#include "hazelcast/util/ExceptionUtil.h"
 #include "hazelcast/client/protocol/codec/RingbufferReadManyCodec.h"
 #include "hazelcast/client/DataArray.h"
 #include "hazelcast/client/impl/DataArrayImpl.h"
@@ -91,16 +92,19 @@ namespace hazelcast {
                     serialization::pimpl::Data itemData = toData<E>(item);
                     std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferAddCodec::encodeRequest(
                             getName(), OVERWRITE, itemData);
-                    return invokeAndGetResult<int64_t, protocol::codec::RingbufferAddCodec::ResponseParameters>(msg, partitionId);
+                    return invokeAndGetResult<int64_t, protocol::codec::RingbufferAddCodec::ResponseParameters>(msg,
+                                                                                                                partitionId);
                 }
 
                 std::auto_ptr<E> readOne(int64_t sequence) {
-                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
+                    checkSequence(sequence);
+                    
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::RingbufferReadOneCodec::encodeRequest(
                             getName(), sequence);
 
                     std::auto_ptr<serialization::pimpl::Data> itemData = invokeAndGetResult<
                             std::auto_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
-                            msg, partitionId);
+                            request, partitionId);
 
                     return toObject<E>(itemData);
                 }
@@ -108,7 +112,7 @@ namespace hazelcast {
                 boost::shared_ptr<spi::impl::ClientInvocationFuture>
                 readManyAsync(int64_t sequence, int32_t maxCount, time_t timeoutSeconds) {
                     std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadManyCodec::encodeRequest(
-                            getName(), sequence, 1, maxCount, (const serialization::pimpl::Data *)NULL);
+                            getName(), sequence, 1, maxCount, (const serialization::pimpl::Data *) NULL);
 
                     return invokeAndGetFuture(msg, partitionId);
                 }
@@ -118,14 +122,14 @@ namespace hazelcast {
                     protocol::codec::RingbufferReadManyCodec::ResponseParameters responseParameters =
                             protocol::codec::RingbufferReadManyCodec::ResponseParameters::decode(*responseMsg);
                     return std::auto_ptr<DataArray<E> >(new impl::DataArrayImpl<E>(responseParameters.items,
-                                                                            getContext().getSerializationService()));
+                                                                                   getContext().getSerializationService()));
                 }
 
-                const std::string& getServiceName() const {
+                const std::string &getServiceName() const {
                     return ProxyImpl::getServiceName();
                 }
 
-                const std::string& getName() const {
+                const std::string &getName() const {
                     return ProxyImpl::getName();
                 }
 
@@ -133,6 +137,28 @@ namespace hazelcast {
                     ProxyImpl::destroy();
                 }
                 /***************** RingBuffer<E> interface implementation ends here ***********************************/
+            protected:
+                boost::shared_ptr<protocol::ClientMessage>
+                invoke(std::auto_ptr<protocol::ClientMessage> &clientMessage, int32_t partitionId) {
+                    try {
+                        return invokeOnPartition(clientMessage, partitionId);
+                    } catch (exception::ExecutionException &e) {
+                        boost::shared_ptr<exception::IException> cause = e.getCause();
+                        if (cause->getErrorCode() == exception::StaleSequenceException::ERROR_CODE) {
+                            // can not use static_
+                            boost::shared_ptr<exception::StaleSequenceException> se = boost::dynamic_pointer_cast<exception::StaleSequenceException>(
+                                    cause);
+                            int64_t l = headSequence();
+                            throw (exception::ExceptionBuilder<exception::StaleSequenceException>(se->getSource())
+                                    << se->getMessage() << ", head sequence:" << l).build();
+                        }
+                        util::ExceptionUtil::rethrow(e);
+                    } catch (const exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<protocol::ClientMessage>();
+                }
+
             private:
                 /**
                  * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
@@ -153,8 +179,23 @@ namespace hazelcast {
                      * second ago, then there are 29 seconds remaining for that item. Using this policy you are going to overwrite no matter
                      * what.
                      */
-                     OVERWRITE = 0
+                            OVERWRITE = 0
                 };
+
+                static void checkSequence(int64_t sequence) {
+                    if (sequence < 0) {
+                        throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                                "RingbufferImpl::checkSequence") << "sequence can't be smaller than 0, but was: "
+                                                                 << sequence).build();
+                    }
+                }
+
+                template<typename T, typename CODEC>
+                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> &request, int partitionId) {
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
+
+                    return (T)CODEC::decode(*response).response;
+                }
 
                 int32_t partitionId;
                 util::Atomic<int64_t> bufferCapacity;

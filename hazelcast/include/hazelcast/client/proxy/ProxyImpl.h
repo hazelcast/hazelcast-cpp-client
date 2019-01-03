@@ -48,12 +48,6 @@ namespace hazelcast {
 
         namespace proxy {
             class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
-            public:
-                template <typename T>
-                TypedData toTypedData(const T &key) {
-                    return TypedData(toHeapData<T>(key), getContext().getSerializationService());
-                }
-
             protected:
                 /**
                 * Constructor
@@ -95,9 +89,6 @@ namespace hazelcast {
                 * @param request ClientMessage ptr.
                 */
                 boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
-
-                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                              boost::shared_ptr<connection::Connection> conn);
 
                 boost::shared_ptr<protocol::ClientMessage> invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request,
                                                                   const Address &address);
@@ -197,14 +188,6 @@ namespace hazelcast {
                 }
 
                 template<typename T, typename CODEC>
-                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     boost::shared_ptr<connection::Connection> conn) {
-                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request, conn);
-
-                    return (T)CODEC::decode(*response).response;
-                }
-
-                template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
                     boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
 
@@ -213,32 +196,15 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     int partitionId, boost::shared_ptr<connection::Connection> conn) {
-                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request, conn);
-
-                    return (T)CODEC::decode(*response).response;
-                }
-
-
-                template<typename T, typename CODEC>
-                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      const serialization::pimpl::Data &key) {
                     int partitionId = getPartitionId(key);
-                    
+
                     boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
 
                     return (T)CODEC::decode(*response).response;
                 }
 
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
-
-            private:
-
-                template <typename T>
-                std::auto_ptr<serialization::pimpl::Data> toHeapData(const T *key) {
-                    serialization::pimpl::Data data = getContext().getSerializationService().toData<T>(&key);
-                    return std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
-                }
             };
         }
     }

@@ -121,8 +121,6 @@ namespace hazelcast {
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
-                    virtual void onComplete();
-
                     static bool isRetrySafeException(exception::IException &exception);
 
                 private:

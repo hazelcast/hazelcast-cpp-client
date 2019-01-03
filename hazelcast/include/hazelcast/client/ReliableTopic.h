@@ -199,7 +199,14 @@ namespace hazelcast {
                     }
 
                     int32_t err = throwable->getErrorCode();
-                    if (protocol::EXECUTION == err &&
+                    if (protocol::TIMEOUT == err) {
+                        if (logger.isFinestEnabled()) {
+                            logger.finest() << "MessageListener " << listener << " on topic: " << name << " timed out. "
+                                          << "Continuing from last known sequence: " << sequence;
+                        }
+                        next();
+                        return;
+                    } else if (protocol::EXECUTION == err &&
                         protocol::STALE_SEQUENCE == throwable->getCauseErrorCode()) {
                         // StaleSequenceException.getHeadSeq() is not available on the client-side, see #7317
                         int64_t remoteHeadSeq = ringbuffer->headSequence();

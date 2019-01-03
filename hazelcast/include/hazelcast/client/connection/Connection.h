@@ -29,6 +29,7 @@
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Closeable.h"
+#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -121,6 +122,10 @@ namespace hazelcast {
                 friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
 
             private:
+                void logClose();
+
+                void innerClose();
+
                 int64_t startTimeInMillis;
                 util::Atomic<int64_t> closedTimeMillis;
                 spi::ClientContext& clientContext;
@@ -139,9 +144,7 @@ namespace hazelcast {
 
                 boost::shared_ptr<Address> remoteEndpoint;
 
-                void logClose();
-
-                void innerClose();
+                util::ILogger &logger;
             };
         }
     }

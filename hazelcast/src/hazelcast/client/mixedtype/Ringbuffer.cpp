@@ -76,6 +76,8 @@ namespace hazelcast {
             }
 
             TypedData Ringbuffer::readOne(int64_t sequence) {
+                checkSequence(sequence);
+
                 std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
                         getName(), sequence);
 
@@ -84,6 +86,14 @@ namespace hazelcast {
                         msg, partitionId);
 
                 return TypedData(itemData, getContext().getSerializationService());
+            }
+
+            void Ringbuffer::checkSequence(int64_t sequence) {
+                if (sequence < 0) {
+                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
+                            "RingbufferImpl::checkSequence") << "sequence can't be smaller than 0, but was: "
+                                                             << sequence).build();
+                }
             }
         }
     }
