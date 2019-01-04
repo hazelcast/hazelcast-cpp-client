@@ -80,11 +80,6 @@ namespace hazelcast {
                             boost::shared_ptr<client::crdt::pncounter::PNCounter> counter2;
                         };
 
-                        void assertCounterValueEventually(int64_t expectedValue,
-                                                          const boost::shared_ptr<client::crdt::pncounter::PNCounter> &counter) {
-                            ASSERT_EQ_EVENTUALLY(expectedValue, counter->get());
-                        }
-
                         static HazelcastServer *instance;
                         static ClientConfig *clientConfig;
                         static HazelcastClient *client;
@@ -101,8 +96,8 @@ namespace hazelcast {
 
                         assertEquals(5, counter1->addAndGet(5));
 
-                        assertCounterValueEventually(5, counter1);
-                        assertCounterValueEventually(5, counter2);
+                        ASSERT_EQ_EVENTUALLY(5, counter1->get());
+                        ASSERT_EQ_EVENTUALLY(5, counter2->get());
                     }
 
                     TEST_F(PnCounterFunctionalityTest, testParallelism) {
@@ -116,16 +111,19 @@ namespace hazelcast {
 
                         std::vector<boost::shared_ptr<util::Thread> > futures;
                         for (int i = 0; i < parallelism; i++) {
-                            futures.push_back(boost::shared_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
-                                    new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)), getLogger())));
+                            boost::shared_ptr<Thread> thread = boost::shared_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
+                                                                new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)), getLogger()));
+                            thread->start();
+                            futures.push_back(thread);
                         }
 
                         BOOST_FOREACH(const boost::shared_ptr<util::Thread> &future , futures) {
                             future->join();
                         }
 
-                        assertCounterValueEventually(finalValue.get(), counter1);
-                        assertCounterValueEventually(finalValue.get(), counter2);
+                        int64_t finalExpectedValue = 3 * (int64_t) loopsPerThread * parallelism;
+                        ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter1->get());
+                        ASSERT_EQ_EVENTUALLY(finalExpectedValue, counter2->get());
                     }
 
                 }
