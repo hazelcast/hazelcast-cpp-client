@@ -232,15 +232,9 @@ namespace hazelcast {
 
                 bool ClientInvocation::isRetrySafeException(exception::IException &exception) {
                     int32_t errorCode = exception.getErrorCode();
-                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE) {
+                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE ||
+                        exception.isRetryable()) {
                         return true;
-                    }
-                    try {
-                        exception.raise();
-                    } catch (exception::RetryableHazelcastException &) {
-                        return true;
-                    } catch (exception::IException &) {
-                        return false;
                     }
 
                     return false;
