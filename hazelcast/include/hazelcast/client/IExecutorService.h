@@ -157,7 +157,7 @@ namespace hazelcast {
          * @param memberSelector memberSelector
          * @param <T>            the result type of callable
          * @return map of Member-Future pairs representing pending completion of the task on each member
-         * @throws java.util.concurrent.RejectedExecutionException if no member is selected
+         * @throws RejectedExecutionException if no member is selected
          */
         template <typename HazelcastSerializable, typename T>
         std::map<Member, boost::shared_ptr<Future<T> > > submitToMembers(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector);
@@ -184,10 +184,6 @@ namespace hazelcast {
          * for a task, you can use constructions of the form
          * {@code result = exec.submit(aCallable).get();}
          *
-         * <p>Note: The {@link Executors} class includes a set of methods
-         * that can convert some other common closure-like objects,
-         * for example, {@link java.security.PrivilegedAction} to
-         * {@link Callable} form so they can be submitted.
          *
          * @param task the task to submit
          * @param <T> the type of the task's result
@@ -229,7 +225,7 @@ namespace hazelcast {
          * @param memberSelector memberSelector
          * @param callback       callback
          * @param <T>            the response type of callback
-         * @throws java.util.concurrent.RejectedExecutionException if no member is selected
+         * @throws RejectedExecutionException if no member is selected
          */
         template <typename HazelcastSerializable, typename T>
         void submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector, const boost::shared_ptr<ExecutionCallback<T> > &callback);
@@ -261,7 +257,7 @@ namespace hazelcast {
         /**
          * Submits a task to the specified members. Caller will be notified for the result of the each task by
          * {@link MultiExecutionCallback#onResponse(Member, Object)}, and when all tasks are completed,
-         * {@link MultiExecutionCallback#onComplete(java.util.Map)} will be called.
+         * {@link MultiExecutionCallback#onComplete(std::vector)} will be called.
          *
          * @param task     the task submitted to the specified members
          * @param members  the specified members
@@ -303,13 +299,6 @@ namespace hazelcast {
          * complete execution.  Use {@link #awaitTermination awaitTermination}
          * to do that.
          *
-         * @throws SecurityException if a security manager exists and
-         *         shutting down this ExecutorService may manipulate
-         *         threads that the caller is not permitted to modify
-         *         because it does not hold {@link
-         *         java.lang.RuntimePermission}{@code ("modifyThread")},
-         *         or the security manager's {@code checkAccess} method
-         *         denies access.
          */
         void shutdown();
 

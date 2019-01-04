@@ -167,7 +167,6 @@ namespace hazelcast {
                  * Overflowing happens when a time-to-live is set and the oldest item in the ringbuffer (the head) is not old enough to expire.
                  *
                  * @see Ringbuffer#addAsync(Object, OverflowPolicy)
-                 * @see Ringbuffer#addAllAsync(java.util.Collection, OverflowPolicy)
                  */
                 enum OverflowPolicy {
 

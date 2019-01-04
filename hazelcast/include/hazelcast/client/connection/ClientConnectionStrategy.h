@@ -74,7 +74,7 @@ namespace hazelcast {
                  * this method will be called.
                  *
                  * This request can be rejected by throwing an instance of non retryable exceptions;
-                 * {@link java.io.IOException}, {@link HazelcastInstanceNotActiveException} or
+                 * {@link IOException}, {@link HazelcastInstanceNotActiveException} or
                  * {@link RetryableException}
                  * @param target address of the requested connection
                  */

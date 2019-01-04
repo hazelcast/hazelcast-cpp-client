@@ -174,7 +174,8 @@ namespace hazelcast {
                  *                                            is thrown. It is up to the caller to deal with this particular situation, e.g.
                  *                                            throw an Exception or restart from the last known head. That is why the
                  *                                            StaleSequenceException contains the last known head.
-                 * @throws java.lang.IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
+                 * @throws IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
+                 * @throws IllegalArgumentException if sequence is smaller than 0 or larger than {@link #tailSequence()}+1.
                  * @throws InterruptedException               if the call is interrupted while blocking.
                  */
                 TypedData readOne(int64_t sequence);
@@ -190,8 +191,6 @@ namespace hazelcast {
                  *
                  * Overflowing happens when a time-to-live is set and the oldest item in the ringbuffer (the head) is not old enough to expire.
                  *
-                 * @see Ringbuffer#addAsync(Object, OverflowPolicy)
-                 * @see Ringbuffer#addAllAsync(java.util.Collection, OverflowPolicy)
                  */
                 enum OverflowPolicy {
 

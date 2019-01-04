@@ -85,7 +85,7 @@ namespace hazelcast {
              * @param value        the  value tested to see if it is not negative.
              * @param errorMessage the errorMessage
              * @return the value
-             * @throws java.lang.IllegalArgumentException if the value is negative.
+             * @throws IllegalArgumentException if the value is negative.
              */
             template <typename T>
             static const T &checkNotNegative(const T &value, const std::string &errorMessage) {
