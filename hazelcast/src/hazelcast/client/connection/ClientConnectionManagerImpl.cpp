@@ -18,7 +18,7 @@
 
 #include <boost/foreach.hpp>
 
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
 #include "hazelcast/client/connection/AddressProvider.h"
@@ -300,7 +300,7 @@ namespace hazelcast {
                         boost::shared_ptr<util::Runnable>(new TimeoutAuthenticationTask(invocationFuture, *this)),
                         connectionTimeoutMillis);
                 invocationFuture->andThen(
-                        boost::shared_ptr<impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
+                        boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> >(
                                 new AuthCallback(connection, asOwner, target, future, *this)));
             }
 
@@ -775,10 +775,10 @@ namespace hazelcast {
                     : connectionManager(connectionManager) {
             }
 
-            bool ClientConnectionManagerImpl::ConnectToClusterTask::call() {
+            boost::shared_ptr<bool> ClientConnectionManagerImpl::ConnectToClusterTask::call() {
                 try {
                     connectionManager.connectToClusterInternal();
-                    return true;
+                    return boost::shared_ptr<bool>(new bool(true));
                 } catch (exception::IException &e) {
                     connectionManager.logger.warning() << "Could not connect to cluster, shutting down the client. "
                                                        << e.getMessage();
@@ -837,7 +837,7 @@ namespace hazelcast {
                 future->complete((exception::ExceptionBuilder<exception::TimeoutException>(
                         "TimeoutAuthenticationTask::TimeoutAuthenticationTask")
                         << "Authentication response did not come back in "
-                        << clientConnectionManager.connectionTimeoutMillis << " millis").build());
+                        << clientConnectionManager.connectionTimeoutMillis << " millis").buildShared());
             }
 
             const std::string ClientConnectionManagerImpl::TimeoutAuthenticationTask::getName() const {

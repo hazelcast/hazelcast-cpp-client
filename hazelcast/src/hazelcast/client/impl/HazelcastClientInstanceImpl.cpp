@@ -252,10 +252,10 @@ namespace hazelcast {
                 }
             }
 
-            std::auto_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
-                return std::auto_ptr<spi::impl::ClientExecutionServiceImpl>(
+            boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
+                return boost::shared_ptr<spi::impl::ClientExecutionServiceImpl>(
                         new spi::impl::ClientExecutionServiceImpl(instanceName, clientProperties,
-                                                                  clientConfig.getExecutorPoolSize(), *logger));
+                                clientConfig.getExecutorPoolSize(), *logger));
             }
 
             std::auto_ptr<connection::ClientConnectionManagerImpl>

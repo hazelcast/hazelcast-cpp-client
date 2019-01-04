@@ -110,10 +110,10 @@ namespace hazelcast {
                     invoke(request);
 
                     state = TxnState::COMMITTED;
-                } catch (exception::IException &) {
+                } catch (exception::IException &e) {
                     state = TxnState::COMMIT_FAILED;
                     TRANSACTION_EXISTS = false;
-                    throw;
+                    util::ExceptionUtil::rethrow(e);
                 }
             }
 

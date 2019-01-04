@@ -32,113 +32,107 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-#define DEFINE_EXCEPTION_CLASS(ClassName, errorNo) \
+#define DEFINE_EXCEPTION_CLASS(ClassName, errorNo, runtime) \
             class HAZELCAST_API ClassName : public virtual IException {\
             public:\
                 static const int32_t ERROR_CODE = errorNo;\
                 ClassName(const std::string& source, const std::string& message, const std::string& details, \
                         int32_t causeCode) \
-                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode) {\
+                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode, runtime) {\
                 }\
                 ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
-                    : IException(#ClassName, source, message, ERROR_CODE, causeCode) {\
+                    : IException(#ClassName, source, message, ERROR_CODE, causeCode, runtime) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
-                    : IException(#ClassName, source, message, ERROR_CODE) {\
+                    : IException(#ClassName, source, message, ERROR_CODE, runtime) {\
                 }\
-                ClassName(const std::string& source) : IException(#ClassName, source, "", ERROR_CODE) {\
+                ClassName(const std::string& source) : IException(#ClassName, source, "", ERROR_CODE, runtime) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
                             const boost::shared_ptr<IException> &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, cause) {}\
+                            : IException(#ClassName, source, message, ERROR_CODE, cause, runtime) {}\
                 ClassName(const std::string &source, const std::string &message, const IException &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone())) {}\
+                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause.clone()), runtime) {}\
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \
                 virtual void raise() const { throw *this; } \
             };\
 
-            DEFINE_EXCEPTION_CLASS(ArrayIndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS);
-            DEFINE_EXCEPTION_CLASS(ArrayStoreException, protocol::ARRAY_STORE);
-            DEFINE_EXCEPTION_CLASS(AuthenticationException, protocol::AUTHENTICATIONERROR);
-            DEFINE_EXCEPTION_CLASS(CacheNotExistsException, protocol::CACHE_NOT_EXISTS);
-            DEFINE_EXCEPTION_CLASS(CancellationException, protocol::CANCELLATION);
-            DEFINE_EXCEPTION_CLASS(ClassCastException, protocol::CLASS_CAST);
-            DEFINE_EXCEPTION_CLASS(ClassNotFoundException, protocol::CLASS_NOT_FOUND);
-            DEFINE_EXCEPTION_CLASS(ConcurrentModificationException, protocol::CONCURRENT_MODIFICATION);
-            DEFINE_EXCEPTION_CLASS(ConfigMismatchException, protocol::CONFIG_MISMATCH);
-            DEFINE_EXCEPTION_CLASS(ConfigurationException, protocol::CONFIGURATION);
-            DEFINE_EXCEPTION_CLASS(DistributedObjectDestroyedException, protocol::DISTRIBUTED_OBJECT_DESTROYED);
-            DEFINE_EXCEPTION_CLASS(DuplicateInstanceNameException, protocol::DUPLICATE_INSTANCE_NAME);
-            DEFINE_EXCEPTION_CLASS(EOFException, protocol::ENDOFFILE);
-            DEFINE_EXCEPTION_CLASS(ExecutionException, protocol::EXECUTION);
-            DEFINE_EXCEPTION_CLASS(HazelcastException, protocol::HAZELCAST);
-            DEFINE_EXCEPTION_CLASS(HazelcastInstanceNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE);
-            DEFINE_EXCEPTION_CLASS(HazelcastOverloadException, protocol::HAZELCAST_OVERLOAD);
-            DEFINE_EXCEPTION_CLASS(HazelcastSerializationException, protocol::HAZELCAST_SERIALIZATION);
-            DEFINE_EXCEPTION_CLASS(IOException, protocol::IO);
-            DEFINE_EXCEPTION_CLASS(IllegalArgumentException, protocol::ILLEGAL_ARGUMENT);
-            DEFINE_EXCEPTION_CLASS(IllegalAccessException, protocol::ILLEGAL_ACCESS_EXCEPTION);
-            DEFINE_EXCEPTION_CLASS(IllegalAccessError, protocol::ILLEGAL_ACCESS_ERROR);
-            DEFINE_EXCEPTION_CLASS(IllegalMonitorStateException, protocol::ILLEGAL_MONITOR_STATE);
-            DEFINE_EXCEPTION_CLASS(IllegalStateException, protocol::ILLEGAL_STATE);
-            DEFINE_EXCEPTION_CLASS(IllegalThreadStateException, protocol::ILLEGAL_THREAD_STATE);
-            DEFINE_EXCEPTION_CLASS(IndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS);
-            DEFINE_EXCEPTION_CLASS(InterruptedException, protocol::INTERRUPTED);
-            DEFINE_EXCEPTION_CLASS(InvalidAddressException, protocol::INVALID_ADDRESS);
-            DEFINE_EXCEPTION_CLASS(InvalidConfigurationException, protocol::INVALID_CONFIGURATION);
-            DEFINE_EXCEPTION_CLASS(NegativeArraySizeException, protocol::NEGATIVE_ARRAY_SIZE);
-            DEFINE_EXCEPTION_CLASS(NoSuchElementException, protocol::NO_SUCH_ELEMENT);
-            DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE);
-            DEFINE_EXCEPTION_CLASS(NullPointerException, protocol::NULL_POINTER);
-            DEFINE_EXCEPTION_CLASS(OperationTimeoutException, protocol::OPERATION_TIMEOUT);
-            DEFINE_EXCEPTION_CLASS(QueryException, protocol::QUERY);
-            DEFINE_EXCEPTION_CLASS(QueryResultSizeExceededException, protocol::QUERY_RESULT_SIZE_EXCEEDED);
-            DEFINE_EXCEPTION_CLASS(QuorumException, protocol::QUORUM);
-            DEFINE_EXCEPTION_CLASS(ReachedMaxSizeException, protocol::REACHED_MAX_SIZE);
-            DEFINE_EXCEPTION_CLASS(RejectedExecutionException, protocol::REJECTED_EXECUTION);
-            DEFINE_EXCEPTION_CLASS(RemoteMapReduceException, protocol::REMOTE_MAP_REDUCE);
-            DEFINE_EXCEPTION_CLASS(ResponseAlreadySentException, protocol::RESPONSE_ALREADY_SENT);
-            DEFINE_EXCEPTION_CLASS(RuntimeException, protocol::RUNTIME);
-            DEFINE_EXCEPTION_CLASS(SecurityException, protocol::SECURITY);
-            DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCKET);
+            // ---------  Non-RuntimeException starts here -------------------------------------------/
+            DEFINE_EXCEPTION_CLASS(ExecutionException, protocol::EXECUTION, false);
+            DEFINE_EXCEPTION_CLASS(ClassNotFoundException, protocol::CLASS_NOT_FOUND, false);
+            DEFINE_EXCEPTION_CLASS(EOFException, protocol::ENDOFFILE, false);
+            DEFINE_EXCEPTION_CLASS(IOException, protocol::IO, false);
+            DEFINE_EXCEPTION_CLASS(IllegalAccessException, protocol::ILLEGAL_ACCESS_EXCEPTION, false);
+            DEFINE_EXCEPTION_CLASS(IllegalAccessError, protocol::ILLEGAL_ACCESS_ERROR, false);
+            DEFINE_EXCEPTION_CLASS(InterruptedException, protocol::INTERRUPTED, false);
+            DEFINE_EXCEPTION_CLASS(NotSerializableException, protocol::NOT_SERIALIZABLE, false);
+            DEFINE_EXCEPTION_CLASS(SocketException, protocol::SOCKET, false);
+            DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT, false);
+            DEFINE_EXCEPTION_CLASS(URISyntaxException, protocol::URI_SYNTAX, false);
+            DEFINE_EXCEPTION_CLASS(UTFDataFormatException, protocol::UTF_DATA_FORMAT, false);
+            DEFINE_EXCEPTION_CLASS(XAException, protocol::XA, false);
+            DEFINE_EXCEPTION_CLASS(LoginException, protocol::LOGIN, false);
+            DEFINE_EXCEPTION_CLASS(UnsupportedCallbackException, protocol::UNSUPPORTED_CALLBACK, false);
+            DEFINE_EXCEPTION_CLASS(AssertionError, protocol::ASSERTION_ERROR, false);
+            DEFINE_EXCEPTION_CLASS(OutOfMemoryError, protocol::OUT_OF_MEMORY_ERROR, false);
+            DEFINE_EXCEPTION_CLASS(StackOverflowError, protocol::STACK_OVERFLOW_ERROR, false);
+            DEFINE_EXCEPTION_CLASS(NativeOutOfMemoryError, protocol::NATIVE_OUT_OF_MEMORY_ERROR, false);
+            // ---------  Non-RuntimeException ends here -------------------------------------------/
+
+            // ---------  RuntimeException starts here -------------------------------------------/
+            DEFINE_EXCEPTION_CLASS(ArrayIndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS, true);
+            DEFINE_EXCEPTION_CLASS(ArrayStoreException, protocol::ARRAY_STORE, true);
+            DEFINE_EXCEPTION_CLASS(AuthenticationException, protocol::AUTHENTICATIONERROR, true);
+            DEFINE_EXCEPTION_CLASS(CacheNotExistsException, protocol::CACHE_NOT_EXISTS, true);
+            DEFINE_EXCEPTION_CLASS(CancellationException, protocol::CANCELLATION, true);
+            DEFINE_EXCEPTION_CLASS(ClassCastException, protocol::CLASS_CAST, true);
+            DEFINE_EXCEPTION_CLASS(ConcurrentModificationException, protocol::CONCURRENT_MODIFICATION, true);
+            DEFINE_EXCEPTION_CLASS(ConfigMismatchException, protocol::CONFIG_MISMATCH, true);
+            DEFINE_EXCEPTION_CLASS(ConfigurationException, protocol::CONFIGURATION, true);
+            DEFINE_EXCEPTION_CLASS(DistributedObjectDestroyedException, protocol::DISTRIBUTED_OBJECT_DESTROYED, true);
+            DEFINE_EXCEPTION_CLASS(DuplicateInstanceNameException, protocol::DUPLICATE_INSTANCE_NAME, true);
+            DEFINE_EXCEPTION_CLASS(HazelcastException, protocol::HAZELCAST, true);
+            DEFINE_EXCEPTION_CLASS(HazelcastInstanceNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
+            DEFINE_EXCEPTION_CLASS(HazelcastOverloadException, protocol::HAZELCAST_OVERLOAD, true);
+            DEFINE_EXCEPTION_CLASS(HazelcastSerializationException, protocol::HAZELCAST_SERIALIZATION, true);
+            DEFINE_EXCEPTION_CLASS(IllegalArgumentException, protocol::ILLEGAL_ARGUMENT, true);
+            DEFINE_EXCEPTION_CLASS(IllegalMonitorStateException, protocol::ILLEGAL_MONITOR_STATE, true);
+            DEFINE_EXCEPTION_CLASS(IllegalStateException, protocol::ILLEGAL_STATE, true);
+            DEFINE_EXCEPTION_CLASS(IllegalThreadStateException, protocol::ILLEGAL_THREAD_STATE, true);
+            DEFINE_EXCEPTION_CLASS(IndexOutOfBoundsException, protocol::INDEX_OUT_OF_BOUNDS, true);
+            DEFINE_EXCEPTION_CLASS(InvalidAddressException, protocol::INVALID_ADDRESS, true);
+            DEFINE_EXCEPTION_CLASS(InvalidConfigurationException, protocol::INVALID_CONFIGURATION, true);
+            DEFINE_EXCEPTION_CLASS(NegativeArraySizeException, protocol::NEGATIVE_ARRAY_SIZE, true);
+            DEFINE_EXCEPTION_CLASS(NoSuchElementException, protocol::NO_SUCH_ELEMENT, true);
+            DEFINE_EXCEPTION_CLASS(NullPointerException, protocol::NULL_POINTER, true);
+            DEFINE_EXCEPTION_CLASS(OperationTimeoutException, protocol::OPERATION_TIMEOUT, true);
+            DEFINE_EXCEPTION_CLASS(QueryException, protocol::QUERY, true);
+            DEFINE_EXCEPTION_CLASS(QueryResultSizeExceededException, protocol::QUERY_RESULT_SIZE_EXCEEDED, true);
+            DEFINE_EXCEPTION_CLASS(QuorumException, protocol::QUORUM, true);
+            DEFINE_EXCEPTION_CLASS(ReachedMaxSizeException, protocol::REACHED_MAX_SIZE, true);
+            DEFINE_EXCEPTION_CLASS(RejectedExecutionException, protocol::REJECTED_EXECUTION, true);
+            DEFINE_EXCEPTION_CLASS(RemoteMapReduceException, protocol::REMOTE_MAP_REDUCE, true);
+            DEFINE_EXCEPTION_CLASS(ResponseAlreadySentException, protocol::RESPONSE_ALREADY_SENT, true);
+            DEFINE_EXCEPTION_CLASS(RuntimeException, protocol::RUNTIME, true);
+            DEFINE_EXCEPTION_CLASS(SecurityException, protocol::SECURITY, true);
             /**
             * Raised at Ringbuffer::readOne if the provided sequence is smaller then Ringbuffer::headSequence() is passed.
             */
-            DEFINE_EXCEPTION_CLASS(StaleSequenceException, protocol::STALE_SEQUENCE);
-            DEFINE_EXCEPTION_CLASS(TargetDisconnectedException, protocol::TARGET_DISCONNECTED);
-            DEFINE_EXCEPTION_CLASS(TimeoutException, protocol::TIMEOUT);
-            DEFINE_EXCEPTION_CLASS(TopicOverloadException, protocol::TOPIC_OVERLOAD);
-            DEFINE_EXCEPTION_CLASS(TransactionException, protocol::TRANSACTION);
-            DEFINE_EXCEPTION_CLASS(TransactionNotActiveException, protocol::TRANSACTION_NOT_ACTIVE);
-            DEFINE_EXCEPTION_CLASS(TransactionTimedOutException, protocol::TRANSACTION_TIMED_OUT);
-            DEFINE_EXCEPTION_CLASS(URISyntaxException, protocol::URI_SYNTAX);
-            DEFINE_EXCEPTION_CLASS(UTFDataFormatException, protocol::UTF_DATA_FORMAT);
-            DEFINE_EXCEPTION_CLASS(UnsupportedOperationException, protocol::UNSUPPORTED_OPERATION);
-            DEFINE_EXCEPTION_CLASS(XAException, protocol::XA);
-            DEFINE_EXCEPTION_CLASS(AccessControlException, protocol::ACCESS_CONTROL);
-            DEFINE_EXCEPTION_CLASS(LoginException, protocol::LOGIN);
-            DEFINE_EXCEPTION_CLASS(UnsupportedCallbackException, protocol::UNSUPPORTED_CALLBACK);
-            DEFINE_EXCEPTION_CLASS(NoDataMemberInClusterException, protocol::NO_DATA_MEMBER);
-            DEFINE_EXCEPTION_CLASS(ReplicatedMapCantBeCreatedOnLiteMemberException, protocol::REPLICATED_MAP_CANT_BE_CREATED);
-            DEFINE_EXCEPTION_CLASS(MaxMessageSizeExceeded, protocol::MAX_MESSAGE_SIZE_EXCEEDED);
-            DEFINE_EXCEPTION_CLASS(WANReplicationQueueFullException, protocol::WAN_REPLICATION_QUEUE_FULL);
-            DEFINE_EXCEPTION_CLASS(AssertionError, protocol::ASSERTION_ERROR);
-            DEFINE_EXCEPTION_CLASS(OutOfMemoryError, protocol::OUT_OF_MEMORY_ERROR);
-            DEFINE_EXCEPTION_CLASS(StackOverflowError, protocol::STACK_OVERFLOW_ERROR);
-            DEFINE_EXCEPTION_CLASS(NativeOutOfMemoryError, protocol::NATIVE_OUT_OF_MEMORY_ERROR);
-            DEFINE_EXCEPTION_CLASS(ServiceNotFoundException, protocol::SERVICE_NOT_FOUND);
-
-            // -----------------    ONLY Client side exceptions below -------------------------------------------
-            DEFINE_EXCEPTION_CLASS(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE);
-            /**
-             * Thrown when Hazelcast client is offline during an invocation.
-             */
-            DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE);
-            DEFINE_EXCEPTION_CLASS(UnknownHostException, protocol::UNKNOWN_HOST);
-            DEFINE_EXCEPTION_CLASS(FutureUninitialized, protocol::FUTURE_UNINITIALIZED);
-            DEFINE_EXCEPTION_CLASS(ConsistencyLostException, protocol::CONSISTENCY_LOST);
+            DEFINE_EXCEPTION_CLASS(StaleSequenceException, protocol::STALE_SEQUENCE, true);
+            DEFINE_EXCEPTION_CLASS(TargetDisconnectedException, protocol::TARGET_DISCONNECTED, true);
+            DEFINE_EXCEPTION_CLASS(TopicOverloadException, protocol::TOPIC_OVERLOAD, true);
+            DEFINE_EXCEPTION_CLASS(TransactionException, protocol::TRANSACTION, true);
+            DEFINE_EXCEPTION_CLASS(TransactionNotActiveException, protocol::TRANSACTION_NOT_ACTIVE, true);
+            DEFINE_EXCEPTION_CLASS(TransactionTimedOutException, protocol::TRANSACTION_TIMED_OUT, true);
+            DEFINE_EXCEPTION_CLASS(UnsupportedOperationException, protocol::UNSUPPORTED_OPERATION, true);
+            DEFINE_EXCEPTION_CLASS(AccessControlException, protocol::ACCESS_CONTROL, true);
+            DEFINE_EXCEPTION_CLASS(NoDataMemberInClusterException, protocol::NO_DATA_MEMBER, true);
+            DEFINE_EXCEPTION_CLASS(ReplicatedMapCantBeCreatedOnLiteMemberException, protocol::REPLICATED_MAP_CANT_BE_CREATED, true);
+            DEFINE_EXCEPTION_CLASS(MaxMessageSizeExceeded, protocol::MAX_MESSAGE_SIZE_EXCEEDED, true);
+            DEFINE_EXCEPTION_CLASS(WANReplicationQueueFullException, protocol::WAN_REPLICATION_QUEUE_FULL, true);
+            DEFINE_EXCEPTION_CLASS(ServiceNotFoundException, protocol::SERVICE_NOT_FOUND, true);
 
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:
@@ -159,17 +153,17 @@ namespace hazelcast {
                 static const int32_t ERROR_CODE = errorNo;\
                 ClassName(const std::string& source, const std::string& message, const std::string& details, \
                         int32_t causeCode) \
-                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode), RetryableHazelcastException(source, message, details, causeCode) {\
+                    : IException(#ClassName, source, message, details, ERROR_CODE, causeCode, true, true), RetryableHazelcastException(source, message, details, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message, int32_t causeCode) \
-                    : IException(#ClassName, source, message, ERROR_CODE, causeCode), RetryableHazelcastException(source, message, causeCode) {\
+                    : IException(#ClassName, source, message, ERROR_CODE, causeCode, true, true), RetryableHazelcastException(source, message, causeCode) {\
                 }\
                 ClassName(const std::string& source, const std::string& message) \
-                    : IException(#ClassName, source, message, ERROR_CODE), RetryableHazelcastException(source, message) {\
+                    : IException(#ClassName, source, message, ERROR_CODE, true, true), RetryableHazelcastException(source, message) {\
                 }\
                 ClassName(const std::string &source, const std::string &message, \
                             const boost::shared_ptr<IException> &cause) \
-                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause->clone())), RetryableHazelcastException(source, message, cause) {}\
+                            : IException(#ClassName, source, message, ERROR_CODE, boost::shared_ptr<IException>(cause->clone()), true, true), RetryableHazelcastException(source, message, cause) {}\
                 virtual std::auto_ptr<IException> clone() const {\
                     return std::auto_ptr<IException>(new ClassName(*this));\
                 } \
@@ -199,11 +193,19 @@ namespace hazelcast {
 
             };
 
+            // ---------  RuntimeException ends here -------------------------------------------------/
+
+            // -----------------    ONLY Client side exceptions start here ----------------------------------------
+            // -----------------    Client side runtime exceptions start here --------------------------------
+            DEFINE_EXCEPTION_CLASS(HazelcastClientNotActiveException, protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, true);
+            DEFINE_EXCEPTION_CLASS(HazelcastClientOfflineException, protocol::HAZELCAST_CLIENT_OFFLINE, true);
+            DEFINE_EXCEPTION_CLASS(ConsistencyLostException, protocol::CONSISTENCY_LOST, true);
+
             class HAZELCAST_API UndefinedErrorCodeException : public IException {
             public:
                 UndefinedErrorCodeException(const std::string &source, const std::string &message,
-                                                            int32_t errorCode, int64_t correlationId,
-                                                            std::string details);
+                                            int32_t errorCode, int64_t correlationId,
+                                            std::string details);
 
                 virtual ~UndefinedErrorCodeException() throw();
 
@@ -222,6 +224,17 @@ namespace hazelcast {
                 int64_t messageCallId;
                 std::string detailedErrorMessage;
             };
+            // -----------------    Client side runtime exceptions finish here --------------------------------
+
+            // -----------------    Client side non-runtime exceptions start here -----------------------------
+            /**
+             * Thrown when Hazelcast client is offline during an invocation.
+             */
+            DEFINE_EXCEPTION_CLASS(UnknownHostException, protocol::UNKNOWN_HOST, false);
+            DEFINE_EXCEPTION_CLASS(FutureUninitialized, protocol::FUTURE_UNINITIALIZED, false);
+            // -----------------    Client side non-runtime exceptions finish here ----------------------------
+
+            // -----------------    Client side runtime exceptions ends here --------------------------------
         }
     }
 }

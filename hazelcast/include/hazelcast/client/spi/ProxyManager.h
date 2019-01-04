@@ -71,7 +71,7 @@ namespace hazelcast {
 
                 void initialize(const boost::shared_ptr<ClientProxy> &clientProxy);
 
-                util::SynchronizedMap<DefaultObjectNamespace, util::Future<boost::shared_ptr<ClientProxy> > > proxies;
+                util::SynchronizedMap<DefaultObjectNamespace, util::Future<ClientProxy> > proxies;
                 int64_t invocationTimeoutMillis;
                 int64_t invocationRetryPauseMillis;
                 ClientContext &client;

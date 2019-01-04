@@ -36,12 +36,12 @@ namespace hazelcast {
             return awaitMillis(seconds * MILLISECONDS_IN_A_SECOND);
         }
 
-        bool CountDownLatch::awaitMillis(size_t milliseconds) {
-            size_t elapsed;
+        bool CountDownLatch::awaitMillis(int64_t milliseconds) {
+            int64_t elapsed;
             return awaitMillis(milliseconds, elapsed);
         }
 
-        bool CountDownLatch::awaitMillis(size_t milliseconds, size_t &elapsed) {
+        bool CountDownLatch::awaitMillis(int64_t milliseconds, int64_t &elapsed) {
             // set elapsed to zero in case it returns before sleep
             elapsed = 0;
 
@@ -81,13 +81,13 @@ namespace hazelcast {
             return *this;
         }
 
-        bool CountDownLatchWaiter::awaitMillis(size_t milliseconds) {
+        bool CountDownLatchWaiter::awaitMillis(int64_t milliseconds) {
             if (latches.empty()) {
                 return true;
             }
 
             for (std::vector<util::CountDownLatch *>::const_iterator it = latches.begin();it != latches.end();++it) {
-                size_t elapsed;
+                int64_t elapsed;
                 bool result = (*it)->awaitMillis(milliseconds, elapsed);
                 if (!result) {
                     return false;

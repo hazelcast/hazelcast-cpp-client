@@ -24,7 +24,7 @@
 #include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/EventHandler.h"
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/impl/Partition.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/protocol/codec/ClientAddPartitionListenerCodec.h"
@@ -108,7 +108,7 @@ namespace hazelcast {
                     };
 
                     class RefreshTaskCallback
-                            : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
+                            : public client::ExecutionCallback<protocol::ClientMessage> {
                     public:
                         RefreshTaskCallback(ClientPartitionServiceImpl &partitionService);
 
@@ -127,7 +127,7 @@ namespace hazelcast {
                     ClientContext &client;
                     util::ILogger &logger;
                     ClientExecutionService &clientExecutionService;
-                    boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > refreshTaskCallback;
+                    boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > refreshTaskCallback;
 
                     static const int64_t PERIOD = 10 * 1000;
                     static const int64_t INITIAL_DELAY = 10 * 1000;

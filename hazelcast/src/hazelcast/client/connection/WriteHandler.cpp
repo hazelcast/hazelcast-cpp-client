@@ -49,12 +49,16 @@ namespace hazelcast {
             }
 
             // TODO: Add a fragmentation layer here before putting the message into the write queue
-            void WriteHandler::enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message) {
+            bool WriteHandler::enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message) {
+                if (!this->connection.isAlive()) {
+                    return false;
+                }
                 writeQueue.offer(message);
                 if (informSelector.compareAndSet(true, false)) {
                     ioSelector.addTask(this);
                     ioSelector.wakeUp();
                 }
+                return true;
             }
 
             void WriteHandler::handle() {

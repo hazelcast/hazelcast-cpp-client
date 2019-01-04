@@ -21,9 +21,11 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 
+#include "hazelcast/util/Runnable.h"
+#include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/Atomic.h"
-#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/spi/EventHandler.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -71,7 +73,6 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API ClientInvocation
                         : public util::Runnable,
-                          public ClientInvocationFuture,
                           public boost::enable_shared_from_this<ClientInvocation> {
                 public:
                     virtual ~ClientInvocation();
@@ -105,7 +106,7 @@ namespace hazelcast {
 
                     void notify(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
 
-                    void notifyException(exception::IException &exception);
+                    void notifyException(const boost::shared_ptr<exception::IException> &exception);
 
                     boost::shared_ptr<connection::Connection> getSendConnection();
 
@@ -120,44 +121,21 @@ namespace hazelcast {
 
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
-                    virtual void onComplete();
-
-                    virtual void
-                    andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback);
-
-                    virtual std::string invocationToString();
-
                     static bool isRetrySafeException(exception::IException &exception);
 
                 private:
-                    class InternalDelegatingExecutionCallback
-                            : public client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > {
-                    public:
-                        InternalDelegatingExecutionCallback(
-                                const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback,
-                                sequence::CallIdSequence &callIdSequence);
-
-                        virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &message);
-
-                        virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
-
-                    private:
-                        boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > callback;
-                        sequence::CallIdSequence &callIdSequence;
-                    };
-
                     /**
                      * Create an invocation that will be executed on owner of {@code partitionId}.
                      */
                     ClientInvocation(spi::ClientContext &clientContext,
-                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName, int partitionId);
 
                     /**
                      * Create an invocation that will be executed on given {@code connection}.
                      */
                     ClientInvocation(spi::ClientContext &clientContext,
-                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName,
                                      const boost::shared_ptr<connection::Connection> &connection);
 
@@ -165,14 +143,14 @@ namespace hazelcast {
                      * Create an invocation that will be executed on random member.
                      */
                     ClientInvocation(spi::ClientContext &clientContext,
-                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName);
 
                     /**
                      * Create an invocation that will be executed on member with given {@code address}.
                      */
                     ClientInvocation(spi::ClientContext &clientContext,
-                                     std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                     const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                      const std::string &objectName, const Address &address);
 
                     static void invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation);
@@ -188,9 +166,9 @@ namespace hazelcast {
                     LifecycleService &lifecycleService;
                     ClientClusterService &clientClusterService;
                     ClientInvocationService &invocationService;
-                    ClientExecutionService &executionService;
+                    boost::shared_ptr<ClientExecutionService> executionService;
                     util::Atomic<boost::shared_ptr<protocol::ClientMessage> > clientMessage;
-                    sequence::CallIdSequence &callIdSequence;
+                    boost::shared_ptr<sequence::CallIdSequence> callIdSequence;
                     boost::shared_ptr<Address> address;
                     int partitionId;
                     int64_t startTimeMillis;
@@ -200,10 +178,11 @@ namespace hazelcast {
                     util::Atomic<boost::shared_ptr<connection::Connection> > sendConnection;
                     boost::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler;
                     util::Atomic<int64_t> invokeCount;
+                    boost::shared_ptr<ClientInvocationFuture> clientInvocationFuture;
 
                     bool isNotAllowedToRetryOnSelection(exception::IException &exception);
 
-                    exception::OperationTimeoutException newOperationTimeoutException(exception::IException &exception);
+                    boost::shared_ptr<exception::OperationTimeoutException> newOperationTimeoutException(exception::IException &exception);
 
                     void execute();
 

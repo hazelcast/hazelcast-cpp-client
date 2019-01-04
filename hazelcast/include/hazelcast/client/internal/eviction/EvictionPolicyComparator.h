@@ -31,7 +31,7 @@ namespace hazelcast {
         namespace internal {
             namespace eviction {
                 /**
-                 * A kind of {@link java.util.Comparator} to be used while comparing
+                 * A kind of {@link Comparator} to be used while comparing
                  * entries to be evicted.
                  */
                 template<typename K, typename V>

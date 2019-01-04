@@ -40,6 +40,16 @@ namespace hazelcast {
                     ASSERT_EQ((exception::IException *) NULL, exceptionCause->getCause().get());
                 }
 
+                TEST_F(ExceptionTest, testExceptionDetail) {
+                    std::string details("A lot of details");
+                    exception::TargetDisconnectedException targetDisconnectedException("testExceptionCause",
+                                                                                       "test message", details,
+                                                                                       protocol::IO);
+
+
+                    ASSERT_EQ(details, targetDisconnectedException.getDetails());
+                }
+
                 TEST_F(ExceptionTest, testExceptionBuilderBuildShared) {
                     boost::shared_ptr<exception::IOException> sharedException = exception::ExceptionBuilder<exception::IOException>(
                             "Exception from testExceptionBuilderBuildShared").buildShared();

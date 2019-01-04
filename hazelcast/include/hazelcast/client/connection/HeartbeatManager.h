@@ -19,7 +19,7 @@
 
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Atomic.h"
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/util/Executor.h"
 
 namespace hazelcast {

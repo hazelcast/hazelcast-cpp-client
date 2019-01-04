@@ -193,7 +193,12 @@ namespace hazelcast {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
                 }
 
-                return clientInvocationFuture->waitFor(timeoutInMilliseconds) ? future_status::ready : future_status::timeout;
+                try {
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
+                    return future_status::ready;
+                } catch (exception::TimeoutException &) {
+                    return future_status::timeout;
+                }
             }
 
             /**
@@ -316,7 +321,12 @@ namespace hazelcast {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
                 }
 
-                return clientInvocationFuture->waitFor(timeoutInMilliseconds) ? future_status::ready : future_status::timeout;
+                try {
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
+                    return future_status::ready;
+                } catch (exception::TimeoutException &) {
+                    return future_status::timeout;
+                }
             }
 
             /**

@@ -54,7 +54,7 @@ namespace hazelcast {
 
                 void handle();
 
-                void enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message);
+                bool enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message);
 
                 void run();
 

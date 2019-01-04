@@ -18,8 +18,9 @@
 //
 
 #include <boost/foreach.hpp>
-#include "hazelcast/client/spi/impl/ClientInvocation.h"
 
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/TypedData.h"
 #include "hazelcast/client/protocol/codec/ClientDestroyProxyCodec.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
@@ -27,6 +28,7 @@
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/util/ExceptionUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -45,49 +47,51 @@ namespace hazelcast {
 
             boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
                     std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
+                boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request, partitionId);
 
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName(), partitionId);
-                return invocation->invoke()->get();
+                try {
+                    return future->get();
+                } catch (exception::IException &e) {
+                    util::ExceptionUtil::rethrow(e);
+                }
+                return boost::shared_ptr<protocol::ClientMessage>();
             }
 
             boost::shared_ptr<spi::impl::ClientInvocationFuture>
             ProxyImpl::invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName(), partitionId);
-                return invocation->invoke();
+                try {
+                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                            getContext(), request, getName(), partitionId);
+                    return invocation->invoke();
+                } catch (exception::IException &e) {
+                    util::ExceptionUtil::rethrow(e);
+                }
+                return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
             }
 
             boost::shared_ptr<protocol::ClientMessage>
             ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request) {
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName());
-                return invocation->invoke()->get();
-            }
-
-            void ProxyImpl::destroy() {
-                onDestroy();
-
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
-                        getName(), getServiceName());
-
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName());
-                invocation->invoke()->get();
-            }
-
-            boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                                         boost::shared_ptr<connection::Connection> conn) {
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName(), conn);
-                return invocation->invoke()->get();
+                try {
+                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                            getContext(), request, getName());
+                    return invocation->invoke()->get();
+                } catch (exception::IException &e) {
+                    util::ExceptionUtil::rethrow(e);
+                }
+                return boost::shared_ptr<protocol::ClientMessage>();
             }
 
             boost::shared_ptr<protocol::ClientMessage>
             ProxyImpl::invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request, const Address &address) {
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
-                        getContext(), request, getName(), address);
-                return invocation->invoke()->get();
+                try {
+
+                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                            getContext(), request, getName(), address);
+                    return invocation->invoke()->get();
+                } catch (exception::IException &e) {
+                    util::ExceptionUtil::rethrow(e);
+                }
+                return boost::shared_ptr<protocol::ClientMessage>();
             }
 
             std::vector<hazelcast::client::TypedData>

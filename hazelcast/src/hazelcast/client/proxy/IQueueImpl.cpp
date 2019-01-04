@@ -108,7 +108,7 @@ namespace hazelcast {
 
             std::vector<serialization::pimpl::Data> IQueueImpl::drainToData(size_t maxElements) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::QueueDrainToMaxSizeCodec::encodeRequest(getName(), maxElements);
+                        protocol::codec::QueueDrainToMaxSizeCodec::encodeRequest(getName(), (int32_t) maxElements);
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::QueueDrainToMaxSizeCodec::ResponseParameters>(
                         request, partitionId);

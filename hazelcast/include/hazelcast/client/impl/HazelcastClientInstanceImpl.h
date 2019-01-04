@@ -420,7 +420,7 @@ namespace hazelcast {
                 std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
                 spi::impl::ClientClusterServiceImpl clusterService;
                 boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
-                std::auto_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
+                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                 std::auto_ptr<spi::ClientInvocationService> invocationService;
                 boost::shared_ptr<spi::ClientListenerService> listenerService;
                 spi::impl::ClientTransactionManagerServiceImpl transactionManager;
@@ -428,7 +428,7 @@ namespace hazelcast {
                 spi::LifecycleService lifecycleService;
                 spi::ProxyManager proxyManager;
                 std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
-                std::auto_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
+                boost::shared_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
                 std::auto_ptr<statistics::Statistics> statistics;
                 protocol::ClientExceptionFactory exceptionFactory;
                 std::string instanceName;
@@ -449,7 +449,7 @@ namespace hazelcast {
 
                 std::auto_ptr<spi::ClientInvocationService> initInvocationService();
 
-                std::auto_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 
                 std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
                         const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);
