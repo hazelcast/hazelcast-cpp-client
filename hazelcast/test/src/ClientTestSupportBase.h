@@ -27,6 +27,8 @@
 #include <TestHelperFunctions.h>
 #include <hazelcast/util/Runnable.h>
 #include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/Member.h>
+#include <hazelcast/client/spi/ClientContext.h>
 
 namespace hazelcast {
     namespace client {
@@ -50,6 +52,8 @@ namespace hazelcast {
                 static std::string randomString();
 
                 static void sleepSeconds(int32_t seconds);
+
+                static std::string generateKeyOwnedBy(spi::ClientContext &context, const Member &member);
             protected:
 
                 static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();

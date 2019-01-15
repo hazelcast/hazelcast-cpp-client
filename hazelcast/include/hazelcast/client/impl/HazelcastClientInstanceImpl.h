@@ -50,6 +50,7 @@
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/FlakeIdGenerator.h"
+#include "hazelcast/client/IExecutorService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -334,6 +335,19 @@ namespace hazelcast {
                 * @return ISemaphore proxy for the given name
                 */
                 ISemaphore getISemaphore(const std::string& name);
+
+                /**
+                 * Creates or returns the distributed executor service for the given name.
+                 * Executor service enables you to run your <tt>Runnable</tt>s and <tt>Callable</tt>s
+                 * on the Hazelcast cluster.
+                 * <p>
+                 * <p><b>Note:</b> Note that it doesn't support {@code invokeAll/Any}
+                 * and doesn't have standard shutdown behavior</p>
+                 *
+                 * @param name name of the executor service
+                 * @return the distributed executor service for the given name
+                 */
+                boost::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
 
                 /**
                 *

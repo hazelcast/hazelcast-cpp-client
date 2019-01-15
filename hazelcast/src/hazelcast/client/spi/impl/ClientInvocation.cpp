@@ -15,6 +15,8 @@
  */
 
 #include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
+
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -44,8 +46,7 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         invokeCount(0),
-                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
-                                clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
+                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(), clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
@@ -290,6 +291,7 @@ namespace hazelcast {
                                                                              int partitionId) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, partitionId));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -299,6 +301,7 @@ namespace hazelcast {
                                                                              const boost::shared_ptr<connection::Connection> &connection) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, connection));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -309,6 +312,7 @@ namespace hazelcast {
                                                                              const Address &address) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, address));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -317,10 +321,19 @@ namespace hazelcast {
                                                                              const std::string &objectName) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
                             new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
                 boost::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() {
+                    return sendConnection;
+                }
+
+                boost::shared_ptr<connection::Connection> ClientInvocation::getSendConnectionOrWait() {
+                    while (sendConnection.get().get() == NULL && !clientInvocationFuture->isDone()) {
+                        // TODO: Make sleep interruptible
+                        util::sleepmillis(retryPauseMillis);
+                    }
                     return sendConnection;
                 }
 
@@ -369,6 +382,11 @@ namespace hazelcast {
                 boost::shared_ptr<protocol::ClientMessage> ClientInvocation::copyMessage() {
                     return boost::shared_ptr<protocol::ClientMessage>(new protocol::ClientMessage(*clientMessage.get()));
                 }
+
+                boost::shared_ptr<util::Executor> ClientInvocation::getUserExecutor() {
+                    return executionService->getUserExecutor();
+                }
+
             }
         }
     }

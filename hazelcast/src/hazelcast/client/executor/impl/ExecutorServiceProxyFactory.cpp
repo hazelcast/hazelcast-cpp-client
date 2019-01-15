@@ -13,23 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
-#include "hazelcast/client/Member.h"
+
+#include "hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h"
+#include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/IExecutorService.h"
 
 namespace hazelcast {
     namespace client {
-        namespace cluster {
-            namespace memberselector {
-                bool MemberSelectors::DataMemberSelector::select(const Member &member) const {
-                    return !member.isLiteMember();
-                }
+        namespace executor {
+            namespace impl {
+                ExecutorServiceProxyFactory::ExecutorServiceProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                        clientContext) {}
 
-                void MemberSelectors::DataMemberSelector::toString(std::ostream &os) const {
-                    os << "Default DataMemberSelector";
+                boost::shared_ptr<spi::ClientProxy> ExecutorServiceProxyFactory::create(const std::string &id) {
+                    return boost::shared_ptr<spi::ClientProxy>(
+                            new IExecutorService(id, clientContext));
                 }
-
-                const std::auto_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
-                        new MemberSelectors::DataMemberSelector());
             }
         }
     }

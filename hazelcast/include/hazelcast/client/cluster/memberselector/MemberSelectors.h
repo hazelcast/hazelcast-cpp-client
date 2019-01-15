@@ -18,6 +18,7 @@
 #define HAZELCAST_CLIENT_CLUSTER_MEMBERSELECTOR_MEMBERSELECTORS_H_
 
 #include <memory>
+#include <ostream>
 
 namespace hazelcast {
     namespace client {
@@ -53,6 +54,13 @@ namespace hazelcast {
                     virtual bool select(const Member &member) const = 0;
 
                     virtual ~MemberSelector(){};
+
+                    virtual void toString(std::ostream &os) const = 0;
+
+                    friend std::ostream &operator<<(std::ostream &os, const MemberSelector &aSelector) {
+                        aSelector.toString(os);
+                        return os;
+                    }
                 };
 
                 /**
@@ -62,6 +70,9 @@ namespace hazelcast {
                 public:
                     class DataMemberSelector : public MemberSelector {
                         virtual bool select(const Member &member) const;
+
+                    public:
+                        virtual void toString(std::ostream &os) const;
                     };
 
                     static const std::auto_ptr<MemberSelector> DATA_MEMBER_SELECTOR;

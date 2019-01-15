@@ -63,9 +63,12 @@ namespace hazelcast {
                                            int64_t initialDelayInMillis,
                                            int64_t periodInMillis);
 
-                private:
+                virtual const boost::shared_ptr<util::ExecutorService> getUserExecutor() const;
+
+            private:
                     util::ILogger &logger;
                     boost::shared_ptr<util::ScheduledExecutorService> internalExecutor;
+                    boost::shared_ptr<util::ExecutorService> userExecutor;
                 };
             }
         }
