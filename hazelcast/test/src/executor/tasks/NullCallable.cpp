@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::NullCallable::getFactoryId() const
 }
 
 int hazelcast::client::test::executor::tasks::NullCallable::getClassId() const {
-    return IdentifiedFactory::NULLCALLABLE;
+    return IdentifiedFactory::NULL_CALLABLE;
 }
 
 void hazelcast::client::test::executor::tasks::NullCallable::writeData(

@@ -26,7 +26,7 @@ int hazelcast::client::test::executor::tasks::AppendCallable::getFactoryId() con
 }
 
 int hazelcast::client::test::executor::tasks::AppendCallable::getClassId() const {
-    return IdentifiedFactory::APPENDCALLABLE;
+    return IdentifiedFactory::APPEND_CALLABLE;
 }
 
 void hazelcast::client::test::executor::tasks::AppendCallable::writeData(

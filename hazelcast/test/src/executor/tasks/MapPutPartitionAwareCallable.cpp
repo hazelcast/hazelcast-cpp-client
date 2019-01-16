@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getF
 }
 
 int hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::getClassId() const {
-    return IdentifiedFactory::MAPPUTPARTITIONAWARECALLABLE;
+    return IdentifiedFactory::MAP_PUTPARTITIONAWARE_CALLABLE;
 }
 
 void hazelcast::client::test::executor::tasks::MapPutPartitionAwareCallable::writeData(

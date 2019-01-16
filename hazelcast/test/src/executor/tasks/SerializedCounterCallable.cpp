@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::SerializedCounterCallable::getFact
 }
 
 int hazelcast::client::test::executor::tasks::SerializedCounterCallable::getClassId() const {
-    return IdentifiedFactory::SERIALIZEDCOUNTERCALLABLE;
+    return IdentifiedFactory::SERIALIZED_COUNTER_CALLABLE;
 }
 
 void hazelcast::client::test::executor::tasks::SerializedCounterCallable::writeData(

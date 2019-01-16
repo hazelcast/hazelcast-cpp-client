@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::GetMemberUuidTask::getFactoryId() 
 }
 
 int hazelcast::client::test::executor::tasks::GetMemberUuidTask::getClassId() const {
-    return IdentifiedFactory::GETMEMBERUUIDTASK;
+    return IdentifiedFactory::GET_MEMBER_UUID_TASK;
 }
 
 void hazelcast::client::test::executor::tasks::GetMemberUuidTask::writeData(

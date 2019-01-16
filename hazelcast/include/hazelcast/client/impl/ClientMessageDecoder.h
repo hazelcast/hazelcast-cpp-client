@@ -28,6 +28,9 @@ namespace hazelcast {
              */
             class ClientMessageDecoder {
             public:
+                virtual ~ClientMessageDecoder() {
+                }
+
                 virtual boost::shared_ptr<serialization::pimpl::Data>
                 decodeClientMessage(const boost::shared_ptr <protocol::ClientMessage> &clientMessage) = 0;
             };

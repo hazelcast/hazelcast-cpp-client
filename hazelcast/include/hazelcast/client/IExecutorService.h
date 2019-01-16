@@ -371,7 +371,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T, typename K>
             void submitToKeyOwner(const HazelcastSerializable &task, const K &key,
                                   const boost::shared_ptr<ExecutionCallback<T> > &callback) {
-                submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, boost::shared_ptr<T>(), false);
+                submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, callback);
             }
 
             /**
@@ -630,6 +630,17 @@ namespace hazelcast {
                                                     partitionId);
             }
 
+            template<typename HazelcastSerializable, typename T, typename K>
+            void submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key,
+                    const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+
+                Data dataKey = toData<K>(key);
+
+                int partitionId = getPartitionId(dataKey);
+
+                submitToPartitionInternal<T>(toData<HazelcastSerializable>(task), partitionId, callback);
+            }
+
             template<typename T>
             boost::shared_ptr<ICompletableFuture<T> >
             submitToRandomInternal(const serialization::pimpl::Data &taskData, const boost::shared_ptr<T> &defaultValue,
@@ -700,7 +711,7 @@ namespace hazelcast {
             boost::shared_ptr<T>
             retrieveResultFromMessage(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &f) {
                 serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                const std::auto_ptr<serialization::pimpl::Data> &data = protocol::codec::ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(
+                std::auto_ptr<serialization::pimpl::Data> data = protocol::codec::ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(
                         *f->get()).response;
                 return boost::shared_ptr<T>(serializationService.toObject<T>(data.get()));
             }

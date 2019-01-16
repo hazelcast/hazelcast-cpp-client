@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::ge
 }
 
 int hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::getClassId() const {
-    return IdentifiedFactory::TASKWITHUNSERIALIZABLERESPONSE;
+    return IdentifiedFactory::TASK_WITH_UNSERIALIZABLE_RESPONSE;
 }
 
 void hazelcast::client::test::executor::tasks::TaskWithUnserializableResponse::writeData(

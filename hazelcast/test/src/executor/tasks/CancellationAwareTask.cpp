@@ -25,7 +25,7 @@ int hazelcast::client::test::executor::tasks::CancellationAwareTask::getFactoryI
 }
 
 int hazelcast::client::test::executor::tasks::CancellationAwareTask::getClassId() const {
-    return IdentifiedFactory::CANCELLATIONAWARETASK;
+    return IdentifiedFactory::CANCELLATION_AWARE_TASK;
 }
 
 void hazelcast::client::test::executor::tasks::CancellationAwareTask::writeData(

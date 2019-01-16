@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::SelectNoMembers::getFactoryId() co
 }
 
 int hazelcast::client::test::executor::tasks::SelectNoMembers::getClassId() const {
-    return IdentifiedFactory::SELECTNOMEMBERS;
+    return IdentifiedFactory::SELECT_NO_MEMBERS;
 }
 
 void hazelcast::client::test::executor::tasks::SelectNoMembers::writeData(

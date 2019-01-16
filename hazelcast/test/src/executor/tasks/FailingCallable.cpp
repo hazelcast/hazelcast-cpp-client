@@ -24,7 +24,7 @@ int hazelcast::client::test::executor::tasks::FailingCallable::getFactoryId() co
 }
 
 int hazelcast::client::test::executor::tasks::FailingCallable::getClassId() const {
-    return IdentifiedFactory::FAILINGCALLABLE;
+    return IdentifiedFactory::FAILING_CALLABLE;
 }
 
 void hazelcast::client::test::executor::tasks::FailingCallable::writeData(
