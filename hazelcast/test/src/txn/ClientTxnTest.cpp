@@ -209,7 +209,7 @@ namespace hazelcast {
 
                     context.commitTransaction();
                     FAIL();
-                } catch (exception::TransactionException &e) {
+                } catch (exception::TransactionException &) {
                     context.rollbackTransaction();
                     txnRollbackLatch.countDown();
                 }
