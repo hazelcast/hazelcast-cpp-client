@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_PROXY_IEXECUTORDELEGATINGPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_IEXECUTORDELEGATINGPROXY_H_
 
-#include "hazelcast/client/internal/util/ClientDelegatingFuture.h"
+#include "hazelcast/client/internal/ClientDelegatingFuture.h"
 #include "hazelcast/util/ExceptionUtil.h"
 #include "hazelcast/client/protocol/codec/ExecutorServiceCancelOnPartitionCodec.h"
 #include "hazelcast/client/protocol/codec/ExecutorServiceCancelOnAddressCodec.h"
@@ -32,14 +32,14 @@ namespace hazelcast {
              * @param <V> Type of returned object from the get method of this class.
              */
             template<typename V>
-            class IExecutorDelegatingFuture : public internal::util::ClientDelegatingFuture<V> {
+            class IExecutorDelegatingFuture : public internal::ClientDelegatingFuture<V> {
             public:
                 IExecutorDelegatingFuture(
                         const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
                         spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
                         const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder,
                         const std::string &objectName, const int partitionId)
-                        : internal::util::ClientDelegatingFuture<V>(clientInvocationFuture,
+                        : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),
                                                                     clientMessageDecoder, defaultValue),
                           context(context), uuid(uuid), partitionId(partitionId), objectName(objectName) {}
@@ -49,13 +49,13 @@ namespace hazelcast {
                         spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
                         const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder,
                         const std::string &objectName, const Address &address)
-                        : internal::util::ClientDelegatingFuture<V>(clientInvocationFuture,
+                        : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),
                                                                     clientMessageDecoder, defaultValue),
                           context(context), uuid(uuid), target(new Address(address)), partitionId(-1), objectName(objectName) {}
 
                 virtual bool cancel(bool mayInterruptIfRunning) {
-                    if (internal::util::ClientDelegatingFuture<V>::isDone()) {
+                    if (internal::ClientDelegatingFuture<V>::isDone()) {
                         return false;
                     }
 
@@ -66,14 +66,14 @@ namespace hazelcast {
                         util::ExceptionUtil::rethrow(e);
                     }
 
-                    internal::util::ClientDelegatingFuture<V>::complete(boost::shared_ptr<exception::IException>(
+                    internal::ClientDelegatingFuture<V>::complete(boost::shared_ptr<exception::IException>(
                             new exception::CancellationException("IExecutorDelegatingFuture::cancel(bool)")));
                     return cancelSuccessful;
                 }
 
             private:
                 void waitForRequestToBeSend() {
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = internal::util::ClientDelegatingFuture<V>::getFuture();
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = internal::ClientDelegatingFuture<V>::getFuture();
                     future->getInvocation()->getSendConnectionOrWait();
                 }
 

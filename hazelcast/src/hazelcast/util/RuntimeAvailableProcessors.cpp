@@ -18,15 +18,14 @@
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
-#ifdef BOOST_WINDOWS
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #include <windows.h>
-#elif BOOST_CLANG
+#elif defined(BOOST_CLANG)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #else
 #include <unistd.h>
 #include <hazelcast/util/RuntimeAvailableProcessors.h>
-
 #endif
 
 #include "hazelcast/util/RuntimeAvailableProcessors.h"

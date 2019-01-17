@@ -31,7 +31,7 @@
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/util/ExceptionUtil.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
-#include "hazelcast/client/internal/util/executor/CompletedFuture.h"
+#include "hazelcast/client/internal/executor/CompletedFuture.h"
 #include "hazelcast/client/proxy/IExecutorDelegatingFuture.h"
 
 // CODECs
@@ -45,9 +45,14 @@
 
 namespace hazelcast {
     namespace client {
+        namespace executor {
+            namespace impl {
+                class ExecutorServiceProxyFactory;
+            }
+        }
 
         /**
-         * Distributed implementation of {@link java.util.concurrent.ExecutorService}.
+         * Distributed implementation of java.util.concurrent.ExecutorService.
          * IExecutorService provides additional methods like executing tasks
          * on a specific member, on a member who is owner of a specific key,
          * executing a tasks on multiple members and listening execution result using a callback.
@@ -57,10 +62,9 @@ namespace hazelcast {
          * @see MultiExecutionCallback
          */
         class HAZELCAST_API IExecutorService : public proxy::ProxyImpl {
+            friend class executor::impl::ExecutorServiceProxyFactory;
         public:
             static const std::string SERVICE_NAME;
-
-            IExecutorService(const std::string &name, spi::ClientContext *context);
 
             /**
              * Executes the given command at some time in the future.  The command
@@ -154,13 +158,13 @@ namespace hazelcast {
             }
 
             /**
-             * Submits a task to the owner of the specified key and returns a Future
+             * Submits a task to the owner of the specified key and returns a ICompletableFuture
              * representing that task.
              *
              * @param task task submitted to the owner of the specified key
              * @param key  the specified key
              * @param <T>  the result type of callable
-             * @return a Future representing pending completion of the task
+             * @return a ICompletableFuture representing pending completion of the task
              */
             template<typename HazelcastSerializable, typename T, typename K>
             boost::shared_ptr<ICompletableFuture<T> >
@@ -169,13 +173,13 @@ namespace hazelcast {
             }
 
             /**
-             * Submits a task to the specified member and returns a Future
+             * Submits a task to the specified member and returns a ICompletableFuture
              * representing that task.
              *
              * @param task   the task submitted to the specified member
              * @param member the specified member
              * @param <T>    the result type of callable
-             * @return a Future representing pending completion of the task
+             * @return a ICompletableFuture representing pending completion of the task
              */
             template<typename HazelcastSerializable, typename T>
             boost::shared_ptr<ICompletableFuture<T> >
@@ -187,12 +191,12 @@ namespace hazelcast {
 
             /**
              * Submits a task to given members and returns
-             * map of Member-Future pairs representing pending completion of the task on each member
+             * map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              *
              * @param task    the task submitted to given members
              * @param members the given members
              * @param <T>     the result type of callable
-             * @return map of Member-Future pairs representing pending completion of the task on each member
+             * @return map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              */
             template<typename HazelcastSerializable, typename T>
             std::map<Member, boost::shared_ptr<ICompletableFuture<T> > >
@@ -211,12 +215,12 @@ namespace hazelcast {
 
             /**
              * Submits a task to selected members and returns a
-             * map of Member-Future pairs representing pending completion of the task on each member.
+             * map of Member-ICompletableFuture pairs representing pending completion of the task on each member.
              *
              * @param task           the task submitted to selected members
              * @param memberSelector memberSelector
              * @param <T>            the result type of callable
-             * @return map of Member-Future pairs representing pending completion of the task on each member
+             * @return map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
@@ -229,11 +233,11 @@ namespace hazelcast {
 
             /**
              * Submits task to all cluster members and returns a
-             * map of Member-Future pairs representing pending completion of the task on each member.
+             * map of Member-ICompletableFuture pairs representing pending completion of the task on each member.
              *
              * @param task the task submitted to all cluster members
              * @param <T>  the result type of callable
-             * @return map of Member-Future pairs representing pending completion of the task on each member
+             * @return map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              */
             template<typename HazelcastSerializable, typename T>
             std::map<Member, boost::shared_ptr<ICompletableFuture<T> > >
@@ -252,14 +256,14 @@ namespace hazelcast {
             }
 
             /**
-             * Submits a Runnable task for execution and returns a Future
-             * representing that task. The Future's {@code get} method will
+             * Submits a task for execution and returns a ICompletableFuture
+             * representing that task. The ICompletableFuture's {@code ICompletableFuture::get} method will
              * return the given result upon successful completion.
              *
              * @param task the task to submit
              * @param result the result to return
              * @param <T> the type of the result
-             * @return a Future representing pending completion of the task
+             * @return a ICompletableFuture representing pending completion of the task
              * @throws RejectedExecutionException if the task cannot be
              *         scheduled for execution
              * @throws NullPointerException if the task is null
@@ -280,19 +284,19 @@ namespace hazelcast {
 
             /**
              * Submits a value-returning task for execution and returns a
-             * Future representing the pending results of the task. The
-             * Future's {@code get} method will return the task's result upon
+             * ICompletableFuture representing the pending results of the task. The
+             * ICompletableFuture's {@code ICompletableFuture::get} method will return the task's result upon
              * successful completion.
              *
              * <p>
              * If you would like to immediately block waiting
              * for a task, you can use constructions of the form
-             * {@code result = exec.submit(aCallable).get();}
+             * {@code result = exec->submit<HazelcastSerializable, T>(aCallable)->get();}
              *
              *
              * @param task the task to submit
              * @param <T> the type of the task's result
-             * @return a Future representing pending completion of the task
+             * @return a ICompletableFuture representing pending completion of the task
              * @throws RejectedExecutionException if the task cannot be
              *         scheduled for execution
              */
@@ -303,7 +307,7 @@ namespace hazelcast {
 
             /**
              * Submits a task to a random member. Caller will be notified of the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
+             * {@link ExecutionCallback<T>::onResponse()} or {@link ExecutionCallback<T>::onFailure(exception::IException)}.
              *
              * @param task     a task submitted to a random member
              * @param callback callback
@@ -323,13 +327,13 @@ namespace hazelcast {
             }
 
             /**
-             * Submits a task to a randomly selected member and returns a Future
+             * Submits a task to a randomly selected member and returns a ICompletableFuture
              * representing that task.
              *
              * @param task           task submitted to a randomly selected member
              * @param memberSelector memberSelector
              * @param <T>            the result type of callable
-             * @return a Future representing pending completion of the task
+             * @return a ICompletableFuture representing pending completion of the task
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
@@ -342,7 +346,7 @@ namespace hazelcast {
 
             /**
              * Submits a task to randomly selected members. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
+             * {@link ExecutionCallback<T>::onResponse()} or {@link ExecutionCallback<T>::onFailure(exception::IException)}.
              *
              * @param task           the task submitted to randomly selected members
              * @param memberSelector memberSelector
@@ -361,7 +365,7 @@ namespace hazelcast {
 
             /**
              * Submits a task to the owner of the specified key. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
+             * {@link ExecutionCallback<T>::onResponse()} or {@link ExecutionCallback<T>::onFailure(exception::IException)}.
              *
              * @param task     task submitted to the owner of the specified key
              * @param key      the specified key
@@ -376,7 +380,7 @@ namespace hazelcast {
 
             /**
              * Submits a task to the specified member. Caller will be notified for the result of the task by
-             * {@link ExecutionCallback#onResponse(Object)} or {@link ExecutionCallback#onFailure(Throwable)}.
+             * {@link ExecutionCallback<T>::onResponse()} or {@link ExecutionCallback<T>::onFailure(exception::IException)}.
              *
              * @param task     the task submitted to the specified member
              * @param member   the specified member
@@ -458,8 +462,7 @@ namespace hazelcast {
              * Invocation has no additional effect if already shut down.
              *
              * <p>This method does not wait for previously submitted tasks to
-             * complete execution.  Use {@link #awaitTermination awaitTermination}
-             * to do that.
+             * complete execution.
              *
              */
             void shutdown();
@@ -474,13 +477,15 @@ namespace hazelcast {
             /**
              * Returns {@code true} if all tasks have completed following shut down.
              * Note that {@code isTerminated} is never {@code true} unless
-             * either {@code shutdown} or {@code shutdownNow} was called first.
+             * either {@code shutdown}.
              *
              * @return {@code true} if all tasks have completed following shut down
              */
             bool isTerminated();
 
         private:
+            IExecutorService(const std::string &name, spi::ClientContext *context);
+
             template<typename T>
             class MultiExecutionCallbackWrapper : MultiExecutionCallback<T> {
             public:
@@ -601,7 +606,7 @@ namespace hazelcast {
 
 
                 boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
-                        new internal::util::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
+                        new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
                                                                       SUBMIT_TO_PARTITION_DECODER(),
                                                                       boost::shared_ptr<T>()));
 
@@ -681,7 +686,7 @@ namespace hazelcast {
                         task, address, uuid);
 
                 boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
-                        new internal::util::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
+                        new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
                                                                       SUBMIT_TO_ADDRESS_DECODER(),
                                                                       boost::shared_ptr<T>()));
 
@@ -753,11 +758,11 @@ namespace hazelcast {
                     boost::shared_ptr<T> response = retrieveResultFromMessage<T>(f);
                     boost::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
                     return boost::shared_ptr<ICompletableFuture<T> >(
-                            new internal::util::executor::CompletedFuture<T>(response, userExecutor));
+                            new internal::executor::CompletedFuture<T>(response, userExecutor));
                 } catch (exception::IException &e) {
                     boost::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
                     return boost::shared_ptr<ICompletableFuture<T> >(
-                            new internal::util::executor::CompletedFuture<T>(
+                            new internal::executor::CompletedFuture<T>(
                                     boost::shared_ptr<exception::IException>(e.clone()), userExecutor));
                 }
             }
