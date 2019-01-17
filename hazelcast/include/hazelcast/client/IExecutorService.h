@@ -73,7 +73,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command) {
-                submit<HazelcastSerializable>(command);
+                submit<HazelcastSerializable, void>(command);
             }
 
             /**
@@ -122,7 +122,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable>
             void executeOnMembers(const HazelcastSerializable &command, const std::vector<Member> &members) {
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    submitToMember<HazelcastSerializable>(command, *it);
+                    submitToMember<HazelcastSerializable, void>(command, *it);
                 }
             }
 
@@ -149,7 +149,7 @@ namespace hazelcast {
             void executeOnAllMembers(const HazelcastSerializable &command) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    submitToMember<HazelcastSerializable>(command, *it);
+                    submitToMember<HazelcastSerializable, void>(command, *it);
                 }
             }
 
@@ -402,11 +402,11 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members,
                                  const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
-                boost::shared_ptr<MultiExecutionCallbackWrapper < T> >
-                multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>(members.size(), callback));
+                boost::shared_ptr<MultiExecutionCallbackWrapper <T> >
+                multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
 
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    boost::shared_ptr<ExecutionCallbackWrapper<T> >
+                    boost::shared_ptr<ExecutionCallbackWrapper <T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
                     submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
                 }
@@ -443,7 +443,8 @@ namespace hazelcast {
                                     const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 submitToMembers<HazelcastSerializable, T>(task, memberList, callback);
-                boost::shared_ptr<MultiExecutionCallbackWrapper<T> > multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) memberList.size(), callback));
+                boost::shared_ptr<MultiExecutionCallbackWrapper <T> >
+                multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) memberList.size(), callback));
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
                     boost::shared_ptr<ExecutionCallbackWrapper <T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
@@ -521,17 +522,17 @@ namespace hazelcast {
                     typedef std::vector<std::pair<Member, boost::shared_ptr<T> > > ENTRYVECTOR;
                     ENTRYVECTOR entries = values.entrySet();
                     for (typename ENTRYVECTOR::const_iterator it = entries.begin();
-                             it != entries.end(); ++it) {
-                            completedValues[it->first] = it->second;
-                        }
+                         it != entries.end(); ++it) {
+                        completedValues[it->first] = it->second;
+                    }
 
                     std::map<Member, boost::shared_ptr<exception::IException> > completedExceptions;
                     typedef std::vector<std::pair<Member, boost::shared_ptr<exception::IException> > > EXCEPTIONVECTOR;
                     EXCEPTIONVECTOR exceptionEntries = exceptions.entrySet();
                     for (typename EXCEPTIONVECTOR::const_iterator it = exceptionEntries.begin();
-                             it != exceptionEntries.end(); ++it) {
-                            completedExceptions[it->first] = it->second;
-                        }
+                         it != exceptionEntries.end(); ++it) {
+                        completedExceptions[it->first] = it->second;
+                    }
 
                     onComplete(completedValues, completedExceptions);
                 }
@@ -562,7 +563,6 @@ namespace hazelcast {
                 const boost::shared_ptr<MultiExecutionCallbackWrapper<T> > multiExecutionCallbackWrapper;
                 const Member member;
             };
-
 
             class SubmitToPartitionDecoder : public impl::ClientMessageDecoder {
             public:
@@ -632,7 +632,7 @@ namespace hazelcast {
 
             template<typename HazelcastSerializable, typename T, typename K>
             void submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key,
-                    const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                          const boost::shared_ptr<ExecutionCallback<T> > &callback) {
 
                 Data dataKey = toData<K>(key);
 
