@@ -68,13 +68,13 @@ namespace hazelcast {
 
                 class FailingExecutionCallback : public ExecutionCallback<std::string> {
                 public:
-                    FailingExecutionCallback(util::CountDownLatch &latch) : latch(latch) {}
+                    FailingExecutionCallback(const boost::shared_ptr<util::CountDownLatch> &latch) : latch(latch) {}
 
-                    virtual void onResponse(const boost::shared_ptr<string> &response) {
+                    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
                     }
 
                     virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
-                        latch.countDown();
+                        latch->countDown();
                         exception = e;
                     }
 
@@ -83,53 +83,56 @@ namespace hazelcast {
                     }
 
                 private:
-                    util::CountDownLatch &latch;
+                    const boost::shared_ptr<util::CountDownLatch> latch;
                     util::Atomic<boost::shared_ptr<exception::IException> > exception;
                 };
 
                 class SuccessfullExecutionCallback : public ExecutionCallback<std::string> {
                 public:
-                    SuccessfullExecutionCallback(util::CountDownLatch &latch) : latch(latch) {}
+                    SuccessfullExecutionCallback(const boost::shared_ptr<util::CountDownLatch> &latch) : latch(latch) {}
 
-                    virtual void onResponse(const boost::shared_ptr<string> &response) {
-                        latch.countDown();
+                    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+                        latch->countDown();
                     }
 
                     virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
                     }
 
                 private:
-                    util::CountDownLatch &latch;
+                    const boost::shared_ptr<util::CountDownLatch> latch;
                 };
 
                 class ResultSettingExecutionCallback : public ExecutionCallback<std::string> {
                 public:
-                    ResultSettingExecutionCallback(util::CountDownLatch &latch, Atomic<boost::shared_ptr<string> > &result) : latch(latch),
-                                                                                                   result(result) {}
+                    ResultSettingExecutionCallback(const boost::shared_ptr<util::CountDownLatch> &latch) : latch(latch) {}
 
-                    virtual void onResponse(const boost::shared_ptr<string> &response) {
+                    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
                         result.set(response);
-                        latch.countDown();
+                        latch->countDown();
                     }
 
                     virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
                     }
 
+                    boost::shared_ptr<std::string> getResult() {
+                        return result.get();
+                    }
+
                 private:
-                    util::CountDownLatch &latch;
-                    util::Atomic<boost::shared_ptr<string> > &result;
+                    const boost::shared_ptr<util::CountDownLatch> latch;
+                    util::Atomic<boost::shared_ptr<std::string> > result;
                 };
 
                 class MultiExecutionCompletionCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionCompletionCallback(const string &msg, CountDownLatch &responseLatch,
-                                                     CountDownLatch &completeLatch) : msg(msg),
+                    MultiExecutionCompletionCallback(const string &msg, const boost::shared_ptr<util::CountDownLatch> &responseLatch,
+                                                     const boost::shared_ptr<util::CountDownLatch> &completeLatch) : msg(msg),
                                                                                       responseLatch(responseLatch),
                                                                                       completeLatch(completeLatch) {}
 
                     virtual void onResponse(const Member &member, const boost::shared_ptr<std::string> &response) {
                         if (response.get() && *response == msg + executor::tasks::AppendCallable::APPENDAGE) {
-                            responseLatch.countDown();
+                            responseLatch->countDown();
                         }
                     }
 
@@ -143,23 +146,23 @@ namespace hazelcast {
                         std::string expectedValue(msg + executor::tasks::AppendCallable::APPENDAGE);
                         BOOST_FOREACH(const VALUE_MAP::value_type &entry , values) {
                                         if (entry.second.get() && *entry.second == expectedValue) {
-                                            completeLatch.countDown();
+                                            completeLatch->countDown();
                                         }
                                     }
                     }
                 private:
                     std::string msg;
-                    util::CountDownLatch &responseLatch;
-                    util::CountDownLatch &completeLatch;
+                    const boost::shared_ptr<util::CountDownLatch> responseLatch;
+                    const boost::shared_ptr<util::CountDownLatch> completeLatch;
                 };
 
                 class MultiExecutionNullCallback : public MultiExecutionCallback<std::string> {
                 public:
-                    MultiExecutionNullCallback(CountDownLatch &responseLatch, CountDownLatch &completeLatch) : responseLatch(responseLatch), completeLatch(completeLatch) {}
+                    MultiExecutionNullCallback(const boost::shared_ptr<util::CountDownLatch> &responseLatch, const boost::shared_ptr<util::CountDownLatch> &completeLatch) : responseLatch(responseLatch), completeLatch(completeLatch) {}
 
                     virtual void onResponse(const Member &member, const boost::shared_ptr<std::string> &response) {
                         if (response.get() == NULL) {
-                            responseLatch.countDown();
+                            responseLatch->countDown();
                         }
                     }
 
@@ -172,13 +175,13 @@ namespace hazelcast {
                         typedef std::map<Member, boost::shared_ptr<std::string> > VALUE_MAP;
                         BOOST_FOREACH(const VALUE_MAP::value_type &entry , values) {
                                         if (entry.second.get() == NULL) {
-                                            completeLatch.countDown();
+                                            completeLatch->countDown();
                                         }
                                     }
                     }
                 private:
-                    util::CountDownLatch &responseLatch;
-                    util::CountDownLatch &completeLatch;
+                    const boost::shared_ptr<util::CountDownLatch> responseLatch;
+                    const boost::shared_ptr<util::CountDownLatch> completeLatch;
                 };
 
                 static std::vector<HazelcastServer *> instances;
@@ -280,20 +283,20 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableException_withExecutionCallback) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                util::CountDownLatch latch(1);
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
 
                 executor::tasks::FailingCallable task;
                 boost::shared_ptr<ExecutionCallback<std::string> > callback(new FailingExecutionCallback(latch));
 
                 service->submit<executor::tasks::FailingCallable, std::string>(task, callback);
 
-                ASSERT_OPEN_EVENTUALLY(latch);
+                ASSERT_OPEN_EVENTUALLY(*latch);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitFailingCallableReasonExceptionCause) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                const boost::shared_ptr<ICompletableFuture<string> > &failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
+                const boost::shared_ptr<ICompletableFuture<std::string> > &failingFuture = service->submit<executor::tasks::FailingCallable, std::string>(
                         executor::tasks::FailingCallable());
 
                 try {
@@ -369,14 +372,14 @@ namespace hazelcast {
 
                 executor::tasks::TaskWithUnserializableResponse taskWithUnserializableResponse;
 
-                util::CountDownLatch latch(1);
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
 
                 boost::shared_ptr<FailingExecutionCallback> callback(new FailingExecutionCallback(latch));
 
                 service->submit<executor::tasks::TaskWithUnserializableResponse, std::string>(
                         taskWithUnserializableResponse, callback);
 
-                ASSERT_OPEN_EVENTUALLY(latch);
+                ASSERT_OPEN_EVENTUALLY(*latch);
 
                 boost::shared_ptr<exception::IException> exception = callback->getException();
                 ASSERT_NOTNULL(exception.get(), exception::IException);
@@ -412,7 +415,7 @@ namespace hazelcast {
 
                 BOOST_FOREACH(const Member &member, members) {
                                 ASSERT_EQ(1U, futuresMap.count(member));
-                                boost::shared_ptr<string> uuid = futuresMap[member]->get();
+                                boost::shared_ptr<std::string> uuid = futuresMap[member]->get();
                                 ASSERT_NOTNULL(uuid.get(), std::string);
                                 ASSERT_EQ(member.getUuid(), *uuid);
                             }
@@ -478,7 +481,7 @@ namespace hazelcast {
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, randomString());
 
-                util::CountDownLatch latch(1);
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
                 boost::shared_ptr<SuccessfullExecutionCallback> callback(new SuccessfullExecutionCallback(latch));
 
                 std::vector<Member> members = client->getCluster().getMembers();
@@ -488,15 +491,15 @@ namespace hazelcast {
 
                 IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
                 
-                ASSERT_OPEN_EVENTUALLY(latch);
+                ASSERT_OPEN_EVENTUALLY(*latch);
                 ASSERT_EQ(1, map.size());
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToMember_withMultiExecutionCallback) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                util::CountDownLatch responseLatch(numberOfMembers);
-                util::CountDownLatch completeLatch(numberOfMembers);
+                boost::shared_ptr<util::CountDownLatch> responseLatch(new util::CountDownLatch(numberOfMembers));
+                boost::shared_ptr<util::CountDownLatch> completeLatch(new util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -507,8 +510,8 @@ namespace hazelcast {
 
                 service->submitToMembers<executor::tasks::AppendCallable, std::string>(callable, members, callback);
 
-                ASSERT_OPEN_EVENTUALLY(responseLatch);
-                ASSERT_OPEN_EVENTUALLY(completeLatch);
+                ASSERT_OPEN_EVENTUALLY(*responseLatch);
+                ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallable_withExecutionCallback) {
@@ -517,14 +520,13 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
                 executor::tasks::SelectAllMembers selector;
-                util::Atomic<boost::shared_ptr<std::string> > result;
-                util::CountDownLatch responseLatch(1);
-                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(responseLatch, result));
+                boost::shared_ptr<util::CountDownLatch> responseLatch(new util::CountDownLatch(1));
+                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(responseLatch));
 
                 service->submit<executor::tasks::AppendCallable, std::string>(callable, selector, callback);
 
-                ASSERT_OPEN_EVENTUALLY(responseLatch);
-                boost::shared_ptr<std::string> message = result.get();
+                ASSERT_OPEN_EVENTUALLY(*responseLatch);
+                boost::shared_ptr<std::string> message = callback->getResult();
                 ASSERT_NOTNULL(message.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *message);
             }
@@ -532,8 +534,8 @@ namespace hazelcast {
             TEST_F(ClientExecutorServiceTest, submitCallableToMembers_withExecutionCallback) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                util::CountDownLatch responseLatch(numberOfMembers);
-                util::CountDownLatch completeLatch(numberOfMembers);
+                boost::shared_ptr<util::CountDownLatch> responseLatch(new util::CountDownLatch(numberOfMembers));
+                boost::shared_ptr<util::CountDownLatch> completeLatch(new util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -543,15 +545,15 @@ namespace hazelcast {
 
                 service->submitToMembers<executor::tasks::AppendCallable, std::string>(callable, selector, callback);
 
-                ASSERT_OPEN_EVENTUALLY(responseLatch);
-                ASSERT_OPEN_EVENTUALLY(completeLatch);
+                ASSERT_OPEN_EVENTUALLY(*responseLatch);
+                ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableToAllMembers_withMultiExecutionCallback) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                util::CountDownLatch responseLatch(numberOfMembers);
-                util::CountDownLatch completeLatch(numberOfMembers);
+                boost::shared_ptr<util::CountDownLatch> responseLatch(new util::CountDownLatch(numberOfMembers));
+                boost::shared_ptr<util::CountDownLatch> completeLatch(new util::CountDownLatch(numberOfMembers));
 
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
@@ -560,15 +562,15 @@ namespace hazelcast {
 
                 service->submitToAllMembers<executor::tasks::AppendCallable, std::string>(callable, callback);
 
-                ASSERT_OPEN_EVENTUALLY(completeLatch);
-                ASSERT_OPEN_EVENTUALLY(responseLatch);
+                ASSERT_OPEN_EVENTUALLY(*completeLatch);
+                ASSERT_OPEN_EVENTUALLY(*responseLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, submitCallableWithNullResultToAllMembers_withMultiExecutionCallback) {
                 boost::shared_ptr<IExecutorService> service = client->getExecutorService(getTestName());
 
-                util::CountDownLatch responseLatch(numberOfMembers);
-                util::CountDownLatch completeLatch(numberOfMembers);
+                boost::shared_ptr<util::CountDownLatch> responseLatch(new util::CountDownLatch(numberOfMembers));
+                boost::shared_ptr<util::CountDownLatch> completeLatch(new util::CountDownLatch(numberOfMembers));
 
                 executor::tasks::NullCallable callable;
 
@@ -576,8 +578,8 @@ namespace hazelcast {
 
                 service->submitToAllMembers<executor::tasks::NullCallable, std::string>(callable, callback);
 
-                ASSERT_OPEN_EVENTUALLY(responseLatch);
-                ASSERT_OPEN_EVENTUALLY(completeLatch);
+                ASSERT_OPEN_EVENTUALLY(*responseLatch);
+                ASSERT_OPEN_EVENTUALLY(*completeLatch);
             }
 
             TEST_F(ClientExecutorServiceTest, testSubmitCallable) {
@@ -599,14 +601,13 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
 
-                util::CountDownLatch latch(1);
-                Atomic<boost::shared_ptr<string> > result;
-                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch, result));
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
+                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch));
 
                 service->submit<executor::tasks::AppendCallable, std::string>(callable, callback);
 
-                ASSERT_OPEN_EVENTUALLY(latch);
-                boost::shared_ptr<string> value = result.get();
+                ASSERT_OPEN_EVENTUALLY(*latch);
+                boost::shared_ptr<std::string> value = callback->getResult();
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *value);
             }
@@ -630,14 +631,13 @@ namespace hazelcast {
                 std::string msg = randomString();
                 executor::tasks::AppendCallable callable(msg);
 
-                util::CountDownLatch latch(1);
-                Atomic<boost::shared_ptr<string> > result;
-                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch, result));
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
+                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch));
 
                 service->submitToKeyOwner<executor::tasks::AppendCallable, std::string, std::string>(callable, "key", callback);
 
-                ASSERT_OPEN_EVENTUALLY(latch);
-                boost::shared_ptr<string> value = result.get();
+                ASSERT_OPEN_EVENTUALLY(*latch);
+                boost::shared_ptr<std::string> value = callback->getResult();
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ(msg + executor::tasks::AppendCallable::APPENDAGE, *value);
             }
@@ -676,14 +676,13 @@ namespace hazelcast {
 
                 executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
 
-                util::CountDownLatch latch(1);
-                Atomic<boost::shared_ptr<string> > result;
-                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch, result));
+                boost::shared_ptr<util::CountDownLatch> latch(new util::CountDownLatch(1));
+                boost::shared_ptr<ResultSettingExecutionCallback> callback(new ResultSettingExecutionCallback(latch));
 
                 service->submit<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, callback);
 
-                ASSERT_OPEN_EVENTUALLY(latch);
-                boost::shared_ptr<string> value = result.get();
+                ASSERT_OPEN_EVENTUALLY(*latch);
+                boost::shared_ptr<std::string> value = callback->getResult();
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ(member.getUuid(), *value);
                 ASSERT_TRUE(map.containsKey(member.getUuid()));

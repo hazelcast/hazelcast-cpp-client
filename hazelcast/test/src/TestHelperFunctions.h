@@ -54,6 +54,6 @@
 #define ASSERT_TRUE_EVENTUALLY(value) ASSERT_EQ_EVENTUALLY(value, true)
 #define ASSERT_TRUE_EVENTUALLY_WITH_TIMEOUT(value, timeout) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(value, true, timeout)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
-#define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE(latch.await(120))
+#define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE((latch).await(120))
 
 #endif //HAZELCAST_TestHelperFunctions
