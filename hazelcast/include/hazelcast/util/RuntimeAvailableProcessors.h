@@ -48,8 +48,20 @@ namespace hazelcast {
              */
             static void override(int availableProcessors);
 
-        private:
+            /**
+             * This is to be used only for testing.
+             *
+             * @return The number of available processors on the platform.
+             */
             static int getNumberOfProcessors();
+
+            /**
+             * Resets the overridden number of available processors to {@link getNumberOfProcessors()}.
+             * <p>
+             * This is to be used only for testing.
+             */
+            static void resetOverride();
+        private:
 
             // number of available processors currently configured
             static util::AtomicInt currentAvailableProcessors;
