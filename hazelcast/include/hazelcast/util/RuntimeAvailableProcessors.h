@@ -27,7 +27,7 @@ namespace hazelcast {
          * {@link #override(int)} and {@link #resetOverride()} should only be used for testing purposes.
          */
 
-        class RuntimeAvailableProcessors {
+        class HAZELCAST_API RuntimeAvailableProcessors {
         public:
             /**
              * Returns the number of available processors.
