@@ -175,20 +175,23 @@ namespace hazelcast {
 
                     class ThreadState : public BaseState {
                     public:
-                        ThreadState(int64_t threadId) : BaseState(BaseState::Thread), threadId(threadId) {}
+                        ThreadState(int64_t threadId) : BaseState(BaseState::Thread), threadId(threadId), unparked(false) {}
 
                         void park() {
-                            util::LockGuard guard(mutex);
-                            conditionVariable.wait(mutex);
+                            parkNanos(INT64_MAX);
                         }
 
                         void parkNanos(int64_t nanos) {
                             util::LockGuard guard(mutex);
+                            if (unparked) {
+                                return;
+                            }
                             conditionVariable.waitNanos(mutex, nanos);
                         }
 
                         void unpark() {
                             util::LockGuard guard(mutex);
+                            unparked = true;
                             conditionVariable.notify_all();
                         }
 
@@ -196,6 +199,7 @@ namespace hazelcast {
                         int64_t threadId;
                         util::Mutex mutex;
                         util::ConditionVariable conditionVariable;
+                        bool unparked;
                     };
 
                     class ValueState : public BaseState {
