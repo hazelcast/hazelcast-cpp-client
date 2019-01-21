@@ -91,7 +91,10 @@ int main() {
     // Get the Distributed Executor Service
     boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    ex->submit<MessagePrinter, bool>(MessagePrinter("message to any node"));
+    boost::shared_ptr<ICompletableFuture<bool> > future = ex->submit<MessagePrinter, bool>(MessagePrinter("message to any node"));
+    // Wait for the result of the submitted task and print the result
+    boost::shared_ptr<bool> result = future->get();
+    std::cout << "Server result: " << (*result ? "success" : "failure") << std::endl;
     // Get the first Hazelcast Cluster Member
     Member firstMember = hz.getCluster().getMembers()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
@@ -99,7 +102,7 @@ int main() {
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members
     ex->executeOnAllMembers<MessagePrinter>(MessagePrinter("message to all members in the cluster"));
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
-    ex->executeOnKeyOwner<MessagePrinter>(MessagePrinter("message to the member that owns the following key"), "key");
+    ex->executeOnKeyOwner<MessagePrinter, std::string>(MessagePrinter("message to the member that owns the following key"), "key");
 
     // Shutdown this Hazelcast Client
     hz.shutdown();
