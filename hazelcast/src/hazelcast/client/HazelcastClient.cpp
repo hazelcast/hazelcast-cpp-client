@@ -103,6 +103,10 @@ namespace hazelcast {
         spi::LifecycleService &HazelcastClient::getLifecycleService() {
             return clientImpl->getLifecycleService();
         }
+
+        boost::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
+            return clientImpl->getExecutorService(name);
+        }
     }
 }
 

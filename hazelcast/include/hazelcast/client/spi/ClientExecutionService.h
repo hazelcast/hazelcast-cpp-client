@@ -39,6 +39,11 @@ namespace hazelcast {
             public:
                 virtual ~ClientExecutionService() {
                 }
+
+                /**
+                 * @return executorService that alien (user code) runs on
+                 */
+                virtual const boost::shared_ptr<util::ExecutorService> getUserExecutor() const = 0;
             };
         }
     }

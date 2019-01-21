@@ -20,9 +20,9 @@
 #include "hazelcast/util/IOUtil.h"
 #include "hazelcast/client/ClientProperties.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/impl/SimpleExecutorService.h"
+#include "hazelcast/util/RuntimeAvailableProcessors.h"
 
 namespace hazelcast {
     namespace client {
@@ -41,10 +41,22 @@ namespace hazelcast {
                                 ClientProperties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);
                     }
 
+                    int32_t executorPoolSize = poolSize;
+                    if (executorPoolSize <= 0) {
+                        executorPoolSize = util::RuntimeAvailableProcessors::get();
+                    }
+                    if (executorPoolSize <= 0) {
+                        executorPoolSize = 4; // hard coded thread pool count in case we could not get the processor count
+                    }
+
                     internalExecutor.reset(
                             new util::impl::SimpleExecutorService(logger, name + ".internal-", internalPoolSize,
                                                                   INT32_MAX));
-                 }
+
+                    userExecutor.reset(
+                            new util::impl::SimpleExecutorService(logger, name + ".user-", executorPoolSize,
+                                                                  INT32_MAX));
+                }
 
                 void ClientExecutionServiceImpl::execute(const boost::shared_ptr<util::Runnable> &command) {
                     internalExecutor->execute(command);
@@ -70,7 +82,7 @@ namespace hazelcast {
                             }
                         }
                     } catch (exception::InterruptedException &e) {
-                        logger.warning() << name << " executor await termination is interrupted. "<< e;
+                        logger.warning() << name << " executor await termination is interrupted. " << e;
                     }
                 }
 
@@ -84,6 +96,10 @@ namespace hazelcast {
                 void ClientExecutionServiceImpl::schedule(const boost::shared_ptr<util::Runnable> &command,
                                                           int64_t initialDelayInMillis) {
                     internalExecutor->schedule(command, initialDelayInMillis);
+                }
+
+                const boost::shared_ptr<util::ExecutorService> ClientExecutionServiceImpl::getUserExecutor() const {
+                    return userExecutor;
                 }
             }
         }
