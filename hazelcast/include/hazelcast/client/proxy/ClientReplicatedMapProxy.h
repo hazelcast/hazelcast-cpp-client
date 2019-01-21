@@ -148,7 +148,7 @@ namespace hazelcast {
                             cache->put(keyData, value);
                         }
                         return value;
-                    } catch (exception::IException &t) {
+                    } catch (exception::IException &) {
                         invalidate(keyData);
                         throw;
                     }
