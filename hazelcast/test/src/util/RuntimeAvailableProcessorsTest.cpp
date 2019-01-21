@@ -24,6 +24,10 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class RuntimeAvailableProcessorsTest : public ::testing::Test {
+            protected:
+                virtual void TearDown() {
+                    RuntimeAvailableProcessors::resetOverride();
+                }
             };
 
             TEST_F(RuntimeAvailableProcessorsTest, getAvailableProcessors_withoutOverride) {
