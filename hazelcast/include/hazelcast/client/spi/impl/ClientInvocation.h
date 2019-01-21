@@ -110,6 +110,8 @@ namespace hazelcast {
 
                     boost::shared_ptr<connection::Connection> getSendConnection();
 
+                    boost::shared_ptr<connection::Connection> getSendConnectionOrWait();
+
                     void
                     setSendConnection(const boost::shared_ptr<connection::Connection> &sendConnection);
 
@@ -122,6 +124,8 @@ namespace hazelcast {
                     friend std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation);
 
                     static bool isRetrySafeException(exception::IException &exception);
+
+                    boost::shared_ptr<util::Executor> getUserExecutor();
 
                 private:
                     /**

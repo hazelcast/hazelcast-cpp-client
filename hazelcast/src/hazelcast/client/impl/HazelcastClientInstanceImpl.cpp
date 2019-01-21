@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
 #include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
 #include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
@@ -337,6 +338,15 @@ namespace hazelcast {
 
             void HazelcastClientInstanceImpl::initalizeNearCacheManager() {
                 nearCacheManager.reset(new internal::nearcache::NearCacheManager(serializationService, *logger));
+            }
+
+            boost::shared_ptr<IExecutorService>
+            HazelcastClientInstanceImpl::getExecutorService(const std::string &name) {
+                executor::impl::ExecutorServiceProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(IExecutorService::SERVICE_NAME, name, factory);
+
+                return boost::static_pointer_cast<IExecutorService>(proxy);
             }
         }
     }

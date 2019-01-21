@@ -18,7 +18,9 @@
 
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
+#include <hazelcast/client/serialization/pimpl/SerializationService.h>
 #include <hazelcast/util/UuidUtil.h>
+#include <hazelcast/client/impl/Partition.h>
 
 namespace hazelcast {
     namespace client {
@@ -55,6 +57,19 @@ namespace hazelcast {
             }
 
             ClientTestSupportBase::ClientTestSupportBase() {
+            }
+
+            std::string ClientTestSupportBase::generateKeyOwnedBy(spi::ClientContext &context, const Member &member) {
+                spi::ClientPartitionService &partitionService = context.getPartitionService();
+                serialization::pimpl::SerializationService &serializationService = context.getSerializationService();
+                while (true) {
+                    std::string id = randomString();
+                    int partitionId = partitionService.getPartitionId(serializationService.toData<std::string>(&id));
+                    boost::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
+                    if (*partition->getOwner() == member) {
+                        return id;
+                    }
+                }
             }
         }
     }

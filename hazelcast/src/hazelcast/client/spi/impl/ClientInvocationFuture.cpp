@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/spi/impl/ClientInvocationFuture.h>
+
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
 
@@ -22,10 +24,10 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
 
-                ClientInvocationFuture::ClientInvocationFuture(const boost::shared_ptr<Executor> &defaultExecutor,
-                                                               ILogger &logger,
-                                                               const boost::shared_ptr<protocol::ClientMessage> &request,
-                                                               const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence)
+                ClientInvocationFuture::ClientInvocationFuture(
+                        const boost::shared_ptr<Executor> &defaultExecutor, ILogger &logger,
+                        const boost::shared_ptr<protocol::ClientMessage> &request,
+                        const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence)
                         : AbstractInvocationFuture<protocol::ClientMessage>(defaultExecutor, logger), request(request),
                           callIdSequence(callIdSequence) {}
 
@@ -72,6 +74,15 @@ namespace hazelcast {
                                     response);
 
                     return valueState->getValue();
+                }
+
+                const boost::shared_ptr<ClientInvocation> ClientInvocationFuture::getInvocation() {
+                    return invocation.lock();
+                }
+
+                void ClientInvocationFuture::setInvocation(
+                        const boost::weak_ptr<spi::impl::ClientInvocation> &invocation) {
+                    this->invocation = invocation;
                 }
 
                 ClientInvocationFuture::InternalDelegatingExecutionCallback::InternalDelegatingExecutionCallback(
