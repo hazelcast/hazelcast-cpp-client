@@ -23,7 +23,7 @@ using namespace hazelcast::client;
 // The Java server side example MessagePrinter implementation looks like the following (Please observe that Java class
 // should implement the Callable and the IdentifiedDataSerializable interfaces):
 //
-// public class MessagePrinter implements IdentifiedDataSerializable, Callable<Boolean> {
+//public class MessagePrinter implements IdentifiedDataSerializable, Callable<String> {
 //    private String message;
 //
 //    public MessagePrinter(String message) {
@@ -53,10 +53,10 @@ using namespace hazelcast::client;
 //    }
 //
 //    @Override
-//    public Boolean call()
+//    public String call()
 //            throws Exception {
 //        System.out.println(message);
-//        return true;
+//        return message;
 //    }
 //}
 
@@ -84,6 +84,34 @@ private:
     std::string message;
 };
 
+class PrinterCallback : public ExecutionCallback<std::string> {
+public:
+    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+        std::cout << "The execution of the task is completed successfully and server returned:" << *response
+                  << std::endl;
+    }
+
+    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+        std::cout << "The execution of the task failed with exception:" << e << std::endl;
+    }
+};
+
+class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
+public:
+    virtual bool select(const Member &member) const {
+        const std::string *attribute = member.getAttribute("my.special.executor");
+        if (attribute == NULL) {
+            return false;
+        }
+
+        return *attribute == "true";
+    }
+
+    virtual void toString(std::ostream &os) const {
+        os << "MyMemberSelector";
+    }
+};
+
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     ClientConfig clientConfig;
@@ -91,10 +119,11 @@ int main() {
     // Get the Distributed Executor Service
     boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
-    boost::shared_ptr<ICompletableFuture<bool> > future = ex->submit<MessagePrinter, bool>(MessagePrinter("message to any node"));
+    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(
+            MessagePrinter("message to any node"));
     // Wait for the result of the submitted task and print the result
-    boost::shared_ptr<bool> result = future->get();
-    std::cout << "Server result: " << (*result ? "success" : "failure") << std::endl;
+    boost::shared_ptr<std::string> result = future->get();
+    std::cout << "Server result: " << *result << std::endl;
     // Get the first Hazelcast Cluster Member
     Member firstMember = hz.getCluster().getMembers()[0];
     // Submit the MessagePrinter Runnable to the first Hazelcast Cluster Member
@@ -102,8 +131,15 @@ int main() {
     // Submit the MessagePrinter Runnable to all Hazelcast Cluster Members
     ex->executeOnAllMembers<MessagePrinter>(MessagePrinter("message to all members in the cluster"));
     // Submit the MessagePrinter Runnable to the Hazelcast Cluster Member owning the key called "key"
-    ex->executeOnKeyOwner<MessagePrinter, std::string>(MessagePrinter("message to the member that owns the following key"), "key");
-
+    ex->executeOnKeyOwner<MessagePrinter, std::string>(
+            MessagePrinter("message to the member that owns the key"), "key");
+    // Instantiate a callback instance
+    boost::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
+    // Use a callback execution when the task is completed
+    ex->submit<MessagePrinter, std::string>(MessagePrinter("Message for the callback"), callback);
+    // Choose which member to submit the task to using a member selector
+    ex->submit<MessagePrinter, std::string>(MessagePrinter("Message when using the member selector"),
+                                            MyMemberSelector());
     // Shutdown this Hazelcast Client
     hz.shutdown();
 
