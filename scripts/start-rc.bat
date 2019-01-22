@@ -8,8 +8,8 @@ set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
 set HAZELCAST_RC_VERSION=0.4-SNAPSHOT
 set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
 set RELEASE_REPO=http://repo1.maven.apache.org/maven2
-set ENTERPRISE_RELEASE_REPO=https://repository-hazelcast-l337.forge.cloudbees.com/release/
-set ENTERPRISE_SNAPSHOT_REPO=https://repository-hazelcast-l337.forge.cloudbees.com/snapshot/
+set ENTERPRISE_RELEASE_REPO=https://repository.hazelcast.com/release/
+set ENTERPRISE_SNAPSHOT_REPO=https://repository.hazelcast.com/snapshot/
 
 if not "x%HZ_VERSION:SNAPSHOT=%"=="x%HZ_VERSION%" (
     set REPO=%SNAPSHOT_REPO%
