@@ -648,7 +648,7 @@ namespace hazelcast {
 
                 IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
 
-                vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
                 std::string key = generateKeyOwnedBy(clientContext, member);
@@ -669,7 +669,7 @@ namespace hazelcast {
 
                 IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
 
-                vector<Member> members = client->getCluster().getMembers();
+                std::vector<Member> members = client->getCluster().getMembers();
                 spi::ClientContext clientContext(*client);
                 Member &member = members[0];
                 std::string key = generateKeyOwnedBy(clientContext, member);
@@ -686,6 +686,124 @@ namespace hazelcast {
                 ASSERT_NOTNULL(value.get(), std::string);
                 ASSERT_EQ(member.getUuid(), *value);
                 ASSERT_TRUE(map.containsKey(member.getUuid()));
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecute) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                service->execute<executor::tasks::MapPutPartitionAwareCallable>(
+                        executor::tasks::MapPutPartitionAwareCallable(testName, "key"));
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                assertSizeEventually(1, map);
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecute_withMemberSelector) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+                executor::tasks::SelectAllMembers selector;
+
+                service->execute<executor::tasks::MapPutPartitionAwareCallable>(
+                        executor::tasks::MapPutPartitionAwareCallable(testName, "key"), selector);
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                assertSizeEventually(1, map);
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnKeyOwner) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                std::vector<Member> members = client->getCluster().getMembers();
+                spi::ClientContext clientContext(*client);
+                Member &member = members[0];
+                std::string targetUuid = member.getUuid();
+                std::string key = generateKeyOwnedBy(clientContext, member);
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, key);
+
+                service->executeOnKeyOwner<executor::tasks::MapPutPartitionAwareCallable, std::string>(callable, key);
+
+                ASSERT_TRUE_EVENTUALLY(map.containsKey(targetUuid));
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnMember) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                std::vector<Member> members = client->getCluster().getMembers();
+                Member &member = members[0];
+                std::string targetUuid = member.getUuid();
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+
+                service->executeOnMember<executor::tasks::MapPutPartitionAwareCallable>(callable, member);
+
+                ASSERT_TRUE_EVENTUALLY(map.containsKey(targetUuid));
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnMembers) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                std::vector<Member> allMembers = client->getCluster().getMembers();
+                std::vector<Member> members(allMembers.begin(), allMembers.begin() + 2);
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+
+                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, members);
+
+                ASSERT_TRUE_EVENTUALLY(map.containsKey(members[0].getUuid()) && map.containsKey(members[1].getUuid()));
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withEmptyCollection) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+
+                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable,
+                                                                                         std::vector<Member>());
+
+                assertSizeEventually(0, map);
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnMembers_withSelector) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+
+                executor::tasks::SelectAllMembers selector;
+
+                service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, selector);
+
+                assertSizeEventually(numberOfMembers, map);
+            }
+
+            TEST_F(ClientExecutorServiceTest, testExecuteOnAllMembers) {
+                std::string testName = getTestName();
+                boost::shared_ptr<IExecutorService> service = client->getExecutorService(testName);
+
+                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(testName);
+
+                executor::tasks::MapPutPartitionAwareCallable callable(testName, "key");
+
+                service->executeOnAllMembers<executor::tasks::MapPutPartitionAwareCallable>(callable);
+
+                assertSizeEventually(numberOfMembers, map);
             }
         }
     }

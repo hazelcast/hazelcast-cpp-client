@@ -20,8 +20,7 @@
 #ifndef HAZELCAST_TestHelperFunctions
 #define HAZELCAST_TestHelperFunctions
 
-#define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, 120)
-#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, timeoutSeconds) do{              \
+#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(message, expected, actual, timeoutSeconds) do{              \
             bool result = false;                                \
             for(int i = 0 ; i < timeoutSeconds * 5 && !result ; i++ ) {    \
                 if ((expected) == (actual)) {                       \
@@ -30,7 +29,7 @@
                     util::sleepmillis(200);                     \
                 }                                               \
             }                                                   \
-            ASSERT_TRUE(result);                                \
+            ASSERT_TRUE(result) << message;                     \
       }while(0)                                                 \
 
 #define WAIT_TRUE_EVENTUALLY(expression) do{                    \
@@ -38,6 +37,9 @@
                 util::sleepmillis(200);                         \
             }                                                   \
       }while(0)                                                 \
+
+#define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, timeoutSeconds) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("", expected, actual, timeoutSeconds)
+#define ASSERT_EQ_EVENTUALLY(expected, actual) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(expected, actual, 120)
 
 #define ASSERT_TRUE_ALL_THE_TIME(expression, seconds) do{       \
             for(int i = 0; i < seconds ; i++ ) {                \
@@ -55,5 +57,10 @@
 #define ASSERT_TRUE_EVENTUALLY_WITH_TIMEOUT(value, timeout) ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT(value, true, timeout)
 #define ASSERT_NULL_EVENTUALLY(value, type) ASSERT_EQ_EVENTUALLY((type *) NULL, value)
 #define ASSERT_OPEN_EVENTUALLY(latch) ASSERT_TRUE((latch).await(120))
+
+#define assertSizeEventually(expectedSize, container) assertSizeEventuallyWithTimeout(expectedSize, container, 120)
+#define assertSizeEventuallyWithTimeout(expectedSize, container, timeoutSeconds) do{  \
+    ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG("the size of the map is not correct", expectedSize, (container).size(), timeoutSeconds);  \
+    } while(0)                                                                                                                      \
 
 #endif //HAZELCAST_TestHelperFunctions
