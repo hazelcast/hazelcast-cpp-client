@@ -1983,7 +1983,7 @@ This section describes how Hazelcast IMDG's distributed executor service and ent
 ### 7.6.1. Distributed Executor Service
 Hazelcast C++ client allows you to asynchronously execute your tasks (logical units of work) in the cluster, such as database queries, complex calculations and image rendering.
 
-With `IExecutorService`, you can execute tasks asynchronously and perform other useful tasks. If your task execution takes longer than expected, you can cancel the task execution. Tasks should be `Hazelcast Serializable`, i.e. `IdentifiedDataSerializable`, `Portable`, `Custom`, since they will be distributed in the cluster.
+With `IExecutorService`, you can execute tasks asynchronously and perform other useful tasks. If your task execution takes longer than expected, you can cancel the task execution. Tasks should be `Hazelcast Serializable`, i.e., `IdentifiedDataSerializable`, `Portable`, `Custom`, since they will be distributed in the cluster.
 
 You need to implement the actual task logic at the server side as a Java code. The task should implement Java's `java.util.concurrent.Callable` interface.
 
@@ -2118,7 +2118,7 @@ void printOnTheMember(const std::string &input, const Member &member) {
             MessagePrinter(input), member);
 
     boost::shared_ptr<std::string> taskResult = future->get();
-````
+```
 
 ```C++
 void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
