@@ -790,7 +790,7 @@ namespace hazelcast {
 
                 service->executeOnMembers<executor::tasks::MapPutPartitionAwareCallable>(callable, selector);
 
-                assertSizeEventually(numberOfMembers, map);
+                assertSizeEventually((int) numberOfMembers, map);
             }
 
             TEST_F(ClientExecutorServiceTest, testExecuteOnAllMembers) {
@@ -803,7 +803,7 @@ namespace hazelcast {
 
                 service->executeOnAllMembers<executor::tasks::MapPutPartitionAwareCallable>(callable);
 
-                assertSizeEventually(numberOfMembers, map);
+                assertSizeEventually((int) numberOfMembers, map);
             }
         }
     }
