@@ -1978,26 +1978,26 @@ int main() {
 
 ## 7.6. Distributed Computing
 
-This chapter explains Hazelcast's distributed executor service and entry processor implementations.
+This section describes how Hazelcast IMDG's distributed executor service and entry processor features can be used in the C++ client.
 
 ### 7.6.1. Distributed Executor Service
 Hazelcast C++ client allows you to asynchronously execute your tasks (logical units of work) in the cluster, such as database queries, complex calculations and image rendering.
 
-With `IExecutorService`, you can execute tasks asynchronously and perform other useful tasks. If your task execution takes longer than expected, you can cancel the task execution. Tasks should be `Hazelcast Serializable` (i.e. `IdentifiedDataSerializable`, `Portable`, `Custom`) since they will be distributed in the cluster.
+With `IExecutorService`, you can execute tasks asynchronously and perform other useful tasks. If your task execution takes longer than expected, you can cancel the task execution. Tasks should be `Hazelcast Serializable`, i.e. `IdentifiedDataSerializable`, `Portable`, `Custom`, since they will be distributed in the cluster.
 
-You need to implement the actual task logic at the server side as a Java code. The task should implement Java `java.util.concurrent.Callable` interface.
+You need to implement the actual task logic at the server side as a Java code. The task should implement Java's `java.util.concurrent.Callable` interface.
 
 Note that, the distributed executor service (`IExecutorService`) is intended to run processing where the data is hosted: on the server members.
 
-You can find more details on server side service configuration at [Executor Service](https://docs.hazelcast.org/docs/latest/manual/html-single/#executor-service)
+For more information on the server side configuration, see the [Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#executor-service) in the Hazelcast IMDG Reference Manual.
 
 #### 7.6.1.1 Implementing a Callable Task
 
-You implement a C++ class which is `Hazelcast Serializable`. This is the task class to be run at the server side. The client side implementation does not need to have any logic, it is purely for initiating the server side task.
+You implement a C++ class which is `Hazelcast Serializable`. This is the task class to be run on the server side. The client side implementation does not need to have any logic, it is purely for initiating the server side task.
 
-At the server side, when you implement the task as `java.util.concurrent.Callable` (a task that returns a value), implement one of the Hazelcast serialization methods for the new class. The serialization type needs to match with that of the client side task class.
+On the server side, when you implement the task as `java.util.concurrent.Callable` (a task that returns a value), implement one of the Hazelcast serialization methods for the new class. The serialization type needs to match with that of the client side task class.
 
-Below is a sample C++ task class implementation.
+An example C++ task class implementation is shown below.
 
 ```C++
 class MessagePrinter : public serialization::IdentifiedDataSerializable {
@@ -2025,7 +2025,7 @@ private:
 };
 ```
 
-Below is an example of a Callable Java task which matches the C++ class above. `MessagePrinter` prints out the message sent from the C++ client at the cluster members.
+An example of a Callable Java task which matches the above C++ class is shown below. `MessagePrinter` prints out the message sent from the C++ client at the cluster members.
 
 ```Java
 public class MessagePrinter implements IdentifiedDataSerializable, Callable<String> {
@@ -2066,18 +2066,18 @@ public class MessagePrinter implements IdentifiedDataSerializable, Callable<Stri
 }
 ```
 
-You need to compile and link the Java class at the server side (put it at the server classpath), implement and register a `DataSerializableFactory` at the server side. In this example, we designed the task as `IdentifiedDataSerializable` and you can see that the factory and class id for both C++ and Java classes are the same. You can of course use other Hazelcast serialization methods as well.
+You need to compile and link the Java class on the server side (add it to the server's classpath), implement and register a DataSerializableFactory on the server side. In this example, we designed the task as `IdentifiedDataSerializable` and you can see that the factory and class ID for both C++ and Java classes are the same. You can of course use the other Hazelcast serialization methods as well.
 
 #### 7.6.1.2 Executing a Callable Task
 
 To execute a callable task:
 
-* Retrieve the Executor from `HazelcastClient`.
+* Retrieve the executor from `HazelcastClient`.
 * Submit a task which returns a `boost::shared_ptr<ICompletableFuture<T> >`.
 * After executing the task, you do not have to wait for the execution to complete, you can process other things.
 * When ready, use the `ICompletableFuture<T>` object to retrieve the result as shown in the code example below.
 
-Below shows an example where `MessagePrinter` task is executed.
+An example where `MessagePrinter` task is executed is shown below.
 
 ```C++
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
@@ -2094,7 +2094,7 @@ Below shows an example where `MessagePrinter` task is executed.
 
 #### 7.6.1.3 Scaling The Executor Service
 
-You can scale the Executor service both vertically (scale up) and horizontally (scale out). Please see [Scaling The Executor Service](https://docs.hazelcast.org/docs/latest/manual/html-single/#scaling-the-executor-service) for more details of cluster configuration.
+You can scale the Executor service both vertically (scale up) and horizontally (scale out). See the [Scaling The Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#scaling-the-executor-service) in the Hazelcast IMDG Reference Manual for more details on its configuration.
 
 #### 7.6.1.4 Executing Code in the Cluster
 
@@ -2172,15 +2172,15 @@ void printOnMembers(const std::string input, const std::vector<Member> &members)
 }
 ```
 
-**NOTE:** You can obtain the set of cluster members via `HazelcastClient::getCluster()::getMembers()` call.
+**NOTE:** You can obtain the set of cluster members via the `HazelcastClient::getCluster()::getMembers()` call.
 
 #### 7.6.1.5 Canceling an Executing Task
 A task in the code that you execute in a cluster might take longer than expected. If you cannot stop/cancel that task, it will keep eating your resources.
 
-To cancel a task, you can use `ICompletableFuture<T>::cancel()` API. This api encourages us to code and design for cancellations, a highly ignored part of software development.
+To cancel a task, you can use the `ICompletableFuture<T>::cancel()` API. This API encourages us to code and design for cancellations, a highly ignored part of software development.
 
 #### 7.6.1.5.1 Example Task to Cancel
-The following code waits for the task completed in 3 seconds and if it is not finished a `TimeoutException` is thrown from the `get` method and we cancel the task with the `cancel` method. The remote execution of the task is being cancelled.
+The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `TimeoutException` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
 
 ```
     try {
@@ -2222,13 +2222,13 @@ public:
 ```
 
 #### 7.6.1.7 Selecting Members for Task Execution
-As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or a set of keys, or you allow Hazelcast to select a member.
+As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or set of keys, or you allow Hazelcast to select a member.
 
 If you want more control over where your code runs, use the `MemberSelector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `MemberSelector` is an interface that you can implement and then provide to the `IExecutorService` when you submit or execute.
 
 The `bool select(const Member &member)` method is called for every available member in the cluster. Implement this method to decide if the member is going to be used or not.
 
-In a simple example shown below, we select the cluster members based on the presence of an attribute.
+In the simple example shown below, we select the cluster members based on the presence of an attribute.
 
 ```C++
 class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
@@ -2248,7 +2248,7 @@ public:
 };
 ```
 
-You can now submit your task using this selector and the task will run on the member whose attribute key "my.special.executor" is set to string value "true". An example is shown below:
+You can now submit your task using this selector and the task will run on the member whose attribute key "my.special.executor" is set to "true". An example is shown below:
 
 ```
 ex->submit<MessagePrinter, std::string>(MessagePrinter(input), MyMemberSelector());
