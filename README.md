@@ -663,8 +663,9 @@ Hazelcast C++ client supports the following data structures and features:
 * Semaphore
 * Atomic Long
 * CRDT PN Counter
-* Flake Id Generator
+* Flake ID Generator
 * Event Listeners
+* Distributed Executor Service
 * Entry Processor
 * Transactional Map
 * Transactional MultiMap
