@@ -77,7 +77,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable>
             void execute(const HazelcastSerializable &command) {
-                submit<HazelcastSerializable, void>(command);
+                submit<HazelcastSerializable, bool>(command);
             }
 
             /**
@@ -126,7 +126,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable>
             void executeOnMembers(const HazelcastSerializable &command, const std::vector<Member> &members) {
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    submitToMember<HazelcastSerializable, void>(command, *it);
+                    submitToMember<HazelcastSerializable, bool>(command, *it);
                 }
             }
 
@@ -153,7 +153,7 @@ namespace hazelcast {
             void executeOnAllMembers(const HazelcastSerializable &command) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    submitToMember<HazelcastSerializable, void>(command, *it);
+                    submitToMember<HazelcastSerializable, bool>(command, *it);
                 }
             }
 
