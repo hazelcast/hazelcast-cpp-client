@@ -104,7 +104,7 @@ namespace hazelcast {
                         clientProxy->getName(),
                         clientProxy->getServiceName(), *initializationTarget);
                 spi::impl::ClientInvocation::create(client, clientMessage, clientProxy->getServiceName(),
-                                                    *initializationTarget)->invoke().get();
+                                                    *initializationTarget)->invoke()->get();
                 clientProxy->onInitialize();
             }
 
