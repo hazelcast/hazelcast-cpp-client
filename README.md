@@ -74,7 +74,17 @@
     * [7.5.2. Distributed Data Structure Events](#752-distributed-data-structure-events)
       * [7.5.2.1. Listening for Map Events](#7521-listening-for-map-events)
   * [7.6. Distributed Computing](#76-distributed-computing)
-    * [7.6.1. Using EntryProcessor](#761-using-entryprocessor)
+    * [7.6.1. Distributed Executor Service](#761-distributed-executor-service)
+        * [7.6.1.1 Implementing a Callable Task](#7611-implementing-a-callable-task)
+        * [7.6.1.2 Executing a Callable Task](#7612-executing-a-callable-task)
+        * [7.6.1.3 Scaling The Executor Service](#7613-scaling-the-executor-service)
+        * [7.6.1.4 Executing Code in the Cluster](#7614-executing-code-in-the-cluster)
+        * [7.6.1.5 Canceling an Executing Task](#7615-canceling-an-executing-task)
+            * [7.6.1.5.1 Example Task to Cancel](#76151-example-task-to-cancel)
+        * [7.6.1.6 Callback When Task Completes](#7616-callback-when-task-completes)
+            * [7.6.1.6.1 Example Task to Callback](#76161-example-task-to-callback)
+        * [7.6.1.7 Selecting Members for Task Execution](#7617-selecting-members-for-task-execution)
+    * [7.6.2. Using EntryProcessor](#762-using-entryprocessor)
   * [7.7. Distributed Query](#77-distributed-query)
     * [7.7.1. How Distributed Query Works](#771-how-distributed-query-works)
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
@@ -1968,9 +1978,283 @@ int main() {
 
 ## 7.6. Distributed Computing
 
-This chapter explains how you can use Hazelcast IMDG's entry processor implementation in the C++ client.
+This section describes how Hazelcast IMDG's distributed executor service and entry processor features can be used in the C++ client.
 
-### 7.6.1. Using EntryProcessor
+### 7.6.1. Distributed Executor Service
+Hazelcast C++ client allows you to asynchronously execute your tasks (logical units of work) in the cluster, such as database queries, complex calculations and image rendering.
+
+With `IExecutorService`, you can execute tasks asynchronously and perform other useful tasks. If your task execution takes longer than expected, you can cancel the task execution. Tasks should be `Hazelcast Serializable`, i.e., `IdentifiedDataSerializable`, `Portable`, `Custom`, since they will be distributed in the cluster.
+
+You need to implement the actual task logic at the server side as a Java code. The task should implement Java's `java.util.concurrent.Callable` interface.
+
+Note that, the distributed executor service (`IExecutorService`) is intended to run processing where the data is hosted: on the server members.
+
+For more information on the server side configuration, see the [Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#executor-service) in the Hazelcast IMDG Reference Manual.
+
+#### 7.6.1.1 Implementing a Callable Task
+
+You implement a C++ class which is `Hazelcast Serializable`. This is the task class to be run on the server side. The client side implementation does not need to have any logic, it is purely for initiating the server side task.
+
+On the server side, when you implement the task as `java.util.concurrent.Callable` (a task that returns a value), implement one of the Hazelcast serialization methods for the new class. The serialization type needs to match with that of the client side task class.
+
+An example C++ task class implementation is shown below.
+
+```C++
+class MessagePrinter : public serialization::IdentifiedDataSerializable {
+public:
+    MessagePrinter(const std::string &message) : message(message) {}
+
+    virtual int getFactoryId() const {
+        return 1;
+    }
+
+    virtual int getClassId() const {
+        return 555;
+    }
+
+    virtual void writeData(serialization::ObjectDataOutput &writer) const {
+        writer.writeUTF(&message);
+    }
+
+    virtual void readData(serialization::ObjectDataInput &reader) {
+        // no need to implement since it will not be read by the client in our example
+    }
+
+private:
+    std::string message;
+};
+```
+
+An example of a Callable Java task which matches the above C++ class is shown below. `MessagePrinter` prints out the message sent from the C++ client at the cluster members.
+
+```Java
+public class MessagePrinter implements IdentifiedDataSerializable, Callable<String> {
+    private String message;
+
+    public MessagePrinter(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public int getFactoryId() {
+        return 1;
+    }
+
+    @Override
+    public int getId() {
+        return 555;
+    }
+
+    @Override
+    public void writeData(ObjectDataOutput out)
+            throws IOException {
+        out.writeUTF(message);
+    }
+
+    @Override
+    public void readData(ObjectDataInput in)
+            throws IOException {
+        message = in.readUTF();
+    }
+
+    @Override
+    public String call()
+            throws Exception {
+        System.out.println(message);
+        return message;
+    }
+}
+```
+
+You need to compile and link the Java class on the server side (add it to the server's classpath), implement and register a DataSerializableFactory on the server side. In this example, we designed the task as `IdentifiedDataSerializable` and you can see that the factory and class ID for both C++ and Java classes are the same. You can of course use the other Hazelcast serialization methods as well.
+
+#### 7.6.1.2 Executing a Callable Task
+
+To execute a callable task:
+
+* Retrieve the executor from `HazelcastClient`.
+* Submit a task which returns a `boost::shared_ptr<ICompletableFuture<T> >`.
+* After executing the task, you do not have to wait for the execution to complete, you can process other things.
+* When ready, use the `ICompletableFuture<T>` object to retrieve the result as shown in the code example below.
+
+An example where `MessagePrinter` task is executed is shown below.
+
+```C++
+    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+    ClientConfig clientConfig;
+    HazelcastClient hz(clientConfig);
+    // Get the Distributed Executor Service
+    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member
+    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(MessagePrinter("message to any node"));
+    // Wait for the result of the submitted task and print the result
+    boost::shared_ptr<std::string> result = future->get();
+    std::cout << "Server retuned result: " << *result << std::endl;
+```
+
+#### 7.6.1.3 Scaling The Executor Service
+
+You can scale the Executor service both vertically (scale up) and horizontally (scale out). See the [Scaling The Executor Service section](https://docs.hazelcast.org/docs/latest/manual/html-single/#scaling-the-executor-service) in the Hazelcast IMDG Reference Manual for more details on its configuration.
+
+#### 7.6.1.4 Executing Code in the Cluster
+
+The distributed executor service allows you to execute your code in the cluster. In this section, the code examples are based on the `MessagePrinter` class above. The code examples show how Hazelcast can execute your code:
+
+* `printOnTheMember`: On a specific cluster member you choose with the `IExecutorService::submitToMember` method.
+* `printOnTheMemberOwningTheKey`: On the member owning the key you choose with the `IExecutorService::submitToKeyOwner` method.
+* `printOnSomewhere`: On the member Hazelcast picks with the `IExecutorService::submit` method.
+* `printOnMembers`: On all or a subset of the cluster members with the `IExecutorService::submitToMembers` method.
+
+```C++
+void printOnTheMember(const std::string &input, const Member &member) {
+    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+    ClientConfig clientConfig;
+    HazelcastClient hz(clientConfig);
+
+    // Get the Distributed Executor Service
+    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    // Submit the MessagePrinter to a the provided Hazelcast Member
+    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submitToMember<MessagePrinter, std::string>(
+            MessagePrinter(input), member);
+
+    boost::shared_ptr<std::string> taskResult = future->get();
+```
+
+```C++
+void printOnTheMemberOwningTheKey(const std::string &input, const std::string &key) {
+    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+    ClientConfig clientConfig;
+    HazelcastClient hz(clientConfig);
+
+    // Get the Distributed Executor Service
+    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    // Submit the MessagePrinter to the cluster member owning the key
+    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submitToKeyOwner<MessagePrinter, std::string, std::string>(
+            MessagePrinter(input), key);
+
+    boost::shared_ptr<std::string> taskResult = future->get();
+}
+```
+
+```C++
+void printOnSomewhere(const std::string &input) {
+    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+    ClientConfig clientConfig;
+    HazelcastClient hz(clientConfig);
+
+    // Get the Distributed Executor Service
+    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    // Submit the MessagePrinter to the cluster member owning the key
+    boost::shared_ptr<ICompletableFuture<std::string> > future = ex->submit<MessagePrinter, std::string>(
+            MessagePrinter(input));
+
+    boost::shared_ptr<std::string> taskResult = future->get();
+}
+```
+
+```C++
+void printOnMembers(const std::string input, const std::vector<Member> &members) {
+    // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
+    ClientConfig clientConfig;
+    HazelcastClient hz(clientConfig);
+
+    // Get the Distributed Executor Service
+    boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
+    // Submit the MessagePrinter to the cluster member owning the key
+    std::map<Member, boost::shared_ptr<ICompletableFuture<std::string> > > futures = ex->submitToMembers<MessagePrinter, std::string>(
+            MessagePrinter(input), members);
+
+    for (std::map<Member, boost::shared_ptr<ICompletableFuture<std::string> > >::const_iterator it=futures.begin();it != futures.end(); ++it) {
+        boost::shared_ptr<std::string> result = it->second->get();
+        std::cout << "Result for member " << it->first << " is " << *result << std::endl;
+        // ...
+    }
+}
+```
+
+**NOTE:** You can obtain the set of cluster members via the `HazelcastClient::getCluster()::getMembers()` call.
+
+#### 7.6.1.5 Canceling an Executing Task
+A task in the code that you execute in a cluster might take longer than expected. If you cannot stop/cancel that task, it will keep eating your resources.
+
+To cancel a task, you can use the `ICompletableFuture<T>::cancel()` API. This API encourages us to code and design for cancellations, a highly ignored part of software development.
+
+#### 7.6.1.5.1 Example Task to Cancel
+The following code waits for the task to be completed in 3 seconds. If it is not finished within this period, a `TimeoutException` is thrown from the `get()` method, and we cancel the task with the `cancel()` method. The remote execution of the task is being cancelled.
+
+```
+    try {
+        future->get(3, TimeUnit::SECONDS());
+    } catch (exception::TimeoutException &e) {
+        future->cancel(true);
+    }
+```
+
+#### 7.6.1.6 Callback When Task Completes
+
+You can use the `ExecutionCallback` interface offered by Hazelcast to asynchronously be notified when the execution is done.
+
+* To be notified when your task completes without an error, implement the `onResponse` method.
+* To be notified when your task completes with an error, implement the `onFailure` method.
+
+#### 7.6.1.6.1 Example Task to Callback
+
+The example code below submits the `MessagePrinter` task to `PrinterCallback` and prints the result asynchronously. `ExecutionCallback` has the methods `onResponse` and `onFailure`. In this example code, `onResponse` is called upon a valid response and prints the calculation result, whereas `onFailure` is called upon a failure and prints the exception details.
+
+```C++
+    boost::shared_ptr<ExecutionCallback<std::string> > callback(new PrinterCallback());
+    ex->submit<MessagePrinter, std::string>(MessagePrinter(input), callback);
+```
+
+The `PrinterCallback` implementation class is as below:
+
+```C++
+class PrinterCallback : public ExecutionCallback<std::string> {
+public:
+    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+        std::cout << "The execution of the task is completed successfully and server returned:" << *response << std::endl;
+    }
+
+    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+        std::cout << "The execution of the task failed with exception:" << e << std::endl;
+    }
+};
+```
+
+#### 7.6.1.7 Selecting Members for Task Execution
+As previously mentioned, it is possible to indicate where in the Hazelcast cluster the task is executed. Usually you execute these in the cluster based on the location of a key or set of keys, or you allow Hazelcast to select a member.
+
+If you want more control over where your code runs, use the `MemberSelector` interface. For example, you may want certain tasks to run only on certain members, or you may wish to implement some form of custom load balancing regime.  The `MemberSelector` is an interface that you can implement and then provide to the `IExecutorService` when you submit or execute.
+
+The `bool select(const Member &member)` method is called for every available member in the cluster. Implement this method to decide if the member is going to be used or not.
+
+In the simple example shown below, we select the cluster members based on the presence of an attribute.
+
+```C++
+class MyMemberSelector : public hazelcast::client::cluster::memberselector::MemberSelector {
+public:
+    virtual bool select(const Member &member) const {
+        const std::string *attribute = member.getAttribute("my.special.executor");
+        if (attribute == NULL) {
+            return false;
+        }
+
+        return *attribute == "true";
+    }
+
+    virtual void toString(std::ostream &os) const {
+        os << "MyMemberSelector";
+    }
+};
+```
+
+You can now submit your task using this selector and the task will run on the member whose attribute key "my.special.executor" is set to "true". An example is shown below:
+
+```
+ex->submit<MessagePrinter, std::string>(MessagePrinter(input), MyMemberSelector());
+```
+
+### 7.6.2. Using EntryProcessor
 
 Hazelcast supports entry processing. An entry processor is a function that executes your code on a map entry in an atomic way.
 
