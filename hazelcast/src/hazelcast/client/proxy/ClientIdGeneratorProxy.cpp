@@ -18,7 +18,7 @@
 namespace hazelcast {
     namespace client {
         namespace proxy {
-            const std::string ClientIdGeneratorProxy::SERVICE_NAME = "hz:impl:IdGeneratorService";
+            const std::string ClientIdGeneratorProxy::SERVICE_NAME = "hz:impl:idGeneratorService";
 
             ClientIdGeneratorProxy::ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context)
                     : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
