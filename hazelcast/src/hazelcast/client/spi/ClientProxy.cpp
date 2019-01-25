@@ -72,7 +72,7 @@ namespace hazelcast {
             void ClientProxy::destroyRemotely() {
                 std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
                         getName(), getServiceName());
-                spi::impl::ClientInvocation::create(getContext(), clientMessage, getName())->invoke().get();
+                spi::impl::ClientInvocation::create(getContext(), clientMessage, getName())->invoke()->get();
             }
 
             ClientProxy::EventHandlerDelegator::EventHandlerDelegator(client::impl::BaseEventHandler *handler) : handler(
