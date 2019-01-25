@@ -15,7 +15,6 @@
  */
 
 #include "HazelcastServerFactory.h"
-#include "SimpleMapTest.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -57,7 +56,5 @@ int main(int argc, char** argv) {
     ::testing::AddGlobalTestEnvironment(new ServerFactoryEnvironment("127.0.0.1"));
 
     return RUN_ALL_TESTS();
-
-    //SimpleMapTest("127.0.0.1", 5701).start();
 }
 
