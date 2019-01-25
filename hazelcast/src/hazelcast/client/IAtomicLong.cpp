@@ -36,7 +36,7 @@ namespace hazelcast {
         }
 
         int64_t IAtomicLong::getAndAdd(int64_t delta) {
-            return impl->addAndGet(delta);
+            return impl->getAndAdd(delta);
         }
 
         int64_t IAtomicLong::getAndSet(int64_t newValue) {
