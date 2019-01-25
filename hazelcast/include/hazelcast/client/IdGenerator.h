@@ -41,15 +41,17 @@ namespace hazelcast {
          *
          * Cluster-wide unique id generator.
          */
-    class HAZELCAST_API IdGenerator : public impl::IdGeneratorInterface {
+        class HAZELCAST_API IdGenerator : public impl::IdGeneratorInterface {
             friend class impl::HazelcastClientInstanceImpl;
+
             friend class FlakeIdGenerator;
+
         public:
-        virtual ~IdGenerator();
+            virtual ~IdGenerator();
 
-        virtual bool init(int64_t id);
+            virtual bool init(int64_t id);
 
-            virtual  int64_t newId();
+            virtual int64_t newId();
 
         private:
             IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl);
