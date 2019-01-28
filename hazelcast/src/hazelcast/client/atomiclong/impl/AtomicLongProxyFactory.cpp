@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_IMPL_IDGENERATORINTERFACE_H_
-#define HAZELCAST_CLIENT_IMPL_IDGENERATORINTERFACE_H_
-
-#include <stdint.h>
-
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
+#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
 
 namespace hazelcast {
     namespace client {
-        namespace impl {
-            class HAZELCAST_API IdGeneratorInterface {
-            public:
-                 virtual int64_t newId() = 0;
+        namespace atomiclong {
+            namespace impl {
+                AtomicLongProxyFactory::AtomicLongProxyFactory(spi::ClientContext *clientContext) : clientContext(
+                        clientContext) {}
 
-                 virtual bool init(int64_t id) = 0;
-            };
+                boost::shared_ptr<spi::ClientProxy> AtomicLongProxyFactory::create(const std::string &id) {
+                    return boost::shared_ptr<spi::ClientProxy>(new proxy::ClientAtomicLongProxy(id, clientContext));
+                }
+            }
         }
     }
 }
-
-#endif //HAZELCAST_CLIENT_IMPL_IDGENERATORINTERFACE_H_
-

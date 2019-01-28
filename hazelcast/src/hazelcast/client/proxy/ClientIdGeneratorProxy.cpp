@@ -19,15 +19,18 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             const std::string ClientIdGeneratorProxy::SERVICE_NAME = "hz:impl:idGeneratorService";
+            const std::string ClientIdGeneratorProxy::ATOMIC_LONG_NAME = "hz:atomic:idGenerator:";
 
-            ClientIdGeneratorProxy::ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context)
+            ClientIdGeneratorProxy::ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context,
+                                                           const IAtomicLong &atomicLong)
                     : proxy::ProxyImpl(ClientIdGeneratorProxy::SERVICE_NAME, instanceName, context),
-                      atomicLong("hz:atomic:idGenerator:" + instanceName, context), local(new util::Atomic<int64_t>(-1)),
+                      atomicLong(atomicLong), local(new util::Atomic<int64_t>(-1)),
                       residue(new util::Atomic<int32_t>(BLOCK_SIZE)), localLock(new util::Mutex) {
+                this->atomicLong.get();
             }
 
             bool ClientIdGeneratorProxy::init(int64_t id) {
-                if (id <= 0) {
+                if (id < 0) {
                     return false;
                 }
                 int64_t step = (id / BLOCK_SIZE);
@@ -36,29 +39,40 @@ namespace hazelcast {
                 bool init = atomicLong.compareAndSet(0, step + 1);
                 if (init) {
                     local->set(step);
-                    residue->set((id % BLOCK_SIZE) + 1);
+                    residue->set((int32_t) (id % BLOCK_SIZE) + 1);
                 }
                 return init;
             }
 
             int64_t ClientIdGeneratorProxy::newId() {
-                util::Atomic<int32_t> &residueValue = *residue;
-                int value = residueValue++;
-                if (value >= BLOCK_SIZE) {
+                int64_t block = local->get();
+                int32_t value = (*residue)++;
+
+                if (local->get() != block) {
+                    return newId();
+                }
+
+                if (value < BLOCK_SIZE) {
+                    return block * BLOCK_SIZE + value;
+                }
+
+                {
                     util::LockGuard lg(*localLock);
                     value = *residue;
                     if (value >= BLOCK_SIZE) {
                         *local = atomicLong.getAndIncrement();
                         *residue = 0;
                     }
-                    return newId();
-
                 }
-                return int(*local) * BLOCK_SIZE + value;
+
+                return newId();
             }
 
-            void ClientIdGeneratorProxy::onDestroy() {
-                atomicLong.onDestroy();
+            void ClientIdGeneratorProxy::destroy() {
+                util::LockGuard lg(*localLock);
+                atomicLong.destroy();
+                *local = -1;
+                *residue = BLOCK_SIZE;
             }
         }
     }
