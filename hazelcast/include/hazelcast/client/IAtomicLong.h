@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAZELCAST_ATOMIC_NUMBER
-#define HAZELCAST_ATOMIC_NUMBER
+#ifndef HAZELCAST_CLIENT_IATOMICLONG_H_
+#define HAZELCAST_CLIENT_IATOMICLONG_H_
 
-#include <string>
-#include <stdint.h>
+#include <boost/shared_ptr.hpp>
 
-#include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/serialization/pimpl/Data.h"
-#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/impl/AtomicLongInterface.h"
 
 namespace hazelcast {
     namespace client {
-        namespace spi {
-            class ClientContext;
-        }
-
-        namespace proxy {
-            class ClientIdGeneratorProxy;
+        namespace impl {
+            class HazelcastClientInstanceImpl;
         }
 
         /**
@@ -39,12 +32,9 @@ namespace hazelcast {
         * via backup.
         *
         */
-        class HAZELCAST_API IAtomicLong : public proxy::ProxyImpl {
+        class HAZELCAST_API IAtomicLong : public impl::AtomicLongInterface {
             friend class impl::HazelcastClientInstanceImpl;
-            friend class proxy::ClientIdGeneratorProxy;
-
         public:
-
             /**
             * adds the given value to the current value.
             *
@@ -115,13 +105,18 @@ namespace hazelcast {
             */
             void set(int64_t newValue);
 
+            virtual const std::string &getServiceName() const;
+
+            virtual const std::string &getName() const;
+
+            virtual void destroy();
+
         private:
+            IAtomicLong(const boost::shared_ptr<AtomicLongInterface> &impl);
 
-            IAtomicLong(const std::string& objectName, spi::ClientContext *context);
-
-            int partitionId;
+            boost::shared_ptr<impl::AtomicLongInterface> impl;
         };
     }
 }
 
-#endif /* HAZELCAST_ATOMIC_NUMBER */
+#endif /* HAZELCAST_CLIENT_IATOMICLONG_H_ */

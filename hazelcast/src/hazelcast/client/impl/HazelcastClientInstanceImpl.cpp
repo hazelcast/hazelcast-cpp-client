@@ -38,6 +38,8 @@
 #include "hazelcast/client/idgen/impl/IdGeneratorProxyFactory.h"
 #include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 #include "hazelcast/client/proxy/ClientIdGeneratorProxy.h"
+#include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
+#include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
 
 #ifndef HAZELCAST_VERSION
 #define HAZELCAST_VERSION "NOT_FOUND"
@@ -169,8 +171,15 @@ namespace hazelcast {
                 return IdGenerator(impl);
             }
 
-            IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &instanceName) {
-                return getDistributedObject<IAtomicLong>(instanceName);
+            IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &name) {
+                atomiclong::impl::AtomicLongProxyFactory factory(&clientContext);
+                boost::shared_ptr<spi::ClientProxy> proxy =
+                        getDistributedObjectForService(proxy::ClientAtomicLongProxy::SERVICE_NAME, name, factory);
+
+                boost::shared_ptr<proxy::ClientAtomicLongProxy> impl = boost::static_pointer_cast<proxy::ClientAtomicLongProxy>(
+                        proxy);
+
+                return IAtomicLong(impl);
             }
 
             FlakeIdGenerator HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {

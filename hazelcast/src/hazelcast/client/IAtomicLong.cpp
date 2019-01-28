@@ -13,90 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "hazelcast/client/IAtomicLong.h"
-
-// Includes for parameters classes
-#include "hazelcast/client/protocol/codec/AtomicLongAddAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongCompareAndSetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongDecrementAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndAddCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndSetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongIncrementAndGetCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongGetAndIncrementCodec.h"
-#include "hazelcast/client/protocol/codec/AtomicLongSetCodec.h"
-
-#include "hazelcast/client/proxy/ProxyImpl.h"
 
 namespace hazelcast {
     namespace client {
-        IAtomicLong::IAtomicLong(const std::string& objectName, spi::ClientContext *context)
-        : proxy::ProxyImpl("hz:impl:atomicLongService", objectName, context) {
-            serialization::pimpl::Data keyData = context->getSerializationService().toData<std::string>(&objectName);
-            partitionId = getPartitionId(keyData);
-        }
 
         int64_t IAtomicLong::addAndGet(int64_t delta) {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(getName(), delta);
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongAddAndGetCodec::ResponseParameters>(request, partitionId);
+            return impl->addAndGet(delta);
         }
 
         bool IAtomicLong::compareAndSet(int64_t expect, int64_t update) {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(getName(), expect, update);
-
-            return invokeAndGetResult<bool, protocol::codec::AtomicLongCompareAndSetCodec::ResponseParameters>(request, partitionId);
+            return impl->compareAndSet(expect, update);
         }
 
         int64_t IAtomicLong::decrementAndGet() {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongDecrementAndGetCodec::ResponseParameters>(request, partitionId);
+            return impl->decrementAndGet();
         }
 
         int64_t IAtomicLong::get() {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetCodec::ResponseParameters>(request, partitionId);
+            return impl->get();
         }
 
         int64_t IAtomicLong::getAndAdd(int64_t delta) {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(getName(), delta);
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndAddCodec::ResponseParameters>(request, partitionId);
+            return impl->getAndAdd(delta);
         }
 
         int64_t IAtomicLong::getAndSet(int64_t newValue) {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(getName(), newValue);
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndSetCodec::ResponseParameters>(request, partitionId);
+            return impl->getAndSet(newValue);
         }
 
         int64_t IAtomicLong::incrementAndGet() {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongIncrementAndGetCodec::ResponseParameters>(request, partitionId);
+            return impl->incrementAndGet();
         }
 
         int64_t IAtomicLong::getAndIncrement() {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(getName());
-
-            return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndIncrementCodec::ResponseParameters>(request, partitionId);
+            return impl->getAndIncrement();
         }
 
         void IAtomicLong::set(int64_t newValue) {
-            std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::AtomicLongSetCodec::encodeRequest(getName(), newValue);
+            impl->set(newValue);
+        }
 
-            invokeOnPartition(request, partitionId);
+        IAtomicLong::IAtomicLong(const boost::shared_ptr<impl::AtomicLongInterface> &impl) : impl(impl) {}
+
+        const std::string &IAtomicLong::getServiceName() const {
+            return impl->getServiceName();
+        }
+
+        const std::string &IAtomicLong::getName() const {
+            return impl->getName();
+        }
+
+        void IAtomicLong::destroy() {
+            impl->destroy();
         }
     }
 }
