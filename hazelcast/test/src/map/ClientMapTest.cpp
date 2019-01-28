@@ -151,12 +151,6 @@ namespace hazelcast {
                     clientConfig = new CONFIGTYPE();
 
                     client = new HazelcastClient(*clientConfig);
-
-                    imap = new IMap<std::string, std::string>(
-                            client->getMap<std::string, std::string>(MapClientConfig::imapName));
-                    intMap = new IMap<int, int>(client->getMap<int, int>(MapClientConfig::intMapName));
-                    employees = new IMap<int, Employee>(
-                            client->getMap<int, Employee>(MapClientConfig::employeesMapName));
                 }
 
                 static void TearDownTestCase() {
@@ -202,11 +196,21 @@ namespace hazelcast {
                     std::auto_ptr<std::string> prefix;
                 };
 
+
+            protected:
+                virtual void SetUp() {
+                    imap = new IMap<std::string, std::string>(
+                            client->getMap<std::string, std::string>(MapClientConfig::imapName));
+                    intMap = new IMap<int, int>(client->getMap<int, int>(MapClientConfig::intMapName));
+                    employees = new IMap<int, Employee>(
+                            client->getMap<int, Employee>(MapClientConfig::employeesMapName));
+                }
+
                 virtual void TearDown() {
                     // clear maps
-                    employees->clear();
-                    intMap->clear();
-                    imap->clear();
+                    employees->destroy();
+                    intMap->destroy();
+                    imap->destroy();
                     client->getMap<std::string, std::string>(MapClientConfig::ONE_SECOND_MAP_NAME).destroy();
                 }
 

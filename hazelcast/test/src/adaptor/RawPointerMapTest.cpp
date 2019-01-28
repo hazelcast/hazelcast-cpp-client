@@ -103,11 +103,23 @@ namespace hazelcast {
                         }
                     };
 
+
+                protected:
+                    virtual void SetUp() {
+                        legacyMap = new IMap<std::string, std::string>(
+                                client->getMap<std::string, std::string>("RawPointerMapTest"));
+                        imap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyMap);
+                        legacyEmployees = new IMap<int, Employee>(client->getMap<int, Employee>("EmployeesMap"));
+                        employees = new client::adaptor::RawPointerMap<int, Employee>(*legacyEmployees);
+                        legacyIntMap = new IMap<int, int>(client->getMap<int, int>("legacyIntMap"));
+                        intMap = new client::adaptor::RawPointerMap<int, int>(*legacyIntMap);
+                    }
+
                     virtual void TearDown() {
                         // clear maps
-                        intMap->clear();
-                        employees->clear();
-                        imap->clear();
+                        legacyIntMap->destroy();
+                        legacyEmployees->destroy();
+                        legacyMap->destroy();
                     }
 
                     static void SetUpTestCase() {
@@ -127,13 +139,6 @@ namespace hazelcast {
                         clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
                         #endif // HZ_BUILD_WITH_SSL
                         client = new HazelcastClient(*clientConfig);
-                        legacyMap = new IMap<std::string, std::string>(
-                                client->getMap<std::string, std::string>("RawPointerMapTest"));
-                        imap = new client::adaptor::RawPointerMap<std::string, std::string>(*legacyMap);
-                        legacyEmployees = new IMap<int, Employee>(client->getMap<int, Employee>("EmployeesMap"));
-                        employees = new client::adaptor::RawPointerMap<int, Employee>(*legacyEmployees);
-                        legacyIntMap = new IMap<int, int>(client->getMap<int, int>("legacyIntMap"));
-                        intMap = new client::adaptor::RawPointerMap<int, int>(*legacyIntMap);
                     }
 
                     static void TearDownTestCase() {
