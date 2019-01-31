@@ -92,7 +92,12 @@ namespace hazelcast {
                     HZ_MAP_ADDNEARCACHEINVALIDATIONLISTENER = 0x0145,
                     HZ_MAP_FETCHWITHQUERY = 0x0146,
                     HZ_MAP_EVENTJOURNALSUBSCRIBE = 0x0147,
-                    HZ_MAP_EVENTJOURNALREAD = 0x0148
+                    HZ_MAP_EVENTJOURNALREAD = 0x0148,
+                    HZ_MAP_SETTTL = 0x0149,
+                    HZ_MAP_PUTWITHMAXIDLE = 0x014a,
+                    HZ_MAP_PUTTRANSIENTWITHMAXIDLE = 0x014b,
+                    HZ_MAP_PUTIFABSENTWITHMAXIDLE = 0x014c,
+                    HZ_MAP_SETWITHMAXIDLE = 0x014d
                 };
             }
         }

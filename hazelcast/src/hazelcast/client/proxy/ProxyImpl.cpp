@@ -27,7 +27,6 @@
 #include "hazelcast/client/spi/ClientClusterService.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
-#include "hazelcast/client/spi/ClientInvocationService.h"
 #include "hazelcast/util/ExceptionUtil.h"
 
 namespace hazelcast {
@@ -67,6 +66,15 @@ namespace hazelcast {
                     util::ExceptionUtil::rethrow(e);
                 }
                 return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+            }
+
+            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            ProxyImpl::invokeOnKeyOwner(std::auto_ptr<protocol::ClientMessage> request,
+                                        const serialization::pimpl::Data &keyData) {
+                int partitionId = getPartitionId(keyData);
+                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                        getContext(), request, getName(), partitionId);
+                return invocation->invoke();
             }
 
             boost::shared_ptr<protocol::ClientMessage>

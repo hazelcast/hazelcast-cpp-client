@@ -15,6 +15,8 @@
  */
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <hazelcast/util/TimeUtil.h>
+
 
 #include "hazelcast/util/TimeUtil.h"
 
@@ -25,6 +27,15 @@ namespace hazelcast {
             boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
             boost::posix_time::time_duration diff = now - epoch;
             return diff;
+        }
+
+        int64_t TimeUtil::timeInMsOrOneIfResultIsZero(int64_t time, const concurrent::TimeUnit &timeunit) {
+            int64_t timeInMillis = timeunit.toMillis(time);
+            if (time > 0 && timeInMillis == 0) {
+                timeInMillis = 1;
+            }
+
+            return timeInMillis;
         }
     }
 }

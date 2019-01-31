@@ -65,7 +65,9 @@ namespace hazelcast {
         template<typename K, typename V>
         class IMap {
             friend class spi::ProxyManager;
+
             friend class impl::HazelcastClientInstanceImpl;
+
             friend class adaptor::RawPointerMap<K, V>;
 
         public:
@@ -125,7 +127,7 @@ namespace hazelcast {
             * @return the previous value in shared_ptr, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+            boost::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
                 return mapImpl->put(key, value, ttlInMillis);
             }
 
@@ -191,7 +193,7 @@ namespace hazelcast {
             * @param timeoutInMillis  maximum time in milliseconds to wait for acquiring the lock
             *                 for the key
             */
-            bool tryRemove(const K &key, long timeoutInMillis) {
+            bool tryRemove(const K &key, int64_t timeoutInMillis) {
                 return mapImpl->tryRemove(key, timeoutInMillis);
             }
 
@@ -207,12 +209,12 @@ namespace hazelcast {
             * @return <tt>true</tt> if the put is successful, <tt>false</tt>
             *         otherwise.
             */
-            bool tryPut(const K &key, const V &value, long timeoutInMillis) {
+            bool tryPut(const K &key, const V &value, int64_t timeoutInMillis) {
                 return mapImpl->tryPut(key, value, timeoutInMillis);
             }
 
             /**
-            * Same as put(K, V, long, TimeUnit) but MapStore, if defined,
+            * Same as put(K, V, int64_t, TimeUnit) but MapStore, if defined,
             * will not be called to store/persist the entry.  If ttl is 0, then
             * the entry lives forever.
             *
@@ -220,7 +222,7 @@ namespace hazelcast {
             * @param value        value of the entry
             * @param ttlInMillis  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
             */
-            void putTransient(const K &key, const V &value, long ttlInMillis) {
+            void putTransient(const K &key, const V &value, int64_t ttlInMillis) {
                 mapImpl->putTransient(key, value, ttlInMillis);
             }
 
@@ -247,7 +249,7 @@ namespace hazelcast {
             * @return the previous value of the entry, if there is no mapping for key
             * then returns NULL in shared_ptr.
             */
-            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+            boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
                 return mapImpl->putIfAbsent(key, value, ttlInMillis);
             }
 
@@ -309,7 +311,7 @@ namespace hazelcast {
             * @param key key to lock.
             * @param leaseTime time in milliseconds to wait before releasing the lock.
             */
-            void lock(const K &key, long leaseTime) {
+            void lock(const K &key, int64_t leaseTime) {
                 mapImpl->lock(key, leaseTime);
             }
 
@@ -354,7 +356,7 @@ namespace hazelcast {
             * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
             *         if the waiting time elapsed before the lock was acquired.
             */
-            bool tryLock(const K &key, long timeInMillis) {
+            bool tryLock(const K &key, int64_t timeInMillis) {
                 return mapImpl->tryLock(key, timeInMillis);
             }
 
@@ -863,7 +865,7 @@ namespace hazelcast {
             * @param ttl maximum time in milliseconds for this entry to stay in the map
             0 means infinite.
             */
-            void set(const K &key, const V &value, long ttl) {
+            void set(const K &key, const V &value, int64_t ttl) {
                 mapImpl->set(key, value, ttl);
             }
 
@@ -933,6 +935,474 @@ namespace hazelcast {
             monitor::LocalMapStats &getLocalMapStats() {
                 return mapImpl->getLocalMapStats();
             }
+
+            /**
+             * Asynchronously gets the given key.
+             * <pre>
+             *   boost::shared_ptr<ICompletableFuture> future = map.getAsync(key);
+             *   // do some other stuff, when ready get the result.
+             *   boost::shared_ptr<V> value = future->get();
+             * </pre>
+             * {@link ICompletableFuture#get()} will block until the actual map.get() completes.
+             * If the application requires timely response,
+             * then {@link ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)} can be used.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture> future = map.getAsync(key);
+             *     boost::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * Additionally, the client can schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>{@code
+             *   // assuming an IMap<std::string, std::string>
+             *   ICompletableFuture<std::string> future = map.getAsync("a");
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * }</pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <b>Warning:</b>
+             * <p>
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             *
+             * @param key the key of the map entry
+             * @return ICompletableFuture from which the value of the key can be retrieved
+             * @see ICompletableFuture
+             */
+            boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+                return mapImpl->getAsync(key);
+            }
+
+            /**
+             * Asynchronously puts the given key and value.
+             * <pre>
+             *   boost::shared_ptr<V> value = future->putAsync(key, value);
+             *   // do some other stuff, when ready get the result.
+             *   boost::shared_ptr<V> value = future->get();
+             * </pre>
+             * ICompletableFuture::get() will block until the actual map.put() completes.
+             * If the application requires a timely response,
+             * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture> future = imap.putAsync(key, newValue);
+             *     boost::shared_ptr<V> value = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * Additionally, the client can schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>{@code
+             *   // assuming an IMap<std::string, std::string>
+             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b");
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * }</pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <p><b>Note:</b>
+             * Use {@link #setAsync(const K&, const V &)} if you don't need the return value, it's slightly more efficient.
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If no value is found with {@code key} in memory,
+             * {@link java MapLoader#load(Object)} is invoked at server to load the value from
+             * the map store backing the map. Exceptions thrown by load fail
+             * the operation and are propagated to the caller.
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link java server MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller.
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key   the key of the map entry
+             * @param value the new value of the map entry
+             * @return ICompletableFuture from which the old value of the key can be retrieved
+             * @see ICompletableFuture
+             * @see #setAsync(Object, Object)
+             */
+            boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
+                return mapImpl->putAsync(key, value);
+            }
+
+            /**
+             * Asynchronously puts the given key and value into this map with a given TTL (time to live) value.
+             * <p>
+             * The entry will expire and get evicted after the TTL. If the TTL is 0,
+             * then the entry lives forever. If the TTL is negative, then the TTL
+             * from the map configuration will be used (default: forever).
+             * <pre>
+             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
+             *   // do some other stuff, when ready get the result
+             *   boost::shared_ptr<V> value = future->get();
+             * </pre>
+             * ICompletableFuture::get() will block until the actual map.put() completes.
+             * If your application requires a timely response,
+             * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
+             *     boost::shared_ptr<V> oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * The client can schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>{@code
+             *   // assuming an IMap<std::string, std::string>
+             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * }</pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <b>Warning:</b>
+             * <p>
+             * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
+             * <p>
+             * <p><b>Note:</b>
+             * Use {@link #setAsync(const K &, const V &, int64_t, const util::concurrent::TimeUnit &)} if you don't 
+             * need the return value, it's slightly more efficient.
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If no value is found with {@code key} in memory,
+             * {@link java server MapLoader#load(Object)} is invoked to load the value from
+             * the map store backing the map. Exceptions thrown by load fail
+             * the operation and are propagated to the caller.
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link java server MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller.
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key      the key of the map entry
+             * @param value    the new value of the map entry
+             * @param ttl      maximum time for this entry to stay in the map (0 means infinite, negative means map config default)
+             * @param ttlUnit time unit for the TTL
+             * @return ICompletableFuture from which the old value of the key can be retrieved
+             * @see ICompletableFuture
+             * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
+             */
+            boost::shared_ptr<ICompletableFuture<V> >
+            putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
+                return mapImpl->putAsync(key, value, ttl, ttlUnit);
+            }
+
+            /**
+             * Asynchronously puts the given key and value into this map with a given TTL (time to live) value and max idle time value.
+             * <p>
+             * The entry will expire and get evicted after the TTL. If the TTL is 0,
+             * then the entry lives forever. If the TTL is negative, then the TTL
+             * from the map configuration will be used (default: forever).
+             * <p>
+             * The entry will expire and get evicted after the Max Idle time. If the MaxIdle is 0,
+             * then the entry lives forever. If the MaxIdle is negative, then the MaxIdle
+             * from the map configuration will be used (default: forever).
+             * <pre>
+             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, value, ttl, timeunit);
+             *   // do some other stuff, when ready get the result
+             *   boost::shared_ptr<V> value = future->get();
+             * </pre>
+             * ICompletableFuture::get() will block until the actual map.put() completes.
+             * If your application requires a timely response,
+             * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture> future = map.putAsync(key, newValue, ttl, timeunit);
+             *     Object oldValue = future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * The client can schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>{@code
+             *   // assuming an IMap<std::string, std::string>
+             *   boost::shared_ptr<ICompletableFuture> future = map.putAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * }</pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <b>Warning:</b>
+             * <p>
+             * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
+             * <p>
+             * <p><b>Note:</b>
+             * Use {@link #setAsync(const K&, const V&, int64_t, TimeUnit)} if you don't need the return value, it's slightly
+             * more efficient.
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If no value is found with {@code key} in memory,
+             * {@link MapLoader#load(Object)} is invoked to load the value from
+             * the map store backing the map. Exceptions thrown by load fail
+             * the operation and are propagated to the caller.
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller.
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key         the key of the map entry
+             * @param value       the new value of the map entry
+             * @param ttl         maximum time for this entry to stay in the map (0 means infinite, negative means map config default)
+             * @param ttlUnit     time unit for the TTL
+             * @param maxIdle     maximum time for this entry to stay idle in the map.
+             *                    (0 means infinite, negative means map config default)
+             * @param maxIdleUnit time unit for the Max-Idle
+             * @return ICompletableFuture from which the old value of the key can be retrieved
+             * @see ICompletableFuture
+             * @see #setAsync(const K&, const V&, int64_t, TimeUnit)
+             */
+            boost::shared_ptr<ICompletableFuture<V> >
+            putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                     int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
+                return mapImpl->putAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
+            }
+
+            /**
+             * Asynchronously puts the given key and value.
+             * The entry lives forever.
+             * Similar to the put operation except that set
+             * doesn't return the old value, which is more efficient.
+             * <pre>{@code
+             *   boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, value);
+             *   // do some other stuff, when ready wait for completion
+             *   future->get();
+             * }</pre>
+             * ICompletableFuture::get() will block until the actual map.set() operation completes.
+             * If your application requires a timely response,
+             * then you can use ICompletableFuture#get(int64_t, const util::concurrent::TimeUnit::TimeUnit&)}.
+             * <pre>{@code
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue);
+             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * }</pre>
+             * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>{@code
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * }</pre>
+             * ExecutionException is never thrown.
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller.
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key   the key of the map entry
+             * @param value the new value of the map entry
+             * @return ICompletableFuture on which to block waiting for the operation to complete or
+             * register an {@link ExecutionCallback<V>} to be invoked upon completion
+             * @see ICompletableFuture
+             */
+            boost::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
+                return mapImpl->setAsync(key, value);
+            }
+
+            /**
+             * Asynchronously puts an entry into this map with a given TTL (time to live) value,
+             * without returning the old value (which is more efficient than {@code put()}).
+             * <p>
+             * The entry will expire and get evicted after the TTL. If the TTL is 0,
+             * then the entry lives forever. If the TTL is negative, then the TTL
+             * from the map configuration will be used (default: forever).
+             * <p>
+             * The entry will expire and get evicted after the Max Idle time. If the MaxIdle is 0,
+             * then the entry lives forever. If the MaxIdle is negative, then the MaxIdle
+             * from the map configuration will be used (default: forever).
+             * <pre>
+             *   ICompletableFuture&lt;void&gt; future = map.setAsync(key, value, ttl, timeunit);
+             *   // do some other stuff, when you want to make sure set operation is complete:
+             *   future->get();
+             * </pre>
+             * ICompletableFuture::get() will block until the actual map set operation completes.
+             * If your application requires a timely response,
+             * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
+             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>
+             *   ICompletableFuture&lt;void&gt; future = map.setAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * </pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <b>Warning:</b>
+             * <p>
+             * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller..
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key      the key of the map entry
+             * @param value    the new value of the map entry
+             * @param ttl      maximum time for this entry to stay in the map (0 means infinite, negative means map config default)
+             * @param ttlUnit  time unit for the TTL
+             * @return ICompletableFuture on which client code can block waiting for the operation to complete
+             * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
+             * @see ICompletableFuture
+             */
+            boost::shared_ptr<ICompletableFuture<void> >
+            setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
+                return mapImpl->setAsync(key, value, ttl, ttlUnit);
+            }
+
+            /**
+             * Asynchronously puts an entry into this map with a given TTL (time to live) value and max idle time value.
+             * without returning the old value (which is more efficient than {@code put()}).
+             * <p>
+             * The entry will expire and get evicted after the TTL. If the TTL is 0,
+             * then the entry lives forever. If the TTL is negative, then the TTL
+             * from the map configuration will be used (default: forever).
+             * <p>
+             * The entry will expire and get evicted after the Max Idle time. If the MaxIdle is 0,
+             * then the entry lives forever. If the MaxIdle is negative, then the MaxIdle
+             * from the map configuration will be used (default: forever).
+             * <pre>
+             *   ICompletableFuture&lt;void&gt; future = map.setAsync(key, value, ttl, timeunit);
+             *   // do some other stuff, when you want to make sure set operation is complete:
+             *   future->get();
+             * </pre>
+             * ICompletableFuture::get() will block until the actual map set operation completes.
+             * If your application requires a timely response,
+             * then you can use {@link ICompletableFuture#get(int64_t, TimeUnit)}.
+             * <pre>
+             *   try {
+             *     boost::shared_ptr<ICompletableFuture<void> > future = map.setAsync(key, newValue, ttl, timeunit);
+             *     future->get(40, util::concurrent::TimeUnit::MILLISECONDS());
+             *   } catch (exception::TimeoutException &t) {
+             *     // time wasn't enough
+             *   }
+             * </pre>
+             * You can also schedule an {@link ExecutionCallback<V>} to be invoked upon
+             * completion of the {@code ICompletableFuture} via {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &)} or
+             * {@link ICompletableFuture#andThen(const boost::shared_ptr<ExecutionCallback<V> > &, const boost::shared_ptr<Executor> &)}:
+             * <pre>
+             *   ICompletableFuture&lt;void&gt; future = map.setAsync("a", "b", 5, util::concurrent::TimeUnit::MINUTES());
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * </pre>
+             * ExecutionException is never thrown.
+             * <p>
+             * <b>Warning:</b>
+             * <p>
+             * Time resolution for TTL is seconds. The given TTL value is rounded to the next closest second value.
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is stored in memory, {@link MapStore#store(Object, Object)} is
+             * called to write the value into the map store. Exceptions thrown
+             * by the store fail the operation and are propagated to the caller..
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key         the key of the map entry
+             * @param value       the new value of the map entry
+             * @param ttl         maximum time for this entry to stay in the map (0 means infinite, negative means map config default)
+             * @param ttlUnit     time unit for the TTL
+             * @param maxIdle     maximum time for this entry to stay idle in the map.
+             *                    (0 means infinite, negative means map config default)
+             * @param maxIdleUnit time unit for the Max-Idle
+             * @return ICompletableFuture on which client code can block waiting for the operation to complete
+             * or provide an {@link ExecutionCallback<V>} to be invoked upon set operation completion
+             * @see ICompletableFuture
+             */
+            boost::shared_ptr<ICompletableFuture<void> >
+            setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                     int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
+                return mapImpl->setAsync(key, value, ttl, ttlUnit, maxIdle, maxIdleUnit);
+            }
+
+            /**
+             * Asynchronously removes the given key, returning an {@link ICompletableFuture} on which
+             * the caller can provide an {@link ExecutionCallback<V>} to be invoked upon remove operation
+             * completion or block waiting for the operation to complete with {@link ICompletableFuture#get()}.
+             * <p>
+             *
+             * <p><b>Interactions with the map store</b>
+             * <p>
+             * If write-through persistence mode is configured, before the value
+             * is removed from the the memory, {@link MapStore#delete(Object)}
+             * is called to remove the value from the map store. Exceptions
+             * thrown by delete fail the operation and are propagated to the
+             * caller.
+             * <p>
+             * If write-behind persistence mode is configured with
+             * write-coalescing turned off,
+             * {@link ReachedMaxSizeException} may be thrown
+             * if the write-behind queue has reached its per-node maximum
+             * capacity.
+             *
+             * @param key The key of the map entry to remove
+             * @return {@link ICompletableFuture} from which the value removed from the map can be retrieved
+             * @see ICompletableFuture
+             */
+            boost::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
+                return mapImpl->removeAsync(key);
+            }
+
         private:
             IMap(boost::shared_ptr<spi::ClientProxy> clientProxy) {
                 mapImpl = boost::static_pointer_cast<map::ClientMapProxy<K, V> >(clientProxy);
@@ -941,7 +1411,7 @@ namespace hazelcast {
             boost::shared_ptr<map::ClientMapProxy<K, V> > mapImpl;
         };
 
-        template <typename K, typename V>
+        template<typename K, typename V>
         const std::string IMap<K, V>::SERVICE_NAME = "hz:impl:mapService";
     }
 }

@@ -26,6 +26,10 @@
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
+// Includes for parameters classes
+#include "hazelcast/client/protocol/codec/MapPutCodec.h"
+#include "hazelcast/client/protocol/codec/MapGetCodec.h"
+
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
@@ -57,21 +61,21 @@ namespace hazelcast {
 
                 virtual void flush();
 
-                bool tryRemove(const serialization::pimpl::Data &key, long timeoutInMillis);
+                bool tryRemove(const serialization::pimpl::Data &key, int64_t timeoutInMillis);
 
                 bool tryPut(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                            long timeoutInMillis);
+                            int64_t timeoutInMillis);
 
                 std::auto_ptr<serialization::pimpl::Data>
                 putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                        long ttlInMillis);
+                        int64_t ttlInMillis);
 
                 void putTransient(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                  long ttlInMillis);
+                                  int64_t ttlInMillis);
 
                 std::auto_ptr<serialization::pimpl::Data>
                 putIfAbsentData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                                long ttlInMillis);
+                                int64_t ttlInMillis);
 
                 bool replace(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
                              const serialization::pimpl::Data &newValue);
@@ -79,15 +83,15 @@ namespace hazelcast {
                 std::auto_ptr<serialization::pimpl::Data>
                 replaceData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
-                void set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, long ttl);
+                void set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t ttl);
 
                 void lock(const serialization::pimpl::Data &key);
 
-                void lock(const serialization::pimpl::Data &key, long leaseTime);
+                void lock(const serialization::pimpl::Data &key, int64_t leaseTime);
 
                 bool isLocked(const serialization::pimpl::Data &key);
 
-                bool tryLock(const serialization::pimpl::Data &key, long timeInMillis);
+                bool tryLock(const serialization::pimpl::Data &key, int64_t timeInMillis);
 
                 void unlock(const serialization::pimpl::Data &key);
 

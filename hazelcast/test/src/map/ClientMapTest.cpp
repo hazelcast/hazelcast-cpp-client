@@ -196,8 +196,6 @@ namespace hazelcast {
                     std::auto_ptr<std::string> prefix;
                 };
 
-
-            protected:
                 virtual void SetUp() {
                     imap = new IMap<std::string, std::string>(
                             client->getMap<std::string, std::string>(MapClientConfig::imapName));
@@ -290,6 +288,20 @@ namespace hazelcast {
                     imap->forceUnlock("key1");
                     latch->countDown();
                 }
+
+                template<typename K, typename V>
+                class EvictedEntryListener : public EntryAdapter<K, V> {
+                public:
+                    EvictedEntryListener(const boost::shared_ptr<CountDownLatch> &evictLatch) : evictLatch(
+                            evictLatch) {}
+
+                    virtual void mapEvicted(const MapEvent &event) {
+                        evictLatch->countDown();
+                    }
+
+                private:
+                    boost::shared_ptr<util::CountDownLatch> evictLatch;
+                };
 
                 template<typename K, typename V>
                 class CountdownListener : public EntryAdapter<K, V> {
@@ -542,6 +554,132 @@ namespace hazelcast {
                     value += util::IOUtil::to_string(i);
                     ASSERT_EQ(*temp, value);
                 }
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncGet) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->getAsync(
+                        "key1");
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPut) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key3", "value");
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value3", *value);
+                value = ClientMapTest<TypeParam>::imap->get("key3");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPutWithTtl) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key", "value1", 3, util::concurrent::TimeUnit::SECONDS());
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NULL("no value for key should exist", value.get(), std::string);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPutWithMaxIdle) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key", "value1", 0, util::concurrent::TimeUnit::SECONDS(), 3,
+                        util::concurrent::TimeUnit::SECONDS());
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NULL("no value for key should exist", value.get(), std::string);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSet) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key3",
+                                                                                                               "value");
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key3");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSetWithTtl) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key",
+                                                                                                               "value1",
+                                                                                                               3,
+                                                                                                               util::concurrent::TimeUnit::SECONDS());
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSetWithMaxIdle) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key",
+                                                                                                               "value1",
+                                                                                                               0,
+                                                                                                               util::concurrent::TimeUnit::SECONDS(),
+                                                                                                               3,
+                                                                                                               util::concurrent::TimeUnit::SECONDS());
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncRemove) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<string> > future = ClientMapTest<TypeParam>::imap->removeAsync(
+                        "key4");
+                future->get();
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value4", *value);
             }
 
             TYPED_TEST(ClientMapTest, testPartitionAwareKey) {

@@ -147,6 +147,15 @@ namespace hazelcast {
                     return Data(*data);
                 }
 
+                template<>
+                std::auto_ptr<void> SerializationService::toObject(const Data &data) {
+                    return std::auto_ptr<void>();
+                }
+
+                template<>
+                std::auto_ptr<void> SerializationService::toObject(const Data *data) {
+                    return std::auto_ptr<void>();
+                }
             }
         }
     }

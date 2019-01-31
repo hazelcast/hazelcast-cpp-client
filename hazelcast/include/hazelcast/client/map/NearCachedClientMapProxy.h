@@ -156,7 +156,7 @@ namespace hazelcast {
                     invalidateNearCache(key);
                 }
 
-                virtual bool tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
+                virtual bool tryRemoveInternal(const serialization::pimpl::Data &key, int64_t timeoutInMillis) {
                     bool response = ClientMapProxy<K, V>::tryRemoveInternal(key, timeoutInMillis);
                     invalidateNearCache(key);
                     return response;
@@ -164,7 +164,7 @@ namespace hazelcast {
 
                 virtual bool
                 tryPutInternal(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
-                               long timeoutInMillis) {
+                               int64_t timeoutInMillis) {
                     bool response = ClientMapProxy<K, V>::tryPutInternal(key, value, timeoutInMillis);
                     invalidateNearCache(key);
                     return response;
@@ -172,7 +172,7 @@ namespace hazelcast {
 
                 virtual std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &key,
                                                                               const serialization::pimpl::Data &value,
-                                                                              long timeoutInMillis) {
+                                                                              int64_t timeoutInMillis) {
                     std::auto_ptr<serialization::pimpl::Data> previousValue =
                             ClientMapProxy<K, V>::putInternal(key, value, timeoutInMillis);
                     invalidateNearCache(key);
