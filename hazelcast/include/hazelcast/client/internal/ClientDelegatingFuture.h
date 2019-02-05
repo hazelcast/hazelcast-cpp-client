@@ -170,9 +170,7 @@ namespace hazelcast {
                     return decodeResponse(clientMessage);
                 }
 
-                static boost::shared_ptr<V> getVoidObject() {
-                    return boost::shared_ptr<V>(new V);
-                }
+                static boost::shared_ptr<V> getVoidObject();
 
                 static const boost::shared_ptr<V> VOIDOBJ;
                 const boost::shared_ptr<spi::impl::ClientInvocationFuture> future;
@@ -189,6 +187,10 @@ namespace hazelcast {
             template<>
             boost::shared_ptr<void> HAZELCAST_API ClientDelegatingFuture<void>::getVoidObject();
 
+            template<typename V>
+            boost::shared_ptr<V> ClientDelegatingFuture<V>::getVoidObject() {
+                return boost::shared_ptr<V>(new V);
+            }
         }
     }
 };
