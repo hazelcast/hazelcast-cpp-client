@@ -20,10 +20,11 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 
 #include "hazelcast/util/concurrent/TimeUnit.h"
+#include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
-        class TimeUtil {
+        class HAZELCAST_API TimeUtil {
         public:
             /**
              * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.

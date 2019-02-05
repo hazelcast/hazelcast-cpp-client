@@ -46,9 +46,9 @@ namespace hazelcast {
 
             boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
                     std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request, partitionId);
-
                 try {
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
+                                                                                                     partitionId);
                     return future->get();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);

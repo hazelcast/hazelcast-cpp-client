@@ -196,8 +196,13 @@ namespace hazelcast {
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      const serialization::pimpl::Data &key) {
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request, key);
-                    boost::shared_ptr<protocol::ClientMessage> response = future->get();
+                    boost::shared_ptr<protocol::ClientMessage> response;
+                    try {
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request, key);
+                        response = future->get();
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
                     return (T)CODEC::decode(*response).response;
                 }
 
