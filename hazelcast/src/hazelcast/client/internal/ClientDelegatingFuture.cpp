@@ -22,12 +22,6 @@ namespace hazelcast {
             boost::shared_ptr<void> ClientDelegatingFuture<void>::getVoidObject() {
                 return boost::shared_ptr<void>(new bool);
             }
-
-            template<>
-            boost::shared_ptr<void>
-            ClientDelegatingFuture<void>::toSharedObject(const boost::shared_ptr<serialization::pimpl::Data> &data) {
-                return boost::shared_ptr<void>();
-            }
         }
     }
 }

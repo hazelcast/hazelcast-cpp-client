@@ -37,7 +37,7 @@ namespace hazelcast {
                 IExecutorDelegatingFuture(
                         const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
                         spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
-                        const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder,
+                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
                         const std::string &objectName, const int partitionId)
                         : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),
@@ -47,7 +47,7 @@ namespace hazelcast {
                 IExecutorDelegatingFuture(
                         const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
                         spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
-                        const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder,
+                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
                         const std::string &objectName, const Address &address)
                         : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),

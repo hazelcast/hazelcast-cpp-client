@@ -34,6 +34,13 @@ namespace hazelcast {
             class InternalCompletableFuture : public ICompletableFuture<T> {
             public:
                 /**
+                 * Waits for this future to complete.
+                 *
+                 * @return the result.
+                 */
+                virtual boost::shared_ptr<T> join() = 0;
+
+                /**
                 * Completes this future.
                 *
                 * @param value the value to complete this future with.

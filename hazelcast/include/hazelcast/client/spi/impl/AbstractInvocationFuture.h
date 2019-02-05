@@ -20,6 +20,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include <hazelcast/util/ConditionVariable.h>
+#include <hazelcast/util/ExceptionUtil.h>
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/InternalCompletableFuture.h"
@@ -121,6 +122,15 @@ namespace hazelcast {
                         unregisterWaiter(thread);
                         throw (ExceptionBuilder<TimeoutException>("AbstractInvocationFuture::get(timeout, unit)")
                                 << "Timeout: " << unit.toMillis(timeout) << " msecs").build();
+                    }
+
+                    virtual boost::shared_ptr<T> join() {
+                        try {
+                            return get();
+                        } catch (exception::IException &e) {
+                            util::ExceptionUtil::rethrow(e);
+                        }
+                        return boost::shared_ptr<T>();
                     }
 
                     /**

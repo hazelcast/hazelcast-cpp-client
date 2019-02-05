@@ -28,6 +28,15 @@ namespace hazelcast {
                         }
                         return name.substr(0, indexOf);
                     }
+
+                    std::string StringPartitioningStrategy::getPartitionKey(const std::string &key) {
+                        size_t firstIndexOf = key.find('@');
+                        if (firstIndexOf == std::string::npos) {
+                            return key;
+                        } else {
+                            return key.substr(firstIndexOf + 1);
+                        }
+                    }
                 }
             }
         }

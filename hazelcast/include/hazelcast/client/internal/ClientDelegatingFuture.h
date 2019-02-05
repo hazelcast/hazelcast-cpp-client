@@ -44,7 +44,7 @@ namespace hazelcast {
                 ClientDelegatingFuture(
                         const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
                         serialization::pimpl::SerializationService &serializationService,
-                        const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder,
+                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
                         const boost::shared_ptr<V> &defaultValue) : future(
                         clientInvocationFuture), serializationService(serializationService), clientMessageDecoder(
                         clientMessageDecoder), defaultValue(defaultValue), decodedResponse(VOIDOBJ) {
@@ -57,7 +57,7 @@ namespace hazelcast {
                 ClientDelegatingFuture(
                         const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
                         serialization::pimpl::SerializationService &serializationService,
-                        const boost::shared_ptr<impl::ClientMessageDecoder> &clientMessageDecoder) : future(
+                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder) : future(
                         clientInvocationFuture), serializationService(serializationService), clientMessageDecoder(
                         clientMessageDecoder), decodedResponse(VOIDOBJ) {
                     const boost::shared_ptr<spi::impl::ClientInvocation> invocation = clientInvocationFuture->getInvocation();
@@ -102,6 +102,15 @@ namespace hazelcast {
                     return resolveResponse(response);
                 }
 
+                virtual boost::shared_ptr<V> join() {
+                    try {
+                        return get();
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<V>();
+                }
+
                 virtual bool complete(const boost::shared_ptr<V> &value) {
                     assert(0);
                     return false;
@@ -144,16 +153,11 @@ namespace hazelcast {
                         return decodedResponse;
                     }
                     // TODO: Java uses a message wrapper here --> ClientMessage message = ClientMessage.createForDecode(clientMessage.buffer(), 0);
-                    boost::shared_ptr<serialization::pimpl::Data> newDecodedResponseData = clientMessageDecoder->decodeClientMessage(
-                            clientMessage);
+                    boost::shared_ptr<V> newDecodedResponse = clientMessageDecoder->decodeClientMessage(clientMessage,
+                                                                                                        serializationService);
 
-                    boost::shared_ptr<V> newDecodedResponse(toSharedObject(newDecodedResponseData));
                     decodedResponse.compareAndSet(VOIDOBJ, newDecodedResponse);
                     return newDecodedResponse;
-                }
-
-                boost::shared_ptr<V> toSharedObject(const boost::shared_ptr<serialization::pimpl::Data> &data) {
-                    return boost::shared_ptr<V>(serializationService.toObject<V>(data.get()));
                 }
 
                 /* TODO: Java client does deserialization inside this method, do we need it ? */
@@ -173,7 +177,7 @@ namespace hazelcast {
                 static const boost::shared_ptr<V> VOIDOBJ;
                 const boost::shared_ptr<spi::impl::ClientInvocationFuture> future;
                 serialization::pimpl::SerializationService &serializationService;
-                const boost::shared_ptr<impl::ClientMessageDecoder> clientMessageDecoder;
+                const boost::shared_ptr<impl::ClientMessageDecoder<V> > clientMessageDecoder;
                 const boost::shared_ptr<V> defaultValue;
                 boost::shared_ptr<hazelcast::util::Executor> userExecutor;
                 hazelcast::util::Atomic<boost::shared_ptr<V> > decodedResponse;
@@ -183,11 +187,8 @@ namespace hazelcast {
             const boost::shared_ptr<V> ClientDelegatingFuture<V>::VOIDOBJ = getVoidObject();
 
             template<>
-            boost::shared_ptr<void> ClientDelegatingFuture<void>::getVoidObject();
+            boost::shared_ptr<void> HAZELCAST_API ClientDelegatingFuture<void>::getVoidObject();
 
-            template<>
-            boost::shared_ptr<void>
-            ClientDelegatingFuture<void>::toSharedObject(const boost::shared_ptr<serialization::pimpl::Data> &data);
         }
     }
 };

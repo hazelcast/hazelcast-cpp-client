@@ -1191,41 +1191,6 @@ namespace hazelcast {
             protected:
                 typedef std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > KEY_DATA_PAIR;
 
-                class GetAsyncResponseDecoder : public client::impl::ClientMessageDecoder {
-                public:
-                    virtual boost::shared_ptr<Data>
-                    decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-                        return boost::shared_ptr<Data>(
-                                protocol::codec::MapGetCodec::ResponseParameters::decode(*clientMessage).response);
-                    }
-                };
-
-                class PutAsyncResponseDecoder : public client::impl::ClientMessageDecoder {
-                public:
-                    virtual boost::shared_ptr<Data>
-                    decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-                        return boost::shared_ptr<Data>(
-                                protocol::codec::MapPutCodec::ResponseParameters::decode(*clientMessage).response);
-                    }
-                };
-
-                class SetAsyncResponseDecoder : public client::impl::ClientMessageDecoder {
-                public:
-                    virtual boost::shared_ptr<Data>
-                    decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-                        return boost::shared_ptr<Data>();
-                    }
-                };
-
-                class RemoveAsyncResponseDecoder : public client::impl::ClientMessageDecoder {
-                public:
-                    virtual boost::shared_ptr<Data>
-                    decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-                        return boost::shared_ptr<Data>(
-                                protocol::codec::MapRemoveCodec::ResponseParameters::decode(*clientMessage).response);
-                    }
-                };
-
                 /**
                  * Default TTL value of a record.
                  */
@@ -1236,25 +1201,22 @@ namespace hazelcast {
                  */
                 static int64_t DEFAULT_MAX_IDLE;
 
-                static const boost::shared_ptr<GetAsyncResponseDecoder> getAsyncResponseDecoder;
-                static const boost::shared_ptr<PutAsyncResponseDecoder> putAsyncResponseDecoder;
-                static const boost::shared_ptr<SetAsyncResponseDecoder> setAsyncResponseDecoder;
-                static const boost::shared_ptr<RemoveAsyncResponseDecoder> removeAsyncResponseDecoder;
-
-                static const boost::shared_ptr<GetAsyncResponseDecoder> &GET_ASYNC_RESPONSE_DECODER() {
-                    return getAsyncResponseDecoder;
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &GET_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapGetCodec, V>::instance();
                 }
 
-                static const boost::shared_ptr<PutAsyncResponseDecoder> &PUT_ASYNC_RESPONSE_DECODER() {
-                    return putAsyncResponseDecoder;
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &PUT_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapPutCodec, V>::instance();
                 }
 
-                static const boost::shared_ptr<SetAsyncResponseDecoder> &SET_ASYNC_RESPONSE_DECODER() {
-                    return setAsyncResponseDecoder;
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<void> > &
+                SET_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::VoidMessageDecoder::instance();
                 }
 
-                static const boost::shared_ptr<RemoveAsyncResponseDecoder> &REMOVE_ASYNC_RESPONSE_DECODER() {
-                    return removeAsyncResponseDecoder;
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &
+                REMOVE_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapRemoveCodec, V>::instance();
                 }
 
                 virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
@@ -1508,21 +1470,6 @@ namespace hazelcast {
             template<typename K, typename V>
             int64_t ClientMapProxy<K, V>::DEFAULT_MAX_IDLE = -1L;
 
-            template<typename K, typename V>
-            const boost::shared_ptr<typename ClientMapProxy<K, V>::GetAsyncResponseDecoder> ClientMapProxy<K, V>::getAsyncResponseDecoder(
-                    new typename ClientMapProxy<K, V>::GetAsyncResponseDecoder());
-
-            template<typename K, typename V>
-            const boost::shared_ptr<typename ClientMapProxy<K, V>::PutAsyncResponseDecoder> ClientMapProxy<K, V>::putAsyncResponseDecoder(
-                    new typename ClientMapProxy<K, V>::PutAsyncResponseDecoder());
-
-            template<typename K, typename V>
-            const boost::shared_ptr<typename ClientMapProxy<K, V>::SetAsyncResponseDecoder> ClientMapProxy<K, V>::setAsyncResponseDecoder(
-                    new typename ClientMapProxy<K, V>::SetAsyncResponseDecoder());
-
-            template<typename K, typename V>
-            const boost::shared_ptr<typename ClientMapProxy<K, V>::RemoveAsyncResponseDecoder> ClientMapProxy<K, V>::removeAsyncResponseDecoder(
-                    new typename ClientMapProxy<K, V>::RemoveAsyncResponseDecoder());
         }
     }
 }

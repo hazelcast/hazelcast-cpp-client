@@ -18,7 +18,6 @@
 #include <hazelcast/client/IExecutorService.h>
 
 
-#include "hazelcast/client/IExecutorService.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/protocol/codec/ExecutorServiceShutdownCodec.h"
 #include "hazelcast/client/protocol/codec/ExecutorServiceIsShutdownCodec.h"
@@ -26,8 +25,6 @@
 namespace hazelcast {
     namespace client {
         const std::string IExecutorService::SERVICE_NAME = "hz:impl:executorService";
-        const boost::shared_ptr<impl::ClientMessageDecoder> IExecutorService::submitToPartitionDecoder(new IExecutorService::SubmitToPartitionDecoder());
-        const boost::shared_ptr<impl::ClientMessageDecoder> IExecutorService::submitToAddressDecoder(new IExecutorService::SubmitToAddressDecoder());
 
         IExecutorService::IExecutorService(const std::string &name, spi::ClientContext *context) : ProxyImpl(
                 SERVICE_NAME, name, context), consecutiveSubmits(0), lastSubmitTime(0) {
@@ -88,28 +85,6 @@ namespace hazelcast {
             return !preventSync && (consecutiveSubmits++ % MAX_CONSECUTIVE_SUBMITS == 0);
         }
 
-        const boost::shared_ptr<impl::ClientMessageDecoder> IExecutorService::SUBMIT_TO_PARTITION_DECODER() {
-            return submitToPartitionDecoder;
-        }
-
-        const boost::shared_ptr<impl::ClientMessageDecoder> IExecutorService::SUBMIT_TO_ADDRESS_DECODER() {
-            return submitToAddressDecoder;
-        }
-
-        boost::shared_ptr<serialization::pimpl::Data> IExecutorService::SubmitToPartitionDecoder::decodeClientMessage(
-                const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-            return boost::shared_ptr<serialization::pimpl::Data>(
-                    protocol::codec::ExecutorServiceSubmitToPartitionCodec::ResponseParameters::decode(
-                            *clientMessage).response);
-        }
-
-        boost::shared_ptr<serialization::pimpl::Data> IExecutorService::SubmitToAddressDecoder::decodeClientMessage(
-                const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
-            return boost::shared_ptr<serialization::pimpl::Data>(
-                    protocol::codec::ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(
-                            *clientMessage).response);
-        }
-
         Address IExecutorService::getMemberAddress(const Member &member) {
             boost::shared_ptr<Member> m = getContext().getClientClusterService().getMember(member.getUuid());
             if (m.get() == NULL) {
@@ -125,13 +100,16 @@ namespace hazelcast {
         }
 
         void IExecutorService::shutdown() {
-            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(getName());
+            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
+                    getName());
             invoke(request);
         }
 
         bool IExecutorService::isShutdown() {
-            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(getName());
-            return invokeAndGetResult<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(request);
+            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
+                    getName());
+            return invokeAndGetResult<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(
+                    request);
         }
 
         bool IExecutorService::isTerminated() {

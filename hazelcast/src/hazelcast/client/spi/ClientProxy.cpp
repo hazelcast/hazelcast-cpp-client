@@ -69,6 +69,10 @@ namespace hazelcast {
             void ClientProxy::postDestroy() {
             }
 
+            serialization::pimpl::SerializationService &ClientProxy::getSerializationService() {
+                return context.getSerializationService();
+            }
+
             void ClientProxy::destroyRemotely() {
                 std::auto_ptr<protocol::ClientMessage> clientMessage = protocol::codec::ClientDestroyProxyCodec::encodeRequest(
                         getName(), getServiceName());

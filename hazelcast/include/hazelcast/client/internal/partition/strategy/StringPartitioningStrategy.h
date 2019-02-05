@@ -27,6 +27,8 @@ namespace hazelcast {
                     class StringPartitioningStrategy {
                     public:
                         static std::string getBaseName(const std::string &name);
+
+                        static std::string getPartitionKey(const std::string &key);
                     };
                 }
             }
