@@ -24,6 +24,7 @@
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/spi/impl/ListenerMessageCodec.h"
 #include "hazelcast/client/spi/EventHandler.h"
+#include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -126,6 +127,7 @@ namespace hazelcast {
 
                 const std::string name;
 
+                serialization::pimpl::SerializationService &getSerializationService();
             private:
                 class EventHandlerDelegator : public spi::EventHandler<protocol::ClientMessage> {
                 public:

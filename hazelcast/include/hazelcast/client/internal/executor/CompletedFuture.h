@@ -72,6 +72,17 @@ namespace hazelcast {
                         return get();
                     }
 
+                    virtual boost::shared_ptr<V> join() {
+                        try {
+                            // this method is quite inefficient when there is unchecked exception, because it will be wrapped
+                            // in a ExecutionException, and then it is unwrapped again.
+                            return get();
+                        } catch (exception::IException &e) {
+                            util::ExceptionUtil::rethrow(e);
+                        }
+                        return boost::shared_ptr<V>();
+                    }
+
                     virtual bool complete(const boost::shared_ptr<V> &value) {
                         return false;
                     }

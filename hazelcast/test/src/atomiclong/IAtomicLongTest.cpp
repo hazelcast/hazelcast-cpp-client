@@ -29,7 +29,6 @@
 #include "HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IAtomicLong.h"
 
 namespace hazelcast {
@@ -39,40 +38,82 @@ namespace hazelcast {
             public:
                 IAtomicLongTest();
 
-                ~IAtomicLongTest();
             protected:
-                HazelcastServer instance;
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                }
+
+                static void TearDownTestCase() {
+                    delete instance;
+                }
+
                 ClientConfig clientConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::auto_ptr<IAtomicLong> atom;
+                std::auto_ptr<IAtomicLong> l;
+
+                static HazelcastServer *instance;
             };
 
-            IAtomicLongTest::IAtomicLongTest() : instance(*g_srvFactory), client(getNewClient()),
-                                                 atom(new IAtomicLong(client->getIAtomicLong("clientAtomicLong"))) {
-                atom->set(0);
+            HazelcastServer *IAtomicLongTest::instance = NULL;
+
+            IAtomicLongTest::IAtomicLongTest() : client(getNewClient()),
+                                                 l(new IAtomicLong(client->getIAtomicLong(getTestName()))) {
+                l->set(0);
             }
 
-            IAtomicLongTest::~IAtomicLongTest() {
-                atom.reset();
-                client.reset();
+            TEST_F(IAtomicLongTest, testSync) {
+                ASSERT_EQ(0, l->getAndAdd(2));
+                ASSERT_EQ(2, l->get());
+                l->set(5);
+                ASSERT_EQ(5, l->get());
+                ASSERT_EQ(8, l->addAndGet(3));
+                ASSERT_FALSE(l->compareAndSet(7, 4));
+                ASSERT_EQ(8, l->get());
+                ASSERT_TRUE(l->compareAndSet(8, 4));
+                ASSERT_EQ(4, l->get());
+                ASSERT_EQ(3, l->decrementAndGet());
+                ASSERT_EQ(3, l->getAndIncrement());
+                ASSERT_EQ(4, l->getAndSet(9));
+                ASSERT_EQ(10, l->incrementAndGet());
             }
 
-            TEST_F(IAtomicLongTest, testAtomicLong) {
-                ASSERT_EQ(0, atom->getAndAdd(2));
-                ASSERT_EQ(2, atom->get());
-                atom->set(5);
-                ASSERT_EQ(5, atom->get());
-                ASSERT_EQ(8, atom->addAndGet(3));
-                ASSERT_FALSE(atom->compareAndSet(7, 4));
-                ASSERT_EQ(8, atom->get());
-                ASSERT_TRUE(atom->compareAndSet(8, 4));
-                ASSERT_EQ(4, atom->get());
-                ASSERT_EQ(3, atom->decrementAndGet());
-                ASSERT_EQ(3, atom->getAndIncrement());
-                ASSERT_EQ(4, atom->getAndSet(9));
-                ASSERT_EQ(10, atom->incrementAndGet());
-            }
+            TEST_F(IAtomicLongTest, testAsync) {
+                boost::shared_ptr<ICompletableFuture<int64_t> > future = l->getAndAddAsync(10);
+                ASSERT_EQ(0, *future->get());
 
+                boost::shared_ptr<ICompletableFuture<bool> > booleanFuture = l->compareAndSetAsync(10, 42);
+                ASSERT_TRUE(booleanFuture->get());
+
+                future = l->getAsync();
+                ASSERT_EQ(42, *future->get());
+
+                future = l->incrementAndGetAsync();
+                ASSERT_EQ(43, *future->get());
+
+                future = l->addAndGetAsync(-13);
+                ASSERT_EQ(30, *future->get());
+
+                future = l->decrementAndGetAsync();
+                ASSERT_EQ(29, *future->get());
+
+                future = l->getAndSetAsync(15);
+                ASSERT_EQ(29, *future->get());
+
+                future = l->getAsync();
+                ASSERT_EQ(15, *future->get());
+
+                future = l->getAndIncrementAsync();
+                ASSERT_EQ(15, *future->get());
+
+                future = l->getAsync();
+                ASSERT_EQ(16, *future->get());
+
+                boost::shared_ptr<ICompletableFuture<void> > voidFuture = l->setAsync(55);
+                voidFuture->get();
+
+                future = l->getAsync();
+                ASSERT_EQ(55, *future->get());
+            }
         }
     }
 }

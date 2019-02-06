@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_PROXY_CLIENTATOMICLONGPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_CLIENTATOMICLONGPROXY_H_
 
-#include "hazelcast/client/proxy/ProxyImpl.h"
+#include "hazelcast/client/proxy/PartitionSpecificClientProxy.h"
 #include "hazelcast/client/impl/AtomicLongInterface.h"
 
 // Includes for parameters classes
@@ -38,7 +38,7 @@ namespace hazelcast {
             /**
              * Client proxy implementation for a {@link AtomicLongInterface}.
              */
-            class ClientAtomicLongProxy : public impl::AtomicLongInterface, public proxy::ProxyImpl {
+            class ClientAtomicLongProxy : public impl::AtomicLongInterface, public proxy::PartitionSpecificClientProxy {
             public:
                 static const std::string SERVICE_NAME;
 
@@ -62,8 +62,24 @@ namespace hazelcast {
 
                 virtual void set(int64_t newValue);
 
-            private:
-                int partitionId;
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta);
+
+                virtual boost::shared_ptr<ICompletableFuture<bool> >
+                compareAndSetAsync(int64_t expect, int64_t update);
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAsync();
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
+
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
+
+                virtual boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
             };
         }
     }

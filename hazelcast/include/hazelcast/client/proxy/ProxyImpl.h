@@ -25,6 +25,7 @@
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientProxy.h"
 #include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,12 +36,6 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 class Data;
-            }
-        }
-
-        namespace spi {
-            namespace impl {
-                class ClientInvocationFuture;
             }
         }
 
@@ -80,6 +75,10 @@ namespace hazelcast {
 
                 boost::shared_ptr<spi::impl::ClientInvocationFuture> invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request,
                                                               int partitionId);
+
+                boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                invokeOnKeyOwner(std::auto_ptr<protocol::ClientMessage> request,
+                                 const serialization::pimpl::Data &keyData);
 
                 /**
                 * Internal API.
@@ -197,10 +196,13 @@ namespace hazelcast {
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
                                      const serialization::pimpl::Data &key) {
-                    int partitionId = getPartitionId(key);
-
-                    boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
-
+                    boost::shared_ptr<protocol::ClientMessage> response;
+                    try {
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request, key);
+                        response = future->get();
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
                     return (T)CODEC::decode(*response).response;
                 }
 

@@ -63,6 +63,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API IExecutorService : public proxy::ProxyImpl {
             friend class executor::impl::ExecutorServiceProxyFactory;
+
         public:
             static const std::string SERVICE_NAME;
 
@@ -406,11 +407,11 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members,
                                  const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
-                boost::shared_ptr<MultiExecutionCallbackWrapper <T> >
+                boost::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
 
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    boost::shared_ptr<ExecutionCallbackWrapper <T> >
+                    boost::shared_ptr<ExecutionCallbackWrapper < T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
                     submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
                 }
@@ -447,10 +448,10 @@ namespace hazelcast {
                                     const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 submitToMembers<HazelcastSerializable, T>(task, memberList, callback);
-                boost::shared_ptr<MultiExecutionCallbackWrapper <T> >
+                boost::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) memberList.size(), callback));
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    boost::shared_ptr<ExecutionCallbackWrapper <T> >
+                    boost::shared_ptr<ExecutionCallbackWrapper < T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
                     submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
                 }
@@ -569,18 +570,6 @@ namespace hazelcast {
                 const Member member;
             };
 
-            class SubmitToPartitionDecoder : public impl::ClientMessageDecoder {
-            public:
-                virtual boost::shared_ptr<serialization::pimpl::Data>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
-            };
-
-            class SubmitToAddressDecoder : public impl::ClientMessageDecoder {
-            public:
-                virtual boost::shared_ptr<serialization::pimpl::Data>
-                decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage);
-            };
-
             std::vector<Member> selectMembers(const cluster::memberselector::MemberSelector &memberSelector);
 
             template<typename T>
@@ -607,8 +596,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
                         new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
-                                                                      SUBMIT_TO_PARTITION_DECODER(),
-                                                                      boost::shared_ptr<T>()));
+                                                                SUBMIT_TO_PARTITION_DECODER<T>(),
+                                                                boost::shared_ptr<T>()));
 
                 delegatingFuture->andThen(callback);
             }
@@ -687,8 +676,8 @@ namespace hazelcast {
 
                 boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
                         new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
-                                                                      SUBMIT_TO_ADDRESS_DECODER(),
-                                                                      boost::shared_ptr<T>()));
+                                                                SUBMIT_TO_ADDRESS_DECODER<T>(),
+                                                                boost::shared_ptr<T>()));
 
                 delegatingFuture->andThen(callback);
             }
@@ -731,7 +720,8 @@ namespace hazelcast {
                 } else {
                     return boost::shared_ptr<ICompletableFuture<T> >(
                             new proxy::IExecutorDelegatingFuture<T>(f, getContext(), uuid, defaultValue,
-                                                                    SUBMIT_TO_PARTITION_DECODER(), name, partitionId));
+                                                                    SUBMIT_TO_PARTITION_DECODER<T>(), name,
+                                                                    partitionId));
                 }
 
             }
@@ -746,7 +736,7 @@ namespace hazelcast {
                 } else {
                     return boost::shared_ptr<ICompletableFuture<T> >(
                             new proxy::IExecutorDelegatingFuture<T>(f, getContext(), uuid, defaultValue,
-                                                                    SUBMIT_TO_ADDRESS_DECODER(), name, address));
+                                                                    SUBMIT_TO_ADDRESS_DECODER<T>(), name, address));
                 }
 
             }
@@ -773,15 +763,18 @@ namespace hazelcast {
 
             int randomPartitionId();
 
-            static const boost::shared_ptr<impl::ClientMessageDecoder> SUBMIT_TO_PARTITION_DECODER();
+            template<typename T>
+            static const boost::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_PARTITION_DECODER() {
+                return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToPartitionCodec, T>::instance();
+            }
 
-            static const boost::shared_ptr<impl::ClientMessageDecoder> SUBMIT_TO_ADDRESS_DECODER();
+            template<typename T>
+            static const boost::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_ADDRESS_DECODER() {
+                return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToAddressCodec, T>::instance();
+            }
 
             static const int32_t MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS = 10;
             static const int32_t MAX_CONSECUTIVE_SUBMITS = 100;
-
-            static const boost::shared_ptr<impl::ClientMessageDecoder> submitToAddressDecoder;
-            static const boost::shared_ptr<impl::ClientMessageDecoder> submitToPartitionDecoder;
 
             util::Atomic<int32_t> consecutiveSubmits;
             util::Atomic<int64_t> lastSubmitTime;

@@ -13,29 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
-#define HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
-
-#include <string>
+#include "hazelcast/client/internal/ClientDelegatingFuture.h"
 
 namespace hazelcast {
     namespace client {
         namespace internal {
-            namespace partition {
-                namespace strategy {
-                    class StringPartitioningStrategy {
-                    public:
-                        static std::string getBaseName(const std::string &name);
-
-                        static std::string getPartitionKey(const std::string &key);
-                    };
-                }
+            template<>
+            boost::shared_ptr<void> ClientDelegatingFuture<void>::getVoidObject() {
+                return boost::shared_ptr<void>(new bool);
             }
         }
-
     }
 }
-
-#endif //HAZELCAST_CLIENT_INTERNAL_PARTITION_STRATEGY_STRINGPARTITIONINGSTRATEGY_H_
 

@@ -68,5 +68,41 @@ namespace hazelcast {
         void IAtomicLong::destroy() {
             impl->destroy();
         }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::addAndGetAsync(int64_t delta) {
+            return impl->addAndGetAsync(delta);
+        }
+
+        boost::shared_ptr<ICompletableFuture<bool> > IAtomicLong::compareAndSetAsync(int64_t expect, int64_t update) {
+            return impl->compareAndSetAsync(expect, update);
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::decrementAndGetAsync() {
+            return impl->decrementAndGetAsync();
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAsync() {
+            return impl->getAsync();
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndAddAsync(int64_t delta) {
+            return impl->getAndAddAsync(delta);
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndSetAsync(int64_t newValue) {
+            return impl->getAndSetAsync(newValue);
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::incrementAndGetAsync() {
+            return impl->incrementAndGetAsync();
+        }
+
+        boost::shared_ptr<ICompletableFuture<int64_t> > IAtomicLong::getAndIncrementAsync() {
+            return impl->getAndIncrementAsync();
+        }
+
+        boost::shared_ptr<ICompletableFuture<void> > IAtomicLong::setAsync(int64_t newValue) {
+            return impl->setAsync(newValue);
+        }
     }
 }

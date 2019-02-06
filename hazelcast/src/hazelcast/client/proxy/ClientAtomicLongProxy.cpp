@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
+#include "hazelcast/client/spi/InternalCompletableFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -21,80 +22,125 @@ namespace hazelcast {
             const std::string ClientAtomicLongProxy::SERVICE_NAME = "hz:impl:atomicLongService";
 
             ClientAtomicLongProxy::ClientAtomicLongProxy(const std::string &objectName, spi::ClientContext *context)
-                    : proxy::ProxyImpl(SERVICE_NAME, objectName, context) {
-                serialization::pimpl::Data keyData = toData<std::string>(objectName);
-                partitionId = getPartitionId(keyData);
+                    : PartitionSpecificClientProxy(SERVICE_NAME, objectName, context) {
             }
 
             int64_t ClientAtomicLongProxy::addAndGet(int64_t delta) {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(getName(), delta);
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongAddAndGetCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        addAndGetAsync(delta))->join());
             }
 
             bool ClientAtomicLongProxy::compareAndSet(int64_t expect, int64_t update) {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(getName(), expect, update);
-
-                return invokeAndGetResult<bool, protocol::codec::AtomicLongCompareAndSetCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<bool> >(
+                        compareAndSetAsync(expect, update))->join());
             }
 
             int64_t ClientAtomicLongProxy::decrementAndGet() {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(getName());
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongDecrementAndGetCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        decrementAndGetAsync())->join());
             }
 
             int64_t ClientAtomicLongProxy::get() {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetCodec::encodeRequest(getName());
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetCodec::ResponseParameters>(request,
-                                                                                                            partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(getAsync())->join());
             }
 
             int64_t ClientAtomicLongProxy::getAndAdd(int64_t delta) {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(getName(), delta);
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndAddCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        getAndAddAsync(delta))->join());
             }
 
             int64_t ClientAtomicLongProxy::getAndSet(int64_t newValue) {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(getName(), newValue);
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndSetCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        getAndSetAsync(newValue))->join());
             }
 
             int64_t ClientAtomicLongProxy::incrementAndGet() {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(getName());
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongIncrementAndGetCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        incrementAndGetAsync())->join());
             }
 
             int64_t ClientAtomicLongProxy::getAndIncrement() {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(getName());
-
-                return invokeAndGetResult<int64_t, protocol::codec::AtomicLongGetAndIncrementCodec::ResponseParameters>(
-                        request, partitionId);
+                return *(boost::static_pointer_cast<spi::InternalCompletableFuture<int64_t> >(
+                        getAndIncrementAsync())->join());
             }
 
             void ClientAtomicLongProxy::set(int64_t newValue) {
-                std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::AtomicLongSetCodec::encodeRequest(getName(), newValue);
+                boost::static_pointer_cast<spi::InternalCompletableFuture<void> >(setAsync(newValue))->join();
+            }
 
-                invokeOnPartition(request, partitionId);
+            boost::shared_ptr<ICompletableFuture<int64_t> >
+            ClientAtomicLongProxy::addAndGetAsync(int64_t delta) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongAddAndGetCodec::encodeRequest(name, delta);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongAddAndGetCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<bool> >
+            ClientAtomicLongProxy::compareAndSetAsync(int64_t expect, int64_t update) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongCompareAndSetCodec::encodeRequest(name, expect, update);
+
+                return invokeOnPartitionAsync<bool>(request,
+                                                    impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongCompareAndSetCodec, bool>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::decrementAndGetAsync() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongDecrementAndGetCodec::encodeRequest(name);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongDecrementAndGetCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::getAsync() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongGetCodec::encodeRequest(name);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> >
+            ClientAtomicLongProxy::getAndAddAsync(int64_t delta) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongGetAndAddCodec::encodeRequest(name, delta);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndAddCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> >
+            ClientAtomicLongProxy::getAndSetAsync(int64_t newValue) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongGetAndSetCodec::encodeRequest(name, newValue);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndSetCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::incrementAndGetAsync() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongIncrementAndGetCodec::encodeRequest(name);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongIncrementAndGetCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<int64_t> > ClientAtomicLongProxy::getAndIncrementAsync() {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongGetAndIncrementCodec::encodeRequest(name);
+
+                return invokeOnPartitionAsync<int64_t>(request,
+                                                       impl::PrimitiveMessageDecoder<protocol::codec::AtomicLongGetAndIncrementCodec, int64_t>::instance());
+            }
+
+            boost::shared_ptr<ICompletableFuture<void> > ClientAtomicLongProxy::setAsync(int64_t newValue) {
+                std::auto_ptr<protocol::ClientMessage> request =
+                        protocol::codec::AtomicLongSetCodec::encodeRequest(name, newValue);
+
+                return invokeOnPartitionAsync<void>(request, impl::VoidMessageDecoder::instance());
             }
         }
     }

@@ -20,6 +20,11 @@
 
 #include "hazelcast/client/impl/AtomicLongInterface.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         namespace impl {
@@ -27,11 +32,26 @@ namespace hazelcast {
         }
 
         /**
-        * IAtomicLong is a distributed atomic long implementation.
-        * Note that, in node failures atomic long will be restored
-        * via backup.
-        *
-        */
+         * IAtomicLong is a redundant and highly available distributed alternative to
+         * the {@link java.util.concurrent.atomic.AtomicLong}.
+         * <p>
+         * Asynchronous variants of all methods have been introduced in Hazelcast version 3.7.
+         * Async methods return immediately an {@link ICompletableFuture} from which
+         * the operation's result can be obtained either in a blocking manner or by
+         * registering a callback to be executed upon completion. For example:
+         * <pre><code>
+         * boost::shared_ptr<ICompletableFuture<int64_t> > future = atomicLong.addAndGetAsync(13);
+         * future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+         * </code></pre>
+         * During a network partition event it is possible for the {@link IAtomicLong}
+         * to exist in each of the partitioned clusters or to not exist at all. Under
+         * these circumstances the values held in the {@link IAtomicLong} may diverge.
+         * Once the network partition heals, Hazelcast will use the configured
+         * split-brain merge policy to resolve conflicting values.
+         * <p>
+         * Supports Quorum since 3.10 in cluster versions 3.10 and higher.
+         *
+         */
         class HAZELCAST_API IAtomicLong : public impl::AtomicLongInterface {
             friend class impl::HazelcastClientInstanceImpl;
         public:
@@ -111,12 +131,135 @@ namespace hazelcast {
 
             virtual void destroy();
 
+            /**
+             * Atomically adds the given value to the current value.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             * <p>
+             * The operations result can be obtained in a blocking way, or a callback
+             * can be provided for execution upon completion, as demonstrated in the
+             * following examples:
+             * <pre><code>
+             * boost::shared_ptr<ICompletableFuture<int64_t> > future = atomicLong.addAndGetAsync(13);
+             * // do something else, then read the result
+             *
+             * // this method will block until the result is available
+             * int64_t result = future.get();
+             * </code></pre>
+             * <pre><code>
+             *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+             * </code></pre>
+             *
+             * @param delta the value to add
+             * @return an {@link ICompletableFuture} bearing the response
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta);
+
+            /**
+             * Atomically sets the value to the given updated value
+             * only if the current value {@code ==} the expected value.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @param expect the expected value
+             * @param update the new value
+             * @return an {@link ICompletableFuture} with value {@code true} if successful;
+             * or {@code false} if the actual value was not equal to the expected value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<bool> > compareAndSetAsync(int64_t expect, int64_t update);
+
+            /**
+             * Atomically decrements the current value by one.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @return an {@link ICompletableFuture} with the updated value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
+
+            /**
+             * Gets the current value. This method will dispatch a request and return
+             * immediately an {@link ICompletableFuture}.
+             *
+             * @return an {@link ICompletableFuture} with the current value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAsync();
+
+            /**
+             * Atomically adds the given value to the current value.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @param delta the value to add
+             * @return an {@link ICompletableFuture} with the old value before the addition
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
+
+            /**
+             * Atomically sets the given value and returns the old value.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @param newValue the new value
+             * @return an {@link ICompletableFuture} with the old value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
+
+            /**
+             * Atomically increments the current value by one.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @return an {@link ICompletableFuture} with the updated value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
+
+            /**
+             * Atomically increments the current value by one.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @return an {@link ICompletableFuture} with the old value
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
+
+            /**
+             * Atomically sets the given value.
+             * <p>
+             * This method will dispatch a request and return immediately an
+             * {@link ICompletableFuture}.
+             *
+             * @param newValue the new value
+             * @return an {@link ICompletableFuture}
+             * @since cluster version 3.7
+             */
+            boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
+
         private:
-            IAtomicLong(const boost::shared_ptr<AtomicLongInterface> &impl);
+            IAtomicLong(const boost::shared_ptr<impl::AtomicLongInterface> &impl);
 
             boost::shared_ptr<impl::AtomicLongInterface> impl;
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_CLIENT_IATOMICLONG_H_ */

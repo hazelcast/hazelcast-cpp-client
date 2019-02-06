@@ -20,6 +20,7 @@
 #include <stdint.h>
 
 #include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/ICompletableFuture.h"
 
 namespace hazelcast {
     namespace client {
@@ -95,6 +96,127 @@ namespace hazelcast {
                 * @param newValue the new value
                 */
                 virtual void set(int64_t newValue) = 0;
+
+                /**
+                 * Atomically adds the given value to the current value.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 * <p>
+                 * The operations result can be obtained in a blocking way, or a callback
+                 * can be provided for execution upon completion, as demonstrated in the
+                 * following examples:
+                 * <pre><code>
+                 * boost::shared_ptr<ICompletableFuture<int64_t> > future = atomicLong.addAndGetAsync(13);
+                 * // do something else, then read the result
+                 *
+                 * // this method will block until the result is available
+                 * int64_t result = future.get();
+                 * </code></pre>
+                 * <pre><code>
+                 *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+                 * </code></pre>
+                 *
+                 * @param delta the value to add
+                 * @return an {@link ICompletableFuture} bearing the response
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta) = 0;
+
+                /**
+                 * Atomically sets the value to the given updated value
+                 * only if the current value {@code ==} the expected value.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @param expect the expected value
+                 * @param update the new value
+                 * @return an {@link ICompletableFuture} with value {@code true} if successful;
+                 * or {@code false} if the actual value was not equal to the expected value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<bool> >
+                compareAndSetAsync(int64_t expect, int64_t update) = 0;
+
+                /**
+                 * Atomically decrements the current value by one.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @return an {@link ICompletableFuture} with the updated value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync() = 0;
+
+                /**
+                 * Gets the current value. This method will dispatch a request and return
+                 * immediately an {@link ICompletableFuture}.
+                 *
+                 * @return an {@link ICompletableFuture} with the current value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAsync() = 0;
+
+                /**
+                 * Atomically adds the given value to the current value.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @param delta the value to add
+                 * @return an {@link ICompletableFuture} with the old value before the addition
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta) = 0;
+
+                /**
+                 * Atomically sets the given value and returns the old value.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @param newValue the new value
+                 * @return an {@link ICompletableFuture} with the old value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+                getAndSetAsync(int64_t newValue) = 0;
+
+                /**
+                 * Atomically increments the current value by one.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @return an {@link ICompletableFuture} with the updated value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync() = 0;
+
+                /**
+                 * Atomically increments the current value by one.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @return an {@link ICompletableFuture} with the old value
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync() = 0;
+
+                /**
+                 * Atomically sets the given value.
+                 * <p>
+                 * This method will dispatch a request and return immediately an
+                 * {@link ICompletableFuture}.
+                 *
+                 * @param newValue the new value
+                 * @return an {@link ICompletableFuture}
+                 * @since cluster version 3.7
+                 */
+                virtual boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue) = 0;
             };
         }
     }
