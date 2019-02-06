@@ -170,7 +170,7 @@ namespace hazelcast {
              * or {@code false} if the actual value was not equal to the expected value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<bool> > compareAndSetAsync(int64_t expect, int64_t update);
+            boost::shared_ptr<ICompletableFuture<bool> > compareAndSetAsync(int64_t expect, int64_t update);
 
             /**
              * Atomically decrements the current value by one.
@@ -181,7 +181,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the updated value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
+            boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync();
 
             /**
              * Gets the current value. This method will dispatch a request and return
@@ -190,7 +190,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the current value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAsync();
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAsync();
 
             /**
              * Atomically adds the given value to the current value.
@@ -202,7 +202,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the old value before the addition
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta);
 
             /**
              * Atomically sets the given value and returns the old value.
@@ -214,7 +214,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the old value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndSetAsync(int64_t newValue);
 
             /**
              * Atomically increments the current value by one.
@@ -225,7 +225,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the updated value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
+            boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync();
 
             /**
              * Atomically increments the current value by one.
@@ -236,7 +236,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture} with the old value
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
+            boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync();
 
             /**
              * Atomically sets the given value.
@@ -248,7 +248,7 @@ namespace hazelcast {
              * @return an {@link ICompletableFuture}
              * @since cluster version 3.7
              */
-            virtual boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
+            boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue);
 
         private:
             IAtomicLong(const boost::shared_ptr<impl::AtomicLongInterface> &impl);
