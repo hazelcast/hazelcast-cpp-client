@@ -135,22 +135,20 @@ namespace hazelcast {
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > entrySet() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
+                std::vector<std::pair<K, boost::shared_ptr<V> > > entries;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries.push_back(std::pair<K, boost::shared_ptr<V> >(it->first, it->second));
                 }
                 return entries;
             }
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > clear() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
+                std::vector<std::pair<K, boost::shared_ptr<V> > > entries;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries.push_back(std::pair<K, boost::shared_ptr<V> >(it->first, it->second));
                 }
                 internalMap.clear();
                 return entries;
@@ -158,22 +156,20 @@ namespace hazelcast {
 
             std::vector<boost::shared_ptr<V> > values() {
                 util::LockGuard lg(mapLock);
-                std::vector<boost::shared_ptr<V> > valueArray(internalMap.size());
+                std::vector<boost::shared_ptr<V> > valueArray;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    valueArray[i++] = it->second;
+                    valueArray.push_back(it->second);
                 }
                 return valueArray;
             }
 
             std::vector<K> keys() {
                 util::LockGuard lg(mapLock);
-                std::vector<K> keysArray(internalMap.size());
+                std::vector<K> keysArray;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    keysArray[i++] = it->first;
+                    keysArray.push_back(it->first);
                 }
                 return keysArray;
             }
