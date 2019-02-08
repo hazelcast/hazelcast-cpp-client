@@ -33,12 +33,14 @@ namespace hazelcast {
                  */
                 class VectorClock {
                 public:
+                    typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
+
                     VectorClock();
 
-                    VectorClock(const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps);
+                    VectorClock(const TimestampVector &replicaLogicalTimestamps);
 
                     /** Returns a set of replica logical timestamps for this vector clock. */
-                    std::vector<std::pair<std::string, int64_t> > entrySet();
+                    TimestampVector entrySet();
 
                     /**
                      * Returns {@code true} if this vector clock is causally strictly after the

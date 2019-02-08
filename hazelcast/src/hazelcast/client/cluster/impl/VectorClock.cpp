@@ -24,19 +24,17 @@ namespace hazelcast {
     namespace client {
         namespace cluster {
             namespace impl {
-                typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
 
                 VectorClock::VectorClock() {}
 
-                VectorClock::VectorClock(
-                        const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps) {
+                VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps) {
                     BOOST_FOREACH(const TimestampVector::value_type &replicaTimestamp, replicaLogicalTimestamps) {
                                     replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
                                 }
                 }
 
-                std::vector<std::pair<std::string, int64_t> > VectorClock::entrySet() {
-                    std::vector<std::pair<std::string, int64_t> > result;
+                VectorClock::TimestampVector VectorClock::entrySet() {
+                    TimestampVector result;
                     BOOST_FOREACH(const TimestampMap::value_type &entry, replicaTimestamps) {
                                     result.push_back(std::make_pair(entry.first, entry.second));
                     }
