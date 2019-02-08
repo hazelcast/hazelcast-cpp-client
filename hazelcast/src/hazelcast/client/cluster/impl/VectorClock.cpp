@@ -26,14 +26,15 @@ namespace hazelcast {
                 VectorClock::VectorClock() {}
 
                 VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps) {
-                    BOOST_FOREACH(const TimestampVector::value_type &replicaTimestamp, replicaLogicalTimestamps) {
+                    BOOST_FOREACH(const VectorClock::TimestampVector::value_type &replicaTimestamp,
+                                  replicaLogicalTimestamps) {
                                     replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
                                 }
                 }
 
                 VectorClock::TimestampVector VectorClock::entrySet() {
-                    TimestampVector result;
-                    BOOST_FOREACH(const TimestampMap::value_type &entry, replicaTimestamps) {
+                    VectorClock::TimestampVector result;
+                    BOOST_FOREACH(const VectorClock::TimestampMap::value_type &entry, replicaTimestamps) {
                                     result.push_back(std::make_pair(entry.first, entry.second));
                     }
 
@@ -42,7 +43,7 @@ namespace hazelcast {
 
                 bool VectorClock::isAfter(VectorClock &other) {
                     bool anyTimestampGreater = false;
-                    BOOST_FOREACH(const TimestampMap::value_type &otherEntry, other.replicaTimestamps) {
+                    BOOST_FOREACH(const VectorClock::TimestampMap::value_type &otherEntry, other.replicaTimestamps) {
                         const std::string &replicaId = otherEntry.first;
                                     int64_t otherReplicaTimestamp = otherEntry.second;
                                     std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
