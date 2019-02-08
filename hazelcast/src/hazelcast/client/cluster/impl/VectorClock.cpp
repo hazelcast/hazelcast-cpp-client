@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <utility>
 #include <boost/foreach.hpp>
-#include <set>
 
 #include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {

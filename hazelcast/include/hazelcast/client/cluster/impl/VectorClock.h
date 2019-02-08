@@ -20,6 +20,7 @@
 #include <string>
 #include <stdint.h>
 #include <map>
+#include <vector>
 
 namespace hazelcast {
     namespace client {
