@@ -24,35 +24,37 @@ namespace hazelcast {
     namespace client {
         namespace cluster {
             namespace impl {
+                typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
 
                 VectorClock::VectorClock() {}
 
-                typedef std::vector<std::pair<std::string, boost::shared_ptr<int64_t> > > TimestampVector;
+                VectorClock::VectorClock(
+                        const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps) {
+                    BOOST_FOREACH(const TimestampVector::value_type &replicaTimestamp, replicaLogicalTimestamps) {
+                                    replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
+                                }
+                }
 
                 std::vector<std::pair<std::string, int64_t> > VectorClock::entrySet() {
-                    TimestampVector entries = replicaTimestamps.entrySet();
                     std::vector<std::pair<std::string, int64_t> > result;
-                    BOOST_FOREACH(const TimestampVector::value_type &entry , entries) {
-                        result.push_back(std::make_pair(entry.first, *entry.second));
+                    BOOST_FOREACH(const TimestampMap::value_type &entry, replicaTimestamps) {
+                                    result.push_back(std::make_pair(entry.first, entry.second));
                     }
 
                     return result;
                 }
 
-                void VectorClock::setReplicaTimestamp(const std::string &replicaId, int64_t timestamp) {
-                    replicaTimestamps.put(replicaId, boost::shared_ptr<int64_t >(new int64_t(timestamp)));
-                }
-
                 bool VectorClock::isAfter(VectorClock &other) {
                     bool anyTimestampGreater = false;
-                    BOOST_FOREACH (const TimestampVector::value_type &otherEntry , other.replicaTimestamps.entrySet()) {
+                    BOOST_FOREACH(const TimestampMap::value_type &otherEntry, other.replicaTimestamps) {
                         const std::string &replicaId = otherEntry.first;
-                        const boost::shared_ptr<int64_t> &otherReplicaTimestamp = otherEntry.second;
-                        boost::shared_ptr<int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
+                                    int64_t otherReplicaTimestamp = otherEntry.second;
+                                    std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
 
-                        if (localReplicaTimestamp.get() == NULL || *localReplicaTimestamp < *otherReplicaTimestamp) {
+                                    if (!localReplicaTimestamp.first ||
+                                        localReplicaTimestamp.second < otherReplicaTimestamp) {
                             return false;
-                        } else if (*localReplicaTimestamp > *otherReplicaTimestamp) {
+                                    } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
                             anyTimestampGreater = true;
                         }
                     }
@@ -60,8 +62,11 @@ namespace hazelcast {
                     return anyTimestampGreater ||  other.replicaTimestamps.size() < replicaTimestamps.size();
                 }
 
-                boost::shared_ptr<int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
-                    return replicaTimestamps.get(replicaId);
+                std::pair<bool, int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
+                    if (replicaTimestamps.count(replicaId) == 0) {
+                        return std::make_pair(false, -1);
+                    }
+                    return std::make_pair(true, replicaTimestamps[replicaId]);
                 }
 
             }
