@@ -52,7 +52,7 @@ namespace hazelcast {
                 wrapForWrite(size, HEADER_SIZE);
 
                 setFrameLength(size);
-                setVersion(PROTOCOL_VERSION);
+                setVersion(HAZELCAST_CLIENT_PROTOCOL_VERSION);
                 addFlag(BEGIN_AND_END_FLAGS);
                 setCorrelationId(0);
                 setPartitionId(-1);

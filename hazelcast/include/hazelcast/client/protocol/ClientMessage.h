@@ -109,7 +109,7 @@ namespace hazelcast {
                 /**
                 * Current protocol version
                 */
-                static const uint8_t PROTOCOL_VERSION = 1;
+                static const uint8_t HAZELCAST_CLIENT_PROTOCOL_VERSION = 1;
 
                 /**
                 * Begin Flag
