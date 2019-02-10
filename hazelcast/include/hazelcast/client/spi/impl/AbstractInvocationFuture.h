@@ -425,7 +425,7 @@ namespace hazelcast {
                         }
                     }
 
-                    class CallbackRunner : public HazelCastRunnable {
+                    class CallbackRunner : public Runnable {
                     public:
                         CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
                                        const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
