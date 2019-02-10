@@ -121,7 +121,7 @@ namespace hazelcast {
                         }
 
                         unregisterWaiter(thread);
-                        throw (ExceptionBuilder<TimeoutException>("AbstractInvocationFuture::get(timeout, unit)")
+                        throw (ExceptionBuilder<exception::TimeoutException>("AbstractInvocationFuture::get(timeout, unit)")
                                 << "Timeout: " << unit.toMillis(timeout) << " msecs").build();
                     }
 
