@@ -34,6 +34,8 @@
 using namespace hazelcast::util;
 using namespace hazelcast::client::exception;
 
+using hazelcast::util::Runnable;
+
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -423,7 +425,7 @@ namespace hazelcast {
                         }
                     }
 
-                    class CallbackRunner : public Runnable {
+                    class CallbackRunner : public HazelCastRunnable {
                     public:
                         CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
                                        const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
