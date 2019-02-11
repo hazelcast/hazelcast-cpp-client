@@ -19,8 +19,8 @@
 
 #include <string>
 #include <stdint.h>
-
-#include "hazelcast/util/SynchronizedMap.h"
+#include <map>
+#include <vector>
 
 namespace hazelcast {
     namespace client {
@@ -30,42 +30,37 @@ namespace hazelcast {
                  * Vector clock consisting of distinct replica logical clocks.
                  * <p>
                  * See https://en.wikipedia.org/wiki/Vector_clock
-                 * The vector clock may be read from different thread but concurrent
-                 * updates must be synchronized externally. There is no guarantee for
-                 * concurrent updates.
+                 * There is no guarantee for concurrent updates.
                  */
                 class VectorClock {
                 public:
+                    typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
+
                     VectorClock();
 
-                    /**
-                     * Returns logical timestamp for given {@code replicaId}.
-                     * This method may be called from different threads and the result reflects
-                     * the latest update on the vector clock.
-                     */
-                    boost::shared_ptr<int64_t> getTimestampForReplica(const std::string &replicaId);
-
-                    /**
-                     * Sets the logical timestamp for the given {@code replicaId}.
-                     * This method is not thread safe and concurrent access must be synchronized
-                     * externally.
-                     */
-                    void setReplicaTimestamp(const std::string &replicaId, int64_t timestamp);
+                    VectorClock(const TimestampVector &replicaLogicalTimestamps);
 
                     /** Returns a set of replica logical timestamps for this vector clock. */
-                    std::vector<std::pair<std::string, int64_t> > entrySet();
+                    TimestampVector entrySet();
 
                     /**
                      * Returns {@code true} if this vector clock is causally strictly after the
                      * provided vector clock. This means that it the provided clock is neither
                      * equal to, greater than or concurrent to this vector clock.
-                     * This method may be called from different threads and the result reflects
-                     * the latest update on the vector clock.
                      */
                     bool isAfter(VectorClock &other);
 
                 private:
-                    util::SynchronizedMap<std::string, int64_t> replicaTimestamps;
+                    /**
+                     * Returns logical timestamp for given {@code replicaId}.
+                     * @return false for the pair.first if timestamp does not exist for replicaId,
+                     * otherwise returns true for pair.first and the timestamp of the replica as the pair.second.
+                     */
+                    std::pair<bool, int64_t> getTimestampForReplica(const std::string &replicaId);
+
+                    typedef std::map<std::string, int64_t> TimestampMap;
+                    TimestampMap replicaTimestamps;
+                    VectorClock::TimestampVector replicaTimestampEntries;
                 };
             }
         }
