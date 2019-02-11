@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <utility>
 #include <boost/foreach.hpp>
-#include <set>
 
 #include "hazelcast/client/cluster/impl/VectorClock.h"
-#include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
-#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -27,32 +25,29 @@ namespace hazelcast {
 
                 VectorClock::VectorClock() {}
 
-                typedef std::vector<std::pair<std::string, boost::shared_ptr<int64_t> > > TimestampVector;
-
-                std::vector<std::pair<std::string, int64_t> > VectorClock::entrySet() {
-                    TimestampVector entries = replicaTimestamps.entrySet();
-                    std::vector<std::pair<std::string, int64_t> > result;
-                    BOOST_FOREACH(const TimestampVector::value_type &entry , entries) {
-                        result.push_back(std::make_pair(entry.first, *entry.second));
-                    }
-
-                    return result;
+                VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
+                        : replicaTimestampEntries(replicaLogicalTimestamps) {
+                    BOOST_FOREACH(const VectorClock::TimestampVector::value_type &replicaTimestamp,
+                                  replicaLogicalTimestamps) {
+                                    replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
+                                }
                 }
 
-                void VectorClock::setReplicaTimestamp(const std::string &replicaId, int64_t timestamp) {
-                    replicaTimestamps.put(replicaId, boost::shared_ptr<int64_t >(new int64_t(timestamp)));
+                VectorClock::TimestampVector VectorClock::entrySet() {
+                    return replicaTimestampEntries;
                 }
 
                 bool VectorClock::isAfter(VectorClock &other) {
                     bool anyTimestampGreater = false;
-                    BOOST_FOREACH (const TimestampVector::value_type &otherEntry , other.replicaTimestamps.entrySet()) {
+                    BOOST_FOREACH(const VectorClock::TimestampMap::value_type &otherEntry, other.replicaTimestamps) {
                         const std::string &replicaId = otherEntry.first;
-                        const boost::shared_ptr<int64_t> &otherReplicaTimestamp = otherEntry.second;
-                        boost::shared_ptr<int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
+                                    int64_t otherReplicaTimestamp = otherEntry.second;
+                                    std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);
 
-                        if (localReplicaTimestamp.get() == NULL || *localReplicaTimestamp < *otherReplicaTimestamp) {
+                                    if (!localReplicaTimestamp.first ||
+                                        localReplicaTimestamp.second < otherReplicaTimestamp) {
                             return false;
-                        } else if (*localReplicaTimestamp > *otherReplicaTimestamp) {
+                                    } else if (localReplicaTimestamp.second > otherReplicaTimestamp) {
                             anyTimestampGreater = true;
                         }
                     }
@@ -60,10 +55,12 @@ namespace hazelcast {
                     return anyTimestampGreater ||  other.replicaTimestamps.size() < replicaTimestamps.size();
                 }
 
-                boost::shared_ptr<int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
-                    return replicaTimestamps.get(replicaId);
+                std::pair<bool, int64_t> VectorClock::getTimestampForReplica(const std::string &replicaId) {
+                    if (replicaTimestamps.count(replicaId) == 0) {
+                        return std::make_pair(false, -1);
+                    }
+                    return std::make_pair(true, replicaTimestamps[replicaId]);
                 }
-
             }
         }
     }
