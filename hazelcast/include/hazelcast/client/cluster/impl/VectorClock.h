@@ -60,6 +60,7 @@ namespace hazelcast {
 
                     typedef std::map<std::string, int64_t> TimestampMap;
                     TimestampMap replicaTimestamps;
+                    VectorClock::TimestampVector replicaTimestampEntries;
                 };
             }
         }
