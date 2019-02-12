@@ -121,6 +121,8 @@ namespace hazelcast {
             private:
                 typedef std::map<boost::shared_ptr<serialization::pimpl::Data>, bool> MARKER_MAP;
 
+                void invalidateEntries(const std::map<int, EntryVector> &entries);
+
                 map::impl::nearcache::KeyStateMarker *getKeyStateMarker();
 
                 void addNearCacheInvalidateListener(std::auto_ptr<client::impl::BaseEventHandler> handler);

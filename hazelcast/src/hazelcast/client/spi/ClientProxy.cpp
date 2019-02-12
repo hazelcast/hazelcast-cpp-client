@@ -69,6 +69,12 @@ namespace hazelcast {
             void ClientProxy::postDestroy() {
             }
 
+            void ClientProxy::onInitialize() {
+            }
+
+            void ClientProxy::onShutdown() {
+            }
+
             serialization::pimpl::SerializationService &ClientProxy::getSerializationService() {
                 return context.getSerializationService();
             }
@@ -113,7 +119,6 @@ namespace hazelcast {
             bool ClientProxy::deregisterListener(const std::string &registrationId) {
                 return getContext().getClientListenerService().deregisterListener(registrationId);
             }
-
         }
     }
 }

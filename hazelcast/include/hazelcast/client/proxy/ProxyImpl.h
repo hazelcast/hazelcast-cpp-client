@@ -55,14 +55,6 @@ namespace hazelcast {
                 virtual ~ProxyImpl();
 
                 /**
-                 * Called when proxy is created.
-                 * Overriding implementations can add initialization specific logic into this method
-                 * like registering a listener, creating a cleanup task etc.
-                 */
-                virtual void onInitialize() {
-                }
-
-                /**
                 * Internal API.
                 * method to be called by distributed objects.
                 * memory ownership is moved to DistributedObject.

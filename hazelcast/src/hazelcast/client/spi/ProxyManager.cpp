@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <boost/foreach.hpp>
+
 #include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
 #include "hazelcast/client/protocol/codec/ClientCreateProxyCodec.h"
@@ -34,6 +36,13 @@ namespace hazelcast {
 
                 invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
                 invocationRetryPauseMillis = invocationService.getInvocationRetryPauseMillis();
+            }
+
+            void ProxyManager::destroy() {
+                BOOST_FOREACH(const boost::shared_ptr<util::Future<ClientProxy> > &future, proxies.values()) {
+                                future->get()->onShutdown();
+                            }
+                proxies.clear();
             }
 
             boost::shared_ptr<ClientProxy> ProxyManager::getOrCreateProxy(
