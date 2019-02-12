@@ -15,10 +15,9 @@
  */
 
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <hazelcast/util/TimeUtil.h>
-
 
 #include "hazelcast/util/TimeUtil.h"
+#include "hazelcast/util/concurrent/TimeUnit.h"
 
 namespace hazelcast {
     namespace util {

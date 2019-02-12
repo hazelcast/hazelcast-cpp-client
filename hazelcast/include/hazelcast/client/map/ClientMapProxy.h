@@ -37,14 +37,11 @@
 #include "hazelcast/client/impl/ClientMessageDecoder.h"
 #include "hazelcast/client/internal/ClientDelegatingFuture.h"
 #include "hazelcast/util/ExceptionUtil.h"
-#include <hazelcast/util/TimeUtil.h>
 
 // Codecs
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
-#include "hazelcast/client/protocol/codec/MapPutWithMaxIdleCodec.h"
-#include "hazelcast/client/protocol/codec/MapSetWithMaxIdleCodec.h"
 #include "hazelcast/client/protocol/codec/MapSetCodec.h"
 #include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
 
@@ -1404,22 +1401,11 @@ namespace hazelcast {
                     try {
                         serialization::pimpl::Data keyData = toData<K>(key);
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        int64_t ttlMillis = util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
-                        std::auto_ptr<protocol::ClientMessage> request;
-                        if (maxIdle != NULL) {
-                            request = protocol::codec::MapPutWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                             util::getCurrentThreadId(),
-                                                                                             ttlMillis,
-                                                                                             util::TimeUtil::timeInMsOrOneIfResultIsZero(
-                                                                                                     *maxIdle,
-                                                                                                     maxIdleUnit));
-                        } else {
-                            request = protocol::codec::MapPutCodec::encodeRequest(name, keyData, valueData,
-                                                                                  util::getCurrentThreadId(),
-                                                                                  ttlMillis);
-                        }
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
-                                                                                                       keyData);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = putAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
                         return boost::shared_ptr<ICompletableFuture<V> >(
                                 new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
                                                                         PUT_ASYNC_RESPONSE_DECODER()));
@@ -1435,22 +1421,11 @@ namespace hazelcast {
                     try {
                         serialization::pimpl::Data keyData = toData<K>(key);
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        int64_t ttlMillis = util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
-                        std::auto_ptr<protocol::ClientMessage> request;
-                        if (maxIdle != NULL) {
-                            request = protocol::codec::MapSetWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                             util::getCurrentThreadId(),
-                                                                                             ttlMillis,
-                                                                                             util::TimeUtil::timeInMsOrOneIfResultIsZero(
-                                                                                                     *maxIdle,
-                                                                                                     maxIdleUnit));
-                        } else {
-                            request = protocol::codec::MapSetCodec::encodeRequest(name, keyData, valueData,
-                                                                                  util::getCurrentThreadId(),
-                                                                                  ttlMillis);
-                        }
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
-                                                                                                       keyData);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = setAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
                         return boost::shared_ptr<ICompletableFuture<void> >(
                                 new internal::ClientDelegatingFuture<void>(future, getSerializationService(),
                                                                            SET_ASYNC_RESPONSE_DECODER()));
