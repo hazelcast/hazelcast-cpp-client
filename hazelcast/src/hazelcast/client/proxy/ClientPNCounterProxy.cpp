@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
-
 #include "hazelcast/client/protocol/codec/PNCounterAddCodec.h"
 #include "hazelcast/client/protocol/codec/PNCounterGetConfiguredReplicaCountCodec.h"
 #include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
@@ -331,13 +329,8 @@ namespace hazelcast {
 
             boost::shared_ptr<cluster::impl::VectorClock> ClientPNCounterProxy::toVectorClock(
                     const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps) {
-                typedef std::vector<std::pair<std::string, int64_t> > TimestampVector;
-                boost::shared_ptr<cluster::impl::VectorClock> timestamps(new cluster::impl::VectorClock());
-                BOOST_FOREACH(const TimestampVector::value_type &replicaTimestamp, replicaLogicalTimestamps) {
-                                timestamps->setReplicaTimestamp(replicaTimestamp.first, replicaTimestamp.second);
-                            }
-
-                return timestamps;
+                return boost::shared_ptr<cluster::impl::VectorClock>(
+                        new cluster::impl::VectorClock(replicaLogicalTimestamps));
             }
 
             boost::shared_ptr<Address> ClientPNCounterProxy::getCurrentTargetReplicaAddress() {

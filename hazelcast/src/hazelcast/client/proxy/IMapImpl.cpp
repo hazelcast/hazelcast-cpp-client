@@ -23,6 +23,7 @@
 #include "hazelcast/client/EntryEvent.h"
 #include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 #include "hazelcast/util/Util.h"
+#include "hazelcast/util/TimeUtil.h"
 
 // Includes for parameters classes
 #include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
@@ -72,6 +73,8 @@
 #include "hazelcast/client/protocol/codec/MapEntriesWithPagingPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeysCodec.h"
 #include "hazelcast/client/protocol/codec/MapRemoveAllCodec.h"
+#include "hazelcast/client/protocol/codec/MapPutWithMaxIdleCodec.h"
+#include "hazelcast/client/protocol/codec/MapSetWithMaxIdleCodec.h"
 
 namespace hazelcast {
     namespace client {
@@ -653,6 +656,51 @@ namespace hazelcast {
                 return protocol::codec::MapRemoveEntryListenerCodec::ResponseParameters::decode(clientMessage).response;
             }
 
+            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            IMapImpl::putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                                           const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
+                                           const serialization::pimpl::Data &keyData,
+                                           const serialization::pimpl::Data &valueData) {
+                int64_t ttlMillis = hazelcast::util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
+                std::auto_ptr<protocol::ClientMessage> request;
+                if (maxIdle != NULL) {
+                    request = protocol::codec::MapPutWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
+                                                                                     getCurrentThreadId(),
+                                                                                     ttlMillis,
+                                                                                     TimeUtil::timeInMsOrOneIfResultIsZero(
+                                                                                             *maxIdle,
+                                                                                             maxIdleUnit));
+                } else {
+                    request = protocol::codec::MapPutCodec::encodeRequest(name, keyData, valueData,
+                                                                          getCurrentThreadId(),
+                                                                          ttlMillis);
+                }
+
+                return invokeOnKeyOwner(request, keyData);
+            }
+
+            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            IMapImpl::setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                                           const int64_t *maxIdle, const util::concurrent::TimeUnit &maxIdleUnit,
+                                           const serialization::pimpl::Data &keyData,
+                                           const serialization::pimpl::Data &valueData) {
+                int64_t ttlMillis = TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
+                std::auto_ptr<protocol::ClientMessage> request;
+                if (maxIdle != NULL) {
+                    request = protocol::codec::MapSetWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
+                                                                                     getCurrentThreadId(),
+                                                                                     ttlMillis,
+                                                                                     TimeUtil::timeInMsOrOneIfResultIsZero(
+                                                                                             *maxIdle,
+                                                                                             maxIdleUnit));
+                } else {
+                    request = protocol::codec::MapSetCodec::encodeRequest(name, keyData, valueData,
+                                                                          getCurrentThreadId(),
+                                                                          ttlMillis);
+                }
+
+                return invokeOnKeyOwner(request, keyData);
+            }
 
         }
     }
