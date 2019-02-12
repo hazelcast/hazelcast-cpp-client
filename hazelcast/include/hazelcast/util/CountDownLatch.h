@@ -46,9 +46,9 @@ namespace hazelcast {
 
             bool await(int seconds);
 
-            bool awaitMillis(size_t milliseconds);
+            bool awaitMillis(int64_t milliseconds);
 
-            bool awaitMillis(size_t milliseconds, size_t &elapsed);
+            bool awaitMillis(int64_t milliseconds, int64_t &elapsed);
 
             void await();
 
@@ -68,7 +68,7 @@ namespace hazelcast {
         public:
             CountDownLatchWaiter &add(CountDownLatch &latch);
 
-            bool awaitMillis(size_t milliseconds);
+            bool awaitMillis(int64_t milliseconds);
 
             void reset();
         private:

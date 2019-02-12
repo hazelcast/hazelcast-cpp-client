@@ -15,6 +15,8 @@
  */
 
 #include <hazelcast/client/protocol/ClientProtocolErrorCodes.h>
+#include <hazelcast/client/spi/impl/ClientInvocation.h>
+
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/Connection.h"
@@ -29,34 +31,33 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
-                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                   const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
                                                    int partitionId) :
-                        ClientInvocationFuture(clientContext.getLogger()),
                         logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
-                        executionService(clientContext.getClientExecutionService()),
+                        executionService(clientContext.getClientExecutionService().shared_from_this()),
                         clientMessage(boost::shared_ptr<protocol::ClientMessage>(clientMessage)),
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(partitionId),
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        invokeCount(0) {
+                        invokeCount(0),
+                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(), clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
-                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                   const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName,
                                                    const boost::shared_ptr<connection::Connection> &connection) :
-                        ClientInvocationFuture(clientContext.getLogger()),
                         logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
-                        executionService(clientContext.getClientExecutionService()),
+                        executionService(clientContext.getClientExecutionService().shared_from_this()),
                         clientMessage(boost::shared_ptr<protocol::ClientMessage>(clientMessage)),
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(UNASSIGNED_PARTITION),
@@ -64,36 +65,38 @@ namespace hazelcast {
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
                         connection(connection),
-                        invokeCount(0) {
+                        invokeCount(0),
+                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                                          clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
-                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                   const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName) :
-                        ClientInvocationFuture(clientContext.getLogger()),
                         logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
-                        executionService(clientContext.getClientExecutionService()),
+                        executionService(clientContext.getClientExecutionService().shared_from_this()),
                         clientMessage(boost::shared_ptr<protocol::ClientMessage>(clientMessage)),
                         callIdSequence(clientContext.getCallIdSequence()),
                         partitionId(UNASSIGNED_PARTITION),
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        invokeCount(0) {
+                        invokeCount(0),
+                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                                          clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::ClientInvocation(spi::ClientContext &clientContext,
-                                                   std::auto_ptr<protocol::ClientMessage> &clientMessage,
+                                                   const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                    const std::string &objectName, const Address &address) :
-                        ClientInvocationFuture(clientContext.getLogger()),
                         logger(clientContext.getLogger()),
                         lifecycleService(clientContext.getLifecycleService()),
                         clientClusterService(clientContext.getClientClusterService()),
                         invocationService(clientContext.getInvocationService()),
-                        executionService(clientContext.getClientExecutionService()),
+                        executionService(clientContext.getClientExecutionService().shared_from_this()),
                         clientMessage(boost::shared_ptr<protocol::ClientMessage>(clientMessage)),
                         callIdSequence(clientContext.getCallIdSequence()),
                         address(new Address(address)),
@@ -101,7 +104,9 @@ namespace hazelcast {
                         startTimeMillis(util::currentTimeMillis()),
                         retryPauseMillis(invocationService.getInvocationRetryPauseMillis()),
                         objectName(objectName),
-                        invokeCount(0) {
+                        invokeCount(0),
+                        clientInvocationFuture(new ClientInvocationFuture(clientContext.getClientExecutionService().shared_from_this(),
+                                                                          clientContext.getLogger(), clientMessage, clientContext.getCallIdSequence())) {
                 }
 
                 ClientInvocation::~ClientInvocation() {
@@ -109,16 +114,16 @@ namespace hazelcast {
 
                 boost::shared_ptr<ClientInvocationFuture> ClientInvocation::invoke() {
                     assert (clientMessage.get() != NULL);
-                    clientMessage.get()->setCorrelationId(callIdSequence.next());
+                    clientMessage.get()->setCorrelationId(callIdSequence->next());
                     invokeOnSelection(shared_from_this());
-                    return shared_from_this();
+                    return clientInvocationFuture;
                 }
 
                 boost::shared_ptr<ClientInvocationFuture> ClientInvocation::invokeUrgent() {
                     assert (clientMessage.get() != NULL);
-                    clientMessage.get()->setCorrelationId(callIdSequence.forceNext());
+                    clientMessage.get()->setCorrelationId(callIdSequence->forceNext());
                     invokeOnSelection(shared_from_this());
-                    return shared_from_this();
+                    return clientInvocationFuture;
                 }
 
                 void ClientInvocation::invokeOnSelection(const boost::shared_ptr<ClientInvocation> &invocation) {
@@ -136,7 +141,7 @@ namespace hazelcast {
                     } catch (exception::HazelcastOverloadException &) {
                         throw;
                     } catch (exception::IException &e) {
-                        invocation->notifyException(e);
+                        invocation->notifyException(boost::shared_ptr<exception::IException>(e.clone()));
                     }
                 }
 
@@ -155,36 +160,39 @@ namespace hazelcast {
                     // first we force a new invocation slot because we are going to return our old invocation slot immediately after
                     // It is important that we first 'force' taking a new slot; otherwise it could be that a sneaky invocation gets
                     // through that takes our slot!
-                    clientMessage.get()->setCorrelationId(callIdSequence.forceNext());
+                    clientMessage.get()->setCorrelationId(callIdSequence->forceNext());
                     //we release the old slot
-                    callIdSequence.complete();
+                    callIdSequence->complete();
 
                     try {
                         invokeOnSelection(shared_from_this());
                     } catch (exception::IException &e) {
-                        complete(e);
+                        clientInvocationFuture->complete(boost::shared_ptr<exception::IException>(e.clone()));
                     }
                 }
 
-                void ClientInvocation::notifyException(exception::IException &exception) {
+                void ClientInvocation::notifyException(const boost::shared_ptr<exception::IException> &exception) {
                     if (!lifecycleService.isRunning()) {
-                        complete(exception::HazelcastClientNotActiveException(
-                                exception.getSource(), "Client is shutting down", exception));
+                        boost::shared_ptr<exception::IException> notActiveException(
+                                new exception::HazelcastClientNotActiveException(exception->getSource(),
+                                                                                 "Client is shutting down", exception));
+
+                        clientInvocationFuture->complete(notActiveException);
                         return;
                     }
 
-                    if (isNotAllowedToRetryOnSelection(exception)) {
-                        complete(exception);
+                    if (isNotAllowedToRetryOnSelection(*exception)) {
+                        clientInvocationFuture->complete(exception);
                         return;
                     }
 
-                    bool retry = isRetrySafeException(exception)
+                    bool retry = isRetrySafeException(*exception)
                                  || invocationService.isRedoOperation()
-                                 || (exception.getErrorCode() == protocol::TARGET_DISCONNECTED &&
+                                 || (exception->getErrorCode() == protocol::TARGET_DISCONNECTED &&
                                      clientMessage.get()->isRetryable());
 
                     if (!retry) {
-                        complete(exception);
+                        clientInvocationFuture->complete(exception);
                         return;
                     }
 
@@ -192,18 +200,18 @@ namespace hazelcast {
                     if (timePassed > invocationService.getInvocationTimeoutMillis()) {
                         if (logger.isFinestEnabled()) {
                             std::ostringstream out;
-                            out << "Exception will not be retried because invocation timed out. " << exception.what();
+                            out << "Exception will not be retried because invocation timed out. " << exception->what();
                             logger.finest(out.str());
                         }
 
-                        complete(newOperationTimeoutException(exception));
+                        clientInvocationFuture->complete(newOperationTimeoutException(*exception));
                         return;
                     }
 
                     try {
                         execute();
                     } catch (exception::RejectedExecutionException &) {
-                        complete(exception);
+                        clientInvocationFuture->complete(exception);
                     }
 
                 }
@@ -225,31 +233,31 @@ namespace hazelcast {
 
                 bool ClientInvocation::isRetrySafeException(exception::IException &exception) {
                     int32_t errorCode = exception.getErrorCode();
-                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE) {
+                    if (errorCode == protocol::IO || errorCode == protocol::HAZELCAST_INSTANCE_NOT_ACTIVE ||
+                        exception.isRetryable()) {
                         return true;
-                    }
-                    try {
-                        exception.raise();
-                    } catch (exception::RetryableHazelcastException &) {
-                        return true;
-                    } catch (exception::IException &) {
-                        return false;
                     }
 
                     return false;
                 }
 
-                exception::OperationTimeoutException
+                boost::shared_ptr<exception::OperationTimeoutException>
                 ClientInvocation::newOperationTimeoutException(exception::IException &exception) {
-                    std::ostringstream sb;
                     int64_t nowInMillis = util::currentTimeMillis();
-                    sb << *this << " timed out because exception occurred after client invocation timeout "
-                       << "Current time :" << invocationService.getInvocationTimeoutMillis()
-                       << util::StringUtil::timeToString(nowInMillis) << ". " << "Start time: "
-                       << util::StringUtil::timeToString(startTimeMillis) << ". Total elapsed time: "
-                       << (nowInMillis - startTimeMillis) << " ms. ";
-                    return exception::OperationTimeoutException("ClientInvocation::newOperationTimeoutException",
-                                                                sb.str());
+
+                    return (exception::ExceptionBuilder<exception::OperationTimeoutException>(
+                            "ClientInvocation::newOperationTimeoutException") << *this
+                                                                              << " timed out because exception occurred after client invocation timeout "
+                                                                              << "Current time :"
+                                                                              << invocationService.getInvocationTimeoutMillis()
+                                                                              << util::StringUtil::timeToString(
+                                                                                      nowInMillis) << ". "
+                                                                              << "Start time: "
+                                                                              << util::StringUtil::timeToString(
+                                                                                      startTimeMillis)
+                                                                              << ". Total elapsed time: "
+                                                                              << (nowInMillis - startTimeMillis)
+                                                                              << " ms. ").buildShared();
                 }
 
                 std::ostream &operator<<(std::ostream &os, const ClientInvocation &invocation) {
@@ -282,7 +290,8 @@ namespace hazelcast {
                                                                              const std::string &objectName,
                                                                              int partitionId) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
-                            new ClientInvocation(clientContext, clientMessage, objectName, partitionId));
+                            new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, partitionId));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -291,7 +300,8 @@ namespace hazelcast {
                                                                              const std::string &objectName,
                                                                              const boost::shared_ptr<connection::Connection> &connection) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
-                            new ClientInvocation(clientContext, clientMessage, objectName, connection));
+                            new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, connection));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -301,7 +311,8 @@ namespace hazelcast {
                                                                              const std::string &objectName,
                                                                              const Address &address) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
-                            new ClientInvocation(clientContext, clientMessage, objectName, address));
+                            new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName, address));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
@@ -309,11 +320,20 @@ namespace hazelcast {
                                                                              std::auto_ptr<protocol::ClientMessage> &clientMessage,
                                                                              const std::string &objectName) {
                     boost::shared_ptr<ClientInvocation> invocation = boost::shared_ptr<ClientInvocation>(
-                            new ClientInvocation(clientContext, clientMessage, objectName));
+                            new ClientInvocation(clientContext, boost::shared_ptr<protocol::ClientMessage>(clientMessage), objectName));
+                    invocation->clientInvocationFuture->setInvocation(invocation);
                     return invocation;
                 }
 
                 boost::shared_ptr<connection::Connection> ClientInvocation::getSendConnection() {
+                    return sendConnection;
+                }
+
+                boost::shared_ptr<connection::Connection> ClientInvocation::getSendConnectionOrWait() {
+                    while (sendConnection.get().get() == NULL && !clientInvocationFuture->isDone()) {
+                        // TODO: Make sleep interruptible
+                        util::sleepmillis(retryPauseMillis);
+                    }
                     return sendConnection;
                 }
 
@@ -326,7 +346,7 @@ namespace hazelcast {
                     if (clientMessage.get() == NULL) {
                         throw exception::IllegalArgumentException("response can't be null");
                     }
-                    complete(clientMessage);
+                    clientInvocationFuture->complete(clientMessage);
                 }
 
                 const boost::shared_ptr<protocol::ClientMessage> ClientInvocation::getClientMessage() {
@@ -346,12 +366,12 @@ namespace hazelcast {
                 void ClientInvocation::execute() {
                     if (invokeCount < MAX_FAST_INVOCATION_COUNT) {
                         // fast retry for the first few invocations
-                        executionService.execute(boost::shared_ptr<util::Runnable>(shared_from_this()));
+                        executionService->execute(boost::shared_ptr<util::Runnable>(shared_from_this()));
                     } else {
                         // progressive retry delay
                         int64_t delayMillis = util::min<int64_t>(1 << (invokeCount.get() - MAX_FAST_INVOCATION_COUNT),
                                                                  retryPauseMillis);
-                        executionService.schedule(shared_from_this(), delayMillis);
+                        executionService->schedule(shared_from_this(), delayMillis);
                     }
                 }
 
@@ -359,55 +379,13 @@ namespace hazelcast {
                     return "ClientInvocation";
                 }
 
-                void ClientInvocation::onComplete() {
-                    callIdSequence.complete();
-                }
-
-                void ClientInvocation::andThen(
-                        const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback) {
-                    util::Future<boost::shared_ptr<protocol::ClientMessage> >::andThen(
-                            boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > >(
-                                    new InternalDelegatingExecutionCallback(callback, callIdSequence)),
-                            executionService);
-                }
-
-                std::string ClientInvocation::invocationToString() {
-                    std::ostringstream out;
-                    out << *this;
-                    return out.str();
-                }
-
                 boost::shared_ptr<protocol::ClientMessage> ClientInvocation::copyMessage() {
                     return boost::shared_ptr<protocol::ClientMessage>(new protocol::ClientMessage(*clientMessage.get()));
                 }
 
-                ClientInvocation::InternalDelegatingExecutionCallback::InternalDelegatingExecutionCallback(
-                        const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback,
-                        sequence::CallIdSequence &callIdSequence) : callback(callback),
-                                                                    callIdSequence(callIdSequence) {
-                    this->callIdSequence.forceNext();
+                boost::shared_ptr<util::Executor> ClientInvocation::getUserExecutor() {
+                    return executionService->getUserExecutor();
                 }
-
-                void ClientInvocation::InternalDelegatingExecutionCallback::onResponse(
-                        const boost::shared_ptr<protocol::ClientMessage> &message) {
-                    try {
-                        callback->onResponse(message);
-                        callIdSequence.complete();
-                    } catch (...) {
-                        callIdSequence.complete();
-                    }
-                }
-
-                void ClientInvocation::InternalDelegatingExecutionCallback::onFailure(
-                        const boost::shared_ptr<exception::IException> &e) {
-                    try {
-                        callback->onFailure(e);
-                        callIdSequence.complete();
-                    } catch (...) {
-                        callIdSequence.complete();
-                    }
-                }
-
 
             }
         }

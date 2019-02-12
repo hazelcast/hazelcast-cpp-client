@@ -20,7 +20,6 @@
 
 #include "hazelcast/client/config/ConfigPatternMatcher.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {

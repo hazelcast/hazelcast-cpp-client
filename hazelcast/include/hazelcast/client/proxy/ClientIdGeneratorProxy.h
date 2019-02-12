@@ -24,17 +24,20 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             /**
-             * Client proxy implementation for a {@link PNCounter}.
+             * Client proxy implementation for a {@link IdGeneratorInterface}.
              */
             class ClientIdGeneratorProxy : public impl::IdGeneratorInterface, public proxy::ProxyImpl {
             public:
                 static const std::string SERVICE_NAME;
 
+                static const std::string ATOMIC_LONG_NAME;
+
                 enum {
-                    BLOCK_SIZE = 1000
+                    BLOCK_SIZE = 10000
                 };
 
-                ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context);
+                ClientIdGeneratorProxy(const std::string &instanceName, spi::ClientContext *context,
+                                       const IAtomicLong &atomicLong);
 
                 /**
                  * Try to initialize this IdGenerator instance with given id
@@ -53,13 +56,13 @@ namespace hazelcast {
                  */
                 int64_t newId();
 
+                void destroy();
             private:
                 IAtomicLong atomicLong;
                 boost::shared_ptr<util::Atomic<int64_t> > local;
                 boost::shared_ptr<util::Atomic<int32_t> > residue;
                 boost::shared_ptr<util::Mutex> localLock;
 
-                void onDestroy();
             };
         }
     }

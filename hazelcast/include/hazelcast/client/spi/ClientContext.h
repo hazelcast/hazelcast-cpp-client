@@ -118,7 +118,7 @@ namespace hazelcast {
 
                 Cluster &getCluster();
 
-                impl::sequence::CallIdSequence &getCallIdSequence() const;
+                boost::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
 
                 const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
 

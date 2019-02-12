@@ -48,23 +48,6 @@ namespace hazelcast {
                 Data::Data() : cachedHashValue(-1) {
                 }
 
-/*
-                Data::Data(const boost::shared_ptr<std::vector<byte> > &data) : data(data) {
-                    if (data.get()) {
-                        size_t size = data->size();
-                        if (size > 0 && size < Data::DATA_OVERHEAD) {
-                            char msg[100];
-                            util::hz_snprintf(msg, 100, "Provided buffer should be either empty or "
-                                                        "should contain more than %u bytes! Provided buffer size:%lu", Data::DATA_OVERHEAD,
-                                              (unsigned long) size);
-                            throw exception::IllegalArgumentException("Data::setBuffer", msg);
-                        }
-
-                        cachedHashValue = calculateHash();
-                    }
-                }
-*/
-
                 Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), cachedHashValue(-1) {
                     if (data.get()) {
                         size_t size = data->size();

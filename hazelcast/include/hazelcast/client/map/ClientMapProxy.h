@@ -27,8 +27,6 @@
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/monitor/impl/LocalMapStatsImpl.h"
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
-#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/impl/EntryArrayImpl.h"
 #include "hazelcast/client/proxy/IMapImpl.h"
 #include "hazelcast/client/impl/EntryEventHandler.h"
@@ -36,7 +34,17 @@
 #include "hazelcast/client/EntryView.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/Future.h"
+#include "hazelcast/client/impl/ClientMessageDecoder.h"
+#include "hazelcast/client/internal/ClientDelegatingFuture.h"
+#include "hazelcast/util/ExceptionUtil.h"
+
+// Codecs
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
+#include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
+#include "hazelcast/client/protocol/codec/MapSetCodec.h"
+#include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -129,7 +137,7 @@ namespace hazelcast {
                 * @return the previous value in shared_ptr, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+                boost::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
@@ -206,7 +214,7 @@ namespace hazelcast {
                 * @param timeoutInMillis  maximum time in milliseconds to wait for acquiring the lock
                 *                 for the key
                 */
-                bool tryRemove(const K &key, long timeoutInMillis) {
+                bool tryRemove(const K &key, int64_t timeoutInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
 
                     return tryRemoveInternal(keyData, timeoutInMillis);
@@ -224,7 +232,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the put is successful, <tt>false</tt>
                 *         otherwise.
                 */
-                bool tryPut(const K &key, const V &value, long timeoutInMillis) {
+                bool tryPut(const K &key, const V &value, int64_t timeoutInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
@@ -232,7 +240,7 @@ namespace hazelcast {
                 }
 
                 /**
-                * Same as put(K, V, long, TimeUnit) but MapStore, if defined,
+                * Same as put(K, V, int64_t, TimeUnit) but MapStore, if defined,
                 * will not be called to store/persist the entry.  If ttl is 0, then
                 * the entry lives forever.
                 *
@@ -240,7 +248,7 @@ namespace hazelcast {
                 * @param value        value of the entry
                 * @param ttlInMillis  maximum time for this entry to stay in the map in milliseconds, 0 means infinite.
                 */
-                void putTransient(const K &key, const V &value, long ttlInMillis) {
+                void putTransient(const K &key, const V &value, int64_t ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
@@ -270,11 +278,12 @@ namespace hazelcast {
                 * @return the previous value of the entry, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    std::auto_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData, ttlInMillis);
+                    std::auto_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData,
+                                                                                             ttlInMillis);
                     return boost::shared_ptr<V>(toObject<V>(response));
                 }
 
@@ -327,7 +336,7 @@ namespace hazelcast {
                 * @param ttl maximum time in milliseconds for this entry to stay in the map
                 0 means infinite.
                 */
-                void set(const K &key, const V &value, long ttl) {
+                void set(const K &key, const V &value, int64_t ttl) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
@@ -370,7 +379,7 @@ namespace hazelcast {
                 * @param key key to lock.
                 * @param leaseTime time in milliseconds to wait before releasing the lock.
                 */
-                void lock(const K &key, long leaseTime) {
+                void lock(const K &key, int64_t leaseTime) {
                     serialization::pimpl::Data keyData = toData(key);
 
                     proxy::IMapImpl::lock(toData(key), leaseTime);
@@ -417,7 +426,7 @@ namespace hazelcast {
                 * @return <tt>true</tt> if the lock was acquired and <tt>false</tt>
                 *         if the waiting time elapsed before the lock was acquired.
                 */
-                bool tryLock(const K &key, long timeInMillis) {
+                bool tryLock(const K &key, int64_t timeInMillis) {
                     return proxy::IMapImpl::tryLock(toData(key), timeInMillis);
                 }
 
@@ -490,10 +499,11 @@ namespace hazelcast {
                 *
                 * @return registrationId of added listener that can be used to remove the entry listener.
                 */
-                std::string addEntryListener(EntryListener <K, V> &listener, bool includeValue) {
+                std::string addEntryListener(EntryListener<K, V> &listener, bool includeValue) {
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerCodec::AbstractEventHandler>(
-                                    getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
+                                    getName(), getContext().getClientClusterService(),
+                                    getContext().getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, includeValue);
@@ -515,10 +525,11 @@ namespace hazelcast {
                 * @return registrationId of added listener that can be used to remove the entry listener.
                 */
                 std::string
-                addEntryListener(EntryListener <K, V> &listener, const query::Predicate &predicate, bool includeValue) {
+                addEntryListener(EntryListener<K, V> &listener, const query::Predicate &predicate, bool includeValue) {
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerWithPredicateCodec::AbstractEventHandler>(
-                                    getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
+                                    getName(), getContext().getClientClusterService(),
+                                    getContext().getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, predicate, includeValue);
@@ -550,11 +561,12 @@ namespace hazelcast {
                 * @param includeValue <tt>true</tt> if <tt>EntryEvent</tt> should
                 *                     contain the value.
                 */
-                std::string addEntryListener(EntryListener <K, V> &listener, const K &key, bool includeValue) {
+                std::string addEntryListener(EntryListener<K, V> &listener, const K &key, bool includeValue) {
                     serialization::pimpl::Data keyData = toData(key);
                     client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler> *entryEventHandler =
                             new client::impl::EntryEventHandler<K, V, protocol::codec::MapAddEntryListenerToKeyCodec::AbstractEventHandler>(
-                                    getName(), getContext().getClientClusterService(), getContext().getSerializationService(),
+                                    getName(), getContext().getClientClusterService(),
+                                    getContext().getSerializationService(),
                                     listener,
                                     includeValue);
                     return proxy::IMapImpl::addEntryListener(entryEventHandler, keyData, includeValue);
@@ -568,7 +580,7 @@ namespace hazelcast {
                 * @return <tt>EntryView</tt> of the specified key
                 * @see EntryView
                 */
-                EntryView <K, V> getEntryView(const K &key) {
+                EntryView<K, V> getEntryView(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
                     std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(keyData);
                     std::auto_ptr<V> v = toObject<V>(dataEntryView->getValue());
@@ -620,9 +632,9 @@ namespace hazelcast {
 
                     std::map<int, std::vector<KEY_DATA_PAIR> > partitionToKeyData;
                     // group the request per parition id
-                    for (typename std::set<K>::const_iterator it = keys.begin();it != keys.end(); ++it) {
+                    for (typename std::set<K>::const_iterator it = keys.begin(); it != keys.end(); ++it) {
                         serialization::pimpl::Data keyData = toData<K>(*it);
-                        
+
                         int partitionId = getPartitionId(keyData);
 
                         partitionToKeyData[partitionId].push_back(std::make_pair(&(*it), toShared(keyData)));
@@ -701,7 +713,7 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::vector<K> keySet(query::PagingPredicate <K, V> &predicate) {
+                std::vector<K> keySet(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::KEY);
 
                     std::vector<serialization::pimpl::Data> dataResult = keySetForPagingPredicateData(predicate);
@@ -787,7 +799,7 @@ namespace hazelcast {
                 * @param predicate the criteria for values to match
                 * @return a vector clone of the values contained in this map
                 */
-                std::vector<V> values(query::PagingPredicate <K, V> &predicate) {
+                std::vector<V> values(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::VALUE);
 
                     EntryVector dataResult = proxy::IMapImpl::valuesForPagingPredicateData(predicate);
@@ -882,7 +894,7 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry vector of the query
                 */
-                std::vector<std::pair<K, V> > entrySet(query::PagingPredicate <K, V> &predicate) {
+                std::vector<std::pair<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult = proxy::IMapImpl::entrySetForPagingPredicateData(
                             predicate);
 
@@ -968,7 +980,8 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
+                std::map<K, boost::shared_ptr<ResultType> >
+                executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     std::map<K, boost::shared_ptr<ResultType> > result;
@@ -1118,8 +1131,90 @@ namespace hazelcast {
                 virtual monitor::LocalMapStats &getLocalMapStats() {
                     return stats;
                 }
+
+                boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+                    return boost::shared_ptr<ICompletableFuture<V> >(
+                            new internal::ClientDelegatingFuture<V>(getAsyncInternal(key), getSerializationService(),
+                                                                    PUT_ASYNC_RESPONSE_DECODER()));
+                }
+
+                boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
+                    return putAsyncInternal(DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS(), NULL,
+                                            util::concurrent::TimeUnit::MILLISECONDS(), key, value);
+                }
+
+                boost::shared_ptr<ICompletableFuture<V> >
+                putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
+                    return putAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, key, value);
+                }
+
+                boost::shared_ptr<ICompletableFuture<V> >
+                putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                         int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
+                    return putAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, key, value);
+                }
+
+                boost::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
+                    return setAsync(key, value, DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS());
+                }
+
+                boost::shared_ptr<ICompletableFuture<void> >
+                setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
+                    return setAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, key, value);
+                }
+
+                boost::shared_ptr<ICompletableFuture<void> >
+                setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
+                         int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
+                    return setAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, key, value);
+                }
+
+                boost::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
+                    try {
+                        serialization::pimpl::Data keyData = toData<K>(key);
+                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapRemoveCodec::encodeRequest(
+                                name, keyData, util::getCurrentThreadId());
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
+                                                                                                       keyData);
+                        return boost::shared_ptr<ICompletableFuture<V> >(
+                                new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
+                                                                        REMOVE_ASYNC_RESPONSE_DECODER()));
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<ICompletableFuture<V> >();
+                }
+
             protected:
                 typedef std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > KEY_DATA_PAIR;
+
+                /**
+                 * Default TTL value of a record.
+                 */
+                static int64_t DEFAULT_TTL;
+
+                /**
+                 * Default Max Idle value of a record.
+                 */
+                static int64_t DEFAULT_MAX_IDLE;
+
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &GET_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapGetCodec, V>::instance();
+                }
+
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &PUT_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapPutCodec, V>::instance();
+                }
+
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<void> > &
+                SET_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::VoidMessageDecoder::instance();
+                }
+
+                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &
+                REMOVE_ASYNC_RESPONSE_DECODER() {
+                    return client::impl::DataMessageDecoder<protocol::codec::MapRemoveCodec, V>::instance();
+                }
 
                 virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
                     return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
@@ -1147,45 +1242,49 @@ namespace hazelcast {
                     proxy::IMapImpl::deleteEntry(keyData);
                 }
 
-                virtual bool tryRemoveInternal(const serialization::pimpl::Data &keyData, long timeoutInMillis) {
+                virtual bool tryRemoveInternal(const serialization::pimpl::Data &keyData, int64_t timeoutInMillis) {
                     return proxy::IMapImpl::tryRemove(keyData, timeoutInMillis);
                 }
 
                 virtual bool tryPutInternal(const serialization::pimpl::Data &keyData,
-                                            const serialization::pimpl::Data &valueData, long timeoutInMillis) {
+                                            const serialization::pimpl::Data &valueData, int64_t timeoutInMillis) {
                     return proxy::IMapImpl::tryPut(keyData, valueData, timeoutInMillis);
                 }
 
                 virtual std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &keyData,
-                                            const serialization::pimpl::Data &valueData, long timeoutInMillis) {
+                                                                              const serialization::pimpl::Data &valueData,
+                                                                              int64_t timeoutInMillis) {
                     return proxy::IMapImpl::putData(keyData, valueData, timeoutInMillis);
                 }
 
                 virtual void tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                             const serialization::pimpl::Data &valueData, int ttlInMillis) {
+                                                     const serialization::pimpl::Data &valueData, int ttlInMillis) {
                     proxy::IMapImpl::putTransient(keyData, valueData, ttlInMillis);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data> putIfAbsentInternal(const serialization::pimpl::Data &keyData,
-                                                                              const serialization::pimpl::Data &valueData,
-                                                                              int ttlInMillis) {
+                virtual std::auto_ptr<serialization::pimpl::Data>
+                putIfAbsentInternal(const serialization::pimpl::Data &keyData,
+                                    const serialization::pimpl::Data &valueData,
+                                    int ttlInMillis) {
                     return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttlInMillis);
                 }
 
                 virtual bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
-                                           const serialization::pimpl::Data &valueData,
-                                           const serialization::pimpl::Data &newValueData) {
+                                                   const serialization::pimpl::Data &valueData,
+                                                   const serialization::pimpl::Data &newValueData) {
                     return proxy::IMapImpl::replace(keyData, valueData, newValueData);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data> replaceInternal(const serialization::pimpl::Data &keyData,
-                                                                          const serialization::pimpl::Data &valueData) {
+                virtual std::auto_ptr<serialization::pimpl::Data>
+                replaceInternal(const serialization::pimpl::Data &keyData,
+                                const serialization::pimpl::Data &valueData) {
                     return proxy::IMapImpl::replaceData(keyData, valueData);
 
                 }
 
-                virtual void setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                                 int ttlInMillis) {
+                virtual void
+                setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
+                            int ttlInMillis) {
                     proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                 }
 
@@ -1206,9 +1305,9 @@ namespace hazelcast {
                     std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
 
                     for (typename std::map<int, std::vector<KEY_DATA_PAIR> >::const_iterator
-                                 it = partitionToKeyData.begin();it != partitionToKeyData.end();++it) {
+                                 it = partitionToKeyData.begin(); it != partitionToKeyData.end(); ++it) {
                         for (typename std::vector<KEY_DATA_PAIR>::const_iterator
-                                     keyIt = it->second.begin();keyIt != it->second.end();++keyIt) {
+                                     keyIt = it->second.begin(); keyIt != it->second.end(); ++keyIt) {
                             partitionKeys[it->first].push_back(serialization::pimpl::Data(*(*keyIt).second));
 
                             dataKeyPairMap[(*keyIt).second] = (*keyIt).first;
@@ -1216,11 +1315,11 @@ namespace hazelcast {
                     }
                     EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
                     EntryVector responseEntries;
-                    for (EntryVector::iterator it = allData.begin();it != allData.end(); ++it) {
+                    for (EntryVector::iterator it = allData.begin(); it != allData.end(); ++it) {
                         std::auto_ptr<V> value = toObject<V>(it->second);
                         boost::shared_ptr<serialization::pimpl::Data> keyPtr = boost::shared_ptr<serialization::pimpl::Data>(
                                 new serialization::pimpl::Data(it->first));
-                        const K * &keyObject = dataKeyPairMap[keyPtr];
+                        const K *&keyObject = dataKeyPairMap[keyPtr];
                         assert(keyObject != 0);
                         result[*keyObject] = *value;
                         responseEntries.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(
@@ -1236,21 +1335,23 @@ namespace hazelcast {
                     return proxy::IMapImpl::executeOnKeyData(keyData, processor);
                 }
 
-                template <typename ResultType>
+                template<typename ResultType>
                 Future<ResultType>
                 submitToKeyInternal(const serialization::pimpl::Data &keyData,
-                                     const serialization::pimpl::Data &processor) {
+                                    const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
 
                     std::auto_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
-                                                                                             processor,
-                                                                                             keyData,
+                                                                                processor,
+                                                                                keyData,
                                                                                 util::getCurrentThreadId());
 
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(request, partitionId);
+                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(
+                            request, partitionId);
 
-                    return client::Future<ResultType>(clientInvocationFuture, getSerializationService(), submitToKeyDecoder);
+                    return client::Future<ResultType>(clientInvocationFuture, getSerializationService(),
+                                                      submitToKeyDecoder);
                 }
 
                 static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response) {
@@ -1281,9 +1382,69 @@ namespace hazelcast {
                 boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
                     return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
+
+                virtual boost::shared_ptr<spi::impl::ClientInvocationFuture> getAsyncInternal(const K &key) {
+                    try {
+                        serialization::pimpl::Data keyData = toData(key);
+                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapGetCodec::encodeRequest(
+                                name, keyData, util::getCurrentThreadId());
+                        return invokeOnKeyOwner(request, keyData);
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+                }
+
+                boost::shared_ptr<ICompletableFuture<V> >
+                putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
+                                 const util::concurrent::TimeUnit &maxIdleUnit, const K &key, const V &value) {
+                    try {
+                        serialization::pimpl::Data keyData = toData<K>(key);
+                        serialization::pimpl::Data valueData = toData<V>(value);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = putAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
+                        return boost::shared_ptr<ICompletableFuture<V> >(
+                                new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
+                                                                        PUT_ASYNC_RESPONSE_DECODER()));
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<ICompletableFuture<V> >();
+                }
+
+                boost::shared_ptr<ICompletableFuture<void> >
+                setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
+                                 const util::concurrent::TimeUnit &maxIdleUnit, const K &key, const V &value) {
+                    try {
+                        serialization::pimpl::Data keyData = toData<K>(key);
+                        serialization::pimpl::Data valueData = toData<V>(value);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = setAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
+                        return boost::shared_ptr<ICompletableFuture<void> >(
+                                new internal::ClientDelegatingFuture<void>(future, getSerializationService(),
+                                                                           SET_ASYNC_RESPONSE_DECODER()));
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<ICompletableFuture<void> >();
+                }
+
             private:
                 monitor::impl::LocalMapStatsImpl stats;
             };
+
+            template<typename K, typename V>
+            int64_t ClientMapProxy<K, V>::DEFAULT_TTL = -1L;
+
+            template<typename K, typename V>
+            int64_t ClientMapProxy<K, V>::DEFAULT_MAX_IDLE = -1L;
+
         }
     }
 }

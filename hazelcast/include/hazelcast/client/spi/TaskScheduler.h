@@ -33,15 +33,8 @@ namespace hazelcast {
             /**
              * {@link ExecutorService} can schedule a command to run after a given delay or execute periodically.
              *
-             * The {@link #scheduleWithRepetition(Runnable, long, long)} has similar semantic
-             * to {@link java.util.concurrent.ScheduledExecutorService#scheduleAtFixedRate(Runnable, long, long, TimeUnit)}. It
-             * guarantees a task won't be executed by multiple threads concurrently. The difference is that this service will
-             * skip a scheduled execution if another thread is still running the same task, instead of postponing its execution.
-             * To emphasize this difference the method is called <code>scheduleAtFixedRate</code>
-             * instead of <code>scheduleAtFixedRate</code>
+             * It guarantees a task won't be executed by multiple threads concurrently.
              *
-             * The other difference is this service does not offer an equivalent of
-             * {@link java.util.concurrent.ScheduledExecutorService#scheduleWithFixedDelay(Runnable, long, long, TimeUnit)}
              *
              */
             class HAZELCAST_API TaskScheduler : public util::Executor {

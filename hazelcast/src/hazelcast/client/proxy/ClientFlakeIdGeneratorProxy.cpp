@@ -17,6 +17,7 @@
 #include "hazelcast/client/proxy/ClientFlakeIdGeneratorProxy.h"
 #include "hazelcast/client/protocol/codec/FlakeIdGeneratorNewIdBatchCodec.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
 #include "hazelcast/client/ClientConfig.h"
 

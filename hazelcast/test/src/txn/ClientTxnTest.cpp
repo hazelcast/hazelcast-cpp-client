@@ -88,15 +88,13 @@ namespace hazelcast {
             ClientTxnTest::ClientTxnTest()
             : hazelcastInstanceFactory(*g_srvFactory) {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
-                second.reset(new HazelcastServer(hazelcastInstanceFactory));
                 std::auto_ptr<ClientConfig> clientConfig = getConfig();
                 clientConfig->setRedoOperation(true);
-                // Keep the test time shorter by setting a shorter invocation timeout
-                clientConfig->getProperties()[ClientProperties::INVOCATION_TIMEOUT_SECONDS] = "5";
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
                 clientConfig->setLoadBalancer(loadBalancer.get());
                 client.reset(new HazelcastClient(*clientConfig));
+                second.reset(new HazelcastServer(hazelcastInstanceFactory));
             }
 
             ClientTxnTest::~ClientTxnTest() {
@@ -188,13 +186,8 @@ namespace hazelcast {
                 queue.offer(value);
 
                 client->shutdown();
-                try {
-                    context.commitTransaction();
-                } catch (exception::TransactionException &e) {
-                    boost::shared_ptr<exception::IException> cause = e.getCause();
-                    ASSERT_NOTNULL(cause.get(), exception::IException);
-                    ASSERT_EQ((int32_t) protocol::HAZELCAST_INSTANCE_NOT_ACTIVE, cause->getErrorCode());
-                }
+
+                ASSERT_THROW(context.commitTransaction(), exception::HazelcastClientNotActiveException);
             }
 
 

@@ -50,6 +50,7 @@
 #include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/FlakeIdGenerator.h"
+#include "hazelcast/client/IExecutorService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -336,6 +337,19 @@ namespace hazelcast {
                 ISemaphore getISemaphore(const std::string& name);
 
                 /**
+                 * Creates or returns the distributed executor service for the given name.
+                 * Executor service enables you to run your <tt>Runnable</tt>s and <tt>Callable</tt>s
+                 * on the Hazelcast cluster.
+                 * <p>
+                 * <p><b>Note:</b> Note that it doesn't support {@code invokeAll/Any}
+                 * and doesn't have standard shutdown behavior</p>
+                 *
+                 * @param name name of the executor service
+                 * @return the distributed executor service for the given name
+                 */
+                boost::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
+
+                /**
                 *
                 * @return configuration of this Hazelcast client.
                 */
@@ -420,7 +434,7 @@ namespace hazelcast {
                 std::auto_ptr<internal::nearcache::NearCacheManager> nearCacheManager;
                 spi::impl::ClientClusterServiceImpl clusterService;
                 boost::shared_ptr<spi::impl::ClientPartitionServiceImpl> partitionService;
-                std::auto_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
+                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> executionService;
                 std::auto_ptr<spi::ClientInvocationService> invocationService;
                 boost::shared_ptr<spi::ClientListenerService> listenerService;
                 spi::impl::ClientTransactionManagerServiceImpl transactionManager;
@@ -428,7 +442,7 @@ namespace hazelcast {
                 spi::LifecycleService lifecycleService;
                 spi::ProxyManager proxyManager;
                 std::auto_ptr<mixedtype::HazelcastClient> mixedTypeSupportAdaptor;
-                std::auto_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
+                boost::shared_ptr<spi::impl::sequence::CallIdSequence> callIdSequence;
                 std::auto_ptr<statistics::Statistics> statistics;
                 protocol::ClientExceptionFactory exceptionFactory;
                 std::string instanceName;
@@ -449,7 +463,7 @@ namespace hazelcast {
 
                 std::auto_ptr<spi::ClientInvocationService> initInvocationService();
 
-                std::auto_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
+                boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> initExecutionService();
 
                 std::auto_ptr<connection::ClientConnectionManagerImpl> initConnectionManagerService(
                         const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders);

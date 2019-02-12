@@ -39,14 +39,13 @@ namespace hazelcast {
             boost::shared_ptr<ClientProxy> ProxyManager::getOrCreateProxy(
                     const std::string &service, const std::string &id, ClientProxyFactory &factory) {
                 DefaultObjectNamespace ns(service, id);
-                boost::shared_ptr<util::Future<boost::shared_ptr<ClientProxy> > > proxyFuture = proxies.get(ns);
+                boost::shared_ptr<util::Future<ClientProxy> > proxyFuture = proxies.get(ns);
                 if (proxyFuture.get() != NULL) {
                     return proxyFuture->get();
                 }
 
-                proxyFuture.reset(new util::Future<boost::shared_ptr<ClientProxy> >(client.getLogger()));
-                boost::shared_ptr<util::Future<boost::shared_ptr<ClientProxy> > > current = proxies.putIfAbsent(ns,
-                                                                                                                proxyFuture);
+                proxyFuture.reset(new util::Future<ClientProxy>(client.getLogger()));
+                boost::shared_ptr<util::Future<ClientProxy> > current = proxies.putIfAbsent(ns, proxyFuture);
                 if (current.get()) {
                     return current->get();
                 }
@@ -105,7 +104,7 @@ namespace hazelcast {
                         clientProxy->getName(),
                         clientProxy->getServiceName(), *initializationTarget);
                 spi::impl::ClientInvocation::create(client, clientMessage, clientProxy->getServiceName(),
-                                                    *initializationTarget)->invoke().get();
+                                                    *initializationTarget)->invoke()->get();
                 clientProxy->onInitialize();
             }
 
@@ -147,7 +146,7 @@ namespace hazelcast {
 
             void ProxyManager::destroyProxy(ClientProxy &proxy) {
                 DefaultObjectNamespace objectNamespace(proxy.getServiceName(), proxy.getName());
-                boost::shared_ptr<util::Future<boost::shared_ptr<ClientProxy> > > registeredProxyFuture = proxies.remove(
+                boost::shared_ptr<util::Future<ClientProxy> > registeredProxyFuture = proxies.remove(
                         objectNamespace);
                 boost::shared_ptr<ClientProxy> registeredProxy;
                 if (registeredProxyFuture.get()) {

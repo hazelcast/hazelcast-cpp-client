@@ -22,6 +22,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "hazelcast/util/ExceptionUtil.h"
+
 namespace hazelcast {
     namespace client {
         namespace protocol {
@@ -50,6 +52,17 @@ namespace hazelcast {
                 static boost::shared_ptr<protocol::ClientMessage>
                 invoke(std::auto_ptr<protocol::ClientMessage> &request, const std::string &objectName,
                        spi::ClientContext &client, const boost::shared_ptr<connection::Connection> &connection);
+
+            private:
+                class TransactionExceptionFactory : public util::ExceptionUtil::RuntimeExceptionFactory {
+                public:
+                    virtual void rethrow(const client::exception::IException &throwable, const std::string &message);
+                };
+
+                static const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+                TRANSACTION_EXCEPTION_FACTORY();
+
+                static const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> exceptionFactory;
             };
         }
     }

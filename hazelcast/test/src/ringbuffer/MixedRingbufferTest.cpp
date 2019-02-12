@@ -74,7 +74,7 @@ namespace hazelcast {
                 ASSERT_EQ(-1, rb->tailSequence());
                 ASSERT_EQ(0, rb->size());
                 ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                ASSERT_THROW(rb->readOne(-1), exception::StaleSequenceException);
+                ASSERT_THROW(rb->readOne(-1), exception::IllegalArgumentException);
                 ASSERT_THROW(rb->readOne(1), exception::IllegalArgumentException);
 
                 Employee employee1("First", 10);

@@ -19,14 +19,31 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 
+#include "hazelcast/util/HazelcastDll.h"
+
 namespace hazelcast {
     namespace util {
-        class TimeUtil {
+        namespace concurrent {
+            class TimeUnit;
+        }
+        class HAZELCAST_API TimeUtil {
         public:
             /**
              * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
              */
             static boost::posix_time::time_duration getDurationSinceEpoch();
+
+            /**
+             * Convert time to milliseconds based on the input time-unit.
+             * If conversion results in the value 0, then it the value is replaced with the positive 1.
+             *
+             * @param time The input time
+             * @param timeunit The input time-unit to base the conversion on
+             *
+             * @return The milliseconds representation of the input time
+             */
+            static int64_t timeInMsOrOneIfResultIsZero(int64_t time, const concurrent::TimeUnit &timeunit);
+
         };
     }
 }

@@ -23,7 +23,7 @@ namespace hazelcast {
                                                                      const std::string &message,
                                                                      int32_t errorCode, int64_t correlationId,
                                                                      std::string details)
-                    : IException("UndefinedErrorCodeException", source, message, protocol::UNDEFINED), error(errorCode),
+                    : IException("UndefinedErrorCodeException", source, message, protocol::UNDEFINED,true), error(errorCode),
                       messageCallId(correlationId),
                       detailedErrorMessage(details) {
             }
@@ -55,19 +55,19 @@ namespace hazelcast {
                                                                      const std::string &message,
                                                                      const std::string &details, int32_t causeCode)
                     : IException("RetryableHazelcastException", source, message, details, protocol::RETRYABLE_HAZELCAST,
-                                 causeCode), HazelcastException(source, message, details, causeCode) {
+                                 causeCode, true, true), HazelcastException(source, message, details, causeCode) {
             }
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message)
-                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST),
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, true, true),
                       HazelcastException(source, message) {
             }
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
                                                                      int32_t causeCode) : IException(
-                    "RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, causeCode),
+                    "RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, causeCode, true, true),
                                                                                           HazelcastException(source,
                                                                                                              message,
                                                                                                              causeCode) {}
@@ -75,12 +75,12 @@ namespace hazelcast {
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
                                                                      const boost::shared_ptr<IException> &cause)
-                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause),
+                    : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause, true, true),
                       HazelcastException(source, message, cause) {}
 
             MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
                                                      const std::string &details, int32_t causeCode)
-                    : IException("MemberLeftException", source, message, details, protocol::MEMBER_LEFT, causeCode),
+                    : IException("MemberLeftException", source, message, details, protocol::MEMBER_LEFT, causeCode, true),
                       ExecutionException(source, message, details, causeCode),
                       RetryableHazelcastException(source, message, details, causeCode) {
             }
@@ -88,7 +88,7 @@ namespace hazelcast {
             MemberLeftException::MemberLeftException(const std::string &source, const std::string &message,
                                                      int32_t causeCode) : IException("MemberLeftException", source,
                                                                                      message, protocol::MEMBER_LEFT,
-                                                                                     causeCode),
+                                                                                     causeCode, true, true),
                                                                           ExecutionException(source, message,
                                                                                              causeCode),
                                                                           RetryableHazelcastException(source, message,
@@ -96,7 +96,7 @@ namespace hazelcast {
             }
 
             MemberLeftException::MemberLeftException(const std::string &source, const std::string &message)
-                    : IException("MemberLeftException", source, message, protocol::MEMBER_LEFT),
+                    : IException("MemberLeftException", source, message, protocol::MEMBER_LEFT, true, true),
                       ExecutionException(source, message), RetryableHazelcastException(source, message) {
             }
 

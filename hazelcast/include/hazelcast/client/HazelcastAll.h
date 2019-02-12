@@ -68,6 +68,7 @@
 #include "hazelcast/client/mixedtype/IQueue.h"
 #include "hazelcast/client/mixedtype/Ringbuffer.h"
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
+#include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
 
 #endif //HAZELCAST_HazelcastAll
 

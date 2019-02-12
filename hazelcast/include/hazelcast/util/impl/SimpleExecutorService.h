@@ -112,7 +112,7 @@ namespace hazelcast {
 
                     virtual void run() {
                         try {
-                            T result = callable->call();
+                            boost::shared_ptr<T> result = callable->call();
                             future->set_value(result);
                         } catch (client::exception::IException &e) {
                             future->set_exception(e.clone());

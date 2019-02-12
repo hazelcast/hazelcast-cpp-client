@@ -496,7 +496,7 @@ namespace hazelcast {
              * @param name name of the flake ID generator config
              * @return the flake ID generator configuration
              * @throws ConfigurationException if ambiguous configurations are found
-             * @see com.hazelcast.partition.strategy.StringPartitioningStrategy#getBaseName(java.lang.String)
+             * @see StringPartitioningStrategy#getBaseName(std::string)
              * @see #setConfigPatternMatcher(ConfigPatternMatcher)
              * @see #getConfigPatternMatcher()
              */
@@ -525,7 +525,7 @@ namespace hazelcast {
              * @param name name of the flake ID generator config
              * @return the cache configuration
              * @throws ConfigurationException if ambiguous configurations are found
-             * @see StringPartitioningStrategy#getBaseName(java.lang.String)
+             * @see StringPartitioningStrategy#getBaseName(std::string)
              */
             boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> getFlakeIdGeneratorConfig(const std::string &name);
 

@@ -18,9 +18,9 @@
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTINVOCATIONFUTURE_H_
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/util/Future.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/spi/impl/AbstractInvocationFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -31,16 +31,58 @@ namespace hazelcast {
     namespace client {
         namespace spi {
             namespace impl {
-                class HAZELCAST_API ClientInvocationFuture
-                        : public util::Future<boost::shared_ptr<protocol::ClientMessage> > {
+                class ClientInvocation;
+
+                namespace sequence {
+                    class CallIdSequence;
+                }
+
+                class HAZELCAST_API ClientInvocationFuture : public AbstractInvocationFuture<protocol::ClientMessage> {
+                    friend class ClientInvocation;
                 public:
-                    ClientInvocationFuture(util::ILogger &logger)
-                        : util::Future<boost::shared_ptr<protocol::ClientMessage> >(logger) {}
+                    ClientInvocationFuture(const boost::shared_ptr<Executor> &defaultExecutor, ILogger &logger,
+                                           const boost::shared_ptr<protocol::ClientMessage> &request,
+                                           const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence);
+
+                    virtual void andThen(const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback,
+                                         const boost::shared_ptr<Executor> &executor);
 
                     virtual void
-                    andThen(const boost::shared_ptr<client::impl::ExecutionCallback<boost::shared_ptr<protocol::ClientMessage> > > &callback) = 0;
+                    andThen(const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback);
 
-                    virtual std::string invocationToString() = 0;
+                    const boost::shared_ptr<ClientInvocation> getInvocation();
+
+                protected:
+                    virtual std::string invocationToString() const;
+
+                    virtual void onComplete();
+
+                    virtual boost::shared_ptr<protocol::ClientMessage>
+                    resolveAndThrowIfException(
+                            const boost::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::BaseState> &response);
+
+                private:
+                    class InternalDelegatingExecutionCallback
+                            : public client::ExecutionCallback<protocol::ClientMessage> {
+                    public:
+                        InternalDelegatingExecutionCallback(
+                                const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback,
+                                const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence);
+
+                        virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &message);
+
+                        virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
+
+                    private:
+                        const boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > callback;
+                        const boost::shared_ptr<sequence::CallIdSequence> callIdSequence;
+                    };
+
+                    void setInvocation(const boost::weak_ptr<spi::impl::ClientInvocation> &invocation);
+
+                    boost::weak_ptr<spi::impl::ClientInvocation> invocation;
+                    const boost::shared_ptr<protocol::ClientMessage> request;
+                    const boost::shared_ptr<sequence::CallIdSequence> callIdSequence;
                 };
 
             }

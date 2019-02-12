@@ -24,6 +24,10 @@ namespace hazelcast {
                     return !member.isLiteMember();
                 }
 
+                void MemberSelectors::DataMemberSelector::toString(std::ostream &os) const {
+                    os << "Default DataMemberSelector";
+                }
+
                 const std::auto_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
                         new MemberSelectors::DataMemberSelector());
             }

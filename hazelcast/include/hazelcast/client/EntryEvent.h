@@ -284,8 +284,8 @@ namespace hazelcast {
             };
 
             std::ostream &operator<< (std::ostream &out) const {
-                out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
-                ", member=" << member << ", name='" << name << "', key=" << *key;
+                out << "EntryEvent{entryEventType=" << eventType <<
+                    ", member=" << member << ", name='" << name << "', key=" << *key;
                 if (value.get()) {
                     out << ", value=" << *value;
                 }

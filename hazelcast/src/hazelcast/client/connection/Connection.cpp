@@ -54,7 +54,8 @@ namespace hazelcast {
                       readHandler(*this, iListener, 16 << 10, clientContext),
                       writeHandler(*this, oListener, 16 << 10),
                       connectionId(connectionId),
-                      connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION) {
+                      connectedServerVersion(impl::BuildInfo::UNKNOWN_HAZELCAST_VERSION),
+                      logger(clientContext.getLogger()) {
                 socket = socketFactory.create(address);
             }
 
@@ -107,8 +108,14 @@ namespace hazelcast {
             }
 
             bool Connection::write(const boost::shared_ptr<protocol::ClientMessage> &message) {
-                writeHandler.enqueueData(message);
-                return true;
+                if (writeHandler.enqueueData(message)) {
+                    return true;
+                }
+
+                if (logger.isFinestEnabled()) {
+                    logger.finest() << "Connection is closed, dropping frame -> " << message;
+                }
+                return false;
             }
 
             Socket &Connection::getSocket() {
