@@ -195,6 +195,19 @@ namespace hazelcast {
                     }
                 }
 
+                //@Override
+                virtual std::auto_ptr<serialization::pimpl::Data> removeInternal(
+                        const serialization::pimpl::Data &key) {
+                    try {
+                        std::auto_ptr<serialization::pimpl::Data> response = ClientMapProxy<K, V>::removeInternal(key);
+                        invalidateNearCache(key);
+                        return response;
+                    } catch (exception::IException &) {
+                        invalidateNearCache(key);
+                        throw;
+                    }
+                }
+
                 virtual boost::shared_ptr<ICompletableFuture<V> >
                 removeAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
