@@ -109,17 +109,27 @@ namespace hazelcast {
             //@Override
             std::auto_ptr<serialization::pimpl::Data> NearCachedClientMapProxy::removeInternal(
                     const serialization::pimpl::Data &key) {
-                std::auto_ptr<serialization::pimpl::Data> responseData = ClientMapProxy::removeInternal(key);
-                invalidateNearCache(key);
-                return responseData;
+                try {
+                    std::auto_ptr<serialization::pimpl::Data> responseData = ClientMapProxy::removeInternal(key);
+                    invalidateNearCache(key);
+                    return responseData;
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             //@Override
             bool NearCachedClientMapProxy::removeInternal(
                     const serialization::pimpl::Data &key, const serialization::pimpl::Data &value) {
-                bool response = ClientMapProxy::removeInternal(key, value);
-                invalidateNearCache(key);
-                return response;
+                try {
+                    bool response = ClientMapProxy::removeInternal(key, value);
+                    invalidateNearCache(key);
+                    return response;
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             void NearCachedClientMapProxy::removeAllInternal(const serialization::pimpl::Data &predicateData) {
@@ -134,80 +144,130 @@ namespace hazelcast {
             }
 
             void NearCachedClientMapProxy::deleteInternal(const serialization::pimpl::Data &key) {
-                ClientMapProxy::deleteInternal(key);
-                invalidateNearCache(key);
+                try {
+                    ClientMapProxy::deleteInternal(key);
+                    invalidateNearCache(key);
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             bool
             NearCachedClientMapProxy::tryRemoveInternal(const serialization::pimpl::Data &key, long timeoutInMillis) {
-                bool response = ClientMapProxy::tryRemoveInternal(key, timeoutInMillis);
-                invalidateNearCache(key);
-                return response;
+                try {
+                    bool response = ClientMapProxy::tryRemoveInternal(key, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return response;
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             bool NearCachedClientMapProxy::tryPutInternal(const serialization::pimpl::Data &key,
                                                           const serialization::pimpl::Data &value,
                                                           long timeoutInMillis) {
-                bool response = ClientMapProxy::tryPutInternal(key, value, timeoutInMillis);
-                invalidateNearCache(key);
-                return response;
+                try {
+                    bool response = ClientMapProxy::tryPutInternal(key, value, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return response;
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::putInternal(const serialization::pimpl::Data &key,
                                                   const serialization::pimpl::Data &value,
                                                   long timeoutInMillis) {
-                std::auto_ptr<serialization::pimpl::Data> previousValue =
-                        ClientMapProxy::putInternal(key, value, timeoutInMillis);
-                invalidateNearCache(key);
-                return previousValue;
+                try {
+                    std::auto_ptr<serialization::pimpl::Data> previousValue =
+                            ClientMapProxy::putInternal(key, value, timeoutInMillis);
+                    invalidateNearCache(key);
+                    return previousValue;
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             void NearCachedClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &key,
                                                                    const serialization::pimpl::Data &value,
                                                                    int ttlInMillis) {
-                ClientMapProxy::tryPutTransientInternal(key, value, ttlInMillis);
-                invalidateNearCache(key);
+                try {
+                    ClientMapProxy::tryPutTransientInternal(key, value, ttlInMillis);
+                    invalidateNearCache(key);
+                } catch (exception::IException &) {
+                    invalidateNearCache(key);
+                    throw;
+                }
             }
 
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                                           const serialization::pimpl::Data &valueData,
                                                           int ttlInMillis) {
-                std::auto_ptr<serialization::pimpl::Data> previousValue =
-                        ClientMapProxy::putIfAbsentData(keyData, valueData, ttlInMillis);
-                invalidateNearCache(keyData);
-                return previousValue;
+                try {
+                    std::auto_ptr<serialization::pimpl::Data> previousValue =
+                            ClientMapProxy::putIfAbsentData(keyData, valueData, ttlInMillis);
+                    invalidateNearCache(keyData);
+                    return previousValue;
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             bool NearCachedClientMapProxy::replaceIfSameInternal(const serialization::pimpl::Data &keyData,
                                                                  const serialization::pimpl::Data &valueData,
                                                                  const serialization::pimpl::Data &newValueData) {
-                bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
-                invalidateNearCache(keyData);
-                return result;
+                try {
+                    bool result = proxy::IMapImpl::replace(keyData, valueData, newValueData);
+                    invalidateNearCache(keyData);
+                    return result;
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::replaceInternal(const serialization::pimpl::Data &keyData,
                                                       const serialization::pimpl::Data &valueData) {
-                std::auto_ptr<serialization::pimpl::Data> value =
-                        proxy::IMapImpl::replaceData(keyData, valueData);
-                invalidateNearCache(keyData);
-                return value;
+                try {
+                    std::auto_ptr<serialization::pimpl::Data> value =
+                            proxy::IMapImpl::replaceData(keyData, valueData);
+                    invalidateNearCache(keyData);
+                    return value;
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             void NearCachedClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
                                                        const serialization::pimpl::Data &valueData,
                                                        int ttlInMillis) {
-                proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
-                invalidateNearCache(keyData);
+                try {
+                    proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
+                    invalidateNearCache(keyData);
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             bool NearCachedClientMapProxy::evictInternal(const serialization::pimpl::Data &keyData) {
-                bool evicted = proxy::IMapImpl::evict(keyData);
-                invalidateNearCache(keyData);
-                return evicted;
+                try {
+                    bool evicted = proxy::IMapImpl::evict(keyData);
+                    invalidateNearCache(keyData);
+                    return evicted;
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             EntryVector NearCachedClientMapProxy::getAllInternal(const ClientMapProxy::PID_TO_KEY_MAP &pIdToKeyData) {
@@ -251,16 +311,29 @@ namespace hazelcast {
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                                            const serialization::pimpl::Data &processor) {
-                std::auto_ptr<serialization::pimpl::Data> response =
-                        ClientMapProxy::executeOnKeyData(keyData, processor);
-                invalidateNearCache(keyData);
-                return response;
+                try {
+                    std::auto_ptr<serialization::pimpl::Data> response =
+                            ClientMapProxy::executeOnKeyData(keyData, processor);
+                    invalidateNearCache(keyData);
+                    return response;
+                } catch (exception::IException &) {
+                    invalidateNearCache(keyData);
+                    throw;
+                }
             }
 
             void
             NearCachedClientMapProxy::putAllInternal(const std::map<int, EntryVector> &entries) {
-                ClientMapProxy::putAllInternal(entries);
+                try {
+                    ClientMapProxy::putAllInternal(entries);
+                    invalidateEntries(entries);
+                } catch (exception::IException &) {
+                    invalidateEntries(entries);
+                    throw;
+                }
+            }
 
+            void NearCachedClientMapProxy::invalidateEntries(const std::map<int, EntryVector> &entries) {
                 for (std::map<int, EntryVector>::const_iterator it = entries.begin(); it != entries.end(); ++it) {
                     for (EntryVector::const_iterator entryIt = it->second.begin();
                          entryIt != it->second.end(); ++entryIt) {

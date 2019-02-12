@@ -55,7 +55,13 @@ namespace hazelcast {
                  * Overriding implementations can add initialization specific logic into this method
                  * like registering a listener, creating a cleanup task etc.
                  */
-                virtual void onInitialize() = 0;
+                virtual void onInitialize();
+
+                /**
+                 * Called before client shutdown.
+                 * Overriding implementations can add shutdown specific logic here.
+                 */
+                virtual void onShutdown();
 
                 const std::string &getName() const;
 
@@ -114,13 +120,13 @@ namespace hazelcast {
                  */
                 bool preDestroy();
 
-                /**
+                virtual /**
                  * Called before proxy is destroyed.
                  * Overriding implementations should clean/release resources created during initialization.
                  */
                 void onDestroy();
 
-                virtual /**
+                /**
                  * Called after proxy is destroyed.
                  */
                 void postDestroy();
