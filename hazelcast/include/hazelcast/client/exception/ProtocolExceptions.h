@@ -123,6 +123,8 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(StaleSequenceException, protocol::STALE_SEQUENCE, true);
             DEFINE_EXCEPTION_CLASS(TargetDisconnectedException, protocol::TARGET_DISCONNECTED, true);
             DEFINE_EXCEPTION_CLASS(TopicOverloadException, protocol::TOPIC_OVERLOAD, true);
+
+            DEFINE_EXCEPTION_CLASS(TopologyChangedException, protocol::TOPOLOGY_CHANGED, true);
             DEFINE_EXCEPTION_CLASS(TransactionException, protocol::TRANSACTION, true);
             DEFINE_EXCEPTION_CLASS(TransactionNotActiveException, protocol::TRANSACTION_NOT_ACTIVE, true);
             DEFINE_EXCEPTION_CLASS(TransactionTimedOutException, protocol::TRANSACTION_TIMED_OUT, true);
@@ -133,6 +135,20 @@ namespace hazelcast {
             DEFINE_EXCEPTION_CLASS(MaxMessageSizeExceeded, protocol::MAX_MESSAGE_SIZE_EXCEEDED, true);
             DEFINE_EXCEPTION_CLASS(WANReplicationQueueFullException, protocol::WAN_REPLICATION_QUEUE_FULL, true);
             DEFINE_EXCEPTION_CLASS(ServiceNotFoundException, protocol::SERVICE_NOT_FOUND, true);
+
+            DEFINE_EXCEPTION_CLASS(StaleTaskIdException, protocol::STALE_TASK_ID, true);
+
+            DEFINE_EXCEPTION_CLASS(DuplicateTaskException, protocol::DUPLICATE_TASK, true);
+
+            DEFINE_EXCEPTION_CLASS(StaleTaskException, protocol::STALE_TASK, true);
+
+            DEFINE_EXCEPTION_CLASS(LocalMemberResetException, protocol::LOCAL_MEMBER_RESET, true);
+
+            DEFINE_EXCEPTION_CLASS(IndeterminateOperationStateException, protocol::INDETERMINATE_OPERATION_STATE, true);
+
+            DEFINE_EXCEPTION_CLASS(NodeIdOutOfRangeException, protocol::FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION, true);
+
+            DEFINE_EXCEPTION_CLASS(MutationDisallowedException, protocol::MUTATION_DISALLOWED_EXCEPTION, true);
 
             class HAZELCAST_API RetryableHazelcastException : public HazelcastException {
             public:
@@ -172,11 +188,12 @@ namespace hazelcast {
 
             /** List of Retryable exceptions **/
             DEFINE_RETRYABLE_EXCEPTION_CLASS(CallerNotMemberException, protocol::CALLER_NOT_MEMBER);
-            DEFINE_RETRYABLE_EXCEPTION_CLASS(TopologyChangedException, protocol::TOPOLOGY_CHANGED);
             DEFINE_RETRYABLE_EXCEPTION_CLASS(PartitionMigratingException, protocol::PARTITION_MIGRATING);
             DEFINE_RETRYABLE_EXCEPTION_CLASS(RetryableIOException, protocol::RETRYABLE_IO);
             DEFINE_RETRYABLE_EXCEPTION_CLASS(TargetNotMemberException, protocol::TARGET_NOT_MEMBER);
             DEFINE_RETRYABLE_EXCEPTION_CLASS(WrongTargetException, protocol::WRONG_TARGET);
+
+            DEFINE_RETRYABLE_EXCEPTION_CLASS(TargetNotReplicaException, protocol::TARGET_NOT_REPLICA_EXCEPTION);
 
             class MemberLeftException : public ExecutionException, public RetryableHazelcastException {
             public:
