@@ -37,14 +37,11 @@
 #include "hazelcast/client/impl/ClientMessageDecoder.h"
 #include "hazelcast/client/internal/ClientDelegatingFuture.h"
 #include "hazelcast/util/ExceptionUtil.h"
-#include <hazelcast/util/TimeUtil.h>
 
 // Codecs
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerToKeyCodec.h"
 #include "hazelcast/client/protocol/codec/MapAddEntryListenerWithPredicateCodec.h"
 #include "hazelcast/client/protocol/codec/MapSubmitToKeyCodec.h"
-#include "hazelcast/client/protocol/codec/MapPutWithMaxIdleCodec.h"
-#include "hazelcast/client/protocol/codec/MapSetWithMaxIdleCodec.h"
 #include "hazelcast/client/protocol/codec/MapSetCodec.h"
 #include "hazelcast/client/protocol/codec/MapRemoveCodec.h"
 
@@ -1135,7 +1132,7 @@ namespace hazelcast {
                     return stats;
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+                virtual boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
                     return boost::shared_ptr<ICompletableFuture<V> >(
                             new internal::ClientDelegatingFuture<V>(getAsyncInternal(key), getSerializationService(),
                                                                     PUT_ASYNC_RESPONSE_DECODER()));
@@ -1143,18 +1140,18 @@ namespace hazelcast {
 
                 boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
                     return putAsyncInternal(DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS(), NULL,
-                                            util::concurrent::TimeUnit::MILLISECONDS(), key, value);
+                                            util::concurrent::TimeUnit::MILLISECONDS(), toData<K>(key), value);
                 }
 
                 boost::shared_ptr<ICompletableFuture<V> >
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
-                    return putAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, key, value);
+                    return putAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
                 boost::shared_ptr<ICompletableFuture<V> >
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
-                    return putAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, key, value);
+                    return putAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
                 boost::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
@@ -1163,29 +1160,17 @@ namespace hazelcast {
 
                 boost::shared_ptr<ICompletableFuture<void> >
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
-                    return setAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, key, value);
+                    return setAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
                 boost::shared_ptr<ICompletableFuture<void> >
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
-                    return setAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, key, value);
+                    return setAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
                 boost::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
-                    try {
-                        serialization::pimpl::Data keyData = toData<K>(key);
-                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapRemoveCodec::encodeRequest(
-                                name, keyData, util::getCurrentThreadId());
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
-                                                                                                       keyData);
-                        return boost::shared_ptr<ICompletableFuture<V> >(
-                                new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
-                                                                        REMOVE_ASYNC_RESPONSE_DECODER()));
-                    } catch (exception::IException &e) {
-                        util::ExceptionUtil::rethrow(e);
-                    }
-                    return boost::shared_ptr<ICompletableFuture<V> >();
+                    return removeAsyncInternal(toData<K>(key));
                 }
 
             protected:
@@ -1235,6 +1220,22 @@ namespace hazelcast {
                 virtual bool removeInternal(
                         const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData) {
                     return proxy::IMapImpl::remove(keyData, valueData);
+                }
+
+                virtual boost::shared_ptr<ICompletableFuture<V> >
+                removeAsyncInternal(const serialization::pimpl::Data &keyData) {
+                    try {
+                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapRemoveCodec::encodeRequest(
+                                name, keyData, util::getCurrentThreadId());
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
+                                                                                                       keyData);
+                        return boost::shared_ptr<ICompletableFuture<V> >(
+                                new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
+                                                                        REMOVE_ASYNC_RESPONSE_DECODER()));
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<ICompletableFuture<V> >();
                 }
 
                 virtual void removeAllInternal(const serialization::pimpl::Data &predicateData) {
@@ -1388,7 +1389,17 @@ namespace hazelcast {
 
                 virtual boost::shared_ptr<spi::impl::ClientInvocationFuture> getAsyncInternal(const K &key) {
                     try {
-                        serialization::pimpl::Data keyData = toData(key);
+                        serialization::pimpl::Data keyData = toData<K>(key);
+                        return getAsyncInternal(keyData);
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
+                    return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+                }
+
+                virtual boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                getAsyncInternal(const serialization::pimpl::Data &keyData) {
+                    try {
                         std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapGetCodec::encodeRequest(
                                 name, keyData, util::getCurrentThreadId());
                         return invokeOnKeyOwner(request, keyData);
@@ -1398,28 +1409,18 @@ namespace hazelcast {
                     return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> >
+                virtual boost::shared_ptr<ICompletableFuture<V> >
                 putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
-                                 const util::concurrent::TimeUnit &maxIdleUnit, const K &key, const V &value) {
+                                 const util::concurrent::TimeUnit &maxIdleUnit,
+                                 const serialization::pimpl::Data &keyData,
+                                 const V &value) {
                     try {
-                        serialization::pimpl::Data keyData = toData<K>(key);
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        int64_t ttlMillis = util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
-                        std::auto_ptr<protocol::ClientMessage> request;
-                        if (maxIdle != NULL) {
-                            request = protocol::codec::MapPutWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                             util::getCurrentThreadId(),
-                                                                                             ttlMillis,
-                                                                                             util::TimeUtil::timeInMsOrOneIfResultIsZero(
-                                                                                                     *maxIdle,
-                                                                                                     maxIdleUnit));
-                        } else {
-                            request = protocol::codec::MapPutCodec::encodeRequest(name, keyData, valueData,
-                                                                                  util::getCurrentThreadId(),
-                                                                                  ttlMillis);
-                        }
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
-                                                                                                       keyData);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = putAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
                         return boost::shared_ptr<ICompletableFuture<V> >(
                                 new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
                                                                         PUT_ASYNC_RESPONSE_DECODER()));
@@ -1429,28 +1430,17 @@ namespace hazelcast {
                     return boost::shared_ptr<ICompletableFuture<V> >();
                 }
 
-                boost::shared_ptr<ICompletableFuture<void> >
+                virtual boost::shared_ptr<ICompletableFuture<void> >
                 setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
-                                 const util::concurrent::TimeUnit &maxIdleUnit, const K &key, const V &value) {
+                                 const util::concurrent::TimeUnit &maxIdleUnit,
+                                 const serialization::pimpl::Data &keyData, const V &value) {
                     try {
-                        serialization::pimpl::Data keyData = toData<K>(key);
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        int64_t ttlMillis = util::TimeUtil::timeInMsOrOneIfResultIsZero(ttl, ttlUnit);
-                        std::auto_ptr<protocol::ClientMessage> request;
-                        if (maxIdle != NULL) {
-                            request = protocol::codec::MapSetWithMaxIdleCodec::encodeRequest(name, keyData, valueData,
-                                                                                             util::getCurrentThreadId(),
-                                                                                             ttlMillis,
-                                                                                             util::TimeUtil::timeInMsOrOneIfResultIsZero(
-                                                                                                     *maxIdle,
-                                                                                                     maxIdleUnit));
-                        } else {
-                            request = protocol::codec::MapSetCodec::encodeRequest(name, keyData, valueData,
-                                                                                  util::getCurrentThreadId(),
-                                                                                  ttlMillis);
-                        }
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
-                                                                                                       keyData);
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = setAsyncInternalData(ttl, ttlUnit,
+                                                                                                           maxIdle,
+                                                                                                           maxIdleUnit,
+                                                                                                           keyData,
+                                                                                                           valueData);
                         return boost::shared_ptr<ICompletableFuture<void> >(
                                 new internal::ClientDelegatingFuture<void>(future, getSerializationService(),
                                                                            SET_ASYNC_RESPONSE_DECODER()));

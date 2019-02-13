@@ -64,6 +64,9 @@ namespace hazelcast {
                 void destroyProxy(ClientProxy &proxy);
 
                 void init();
+
+                void destroy();
+
             private:
                 void initializeWithRetry(const boost::shared_ptr<ClientProxy> &clientProxy);
 

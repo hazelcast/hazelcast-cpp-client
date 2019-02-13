@@ -23,6 +23,7 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
+#include "hazelcast/client/spi/ProxyManager.h"
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
@@ -77,6 +78,7 @@ namespace hazelcast {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                clientContext.getProxyManager().destroy();
                 clientContext.getConnectionManager().shutdown();
                 ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();

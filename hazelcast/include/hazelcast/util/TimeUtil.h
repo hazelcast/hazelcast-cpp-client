@@ -19,11 +19,13 @@
 
 #include <boost/date_time/posix_time/ptime.hpp>
 
-#include "hazelcast/util/concurrent/TimeUnit.h"
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
     namespace util {
+        namespace concurrent {
+            class TimeUnit;
+        }
         class HAZELCAST_API TimeUtil {
         public:
             /**
