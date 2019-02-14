@@ -34,6 +34,7 @@
 using namespace hazelcast::util;
 using namespace hazelcast::client::exception;
 
+
 namespace hazelcast {
     namespace client {
         namespace spi {
@@ -120,7 +121,7 @@ namespace hazelcast {
                         }
 
                         unregisterWaiter(thread);
-                        throw (ExceptionBuilder<TimeoutException>("AbstractInvocationFuture::get(timeout, unit)")
+                        throw (ExceptionBuilder<exception::TimeoutException>("AbstractInvocationFuture::get(timeout, unit)")
                                 << "Timeout: " << unit.toMillis(timeout) << " msecs").build();
                     }
 
@@ -423,7 +424,7 @@ namespace hazelcast {
                         }
                     }
 
-                    class CallbackRunner : public Runnable {
+                class CallbackRunner : public util::Runnable {
                     public:
                         CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
                                        const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
@@ -464,7 +465,7 @@ namespace hazelcast {
                     void unblock(const boost::shared_ptr<CALLBACKTYPE> &callback,
                                  const boost::shared_ptr<Executor> &executor) {
                         try {
-                            executor->execute(boost::shared_ptr<Runnable>(
+                            executor->execute(boost::shared_ptr<util::Runnable>(
                                     new CallbackRunner(this->shared_from_this(), callback)));
                         } catch (RejectedExecutionException &e) {
                             callback->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
