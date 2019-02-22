@@ -100,7 +100,7 @@ namespace hazelcast {
              */
             template<typename T>
             static const boost::shared_ptr<T> &isNotNull(const boost::shared_ptr<T> &argument,
-                                                         const std::string argName) {
+                                                         const std::string &argName) {
                 if (argument == NULL) {
                     throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>("")
                             << "argument " << argName << " can't be null").build();

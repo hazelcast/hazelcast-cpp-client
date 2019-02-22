@@ -314,15 +314,15 @@ namespace hazelcast {
              */
             template<typename IFUNCTION>
             boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
-            readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION &filter) {
-                return readManyAsncInternal(startSequence, minCount, maxCount,
-                                            getSerializationService().template toData<IFUNCTION>(&filter));
+            readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter) {
+                return readManyAsyncInternal(startSequence, minCount, maxCount,
+                                             getSerializationService().template toData<IFUNCTION>(filter));
             }
 
         protected:
             virtual boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
-            readManyAsncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
-                                 const serialization::pimpl::Data &filterData) = 0;
+            readManyAsyncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
+                                  const serialization::pimpl::Data &filterData) = 0;
 
             virtual serialization::pimpl::SerializationService &getSerializationService() = 0;
         };

@@ -49,7 +49,6 @@ namespace hazelcast {
                     return boost::shared_ptr<internal::ClientDelegatingFuture<V> >();
                 }
 
-                //private:
                 int partitionId;
             };
         }
