@@ -15,7 +15,7 @@
  */
 
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
-#include "hazelcast/client/proxy/RingbufferImpl.h"
+#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 
 namespace hazelcast {
@@ -61,8 +61,8 @@ namespace hazelcast {
                                 return;
                             }
                             try {
-                                proxy::RingbufferImpl<ReliableTopicMessage> &ringbuffer =
-                                        static_cast<proxy::RingbufferImpl<ReliableTopicMessage> &>(rb);
+                                proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbuffer =
+                                        static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
                                 boost::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
                                 boost::shared_ptr<protocol::ClientMessage> responseMsg;
                                 do {

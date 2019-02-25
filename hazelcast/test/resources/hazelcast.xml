@@ -38,6 +38,8 @@ https://hazelcast.org/documentation/.
         <data-serializable-factories>
             <data-serializable-factory factory-id="666">com.hazelcast.client.test.IdentifiedDataSerializableFactory
             </data-serializable-factory>
+            <data-serializable-factory factory-id="66">com.hazelcast.client.test.IdentifiedFactory
+            </data-serializable-factory>
         </data-serializable-factories>
         <portable-factories>
             <portable-factory factory-id="666">com.hazelcast.client.test.PortableFactory</portable-factory>
@@ -252,7 +254,11 @@ https://hazelcast.org/documentation/.
         <backup-count>1</backup-count>
     </set>
 
-    <ringbuffer name="rb*">
+    <ringbuffer name="RingbufferTest*">
+        <capacity>10</capacity>
+    </ringbuffer>
+
+    <ringbuffer name="MixedRingbufferTest*">
         <capacity>10</capacity>
     </ringbuffer>
 

@@ -20,7 +20,10 @@ namespace hazelcast {
     namespace client {
         namespace test {
             ClientTestSupport::ClientTestSupport() {
-                testName = testing::UnitTest::GetInstance()->current_test_info()->name();
+                const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
+                std::ostringstream out;
+                out << testInfo->test_case_name() << "_" << testInfo->name();
+                testName = out.str();
                 logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
             }
 

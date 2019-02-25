@@ -91,8 +91,8 @@ namespace hazelcast {
             void Ringbuffer::checkSequence(int64_t sequence) {
                 if (sequence < 0) {
                     throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
-                            "RingbufferImpl::checkSequence") << "sequence can't be smaller than 0, but was: "
-                                                             << sequence).build();
+                            "Ringbuffer::checkSequence") << "sequence can't be smaller than 0, but was: "
+                                                         << sequence).build();
                 }
             }
         }
