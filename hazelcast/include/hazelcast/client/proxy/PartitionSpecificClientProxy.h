@@ -26,7 +26,7 @@ namespace hazelcast {
             /**
              * Base class for proxies of distributed objects that lives in on partition.
              */
-            class PartitionSpecificClientProxy : public proxy::ProxyImpl {
+            class HAZELCAST_API PartitionSpecificClientProxy : public proxy::ProxyImpl {
             protected:
                 PartitionSpecificClientProxy(const std::string &serviceName, const std::string &objectName,
                                              spi::ClientContext *context);

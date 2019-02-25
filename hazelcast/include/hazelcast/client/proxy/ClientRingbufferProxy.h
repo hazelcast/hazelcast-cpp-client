@@ -311,7 +311,7 @@ namespace hazelcast {
 
             template<typename E>
             const boost::shared_ptr<typename ClientRingbufferProxy<E>::ReadManyAsyncResponseDecoder> ClientRingbufferProxy<E>::READ_MANY_ASYNC_RESPONSE_DECODER(
-                    new ClientRingbufferProxy<E>::ReadManyAsyncResponseDecoder());
+                    new typename ClientRingbufferProxy<E>::ReadManyAsyncResponseDecoder());
         }
     }
 }

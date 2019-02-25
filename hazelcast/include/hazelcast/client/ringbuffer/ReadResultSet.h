@@ -39,7 +39,8 @@ namespace hazelcast {
                               serialization::pimpl::SerializationService &serializationService,
                               std::auto_ptr<std::vector<int64_t> > &itemSeqs, bool itemSeqsExist,
                               int64_t nextSeq) : itemsReadCount(readCount),
-                                                 items(new impl::DataArrayImpl<E>(dataItems, serializationService)),
+                                                 items(new client::impl::DataArrayImpl<E>(dataItems,
+                                                                                          serializationService)),
                                                  itemSeqs(itemSeqs),
                                                  itemSeqsExist(itemSeqsExist),
                                                  nextSeq(nextSeq) {}
@@ -80,7 +81,7 @@ namespace hazelcast {
                         throw exception::IllegalArgumentException("ReadResultSet::getSequence",
                                                                   "No item sequences exist");
                     }
-                    if (index >= itemSeqs->size() || index < 0) {
+                    if (index >= (int32_t) itemSeqs->size() || index < 0) {
                         throw (exception::ExceptionBuilder<exception::IllegalArgumentException>(
                                 "ReadResultSet::getSequence") << "Index " << index
                                                               << " is out of bounds. Sequences size is:"
@@ -117,7 +118,7 @@ namespace hazelcast {
 
             private:
                 int32_t itemsReadCount;
-                std::auto_ptr<impl::DataArrayImpl<E> > items;
+                std::auto_ptr<client::impl::DataArrayImpl<E> > items;
                 std::auto_ptr<std::vector<int64_t> > itemSeqs;
                 bool itemSeqsExist;
                 int64_t nextSeq;
