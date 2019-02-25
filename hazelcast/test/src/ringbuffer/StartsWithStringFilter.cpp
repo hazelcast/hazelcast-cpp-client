@@ -15,7 +15,6 @@
  */
 
 #include "StartsWithStringFilter.h"
-#include "IdentifiedFactory.h"
 
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -28,11 +27,11 @@ namespace hazelcast {
                         startString) {}
 
                 int StartsWithStringFilter::getFactoryId() const {
-                    return IdentifiedFactory::FACTORY_ID;
+                    return 666;
                 }
 
                 int StartsWithStringFilter::getClassId() const {
-                    return IdentifiedFactory::STARTS_WITH_STRING_FILTER;
+                    return 14;
                 }
 
                 void StartsWithStringFilter::writeData(serialization::ObjectDataOutput &writer) const {

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_CLIENT_TEST_IDENTIFIEDFACTORY_H
-#define HAZELCAST_CLIENT_TEST_IDENTIFIEDFACTORY_H
+#ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
+#define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
 
 namespace hazelcast {
     namespace client {
@@ -34,12 +34,11 @@ namespace hazelcast {
                     SELECT_ALL_MEMBERS = 11,
                     SELECT_NO_MEMBERS = 12,
                     SERIALIZED_COUNTER_CALLABLE = 13,
-                    TASK_WITH_UNSERIALIZABLE_RESPONSE = 14,
-                    STARTS_WITH_STRING_FILTER = 15
+                    TASK_WITH_UNSERIALIZABLE_RESPONSE = 14
                 };
             };
         }
     }
 }
 
-#endif //HAZELCAST_CLIENT_TEST_IDENTIFIEDFACTORY_H
+#endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
