@@ -63,9 +63,9 @@ namespace hazelcast {
                  */
                 virtual void onShutdown();
 
-                const std::string &getName() const;
+                virtual const std::string &getName() const;
 
-                const std::string &getServiceName() const;
+                virtual const std::string &getServiceName() const;
 
                 ClientContext &getContext();
 

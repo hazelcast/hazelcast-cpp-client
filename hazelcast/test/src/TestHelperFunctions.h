@@ -21,15 +21,15 @@
 #define HAZELCAST_TestHelperFunctions
 
 #define ASSERT_EQ_EVENTUALLY_WITH_TIMEOUT_MSG(message, expected, actual, timeoutSeconds) do{              \
-            bool result = false;                                \
-            for(int i = 0 ; i < timeoutSeconds * 5 && !result ; i++ ) {    \
+            bool __result__ = false;                                \
+            for(int i = 0 ; i < timeoutSeconds * 5 && !__result__ ; i++ ) {    \
                 if ((expected) == (actual)) {                       \
-                    result = true;                              \
+                    __result__ = true;                              \
                 } else {                                        \
                     util::sleepmillis(200);                     \
                 }                                               \
             }                                                   \
-            ASSERT_TRUE(result) << message;                     \
+            ASSERT_TRUE(__result__) << message;                     \
       }while(0)                                                 \
 
 #define WAIT_TRUE_EVENTUALLY(expression) do{                    \
@@ -50,6 +50,11 @@
 
 #define WAIT_EQ_EVENTUALLY(expected, expression) WAIT_TRUE_EVENTUALLY((expected) == (expression))
 #define WAIT_NE_EVENTUALLY(expected, expression) WAIT_NE_EVENTUALLY((expected) != (expression))
+
+#define ASSERT_EQ_PTR(expected, actual, type) do{ \
+ASSERT_NE((type *) NULL, actual);                   \
+ASSERT_EQ((expected), (*actual));                 \
+} while(0) \
 
 #define ASSERT_NULL(msg, value, type) ASSERT_EQ((type *) NULL, value) << msg
 #define ASSERT_NOTNULL(value, type) ASSERT_NE((type *) NULL, value)

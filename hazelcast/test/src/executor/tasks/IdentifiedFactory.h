@@ -17,22 +17,28 @@
 #ifndef HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
 #define HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H
 
-class IdentifiedFactory {
-public:
-    static const int FACTORY_ID = 66;
+namespace hazelcast {
+    namespace client {
+        namespace test {
+            class IdentifiedFactory {
+            public:
+                static const int FACTORY_ID = 66;
 
-    enum CLASS_IDS {
-        APPEND_CALLABLE = 5,
-        CANCELLATION_AWARE_TASK = 6,
-        FAILING_CALLABLE = 7,
-        GET_MEMBER_UUID_TASK = 8,
-        MAP_PUTPARTITIONAWARE_CALLABLE = 9,
-        NULL_CALLABLE = 10,
-        SELECT_ALL_MEMBERS = 11,
-        SELECT_NO_MEMBERS = 12,
-        SERIALIZED_COUNTER_CALLABLE = 13,
-        TASK_WITH_UNSERIALIZABLE_RESPONSE = 14,
-    };
-};
+                enum CLASS_IDS {
+                    APPEND_CALLABLE = 5,
+                    CANCELLATION_AWARE_TASK = 6,
+                    FAILING_CALLABLE = 7,
+                    GET_MEMBER_UUID_TASK = 8,
+                    MAP_PUTPARTITIONAWARE_CALLABLE = 9,
+                    NULL_CALLABLE = 10,
+                    SELECT_ALL_MEMBERS = 11,
+                    SELECT_NO_MEMBERS = 12,
+                    SERIALIZED_COUNTER_CALLABLE = 13,
+                    TASK_WITH_UNSERIALIZABLE_RESPONSE = 14
+                };
+            };
+        }
+    }
+}
 
 #endif //HAZELCAST_CLIENT_TEST_EXECUTOR_TASKS_IDENTIFIEDFACTORY_H

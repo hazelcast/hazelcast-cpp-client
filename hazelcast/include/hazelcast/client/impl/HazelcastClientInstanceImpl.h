@@ -26,7 +26,8 @@
 #include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
 #include "hazelcast/client/map/impl/ReplicatedMapProxyFactory.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/proxy/RingbufferImpl.h"
+#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
+#include "hazelcast/client/ringbuffer/impl/RingbufferProxyFactory.h"
 #include "hazelcast/client/proxy/ClientReplicatedMapProxy.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/MultiMap.h"
@@ -324,7 +325,12 @@ namespace hazelcast {
                  */
                 template <typename E>
                 boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                    return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+                    ringbuffer::impl::RingbufferProxyFactory<E> factory(&clientContext);
+                    boost::shared_ptr<spi::ClientProxy> proxy =
+                            getDistributedObjectForService(proxy::ClientRingbufferProxy<E>::SERVICE_NAME, name,
+                                                           factory);
+
+                    return boost::static_pointer_cast<proxy::ClientRingbufferProxy<E> >(proxy);
                 }
 
                 /**
