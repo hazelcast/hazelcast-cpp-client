@@ -17,6 +17,24 @@
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/IAtomicLong.h>
 
+/**
+ * This class prints message on receiving the response or prints the exception if exception occurs
+ */
+class PrinterCallback : public hazelcast::client::ExecutionCallback<int64_t> {
+public:
+    virtual void onResponse(const boost::shared_ptr<int64_t> &response) {
+        if (response.get()) {
+            std::cout << "Received response is : " << *response << std::endl;
+        } else {
+            std::cout << "Received null response" << std::endl;
+        }
+    }
+
+    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+        std::cerr << "A failure occured. The exception is:" << e << std::endl;
+    }
+};
+
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
@@ -69,6 +87,11 @@ int main() {
     // This will print the updated value as 100
     std::cout << "The counter value is " << counter.get() << std::endl;
 
+    boost::shared_ptr<ExecutionCallback<int64_t> > callback(new PrinterCallback);
+    boost::shared_ptr<ICompletableFuture<int64_t> > f = counter.decrementAndGetAsync();
+    // Use a callback to write the result of decrement operation in a non-blocking async way
+    f->andThen(callback);
+    
     std::cout << "Finished" << std::endl;
 
     return 0;
