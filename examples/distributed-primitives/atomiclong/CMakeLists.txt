@@ -14,4 +14,5 @@
 # limitations under the License.
 #
 add_executable(atomiclong ./main.cpp)
+add_executable(atomicLongAsyncApi AtomicLongAsyncApi.cpp)
 
