@@ -16,4 +16,5 @@
 add_executable(ringbufferExample ./RingbufferExample.cpp)
 add_executable(customPolymorphicRb CustomPolymorphicRb.cpp)
 add_executable(dataPolymorphicRb DataPolymorphicRb.cpp)
+add_executable(ringBufferAsyncApi RingbufferAsyncApi.cpp)
 
