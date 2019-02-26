@@ -37,7 +37,7 @@ namespace hazelcast {
              * @return the value
              * @throws IllegalArgumentException if the value is not positive.
              */
-            template <typename T>
+            template<typename T>
             static const T &checkPositive(const T &value, const std::string &errorMessage) {
                 if (value <= 0) {
                     throw client::exception::IllegalArgumentException("Preconditions::checkPositive", errorMessage);
@@ -54,11 +54,40 @@ namespace hazelcast {
              */
             template<typename T>
             static const boost::shared_ptr<T> &checkNotNull(const boost::shared_ptr<T> &argument,
-                                                     const std::string &errorMessage) {
+                                                            const std::string &errorMessage) {
                 if (argument == NULL) {
                     throw client::exception::NullPointerException(errorMessage);
                 }
                 return argument;
+            }
+
+            /**
+             * Tests whether the supplied expression is {@code true}.
+             *
+             * @param expression   the expression tested to see if it is {@code true}.
+             * @param errorMessage the errorMessage
+             * @throws IllegalArgumentException if the supplied expression is {@code false}.
+             */
+            template<typename T>
+            static void checkTrue(const T &argument, const std::string &errorMessage) {
+                if (!argument) {
+                    throw client::exception::IllegalArgumentException(errorMessage);
+                }
+                return argument;
+            }
+
+            /**
+             * Tests if an argument is not empty. The argument should have the size method.
+             *
+             * @param argument     the argument tested to see if it is not empty.
+             * @param errorMessage the errorMessage
+             * @throws IllegalArgumentException if argument is empty
+             */
+            template<typename T>
+            static void checkNotEmpty(const T &argument, const std::string &errorMessage) {
+                if (argument.size() == 0) {
+                    throw client::exception::IllegalArgumentException(errorMessage);
+                }
             }
 
             /**
@@ -71,7 +100,7 @@ namespace hazelcast {
              */
             template<typename T>
             static const boost::shared_ptr<T> &isNotNull(const boost::shared_ptr<T> &argument,
-                                                     const std::string argName) {
+                                                         const std::string &argName) {
                 if (argument == NULL) {
                     throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>("")
                             << "argument " << argName << " can't be null").build();
@@ -87,12 +116,29 @@ namespace hazelcast {
              * @return the value
              * @throws IllegalArgumentException if the value is negative.
              */
-            template <typename T>
+            template<typename T>
             static const T &checkNotNegative(const T &value, const std::string &errorMessage) {
                 if (value < 0) {
-                    throw client::exception::IllegalArgumentException(errorMessage);
+                    throw client::exception::IllegalArgumentException("Preconditions::checkNotNegative", errorMessage);
                 }
                 return value;
+            }
+
+            /**
+             * Tests if a value is less than a maximum allowed value.
+             *
+             * @param actualSize        the  value tested to see if it is not negative.
+             * @param expectedMaximum   the maximum allowed
+             * @param variableName      The neame of the variable to be printed in the exception message
+             * @throws IllegalArgumentException if the value is greater than expectedMaximum.
+             */
+            template<typename T>
+            static void checkMax(const T &actualSize, const T &expectedMaximum, const std::string &variableName) {
+                if (actualSize > expectedMaximum) {
+                    throw (client::exception::ExceptionBuilder<client::exception::IllegalArgumentException>(
+                            "Preconditions::checkNotNegative") << variableName << " can't be larger than "
+                                                               << expectedMaximum).build();
+                }
             }
 
             /**

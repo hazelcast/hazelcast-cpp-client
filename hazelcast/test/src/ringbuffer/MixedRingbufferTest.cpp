@@ -32,31 +32,31 @@ namespace hazelcast {
     namespace client {
         namespace test {
             class MixedRingbufferTest : public ClientTestSupport {
+            public:
+                MixedRingbufferTest() : rb(client->toMixedType().getRingbuffer(getTestName())) {
+                }
+
             protected:
                 virtual void TearDown() {
                 }
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    client = new HazelcastClient(*clientConfig);
-                    rb.reset(new mixedtype::Ringbuffer(client->toMixedType().getRingbuffer("rb-1")));
+                    ClientConfig clientConfig;
+                    client = new HazelcastClient(clientConfig);
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
+                mixedtype::Ringbuffer rb;
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
-                static boost::shared_ptr<mixedtype::Ringbuffer> rb;
 
                 static const int64_t CAPACITY;
             };
@@ -64,62 +64,60 @@ namespace hazelcast {
             const int64_t MixedRingbufferTest::CAPACITY = 10;
 
             HazelcastServer *MixedRingbufferTest::instance = NULL;
-            ClientConfig *MixedRingbufferTest::clientConfig = NULL;
             HazelcastClient *MixedRingbufferTest::client = NULL;
-            boost::shared_ptr<mixedtype::Ringbuffer> MixedRingbufferTest::rb = boost::shared_ptr< mixedtype::Ringbuffer>();
 
             TEST_F(MixedRingbufferTest, testAPI) {
-                ASSERT_EQ(CAPACITY, rb->capacity());
-                ASSERT_EQ(0, rb->headSequence());
-                ASSERT_EQ(-1, rb->tailSequence());
-                ASSERT_EQ(0, rb->size());
-                ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                ASSERT_THROW(rb->readOne(-1), exception::IllegalArgumentException);
-                ASSERT_THROW(rb->readOne(1), exception::IllegalArgumentException);
+                ASSERT_EQ(CAPACITY, rb.capacity());
+                ASSERT_EQ(0, rb.headSequence());
+                ASSERT_EQ(-1, rb.tailSequence());
+                ASSERT_EQ(0, rb.size());
+                ASSERT_EQ(CAPACITY, rb.remainingCapacity());
+                ASSERT_THROW(rb.readOne(-1), exception::IllegalArgumentException);
+                ASSERT_THROW(rb.readOne(1), exception::IllegalArgumentException);
 
                 Employee employee1("First", 10);
                 Employee employee2("Second", 20);
 
-                ASSERT_EQ(0, rb->add<Employee>(employee1));
-                ASSERT_EQ(CAPACITY, rb->capacity());
-                ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                ASSERT_EQ(0, rb->headSequence());
-                ASSERT_EQ(0, rb->tailSequence());
-                ASSERT_EQ(1, rb->size());
-                ASSERT_EQ(employee1, *rb->readOne(0).get<Employee>());
-                ASSERT_THROW(rb->readOne(2), exception::IllegalArgumentException);
+                ASSERT_EQ(0, rb.add<Employee>(employee1));
+                ASSERT_EQ(CAPACITY, rb.capacity());
+                ASSERT_EQ(CAPACITY, rb.remainingCapacity());
+                ASSERT_EQ(0, rb.headSequence());
+                ASSERT_EQ(0, rb.tailSequence());
+                ASSERT_EQ(1, rb.size());
+                ASSERT_EQ(employee1, *rb.readOne(0).get<Employee>());
+                ASSERT_THROW(rb.readOne(2), exception::IllegalArgumentException);
 
-                ASSERT_EQ(1, rb->add<Employee>(employee2));
-                ASSERT_EQ(CAPACITY, rb->capacity());
-                ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                ASSERT_EQ(0, rb->headSequence());
-                ASSERT_EQ(1, rb->tailSequence());
-                ASSERT_EQ(2, rb->size());
-                ASSERT_EQ(employee1, *rb->readOne(0).get<Employee>());
-                ASSERT_EQ(employee2, *rb->readOne(1).get<Employee>());
-                ASSERT_THROW(rb->readOne(3), exception::IllegalArgumentException);
+                ASSERT_EQ(1, rb.add<Employee>(employee2));
+                ASSERT_EQ(CAPACITY, rb.capacity());
+                ASSERT_EQ(CAPACITY, rb.remainingCapacity());
+                ASSERT_EQ(0, rb.headSequence());
+                ASSERT_EQ(1, rb.tailSequence());
+                ASSERT_EQ(2, rb.size());
+                ASSERT_EQ(employee1, *rb.readOne(0).get<Employee>());
+                ASSERT_EQ(employee2, *rb.readOne(1).get<Employee>());
+                ASSERT_THROW(rb.readOne(3), exception::IllegalArgumentException);
 
                 // insert many employees to fill the ringbuffer capacity
                 for (int i = 0; i < CAPACITY - 2; ++i) {
                     Employee eleman("name", 10 * (i + 2));
-                    ASSERT_EQ(i + 2, rb->add<Employee>(eleman));
-                    ASSERT_EQ(CAPACITY, rb->capacity());
-                    ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                    ASSERT_EQ(0, rb->headSequence());
-                    ASSERT_EQ(i + 2, rb->tailSequence());
-                    ASSERT_EQ(i + 3, rb->size());
-                    ASSERT_EQ(eleman, *rb->readOne(i + 2).get<Employee>());
+                    ASSERT_EQ(i + 2, rb.add<Employee>(eleman));
+                    ASSERT_EQ(CAPACITY, rb.capacity());
+                    ASSERT_EQ(CAPACITY, rb.remainingCapacity());
+                    ASSERT_EQ(0, rb.headSequence());
+                    ASSERT_EQ(i + 2, rb.tailSequence());
+                    ASSERT_EQ(i + 3, rb.size());
+                    ASSERT_EQ(eleman, *rb.readOne(i + 2).get<Employee>());
                 }
 
                 // verify that the head element is overriden on the first add
                 Employee latestEmployee("latest employee", 100);
-                ASSERT_EQ(CAPACITY, rb->add<Employee>(latestEmployee));
-                ASSERT_EQ(CAPACITY, rb->capacity());
-                ASSERT_EQ(CAPACITY, rb->remainingCapacity());
-                ASSERT_EQ(1, rb->headSequence());
-                ASSERT_EQ(CAPACITY, rb->tailSequence());
-                ASSERT_EQ(CAPACITY, rb->size());
-                ASSERT_EQ(latestEmployee, *rb->readOne(CAPACITY).get<Employee>());
+                ASSERT_EQ(CAPACITY, rb.add<Employee>(latestEmployee));
+                ASSERT_EQ(CAPACITY, rb.capacity());
+                ASSERT_EQ(CAPACITY, rb.remainingCapacity());
+                ASSERT_EQ(1, rb.headSequence());
+                ASSERT_EQ(CAPACITY, rb.tailSequence());
+                ASSERT_EQ(CAPACITY, rb.size());
+                ASSERT_EQ(latestEmployee, *rb.readOne(CAPACITY).get<Employee>());
             }
         }
     }

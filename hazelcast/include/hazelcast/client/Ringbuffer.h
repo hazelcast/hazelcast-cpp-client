@@ -22,6 +22,8 @@
 #include <stdint.h>
 
 #include "hazelcast/client/DistributedObject.h"
+#include "hazelcast/client/ringbuffer/ReadResultSet.h"
+#include "hazelcast/client/ICompletableFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -64,8 +66,43 @@ namespace hazelcast {
          * @param <E>
          */
         template<typename E>
-        class Ringbuffer : public DistributedObject {
+        class Ringbuffer : public virtual DistributedObject {
         public:
+            /**
+             * Using this policy one can control the behavior what should to be done when an item is about to be added to the ringbuffer,
+             * but there is 0 remaining capacity.
+             *
+             * Overflowing happens when a time-to-live is set and the oldest item in the ringbuffer (the head) is not old enough to expire.
+             *
+             * @see Ringbuffer#addAsync(const E &, OverflowPolicy)
+             * @see Ringbuffer#addAllAsync(const std::vector<E> &, OverflowPolicy)
+             */
+            enum OverflowPolicy {
+
+                /**
+                 * Using this policy the oldest item is overwritten no matter it is not old enough to retire. Using this policy you are
+                 * sacrificing the time-to-live in favor of being able to write.
+                 *
+                 * Example: if there is a time-to-live of 30 seconds, the buffer is full and the oldest item in the ring has been placed a
+                 * second ago, then there are 29 seconds remaining for that item. Using this policy you are going to overwrite no matter
+                 * what.
+                 */
+                        OVERWRITE = 0,
+
+                /**
+                 * Using this policy the call will fail immediately and the oldest item will not be overwritten before it is old enough
+                 * to retire. So this policy sacrificing the ability to write in favor of time-to-live.
+                 *
+                 * The advantage of fail is that the caller can decide what to do since it doesn't trap the thread due to backoff.
+                 *
+                 * Example: if there is a time-to-live of 30 seconds, the buffer is full and the oldest item in the ring has been placed a
+                 * second ago, then there are 29 seconds remaining for that item. Using this policy you are not going to overwrite that
+                 * item for the next 29 seconds.
+                 */
+                        FAIL = 1
+            };
+
+
             virtual ~Ringbuffer() {
             }
 
@@ -171,6 +208,123 @@ namespace hazelcast {
              * @throws InterruptedException               if the call is interrupted while blocking.
              */
             virtual std::auto_ptr<E> readOne(int64_t sequence) = 0;
+
+            /**
+             * Asynchronously writes an item with a configurable {@link OverflowPolicy}.
+             * <p>
+             * If there is space in the Ringbuffer, the call will return the sequence
+             * of the written item. If there is no space, it depends on the overflow
+             * policy what happens:
+             * <ol>
+             * <li>{@link OverflowPolicy#OVERWRITE}: we just overwrite the oldest item
+             * in the Ringbuffer and we violate the ttl</li>
+             * <li>{@link OverflowPolicy#FAIL}: we return -1 </li>
+             * </ol>
+             * <p>
+             * The reason that FAIL exist is to give the opportunity to obey the ttl.
+             * If blocking behavior is required, this can be implemented using retrying
+             * in combination with an exponential backoff. Example:
+             * <pre>{@code
+             * int64_t sleepMs = 100;
+             * for (; ; ) {
+             *   int64_t result = *(ringbuffer.addAsync(item, FAIL)->get());
+             *   if (result != -1) {
+             *     break;
+             *   }
+             *   util::sleepMillis(sleepMs);
+             *   sleepMs = min(5000, sleepMs * 2);
+             * }
+             * }</pre>
+             * <p>
+             *
+             * @param item           the item to add
+             * @param overflowPolicy the OverflowPolicy to use.
+             * @return the sequenceId of the added item, or -1 if the add failed.
+             */
+            virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+            addAsync(const E &item, OverflowPolicy overflowPolicy) = 0;
+
+            /**
+             * Adds all the items of a collection to the tail of the Ringbuffer.
+             * <p>
+             * An addAll is likely to outperform multiple calls to {@link #add(const E&)}
+             * due to better io utilization and a reduced number of executed operations.
+             * If the batch is empty, the call is ignored.
+             * <p>
+             * <p>
+             * If the collection is larger than the capacity of the Ringbuffer, then
+             * the items that were written first will be overwritten. Therefore this
+             * call will not block.
+             * <p>
+             * The items are inserted in the order of the Iterator of the collection.
+             * If an addAll is executed concurrently with an add or addAll, no
+             * guarantee is given that items are contiguous.
+             * <p>
+             * The result of the future contains the sequenceId of the last written
+             * item.
+             * <p>
+             *
+             * @param collection the batch of items to add.
+             * @return the ICompletableFuture to synchronize on completion.
+             * @throws NullPointerException     if batch is null, or if an item in this
+             *                                  batch is null or if overflowPolicy is null
+             * @throws IllegalArgumentException if items is empty
+             */
+            virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+            addAllAsync(const std::vector<E> &items, OverflowPolicy overflowPolicy) = 0;
+
+            /**
+             * Reads a batch of items from the Ringbuffer. If the number of available
+             * items after the first read item is smaller than the {@code maxCount},
+             * these items are returned. So it could be the number of items read is
+             * smaller than the {@code maxCount}.
+             * <p>
+             * If there are less items available than {@code minCount}, then this call
+             * blocks.
+             * <p>
+             * Reading a batch of items is likely to perform better because less
+             * overhead is involved.
+             * <p>
+             * A filter can be provided to only select items that need to be read. If the
+             * filter is null, all items are read. If the filter is not null, only items
+             * where the filter function returns true are returned. Using filters is a
+             * good way to prevent getting items that are of no value to the receiver.
+             * This reduces the amount of IO and the number of operations being executed,
+             * and can result in a significant performance improvement.
+             * <p>
+             * For each item not available in the Ringbuffer an attempt is made to read
+             * it from the underlying {com.hazelcast.core.RingbufferStore} via
+             * multiple invocations of {com.hazelcast.core.RingbufferStore#load(long)},
+             * if store is configured for the Ringbuffer. These cases may increase the
+             * execution time significantly depending on the implementation of the store.
+             * Note that exceptions thrown by the store are propagated to the caller.
+             *
+             * @param startSequence the startSequence of the first item to read.
+             * @param minCount      the minimum number of items to read.
+             * @param maxCount      the maximum number of items to read.
+             * @param filter        the filter. Filter is allowed to be null, indicating
+             *                      there is no filter.
+             * @return a future containing the items read.
+             * @throws IllegalArgumentException if startSequence is smaller than 0
+             *                                  or if startSequence larger than {@link #tailSequence()}
+             *                                  or if minCount smaller than 0
+             *                                  or if minCount larger than maxCount,
+             *                                  or if maxCount larger than the capacity of the ringbuffer
+             *                                  or if maxCount larger than 1000 (to prevent overload)
+             */
+            template<typename IFUNCTION>
+            boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            readManyAsync(int64_t startSequence, int32_t minCount, int32_t maxCount, const IFUNCTION *filter) {
+                return readManyAsyncInternal(startSequence, minCount, maxCount,
+                                             getSerializationService().template toData<IFUNCTION>(filter));
+            }
+
+        protected:
+            virtual boost::shared_ptr<ICompletableFuture<ringbuffer::ReadResultSet<E> > >
+            readManyAsyncInternal(int64_t startSequence, int32_t minCount, int32_t maxCount,
+                                  const serialization::pimpl::Data &filterData) = 0;
+
+            virtual serialization::pimpl::SerializationService &getSerializationService() = 0;
         };
     }
 }
