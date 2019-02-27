@@ -52,15 +52,18 @@
         * [7.3.4.1. Configuring Client Reconnect Strategy](#7341-configuring-client-reconnect-strategy)
   * [7.4. Using Distributed Data Structures](#74-using-distributed-data-structures)
     * [7.4.1. Using Map](#741-using-map)
+        * [7.4.1.1. Using IMap Non-Blocking Async Methods](#7411-using-imap-non-blocking-async-methods)
     * [7.4.2. Using MultiMap](#742-using-multimap)
     * [7.4.3. Using Replicated Map](#743-using-replicated-map)
     * [7.4.4. Using Queue](#744-using-queue)
     * [7.4.5. Using Set](#745-using-set)
     * [7.4.6. Using List](#746-using-list)
     * [7.4.7. Using Ringbuffer](#747-using-ringbuffer)
+        * [7.4.7.1. Using Ringbuffer Non-Blocking Async Methods](#7471-using-ringbuffer-non-blocking-async-methods)
     * [7.4.8. Using Reliable Topic](#748-using-reliable-topic) 
     * [7.4.9. Using Lock](#749-using-lock)
     * [7.4.10. Using Atomic Long](#7410-using-atomic-long)
+        * [7.4.10.1. Using Atomic Long Non-Blocking Async Methods](#74101-using-atomic-long-non-blocking-async-methods)
     * [7.4.11. Using Semaphore](#7411-using-semaphore)
     * [7.4.12. Using PN Counter](#7412-using-pn-counter)
     * [7.4.13. Using Flake ID Generator](#7413-using-flake-id-generator)
@@ -1329,6 +1332,68 @@ A Map usage example is shown below.
     map.replace("key", "value", "newvalue");
 ```
 
+#### 7.4.1.1. Using IMap Non-Blocking Async Methods
+Hazelcast IMap provides asynchronous methods for more powerful operations like batched writing or batched reading. The asynchronous methods do not block but return immediately with an `ICompletableFuture` interface. You can later query the result of the operation using this interface or you can even provide a callback method to be executed on the user executor threads when the response to the call is received. 
+
+An `Imap::putAsync` usage example is shown below:
+
+```C++
+    // initiate map put in an unblocking way
+    boost::shared_ptr<ICompletableFuture<std::string> > future = map.putAsync("key", "value");
+
+    // do some other work
+    // ----
+    
+    // later on get the result of the put operation
+    boost::shared_ptr<std::string> result = future->get();
+    if (result.get()) {
+        std::cout << "There was a previous value for key. The value was:" << *result << std::endl;
+    } else {
+        std::cout << "There was no previous value for key." << std::endl;
+    }
+```
+The asynchronous methods always return an `ICompletableFuture` pointer. The method does not block on IO thread. You can get the result later with the `ICompletableFuture::get()` method. `ICompletableFuture::get()` blocks until the response is received or an exception occurs.  
+
+Other asynchronous `IMap` methods are:
+ 
+- `IMap::getAsync`
+- `IMap::removeAsync`
+- `IMap::setAsync`
+- `IMap::getAsync`
+
+You can also provide a callback instance to the future using the `andThen` method. The callback is executed upon the reception of the call response or exception, and you can put your code into the callback methods. The callback method will be executed in the user executor thread which is different from the user's main program thread and hence it will not block the user. An example callback usage is shown below:
+
+```C++
+/**
+ * This class prints message on receiving the response or prints the exception if exception occurs
+ */
+class PrinterCallback : public hazelcast::client::ExecutionCallback<std::string> {
+public:
+    virtual void onResponse(const boost::shared_ptr<std::string> &response) {
+        std::cout << "Response was received. ";
+        if (response.get()) {
+            std::cout << "Received response is : " << *response << std::endl;
+        } else {
+            std::cout << "Received null response" << std::endl;
+        }
+    }
+
+    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+        std::cerr << "A failure occured. The exception is:" << e << std::endl;
+    }
+};
+
+// .......
+    // add an item in an unblocking way
+    boost::shared_ptr<ICompletableFuture<int64_t> > future = rb->addAsync("new item",
+                                                                          hazelcast::client::Ringbuffer<std::string>::OVERWRITE);
+
+    // let the result processed by a callback
+    boost::shared_ptr<ExecutionCallback<int64_t> > callback(new ItemPrinter);
+    future->andThen(callback);
+```
+
+
 ### 7.4.2. Using MultiMap
 
 Hazelcast `MultiMap` is a distributed and specialized map where you can store multiple values under a single key. For details, see the [MultiMap section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#multimap) in the Hazelcast IMDG Reference Manual.
@@ -1448,6 +1513,48 @@ A Ringbuffer usage example is shown below.
     std::cout << *rb->readOne(sequence) << std::endl;
 ```
 
+#### 7.4.7.1. Using Ringbuffer Non-Blocking Async Methods
+
+Hazelcast Ringbuffer provides asynchronous methods for more powerful operations like batched writing or batched reading with filtering.
+To make these methods synchronous, just call the method `get()` on the returned future.
+
+Please see the following example code.
+
+```C++
+    // add an item in an unblocking way
+    boost::shared_ptr<ICompletableFuture<int64_t> > future = rb->addAsync("new item",
+                                                                          hazelcast::client::Ringbuffer<std::string>::OVERWRITE);
+
+    future->get();
+```
+
+However, you can also use `ICompletableFuture` to get notified when the operation has completed. The advantage of `ICompletableFuture` is that the thread used for the call is not blocked till the response is returned. The callback methods are called via the user executor threads.
+
+Please see the below code as an example of when you want to get notified when a batch of reads has completed.
+
+```
+    class ItemsPrinter : public ExecutionCallback<hazelcast::client::ringbuffer::ReadResultSet<std::string> > {
+    public:
+        virtual void onResponse(const boost::shared_ptr<ringbuffer::ReadResultSet<std::string> > &response) {
+            DataArray<std::string> &items = response->getItems();
+            for (size_t i = 0; i < items.size(); ++i) {
+                std::cout << "Received " << items.get(i) << std::endl;
+            }
+        }
+    
+        virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+            std::cout << "An error occured " << e << std::endl;
+        }
+    };
+
+    // -----
+    
+    boost::shared_ptr<ICompletableFuture<hazelcast::client::ringbuffer::ReadResultSet<std::string> > > f = rb->readManyAsync<ItemPrinter>(sequence, min, max, someFilter);
+    f->andThen(boost::shared_ptr<hazelcast::client::ExecutionCallback<hazelcast::client::ringbuffer::ReadResultSet<std::string> > >(new ItemsPrinter));
+
+```
+
+
 ### 7.4.8. Using Reliable Topic
 
 Hazelcast `ReliableTopic` is a distributed topic implementation backed up by the `Ringbuffer` data structure. For details, see the [Reliable Topic section](https://docs.hazelcast.org/docs/latest/manual/html-single/index.html#reliable-topic) in the Hazelcast IMDG Reference Manual.
@@ -1556,6 +1663,61 @@ An Atomic Long usage example is shown below.
     }
 
     std::cout << "Count is:" << counter.get() << std::endl; // Counter is 1000000
+```
+
+#### 7.4.10.1. Using Atomic Long Non-Blocking Async Methods
+Hazelcast IAtomicLong provides asynchronous methods where you can execute a bunch of non-blocking methods and get the response later in your code or just let the atomic long operations complete at the background. You can also use callbacks to be executed upon the completion of the atomic long operations.
+
+Below is a code sample which increments the atomic long counter asynchronously:
+
+```C++
+    // Initiate an increment for the atomic long but do not block
+    boost::shared_ptr<ICompletableFuture<int64_t> > future = counter.incrementAndGetAsync();
+
+    // Do some other work
+
+    // Get the result of the incrementAndGetAsync api using the future
+    boost::shared_ptr<int64_t> result = future->get();
+
+    // It will print the value as 1
+    std::cout << "The counter value is " << *result << std::endl;
+```
+
+Other asynchronous methods provided by the IAtomicLong structure are:
+- `addAndGetAsync`
+- `compareAndSetAsync`
+- `decrementAndGetAsync` 
+- `getAsync` 
+- `setAsync` 
+- `getAndAddAsync` 
+- `getAndSetAsync`  
+- `getAndIncrementAsync`
+
+```C++
+/**
+ * This class prints message on receiving the response or prints the exception if exception occurs
+ */
+class PrinterCallback : public hazelcast::client::ExecutionCallback<int64_t> {
+public:
+    virtual void onResponse(const boost::shared_ptr<int64_t> &response) {
+        if (response.get()) {
+            std::cout << "Received response is : " << *response << std::endl;
+        } else {
+            std::cout << "Received null response" << std::endl;
+        }
+    }
+
+    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+        std::cerr << "A failure occured. The exception is:" << e << std::endl;
+    }
+};
+
+/ ----
+
+    boost::shared_ptr<ExecutionCallback<int64_t> > callback(new PrinterCallback);
+    boost::shared_ptr<ICompletableFuture<int64_t> > f = counter.decrementAndGetAsync();
+    // Use a callback to write the result of decrement operation in a non-blocking async way
+    f->andThen(callback);
 ```
 
 ### 7.4.11 Using Semaphore
