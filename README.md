@@ -1333,7 +1333,7 @@ A Map usage example is shown below.
 ```
 
 #### 7.4.1.1. Using IMap Non-Blocking Async Methods
-Hazelcast IMap provides asynchronous methods for more powerful operations like batched writing or batched reading. Asynchronous methods do not block but return immediately with an `ICompletableFuture` interface. You can later query the result of the operation using this interface or you can even provide a callback method to be executed on the user executor threads when the response to the call is received. 
+Hazelcast IMap provides asynchronous methods for more powerful operations like batched writing or batched reading. The asynchronous methods do not block but return immediately with an `ICompletableFuture` interface. You can later query the result of the operation using this interface or you can even provide a callback method to be executed on the user executor threads when the response to the call is received. 
 
 An `Imap::putAsync` usage example is shown below:
 
@@ -1352,7 +1352,7 @@ An `Imap::putAsync` usage example is shown below:
         std::cout << "There was no previous value for key." << std::endl;
     }
 ```
-The asynchronous methods always return an `ICompletableFuture` pointer. The method does not block for IO. You can get the result later with the `ICompletableFuture::get()` method. `ICompletableFuture::get()` blocks until the response is received or an exception occurs.  
+The asynchronous methods always return an `ICompletableFuture` pointer. The method does not block on IO thread. You can get the result later with the `ICompletableFuture::get()` method. `ICompletableFuture::get()` blocks until the response is received or an exception occurs.  
 
 Other asynchronous `IMap` methods are:
  
@@ -1361,7 +1361,7 @@ Other asynchronous `IMap` methods are:
 - `IMap::setAsync`
 - `IMap::getAsync`
 
-You can also provide a callback instance to the future using the `andThen` method. The callback is executed upon reception of the call response or exception and you can put your code into the callback methods. The callback method will be executed in the user executor thread which is different from the user's main program thread and hence it will not block the user. An example callback usage is shown below:
+You can also provide a callback instance to the future using the `andThen` method. The callback is executed upon the reception of the call response or exception, and you can put your code into the callback methods. The callback method will be executed in the user executor thread which is different from the user's main program thread and hence it will not block the user. An example callback usage is shown below:
 
 ```C++
 /**
@@ -1666,7 +1666,7 @@ An Atomic Long usage example is shown below.
 ```
 
 #### 7.4.10.1. Using Atomic Long Non-Blocking Async Methods
-IAtomicLong provides asynchronous methods where you can execute a bunch of non-blocking methods and get the response later in your code or just let the atomic long operations complete at the background. You can also use callbacks to be executed upon the completion of the atomic long operations.
+Hazelcast IAtomicLong provides asynchronous methods where you can execute a bunch of non-blocking methods and get the response later in your code or just let the atomic long operations complete at the background. You can also use callbacks to be executed upon the completion of the atomic long operations.
 
 Below is a code sample which increments the atomic long counter asynchronously:
 
@@ -1683,7 +1683,7 @@ Below is a code sample which increments the atomic long counter asynchronously:
     std::cout << "The counter value is " << *result << std::endl;
 ```
 
-Other asynchronous methods provided by IAtomicLong structure are:
+Other asynchronous methods provided by the IAtomicLong structure are:
 - `addAndGetAsync`
 - `compareAndSetAsync`
 - `decrementAndGetAsync` 
