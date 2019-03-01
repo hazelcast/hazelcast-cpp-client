@@ -205,6 +205,15 @@ namespace hazelcast {
 
                     virtual void *read(ObjectDataInput &in);
                 };
+
+                class HAZELCAST_API HazelcastJsonValueSerializer : public StreamSerializer {
+                public:
+                    virtual int32_t getHazelcastTypeId() const;
+
+                    virtual void write(ObjectDataOutput &out, const void *object);
+
+                    virtual void *read(ObjectDataInput &in);
+                };
             }
         }
     }

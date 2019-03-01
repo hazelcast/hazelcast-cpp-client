@@ -107,6 +107,7 @@ namespace hazelcast {
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new NullSerializer));
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new DataSerializer(serializationConfig)));
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new PortableSerializer(portableContext)));
+                    registerSerializer(boost::shared_ptr<StreamSerializer>(new HazelcastJsonValueSerializer()));
                     //primitives and String
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::ByteSerializer));
                     registerSerializer(boost::shared_ptr<StreamSerializer>(new pimpl::BooleanSerializer));
