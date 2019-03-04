@@ -1,9 +1,8 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set HZ_VERSION=3.11
-set HAZELCAST_TEST_VERSION=3.12-SNAPSHOT
-set HAZELCAST_VERSION=%HZ_VERSION%
+set HZ_VERSION=3.12-SNAPSHOT
+set HAZELCAST_TEST_VERSION=%HZ_VERSION%
 set HAZELCAST_ENTERPRISE_VERSION=%HZ_VERSION%
 set HAZELCAST_RC_VERSION=0.4-SNAPSHOT
 set SNAPSHOT_REPO=https://oss.sonatype.org/content/repositories/snapshots
@@ -51,7 +50,7 @@ if exist "hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar" (
     )
 )
 
-set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-%HZ_VERSION%.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
+set CLASSPATH="hazelcast-remote-controller-%HAZELCAST_RC_VERSION%.jar;hazelcast-enterprise-%HAZELCAST_ENTERPRISE_VERSION%.jar;hazelcast-%HAZELCAST_TEST_VERSION%-tests.jar"
 echo "Starting Remote Controller ... enterprise ...Using classpath: %CLASSPATH%"
 
 taskkill /T /F /FI "WINDOWTITLE eq hazelcast-remote-controller"

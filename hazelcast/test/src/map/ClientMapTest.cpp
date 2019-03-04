@@ -3387,11 +3387,13 @@ namespace hazelcast {
                 serialization::json::HazelcastJsonValue young("{ \"age\": 4 }");
                 serialization::json::HazelcastJsonValue old("{ \"age\": 20 }");
                 map.put("item1", young);
-                map.put("item1", old);
+                map.put("item2", old);
+
+                ASSERT_EQ(2, map.size());
 
                 // Get the objects whose age is less than 6
                 std::vector<serialization::json::HazelcastJsonValue> result = map.values(
-                        query::GreaterLessPredicate<int>("a", 6, false, true));
+                        query::GreaterLessPredicate<int>("age", 6, false, true));
                 ASSERT_EQ(1U, result.size());
                 ASSERT_EQ(young, result[0]);
             }
