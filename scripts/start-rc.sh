@@ -15,9 +15,8 @@ set +x
 
 trap cleanup EXIT
 
-HZ_VERSION="3.11"
-HAZELCAST_TEST_VERSION="3.12-SNAPSHOT"
-HAZELCAST_VERSION=${HZ_VERSION}
+HZ_VERSION="3.12-SNAPSHOT"
+HAZELCAST_TEST_VERSION=${HZ_VERSION}
 HAZELCAST_ENTERPRISE_VERSION=${HZ_VERSION}
 HAZELCAST_RC_VERSION="0.3-SNAPSHOT"
 SNAPSHOT_REPO="https://oss.sonatype.org/content/repositories/snapshots"
@@ -66,7 +65,7 @@ else
         exit 1
     fi
 fi
-CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar:test/javaclasses"
+CLASSPATH="hazelcast-remote-controller-${HAZELCAST_RC_VERSION}.jar:hazelcast-enterprise-${HAZELCAST_ENTERPRISE_VERSION}.jar:hazelcast-${HAZELCAST_TEST_VERSION}-tests.jar"
 echo "Starting Remote Controller ... enterprise ..."
 
 java -Dhazelcast.enterprise.license.key=${HAZELCAST_ENTERPRISE_KEY} -cp ${CLASSPATH} -Dhazelcast.phone.home.enabled=false com.hazelcast.remotecontroller.Main &

@@ -18,6 +18,7 @@
 #include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
+#include "hazelcast/client/serialization/json/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -250,6 +251,19 @@ namespace hazelcast {
 
                 void *StringArraySerializer::read(ObjectDataInput &in) {
                     return in.readUTFPointerArray().release();
+                }
+
+                int32_t HazelcastJsonValueSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::JAVASCRIPT_JSON_SERIALIZATION_TYPE;
+                }
+
+                void HazelcastJsonValueSerializer::write(ObjectDataOutput &out, const void *object) {
+                    out.writeUTF(
+                            static_cast<const json::HazelcastJsonValue *>(object)->toJsonString().get());
+                }
+
+                void *HazelcastJsonValueSerializer::read(ObjectDataInput &in) {
+                    return new json::HazelcastJsonValue(in.readUTF());
                 }
             }
         }
