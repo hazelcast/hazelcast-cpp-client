@@ -896,9 +896,9 @@ From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` obj
 
 ## 4.4. JSON Serialization
 
-You can use JSON formatted strings as objects in Hazelcast cluster. Starting with Hazelcast server version 3.12, the JSON serialization is one of the formerly supported serialization methods. Creating JSON objects in the cluster does not require any server side coding and hence you can just send a JSOn formatted string object to the cluster and query these objects by fields.
+You can use the JSON formatted strings as objects in Hazelcast cluster. Starting with Hazelcast IMDG 3.12, the JSON serialization is one of the formerly supported serialization methods. Creating JSON objects in the cluster does not require any server side coding and hence you can just send a JSON formatted string object to the cluster and query these objects by fields.
 
-In order to use JSON serialization, you should use `HazelcastJsonValue` object for the key or value. Here is an example IMap usage:
+In order to use JSON serialization, you should use the `HazelcastJsonValue` object for the key or value. Here is an example IMap usage:
 
 ```C++
     hazelcast::client::ClientConfig config;
@@ -908,18 +908,18 @@ In order to use JSON serialization, you should use `HazelcastJsonValue` object f
             "map");
 ```
 
-We constructed a map in the cluster which has the `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toJsonString()` nethod. 
+We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toJsonString()` method. 
 
-You can construct the `HazelcastJsonValue` using one of the constructors. All constructors accept the JSON formatted string as the parameter. No JSON parsing is performed but it is your responsibility to provide correctly formatted JSON strings. The client will not validate the string, and it will send it to the cluster as it is. If you submit incorrect formatted JSON strings and later if you query those objects it is highly possible that you will get formatting errors since the server will fail to deserialize or find the query fields.
+You can construct a `HazelcastJsonValue` using one of the constructors. All constructors accept the JSON formatted string as the parameter. No JSON parsing is performed but it is your responsibility to provide correctly formatted JSON strings. The client will not validate the string, and it will send it to the cluster as it is. If you submit incorrectly formatted JSON strings and, later, if you query those objects, it is highly possible that you will get formatting errors since the server will fail to deserialize or find the query fields.
 
-Here is an example of how you can construct a HazelcastJsonValue and put to the map:
+Here is an example of how you can construct a `HazelcastJsonValue` and put to the map:
 
 ```C++
     map.put("item1", serialization::json::HazelcastJsonValue("{ \"age\": 4 }"));
     map.put("item2", serialization::json::HazelcastJsonValue("{ \"age\": 20 }"));
 ```
 
-You can query JSON objects in the cluster using the `Predicate`s of your choice. An example JSON query for querying values whose age is less than 6 is shown below:
+You can query JSON objects in the cluster using the `Predicate`s of your choice. An example JSON query for querying the values whose age is less than 6 is shown below:
 
 ```C++
     // Get the objects whose age is less than 6
@@ -2712,9 +2712,9 @@ In this example, the code creates a list with the values greater than or equal t
 
 #### 7.7.1.4. Querying with JSON Strings
 
-You can query JSON strings stored inside your Hazelcast clusters. To query a JSON string,
+You can query JSON strings stored inside your Hazelcast clusters. To query the JSON string,
 you first need to create a `HazelcastJsonValue` from the JSON string using the `HazelcastJsonValue(const std::string &)`
-constructor(or one of the other constructors). You can use ``HazelcastJsonValue``s both as keys and values in the distributed data structures. Then, it is
+constructor (or one of the other constructors). You can use ``HazelcastJsonValue``s both as keys and values in the distributed data structures. Then, it is
 possible to query these objects using the Hazelcast query methods explained in this section.
 
 ```C++
@@ -2737,7 +2737,7 @@ documents: `number`,`string`, `true`, `false` and `null`. The `string`, `true/fa
 as `String`, `boolean` and `null`, respectively. We treat the extracted `number` values as ``long``s if they
 can be represented by a `long`. Otherwise, ``number``s are treated as ``double``s.
 
-It is possible to query nested attributes and arrays in JSON documents. The query syntax is the same
+It is possible to query nested attributes and arrays in the JSON documents. The query syntax is the same
 as querying other Hazelcast objects using the ``Predicate``s.
 
 ```C++
@@ -2769,7 +2769,7 @@ std::vector<serialization::json::HazelcastJsonValue> departmentWithPeter = depar
 
 `HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate
 that the contained string should be treated as a valid JSON value. Hazelcast does not check the validity of JSON
-strings put into to maps. Putting an invalid JSON string in a map is permissible. However, in that case
+strings put into to the maps. Putting an invalid JSON string into a map is permissible. However, in that case
 whether such an entry is going to be returned or not from a query is not defined.
 
 #### 7.7.1.5. Filtering with Paging Predicates
