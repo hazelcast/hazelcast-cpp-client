@@ -741,11 +741,21 @@ namespace hazelcast {
                 serialization::pimpl::DataOutput dataOutput;
                 serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
-
                 out.writeUTF(&utfStr);
                 std::auto_ptr<std::vector<byte> > byteArray = out.toByteArray();
                 int strLen = util::Bits::readIntB(*byteArray, 0);
                 ASSERT_EQ(7, strLen);
+            }
+
+            TEST_F(ClientSerializationTest, testExtendedAscii) {
+                std::string utfStr = "Num\xc3\xa9ro";
+
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                serialization::pimpl::Data data = serializationService.toData<std::string>(&utfStr);
+                std::auto_ptr<std::string> deserializedString = serializationService.toObject<std::string>(data);
+                ASSERT_EQ_PTR(utfStr, deserializedString.get(), std::string);
             }
 
             TEST_F(ClientSerializationTest, testGlobalSerializer) {

@@ -3397,6 +3397,16 @@ namespace hazelcast {
                 ASSERT_EQ(1U, result.size());
                 ASSERT_EQ(young, result[0]);
             }
+
+            TYPED_TEST(ClientMapTest, testExtendedAsciiString) {
+                std::string key = "Num\xc3\xa9ro key";
+                std::string value = "Num\xc3\xa9ro value";
+                ClientMapTest<TypeParam>::imap->put(key, value);
+
+                boost::shared_ptr<std::string> actualValue = ClientMapTest<TypeParam>::imap->get(key);
+
+                ASSERT_EQ_PTR(value, actualValue.get(), std::string);
+            }
         }
     }
 }
