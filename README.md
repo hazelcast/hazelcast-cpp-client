@@ -24,7 +24,8 @@
   * [4.1. IdentifiedDataSerializable Serialization](#41-identifieddataserializable-serialization)
   * [4.2. Portable Serialization](#42-portable-serialization)
   * [4.3. Custom Serialization](#43-custom-serialization)
-  * [4.4. Global Serialization](#44-global-serialization)
+  * [4.4. JSON Serialization](#44-json-serialization)
+  * [4.5. Global Serialization](#45-global-serialization)
 * [5. Setting Up Client Network](#5-setting-up-client-network)
   * [5.1. Providing Member Addresses](#51-providing-member-addresses)
   * [5.2. Setting Smart Routing](#52-setting-smart-routing)
@@ -92,7 +93,8 @@
       * [7.7.1.1. Employee Map Query Example](#7711-employee-map-query-example)
       * [7.7.1.2. Querying by Combining Predicates with AND, OR, NOT](#7712-querying-by-combining-predicates-with-and-or-not)
       * [7.7.1.3. Querying with SQL](#7713-querying-with-sql)
-      * [7.7.1.4. Filtering with Paging Predicates](#7714-filtering-with-paging-predicates)
+      * [7.7.1.4. Querying with JSON Strings](#7714-querying-with-json-strings)
+      * [7.7.1.5. Filtering with Paging Predicates](#7715-filtering-with-paging-predicates)
   * [7.8. Performance](#78-performance)
       * [7.8.1. Partition Aware](#781-partition-aware)
       * [7.8.2. Near Cache](#782-near-cache)
@@ -613,6 +615,7 @@ Hazelcast C++ client supports the following data structures and features:
 * IdentifiedDataSerializable Serialization
 * Portable Serialization
 * Custom Serialization
+* JSON Serialization
 * Global Serialization
 
 # 3. Configuration Overview
@@ -891,7 +894,43 @@ Now the last required step is to register the `MusicianSerializer` to the config
 
 From now on, Hazelcast will use `MusicianSerializer` to serialize `Musician` objects.
 
-## 4.4. Global Serialization
+## 4.4. JSON Serialization
+
+You can use the JSON formatted strings as objects in Hazelcast cluster. Starting with Hazelcast IMDG 3.12, the JSON serialization is one of the formerly supported serialization methods. Creating JSON objects in the cluster does not require any server side coding and hence you can just send a JSON formatted string object to the cluster and query these objects by fields.
+
+In order to use JSON serialization, you should use the `HazelcastJsonValue` object for the key or value. Here is an example IMap usage:
+
+```C++
+    hazelcast::client::ClientConfig config;
+    hazelcast::client::HazelcastClient hz(config);
+
+    hazelcast::client::IMap<std::string, serialization::json::HazelcastJsonValue> map = hz.getMap<std::string, serialization::json::HazelcastJsonValue>(
+            "map");
+```
+
+We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toJsonString()` method. 
+
+You can construct a `HazelcastJsonValue` using one of the constructors. All constructors accept the JSON formatted string as the parameter. No JSON parsing is performed but it is your responsibility to provide correctly formatted JSON strings. The client will not validate the string, and it will send it to the cluster as it is. If you submit incorrectly formatted JSON strings and, later, if you query those objects, it is highly possible that you will get formatting errors since the server will fail to deserialize or find the query fields.
+
+Here is an example of how you can construct a `HazelcastJsonValue` and put to the map:
+
+```C++
+    map.put("item1", serialization::json::HazelcastJsonValue("{ \"age\": 4 }"));
+    map.put("item2", serialization::json::HazelcastJsonValue("{ \"age\": 20 }"));
+```
+
+You can query JSON objects in the cluster using the `Predicate`s of your choice. An example JSON query for querying the values whose age is less than 6 is shown below:
+
+```C++
+    // Get the objects whose age is less than 6
+    std::vector<serialization::json::HazelcastJsonValue> result = map.values(
+            query::GreaterLessPredicate<int>("age", 6, false, true));
+
+    std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;
+    std::cout << "Entry is:" << result[0].toJsonString() << std::endl;
+```
+
+## 4.5. Global Serialization
 
 The global serializer is identical to custom serializers from the implementation perspective. The global serializer is registered as a fallback serializer to handle all other objects if a serializer cannot be located for them.
 
@@ -2671,7 +2710,69 @@ You can use `query::QueryConstants::getValueAttributeName()` (`this`) attribute 
 
 In this example, the code creates a list with the values greater than or equal to "27".
 
-#### 7.7.1.4. Filtering with Paging Predicates
+#### 7.7.1.4. Querying with JSON Strings
+
+You can query JSON strings stored inside your Hazelcast clusters. To query the JSON string,
+you first need to create a `HazelcastJsonValue` from the JSON string using the `HazelcastJsonValue(const std::string &)`
+constructor (or one of the other constructors). You can use ``HazelcastJsonValue``s both as keys and values in the distributed data structures. Then, it is
+possible to query these objects using the Hazelcast query methods explained in this section.
+
+```C++
+    std::string person1 = "{ \"name\": \"John\", \"age\": 35 }";
+    std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
+    std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
+
+    IMap<int, serialization::json::HazelcastJsonValue> idPersonMap = hz.getMap<int, serialization::json::HazelcastJsonValue>("jsonValues");
+
+    idPersonMap.put(1, serialization::json::HazelcastJsonValue(person1));
+    idPersonMap.put(2, serialization::json::HazelcastJsonValue(person2));
+    idPersonMap.put(3, serialization::json::HazelcastJsonValue(person3));
+
+    std::vector<serialization::json::HazelcastJsonValue> peopleUnder21 = idPersonMap.values(query::GreaterLessPredicate<int>("age", 21, false, true));
+```
+
+When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they
+can be compared with the query attribute. JSON specification defines five primitive types to be used in the JSON
+documents: `number`,`string`, `true`, `false` and `null`. The `string`, `true/false` and `null` types are treated
+as `String`, `boolean` and `null`, respectively. We treat the extracted `number` values as ``long``s if they
+can be represented by a `long`. Otherwise, ``number``s are treated as ``double``s.
+
+It is possible to query nested attributes and arrays in the JSON documents. The query syntax is the same
+as querying other Hazelcast objects using the ``Predicate``s.
+
+```C++
+/**
+ * Sample JSON object
+ *
+ * {
+ *     "departmentId": 1,
+ *     "room": "alpha",
+ *     "people": [
+ *         {
+ *             "name": "Peter",
+ *             "age": 26,
+ *             "salary": 50000
+ *         },
+ *         {
+ *             "name": "Jonah",
+ *             "age": 50,
+ *             "salary": 140000
+ *         }
+ *     ]
+ * }
+ *
+ *
+ * The following query finds all the departments that have a person named "Peter" working in them.
+ */
+std::vector<serialization::json::HazelcastJsonValue> departmentWithPeter = departments.values(query::EqualPredicate<std::string>("people[any].name", "Peter"));
+```
+
+`HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate
+that the contained string should be treated as a valid JSON value. Hazelcast does not check the validity of JSON
+strings put into to the maps. Putting an invalid JSON string into a map is permissible. However, in that case
+whether such an entry is going to be returned or not from a query is not defined.
+
+#### 7.7.1.5. Filtering with Paging Predicates
 
 The C++ client provides paging for defined predicates. With its `PagingPredicate` object, you can get a list of keys, values, or entries page by page by filtering them with predicates and giving the size of the pages. Also, you can sort the entries by specifying comparators.
 
