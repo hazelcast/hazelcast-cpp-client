@@ -143,22 +143,24 @@ namespace hazelcast {
                 }
 
                 std::auto_ptr<std::string> DataInput::readUTF() {
-                    int32_t len = readInt();
-                    if (util::Bits::NULL_ARRAY == len) {
-                        return std::auto_ptr<std::string>(NULL);
+                    int32_t charCount = readInt();
+                    if (util::Bits::NULL_ARRAY == charCount) {
+                        return std::auto_ptr<std::string>();
                     } else {
-                        int numBytesToRead = 0;
-                        for (int i = 0; i < len ; ++i) {
-                            checkAvailable(1);
-                            int numBytesForChar = getNumBytesForUtf8Char(&buffer[pos] + numBytesToRead);
-                            numBytesToRead += numBytesForChar;
-                            checkAvailable(numBytesToRead);
+                        utfBuffer.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
+                        byte b;
+                        size_t index = 0;
+                        for (int i = 0; i < charCount; ++i) {
+                            b = readByte();
+                            if (b < 0) {
+                                util::UTFUtil::readUTF8Char(*this, b, utfBuffer, index);
+                            } else {
+                                utfBuffer[index++] = (char) b;
+                            }
                         }
 
-                        const std::vector<unsigned char>::const_iterator start = buffer.begin() + pos;
-                        std::auto_ptr<std::string> result(new std::string(start, start + numBytesToRead));
-                        pos += numBytesToRead;
-                        return result;
+                        return std::auto_ptr<std::string>(
+                                new std::string(utfBuffer.begin(), utfBuffer.begin() + index));
                     }
                 }
 
@@ -299,32 +301,6 @@ namespace hazelcast {
                 template <>
                 double DataInput::read() {
                     return readDoubleUnchecked();
-                }
-
-                int DataInput::getNumBytesForUtf8Char(const byte *start) const {
-                    char first = *start;
-                    int b = first & 0xFF;
-                    switch (b >> 4) {
-                        case 0:
-                        case 1:
-                        case 2:
-                        case 3:
-                        case 4:
-                        case 5:
-                        case 6:
-                        case 7:
-                            return 1;
-                        case 12:
-                        case 13: {
-                            return 2;
-                        }
-                        case 14: {
-                            return 3;
-                        }
-                        default:
-                            throw exception::UTFDataFormatException("DataInput::getNumBytesForUtf8Char",
-                                                                    "Malformed byte sequence");
-                    }
                 }
             }
         }
