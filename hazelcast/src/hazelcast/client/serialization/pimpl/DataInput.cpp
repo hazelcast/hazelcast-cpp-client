@@ -39,6 +39,9 @@ namespace hazelcast {
                         : buffer(buf), pos(offset) {
                 }
 
+                DataInput::~DataInput() {
+                }
+
                 void DataInput::readFully(std::vector<byte> &bytes) {
                     size_t length = bytes.size();
                     checkAvailable(length);
@@ -152,11 +155,7 @@ namespace hazelcast {
                         size_t index = 0;
                         for (int i = 0; i < charCount; ++i) {
                             b = readByte();
-                            if (b < 0) {
-                                util::UTFUtil::readUTF8Char(*this, b, utfBuffer, index);
-                            } else {
-                                utfBuffer[index++] = (char) b;
-                            }
+                            util::UTFUtil::readUTF8Char(*this, b, utfBuffer, index);
                         }
 
                         return std::auto_ptr<std::string>(

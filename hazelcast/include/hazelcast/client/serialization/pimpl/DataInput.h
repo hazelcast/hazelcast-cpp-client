@@ -41,13 +41,15 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class DataInput : public util::UTFUtil::ByteReadable {
+                class HAZELCAST_API DataInput : public util::UTFUtil::ByteReadable {
                 public:
                     static const int MAX_UTF_CHAR_SIZE = 4;
 
                     DataInput(const std::vector<byte> &buffer);
 
                     DataInput(const std::vector<byte> &buffer, int offset);
+
+                    virtual ~DataInput();
 
                     void readFully(std::vector<byte> &);
 
