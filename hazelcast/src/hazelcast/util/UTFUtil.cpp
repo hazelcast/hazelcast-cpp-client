@@ -80,5 +80,8 @@ namespace hazelcast {
                 utfBuffer[index++] = (char) b;
             }
         }
+
+        UTFUtil::ByteReadable::~ByteReadable() {
+        }
     }
 }

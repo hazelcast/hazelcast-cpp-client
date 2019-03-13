@@ -29,6 +29,8 @@ namespace hazelcast {
         public:
             class ByteReadable {
             public:
+                virtual ~ByteReadable();
+
                 virtual byte readByte() = 0;
             };
 

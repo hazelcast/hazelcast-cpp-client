@@ -87,8 +87,8 @@ namespace hazelcast {
                     size_t index = 0;
                     for (int i = 0; i < 5; ++i) {
                         byte c = in.readByte();
-                        if (i ==
-                            4) {  // The 4th utf character is missing one byte intentionally in the invalid utf string
+                        // The 4th utf character is missing one byte intentionally in the invalid utf string
+                        if (i == 4) {
                             ASSERT_THROW(hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer, index),
                                          exception::UTFDataFormatException);
                         } else {
