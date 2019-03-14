@@ -152,14 +152,12 @@ namespace hazelcast {
                     } else {
                         utfBuffer.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
                         byte b;
-                        size_t index = 0;
                         for (int i = 0; i < charCount; ++i) {
                             b = readByte();
-                            util::UTFUtil::readUTF8Char(*this, b, utfBuffer, index);
+                            util::UTFUtil::readUTF8Char(*this, b, utfBuffer);
                         }
 
-                        return std::auto_ptr<std::string>(
-                                new std::string(utfBuffer.begin(), utfBuffer.begin() + index));
+                        return std::auto_ptr<std::string>(new std::string(utfBuffer.begin(), utfBuffer.end()));
                     }
                 }
 

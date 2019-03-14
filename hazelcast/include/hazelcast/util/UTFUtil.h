@@ -52,7 +52,7 @@ namespace hazelcast {
              */
             static int32_t isValidUTF8(const std::string &str);
 
-            static void readUTF8Char(ByteReadable &in, byte c, std::vector<char> &utfBuffer, size_t &index);
+            static void readUTF8Char(ByteReadable &in, byte c, std::vector<char> &utfBuffer);
 
         private:
             UTFUtil();

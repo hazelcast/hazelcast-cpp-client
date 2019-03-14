@@ -69,13 +69,12 @@ namespace hazelcast {
                     utfBuffer.reserve(
                             client::serialization::pimpl::DataInput::MAX_UTF_CHAR_SIZE * VALID_UTF_STRING.size());
                     int numberOfUtfChars = hazelcast::util::UTFUtil::isValidUTF8(VALID_UTF_STRING);
-                    size_t index = 0;
                     for (int i = 0; i < numberOfUtfChars; ++i) {
                         byte c = in.readByte();
-                        hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer, index);
+                        hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer);
                     }
 
-                    std::string result(utfBuffer.begin(), utfBuffer.begin() + index);
+                    std::string result(utfBuffer.begin(), utfBuffer.end());
                     ASSERT_EQ(VALID_UTF_STRING, result);
                 }
 
@@ -84,15 +83,14 @@ namespace hazelcast {
                     std::vector<char> utfBuffer;
                     utfBuffer.reserve(
                             client::serialization::pimpl::DataInput::MAX_UTF_CHAR_SIZE * VALID_UTF_STRING.size());
-                    size_t index = 0;
                     for (int i = 0; i < 5; ++i) {
                         byte c = in.readByte();
                         // The 4th utf character is missing one byte intentionally in the invalid utf string
                         if (i == 4) {
-                            ASSERT_THROW(hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer, index),
+                            ASSERT_THROW(hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer),
                                          exception::UTFDataFormatException);
                         } else {
-                            hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer, index);
+                            hazelcast::util::UTFUtil::readUTF8Char(in, c, utfBuffer);
                         }
                     }
                 }

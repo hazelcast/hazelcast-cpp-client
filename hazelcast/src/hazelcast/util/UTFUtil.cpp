@@ -51,7 +51,7 @@ namespace hazelcast {
             return numberOfUtf8Chars;
         }
 
-        void UTFUtil::readUTF8Char(UTFUtil::ByteReadable &in, byte c, std::vector<char> &utfBuffer, size_t &index) {
+        void UTFUtil::readUTF8Char(UTFUtil::ByteReadable &in, byte c, std::vector<char> &utfBuffer) {
             size_t n = 0;
             //if (c==0x09 || c==0x0a || c==0x0d || (0x20 <= c && c <= 0x7e) ) n = 0; // is_printable_ascii
             if (c <= 0x7f) {
@@ -66,7 +66,7 @@ namespace hazelcast {
                 throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
             }
 
-            utfBuffer[index++] = (char) c;
+            utfBuffer.push_back((char) c);
             for (size_t j = 0; j < n; j++) {
                 byte b = in.readByte();
                 if (c == 0xed && (b & 0xa0) == 0xa0) {
@@ -77,7 +77,7 @@ namespace hazelcast {
                 if ((b & 0xC0) != 0x80) { // n bytes matching 10bbbbbb follow ?
                     throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
                 }
-                utfBuffer[index++] = (char) b;
+                utfBuffer.push_back((char) b);
             }
         }
 
