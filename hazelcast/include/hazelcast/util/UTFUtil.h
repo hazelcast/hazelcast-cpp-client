@@ -27,7 +27,7 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API UTFUtil {
         public:
-            class ByteReadable {
+            class HAZELCAST_API ByteReadable {
             public:
                 virtual ~ByteReadable();
 
