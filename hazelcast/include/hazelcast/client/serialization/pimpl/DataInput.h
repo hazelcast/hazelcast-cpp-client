@@ -18,12 +18,10 @@
 #ifndef HAZELCAST_DataInput
 #define HAZELCAST_DataInput
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
-
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include "hazelcast/util/UTFUtil.h"
 
 #include <vector>
 #include <string>
@@ -43,11 +41,15 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class HAZELCAST_API DataInput {
+                class HAZELCAST_API DataInput : public util::UTFUtil::ByteReadable {
                 public:
+                    static const int MAX_UTF_CHAR_SIZE = 4;
+
                     DataInput(const std::vector<byte> &buffer);
 
                     DataInput(const std::vector<byte> &buffer, int offset);
+
+                    virtual ~DataInput();
 
                     void readFully(std::vector<byte> &);
 
@@ -98,6 +100,7 @@ namespace hazelcast {
 
                 private:
                     const std::vector<byte> &buffer;
+                    std::vector<char> utfBuffer;
 
                     int pos;
 
@@ -134,8 +137,6 @@ namespace hazelcast {
                         }
                         return values;
                     }
-
-                    int getNumBytesForUtf8Char(const byte *start) const;
 
                     DataInput(const DataInput &);
 

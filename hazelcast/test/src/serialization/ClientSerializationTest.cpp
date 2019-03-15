@@ -758,6 +758,15 @@ namespace hazelcast {
                 ASSERT_EQ_PTR(utfStr, deserializedString.get(), std::string);
             }
 
+            TEST_F(ClientSerializationTest, testExtendedAsciiIncorrectUtf8Write) {
+                std::string utfStr = "Num\351ro";
+
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                ASSERT_THROW(serializationService.toData<std::string>(&utfStr), exception::UTFDataFormatException);
+            }
+
             TEST_F(ClientSerializationTest, testGlobalSerializer) {
                 SerializationConfig serializationConfig;
 

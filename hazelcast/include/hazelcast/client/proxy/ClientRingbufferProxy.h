@@ -35,6 +35,11 @@
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/client/Ringbuffer.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4250) //for warning class1' : inherits 'class2::member' via dominance
+#endif
+
 namespace hazelcast {
     namespace client {
         class HazelcastClient;
@@ -315,6 +320,10 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CLIENT_PROXY_CLIENTRINGBUFFERPROXY_H_
 

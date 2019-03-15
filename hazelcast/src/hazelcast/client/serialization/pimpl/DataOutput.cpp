@@ -18,6 +18,7 @@
 
 #include "hazelcast/client/serialization/pimpl/DataOutput.h"
 #include "hazelcast/util/IOUtil.h"
+#include "hazelcast/util/UTFUtil.h"
 
 namespace hazelcast {
     namespace client {
@@ -112,7 +113,16 @@ namespace hazelcast {
                 }
 
                 void DataOutput::writeUTF(const std::string *str) {
-                    int32_t len = (NULL != str) ? getUTF8CharCount(*str) : util::Bits::NULL_ARRAY;
+                    int32_t len = util::Bits::NULL_ARRAY;
+                    if (str) {
+                        len = util::UTFUtil::isValidUTF8(*str);
+                        if (len < 0) {
+                            throw (exception::ExceptionBuilder<exception::UTFDataFormatException>(
+                                    "DataOutput::writeUTF")
+                                    << "String \"" << (*str) << "\" is not UTF-8 formatted !!!").build();
+                        }
+                    }
+
                     writeInt(len);
                     if (len > 0) {
                         outputStream->insert(outputStream->end(), str->begin(), str->end());
