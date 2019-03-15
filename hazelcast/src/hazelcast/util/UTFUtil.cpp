@@ -24,7 +24,7 @@ namespace hazelcast {
             for (size_t i = 0, len = str.length(); i < len; ++i) {
                 unsigned char c = (unsigned char) str[i];
                 size_t n = 0;
-                //if (c==0x09 || c==0x0a || c==0x0d || (0x20 <= c && c <= 0x7e) ) n = 0; // is_printable_ascii
+                // is ascii
                 if (c <= 0x7f) {
                     n = 0; // 0bbbbbbb
                 } else if ((c & 0xE0) == 0xC0) {
@@ -51,25 +51,25 @@ namespace hazelcast {
             return numberOfUtf8Chars;
         }
 
-        void UTFUtil::readUTF8Char(UTFUtil::ByteReadable &in, byte c, std::vector<char> &utfBuffer) {
+        void UTFUtil::readUTF8Char(UTFUtil::ByteReadable &in, byte firstByte, std::vector<char> &utfBuffer) {
             size_t n = 0;
-            //if (c==0x09 || c==0x0a || c==0x0d || (0x20 <= c && c <= 0x7e) ) n = 0; // is_printable_ascii
-            if (c <= 0x7f) {
+            // ascii
+            if (firstByte <= 0x7f) {
                 n = 0; // 0bbbbbbb
-            } else if ((c & 0xE0) == 0xC0) {
+            } else if ((firstByte & 0xE0) == 0xC0) {
                 n = 1; // 110bbbbb
-            } else if ((c & 0xF0) == 0xE0) {
+            } else if ((firstByte & 0xF0) == 0xE0) {
                 n = 2; // 1110bbbb
-            } else if ((c & 0xF8) == 0xF0) {
+            } else if ((firstByte & 0xF8) == 0xF0) {
                 n = 3; // 11110bbb
             } else {
                 throw client::exception::UTFDataFormatException("Bits::readUTF8Char", "Malformed byte sequence");
             }
 
-            utfBuffer.push_back((char) c);
+            utfBuffer.push_back((char) firstByte);
             for (size_t j = 0; j < n; j++) {
                 byte b = in.readByte();
-                if (c == 0xed && (b & 0xa0) == 0xa0) {
+                if (firstByte == 0xed && (b & 0xa0) == 0xa0) {
                     throw client::exception::UTFDataFormatException("Bits::readUTF8Char",
                                                                     "Malformed byte sequence U+d800 to U+dfff"); //U+d800 to U+dfff
                 }

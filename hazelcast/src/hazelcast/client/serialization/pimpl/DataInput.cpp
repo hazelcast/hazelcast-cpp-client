@@ -30,9 +30,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
 
-                DataInput::DataInput(const std::vector<byte> &buf)
-                :buffer(buf)
-                , pos(0) {
+                DataInput::DataInput(const std::vector<byte> &buf) : buffer(buf), pos(0) {
                 }
 
                 DataInput::DataInput(const std::vector<byte> &buf, int offset)
@@ -150,6 +148,7 @@ namespace hazelcast {
                     if (util::Bits::NULL_ARRAY == charCount) {
                         return std::auto_ptr<std::string>();
                     } else {
+                        utfBuffer.clear();
                         utfBuffer.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
                         byte b;
                         for (int i = 0; i < charCount; ++i) {

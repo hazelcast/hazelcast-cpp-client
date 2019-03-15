@@ -16,6 +16,8 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/foreach.hpp>
+
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
 #include "hazelcast/util/UTFUtil.h"
@@ -30,26 +32,6 @@ namespace hazelcast {
                     static const std::string VALID_UTF_STRING;
 
                     static const std::string INVALID_UTF_STRING_INSUFFICIENT_BYTES;
-
-                    class ByteReader : public hazelcast::util::UTFUtil::ByteReadable {
-                    public:
-                        ByteReader(const std::string &value) : internalString(value) {
-                            it = internalString.begin();
-                        }
-
-                        virtual byte readByte() {
-                            if (it == internalString.end()) {
-                                throw exception::IOException("ByteReader::readByte", "End of string is reached!");
-                            }
-                            byte b = *it;
-                            ++it;
-                            return b;
-                        }
-
-                    private:
-                        std::string internalString;
-                        std::string::const_iterator it;
-                    };
                 };
 
                 const std::string UTFUtilTest::VALID_UTF_STRING = "a \xc3\xa9 \xe5\x92\xa7 \xf6\xa7\x93\xb5";
@@ -64,7 +46,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(UTFUtilTest, readValidUTF8) {
-                    ByteReader in(VALID_UTF_STRING);
+                    std::vector<byte> strBytes;
+                    BOOST_FOREACH(char b, VALID_UTF_STRING) {
+                                    strBytes.push_back((byte) b);
+                                }
+                    serialization::pimpl::DataInput in(strBytes);
                     std::vector<char> utfBuffer;
                     utfBuffer.reserve(
                             client::serialization::pimpl::DataInput::MAX_UTF_CHAR_SIZE * VALID_UTF_STRING.size());
@@ -79,7 +65,11 @@ namespace hazelcast {
                 }
 
                 TEST_F(UTFUtilTest, readInvalidUTF8) {
-                    ByteReader in(INVALID_UTF_STRING_INSUFFICIENT_BYTES);
+                    std::vector<byte> strBytes;
+                    BOOST_FOREACH(char b, INVALID_UTF_STRING_INSUFFICIENT_BYTES) {
+                                    strBytes.push_back((byte) b);
+                                }
+                    serialization::pimpl::DataInput in(strBytes);
                     std::vector<char> utfBuffer;
                     utfBuffer.reserve(
                             client::serialization::pimpl::DataInput::MAX_UTF_CHAR_SIZE * VALID_UTF_STRING.size());
