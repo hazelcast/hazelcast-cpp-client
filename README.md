@@ -248,11 +248,11 @@ For Mac, there is only 64-bit distribution.
 
 Here is an example script to build with the static library:
 
-`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcast3.10.1_64.a`
+`g++ main.cpp -Icpp/Mac_64/external/include -Icpp/Mac_64/hazelcast/include cpp/Mac_64/hazelcast/lib/libHazelcastClient3.11_64.a`
 
 Here is an example script to build with the shared library:
 
-`g++ main.cpp -Icpp/Mac_64/hazelcast/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClient3.10.1_64`
+`g++ main.cpp -Icpp/Mac_64/external/include -Icpp/Mac_64/hazelcast/include -Lcpp/Mac_64/hazelcast/lib -lHazelcastClient3.11_64`
 
 #### 1.3.1.2 Linux Client
 
