@@ -18,7 +18,7 @@
 #include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
-#include "hazelcast/client/serialization/json/HazelcastJsonValue.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -258,12 +258,11 @@ namespace hazelcast {
                 }
 
                 void HazelcastJsonValueSerializer::write(ObjectDataOutput &out, const void *object) {
-                    out.writeUTF(
-                            static_cast<const json::HazelcastJsonValue *>(object)->toJsonString().get());
+                    out.writeUTF(&(static_cast<const HazelcastJsonValue *>(object)->toString()));
                 }
 
                 void *HazelcastJsonValueSerializer::read(ObjectDataInput &in) {
-                    return new json::HazelcastJsonValue(in.readUTF());
+                    return new HazelcastJsonValue(in.readUTF());
                 }
             }
         }

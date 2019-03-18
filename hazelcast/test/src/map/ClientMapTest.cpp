@@ -50,7 +50,7 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/EntryEvent.h"
-#include "hazelcast/client/serialization/json/HazelcastJsonValue.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -3372,27 +3372,27 @@ namespace hazelcast {
             }
 
             TYPED_TEST(ClientMapTest, testJsonPutGet) {
-                IMap<string, serialization::json::HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, serialization::json::HazelcastJsonValue>(
+                IMap<string, HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, HazelcastJsonValue>(
                         ClientMapTest<TypeParam>::getTestName());
-                serialization::json::HazelcastJsonValue value("{ \"age\": 4 }");
+                HazelcastJsonValue value("{ \"age\": 4 }");
                 map.put("item1", value);
-                boost::shared_ptr<serialization::json::HazelcastJsonValue> retrieved = map.get("item1");
+                boost::shared_ptr<HazelcastJsonValue> retrieved = map.get("item1");
 
-                ASSERT_EQ_PTR(value, retrieved.get(), serialization::json::HazelcastJsonValue);
+                ASSERT_EQ_PTR(value, retrieved.get(), HazelcastJsonValue);
             }
 
             TYPED_TEST(ClientMapTest, testQueryOverJsonObject) {
-                IMap<string, serialization::json::HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, serialization::json::HazelcastJsonValue>(
+                IMap<string, HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, HazelcastJsonValue>(
                         ClientMapTest<TypeParam>::getTestName());
-                serialization::json::HazelcastJsonValue young("{ \"age\": 4 }");
-                serialization::json::HazelcastJsonValue old("{ \"age\": 20 }");
+                HazelcastJsonValue young("{ \"age\": 4 }");
+                HazelcastJsonValue old("{ \"age\": 20 }");
                 map.put("item1", young);
                 map.put("item2", old);
 
                 ASSERT_EQ(2, map.size());
 
                 // Get the objects whose age is less than 6
-                std::vector<serialization::json::HazelcastJsonValue> result = map.values(
+                std::vector<HazelcastJsonValue> result = map.values(
                         query::GreaterLessPredicate<int>("age", 6, false, true));
                 ASSERT_EQ(1U, result.size());
                 ASSERT_EQ(young, result[0]);
