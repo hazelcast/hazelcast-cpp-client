@@ -84,7 +84,7 @@ namespace hazelcast {
                     /**
                      * NULL Object
                      */
-                    static boost::shared_ptr<V> NULL_OBJECT;
+                    static boost::shared_ptr<void> NULL_OBJECT;
 
                     virtual ~NearCache() {
                     }
@@ -176,7 +176,7 @@ namespace hazelcast {
                 };
 
                 template<typename K, typename V>
-                boost::shared_ptr<V> NearCache<K, V>::NULL_OBJECT = boost::shared_ptr<V>(new V());
+                boost::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
             }
         }
     }

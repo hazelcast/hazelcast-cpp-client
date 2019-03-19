@@ -404,7 +404,9 @@ namespace hazelcast {
                                 boost::shared_ptr<V> cached = nearCache->get(keyData);
                                 if (cached.get() != NULL &&
                                     internal::nearcache::NearCache<K, V>::NULL_OBJECT != cached) {
-                                    result[*proxy::ProxyImpl::toObject<K>(*keyData)] = *cached;
+                                    // Use insert method instead of '[]' operator to prevent the need for
+                                    // std::is_default_constructible requirement for key and value
+                                    result.insert(std::make_pair(*proxy::ProxyImpl::toObject<K>(*keyData), *cached));
                                 } else if (invalidateOnChange) {
                                     markers[keyData] = keyStateMarker->tryMark(*keyData);
                                 }

@@ -95,7 +95,7 @@ namespace hazelcast {
                                 const boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 if (value.get() == NULL) {
                                     ANCRS::nearCacheStats.incrementMisses();
-                                    return NearCache<K, V>::NULL_OBJECT;
+                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return ANCRS::dataToValue(value, (V *)NULL);
                             }

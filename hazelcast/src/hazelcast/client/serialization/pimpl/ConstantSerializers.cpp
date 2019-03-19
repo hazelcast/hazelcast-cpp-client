@@ -262,7 +262,7 @@ namespace hazelcast {
                 }
 
                 void *HazelcastJsonValueSerializer::read(ObjectDataInput &in) {
-                    return new HazelcastJsonValue(in.readUTF());
+                    return new HazelcastJsonValue(*in.readUTF());
                 }
             }
         }

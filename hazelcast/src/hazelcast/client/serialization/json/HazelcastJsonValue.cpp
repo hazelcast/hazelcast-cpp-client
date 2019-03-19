@@ -17,13 +17,7 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastJsonValue::HazelcastJsonValue() {
-        }
-
         HazelcastJsonValue::HazelcastJsonValue(const std::string &jsonString) : jsonString(jsonString) {
-        }
-
-        HazelcastJsonValue::HazelcastJsonValue(std::auto_ptr<std::string> jsonString) : jsonString(*jsonString) {
         }
 
         HazelcastJsonValue::~HazelcastJsonValue() {

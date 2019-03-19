@@ -782,10 +782,10 @@ namespace hazelcast {
                 std::vector<V> values(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = proxy::IMapImpl::valuesData(predicate);
                     size_t size = dataResult.size();
-                    std::vector<V> values(size);
+                    std::vector<V> values;
                     for (size_t i = 0; i < size; ++i) {
                         std::auto_ptr<V> value = toObject<V>(dataResult[i]);
-                        values[i] = *value;
+                        values.push_back(*value);
                     }
                     return values;
                 }
@@ -1325,7 +1325,9 @@ namespace hazelcast {
                                 new serialization::pimpl::Data(it->first));
                         const K *&keyObject = dataKeyPairMap[keyPtr];
                         assert(keyObject != 0);
-                        result[*keyObject] = *value;
+                        // Use insert method instead of '[]' operator to prevent the need for
+                        // std::is_default_constructible requirement for key and value
+                        result.insert(std::make_pair(*keyObject, *value));
                         responseEntries.push_back(std::pair<serialization::pimpl::Data, serialization::pimpl::Data>(
                                 *keyPtr, it->second));
                     }

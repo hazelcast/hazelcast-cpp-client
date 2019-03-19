@@ -26,15 +26,15 @@ namespace hazelcast {
     namespace client {
         /**
          * HazelcastJsonValue is a wrapper for Json formatted strings. It is preferred
-         * to store HazelcastJsonValue instead of Strings for Json formatted strings.
+         * to store HazelcastJsonValue instead of std::string for Json formatted strings.
          * Users can run predicates and use indexes on the attributes of the underlying
          * Json strings.
          *
          * HazelcastJsonValue is queried using Hazelcast's querying language.
-         * See {@link Predicates}.
+         * See {@link query::Predicate}.
          *
          * In terms of querying, numbers in Json strings are treated as either
-         * {@code Long} or {@code Double}. Strings, booleans and null are treated as
+         * {@code int64_t} or {@code double}. Strings, bools and NULL are treated as
          * their C++ counterparts.
          *
          * HazelcastJsonValue keeps given string as it is.
@@ -42,8 +42,6 @@ namespace hazelcast {
          */
         class HAZELCAST_API HazelcastJsonValue {
         public:
-            HazelcastJsonValue();
-
             /**
              * Create a HazelcastJsonValue from a string. This method does not the check
              * validity of the underlying Json string. Invalid Json strings may cause
@@ -53,16 +51,6 @@ namespace hazelcast {
              * @return The HazelcastJsonValue representing the json string.
              */
             HazelcastJsonValue(const std::string &jsonString);
-
-            /**
-             * Create a HazelcastJsonValue from a string. This method does not the check
-             * validity of the underlying Json string. Invalid Json strings may cause
-             * wrong results in queries.
-             *
-             * @param jsonString The json string pointer
-             * @return The HazelcastJsonValue representing the json string pointer.
-             */
-            HazelcastJsonValue(std::auto_ptr<std::string> jsonString);
 
             virtual ~HazelcastJsonValue();
 

@@ -45,7 +45,8 @@ namespace hazelcast {
                 }
 
                 virtual void SetUp() {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(), getTestName());
+                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(),
+                                                                                                  getTestName());
                 }
 
                 virtual void TearDown() {
@@ -151,6 +152,7 @@ namespace hazelcast {
                         util::hz_snprintf(buf, 300, messageFormat, expected, actual);
                         ASSERT_EQ(expected, actual) << buf << "(" << stats.toString() << ")";
                     }
+
                 private:
                     NearCacheTestUtils();
 
@@ -276,7 +278,8 @@ namespace hazelcast {
                     return stats->getHits() + 1;
                 }
 
-                bool checkMissesAndHits(int64_t &expectedMisses, int64_t &expectedHits, boost::shared_ptr<std::string> &value) {
+                bool checkMissesAndHits(int64_t &expectedMisses, int64_t &expectedHits,
+                                        boost::shared_ptr<std::string> &value) {
                     expectedMisses = getExpectedMissesWithLocalUpdatePolicy();
                     expectedHits = getExpectedHitsWithLocalUpdatePolicy();
 
@@ -310,7 +313,7 @@ namespace hazelcast {
 
                     // this should invalidate the Near Cache
                     IMap<int, std::string> &adapter = useNearCacheAdapter ? *nearCachedMap
-                                                                                 : *noNearCacheMap;
+                                                                          : *noNearCacheMap;
                     adapter.putAll(invalidationMap);
 
                     WAIT_EQ_EVENTUALLY(0, nearCache->size());
@@ -374,7 +377,8 @@ namespace hazelcast {
                     boost::shared_ptr<std::string> value = nearCache->get(key);
                     if (value.get() != NULL) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        boost::shared_ptr<std::string> &nullObj = internal::nearcache::NearCache<int, std::string>::NULL_OBJECT;
+                        boost::shared_ptr<std::string> nullObj = boost::static_pointer_cast<std::string>(
+                                internal::nearcache::NearCache<int, std::string>::NULL_OBJECT);
                         ASSERT_EQ(nullObj, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }
@@ -463,7 +467,7 @@ namespace hazelcast {
              * This variant uses the nearCacheMap, so there is no Near Cache invalidation necessary.
              */
             TEST_P(BasicClientNearCacheTest,
-               whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnNearCacheAdapter) {
+                   whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnNearCacheAdapter) {
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(true);
             }
 
@@ -473,7 +477,7 @@ namespace hazelcast {
              * This variant uses the noNearCacheMap, so we need to configure Near Cache invalidation.
              */
             TEST_P(BasicClientNearCacheTest,
-               whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnDataAdapter) {
+                   whenPutAllIsUsed_thenNearCacheShouldBeInvalidated_withUpdateOnDataAdapter) {
                 nearCacheConfig->setInvalidateOnChange(true);
                 whenPutAllIsUsed_thenNearCacheShouldBeInvalidated(false);
             }
@@ -505,7 +509,8 @@ namespace hazelcast {
                 populateNearCache();
                 {
                     SCOPED_TRACE("testNearCacheStats when near cache is hit after being populated.");
-                    NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, DEFAULT_RECORD_COUNT, DEFAULT_RECORD_COUNT);
+                    NearCacheTestUtils::assertNearCacheStats(*stats, DEFAULT_RECORD_COUNT, DEFAULT_RECORD_COUNT,
+                                                             DEFAULT_RECORD_COUNT);
                 }
             }
 
