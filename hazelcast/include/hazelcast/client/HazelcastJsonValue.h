@@ -22,6 +22,11 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace client {
         /**
@@ -64,13 +69,17 @@ namespace hazelcast {
 
             bool operator!=(const HazelcastJsonValue &rhs) const;
 
-            friend std::ostream &operator<<(std::ostream &os, const HazelcastJsonValue &value);
+            friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const HazelcastJsonValue &value);
 
         private:
             std::string jsonString;
         };
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CLIENT_SERIALIZATION_JSON_HAZELCASTJSONVALUE_H
 

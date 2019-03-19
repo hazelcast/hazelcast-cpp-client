@@ -296,6 +296,7 @@ namespace hazelcast {
              */
             template<>
             std::auto_ptr<HazelcastJsonValue>
+            HAZELCAST_API
             ObjectDataInput::readObjectInternal(int32_t typeId, const boost::shared_ptr<SerializerBase> &serializer);
         }
     }
