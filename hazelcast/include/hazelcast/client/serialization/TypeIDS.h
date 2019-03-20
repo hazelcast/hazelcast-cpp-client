@@ -25,13 +25,11 @@
 
 namespace hazelcast {
     namespace client {
+        class HazelcastJsonValue;
+
         namespace serialization {
             class Portable;
             class IdentifiedDataSerializable;
-
-            namespace json {
-                class HazelcastJsonValue;
-            }
 
             int32_t HAZELCAST_API getHazelcastTypeId(const Portable* portable);
 
@@ -77,7 +75,7 @@ namespace hazelcast {
 
             int32_t HAZELCAST_API getHazelcastTypeId(const void *object);
 
-            int32_t HAZELCAST_API getHazelcastTypeId(const serialization::json::HazelcastJsonValue *object);
+            int32_t HAZELCAST_API getHazelcastTypeId(const HazelcastJsonValue *object);
         }
     }
 }

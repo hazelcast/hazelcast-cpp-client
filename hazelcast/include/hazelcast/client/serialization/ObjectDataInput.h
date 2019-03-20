@@ -28,6 +28,7 @@
 #include "hazelcast/client/serialization/Serializer.h"
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
+#include "hazelcast/client/serialization/pimpl/ConstantSerializers.h"
 #include "hazelcast/client/serialization/pimpl/SerializerHolder.h"
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
@@ -78,7 +79,7 @@ namespace hazelcast {
                 * fills all content to given byteArray
                 * @param byteArray to fill the data in
                 */
-                void readFully(std::vector<byte>& byteArray);
+                void readFully(std::vector<byte> &byteArray);
 
                 /**
                 *
@@ -216,30 +217,13 @@ namespace hazelcast {
                 std::auto_ptr<T> readObject(int32_t typeId) {
                     boost::shared_ptr<SerializerBase> serializer = serializerHolder.serializerFor(typeId);
                     if (NULL == serializer.get()) {
-                        const std::string message = "No serializer found for serializerId :"+
+                        const std::string message = "No serializer found for serializerId :" +
                                                     util::IOUtil::to_string(typeId) + ", typename :" +
                                                     typeid(T).name();
                         throw exception::HazelcastSerializationException("ObjectDataInput::readInternal", message);
                     }
 
-                    switch (typeId) {
-                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
-                            serialization::pimpl::DataSerializer *dataSerializer =
-                                    static_cast<serialization::pimpl::DataSerializer *>(serializer.get());
-                            return dataSerializer->readObject<T>(*this);
-                        }
-                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
-                            serialization::pimpl::PortableSerializer *portableSerializer =
-                                    static_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
-
-                            return portableSerializer->readObject<T>(*this);
-                        }
-                        default: {
-                            boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(serializer);
-                            return std::auto_ptr<T>(getBackwardCompatiblePointer<T>(streamSerializer->read(*this),
-                                                                                    (T *) NULL));
-                        }
-                    }
+                    return readObjectInternal<T>(typeId, serializer);
                 }
 
                 /**
@@ -260,16 +244,40 @@ namespace hazelcast {
                 void position(int newPos);
 
             private:
-                pimpl::DataInput& dataInput;
-                pimpl::SerializerHolder& serializerHolder;
+                pimpl::DataInput &dataInput;
+                pimpl::SerializerHolder &serializerHolder;
 
-                ObjectDataInput(const ObjectDataInput&);
+                ObjectDataInput(const ObjectDataInput &);
 
-                void operator=(const ObjectDataInput&);
+                void operator=(const ObjectDataInput &);
 
-                template <typename T>
+                template<typename T>
                 T *getBackwardCompatiblePointer(void *actualData, const T *typePointer) const {
                     return reinterpret_cast<T *>(actualData);
+                }
+
+                template<typename T>
+                std::auto_ptr<T>
+                readObjectInternal(int32_t typeId, const boost::shared_ptr<SerializerBase> &serializer) {
+                    switch (typeId) {
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
+                            serialization::pimpl::DataSerializer *dataSerializer =
+                                    static_cast<serialization::pimpl::DataSerializer *>(serializer.get());
+                            return dataSerializer->readObject<T>(*this);
+                        }
+                        case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_PORTABLE: {
+                            serialization::pimpl::PortableSerializer *portableSerializer =
+                                    static_cast<serialization::pimpl::PortableSerializer *>(serializer.get());
+
+                            return portableSerializer->readObject<T>(*this);
+                        }
+                        default: {
+                            boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
+                                    serializer);
+                            return std::auto_ptr<T>(getBackwardCompatiblePointer<T>(streamSerializer->read(*this),
+                                                                                    (T *) NULL));
+                        }
+                    }
                 }
             };
 
@@ -277,10 +285,19 @@ namespace hazelcast {
              * This method is needed for handling backward compatibility with the originally designed api where it
              * assumed that the string in array can not be nullable.
              */
-            template <>
+            template<>
             HAZELCAST_API std::vector<std::string> *ObjectDataInput::getBackwardCompatiblePointer(void *actualData,
-                                         const std::vector<std::string> *typePointer) const;
+                                                                                                  const std::vector<std::string> *typePointer) const;
 
+
+            /**
+             * Specialize readObjectInternal method for HazelcastJsonValue to avoid the need for empty
+             * HazelcastJsonValue constructor.
+             */
+            template<>
+            std::auto_ptr<HazelcastJsonValue>
+            HAZELCAST_API
+            ObjectDataInput::readObjectInternal(int32_t typeId, const boost::shared_ptr<SerializerBase> &serializer);
         }
     }
 }

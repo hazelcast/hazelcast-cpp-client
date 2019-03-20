@@ -45,7 +45,8 @@ namespace hazelcast {
                 }
 
                 virtual void SetUp() {
-                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(), getTestName());
+                    nearCacheConfig = NearCacheTestUtils::createNearCacheConfig<int, std::string>(GetParam(),
+                                                                                                  getTestName());
                 }
 
                 virtual void TearDown() {
@@ -376,7 +377,8 @@ namespace hazelcast {
                     boost::shared_ptr<std::string> value = nearCache->get(key);
                     if (value.get() != NULL) {
                         // the internal value should either be `null` or `NULL_OBJECT`
-                        boost::shared_ptr<std::string> &nullObj = internal::nearcache::NearCache<int, std::string>::NULL_OBJECT;
+                        boost::shared_ptr<std::string> nullObj = boost::static_pointer_cast<std::string>(
+                                internal::nearcache::NearCache<int, std::string>::NULL_OBJECT);
                         ASSERT_EQ(nullObj, nearCache->get(key)) << "Expected NULL_OBJECT in Near Cache for key " << i;
                     }
                 }

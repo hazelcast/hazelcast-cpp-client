@@ -904,30 +904,30 @@ In order to use JSON serialization, you should use the `HazelcastJsonValue` obje
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<std::string, serialization::json::HazelcastJsonValue> map = hz.getMap<std::string, serialization::json::HazelcastJsonValue>(
+    hazelcast::client::IMap<std::string, HazelcastJsonValue> map = hz.getMap<std::string, HazelcastJsonValue>(
             "map");
 ```
 
-We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toJsonString()` method. 
+We constructed a map in the cluster which has `string` as the key and `HazelcastJsonValue` as the value. `HazelcastJsonValue` is a simple wrapper and identifier for the JSON formatted strings. You can get the JSON string from the `HazelcastJsonValue` object using the `toString()` method. 
 
 You can construct a `HazelcastJsonValue` using one of the constructors. All constructors accept the JSON formatted string as the parameter. No JSON parsing is performed but it is your responsibility to provide correctly formatted JSON strings. The client will not validate the string, and it will send it to the cluster as it is. If you submit incorrectly formatted JSON strings and, later, if you query those objects, it is highly possible that you will get formatting errors since the server will fail to deserialize or find the query fields.
 
 Here is an example of how you can construct a `HazelcastJsonValue` and put to the map:
 
 ```C++
-    map.put("item1", serialization::json::HazelcastJsonValue("{ \"age\": 4 }"));
-    map.put("item2", serialization::json::HazelcastJsonValue("{ \"age\": 20 }"));
+    map.put("item1", HazelcastJsonValue("{ \"age\": 4 }"));
+    map.put("item2", HazelcastJsonValue("{ \"age\": 20 }"));
 ```
 
 You can query JSON objects in the cluster using the `Predicate`s of your choice. An example JSON query for querying the values whose age is less than 6 is shown below:
 
 ```C++
     // Get the objects whose age is less than 6
-    std::vector<serialization::json::HazelcastJsonValue> result = map.values(
+    std::vector<HazelcastJsonValue> result = map.values(
             query::GreaterLessPredicate<int>("age", 6, false, true));
 
     std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;
-    std::cout << "Entry is:" << result[0].toJsonString() << std::endl;
+    std::cout << "Entry is:" << result[0].toString() << std::endl;
 ```
 
 ## 4.5. Global Serialization
@@ -2714,7 +2714,7 @@ In this example, the code creates a list with the values greater than or equal t
 
 You can query JSON strings stored inside your Hazelcast clusters. To query the JSON string,
 you first need to create a `HazelcastJsonValue` from the JSON string using the `HazelcastJsonValue(const std::string &)`
-constructor (or one of the other constructors). You can use ``HazelcastJsonValue``s both as keys and values in the distributed data structures. Then, it is
+constructor. You can use ``HazelcastJsonValue``s both as keys and values in the distributed data structures. Then, it is
 possible to query these objects using the Hazelcast query methods explained in this section.
 
 ```C++
@@ -2722,13 +2722,13 @@ possible to query these objects using the Hazelcast query methods explained in t
     std::string person2 = "{ \"name\": \"Jane\", \"age\": 24 }";
     std::string person3 = "{ \"name\": \"Trey\", \"age\": 17 }";
 
-    IMap<int, serialization::json::HazelcastJsonValue> idPersonMap = hz.getMap<int, serialization::json::HazelcastJsonValue>("jsonValues");
+    IMap<int, HazelcastJsonValue> idPersonMap = hz.getMap<int, HazelcastJsonValue>("jsonValues");
 
-    idPersonMap.put(1, serialization::json::HazelcastJsonValue(person1));
-    idPersonMap.put(2, serialization::json::HazelcastJsonValue(person2));
-    idPersonMap.put(3, serialization::json::HazelcastJsonValue(person3));
+    idPersonMap.put(1, HazelcastJsonValue(person1));
+    idPersonMap.put(2, HazelcastJsonValue(person2));
+    idPersonMap.put(3, HazelcastJsonValue(person3));
 
-    std::vector<serialization::json::HazelcastJsonValue> peopleUnder21 = idPersonMap.values(query::GreaterLessPredicate<int>("age", 21, false, true));
+    std::vector<HazelcastJsonValue> peopleUnder21 = idPersonMap.values(query::GreaterLessPredicate<int>("age", 21, false, true));
 ```
 
 When running the queries, Hazelcast treats values extracted from the JSON documents as Java types so they
@@ -2764,7 +2764,7 @@ as querying other Hazelcast objects using the ``Predicate``s.
  *
  * The following query finds all the departments that have a person named "Peter" working in them.
  */
-std::vector<serialization::json::HazelcastJsonValue> departmentWithPeter = departments.values(query::EqualPredicate<std::string>("people[any].name", "Peter"));
+std::vector<HazelcastJsonValue> departmentWithPeter = departments.values(query::EqualPredicate<std::string>("people[any].name", "Peter"));
 ```
 
 `HazelcastJsonValue` is a lightweight wrapper around your JSON strings. It is used merely as a way to indicate

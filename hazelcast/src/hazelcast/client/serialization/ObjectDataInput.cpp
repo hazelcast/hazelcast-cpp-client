@@ -24,6 +24,7 @@
 #include "hazelcast/client/serialization/ObjectDataInput.h"
 #include "hazelcast/client/serialization/pimpl/DataInput.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -145,6 +146,17 @@ namespace hazelcast {
                                 }
                             }
                 return result.release();
+            }
+
+            template<>
+            std::auto_ptr<HazelcastJsonValue>
+            ObjectDataInput::readObjectInternal(int32_t typeId, const boost::shared_ptr<SerializerBase> &serializer) {
+                boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
+                        serializer);
+
+                return std::auto_ptr<HazelcastJsonValue>(
+                        getBackwardCompatiblePointer<HazelcastJsonValue>(streamSerializer->read(*this),
+                                                                         (HazelcastJsonValue *) NULL));
             }
         }
     }

@@ -19,7 +19,7 @@
 #include "hazelcast/client/serialization/pimpl/SerializationConstants.h"
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 #include "hazelcast/client/serialization/Portable.h"
-#include "hazelcast/client/serialization/json/HazelcastJsonValue.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
@@ -112,7 +112,7 @@ namespace hazelcast {
                 return pimpl::SerializationConstants::CONSTANT_TYPE_VOID_POINTER;
             }
 
-            int32_t getHazelcastTypeId(const serialization::json::HazelcastJsonValue *object) {
+            int32_t getHazelcastTypeId(const HazelcastJsonValue *object) {
                 return pimpl::SerializationConstants::JAVASCRIPT_JSON_SERIALIZATION_TYPE;
             }
         }

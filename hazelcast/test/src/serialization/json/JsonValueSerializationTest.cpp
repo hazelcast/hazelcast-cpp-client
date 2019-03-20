@@ -16,7 +16,7 @@
 
 #include "ClientTestSupport.h"
 
-#include <hazelcast/client/serialization/json/HazelcastJsonValue.h>
+#include <hazelcast/client/HazelcastJsonValue.h>
 #include <hazelcast/client/serialization/pimpl/SerializationService.h>
 
 namespace hazelcast {
@@ -31,11 +31,11 @@ namespace hazelcast {
             };
 
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
-                serialization::json::HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
+                HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
                 serialization::pimpl::Data jsonData = serializationService.toData(&jsonValue);
-                std::auto_ptr<serialization::json::HazelcastJsonValue> jsonDeserialized(
-                        serializationService.toObject<serialization::json::HazelcastJsonValue>(jsonData));
-                ASSERT_EQ_PTR(jsonValue, jsonDeserialized.get(), serialization::json::HazelcastJsonValue);
+                std::auto_ptr<HazelcastJsonValue> jsonDeserialized(
+                        serializationService.toObject<HazelcastJsonValue>(jsonData));
+                ASSERT_EQ_PTR(jsonValue, jsonDeserialized.get(), HazelcastJsonValue);
             }
         }
     }

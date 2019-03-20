@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/serialization/json/HazelcastJsonValue.h>
+#include <hazelcast/client/HazelcastJsonValue.h>
 #include <hazelcast/client/query/GreaterLessPredicate.h>
 
 
@@ -22,18 +22,18 @@ int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::HazelcastClient hz(config);
 
-    hazelcast::client::IMap<std::string, serialization::json::HazelcastJsonValue> map = hz.getMap<std::string, serialization::json::HazelcastJsonValue>(
+    hazelcast::client::IMap<std::string, HazelcastJsonValue> map = hz.getMap<std::string, HazelcastJsonValue>(
             "map");
 
-    map.put("item1", serialization::json::HazelcastJsonValue("{ \"age\": 4 }"));
-    map.put("item2", serialization::json::HazelcastJsonValue("{ \"age\": 20 }"));
+    map.put("item1", HazelcastJsonValue("{ \"age\": 4 }"));
+    map.put("item2", HazelcastJsonValue("{ \"age\": 20 }"));
 
     // Get the objects whose age is less than 6
-    std::vector<serialization::json::HazelcastJsonValue> result = map.values(
+    std::vector<HazelcastJsonValue> result = map.values(
             query::GreaterLessPredicate<int>("age", 6, false, true));
 
     std::cout << "Retrieved " << result.size() << " values whose age is less than 6." << std::endl;
-    std::cout << "Entry is:" << result[0].toJsonString() << std::endl;
+    std::cout << "Entry is:" << result[0].toString() << std::endl;
 
     std::cout << "Finished" << std::endl;
 

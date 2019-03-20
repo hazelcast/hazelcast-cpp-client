@@ -75,7 +75,7 @@ namespace hazelcast {
                             boost::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
                                 const boost::shared_ptr<V> value = record->getValue();
                                 if (value.get() == NULL) {
-                                    return NearCache<K, V>::NULL_OBJECT;
+                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return value;
                             }
