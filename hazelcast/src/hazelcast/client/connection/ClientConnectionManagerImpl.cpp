@@ -708,9 +708,17 @@ namespace hazelcast {
                     }
                     case protocol::CREDENTIALS_FAILED: {
                         boost::shared_ptr<protocol::Principal> p = connectionManager.principal;
-                        onFailure((exception::ExceptionBuilder<exception::AuthenticationException>(
-                                "ConnectionManager::AuthCallback::onResponse") << "Invalid credentials! Principal: "
-                                                                               << *p).buildShared());
+                        boost::shared_ptr<exception::AuthenticationException> exception;
+                        if (p.get()) {
+                            exception = (exception::ExceptionBuilder<exception::AuthenticationException>(
+                                    "ConnectionManager::AuthCallback::onResponse") << "Invalid credentials! Principal: "
+                                                                                   << *p).buildShared();
+                        } else {
+                            exception.reset(new exception::AuthenticationException(
+                                    "ConnectionManager::AuthCallback::onResponse",
+                                    "Invalid credentials! No principal."));
+                        }
+                        onFailure(exception);
                         break;
                     }
                     default: {
