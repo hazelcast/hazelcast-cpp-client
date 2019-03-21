@@ -206,15 +206,6 @@ namespace hazelcast {
                 ASSERT_OPEN_EVENTUALLY(shutdownLatch);
             }
 
-            TEST_P(ClusterTest, testGroupConfig) {
-                ClientConfig &clientConfig = *const_cast<ParamType &>(GetParam());
-
-                std::auto_ptr<HazelcastServer> instance = startServer(clientConfig);
-
-                clientConfig.setGroupConfig(GroupConfig("dev", "dev-pass"));
-                HazelcastClient client(clientConfig);
-            }
-
             #ifdef HZ_BUILD_WITH_SSL
 
             INSTANTIATE_TEST_CASE_P(All,
