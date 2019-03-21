@@ -29,6 +29,14 @@ namespace hazelcast {
             class ClientAuthenticationTest : public ClientTestSupport {
             };
 
+            TEST_F(ClientAuthenticationTest, testSetGroupConfig) {
+                HazelcastServer instance(*g_srvFactory);
+                ClientConfig config;
+                config.setGroupConfig(GroupConfig("dev", "dev-pass"));
+
+                HazelcastClient client(config);
+            }
+
             TEST_F(ClientAuthenticationTest, testIncorrectGroupName) {
                 HazelcastServer instance(*g_srvFactory);
                 ClientConfig config;
