@@ -37,14 +37,12 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
                 ITopic<std::string> topic;
             };
 
-            ClientTopicTest::ClientTopicTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , topic(client->getTopic<std::string>("ClientTopicTest")) {
+            ClientTopicTest::ClientTopicTest() : instance(*g_srvFactory), client(getNewClient()),
+                                                 topic(client.getTopic<std::string>("ClientTopicTest")) {
             }
 
             class MyMessageListener : public topic::MessageListener<std::string> {

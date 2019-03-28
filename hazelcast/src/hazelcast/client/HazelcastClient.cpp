@@ -31,7 +31,7 @@
 
 namespace hazelcast {
     namespace client {
-        HazelcastClient::HazelcastClient(ClientConfig &config) : clientImpl(
+        HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
                 new impl::HazelcastClientInstanceImpl(config)) {
         }
 

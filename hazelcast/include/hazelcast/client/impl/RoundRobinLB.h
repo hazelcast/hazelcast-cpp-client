@@ -40,6 +40,8 @@ namespace hazelcast {
             public:
                 RoundRobinLB();
 
+                void operator=(const RoundRobinLB &rhs);
+
                 RoundRobinLB(const RoundRobinLB &rhs);
 
                 void init(Cluster &cluster);

@@ -25,7 +25,6 @@
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -39,23 +38,20 @@ namespace hazelcast {
 
             protected:
                 HazelcastServer instance;
-                ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
             };
 
-            ClientTxnSetTest::ClientTxnSetTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()) {
+            ClientTxnSetTest::ClientTxnSetTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
             
             ClientTxnSetTest::~ClientTxnSetTest() {
             }
 
             TEST_F(ClientTxnSetTest, testAddRemove) {
-                ISet<std::string> s = client->getSet<std::string>("testAddRemove");
+                ISet<std::string> s = client.getSet<std::string>("testAddRemove");
                 s.add("item1");
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalSet<std::string> set = context.getSet<std::string>("testAddRemove");
                 ASSERT_TRUE(set.add("item2"));

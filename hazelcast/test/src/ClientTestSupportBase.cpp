@@ -29,14 +29,12 @@ namespace hazelcast {
                 return "hazelcast/test/resources/cpp_client.crt";
             }
 
-            std::auto_ptr<hazelcast::client::ClientConfig> ClientTestSupportBase::getConfig() {
-                std::auto_ptr<hazelcast::client::ClientConfig> clientConfig(new ClientConfig());
-                return clientConfig;
+            hazelcast::client::ClientConfig ClientTestSupportBase::getConfig() {
+                return ClientConfig();
             }
 
-            std::auto_ptr<HazelcastClient> ClientTestSupportBase::getNewClient() {
-                std::auto_ptr<HazelcastClient> result(new HazelcastClient(*getConfig()));
-                return result;
+            HazelcastClient ClientTestSupportBase::getNewClient() {
+                return HazelcastClient(getConfig());
             }
 
             const std::string ClientTestSupportBase::getSslFilePath() {

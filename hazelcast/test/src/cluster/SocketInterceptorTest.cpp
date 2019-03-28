@@ -51,25 +51,25 @@ namespace hazelcast {
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
                 HazelcastServerFactory sslFactory(getSslFilePath());
                 HazelcastServer instance(sslFactory);
-                std::auto_ptr<ClientConfig> config = getConfig();
+                ClientConfig config = getConfig();
                 util::CountDownLatch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);
-                config->setSocketInterceptor(&interceptor);
+                config.setSocketInterceptor(&interceptor);
                 config::SSLConfig sslConfig;
                 sslConfig.setEnabled(true).addVerifyFile(getCAFilePath());
-                config->getNetworkConfig().setSSLConfig(sslConfig);
-                HazelcastClient client(*config);
+                config.getNetworkConfig().setSSLConfig(sslConfig);
+                HazelcastClient client(config);
                 interceptorLatch.await(2);
             }
             #endif
 
             TEST_F(SocketInterceptorTest, interceptBasic) {
                 HazelcastServer instance(*g_srvFactory);
-                std::auto_ptr<ClientConfig> config = getConfig();
+                ClientConfig config = getConfig();
                 util::CountDownLatch interceptorLatch(1);
                 MySocketInterceptor interceptor(interceptorLatch);
-                config->setSocketInterceptor(&interceptor);
-                HazelcastClient client(*config);
+                config.setSocketInterceptor(&interceptor);
+                HazelcastClient client(config);
                 interceptorLatch.await(2);
             }
         }

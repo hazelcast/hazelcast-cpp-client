@@ -399,7 +399,7 @@ namespace hazelcast {
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with
             */
-            HazelcastClient(ClientConfig &config);
+            HazelcastClient(const ClientConfig &config);
 
             /**
              * Returns the name of this Hazelcast instance.

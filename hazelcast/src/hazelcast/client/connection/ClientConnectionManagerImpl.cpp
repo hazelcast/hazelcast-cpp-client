@@ -84,7 +84,8 @@ namespace hazelcast {
 
                 clusterConnectionExecutor = createSingleThreadExecutorService(client);
 
-                shuffleMemberList = client.getClientProperties().getShuffleMemberList().getBoolean();
+                ClientProperties &clientProperties = client.getClientProperties();
+                shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
 
                 ClientConnectionManagerImpl::addressProviders = addressProviders;
 

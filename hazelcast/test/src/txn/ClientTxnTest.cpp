@@ -88,12 +88,12 @@ namespace hazelcast {
             ClientTxnTest::ClientTxnTest()
             : hazelcastInstanceFactory(*g_srvFactory) {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
-                std::auto_ptr<ClientConfig> clientConfig = getConfig();
-                clientConfig->setRedoOperation(true);
+                ClientConfig clientConfig = getConfig();
+                clientConfig.setRedoOperation(true);
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
-                clientConfig->setLoadBalancer(loadBalancer.get());
-                client.reset(new HazelcastClient(*clientConfig));
+                clientConfig.setLoadBalancer(loadBalancer.get());
+                client.reset(new HazelcastClient(clientConfig));
                 second.reset(new HazelcastServer(hazelcastInstanceFactory));
             }
 

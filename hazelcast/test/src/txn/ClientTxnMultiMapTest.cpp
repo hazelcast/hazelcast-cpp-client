@@ -24,7 +24,6 @@
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
-#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
@@ -79,8 +78,7 @@ namespace hazelcast {
                 };
 
                 HazelcastServer instance;
-                ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
             };
 
             ClientTxnMultiMapTest::ClientTxnMultiMapTest()
@@ -91,7 +89,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientTxnMultiMapTest, testRemoveIfExists) {
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalMultiMap<std::string, std::string> multiMap = context.getMultiMap<std::string, std::string>(
                         "testRemoveIfExists");
@@ -109,13 +107,13 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                MultiMap<std::string, std::string> mm = client->getMultiMap<std::string, std::string>(
+                MultiMap<std::string, std::string> mm = client.getMultiMap<std::string, std::string>(
                         "testRemoveIfExists");
                 ASSERT_EQ(2, (int) mm.get(key).size());
             }
 
             TEST_F(ClientTxnMultiMapTest, testPutGetRemove) {
-                MultiMap<std::string, std::string> mm = client->getMultiMap<std::string, std::string>(
+                MultiMap<std::string, std::string> mm = client.getMultiMap<std::string, std::string>(
                         "testPutGetRemove");
                 int n = 10;
                 util::CountDownLatch latch(n);
@@ -124,8 +122,8 @@ namespace hazelcast {
                 for (int i = 0; i < n; i++) {
                     boost::shared_ptr<util::Thread> t(
                             new util::Thread(
-                                    boost::shared_ptr<util::Runnable>(new PutGetRemoveTestTask(*client, mm, latch)),
-                                            getLogger()));
+                                    boost::shared_ptr<util::Runnable>(new PutGetRemoveTestTask(client, mm, latch)),
+                                    getLogger()));
                     t->start();
                     allThreads.push_back(t);
                 }

@@ -171,14 +171,14 @@ namespace hazelcast {
 
                 void createNoNearCacheContext() {
                     clientConfig = getConfig();
-                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
+                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(clientConfig));
                     noNearCacheMap = client->getReplicatedMap<int, std::string>(getTestName());
                 }
 
                 void createNearCacheContext() {
                     nearCachedClientConfig = getConfig();
-                    nearCachedClientConfig->addNearCacheConfig(nearCacheConfig);
-                    nearCachedClient = std::auto_ptr<HazelcastClient>(new HazelcastClient(*nearCachedClientConfig));
+                    nearCachedClientConfig.addNearCacheConfig(nearCacheConfig);
+                    nearCachedClient = std::auto_ptr<HazelcastClient>(new HazelcastClient(nearCachedClientConfig));
                     nearCachedMap = nearCachedClient->getReplicatedMap<int, std::string>(getTestName());
                     spi::ClientContext clientContext(*nearCachedClient);
                     nearCacheManager = &clientContext.getNearCacheManager();
@@ -319,8 +319,8 @@ namespace hazelcast {
                     ASSERT_EQ(0, nearCache->size()) << "Invalidation is not working on putAll()";
                 }
 
-                std::auto_ptr<ClientConfig> clientConfig;
-                std::auto_ptr<ClientConfig> nearCachedClientConfig;
+                ClientConfig clientConfig;
+                ClientConfig nearCachedClientConfig;
                 boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig;
                 std::auto_ptr<HazelcastClient> client;
                 std::auto_ptr<HazelcastClient> nearCachedClient;

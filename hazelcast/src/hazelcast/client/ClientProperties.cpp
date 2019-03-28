@@ -74,64 +74,46 @@ namespace hazelcast {
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS = "hazelcast.client.statistics.period.seconds";
         const std::string ClientProperties::STATISTICS_PERIOD_SECONDS_DEFAULT = "3";
 
-        ClientProperty::ClientProperty(ClientConfig &config, const std::string &name, const std::string &defaultValue)
+        ClientProperty::ClientProperty(const std::string &name, const std::string &defaultValue)
                 : name(name), defaultValue(defaultValue) {
-            if (config.getProperties().count(name) > 0) {
-                value = config.getProperties()[name];
-            } else if (::getenv(name.c_str()) != NULL) {
-                value = std::string(::getenv(name.c_str()));
-            } else {
-                value = defaultValue;
-            }
         }
 
-        std::string ClientProperty::getName() const {
+        const std::string &ClientProperty::getName() const {
             return name;
-        }
-
-        std::string ClientProperty::getValue() const {
-            return value;
-        }
-
-        int ClientProperty::getInteger() const {
-            return get<int>();
-        }
-
-        bool ClientProperty::getBoolean() const {
-            return get<bool>();
-        }
-
-        int64_t ClientProperty::getLong() const {
-            return util::IOUtil::to_value<int64_t>(value);
         }
 
         const std::string &ClientProperty::getDefaultValue() const {
             return defaultValue;
         }
 
-        ClientProperties::ClientProperties(ClientConfig &clientConfig)
-                : heartbeatTimeout(clientConfig, PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT),
-                  heartbeatInterval(clientConfig, PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT),
-                  retryCount(clientConfig, PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
-                  retryWaitTime(clientConfig, PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT),
-                  awsMemberPort(clientConfig, PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT),
-                  cleanResourcesPeriod(clientConfig, CLEAN_RESOURCES_PERIOD_MILLIS,
+        const char *ClientProperty::getSystemProperty() const {
+            return ::getenv(name.c_str());
+        }
+
+        ClientProperties::ClientProperties(const std::map<std::string, std::string> &properties)
+                : heartbeatTimeout(PROP_HEARTBEAT_TIMEOUT, PROP_HEARTBEAT_TIMEOUT_DEFAULT),
+                  heartbeatInterval(PROP_HEARTBEAT_INTERVAL, PROP_HEARTBEAT_INTERVAL_DEFAULT),
+                  retryCount(PROP_REQUEST_RETRY_COUNT, PROP_REQUEST_RETRY_COUNT_DEFAULT),
+                  retryWaitTime(PROP_REQUEST_RETRY_WAIT_TIME, PROP_REQUEST_RETRY_WAIT_TIME_DEFAULT),
+                  awsMemberPort(PROP_AWS_MEMBER_PORT, PROP_AWS_MEMBER_PORT_DEFAULT),
+                  cleanResourcesPeriod(CLEAN_RESOURCES_PERIOD_MILLIS,
                                        CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT),
-                  invocationRetryPauseMillis(clientConfig, INVOCATION_RETRY_PAUSE_MILLIS,
+                  invocationRetryPauseMillis(INVOCATION_RETRY_PAUSE_MILLIS,
                                              INVOCATION_RETRY_PAUSE_MILLIS_DEFAULT),
-                  invocationTimeoutSeconds(clientConfig, INVOCATION_TIMEOUT_SECONDS,
+                  invocationTimeoutSeconds(INVOCATION_TIMEOUT_SECONDS,
                                            INVOCATION_TIMEOUT_SECONDS_DEFAULT),
-                  eventThreadCount(clientConfig, EVENT_THREAD_COUNT, EVENT_THREAD_COUNT_DEFAULT),
-                  eventQueueCapacity(clientConfig, EVENT_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY_DEFAULT),
-                  internalExecutorPoolSize(clientConfig, INTERNAL_EXECUTOR_POOL_SIZE,
+                  eventThreadCount(EVENT_THREAD_COUNT, EVENT_THREAD_COUNT_DEFAULT),
+                  eventQueueCapacity(EVENT_QUEUE_CAPACITY, EVENT_QUEUE_CAPACITY_DEFAULT),
+                  internalExecutorPoolSize(INTERNAL_EXECUTOR_POOL_SIZE,
                                            INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT),
-                  shuffleMemberList(clientConfig, SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT),
-                  maxConcurrentInvocations(clientConfig, MAX_CONCURRENT_INVOCATIONS,
+                  shuffleMemberList(SHUFFLE_MEMBER_LIST, SHUFFLE_MEMBER_LIST_DEFAULT),
+                  maxConcurrentInvocations(MAX_CONCURRENT_INVOCATIONS,
                                            MAX_CONCURRENT_INVOCATIONS_DEFAULT),
-                  backpressureBackoffTimeoutMillis(clientConfig, BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS,
+                  backpressureBackoffTimeoutMillis(BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS,
                                                    BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT),
-                  statisticsEnabled(clientConfig, STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
-                  statisticsPeriodSeconds(clientConfig, STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT) {
+                  statisticsEnabled(STATISTICS_ENABLED, STATISTICS_ENABLED_DEFAULT),
+                  statisticsPeriodSeconds(STATISTICS_PERIOD_SECONDS, STATISTICS_PERIOD_SECONDS_DEFAULT),
+                  propertiesMap(properties) {
         }
 
         const ClientProperty &ClientProperties::getHeartbeatTimeout() const {
@@ -188,6 +170,32 @@ namespace hazelcast {
 
         const ClientProperty &ClientProperties::getStatisticsPeriodSeconds() const {
             return statisticsPeriodSeconds;
+        }
+
+        std::string ClientProperties::getString(const ClientProperty &property) const {
+            std::map<std::string, std::string>::const_iterator valueIt = propertiesMap.find(property.getName());
+            if (valueIt != propertiesMap.end()) {
+                return valueIt->second;
+            }
+
+            const char *value = property.getSystemProperty();
+            if (value != NULL) {
+                return value;
+            }
+
+            return property.getDefaultValue();
+        }
+
+        bool ClientProperties::getBoolean(const ClientProperty &property) const {
+            return util::IOUtil::to_value<bool>(getString(property));
+        }
+
+        int32_t ClientProperties::getInteger(const ClientProperty &property) const {
+            return util::IOUtil::to_value<int32_t>(getString(property));
+        }
+
+        int64_t ClientProperties::getLong(const ClientProperty &property) const {
+            return util::IOUtil::to_value<int64_t>(getString(property));
         }
     }
 }

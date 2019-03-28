@@ -66,42 +66,38 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     #endif
 
-                    clientConfig = getConfig().release();
+                    ClientConfig clientConfig = getConfig();
 
                     #ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
                     sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
                     networkConfig.setSSLConfig(sslConfig);
-                    clientConfig->setNetworkConfig(networkConfig);
+                    clientConfig.setNetworkConfig(networkConfig);
                     #endif // HZ_BUILD_WITH_SSL
 
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(clientConfig);
                     list = new mixedtype::IList(client->toMixedType().getList("MyMixedList"));
                 }
 
                 static void TearDownTestCase() {
                     delete list;
                     delete client;
-                    delete clientConfig;
                     delete instance;
                     delete sslFactory;
 
                     list = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::IList *list;
                 static HazelcastServerFactory *sslFactory;
             };
 
             HazelcastServer *MixedListTest::instance = NULL;
-            ClientConfig *MixedListTest::clientConfig = NULL;
             HazelcastClient *MixedListTest::client = NULL;
             mixedtype::IList *MixedListTest::list = NULL;
             HazelcastServerFactory *MixedListTest::sslFactory = NULL;

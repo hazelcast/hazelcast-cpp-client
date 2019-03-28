@@ -42,22 +42,20 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
             };
 
-            ClientTxnListTest::ClientTxnListTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()) {
+            ClientTxnListTest::ClientTxnListTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
 
             ClientTxnListTest::~ClientTxnListTest() {
             }
 
             TEST_F(ClientTxnListTest, testAddRemove) {
-                IList<std::string> l = client->getList<std::string>("testAddRemove");
+                IList<std::string> l = client.getList<std::string>("testAddRemove");
                 l.add("item1");
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalList<std::string> list = context.getList<std::string>("testAddRemove");
                 ASSERT_TRUE(list.add("item2"));

@@ -35,7 +35,7 @@ namespace hazelcast {
                                                                        int32_t poolSize, util::ILogger &logger)
                         : logger(logger) {
 
-                    int internalPoolSize = clientProperties.getInternalExecutorPoolSize().getInteger();
+                    int internalPoolSize = clientProperties.getInteger(clientProperties.getInternalExecutorPoolSize());
                     if (internalPoolSize <= 0) {
                         internalPoolSize = util::IOUtil::to_value<int>(
                                 ClientProperties::INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT);

@@ -57,11 +57,11 @@ namespace hazelcast {
         namespace impl {
             util::Atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
-            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(ClientConfig &config)
-                    : clientConfig(config), clientProperties(clientConfig), shutdownLatch(1), clientContext(*this),
+            HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
+                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
+                      shutdownLatch(1), clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
-                      transactionManager(clientContext, *clientConfig.getLoadBalancer()),
-                      cluster(clusterService),
+                      transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID), TOPIC_RB_PREFIX("_hz_rb_") {
@@ -80,8 +80,10 @@ namespace hazelcast {
 
                 executionService = initExecutionService();
 
-                int32_t maxAllowedConcurrentInvocations = clientProperties.getMaxConcurrentInvocations().get<int32_t>();
-                int64_t backofftimeoutMs = clientProperties.getBackpressureBackoffTimeoutMillis().get<int64_t>();
+                int32_t maxAllowedConcurrentInvocations = clientProperties.getInteger(
+                        clientProperties.getMaxConcurrentInvocations());
+                int64_t backofftimeoutMs = clientProperties.getLong(
+                        clientProperties.getBackpressureBackoffTimeoutMillis());
                 bool isBackPressureEnabled = maxAllowedConcurrentInvocations != INT32_MAX;
                 callIdSequence = spi::impl::sequence::CallIdFactory::newCallIdSequence(isBackPressureEnabled,
                                                                                        maxAllowedConcurrentInvocations,
@@ -238,8 +240,8 @@ namespace hazelcast {
             }
 
             boost::shared_ptr<spi::ClientListenerService> HazelcastClientInstanceImpl::initListenerService() {
-                int eventQueueCapacity = clientProperties.getEventQueueCapacity().getInteger();
-                int eventThreadCount = clientProperties.getEventThreadCount().getInteger();
+                int eventQueueCapacity = clientProperties.getInteger(clientProperties.getEventQueueCapacity());
+                int eventThreadCount = clientProperties.getInteger(clientProperties.getEventThreadCount());
                 config::ClientNetworkConfig &networkConfig = clientConfig.getNetworkConfig();
                 if (networkConfig.isSmartRouting()) {
                     return boost::shared_ptr<spi::ClientListenerService>(
@@ -302,7 +304,7 @@ namespace hazelcast {
                 std::vector<boost::shared_ptr<connection::AddressProvider> > addressProviders;
 
                 if (awsConfig.isEnabled()) {
-                    int awsMemberPort = clientProperties.getAwsMemberPort().getInteger();
+                    int awsMemberPort = clientProperties.getInteger(clientProperties.getAwsMemberPort());
                     if (awsMemberPort < 0 || awsMemberPort > 65535) {
                         throw (exception::ExceptionBuilder<exception::InvalidConfigurationException>(
                                 "HazelcastClientInstanceImpl::createAddressProviders") << "Configured aws member port "

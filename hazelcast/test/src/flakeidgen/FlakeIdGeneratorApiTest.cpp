@@ -40,21 +40,19 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = getConfig().release();
+                    ClientConfig clientConfig = getConfig();
                     boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> flakeIdConfig(
                             new config::ClientFlakeIdGeneratorConfig("test*"));
                     flakeIdConfig->setPrefetchCount(10).setPrefetchValidityMillis(20000);
-                    clientConfig->addFlakeIdGeneratorConfig(flakeIdConfig);
-                    client = new HazelcastClient(*clientConfig);
+                    clientConfig.addFlakeIdGeneratorConfig(flakeIdConfig);
+                    client = new HazelcastClient(clientConfig);
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
@@ -86,14 +84,12 @@ namespace hazelcast {
                 };
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
 
                 FlakeIdGenerator flakeIdGenerator;
             };
 
             HazelcastServer *FlakeIdGeneratorApiTest::instance = NULL;
-            ClientConfig *FlakeIdGeneratorApiTest::clientConfig = NULL;
             HazelcastClient *FlakeIdGeneratorApiTest::client = NULL;
 
             TEST_F (FlakeIdGeneratorApiTest, testStartingValue) {

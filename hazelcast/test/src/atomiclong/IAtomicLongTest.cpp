@@ -48,7 +48,7 @@ namespace hazelcast {
                 }
 
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
                 std::auto_ptr<IAtomicLong> l;
 
                 static HazelcastServer *instance;
@@ -57,7 +57,7 @@ namespace hazelcast {
             HazelcastServer *IAtomicLongTest::instance = NULL;
 
             IAtomicLongTest::IAtomicLongTest() : client(getNewClient()),
-                                                 l(new IAtomicLong(client->getIAtomicLong(getTestName()))) {
+                                                 l(new IAtomicLong(client.getIAtomicLong(getTestName()))) {
                 l->set(0);
             }
 

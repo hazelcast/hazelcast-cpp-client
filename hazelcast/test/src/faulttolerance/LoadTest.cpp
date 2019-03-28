@@ -40,10 +40,10 @@ namespace hazelcast {
             namespace faulttolerance {
                 class LoadTest : public ClientTestSupport {
                 public:
-                    std::auto_ptr<hazelcast::client::ClientConfig> getLoadTestConfig() {
-                        std::auto_ptr<ClientConfig> config = ClientTestSupport::getConfig();
-                        config->setRedoOperation(true);
-                        config->setLogLevel(FINEST);
+                    hazelcast::client::ClientConfig getLoadTestConfig() {
+                        ClientConfig config = ClientTestSupport::getConfig();
+                        config.setRedoOperation(true);
+                        config.setLogLevel(FINEST);
                         return config;
                     }
 
@@ -147,17 +147,17 @@ namespace hazelcast {
                 }
 
                 TEST_F(LoadTest, DISABLED_testIntMapSmartClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
-                    config->setSmart(true);
+                    ClientConfig config = getLoadTestConfig();
+                    config.setSmart(true);
 
-                    loadIntMapTestWithConfig(*config, *this);
+                    loadIntMapTestWithConfig(config, *this);
                 }
 
                 TEST_F(LoadTest, DISABLED_testIntMapDummyClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
-                    config->setSmart(false);
+                    ClientConfig config = getLoadTestConfig();
+                    config.setSmart(false);
 
-                    loadIntMapTestWithConfig(*config, *this);
+                    loadIntMapTestWithConfig(config, *this);
                 }
             }
         }
