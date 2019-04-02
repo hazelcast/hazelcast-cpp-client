@@ -29,12 +29,14 @@ namespace hazelcast {
         namespace concurrent {
             class HAZELCAST_API ConcurrencyUtil {
             public:
-                static const boost::shared_ptr<util::Executor> CALLER_RUNS;
+                static const boost::shared_ptr<util::Executor> &CALLER_RUNS();
             private:
                 class CallerThreadExecutor : public util::Executor {
                 public:
                     virtual void execute(const boost::shared_ptr<Runnable> &command);
                 };
+
+                static const boost::shared_ptr<util::Executor> callerRunsExecutor;
             };
         }
     }

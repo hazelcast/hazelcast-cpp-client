@@ -130,7 +130,7 @@ namespace hazelcast {
                 futures.push_back(future);
                 future->andThen(boost::shared_ptr<ExecutionCallback<E> >(
                         new PipeliningExecutionCallback(this->shared_from_this())),
-                                util::concurrent::ConcurrencyUtil::CALLER_RUNS);
+                                util::concurrent::ConcurrencyUtil::CALLER_RUNS());
                 return future;
             }
 

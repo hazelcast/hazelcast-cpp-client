@@ -19,8 +19,12 @@
 namespace hazelcast {
     namespace util {
         namespace concurrent {
-            const boost::shared_ptr<util::Executor> ConcurrencyUtil::CALLER_RUNS(
+            const boost::shared_ptr<util::Executor> ConcurrencyUtil::callerRunsExecutor(
                     new ConcurrencyUtil::CallerThreadExecutor);
+
+            const boost::shared_ptr<util::Executor> &ConcurrencyUtil::CALLER_RUNS() {
+                return callerRunsExecutor;
+            }
 
             void ConcurrencyUtil::CallerThreadExecutor::execute(const boost::shared_ptr<Runnable> &command) {
                 command->run();
