@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 #include <stdint.h>
-#include <stdio.h>
 
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/Pipelining.h>
@@ -26,7 +25,7 @@ using namespace hazelcast::util;
 /**
  * A demonstration of the performance impact of using pipeling.
  *
- * For the benchmark we compare simple IMap.get calls with a pipelined approach.
+ * For the benchmark we compare simple IMap::get calls with a pipelined approach.
  */
 
 class PipeliningDemo {
@@ -37,7 +36,7 @@ public:
     void init() {
         char buf[150];
         for (int l = 0; l < keyDomain; l++) {
-            snprintf(buf, 150, "%d", l);
+            hz_snprintf(buf, 150, "%d", l);
             map.put(l, buf);
         }
     }
