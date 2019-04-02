@@ -34,25 +34,16 @@ namespace hazelcast {
                         class StripedIntRunable : public StripedRunnable {
                         public:
                             StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId,
-                                              long expectedTreadId)
-                                    : key(key), latch(latch), threadId(threadId), expectedTreadId(expectedTreadId),
-                                      threadIdSet(true) {}
-
-                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId) : key(key),
-                                                                                                               latch(latch),
-                                                                                                               threadId(
-                                                                                                                    threadId),
-                                                                                                               threadIdSet(
-                                                                                                                    false) {}
+                                              bool controlThread)
+                                    : key(key), latch(latch), threadId(threadId), isControlThread(controlThread) {}
 
                             virtual void run() {
-                                threadId = hazelcast::util::getCurrentThreadId();
-
-                                if (threadIdSet) {
-                                    if (threadId.get() == expectedTreadId) {
+                                if (isControlThread) {
+                                    if (threadId.get() == hazelcast::util::getCurrentThreadId()) {
                                         latch.countDown();
                                     }
                                 } else {
+                                    threadId = hazelcast::util::getCurrentThreadId();
                                     latch.countDown();
                                 }
                             }
@@ -69,8 +60,7 @@ namespace hazelcast {
                             int32_t key;
                             CountDownLatch &latch;
                             Atomic<int64_t> &threadId;
-                            long expectedTreadId;
-                            bool threadIdSet;
+                            bool isControlThread;
                         };
 
                         class ValueReflector : public Callable<int> {
@@ -206,13 +196,13 @@ namespace hazelcast {
                         int32_t key = 5;
                         // the following gets the thread id fr the key
                         executorService.execute(
-                                boost::shared_ptr<StripedRunnable>(new StripedIntRunable(key, latch, threadId)));
+                                boost::shared_ptr<StripedRunnable>(new StripedIntRunable(key, latch, threadId, false)));
                         ASSERT_OPEN_EVENTUALLY(latch);
 
                         CountDownLatch latch2(1);
                         // this makes sure that the execution occured at the same thread as the previous runnable
                         executorService.execute(boost::shared_ptr<StripedRunnable>(
-                                new StripedIntRunable(key, latch2, threadId, threadId.get())));
+                                new StripedIntRunable(key, latch2, threadId, true)));
                         ASSERT_OPEN_EVENTUALLY(latch2);
                     }
 
