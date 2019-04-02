@@ -195,7 +195,7 @@ namespace hazelcast {
 
             void NearCachedClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &key,
                                                                    const serialization::pimpl::Data &value,
-                                                                   int ttlInMillis) {
+                                                                   int64_t ttlInMillis) {
                 try {
                     ClientMapProxy::tryPutTransientInternal(key, value, ttlInMillis);
                     invalidateNearCache(key);
@@ -208,7 +208,7 @@ namespace hazelcast {
             std::auto_ptr<serialization::pimpl::Data>
             NearCachedClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                                           const serialization::pimpl::Data &valueData,
-                                                          int ttlInMillis) {
+                                                          int64_t ttlInMillis) {
                 try {
                     std::auto_ptr<serialization::pimpl::Data> previousValue =
                             ClientMapProxy::putIfAbsentData(keyData, valueData, ttlInMillis);
@@ -249,7 +249,7 @@ namespace hazelcast {
 
             void NearCachedClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
                                                        const serialization::pimpl::Data &valueData,
-                                                       int ttlInMillis) {
+                                                       int64_t ttlInMillis) {
                 try {
                     proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                     invalidateNearCache(keyData);

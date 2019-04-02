@@ -34,51 +34,57 @@ namespace hazelcast {
         namespace test {
             class PipeliningTest : public ClientTestSupport {
             public:
-                PipeliningTest() : map(client->getMap<int, int>(getTestName())) {
-                }
-
-            public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig;
                     client = new HazelcastClient(clientConfig);
+
+                    map = new IMap<int, int>(client->getMap<int, int>(MAP_NAME));
+                    expected = new std::vector<int>;
+                    for (int k = 0; k < MAP_SIZE; ++k) {
+                        int item = rand();
+                        expected->push_back(item);
+                        map->put(k, item);
+                    }
                 }
 
-                static void ShutdownTestCase() {
+                static void TearDownTestCase() {
                     delete instance;
                     instance = NULL;
                     delete client;
                     client = NULL;
+                    delete map;
+                    map = NULL;
+                    delete expected;
+                    expected = NULL;
                 }
 
             protected:
                 void testPipelining(const boost::shared_ptr<Pipelining<int> > &pipelining) {
-                    std::vector<int> expected;
-                    for (int k = 0; k < MAP_SIZE; ++k) {
-                        int item = rand();
-                        expected.push_back(item);
-                        map.put(k, item);
-                    }
-
                     for (int k = 0; k < MAP_SIZE; k++) {
-                        pipelining->add(map.getAsync(k));
+                        pipelining->add(map->getAsync(k));
                     }
 
                     vector<boost::shared_ptr<int> > results = pipelining->results();
-                    ASSERT_EQ(expected.size(), results.size());
+                    ASSERT_EQ(expected->size(), results.size());
                     for (int k = 0; k < MAP_SIZE; ++k) {
-                        ASSERT_EQ_PTR(expected[k], results[k].get(), int);
+                        ASSERT_EQ_PTR((*expected)[k], results[k].get(), int);
                     }
                 }
 
-                IMap<int, int> map;
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
-                static const int MAP_SIZE = 1000;
+                static const char *MAP_NAME;
+                static IMap<int, int> *map;
+                static std::vector<int> *expected;
+                static const int MAP_SIZE = 10000;
             };
 
             HazelcastServer *PipeliningTest::instance = NULL;
             HazelcastClient *PipeliningTest::client = NULL;
+            const char *PipeliningTest::MAP_NAME = "PipeliningTestMap";
+            IMap<int, int> *PipeliningTest::map = NULL;
+            std::vector<int> *PipeliningTest::expected = NULL;
 
             TEST_F(PipeliningTest, testConstructor_whenNegativeDepth) {
                 ASSERT_THROW(Pipelining<string>::create(0), exception::IllegalArgumentException);
@@ -95,8 +101,8 @@ namespace hazelcast {
                 testPipelining(Pipelining<int>::create(1));
             }
 
-            TEST_F(PipeliningTest, testPipeliningFunctionalityDepth10) {
-                testPipelining(Pipelining<int>::create(10));
+            TEST_F(PipeliningTest, testPipeliningFunctionalityDepth100) {
+                testPipelining(Pipelining<int>::create(100));
             }
         }
     }

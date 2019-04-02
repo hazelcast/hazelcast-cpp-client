@@ -20,7 +20,6 @@
 
 #include "hazelcast/client/ICompletableFuture.h"
 #include "hazelcast/util/Preconditions.h"
-#include "hazelcast/util/AtomicInt.h"
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/concurrent/ConcurrencyUtil.h"
 
@@ -152,44 +151,28 @@ namespace hazelcast {
                 const boost::shared_ptr<Pipelining> pipelining;
             };
 
-            Pipelining(int depth) {
-                util::Preconditions::checkPositive(depth, "depth must be positive");
-
-                permits.set(depth);
+            Pipelining(int depth) : permits(util::Preconditions::checkPositive(depth, "depth must be positive")) {
             }
 
+            // TODO: Change with lock-free implementation when atomic is integrated into the library
             void down() {
-                for (;;) {
-                    int current = permits.get();
-                    int update = current - 1;
-                    if (!permits.compareAndSet(current, update)) {
-                        // we failed to cas, so lets try again.
-                        continue;
-                    }
-
-                    while (permits.get() == -1) {
-                        conditionVariable.wait(mutex);
-                    }
-
-                    return;
+                util::LockGuard lockGuard(mutex);
+                while (permits == 0) {
+                    conditionVariable.wait(mutex);
                 }
+                --permits;
             }
 
             void up() {
-                for (;;) {
-                    int current = permits.get();
-                    int update = current + 1;
-                    if (permits.compareAndSet(current, update)) {
-                        if (current == -1) {
-                            conditionVariable.notify_all();
-                        }
-                        return;
-                    }
+                util::LockGuard lockGuard(mutex);
+                if (permits == 0) {
+                    conditionVariable.notify_all();
                 }
+                ++permits;
             }
 
             typedef std::vector<boost::shared_ptr<ICompletableFuture<E> > > FuturesVector;
-            util::AtomicInt permits;
+            int permits;
             std::vector<boost::shared_ptr<ICompletableFuture<E> > > futures;
             util::ConditionVariable conditionVariable;
             util::Mutex mutex;

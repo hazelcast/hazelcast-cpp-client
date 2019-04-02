@@ -239,15 +239,15 @@ namespace hazelcast {
             }
 
             void ClientMapProxy::tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                                   const serialization::pimpl::Data &valueData,
-                                                   int ttlInMillis) {
+                                                         const serialization::pimpl::Data &valueData,
+                                                         int64_t ttlInMillis) {
                 proxy::IMapImpl::tryPut(keyData, valueData, ttlInMillis);
             }
 
             std::auto_ptr<serialization::pimpl::Data>
             ClientMapProxy::putIfAbsentInternal(const serialization::pimpl::Data &keyData,
-                                          const serialization::pimpl::Data &valueData,
-                                          int ttlInMillis) {
+                                                const serialization::pimpl::Data &valueData,
+                                                int64_t ttlInMillis) {
                 return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttlInMillis);
             }
 
@@ -265,8 +265,8 @@ namespace hazelcast {
             }
 
             void ClientMapProxy::setInternal(const serialization::pimpl::Data &keyData,
-                                       const serialization::pimpl::Data &valueData,
-                                       int ttlInMillis) {
+                                             const serialization::pimpl::Data &valueData,
+                                             int64_t ttlInMillis) {
                 proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
             }
 

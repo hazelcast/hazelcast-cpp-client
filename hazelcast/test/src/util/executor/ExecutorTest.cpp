@@ -33,16 +33,16 @@ namespace hazelcast {
                     protected:
                         class StripedIntRunable : public StripedRunnable {
                         public:
-                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<long> &threadId,
+                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId,
                                               long expectedTreadId)
                                     : key(key), latch(latch), threadId(threadId), expectedTreadId(expectedTreadId),
                                       threadIdSet(true) {}
 
-                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<long> &threadId) : key(key),
-                                                                                                            latch(latch),
-                                                                                                            threadId(
+                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId) : key(key),
+                                                                                                               latch(latch),
+                                                                                                               threadId(
                                                                                                                     threadId),
-                                                                                                            threadIdSet(
+                                                                                                               threadIdSet(
                                                                                                                     false) {}
 
                             virtual void run() {
@@ -68,7 +68,7 @@ namespace hazelcast {
                         private:
                             int32_t key;
                             CountDownLatch &latch;
-                            Atomic<long> &threadId;
+                            Atomic<int64_t> &threadId;
                             long expectedTreadId;
                             bool threadIdSet;
                         };
@@ -202,7 +202,7 @@ namespace hazelcast {
                                                                                       numThreads);
 
                         CountDownLatch latch(1);
-                        Atomic<long> threadId(0);
+                        Atomic<int64_t> threadId(0);
                         int32_t key = 5;
                         // the following gets the thread id fr the key
                         executorService.execute(

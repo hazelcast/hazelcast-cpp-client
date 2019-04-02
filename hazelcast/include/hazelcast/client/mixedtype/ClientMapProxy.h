@@ -1047,12 +1047,12 @@ namespace hazelcast {
                                                                               long timeoutInMillis);
 
                 virtual void tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                                     const serialization::pimpl::Data &valueData, int ttlInMillis);
+                                                     const serialization::pimpl::Data &valueData, int64_t ttlInMillis);
 
                 virtual std::auto_ptr<serialization::pimpl::Data>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
-                                    int ttlInMillis);
+                                    int64_t ttlInMillis);
 
                 virtual bool replaceIfSameInternal(const serialization::pimpl::Data &keyData,
                                                    const serialization::pimpl::Data &valueData,
@@ -1064,7 +1064,7 @@ namespace hazelcast {
 
                 virtual void
                 setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                            int ttlInMillis);
+                            int64_t ttlInMillis);
 
                 virtual bool evictInternal(const serialization::pimpl::Data &keyData);
 

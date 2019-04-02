@@ -300,7 +300,7 @@ namespace hazelcast {
                 }
 
                 virtual void tryPutTransientInternal(const serialization::pimpl::Data &key,
-                                                     const serialization::pimpl::Data &value, int ttlInMillis) {
+                                                     const serialization::pimpl::Data &value, int64_t ttlInMillis) {
                     try {
                         ClientMapProxy<K, V>::tryPutTransientInternal(key, value, ttlInMillis);
                         invalidateNearCache(key);
@@ -313,7 +313,7 @@ namespace hazelcast {
                 virtual std::auto_ptr<serialization::pimpl::Data>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
-                                    int ttlInMillis) {
+                                    int64_t ttlInMillis) {
                     try {
                         std::auto_ptr<serialization::pimpl::Data> previousValue =
                                 ClientMapProxy<K, V>::putIfAbsentData(keyData, valueData, ttlInMillis);
@@ -349,7 +349,7 @@ namespace hazelcast {
 
                 virtual void
                 setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                            int ttlInMillis) {
+                            int64_t ttlInMillis) {
                     try {
                         proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                         invalidateNearCache(keyData);
