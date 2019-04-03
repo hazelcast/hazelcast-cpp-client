@@ -40,6 +40,10 @@ namespace hazelcast {
             RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(const_cast<RoundRobinLB &>(rhs).index.get()) {
             }
 
+            void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
+                index.set(const_cast<RoundRobinLB &>(rhs).index.get());
+            }
+
         }
     }
 }

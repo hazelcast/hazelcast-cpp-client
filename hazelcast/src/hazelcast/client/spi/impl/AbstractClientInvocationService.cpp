@@ -32,10 +32,10 @@ namespace hazelcast {
                           connectionManager(NULL),
                           partitionService(client.getPartitionService()),
                           clientListenerService(NULL),
-                          invocationTimeoutMillis(
-                                  client.getClientProperties().getInvocationTimeoutSeconds().getInteger() * 1000),
-                          invocationRetryPauseMillis(
-                                  client.getClientProperties().getInvocationRetryPauseMillis().getLong()),
+                          invocationTimeoutMillis(client.getClientProperties().getInteger(
+                                  client.getClientProperties().getInvocationTimeoutSeconds()) * 1000),
+                          invocationRetryPauseMillis(client.getClientProperties().getLong(
+                                  client.getClientProperties().getInvocationRetryPauseMillis())),
                           responseThread(client.getName() + ".response-", invocationLogger, *this, client) {
                 }
 
@@ -45,7 +45,7 @@ namespace hazelcast {
 
                     responseThread.start();
 
-                    int64_t cleanResourcesMillis = CLEAN_RESOURCES_MILLIS.getLong();
+                    int64_t cleanResourcesMillis = client.getClientProperties().getLong(CLEAN_RESOURCES_MILLIS);
                     if (cleanResourcesMillis <= 0) {
                         cleanResourcesMillis = util::IOUtil::to_value<int64_t>(
                                 CLEAN_RESOURCES_MILLIS.getDefaultValue());

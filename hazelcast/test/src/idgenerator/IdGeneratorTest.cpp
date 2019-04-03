@@ -37,15 +37,14 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
                 std::auto_ptr<IdGenerator> generator;
 
             };
 
             IdGeneratorTest::IdGeneratorTest()
             : instance(*g_srvFactory)
-            , client(getNewClient())
-            , generator(new IdGenerator(client->getIdGenerator("clientIdGenerator"))) {
+            , client(getNewClient()), generator(new IdGenerator(client.getIdGenerator("clientIdGenerator"))) {
             }
 
             TEST_F (IdGeneratorTest, testGenerator) {

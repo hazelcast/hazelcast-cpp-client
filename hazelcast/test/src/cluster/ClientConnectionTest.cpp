@@ -68,26 +68,26 @@ namespace hazelcast {
             TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
                 HazelcastServerFactory sslFactory(getSslFilePath());
                 HazelcastServer instance(sslFactory);
-                std::auto_ptr<ClientConfig> config = getConfig();
-                config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile("abc");
-                ASSERT_THROW(HazelcastClient client(*config), exception::IllegalStateException);
+                ClientConfig config = getConfig();
+                config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile("abc");
+                ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
                 HazelcastServerFactory sslFactory(getSslFilePath());
                 HazelcastServer instance(sslFactory);
 
-                std::auto_ptr<ClientConfig> config = getConfig();
-                config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(
+                ClientConfig config = getConfig();
+                config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList(
                         "HIGH");
-                std::vector<internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(*config);
+                std::vector<internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(config);
 
                 std::string unsupportedCipher = supportedCiphers[0].name;
                 config = getConfig();
-                config->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).
+                config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).
                         setCipherList(std::string("HIGH:!") + unsupportedCipher);
 
-                std::vector<internal::socket::SSLSocket::CipherInfo> newCiphers = getCiphers(*config);
+                std::vector<internal::socket::SSLSocket::CipherInfo> newCiphers = getCiphers(config);
 
                 ASSERT_EQ(supportedCiphers.size() - 1, newCiphers.size());
 

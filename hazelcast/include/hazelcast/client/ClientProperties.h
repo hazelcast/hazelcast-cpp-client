@@ -41,28 +41,21 @@ namespace hazelcast {
         */
         class HAZELCAST_API ClientProperty {
         public:
-            ClientProperty(ClientConfig& config, const std::string& name, const std::string& defaultValue);
+            ClientProperty(const std::string &name, const std::string &defaultValue);
 
-            std::string getName() const;
-
-            std::string getValue() const;
-
-            template <typename T>
-            T get() const {
-                return util::IOUtil::to_value<T>(value);
-            }
-
-            int getInteger() const;
-
-            bool getBoolean() const;
-
-            int64_t getLong() const;
+            const std::string &getName() const;
 
             const std::string &getDefaultValue() const;
 
+            /**
+             * Gets the system environment property value of the property.
+             *
+             * @return the value of the property. NULL if no such environment property exist.
+             */
+            const char *getSystemProperty() const;
+
         private:
             std::string name;
-            std::string value;
             std::string defaultValue;
         };
 
@@ -74,7 +67,7 @@ namespace hazelcast {
         */
         class HAZELCAST_API ClientProperties {
         public:
-            ClientProperties(ClientConfig& clientConfig);
+            ClientProperties(const std::map<std::string, std::string> &properties);
 
             const ClientProperty& getHeartbeatTimeout() const;
 
@@ -244,6 +237,37 @@ namespace hazelcast {
             static const std::string STATISTICS_PERIOD_SECONDS;
             static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;
 
+            /**
+             * Returns the configured boolean value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as bool
+             */
+            bool getBoolean(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured int32_t value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as int32_t
+             */
+            int32_t getInteger(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured int64_t value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as int64_t
+             */
+            int64_t getLong(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured value of a {@link ClientProperty} as std::string.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value
+             */
+            std::string getString(const ClientProperty &property) const;
 
         private:
             ClientProperty heartbeatTimeout;
@@ -262,6 +286,8 @@ namespace hazelcast {
             ClientProperty backpressureBackoffTimeoutMillis;
             ClientProperty statisticsEnabled;
             ClientProperty statisticsPeriodSeconds;
+
+            std::map<std::string, std::string> propertiesMap;
         };
 
     }

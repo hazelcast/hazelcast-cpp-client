@@ -46,6 +46,10 @@ namespace hazelcast {
             }
 
             SynchronizedMap(const SynchronizedMap<K, V, Comparator> &rhs) {
+                *this = rhs;
+            }
+
+            void operator=(const SynchronizedMap<K, V, Comparator> &rhs) {
                 util::LockGuard lg(mapLock);
                 util::LockGuard lgRhs(rhs.mapLock);
                 internalMap = rhs.internalMap;

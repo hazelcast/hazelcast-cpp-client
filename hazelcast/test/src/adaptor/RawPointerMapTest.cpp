@@ -132,13 +132,13 @@ namespace hazelcast {
                         instance2 = new HazelcastServer(*g_srvFactory);
                         #endif
 
-                        clientConfig = getConfig().release();
+                        ClientConfig clientConfig = getConfig();
                         #ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
                         sslConfig.setEnabled(true).setProtocol(config::tlsv1).addVerifyFile(getCAFilePath());
-                        clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
+                        clientConfig.getNetworkConfig().setSSLConfig(sslConfig);
                         #endif // HZ_BUILD_WITH_SSL
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient(clientConfig);
                     }
 
                     static void TearDownTestCase() {
@@ -149,7 +149,6 @@ namespace hazelcast {
                         delete imap;
                         delete legacyMap;
                         delete client;
-                        delete clientConfig;
                         delete instance2;
                         delete instance;
                         delete sslFactory;
@@ -161,7 +160,6 @@ namespace hazelcast {
                         imap = NULL;
                         legacyMap = NULL;
                         client = NULL;
-                        clientConfig = NULL;
                         instance2 = NULL;
                         instance = NULL;
                     }
@@ -178,7 +176,6 @@ namespace hazelcast {
 
                     static HazelcastServer *instance;
                     static HazelcastServer *instance2;
-                    static ClientConfig *clientConfig;
                     static HazelcastClient *client;
                     static client::adaptor::RawPointerMap<std::string, std::string> *imap;
                     static IMap<std::string, std::string> *legacyMap;
@@ -191,7 +188,6 @@ namespace hazelcast {
 
                 HazelcastServer *RawPointerMapTest::instance = NULL;
                 HazelcastServer *RawPointerMapTest::instance2 = NULL;
-                ClientConfig *RawPointerMapTest::clientConfig = NULL;
                 HazelcastClient *RawPointerMapTest::client = NULL;
                 IMap<std::string, std::string> *RawPointerMapTest::legacyMap = NULL;
                 client::adaptor::RawPointerMap<std::string, std::string> *RawPointerMapTest::imap = NULL;

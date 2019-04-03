@@ -37,14 +37,14 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
                 mixedtype::ITopic topic;
             };
 
 
             MixedTopicTest::MixedTopicTest()
                     : instance(*g_srvFactory), client(getNewClient()),
-                      topic(client->toMixedType().getTopic("MixedTopicTest")) {
+                      topic(client.toMixedType().getTopic("MixedTopicTest")) {
             }
 
             class MyMessageListener : public mixedtype::topic::MessageListener {

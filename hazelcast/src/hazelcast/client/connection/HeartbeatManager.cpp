@@ -29,11 +29,11 @@ namespace hazelcast {
             HeartbeatManager::HeartbeatManager(spi::ClientContext &client) : client(client), clientConnectionManager(
                     client.getConnectionManager()), logger(client.getLogger()) {
                 ClientProperties &clientProperties = client.getClientProperties();
-                int timeoutSeconds = clientProperties.getHeartbeatTimeout().getInteger();
+                int timeoutSeconds = clientProperties.getInteger(clientProperties.getHeartbeatTimeout());
                 heartbeatTimeout = timeoutSeconds > 0 ? timeoutSeconds * 1000 : util::IOUtil::to_value<int>(
                         (std::string) ClientProperties::PROP_HEARTBEAT_TIMEOUT_DEFAULT) * 1000;
 
-                int intervalSeconds = clientProperties.getHeartbeatInterval().getInteger();
+                int intervalSeconds = clientProperties.getInteger(clientProperties.getHeartbeatInterval());
                 heartbeatInterval = intervalSeconds > 0 ? intervalSeconds * 1000 : util::IOUtil::to_value<int>(
                         (std::string) ClientProperties::PROP_HEARTBEAT_INTERVAL_DEFAULT) * 1000;
             }

@@ -42,7 +42,7 @@ namespace hazelcast {
                                                                                     clientContext.getClientProperties()),
                                                                             logger(clientContext.getLogger()),
                                                                             periodicStats(*this) {
-                    this->enabled = clientProperties.getStatisticsEnabled().getBoolean();
+                    this->enabled = clientProperties.getBoolean(clientProperties.getStatisticsEnabled());
                 }
 
                 void Statistics::start() {
@@ -50,7 +50,7 @@ namespace hazelcast {
                         return;
                     }
 
-                    int64_t periodSeconds = clientProperties.getStatisticsPeriodSeconds().getLong();
+                    int64_t periodSeconds = clientProperties.getLong(clientProperties.getStatisticsPeriodSeconds());
                     if (periodSeconds <= 0) {
 
                         int64_t defaultValue = util::IOUtil::to_value<int64_t>(

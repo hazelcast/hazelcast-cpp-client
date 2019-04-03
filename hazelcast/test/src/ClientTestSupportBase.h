@@ -56,9 +56,9 @@ namespace hazelcast {
                 static std::string generateKeyOwnedBy(spi::ClientContext &context, const Member &member);
             protected:
 
-                static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
+                static hazelcast::client::ClientConfig getConfig();
 
-                static std::auto_ptr<HazelcastClient> getNewClient();
+                static HazelcastClient getNewClient();
 
                 static const std::string getSslFilePath();
 

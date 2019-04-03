@@ -122,7 +122,7 @@ namespace hazelcast {
                 * Note: ClientConfig will be copied.
                 * @param config client configuration to start the client with
                 */
-                HazelcastClientInstanceImpl(ClientConfig &config);
+                HazelcastClientInstanceImpl(const ClientConfig &config);
 
                 /**
                 * Destructor

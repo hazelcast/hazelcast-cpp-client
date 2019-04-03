@@ -24,8 +24,13 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            AbstractLoadBalancer::AbstractLoadBalancer(AbstractLoadBalancer &rhs) {
-                util::LockGuard lg(rhs.membersLock);
+            AbstractLoadBalancer::AbstractLoadBalancer(const AbstractLoadBalancer &rhs) {
+                *this = rhs;
+            }
+
+            void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
+                util::LockGuard lg(const_cast<util::Mutex &>(rhs.membersLock));
+                util::LockGuard lg2(membersLock);
                 membersRef = rhs.membersRef;
                 cluster = rhs.cluster;
             }

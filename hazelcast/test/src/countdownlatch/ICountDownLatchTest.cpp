@@ -36,14 +36,13 @@ namespace hazelcast {
             protected:
                 HazelcastServer instance;
                 ClientConfig clientConfig;
-                std::auto_ptr<HazelcastClient> client;
+                HazelcastClient client;
                 std::auto_ptr<ICountDownLatch> l;
             };
 
             ICountDownLatchTest::ICountDownLatchTest()
             : instance(*g_srvFactory)
-            , client(getNewClient())
-            , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {
+            , client(getNewClient()), l(new ICountDownLatch(client.getICountDownLatch("ICountDownLatchTest"))) {
             }
 
             ICountDownLatchTest::~ICountDownLatchTest() {

@@ -40,7 +40,9 @@ namespace hazelcast {
             public:
                 AbstractLoadBalancer();
 
-                AbstractLoadBalancer(AbstractLoadBalancer &rhs);
+                AbstractLoadBalancer(const AbstractLoadBalancer &rhs);
+
+                void operator=(const AbstractLoadBalancer &rhs);
 
                 void setMembersRef();
 

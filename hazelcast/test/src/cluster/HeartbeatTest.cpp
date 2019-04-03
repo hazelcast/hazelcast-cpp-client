@@ -31,10 +31,10 @@ namespace hazelcast {
 
             TEST_F(HeartbeatTest, testPing) {
                 HazelcastServer instance(*g_srvFactory);
-                std::auto_ptr<ClientConfig> config = getConfig();
-                config->setProperty("hazelcast_client_heartbeat_interval", "1");
+                ClientConfig config = getConfig();
+                config.setProperty("hazelcast_client_heartbeat_interval", "1");
 
-                HazelcastClient client(*config);
+                HazelcastClient client(config);
 
                 // sleep enough time so that the client ping is sent to the server
                 util::sleep(3);

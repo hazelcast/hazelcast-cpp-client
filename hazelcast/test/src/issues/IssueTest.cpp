@@ -87,11 +87,11 @@ namespace hazelcast {
                 HazelcastServer hz1(*g_srvFactory);
                 HazelcastServer hz2(*g_srvFactory);
 
-                std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->setRedoOperation(true);
-                clientConfig->setSmart(false);
+                ClientConfig clientConfig(getConfig());
+                clientConfig.setRedoOperation(true);
+                clientConfig.setSmart(false);
 
-                HazelcastClient client(*clientConfig);
+                HazelcastClient client(clientConfig);
 
                 client::IMap<int, int> map = client.getMap<int, int>("m");
                 util::StartedThread *thread = NULL;
@@ -111,10 +111,10 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // 2. Start a client
-                std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->setConnectionAttemptLimit(10);
+                ClientConfig clientConfig(getConfig());
+                clientConfig.setConnectionAttemptLimit(10);
 
-                HazelcastClient client(*clientConfig);
+                HazelcastClient client(clientConfig);
 
                 // 3. Get a map
                 IMap<int, int> map = client.getMap<int, int>("IssueTest_map");
@@ -152,8 +152,8 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // start a client
-                std::auto_ptr<ClientConfig> config = getConfig();
-                HazelcastClient client(*config);
+                ClientConfig config = getConfig();
+                HazelcastClient client(config);
 
                 IMap<int, int> map = client.getMap<int, int>("Issue221_test_map");
 
