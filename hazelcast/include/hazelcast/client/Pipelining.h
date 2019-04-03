@@ -48,7 +48,6 @@ namespace hazelcast {
          * to prevent executing these requests. Invocations can be executed before the
          * {@link #results()} is called.
          *
-         * Pipelining can be used by both clients or members.
          *
          * The Pipelining isn't threadsafe. So only a single thread should add requests to
          * the Pipelining and wait for results.
@@ -122,7 +121,7 @@ namespace hazelcast {
              * @return the future added.
              * @throws NullPointerException if future is null.
              */
-            const boost::shared_ptr<ICompletableFuture<E> >
+            const boost::shared_ptr<ICompletableFuture<E> > &
             add(const boost::shared_ptr<ICompletableFuture<E> > &future) {
                 util::Preconditions::checkNotNull<ICompletableFuture<E> >(future, "future can't be null");
 
