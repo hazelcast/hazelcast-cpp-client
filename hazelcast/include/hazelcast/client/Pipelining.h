@@ -143,7 +143,7 @@ namespace hazelcast {
                 }
 
                 virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
-                    pipelining->down();
+                    pipelining->up();
                 }
 
             private:
