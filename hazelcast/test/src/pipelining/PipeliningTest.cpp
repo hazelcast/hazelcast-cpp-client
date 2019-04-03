@@ -36,8 +36,7 @@ namespace hazelcast {
             public:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    ClientConfig clientConfig;
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient(ClientConfig());
 
                     map = new IMap<int, int>(client->getMap<int, int>(MAP_NAME));
                     expected = new std::vector<int>;
