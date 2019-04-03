@@ -52,8 +52,7 @@ namespace hazelcast {
                     for (size_t i = 0; i < numberOfMembers; ++i) {
                         instances.push_back(new HazelcastServer(*factory));
                     }
-                    ClientConfig clientConfig;
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient;
                 }
 
                 static void TearDownTestCase() {

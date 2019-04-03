@@ -1519,10 +1519,7 @@ private:
 };
 
 int main() {
-
-    ClientConfig config;
-    config.addAddress(Address("127.0.0.1", 5701));
-    HazelcastClient client(config);
+    HazelcastClient client;
 
     CommandLineTool testApp(client);
     testApp.start();

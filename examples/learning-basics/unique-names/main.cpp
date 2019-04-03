@@ -20,8 +20,7 @@
 #include <hazelcast/client/IdGenerator.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IdGenerator idGenerator = hz.getIdGenerator("idGenerator");
     std::ostringstream out("somemap");

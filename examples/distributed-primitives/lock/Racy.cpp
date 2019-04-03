@@ -20,8 +20,7 @@
 #include <hazelcast/client/IAtomicLong.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IAtomicLong number1 = hz.getIAtomicLong("number1");
     hazelcast::client::IAtomicLong number2 = hz.getIAtomicLong("number2");

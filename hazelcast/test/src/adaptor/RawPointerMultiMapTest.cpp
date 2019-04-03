@@ -75,9 +75,7 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient;
                         legacy = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
                         mm = new client::adaptor::RawPointerMultiMap<std::string, std::string>(*legacy);
                     }

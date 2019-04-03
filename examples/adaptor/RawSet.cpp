@@ -20,8 +20,7 @@
 #include <hazelcast/client/adaptor/RawPointerSet.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::ISet<std::string> s = hz.getSet<std::string>("set");
     hazelcast::client::adaptor::RawPointerSet<std::string> set(s);

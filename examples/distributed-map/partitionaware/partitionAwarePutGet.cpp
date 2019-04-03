@@ -66,8 +66,7 @@ bool operator<(const PartitionAwareString &lhs, const PartitionAwareString &rhs)
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     PartitionAwareString partitionKey("MyString");
 

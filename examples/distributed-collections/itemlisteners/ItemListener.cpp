@@ -49,8 +49,7 @@ private:
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IQueue<std::string> queue = hz.getQueue<std::string>("queue");
 

@@ -152,8 +152,7 @@ namespace hazelcast {
                 HazelcastServer server(*g_srvFactory);
 
                 // start a client
-                ClientConfig config = getConfig();
-                HazelcastClient client(config);
+                HazelcastClient client(getConfig());
 
                 IMap<int, int> map = client.getMap<int, int>("Issue221_test_map");
 

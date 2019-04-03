@@ -134,31 +134,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient;
                     mm = new mixedtype::MultiMap(client->toMixedType().getMultiMap("MixedMultimapTestMap"));
                 }
 
                 static void TearDownTestCase() {
                     delete mm;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     mm = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::MultiMap *mm;
             };
 
             HazelcastServer *MixedMultiMapTest::instance = NULL;
-            ClientConfig *MixedMultiMapTest::clientConfig = NULL;
             HazelcastClient *MixedMultiMapTest::client = NULL;
             mixedtype::MultiMap *MixedMultiMapTest::mm = NULL;
 

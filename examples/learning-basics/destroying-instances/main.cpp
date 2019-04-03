@@ -19,8 +19,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IQueue<std::string> q1 = hz.getQueue<std::string>("q");
     hazelcast::client::IQueue<std::string> q2 = hz.getQueue<std::string>("q");

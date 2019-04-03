@@ -39,32 +39,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     q = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
                 }
 
                 static void TearDownTestCase() {
                     delete q;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     q = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static IQueue<std::string> *q;
             };
             
             HazelcastServer *ClientQueueTest::instance = NULL;
-            ClientConfig *ClientQueueTest::clientConfig = NULL;
             HazelcastClient *ClientQueueTest::client = NULL;
             IQueue<std::string> *ClientQueueTest::q = NULL;
 

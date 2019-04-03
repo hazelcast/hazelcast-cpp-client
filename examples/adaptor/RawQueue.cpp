@@ -20,8 +20,7 @@
 #include <hazelcast/client/adaptor/RawPointerQueue.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IQueue<std::string> q = hz.getQueue<std::string>("queue");
     hazelcast::client::adaptor::RawPointerQueue<std::string> queue(q);

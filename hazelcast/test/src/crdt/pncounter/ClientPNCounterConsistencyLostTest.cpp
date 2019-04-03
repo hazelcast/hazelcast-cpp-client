@@ -59,8 +59,7 @@ namespace hazelcast {
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
-                        ClientConfig clientConfig;
-                        HazelcastClient client(clientConfig);
+                        HazelcastClient client;
 
                         boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
@@ -81,8 +80,7 @@ namespace hazelcast {
                         HazelcastServer instance(factory);
                         HazelcastServer instance2(factory);
 
-                        ClientConfig clientConfig;
-                        HazelcastClient client(clientConfig);
+                        HazelcastClient client;
 
                         boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());

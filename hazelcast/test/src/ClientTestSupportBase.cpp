@@ -15,6 +15,7 @@
  */
 
 #include "ClientTestSupportBase.h"
+#include "HazelcastServerFactory.h"
 
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
@@ -30,7 +31,9 @@ namespace hazelcast {
             }
 
             hazelcast::client::ClientConfig ClientTestSupportBase::getConfig() {
-                return ClientConfig();
+                ClientConfig clientConfig;
+                clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                return clientConfig;
             }
 
             HazelcastClient ClientTestSupportBase::getNewClient() {

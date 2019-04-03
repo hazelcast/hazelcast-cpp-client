@@ -20,8 +20,7 @@
 #include <hazelcast/client/adaptor/RawPointerList.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IList<std::string> l = hz.getList<std::string>("list");
     hazelcast::client::adaptor::RawPointerList<std::string> list(l);

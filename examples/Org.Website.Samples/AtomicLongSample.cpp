@@ -18,8 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get an Atomic Counter, we'll call it "counter"
     IAtomicLong counter = hz.getIAtomicLong("counter");
     // Add and Get the "counter"

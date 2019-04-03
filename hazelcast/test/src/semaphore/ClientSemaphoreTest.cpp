@@ -40,28 +40,22 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
             };
 
             HazelcastServer *ClientSemaphoreTest::instance = NULL;
-            ClientConfig *ClientSemaphoreTest::clientConfig = NULL;
             HazelcastClient *ClientSemaphoreTest::client = NULL;
 
             void testAcquireThread(util::ThreadArgs& args) {

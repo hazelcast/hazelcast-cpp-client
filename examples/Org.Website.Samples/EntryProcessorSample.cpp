@@ -36,8 +36,7 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get the Distributed Map from Cluster.
     IMap<std::string, int> map = hz.getMap<std::string, int>("my-distributed-map");
     // Put the integer value of 0 into the Distributed Map

@@ -77,8 +77,7 @@ int main() {
 
     hazelcast::client::Cluster *clusterPtr = NULL;
     try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+        hazelcast::client::HazelcastClient hz;
 
         hazelcast::client::Cluster &cluster = hz.getCluster();
         clusterPtr = &cluster;

@@ -18,8 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get the Distributed Set from Cluster.
     ISet<std::string> set = hz.getSet<std::string>("my-distributed-set");
     // Add items to the set with duplicates

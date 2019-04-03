@@ -18,8 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get the Distributed MultiMap from Cluster.
     MultiMap<std::string, std::string> multiMap = hz.getMultiMap<std::string, std::string>("my-distributed-multimap");
     // Put values in the map against the same key

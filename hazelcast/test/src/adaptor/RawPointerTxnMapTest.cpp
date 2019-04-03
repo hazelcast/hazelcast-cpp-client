@@ -36,28 +36,22 @@ namespace hazelcast {
             protected:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
             };
 
             HazelcastServer *RawPointerClientTxnMapTest::instance = NULL;
-            ClientConfig *RawPointerClientTxnMapTest::clientConfig = NULL;
             HazelcastClient *RawPointerClientTxnMapTest::client = NULL;
 
             TEST_F(RawPointerClientTxnMapTest, testPutGet) {

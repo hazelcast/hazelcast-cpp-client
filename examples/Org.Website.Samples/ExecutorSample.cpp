@@ -114,8 +114,7 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get the Distributed Executor Service
     boost::shared_ptr<IExecutorService> ex = hz.getExecutorService("my-distributed-executor");
     // Submit the MessagePrinter Runnable to a random Hazelcast Cluster Member

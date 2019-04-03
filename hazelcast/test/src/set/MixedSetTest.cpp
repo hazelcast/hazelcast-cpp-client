@@ -56,20 +56,17 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient;
                     set = new mixedtype::ISet(client->toMixedType().getSet("MySet"));
                 }
 
                 static void TearDownTestCase() {
                     delete set;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     set = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
@@ -85,13 +82,11 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static  mixedtype::ISet *set;
             };
 
             HazelcastServer *MixedSetTest::instance = NULL;
-            ClientConfig *MixedSetTest::clientConfig = NULL;
             HazelcastClient *MixedSetTest::client = NULL;
              mixedtype::ISet *MixedSetTest::set = NULL;
 

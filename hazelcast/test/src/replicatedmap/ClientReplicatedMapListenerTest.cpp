@@ -84,36 +84,30 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance1 = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
-                    client2 = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
+                    client2 = new HazelcastClient(getConfig());
                 }
 
                 static void TearDownTestCase() {
                     delete client;
                     delete client2;
-                    delete clientConfig;
                     delete instance1;
                     delete instance2;
 
                     client = NULL;
                     client2 = NULL;
-                    clientConfig = NULL;
                     instance1 = NULL;
                     instance2 = NULL;
                 }
 
                 static HazelcastServer *instance1;
                 static HazelcastServer *instance2;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static HazelcastClient *client2;
             };
 
             HazelcastServer *ClientReplicatedMapListenerTest::instance1 = NULL;
             HazelcastServer *ClientReplicatedMapListenerTest::instance2 = NULL;
-            ClientConfig *ClientReplicatedMapListenerTest::clientConfig = NULL;
             HazelcastClient *ClientReplicatedMapListenerTest::client = NULL;
             HazelcastClient *ClientReplicatedMapListenerTest::client2 = NULL;
 

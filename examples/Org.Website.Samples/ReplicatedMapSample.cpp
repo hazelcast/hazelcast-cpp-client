@@ -18,8 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get a Replicated Map called "my-replicated-map"
     boost::shared_ptr<ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>("my-replicated-map");
     // Add items to the set with duplicates

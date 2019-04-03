@@ -41,37 +41,32 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient;
                     q = new mixedtype::IQueue(client->toMixedType().getQueue("MyQueue"));
                 }
 
                 static void TearDownTestCase() {
                     delete q;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     q = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static void testOfferPollThread2(util::ThreadArgs &args) {
-                    mixedtype::IQueue *q = (mixedtype::IQueue *) args.arg0;
+                    mixedtype::IQueue *queue = (mixedtype::IQueue *) args.arg0;
                     util::sleep(2);
-                    q->offer<std::string>("item1");
+                    queue->offer<std::string>("item1");
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::IQueue *q;
             };
             
             HazelcastServer *MixedQueueTest::instance = NULL;
-            ClientConfig *MixedQueueTest::clientConfig = NULL;
             HazelcastClient *MixedQueueTest::client = NULL;
             mixedtype::IQueue *MixedQueueTest::q = NULL;
 

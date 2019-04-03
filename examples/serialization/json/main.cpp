@@ -19,8 +19,7 @@
 
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<std::string, HazelcastJsonValue> map = hz.getMap<std::string, HazelcastJsonValue>(
             "map");

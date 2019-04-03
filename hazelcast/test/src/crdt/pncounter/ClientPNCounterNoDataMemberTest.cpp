@@ -37,8 +37,7 @@ namespace hazelcast {
                         HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-lite-member.xml");
                         HazelcastServer instance(factory);
 
-                        ClientConfig clientConfig;
-                        HazelcastClient client(clientConfig);
+                        HazelcastClient client;
 
                         boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());

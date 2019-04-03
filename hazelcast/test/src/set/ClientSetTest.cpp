@@ -55,21 +55,17 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     set = new ISet<std::string>(client->getSet<std::string>("MySet"));
                 }
 
                 static void TearDownTestCase() {
                     delete set;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     set = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
@@ -85,13 +81,11 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static ISet<std::string> *set;
             };
 
             HazelcastServer *ClientSetTest::instance = NULL;
-            ClientConfig *ClientSetTest::clientConfig = NULL;
             HazelcastClient *ClientSetTest::client = NULL;
             ISet<std::string> *ClientSetTest::set = NULL;
 
