@@ -152,7 +152,7 @@ namespace hazelcast {
                     private:
                         void updateStats(int updateIntervalCount, int &getCount, int &putCount, int &removeCount) const {
                             if ((getCount + putCount + removeCount) % updateIntervalCount == 0) {
-                                int current = stats.getCount;
+                                int64_t current = stats.getCount;
                                 stats.getCount = current + getCount;
                                 getCount = 0;
 

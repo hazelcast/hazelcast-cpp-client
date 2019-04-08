@@ -1262,14 +1262,14 @@ namespace hazelcast {
                 }
 
                 virtual void tryPutTransientInternal(const serialization::pimpl::Data &keyData,
-                                                     const serialization::pimpl::Data &valueData, int ttlInMillis) {
+                                                     const serialization::pimpl::Data &valueData, int64_t ttlInMillis) {
                     proxy::IMapImpl::putTransient(keyData, valueData, ttlInMillis);
                 }
 
                 virtual std::auto_ptr<serialization::pimpl::Data>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
-                                    int ttlInMillis) {
+                                    int64_t ttlInMillis) {
                     return proxy::IMapImpl::putIfAbsentData(keyData, valueData, ttlInMillis);
                 }
 
@@ -1288,7 +1288,7 @@ namespace hazelcast {
 
                 virtual void
                 setInternal(const serialization::pimpl::Data &keyData, const serialization::pimpl::Data &valueData,
-                            int ttlInMillis) {
+                            int64_t ttlInMillis) {
                     proxy::IMapImpl::set(keyData, valueData, ttlInMillis);
                 }
 

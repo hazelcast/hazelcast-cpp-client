@@ -25,6 +25,8 @@ namespace hazelcast {
     namespace util {
         class HAZELCAST_API Executor {
         public:
+            virtual ~Executor();
+
             virtual void execute(const boost::shared_ptr<Runnable> &command) = 0;
         };
 

@@ -310,6 +310,8 @@ namespace hazelcast {
             return boost::shared_ptr<ExecutorService>(new impl::SimpleExecutorService(logger, name, 1));
         }
 
+        Executor::~Executor() {
+        }
     }
 }
 
