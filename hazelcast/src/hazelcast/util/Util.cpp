@@ -207,7 +207,7 @@ namespace hazelcast {
             if (x >> 24 == 0) { n +=  8; x <<=  8; }
             if (x >> 28 == 0) { n +=  4; x <<=  4; }
             if (x >> 30 == 0) { n +=  2; x <<=  2; }
-            n -= x >> 31;
+            n -= (int) (x >> 31);
             return n;
         }
     }

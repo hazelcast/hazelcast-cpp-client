@@ -103,6 +103,7 @@
           * [7.8.2.3. Near Cache Eviction](#7823-near-cache-eviction)
           * [7.8.2.4. Near Cache Expiration](#7824-near-cache-expiration)
           * [7.8.2.5. Near Cache Invalidation](#7825-near-cache-invalidation)
+      * [7.8.3. Pipelining](#783-pipelining)          
   * [7.9. Monitoring and Logging](#79-monitoring-and-logging)
       * [7.9.1. Enabling Client Statistics](#791-enabling-client-statistics)
       * [7.9.2. Logging Configuration](#792-logging-configuration)
@@ -2974,6 +2975,54 @@ The actual expiration is performed when a record is accessed: it is checked if t
 #### 7.8.2.5. Near Cache Invalidation
 
 Invalidation is the process of removing an entry from the Near Cache when its value is updated or it is removed from the original map (to prevent stale reads). See the [Near Cache Invalidation section](https://docs.hazelcast.org/docs/latest/manual/html-single/#near-cache-invalidation) in the Hazelcast IMDG Reference Manual.
+
+### 7.8.3. Pipelining
+
+With the pipelining, you can send multiple
+requests in parallel using a single thread  and therefore can increase throughput. 
+As an example, suppose that the round trip time for a request/response
+is 1 millisecond. If synchronous requests are used, e.g., `IMap::get()`, then the maximum throughput out of these requests from
+a single thread is 1/001 = 1000 operations/second. One way to solve this problem is to introduce multithreading to make
+the requests in parallel. For the same example, if we would use 2 threads, then the maximum throughput doubles from 1000
+operations/second, to 2000 operations/second.
+
+However, introducing threads for the sake of executing requests isn't always convenient and doesn't always lead to an optimal
+performance; this is where the `pipelining` can be used. Instead of using multiple threads to have concurrent invocations,
+you can use asynchronous method calls such as `IMap::getAsync()`. If you would use 2 asynchronous calls from a single thread,
+then the maximum throughput is 2*(1/001) = 2000 operations/second. Therefore, to benefit from the pipelining, asynchronous calls need to
+be made from a single thread. The pipelining is a convenience implementation to provide back pressure, i.e., controlling
+the number of inflight operations, and it provides a convenient way to wait for all the results.
+
+```C++
+            boost::shared_ptr<Pipelining<std::string> > pipelining = Pipelining<std::string>::create(depth);
+            for (int k = 0; k < 100; ++k) {
+                int key = rand() % keyDomain;
+                pipelining->add(map.getAsync(key));
+            }
+
+            // wait for completion
+            std::vector<boost::shared_ptr<std::string> > results = pipelining->results();
+```
+
+In the above example, we make 100 asynchronous `map.getAsync()` calls, but the maximum number of inflight calls is 10.
+
+By increasing the debt of the pipelining, throughput can be increased. The pipelining has its own back pressure, you do not
+need to enable the [Client BackPressure section](#733-client-backpressure) on the client or member to have this feature on the pipelining. However, if you have many
+pipelines, you may still need to enable the client/member back pressure because it is possible to overwhelm the system
+with requests in that situation. See the [Client BackPressure section](#733-client-backpressure) to learn how to enable it on the client or member.
+
+You do not need a special configuration, it works out-of-the-box.
+
+The pipelining can be used for any asynchronous call. You can use it for IMap asynchronous get/put methods as well as for
+IAtomicLong, etc. It cannot be used as a transaction mechanism though. So you cannot do some calls and throw away the pipeline and expect that
+none of the requests are executed. The pipelining is just a performance optimization, not a mechanism for atomic behavior.
+
+The pipelines are cheap and should frequently be replaced because they accumulate results. It is fine to have a few hundred or
+even a few thousand calls being processed with the pipelining. However, all the responses to all requests are stored in the pipeline
+as long as the pipeline is referenced. So if you want to process a huge number of requests, then every few hundred or few
+thousand calls wait for the pipelining results and just create a new instance.
+
+Note that the pipelines are not thread-safe. They must be used by a single thread.
 
 ## 7.9. Monitoring and Logging
 

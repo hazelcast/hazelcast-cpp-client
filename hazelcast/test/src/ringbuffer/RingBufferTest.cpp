@@ -61,7 +61,7 @@ namespace hazelcast {
                                 clientRingbuffer->readOne(0);
                             } catch (exception::InterruptedException &e) {
                                 std::cerr << e;
-                            } catch (exception::StaleSequenceException &e) {
+                            } catch (exception::StaleSequenceException &) {
                                 latch->countDown();
                             }
                         }
