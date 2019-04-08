@@ -90,38 +90,30 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig;
-                    SerializationConfig &serializationConfig = clientConfig->getSerializationConfig();
+                    ClientConfig clientConfig = getConfig();
+                    SerializationConfig &serializationConfig = clientConfig.getSerializationConfig();
                     serializationConfig.addDataSerializableFactory(666,
                                                                    boost::shared_ptr<serialization::DataSerializableFactory>(
                                                                            new PolymorphicDataSerializableFactory()));
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(clientConfig);
                     rb = client->getRingbuffer<BaseDataSerializable>("rb-1");
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static boost::shared_ptr<Ringbuffer<BaseDataSerializable> > rb;
-
-                static const int64_t CAPACITY;
             };
 
-            const int64_t PolymorphicDataSerializableRingbufferTest::CAPACITY = 10;
 
             HazelcastServer *PolymorphicDataSerializableRingbufferTest::instance = NULL;
-            ClientConfig *PolymorphicDataSerializableRingbufferTest::clientConfig = NULL;
             HazelcastClient *PolymorphicDataSerializableRingbufferTest::client = NULL;
             boost::shared_ptr<Ringbuffer<PolymorphicDataSerializableRingbufferTest::BaseDataSerializable> > PolymorphicDataSerializableRingbufferTest::rb;
 

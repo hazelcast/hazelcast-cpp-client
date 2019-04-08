@@ -18,8 +18,7 @@
 using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get a Blocking Queue called "my-distributed-queue"
     IQueue<std::string> queue = hz.getQueue<std::string>("my-distributed-queue");
     // Offer a String into the Distributed Queue

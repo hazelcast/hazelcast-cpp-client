@@ -26,8 +26,7 @@ public:
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::ITopic<std::string> topic = hz.getTopic<std::string>("testtopic");
     MyTopicListener listener;

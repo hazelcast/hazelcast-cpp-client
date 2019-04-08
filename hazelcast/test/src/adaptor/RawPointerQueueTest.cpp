@@ -59,9 +59,7 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient(getConfig());
                         legacy = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
                         q = new client::adaptor::RawPointerQueue<std::string>(*legacy);
                     }
@@ -70,25 +68,21 @@ namespace hazelcast {
                         delete q;
                         delete legacy;
                         delete client;
-                        delete clientConfig;
                         delete instance;
 
                         q = NULL;
                         legacy = NULL;
                         client = NULL;
-                        clientConfig = NULL;
                         instance = NULL;
                     }
 
                     static HazelcastServer *instance;
-                    static ClientConfig *clientConfig;
                     static HazelcastClient *client;
                     static IQueue<std::string> *legacy;
                     static client::adaptor::RawPointerQueue<std::string> *q;
                 };
 
                 HazelcastServer *RawPointerQueueTest::instance = NULL;
-                ClientConfig *RawPointerQueueTest::clientConfig = NULL;
                 HazelcastClient *RawPointerQueueTest::client = NULL;
                 IQueue<std::string> *RawPointerQueueTest::legacy = NULL;
                 client::adaptor::RawPointerQueue<std::string> *RawPointerQueueTest::q = NULL;

@@ -18,8 +18,7 @@
 #include <hazelcast/client/FlakeIdGenerator.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::FlakeIdGenerator generator = hz.getFlakeIdGenerator("flakeIdGenerator");
     for (int i = 0; i < 10000; ++i) {

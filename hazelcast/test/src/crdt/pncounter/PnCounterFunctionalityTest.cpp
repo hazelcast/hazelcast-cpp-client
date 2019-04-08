@@ -37,17 +37,14 @@ namespace hazelcast {
                     public:
                         static void SetUpTestCase() {
                             instance = new HazelcastServer(*g_srvFactory);
-                            clientConfig = new ClientConfig();
-                            client = new HazelcastClient(*clientConfig);
+                            client = new HazelcastClient;
                         }
 
                         static void TearDownTestCase() {
                             delete client;
-                            delete clientConfig;
                             delete instance;
 
                             client = NULL;
-                            clientConfig = NULL;
                             instance = NULL;
                         }
 
@@ -81,12 +78,10 @@ namespace hazelcast {
                         };
 
                         static HazelcastServer *instance;
-                        static ClientConfig *clientConfig;
                         static HazelcastClient *client;
                     };
 
                     HazelcastServer *PnCounterFunctionalityTest::instance = NULL;
-                    ClientConfig *PnCounterFunctionalityTest::clientConfig = NULL;
                     HazelcastClient *PnCounterFunctionalityTest::client = NULL;
 
                     TEST_F(PnCounterFunctionalityTest, testSimpleReplication) {

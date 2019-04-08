@@ -39,32 +39,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     l = new ILock(client->getILock("MyLock"));
                 }
 
                 static void TearDownTestCase() {
                     delete l;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     l = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static ILock *l;
             };
 
             HazelcastServer *ClientLockTest::instance = NULL;
-            ClientConfig *ClientLockTest::clientConfig = NULL;
             HazelcastClient *ClientLockTest::client = NULL;
             ILock *ClientLockTest::l = NULL;
 

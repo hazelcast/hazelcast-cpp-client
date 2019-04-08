@@ -20,8 +20,7 @@
 #include <hazelcast/client/adaptor/RawPointerTransactionalMap.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::TransactionContext txCtxt = hz.newTransactionContext();
 

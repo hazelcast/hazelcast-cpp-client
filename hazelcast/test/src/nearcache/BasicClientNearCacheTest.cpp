@@ -170,8 +170,7 @@ namespace hazelcast {
                 }
 
                 void createNoNearCacheContext() {
-                    clientConfig = getConfig();
-                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(clientConfig));
+                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(getConfig()));
                     noNearCacheMap = std::auto_ptr<IMap<int, std::string> >(
                             new IMap<int, std::string>(client->getMap<int, std::string>(getTestName())));
                 }

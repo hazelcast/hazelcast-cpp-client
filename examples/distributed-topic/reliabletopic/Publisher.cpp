@@ -19,8 +19,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 void publishWithDefaultConfig() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
 
     boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>("MyReliableTopic");
     std::string message("My first message");

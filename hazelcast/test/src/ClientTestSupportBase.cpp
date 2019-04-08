@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
 #include "ClientTestSupportBase.h"
 
 #include <hazelcast/client/ClientConfig.h>
@@ -30,7 +36,9 @@ namespace hazelcast {
             }
 
             hazelcast::client::ClientConfig ClientTestSupportBase::getConfig() {
-                return ClientConfig();
+                ClientConfig clientConfig;
+                clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
+                return clientConfig;
             }
 
             HazelcastClient ClientTestSupportBase::getNewClient() {

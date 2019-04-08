@@ -395,6 +395,11 @@ namespace hazelcast {
             friend class spi::ClientContext;
         public:
             /**
+            * Constructs a hazelcastClient with default configurations.
+            */
+            HazelcastClient();
+            
+            /**
             * Constructs a hazelcastClient with given ClientConfig.
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with

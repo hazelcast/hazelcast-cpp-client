@@ -70,8 +70,7 @@ private:
 };
 
 void listenWithDefaultConfig() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
 
     std::string topicName("MyReliableTopic");
     boost::shared_ptr<hazelcast::client::ReliableTopic<std::string> > topic = client.getReliableTopic<std::string>(topicName);

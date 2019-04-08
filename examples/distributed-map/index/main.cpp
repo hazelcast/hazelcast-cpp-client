@@ -81,8 +81,7 @@ private:
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<std::string, Person> map =
             hz.getMap<std::string, Person>("personsWithIndex");

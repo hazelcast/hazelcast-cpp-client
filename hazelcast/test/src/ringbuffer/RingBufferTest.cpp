@@ -80,10 +80,8 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        ClientConfig clientConfig;
-                        clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(clientConfig);
-                        client2 = new HazelcastClient(clientConfig);
+                        client = new HazelcastClient(getConfig());
+                        client2 = new HazelcastClient(getConfig());
                     }
 
                     static void TearDownTestCase() {

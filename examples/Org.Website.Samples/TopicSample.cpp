@@ -26,8 +26,7 @@ public:
 
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
-    ClientConfig clientConfig;
-    HazelcastClient hz(clientConfig);
+    HazelcastClient hz;
     // Get a Topic called "my-distributed-topic"
     ITopic<std::string> topic = hz.getTopic<std::string>("my-distributed-topic");
     // Add a Listener to the Topic

@@ -240,9 +240,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     mixedMap = new mixedtype::IMap(client->toMixedType().getMap("MyMap"));
 
                     ClientConfig config;
@@ -281,7 +279,6 @@ namespace hazelcast {
                     delete imapCustom;
                     delete client;
                     delete client2;
-                    delete clientConfig;
                     delete instance2;
                     delete instance;
 
@@ -294,14 +291,12 @@ namespace hazelcast {
                     imapCustom = NULL;
                     client = NULL;
                     client2 = NULL;
-                    clientConfig = NULL;
                     instance2 = NULL;
                     instance = NULL;
                 }
                 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static mixedtype::IMap *mixedMap;
                 static HazelcastClient *client2;
@@ -315,7 +310,6 @@ namespace hazelcast {
 
             HazelcastServer *MixedMapTest::instance = NULL;
             HazelcastServer *MixedMapTest::instance2 = NULL;
-            ClientConfig *MixedMapTest::clientConfig = NULL;
             HazelcastClient *MixedMapTest::client = NULL;
             mixedtype::IMap *MixedMapTest::mixedMap = NULL;
             HazelcastClient *MixedMapTest::client2 = NULL;

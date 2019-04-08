@@ -23,8 +23,7 @@
 #include <hazelcast/client/IdGenerator.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IdGenerator generator = hz.getIdGenerator("idGenerator");
     for (int i = 0; i < 10000; ++i) {

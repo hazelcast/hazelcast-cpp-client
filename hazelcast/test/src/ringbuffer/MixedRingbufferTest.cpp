@@ -42,8 +42,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    ClientConfig clientConfig;
-                    client = new HazelcastClient(clientConfig);
+                    client = new HazelcastClient;
                 }
 
                 static void TearDownTestCase() {

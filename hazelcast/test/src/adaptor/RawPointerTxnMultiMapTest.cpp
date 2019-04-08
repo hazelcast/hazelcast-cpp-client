@@ -36,9 +36,7 @@ namespace hazelcast {
                 protected:
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient(getConfig());
                     }
 
                     static void TearDownTestCase() {

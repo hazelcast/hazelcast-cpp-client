@@ -45,37 +45,32 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     instance2 = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    clientConfig->getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
-                    client = new HazelcastClient(*clientConfig);
+                    ClientConfig clientConfig(getConfig());
+                    clientConfig.getProperties()[ClientProperties::PROP_HEARTBEAT_TIMEOUT] = "20";
+                    client = new HazelcastClient(clientConfig);
                     imap = new IMap<int, int>(client->getMap<int, int>("IntMap"));
                 }
 
                 static void TearDownTestCase() {
                     delete imap;
                     delete client;
-                    delete clientConfig;
                     delete instance2;
                     delete instance;
 
                     imap = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance2 = NULL;
                     instance = NULL;
                 }
                 
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static IMap<int, int> *imap;
             };
 
             HazelcastServer *ClientExpirationListenerTest::instance = NULL;
             HazelcastServer *ClientExpirationListenerTest::instance2 = NULL;
-            ClientConfig *ClientExpirationListenerTest::clientConfig = NULL;
             HazelcastClient *ClientExpirationListenerTest::client = NULL;
             IMap<int, int> *ClientExpirationListenerTest::imap = NULL;
 

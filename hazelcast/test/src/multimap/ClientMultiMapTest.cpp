@@ -42,32 +42,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     mm = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
                 }
 
                 static void TearDownTestCase() {
                     delete mm;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     mm = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static MultiMap<std::string, std::string> *mm;
             };
 
             HazelcastServer *ClientMultiMapTest::instance = NULL;
-            ClientConfig *ClientMultiMapTest::clientConfig = NULL;
             HazelcastClient *ClientMultiMapTest::client = NULL;
             MultiMap<std::string, std::string> *ClientMultiMapTest::mm = NULL;
 

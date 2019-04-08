@@ -19,8 +19,7 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("map");
     std::vector<std::pair<std::string, std::string> > entries = map.entrySet();

@@ -140,8 +140,7 @@ public:
     }
 
     void run() {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+        hazelcast::client::HazelcastClient hz;
 
         hazelcast::client::IMap<std::string, Person> personMap = hz.getMap<std::string, Person>("personMap");
 
@@ -190,8 +189,7 @@ public:
 };
 
 void queryMapUsingPagingPredicate() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
 
     IMap<int, int> intMap = client.getMap<int, int>("testIntMapValuesWithPagingPredicate");
 
@@ -258,8 +256,7 @@ void queryMapUsingPagingPredicate() {
 }
 
 void queryMapUsingDifferentPredicates() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
     
     IMap<int, int> intMap = client.getMap<int, int>("testValuesWithPredicateIntMap");
     adaptor::RawPointerMap<int, int> rawMap(intMap);

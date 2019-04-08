@@ -20,8 +20,7 @@
 #include <hazelcast/client/adaptor/RawPointerMultiMap.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::MultiMap<std::string, std::string> m = hz.getMultiMap<std::string, std::string>("multimap");
     hazelcast::client::adaptor::RawPointerMultiMap<std::string, std::string> multimap(m);

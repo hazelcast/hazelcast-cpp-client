@@ -21,8 +21,7 @@
 #include <hazelcast/client/IAtomicLong.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::ISemaphore semaphore = hz.getISemaphore("semaphore");
     hazelcast::client::IAtomicLong resource = hz.getIAtomicLong("resource");
