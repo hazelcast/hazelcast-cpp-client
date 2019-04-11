@@ -45,8 +45,6 @@ namespace hazelcast {
             public:
                 ClientTestSupportBase();
 
-                static std::string getCAFilePath();
-
                 static std::string randomMapName();
 
                 static std::string randomString();

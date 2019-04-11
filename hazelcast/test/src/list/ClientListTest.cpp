@@ -76,7 +76,7 @@ namespace hazelcast {
                     #ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
-                    sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
+                    sslConfig.setEnabled(true).setCipherList("HIGH");
                     networkConfig.setSSLConfig(sslConfig);
                     clientConfig.setNetworkConfig(networkConfig);
                     #endif // HZ_BUILD_WITH_SSL

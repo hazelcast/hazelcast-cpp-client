@@ -119,8 +119,7 @@ namespace hazelcast {
             class SmartSSLClientConfig : public ClientConfig {
             public:
                 SmartSSLClientConfig() {
-                    this->getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(
-                            ClientTestSupportBase::getCAFilePath());
+                    this->getNetworkConfig().getSSLConfig().setEnabled(true);
                 }
             };
 

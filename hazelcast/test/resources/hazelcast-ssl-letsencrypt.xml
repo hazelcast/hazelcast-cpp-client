@@ -15,10 +15,10 @@
   ~ limitations under the License.
   -->
 
-<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.8.xsd"
+<hazelcast xsi:schemaLocation="http://www.hazelcast.com/schema/config hazelcast-config-3.12.xsd"
            xmlns="http://www.hazelcast.com/schema/config"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <group>
+    <group>
         <name>dev</name>
         <password>dev-pass</password>
     </group>
@@ -68,19 +68,19 @@
         </join>
         <public-address>127.0.0.1</public-address>
         <ssl enabled="true">
-          <factory-class-name>
-            com.hazelcast.nio.ssl.BasicSSLContextFactory
-          </factory-class-name>
-          <properties>
-              <property name="keyStore">hazelcast/test/resources/letsencrypt.jks</property>
-            <property name="keyStorePassword">123456</property>
-            <property name="trustStorePassword">123456</property>
-<!--
-            <property name="keyManagerAlgorithm">SunX509</property>
-            <property name="trustManagerAlgorithm">SunX509</property>
-            <property name="protocol">TLS</property>
--->
-          </properties>
+            <factory-class-name>
+                com.hazelcast.nio.ssl.BasicSSLContextFactory
+            </factory-class-name>
+            <properties>
+                <property name="keyStore">hazelcast/test/resources/letsencrypt.jks</property>
+                <property name="keyStorePassword">123456</property>
+                <property name="trustStorePassword">123456</property>
+                <!--
+                            <property name="keyManagerAlgorithm">SunX509</property>
+                            <property name="trustManagerAlgorithm">SunX509</property>
+                            <property name="protocol">TLS</property>
+                -->
+            </properties>
         </ssl>
     </network>
 

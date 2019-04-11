@@ -31,10 +31,6 @@
 namespace hazelcast {
     namespace client {
         namespace test {
-            std::string ClientTestSupportBase::getCAFilePath() {
-                return "hazelcast/test/resources/cpp_client.crt";
-            }
-
             hazelcast::client::ClientConfig ClientTestSupportBase::getConfig() {
                 ClientConfig clientConfig;
                 clientConfig.addAddress(Address(g_srvFactory->getServerAddress(), 5701));
@@ -46,7 +42,7 @@ namespace hazelcast {
             }
 
             const std::string ClientTestSupportBase::getSslFilePath() {
-                return "hazelcast/test/resources/hazelcast-ssl.xml";
+                return "hazelcast/test/resources/hazelcast-ssl-letsencrypt.xml";
             }
 
             std::string ClientTestSupportBase::randomMapName() {

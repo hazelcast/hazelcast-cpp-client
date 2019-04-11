@@ -1121,7 +1121,7 @@ You can set the protocol type. If not set, the configuration uses `tlsv12` (TLSv
 The following is an example configuration.
 
 ```C++
-config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
+config.getNetworkConfig().getSSLConfig().setEnabled(true);
 
 //Cipher suite is set using a string which is defined by OpenSSL standard at this page: https://www.openssl.org/docs/man1.0.2/apps/ciphers.html An example usage:
 config.getNetworkConfig().getSSLConfig().setCipherList("HIGH");

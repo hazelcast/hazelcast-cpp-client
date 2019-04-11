@@ -63,7 +63,7 @@ namespace hazelcast {
             TEST_F(SSLConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
                 ClientConfig config;
                 config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
-                        Address("8.8.8.8", 5701)).getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath());
+                        Address("8.8.8.8", 5701)).getSSLConfig().setEnabled(true);
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
 
