@@ -72,8 +72,7 @@
             com.hazelcast.nio.ssl.BasicSSLContextFactory
           </factory-class-name>
           <properties>
-            <property name="keyStore">hazelcast/test/resources/keystore.jks</property>
-            <property name="trustStore">hazelcast/test/resources/truststore.jks</property>
+              <property name="keyStore">hazelcast/test/resources/letsencrypt.jks</property>
             <property name="keyStorePassword">123456</property>
             <property name="trustStorePassword">123456</property>
 <!--

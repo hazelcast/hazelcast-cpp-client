@@ -39,8 +39,10 @@ namespace hazelcast {
         namespace internal {
             namespace socket {
                 SSLSocket::SSLSocket(const client::Address &address, asio::ssl::context &context,
-                        client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
-                        sslContext(context), deadline(ioService), socketId(-1), socketOptions(socketOptions) {
+                                     client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
+                                                                                     sslContext(context),
+                                                                                     deadline(ioService), socketId(-1),
+                                                                                     socketOptions(socketOptions) {
                     socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                             new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
                 }
@@ -118,11 +120,14 @@ namespace hazelcast {
                         socket->lowest_layer().cancel();
 
                         if (ioRunErrorCode) {
-                            return ioRunErrorCode.value();
+                            throw (exception::ExceptionBuilder<exception::IOException>("SSLSocket::connect")
+                                    << "SSL connection to " << remoteEndpoint << ". Asio error:"
+                                    << ioRunErrorCode).build();
                         }
 
                         if (errorCode) {
-                            return errorCode.value();
+                            throw (exception::ExceptionBuilder<exception::IOException>("SSLSocket::connect")
+                                    << "SSL connection to " << remoteEndpoint << ". Asio error:" << errorCode).build();
                         }
 
                         // Determine whether a connection was successfully established. The
@@ -131,7 +136,9 @@ namespace hazelcast {
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
                         if (!socket->lowest_layer().is_open()) {
-                            return asio::error::operation_aborted;
+                            throw (exception::ExceptionBuilder<exception::IOException>("SSLSocket::connect")
+                                    << "SSL connection to " << remoteEndpoint
+                                    << ". Operation is timed out and aborted").build();
                         }
 
                         socket->handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
@@ -141,7 +148,8 @@ namespace hazelcast {
                         setBlocking(false);
                         socketId = socket->lowest_layer().native_handle();
                     } catch (asio::system_error &e) {
-                        return e.code().value();
+                        throw (exception::ExceptionBuilder<exception::IOException>("SSLSocket::connect")
+                                << "SSL connection to " << remoteEndpoint << ". Asio error:" << e.what()).build();
                     }
 
                     return 0;

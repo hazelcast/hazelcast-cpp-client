@@ -45,42 +45,46 @@ namespace hazelcast {
                         sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
                                 (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
-                        const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
-                        bool success = true;
+                        asio::error_code ec;
+                        sslContext->set_verify_mode(asio::ssl::verify_peer | asio::ssl::verify_fail_if_no_peer_cert,
+                                                    ec);
                         util::ILogger &logger = clientContext.getLogger();
-                        for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
-                             ++it) {
-                            asio::error_code ec;
-                            sslContext->load_verify_file(*it, ec);
-                            if (ec) {
-                                logger.warning(
-                                        std::string("SocketFactory::start: Failed to load CA "
-                                                            "verify file at ") + *it + " "
-                                        + ec.message());
-                                success = false;
-                            }
+                        if (ec) {
+                            logger.warning()
+                                    << "SocketFactory::start: Failed at set_verify_mode while setting peer verification. "
+                                    << ec;
+                            return false;
                         }
 
-                        if (!success) {
-                            sslContext.reset();
-                            logger.warning("SocketFactory::start: Failed to load one or more "
-                                                                       "configured CA verify files (PEM files). Please "
-                                                                       "correct the files and retry.");
-                            return false;
+                        const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
+                        if (verifyFiles.empty()) {
+                            sslContext->set_default_verify_paths(ec);
+                            if (ec) {
+                                logger.warning() << "SocketFactory::start: Failed at set_default_verify_paths. " << ec;
+                                return false;
+                            }
+                        }
+                        bool success = true;
+                        for (std::vector<std::string>::const_iterator it = verifyFiles.begin();
+                             success && it != verifyFiles.end(); ++it) {
+                            sslContext->load_verify_file(*it, ec);
+                            if (ec) {
+                                logger.warning() << "SocketFactory::start: Failed to load CA verify file at " << *it
+                                                 << " " << ec;
+                                return false;
+                            }
                         }
 
                         // set cipher list if the list is set
                         const std::string &cipherList = sslConfig.getCipherList();
                         if (!cipherList.empty()) {
                             if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                                logger.warning(
-                                        std::string("SocketFactory::start: Could not load any "
-                                                            "of the ciphers in the config provided "
-                                                            "ciphers:") + cipherList);
+                                logger.warning()
+                                        << "SocketFactory::start: Could not load any of the ciphers in the config provided ciphers:"
+                                        << cipherList;
                                 return false;
                             }
                         }
-
                     }
                     #else
                     (void) clientContext;
@@ -93,12 +97,12 @@ namespace hazelcast {
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
                         return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
-                                clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                                                                                     clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
                     #endif
 
                     return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address,
-                            &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                                                                                 &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                 }
             }
         }

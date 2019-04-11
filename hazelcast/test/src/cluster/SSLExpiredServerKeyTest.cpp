@@ -22,21 +22,25 @@
 #include "HazelcastServer.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/connection/Connection.h"
-#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientConnectionTest : public ClientTestSupport {
+            class SSLExpiredServerKeyTest : public ClientTestSupport {
             };
 
-            TEST_F(ClientConnectionTest, testTcpSocketTimeoutToOutsideNetwork) {
+#ifdef HZ_BUILD_WITH_SSL
+
+            TEST_F(SSLExpiredServerKeyTest, testClientCanNotConnectToServerWithExpiredTrustedCertificate) {
+                HazelcastServerFactory factory("hazelcast/test/resources/hazelcast-expired-trusted-server-key.xml");
+                HazelcastServer server(factory);
                 ClientConfig config;
-                config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
-                        Address("8.8.8.8", 5701));
+                config.getNetworkConfig().getSSLConfig().setEnabled(true);
                 ASSERT_THROW(HazelcastClient client(config), exception::IllegalStateException);
             }
+
+#endif //#ifdef HZ_BUILD_WITH_SSL
+
         }
     }
 }

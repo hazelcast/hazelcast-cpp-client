@@ -110,7 +110,9 @@ namespace hazelcast {
                 }
                 alive = true;
 
-                bool result = socketFactory.start();
+                if (!socketFactory.start()) {
+                    return false;
+                }
 
                 socketInterceptor = client.getClientConfig().getSocketInterceptor();
 
@@ -126,7 +128,7 @@ namespace hazelcast {
                 heartbeat->start();
                 connectionStrategy->start();
 
-                return result;
+                return true;
             }
 
             void ClientConnectionManagerImpl::shutdown() {
