@@ -665,6 +665,15 @@ namespace hazelcast {
             Cluster& getCluster();
 
             /**
+             * Returns the local endpoint which this HazelcastInstance belongs to.
+             * <p>
+             *
+             * @return the local enpoint which this client belongs to
+             * @see Client
+             */
+            Client getLocalEndpoint() const;
+
+            /**
             * Add listener to listen lifecycle events.
             *
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.

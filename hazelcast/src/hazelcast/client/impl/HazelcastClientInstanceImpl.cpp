@@ -359,6 +359,10 @@ namespace hazelcast {
 
                 return boost::static_pointer_cast<IExecutorService>(proxy);
             }
+
+            Client HazelcastClientInstanceImpl::getLocalEndpoint() const {
+                return clusterService.getLocalClient();
+            }
         }
     }
 }

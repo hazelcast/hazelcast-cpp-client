@@ -19,7 +19,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
-#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/Client.h"
 #include "hazelcast/client/Member.h"
 #include "hazelcast/client/MembershipListener.h"
 
@@ -36,6 +36,11 @@ namespace hazelcast {
             }
         }
         namespace spi {
+            /**
+             * @return The client interface representing the local client.
+             */
+            Client getLocalClient();
+
             /**
              * Cluster service for Hazelcast clients.
              *
