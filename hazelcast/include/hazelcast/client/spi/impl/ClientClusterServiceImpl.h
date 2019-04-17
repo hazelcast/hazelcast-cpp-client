@@ -27,6 +27,7 @@
 #include "hazelcast/client/Member.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/client/Client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -77,6 +78,8 @@ namespace hazelcast {
                     void fireMemberAttributeEvent(const MemberAttributeEvent &event);
 
                     virtual int getSize();
+
+                    Client getLocalClient() const;
 
                 private:
                     ClientContext &client;

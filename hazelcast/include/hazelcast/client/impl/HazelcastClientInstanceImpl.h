@@ -52,6 +52,7 @@
 #include "hazelcast/client/impl/statistics/Statistics.h"
 #include "hazelcast/client/FlakeIdGenerator.h"
 #include "hazelcast/client/IExecutorService.h"
+#include "hazelcast/client/Client.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -384,6 +385,8 @@ namespace hazelcast {
                 * @return cluster
                 */
                 Cluster& getCluster();
+
+                Client getLocalEndpoint() const;
 
                 /**
                 * Add listener to listen lifecycle events.

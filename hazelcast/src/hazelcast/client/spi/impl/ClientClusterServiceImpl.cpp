@@ -15,6 +15,7 @@
  */
 
 #include <boost/foreach.hpp>
+#include <boost/make_shared.hpp>
 
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -23,6 +24,7 @@
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/spi/impl/ClientMembershipListener.h"
 #include "hazelcast/client/cluster/memberselector/MemberSelectors.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -168,17 +170,30 @@ namespace hazelcast {
                 std::vector<Member>
                 ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) {
                     std::vector<Member> result;
-                    BOOST_FOREACH(const Member &member , getMemberList()) {
-                        if (selector.select(member)) {
-                            result.push_back(member);
-                        }
-                    }
+                    BOOST_FOREACH(const Member &member, getMemberList()) {
+                                    if (selector.select(member)) {
+                                        result.push_back(member);
+                                    }
+                                }
 
                     return result;
                 }
 
                 int ClientClusterServiceImpl::getSize() {
                     return (int) getMemberList().size();
+                }
+
+                Client ClientClusterServiceImpl::getLocalClient() const {
+                    connection::ClientConnectionManagerImpl &cm = client.getConnectionManager();
+                    boost::shared_ptr<connection::Connection> connection = cm.getOwnerConnection();
+                    boost::shared_ptr<Address> inetSocketAddress =
+                            connection.get() != NULL ? boost::shared_ptr<Address>(connection->getLocalSocketAddress())
+                                                     : boost::shared_ptr<Address>();
+                    const boost::shared_ptr<protocol::Principal> principal = cm.getPrincipal();
+                    boost::shared_ptr<std::string> uuid =
+                            principal.get() != NULL ? boost::make_shared<std::string>(*principal->getUuid())
+                                                    : boost::shared_ptr<std::string>();
+                    return Client(uuid, inetSocketAddress, client.getName());
                 }
             }
         }
