@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 2.6.4)
 project(performance_test)
 
-set(CMAKE_CXX_STANDARD 98)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS")
 
 if (NOT HAZELCAST_INSTALL_DIR)
@@ -29,8 +27,10 @@ set(LIBRARY_DIRECTORY ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/lib)
 include_directories(${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/external/include ${HAZELCAST_INSTALL_DIR}/${PLATFORM}_64/hazelcast/include)
 
 add_executable(soakTest SoakTest.cpp)
+add_executable(simplePerformanceTest SimplePerformanceTest.cpp)
 
 ADD_LIBRARY(${HZ_LIBRARY_NAME} STATIC IMPORTED)
-SET_TARGET_PROPERTIES(${HZ_LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIRECTORY}/lib${HZ_LIBRARY_NAME}.a)
+SET_TARGET_PROPERTIES(${HZ_LIBRARY_NAME} PROPERTIES IMPORTED_LOCATION ${LIBRARY_DIRECTORY}/lib${HZ_LIBRARY_NAME}.dylib)
 target_link_libraries(soakTest ${HZ_LIBRARY_NAME})
+target_link_libraries(simplePerformanceTest ${HZ_LIBRARY_NAME})
 
