@@ -50,8 +50,6 @@
 #pragma warning(disable: 4355) //for strerror	
 #endif
 
-_INITIALIZE_EASYLOGGINGPP
-
 namespace hazelcast {
     namespace client {
         namespace impl {

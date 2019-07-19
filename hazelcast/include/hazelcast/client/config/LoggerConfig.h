@@ -27,6 +27,7 @@
 
 namespace hazelcast {
     namespace client {
+
         class HAZELCAST_API LoggerLevel {
         public:
             enum Level {
@@ -40,6 +41,16 @@ namespace hazelcast {
             INFO = LoggerLevel::INFO,
             FINEST = LoggerLevel::FINEST
         };
+
+		class HAZELCAST_API LoggerCallback {
+		public:
+			/**
+			 *
+			 * @param level The logging level being logged.
+			 * @param message The log message.
+			 */
+			virtual void logCallback(LogLevel level, const std::string &message) = 0;
+		};
 
         namespace config {
             class HAZELCAST_API LoggerConfig {
@@ -92,10 +103,23 @@ namespace hazelcast {
                  */
                 void setLogLevel(LoggerLevel::Level logLevel);
 
+				/**
+				 *
+				 * @return The callback object set.
+				 */
+				LoggerCallback *getLoggerCallback();
+
+				/**
+				 *
+				 * @param Sets a callback object for all log events.
+				 */
+				void setLoggerCallback(LoggerCallback *pCallback);
+
             private:
                 Type::LoggerType type;
                 std::string configurationFileName;
                 LoggerLevel::Level logLevel;
+				LoggerCallback *m_pCallback;
             };
         }
     }

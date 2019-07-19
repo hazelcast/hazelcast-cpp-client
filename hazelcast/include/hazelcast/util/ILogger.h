@@ -83,12 +83,14 @@ namespace hazelcast {
 
             bool isFinestEnabled() const;
 
+			client::config::LoggerConfig& getConfig();
+
         private:
             const std::string instanceName;
             const std::string groupName;
             const std::string version;
             std::string prefix;
-            easyloggingpp::Logger *easyLogger;
+            el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
 
             void init();
