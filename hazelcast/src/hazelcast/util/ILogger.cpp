@@ -135,19 +135,19 @@ namespace hazelcast {
 		}
 
         void ILogger::severe(const std::string &message) {
-            CLOG(FATAL) << message;
+            CLOG(FATAL, instanceName.c_str()) << message;
         }
 
         void ILogger::warning(const std::string &message) {
-			CLOG(WARNING) << message;
+			CLOG(WARNING, instanceName.c_str()) << message;
         }
 
         void ILogger::info(const std::string &message) {
-			CLOG(INFO) << message;
+			CLOG(INFO, instanceName.c_str()) << message;
         }
 
         void ILogger::finest(const std::string &message) {
-			CLOG(DEBUG) << message;
+			CLOG(DEBUG, instanceName.c_str()) << message;
         }
 
         LeveledLogger ILogger::finest() {
@@ -186,16 +186,16 @@ namespace hazelcast {
         LeveledLogger::~LeveledLogger() {
             switch (requestedLogLevel) {
                 case client::LoggerLevel::FINEST:
-					CLOG(DEBUG) << out.str();
+					CLOG(DEBUG, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::INFO:
-					CLOG(INFO) << out.str();
+					CLOG(INFO, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::WARNING:
-					CLOG(WARNING) << out.str();
+					CLOG(WARNING, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::SEVERE:
-					CLOG(FATAL) << out.str();
+					CLOG(FATAL, logger.instanceName.c_str()) << out.str();
                     break;
             }
         }
