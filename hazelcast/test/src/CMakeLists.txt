@@ -1,6 +1,6 @@
 project(HazelcastClientTest)
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 2 REQUIRED)
 
 message(STATUS "Using PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
 message(STATUS "Using PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
