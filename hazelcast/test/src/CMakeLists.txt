@@ -1,6 +1,10 @@
 project(HazelcastClientTest)
 
-find_package(PythonLibs REQUIRED)
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    find_package(PythonLibs REQUIRED)
+else()
+    find_package(PythonLibs 2 REQUIRED)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 message(STATUS "Using PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
 message(STATUS "Using PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
