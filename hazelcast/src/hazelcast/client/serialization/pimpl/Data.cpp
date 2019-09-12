@@ -61,6 +61,8 @@ namespace hazelcast {
                     }
                 }
 
+                Data::~Data() {}
+
                 size_t Data::dataSize() const {
                     return (size_t) std::max<int>((int) totalSize() - (int) Data::DATA_OVERHEAD, 0);
                 }
