@@ -57,7 +57,12 @@ namespace hazelcast {
 
                     Data(std::auto_ptr<std::vector<byte> > buffer);
 
-                    virtual ~Data();
+                    /**
+                     * We need to define the destructor so that for C++11 and later compiler users, no implicit move
+                     * constructor is generated. It can not also be virtual.
+                     * See https://github.com/hazelcast/hazelcast-cpp-client/issues/563
+                     */
+                    ~Data();
 
                     size_t dataSize() const;
 
