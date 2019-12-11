@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,20 @@
  */
 //
 // Created by sancar koyunlu on 8/27/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/util/Util.h"
-#include "multimap/ClientMultiMapTest.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/MultiMap.h"
-
-#include "HazelcastServerFactory.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 
 namespace hazelcast {
     namespace client {
@@ -38,32 +42,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     mm = new MultiMap<std::string, std::string>(client->getMultiMap<std::string, std::string>("MyMultiMap"));
                 }
 
                 static void TearDownTestCase() {
                     delete mm;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     mm = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static MultiMap<std::string, std::string> *mm;
             };
 
             HazelcastServer *ClientMultiMapTest::instance = NULL;
-            ClientConfig *ClientMultiMapTest::clientConfig = NULL;
             HazelcastClient *ClientMultiMapTest::client = NULL;
             MultiMap<std::string, std::string> *ClientMultiMapTest::mm = NULL;
 
@@ -202,7 +200,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testLock) {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(lockThread, mm, &latch);
+                util::StartedThread t(lockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(5));
                 mm->forceUnlock("key1");
             }
@@ -223,7 +221,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testLockTtl) {
                 mm->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t(lockTtlThread, mm, &latch);
+                util::StartedThread t(lockTtlThread, mm, &latch);
                 ASSERT_TRUE(latch.await(10));
                 mm->forceUnlock("key1");
             }
@@ -256,12 +254,12 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testTryLock) {
                 ASSERT_TRUE(mm->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t(tryLockThread, mm, &latch);
+                util::StartedThread t(tryLockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_TRUE(mm->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(tryLockThread2, mm, &latch2);
+                util::StartedThread t2(tryLockThread2, mm, &latch2);
 
                 util::sleep(1);
                 mm->unlock("key1");
@@ -280,7 +278,7 @@ namespace hazelcast {
             TEST_F(ClientMultiMapTest, testForceUnlock) {
                 mm->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t(forceUnlockThread, mm, &latch);
+                util::StartedThread t(forceUnlockThread, mm, &latch);
                 ASSERT_TRUE(latch.await(100));
                 ASSERT_FALSE(mm->isLocked("key1"));
             }

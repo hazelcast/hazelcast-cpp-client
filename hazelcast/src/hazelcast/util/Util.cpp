@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,17 @@
 // Created by sancar koyunlu on 5/3/13.
 
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/util/TimeUtil.h"
 
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/date_time/microsec_time_clock.hpp>
-#include <boost/date_time.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <string.h>
 #include <algorithm>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #define WIN32_LEAN_AND_MEAN
@@ -34,14 +35,22 @@
 #else
 #include <sys/time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #endif
 
 namespace hazelcast {
     namespace util {
 
-        long getThreadId() {
-            return util::Thread::getThreadID();
+        int64_t getCurrentThreadId() {
+        #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            return (int64_t) GetCurrentThreadId();
+        #else
+            int64_t threadId = 0;
+            pthread_t thread = pthread_self();
+            memcpy(&threadId, &thread, std::min(sizeof(threadId), sizeof(thread)));
+            return threadId;
+        #endif
         }
 
 		void sleep(int seconds){
@@ -77,7 +86,7 @@ namespace hazelcast {
             return returnCode;
         }
 
-        int snprintf(char *str, size_t len, const char *format, ...) {
+        int hz_snprintf(char *str, size_t len, const char *format, ...) {
             va_list args;
             va_start(args, format);
 
@@ -86,9 +95,12 @@ namespace hazelcast {
             if (result < 0) {
                 return len > 0 ? len - 1 : 0;
             }
+            va_end(args);
             return result;
             #else
-            return vsnprintf(str, len, format, args);
+            int result = vsnprintf(str, len, format, args);
+            va_end(args);
+            return result;
             #endif
         }
 
@@ -101,16 +113,19 @@ namespace hazelcast {
         }
 
         int64_t currentTimeMillis() {
-            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
-            boost::posix_time::ptime now = boost::posix_time::microsec_clock::universal_time();
-            boost::posix_time::time_duration diff = now - epoch;
+            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
             return diff.total_milliseconds();
+        }
+
+        int64_t currentTimeNanos() {
+            boost::posix_time::time_duration diff = TimeUtil::getDurationSinceEpoch();
+            return diff.total_nanoseconds();
         }
 
         int strerror_s(int errnum, char *strerrbuf, size_t buflen, const char *msgPrefix) {
             int numChars = 0;
             if ((const char *)NULL != msgPrefix) {
-                numChars = util::snprintf(strerrbuf, buflen, "%s ", msgPrefix);
+                numChars = util::hz_snprintf(strerrbuf, buflen, "%s ", msgPrefix);
                 if (numChars < 0) {
                     return numChars;
                 }
@@ -131,16 +146,69 @@ namespace hazelcast {
                 return -1;
             }
             return 0;
-            #elif defined(__llvm__)
+            #elif defined(__llvm__) && ! _GNU_SOURCE
+                /* XSI-compliant */
                 return ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-            #elif defined(__GNUC__)
+            #else
+                /* GNU-specific */
                 char *errStr = ::strerror_r(errnum, strerrbuf + numChars, buflen - numChars);
-                int result = util::snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
+                int result = util::hz_snprintf(strerrbuf + numChars, buflen - numChars, "%s", errStr);
                 if (result < 0) {
                     return result;
                 }
                 return 0;
             #endif
+        }
+
+        int32_t getAvailableCoreCount() {
+            #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+            SYSTEM_INFO sysinfo;
+            GetSystemInfo(&sysinfo);
+            return sysinfo.dwNumberOfProcessors;
+            #else
+            return (int32_t) sysconf(_SC_NPROCESSORS_ONLN);
+            #endif
+        }
+
+        std::string StringUtil::timeToString(int64_t timeInMillis) {
+            boost::posix_time::time_facet* facet = new boost::posix_time::time_facet("%Y-%m-%d %H:%M:%S.%f");
+            std::stringstream dateStream;
+            dateStream.imbue(std::locale(dateStream.getloc(), facet));
+            boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
+            dateStream << epoch + boost::posix_time::milliseconds(timeInMillis);
+            return dateStream.str();
+        }
+
+        std::string StringUtil::timeToStringFriendly(int64_t timeInMillis) {
+            return timeInMillis == 0 ? "never" : timeToString(timeInMillis);
+        }
+
+        std::vector<std::string> StringUtil::tokenizeVersionString(const std::string &version) {
+            typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+            boost::char_separator<char> sep(".");
+            tokenizer tok(version, sep);
+
+            std::vector<std::string> tokens;
+            BOOST_FOREACH(const std::string &token , tok) {
+                            tokens.push_back(token);
+            }
+
+            return tokens;
+        }
+
+        int Int64Util::numberOfLeadingZeros(int64_t i) {
+            // HD, Figure 5-6
+            if (i == 0)
+                return 64;
+            int n = 1;
+            int64_t x = (int64_t)(i >> 32);
+            if (x == 0) { n += 32; x = (int64_t)i; }
+            if (x >> 16 == 0) { n += 16; x <<= 16; }
+            if (x >> 24 == 0) { n +=  8; x <<=  8; }
+            if (x >> 28 == 0) { n +=  4; x <<=  4; }
+            if (x >> 30 == 0) { n +=  2; x <<=  2; }
+            n -= (int) (x >> 31);
+            return n;
         }
     }
 }

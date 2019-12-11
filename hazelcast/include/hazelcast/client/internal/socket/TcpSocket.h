@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,6 @@
  */
 #ifndef HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
 #define HAZELCAST_CLIENT_INTERNAL_SOCKET_TCPSOCKET_H_
-
-#include "hazelcast/client/Socket.h"
-
-#include "hazelcast/client/Address.h"
-#include "hazelcast/util/AtomicBoolean.h"
-#include <string>
-
-#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
-#endif
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma comment(lib, "Ws2_32.lib")
@@ -46,7 +35,21 @@ typedef int socklen_t;
 #include <sys/errno.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <netinet/tcp.h>
 
+#endif
+
+#include <string>
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/client/Socket.h"
+#include "hazelcast/client/config/SocketOptions.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/util/AtomicBoolean.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 #if !defined(MSG_NOSIGNAL)
@@ -70,7 +73,7 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    TcpSocket(const client::Address &address);
+                    TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions);
 
                     /**
                      * Destructor
@@ -87,10 +90,11 @@ namespace hazelcast {
                     /**
                      * @param buffer
                      * @param len length of the buffer
+                     * @param flag bsd sockets options flag.
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len) const;
+                    int send(const void *buffer, int len, int flag = 0);
 
                     /**
                      * @param buffer
@@ -99,7 +103,7 @@ namespace hazelcast {
                      * @return number of bytes received.
                      * @throw IOException in failure.
                      */
-                    int receive(void *buffer, int len, int flag = 0) const;
+                    int receive(void *buffer, int len, int flag = 0);
 
                     /**
                      * return socketId
@@ -107,24 +111,16 @@ namespace hazelcast {
                     int getSocketId() const;
 
                     /**
-                     * @param address remote endpoint address.
-                     */
-                    void setRemoteEndpoint(const client::Address &address);
-
-                    /**
-                     * @return remoteEndpoint
-                     */
-                    const client::Address &getRemoteEndpoint() const;
-
-                    /**
                      * closes the socket. Automatically called in destructor.
                      * Second call to this function is no op.
                      */
                     void close();
 
-                    client::Address getAddress() const;
+                    Address getAddress() const;
 
                     void setBlocking(bool blocking);
+
+                    std::auto_ptr<Address> localSocketAddress() const;
 
                 private:
                     TcpSocket(const Socket &rhs);
@@ -135,9 +131,9 @@ namespace hazelcast {
 
                     void throwIOException(int error, const char *methodName, const char *prefix) const;
 
-                    client::Address remoteEndpoint;
+                    void setSocketOptions(const client::config::SocketOptions &socketOptions);
 
-                    const client::Address configAddress;
+                    const Address configAddress;
 
                     struct addrinfo *serverInfo;
                     int socketId;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hazelcast/client/protocol/codec/SemaphoreIncreasePermitsCodec.h>
 #include "hazelcast/client/ISemaphore.h"
 
 // Includes for parameters classes
@@ -34,8 +35,9 @@ namespace hazelcast {
         }
 
         bool ISemaphore::init(int permits) {
+            checkNegative(permits);
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreInitCodec::RequestParameters::encode(getName(), permits);
+                    protocol::codec::SemaphoreInitCodec::encodeRequest(getName(), permits);
 
             return invokeAndGetResult<bool, protocol::codec::SemaphoreInitCodec::ResponseParameters>(request, partitionId);
         }
@@ -46,30 +48,30 @@ namespace hazelcast {
 
         void ISemaphore::acquire(int permits) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreAcquireCodec::RequestParameters::encode(getName(), permits);
+                    protocol::codec::SemaphoreAcquireCodec::encodeRequest(getName(), permits);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         int ISemaphore::availablePermits() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreAvailablePermitsCodec::RequestParameters::encode(getName());
+                    protocol::codec::SemaphoreAvailablePermitsCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int, protocol::codec::SemaphoreAvailablePermitsCodec::ResponseParameters>(request, partitionId);
         }
 
         int ISemaphore::drainPermits() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreDrainPermitsCodec::RequestParameters::encode(getName());
+                    protocol::codec::SemaphoreDrainPermitsCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int, protocol::codec::SemaphoreDrainPermitsCodec::ResponseParameters>(request, partitionId);
         }
 
         void ISemaphore::reducePermits(int reduction) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreReducePermitsCodec::RequestParameters::encode(getName(), reduction);
+                    protocol::codec::SemaphoreReducePermitsCodec::encodeRequest(getName(), reduction);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ISemaphore::release() {
@@ -78,9 +80,9 @@ namespace hazelcast {
 
         void ISemaphore::release(int permits) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreReleaseCodec::RequestParameters::encode(getName(), permits);
+                    protocol::codec::SemaphoreReleaseCodec::encodeRequest(getName(), permits);
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         bool ISemaphore::tryAcquire() {
@@ -89,7 +91,7 @@ namespace hazelcast {
 
         bool ISemaphore::tryAcquire(int permits) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreTryAcquireCodec::RequestParameters::encode(getName(), permits, 0);
+                    protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, 0);
 
             return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request, partitionId);
         }
@@ -100,9 +102,22 @@ namespace hazelcast {
 
         bool ISemaphore::tryAcquire(int permits, long timeoutInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::SemaphoreTryAcquireCodec::RequestParameters::encode(getName(), permits, timeoutInMillis);
+                    protocol::codec::SemaphoreTryAcquireCodec::encodeRequest(getName(), permits, timeoutInMillis);
 
             return invokeAndGetResult<bool, protocol::codec::SemaphoreTryAcquireCodec::ResponseParameters>(request, partitionId);
+        }
+
+        void ISemaphore::increasePermits(int32_t increase) {
+            checkNegative(increase);
+            std::auto_ptr<protocol::ClientMessage> request =
+                    protocol::codec::SemaphoreIncreasePermitsCodec::encodeRequest(getName(), increase);
+            invokeOnPartition(request, partitionId);
+        }
+
+        void ISemaphore::checkNegative(int32_t permits) const {
+            if (permits < 0) {
+                throw exception::IllegalArgumentException("ISemaphore::checkNegative", "Permits cannot be negative!");
+            }
         }
     }
 }

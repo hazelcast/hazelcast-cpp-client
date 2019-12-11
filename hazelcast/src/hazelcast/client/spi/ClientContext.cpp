@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,51 +18,60 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext(HazelcastClient &hazelcastClient)
-            : hazelcastClient(hazelcastClient) {
+            ClientContext::ClientContext(client::HazelcastClient &hazelcastClient) : hazelcastClient(
+                    *hazelcastClient.clientImpl) {
+            }
+
+            ClientContext::ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient)
+                    : hazelcastClient(hazelcastClient) {
             }
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
                 return hazelcastClient.serializationService;
             }
 
-            ClusterService &ClientContext::getClusterService() {
+            ClientClusterService &ClientContext::getClientClusterService() {
                 return hazelcastClient.clusterService;
             }
 
-            InvocationService &ClientContext::getInvocationService() {
-                return hazelcastClient.invocationService;
+            ClientInvocationService &ClientContext::getInvocationService() {
+                return *hazelcastClient.invocationService;
             }
 
             ClientConfig &ClientContext::getClientConfig() {
                 return hazelcastClient.clientConfig;
             }
 
-            PartitionService &ClientContext::getPartitionService() {
-                return hazelcastClient.partitionService;
+            ClientPartitionService &ClientContext::getPartitionService() {
+                return *hazelcastClient.partitionService;
             }
 
             LifecycleService &ClientContext::getLifecycleService() {
                 return hazelcastClient.lifecycleService;
             }
 
-            ServerListenerService &ClientContext::getServerListenerService() {
-                return hazelcastClient.serverListenerService;
+            ClientListenerService &ClientContext::getClientListenerService() {
+                return *hazelcastClient.listenerService;
             }
 
-            connection::ConnectionManager &ClientContext::getConnectionManager() {
+            connection::ClientConnectionManagerImpl &ClientContext::getConnectionManager() {
                 return *hazelcastClient.connectionManager;
             }
 
-            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() const {
-                return hazelcastClient.nearCacheManager;
+            internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() {
+                return *hazelcastClient.nearCacheManager;
             }
 
-            ClientProperties& ClientContext::getClientProperties() {
+            ClientProperties &ClientContext::getClientProperties() {
                 return hazelcastClient.clientProperties;
             }
 
@@ -70,6 +79,48 @@ namespace hazelcast {
                 return hazelcastClient.cluster;
             }
 
+            boost::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
+                return hazelcastClient.callIdSequence;
+            }
+
+            const protocol::ClientExceptionFactory &ClientContext::getClientExceptionFactory() const {
+                return hazelcastClient.getExceptionFactory();
+            }
+
+            const std::string &ClientContext::getName() const {
+                return hazelcastClient.getName();
+            }
+
+            impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
+                return *hazelcastClient.executionService;
+            }
+
+            void ClientContext::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
+                hazelcastClient.onClusterConnect(ownerConnection);
+            }
+
+            const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
+            ClientContext::getLockReferenceIdGenerator() {
+                return hazelcastClient.getLockReferenceIdGenerator();
+            }
+
+            boost::shared_ptr<client::impl::HazelcastClientInstanceImpl>
+                    ClientContext::getHazelcastClientImplementation() {
+                boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
+                return clientImpl.lock();
+            }
+
+            spi::ProxyManager &ClientContext::getProxyManager() {
+                return hazelcastClient.getProxyManager();
+            }
+
+            util::ILogger &ClientContext::getLogger() {
+                return *hazelcastClient.logger;
+            }
+
+            client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
+                return *hazelcastClient.statistics;
+            }
 
         }
 

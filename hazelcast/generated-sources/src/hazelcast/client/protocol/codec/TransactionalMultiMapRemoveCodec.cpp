@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMultiMapRemoveCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMultiMapMessageType TransactionalMultiMapRemoveCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMULTIMAP_REMOVE;
-                const bool TransactionalMultiMapRemoveCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMultiMapRemoveCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> TransactionalMultiMapRemoveCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMultiMapMessageType TransactionalMultiMapRemoveCodec::REQUEST_TYPE = HZ_TRANSACTIONALMULTIMAP_REMOVE;
+                const bool TransactionalMultiMapRemoveCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMultiMapRemoveCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> TransactionalMultiMapRemoveCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMultiMapRemoveCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMultiMapRemoveCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -43,10 +44,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMultiMapRemoveCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMultiMapRemoveCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -57,21 +58,17 @@ namespace hazelcast {
                 }
 
                 TransactionalMultiMapRemoveCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMultiMapRemoveCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                TransactionalMultiMapRemoveCodec::ResponseParameters TransactionalMultiMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapRemoveCodec::ResponseParameters
+                TransactionalMultiMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMultiMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapRemoveCodec::ResponseParameters::ResponseParameters(const TransactionalMultiMapRemoveCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

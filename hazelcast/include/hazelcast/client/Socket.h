@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 #ifndef HAZELCAST_CLIENT_SOCKET_H_
 #define HAZELCAST_CLIENT_SOCKET_H_
+
+#include <memory>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/Address.h"
 
@@ -45,10 +48,11 @@ namespace hazelcast {
             /**
              * @param buffer
              * @param len length of the buffer
+             * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
              * @return number of bytes send
              * @throw IOException in failure.
              */
-            virtual int send(const void *buffer, int len) const = 0;
+            virtual int send(const void *buffer, int len, int flag = 0) = 0;
 
             /**
              * @param buffer
@@ -57,22 +61,12 @@ namespace hazelcast {
              * @return number of bytes received.
              * @throw IOException in failure.
              */
-            virtual int receive(void *buffer, int len, int flag = 0) const = 0;
+            virtual int receive(void *buffer, int len, int flag = 0) = 0;
 
             /**
              * return socketId
              */
             virtual int getSocketId() const = 0;
-
-            /**
-             * @param address remote endpoint address.
-             */
-            virtual void setRemoteEndpoint(const client::Address &address) = 0;
-
-            /**
-             * @return remoteEndpoint
-             */
-            virtual const client::Address &getRemoteEndpoint() const = 0;
 
             /**
              * closes the socket. Automatically called in destructor.
@@ -83,17 +77,16 @@ namespace hazelcast {
             virtual client::Address getAddress() const = 0;
 
             virtual void setBlocking(bool blocking) = 0;
+
+            /**
+             *
+             * This function is used to obtain the locally bound endpoint of the socket.
+             *
+             * @returns An address that represents the local endpoint of the socket.
+             */
+            virtual std::auto_ptr<Address> localSocketAddress() const = 0;
         };
 
-        /**
-         * Socket Ptr compare method. Compares based on socket id.
-         */
-        struct HAZELCAST_API socketPtrComp {
-            /**
-             * Functor.
-             */
-            bool operator ()(Socket const *const &lhs, Socket const *const &rhs) const;
-        };
     }
 }
 

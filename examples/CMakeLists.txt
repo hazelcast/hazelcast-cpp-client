@@ -1,5 +1,5 @@
 ﻿#
-# Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 2.6.4)
 project (HazelcastExamples)
 
 INCLUDE(TestBigEndian)
@@ -204,7 +204,7 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
-add_subdirectory(CommandLineTool)
+add_subdirectory(command-line-tool)
 add_subdirectory(transactions)
 add_subdirectory(spi)
 add_subdirectory(serialization)
@@ -216,6 +216,13 @@ add_subdirectory(distributed-primitives)
 add_subdirectory(distributed-map)
 add_subdirectory(distributed-collections)
 add_subdirectory(adaptor)
+add_subdirectory(Org.Website.Samples)
+add_subdirectory(replicated-map)
+add_subdirectory(invocation-timeouts)
+add_subdirectory(backpressure)
+add_subdirectory(event-properties)
+add_subdirectory(client-statistics)
+add_subdirectory(pipeline)
 if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
     add_subdirectory(tls)
     add_subdirectory(aws)

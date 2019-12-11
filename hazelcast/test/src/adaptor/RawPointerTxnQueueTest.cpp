@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,16 @@
  */
 //
 // Created by ihsan demir on 24/3/16.
-
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalQueue.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
@@ -33,28 +35,22 @@ namespace hazelcast {
                 protected:
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient(getConfig());
                     }
 
                     static void TearDownTestCase() {
                         delete client;
-                        delete clientConfig;
                         delete instance;
 
                         client = NULL;
-                        clientConfig = NULL;
                         instance = NULL;
                     }
 
                     static HazelcastServer *instance;
-                    static ClientConfig *clientConfig;
                     static HazelcastClient *client;
                 };
 
                 HazelcastServer *RawPointerTxnQueueTest::instance = NULL;
-                ClientConfig *RawPointerTxnQueueTest::clientConfig = NULL;
                 HazelcastClient *RawPointerTxnQueueTest::client = NULL;
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll1) {
@@ -81,7 +77,7 @@ namespace hazelcast {
 
                 TEST_F(RawPointerTxnQueueTest, testTransactionalOfferPoll2) {
                     util::CountDownLatch latch(1);
-                    util::Thread t(testTransactionalOfferPoll2Thread, &latch, client);
+                    util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, client);
                     TransactionContext context = client->newTransactionContext();
                     context.beginTransaction();
                     TransactionalQueue<std::string> queue0 = context.getQueue<std::string>("defQueue0");

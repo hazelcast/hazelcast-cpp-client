@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ class PredicateMember {
 public:
     std::vector<Person> getWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[200];
-        hazelcast::util::snprintf(buf, 200, "name == %s", name);
+        hazelcast::util::hz_snprintf(buf, 200, "name == %s", name);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
@@ -124,7 +124,7 @@ public:
 
     std::vector<Person> getNotWithName(const char *name, hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[200];
-        hazelcast::util::snprintf(buf, 200, "name != %s", name);
+        hazelcast::util::hz_snprintf(buf, 200, "name != %s", name);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
@@ -133,15 +133,14 @@ public:
     std::vector<Person> getWithNameAndAge(const char *name, int age,
                                           hazelcast::client::IMap<std::string, Person> &personMap) {
         char buf[300];
-        hazelcast::util::snprintf(buf, 300, "name == %s AND age == %d", name, age);
+        hazelcast::util::hz_snprintf(buf, 300, "name == %s AND age == %d", name, age);
         hazelcast::client::query::SqlPredicate predicate(buf);
 
         return personMap.values(predicate);
     }
 
     void run() {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+        hazelcast::client::HazelcastClient hz;
 
         hazelcast::client::IMap<std::string, Person> personMap = hz.getMap<std::string, Person>("personMap");
 
@@ -190,8 +189,7 @@ public:
 };
 
 void queryMapUsingPagingPredicate() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
 
     IMap<int, int> intMap = client.getMap<int, int>("testIntMapValuesWithPagingPredicate");
 
@@ -258,8 +256,7 @@ void queryMapUsingPagingPredicate() {
 }
 
 void queryMapUsingDifferentPredicates() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient client(config);
+    hazelcast::client::HazelcastClient client;
     
     IMap<int, int> intMap = client.getMap<int, int>("testValuesWithPredicateIntMap");
     adaptor::RawPointerMap<int, int> rawMap(intMap);
@@ -432,7 +429,7 @@ void queryMapUsingDifferentPredicates() {
     // SqlPredicate
     // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
     char sql[100];
-    hazelcast::util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+    hazelcast::util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
     valuesArray = rawMap.values(query::SqlPredicate(sql));
     values = intMap.values(query::SqlPredicate(sql));
 

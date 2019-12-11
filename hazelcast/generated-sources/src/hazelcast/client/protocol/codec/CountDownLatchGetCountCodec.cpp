@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/CountDownLatchGetCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const CountDownLatchMessageType CountDownLatchGetCountCodec::RequestParameters::TYPE = HZ_COUNTDOWNLATCH_GETCOUNT;
-                const bool CountDownLatchGetCountCodec::RequestParameters::RETRYABLE = true;
-                const int32_t CountDownLatchGetCountCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> CountDownLatchGetCountCodec::RequestParameters::encode(
+                const CountDownLatchMessageType CountDownLatchGetCountCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_GETCOUNT;
+                const bool CountDownLatchGetCountCodec::RETRYABLE = true;
+                const ResponseMessageConst CountDownLatchGetCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> CountDownLatchGetCountCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)CountDownLatchGetCountCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) CountDownLatchGetCountCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t CountDownLatchGetCountCodec::RequestParameters::calculateDataSize(
+                int32_t CountDownLatchGetCountCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,21 +46,17 @@ namespace hazelcast {
                 }
 
                 CountDownLatchGetCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("CountDownLatchGetCountCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                CountDownLatchGetCountCodec::ResponseParameters CountDownLatchGetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                CountDownLatchGetCountCodec::ResponseParameters
+                CountDownLatchGetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return CountDownLatchGetCountCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchGetCountCodec::ResponseParameters::ResponseParameters(const CountDownLatchGetCountCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

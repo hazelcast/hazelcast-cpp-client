@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,19 +40,20 @@ namespace hazelcast {
 
                 bool SocketFactory::start() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    const config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
+                    const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
                         sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
                                 (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
                         bool success = true;
+                        util::ILogger &logger = clientContext.getLogger();
                         for (std::vector<std::string>::const_iterator it = verifyFiles.begin(); it != verifyFiles.end();
                              ++it) {
                             asio::error_code ec;
                             sslContext->load_verify_file(*it, ec);
                             if (ec) {
-                                util::ILogger::getLogger().warning(
+                                logger.warning(
                                         std::string("SocketFactory::start: Failed to load CA "
                                                             "verify file at ") + *it + " "
                                         + ec.message());
@@ -62,7 +63,7 @@ namespace hazelcast {
 
                         if (!success) {
                             sslContext.reset();
-                            util::ILogger::getLogger().warning("SocketFactory::start: Failed to load one or more "
+                            logger.warning("SocketFactory::start: Failed to load one or more "
                                                                        "configured CA verify files (PEM files). Please "
                                                                        "correct the files and retry.");
                             return false;
@@ -72,7 +73,7 @@ namespace hazelcast {
                         const std::string &cipherList = sslConfig.getCipherList();
                         if (!cipherList.empty()) {
                             if (!SSL_CTX_set_cipher_list(sslContext->native_handle(), cipherList.c_str())) {
-                                util::ILogger::getLogger().warning(
+                                logger.warning(
                                         std::string("SocketFactory::start: Could not load any "
                                                             "of the ciphers in the config provided "
                                                             "ciphers:") + cipherList);
@@ -80,22 +81,24 @@ namespace hazelcast {
                             }
                         }
 
-                        ioService = std::auto_ptr<asio::io_service>(new asio::io_service);
                     }
                     #else
                     (void) clientContext;
                     #endif
-                    
+
                     return true;
                 }
 
                 std::auto_ptr<Socket> SocketFactory::create(const Address &address) const {
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *ioService, *sslContext));
+                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
+                                clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
                     #endif
-                    return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address));
+
+                    return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address,
+                            &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                 }
             }
         }

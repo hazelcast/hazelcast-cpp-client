@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 #include "hazelcast/util/AtomicInt.h"
 
-#include "hazelcast/util/LockGuard.h"
-
 namespace hazelcast {
     namespace util {
-        AtomicInt::AtomicInt() : Atomic<int32_t>(0) {
+        AtomicInt::AtomicInt() : Atomic<int>(0) {
         }
 
-        AtomicInt::AtomicInt(int value) : Atomic<int32_t>(value) {
+        AtomicInt::AtomicInt(const int &value) : Atomic<int>(value) {
         }
     }
 }

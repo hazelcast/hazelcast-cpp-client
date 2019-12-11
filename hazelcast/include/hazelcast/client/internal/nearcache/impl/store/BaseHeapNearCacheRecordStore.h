@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include "hazelcast/client/internal/nearcache/impl/store/HeapNearCacheRecordMap.h"
 #include "hazelcast/client/internal/nearcache/impl/store/AbstractNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/maxsize/EntryCountNearCacheMaxSizeChecker.h"
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,7 +40,7 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore<K, V, KS, R, HeapNearCacheRecordMap<K, V, KS, R> > ANCRS;
 
                             BaseHeapNearCacheRecordStore(const std::string &name,
-                                                         const config::NearCacheConfig<K, V> &nearCacheConfig,
+                                                         const client::config::NearCacheConfig<K, V> &nearCacheConfig,
                                                          serialization::pimpl::SerializationService &serializationService
                             ) : ANCRS(nearCacheConfig, serializationService) {
                             }
@@ -70,7 +69,7 @@ namespace hazelcast {
                                     const boost::shared_ptr<KS> &key = entry.first;
                                     const boost::shared_ptr<R> &value = entry.second;
                                     if (ANCRS::isRecordExpired(value)) {
-                                        ANCRS::remove(key);
+                                        ANCRS::invalidate(key);
                                         ANCRS::onExpire(key, value);
                                     }
                                 }
@@ -78,10 +77,10 @@ namespace hazelcast {
                         protected:
                             //@Override
                             std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<config::EvictionConfig<K, V> > &evictionConfig,
-                                    const config::NearCacheConfig<K, V> &nearCacheConfig) {
-                                typename config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy = evictionConfig->getMaximumSizePolicy();
-                                if (maxSizePolicy == config::EvictionConfig<K, V>::ENTRY_COUNT) {
+                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                typename client::config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy = evictionConfig->getMaximumSizePolicy();
+                                if (maxSizePolicy == client::config::EvictionConfig<K, V>::ENTRY_COUNT) {
                                     return std::auto_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
                                                     evictionConfig->getSize(),
@@ -90,13 +89,13 @@ namespace hazelcast {
                                 std::ostringstream out;
                                 out << "Invalid max-size policy " << '(' << (int) maxSizePolicy << ") for " <<
                                 nearCacheConfig.getName() << "! Only " <<
-                                        (int) config::EvictionConfig<K, V>::ENTRY_COUNT << " is supported.";
+                                        (int) client::config::EvictionConfig<K, V>::ENTRY_COUNT << " is supported.";
                                 throw exception::IllegalArgumentException(out.str());
                             }
 
                             //@Override
                             std::auto_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
-                                    const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                                    const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 return std::auto_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
                                         new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService,
                                                                                 DEFAULT_INITIAL_CAPACITY));
@@ -108,17 +107,16 @@ namespace hazelcast {
                                 boost::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
                                 ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
+                                if (oldRecord.get() != NULL) {
+                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
+                                            ANCRS::getTotalStorageMemoryCost(key, oldRecord));
+                                }
                                 return oldRecord;
                             }
 
                             //@OverrideR
                             boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
-                                boost::shared_ptr<R> removedRecord = ANCRS::records->remove(key);
-                                if (removedRecord.get() != NULL) {
-                                    ANCRS::nearCacheStats.decrementOwnedEntryMemoryCost(
-                                            ANCRS::getTotalStorageMemoryCost(key, removedRecord));
-                                }
-                                return removedRecord;
+                                return ANCRS::records->remove(key);
                             }
 
                             //@Override

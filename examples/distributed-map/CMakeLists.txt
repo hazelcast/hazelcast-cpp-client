@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 add_subdirectory(basic)
+add_subdirectory(mixed-map)
 add_subdirectory(near-cache)
 add_subdirectory(query)
 add_subdirectory(custom-attributes)
@@ -24,3 +25,6 @@ add_subdirectory(index)
 add_subdirectory(locking)
 add_subdirectory(map-interceptor)
 add_subdirectory(multimap)
+add_subdirectory(partitionaware)
+add_subdirectory(removeAll)
+add_subdirectory(async-api)

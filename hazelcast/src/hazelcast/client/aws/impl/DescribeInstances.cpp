@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,16 @@
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
 #include "hazelcast/client/aws/impl/Filter.h"
 #include "hazelcast/client/aws/impl/Constants.h"
-#include "hazelcast/client/aws/security/EC2RequestSigner.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/util/SyncHttpsClient.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/SyncHttpClient.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4996) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -38,9 +42,9 @@ namespace hazelcast {
                 const std::string DescribeInstances::IAM_ROLE_QUERY = "/latest/meta-data/iam/security-credentials/";
                 const std::string DescribeInstances::IAM_TASK_ROLE_ENDPOINT = "169.254.170.2";
 
-                DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig,
-                                                     const std::string &endpoint) : awsConfig(awsConfig),
-                                                                                    endpoint(endpoint) {
+                DescribeInstances::DescribeInstances(config::ClientAwsConfig &awsConfig, const std::string &endpoint,
+                                                     util::ILogger &logger) : awsConfig(awsConfig), endpoint(endpoint),
+                                                                              logger(logger) {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
@@ -64,7 +68,7 @@ namespace hazelcast {
                     attributes["X-Amz-Signature"] = signature;
 
                     std::istream &stream = callService();
-                    return utility::CloudUtility::unmarshalTheResponse(stream);
+                    return utility::CloudUtility::unmarshalTheResponse(stream, logger);
                 }
 
                 std::string DescribeInstances::getFormattedTimestamp() {
@@ -86,17 +90,13 @@ namespace hazelcast {
                 }
 
                 void DescribeInstances::checkKeysFromIamRoles() {
-                    if (!awsConfig.getAccessKey().empty() && awsConfig.getIamRole().empty()) {
-                        return;
-                    }
-                    // in case no IAM role has been defined, this will attempt to retrieve name of default role.
-                    tryGetDefaultIamRole();
-
-                    // if IAM role is still empty, one last attempt
-                    if (awsConfig.getIamRole().empty()) {
-                        getKeysFromIamTaskRole();
-                    } else {
-                        getKeysFromIamRole();
+                    if (awsConfig.getAccessKey().empty() || !awsConfig.getIamRole().empty()) {
+                        tryGetDefaultIamRole();
+                        if (!awsConfig.getIamRole().empty()) {
+                            getKeysFromIamRole();
+                        } else {
+                            getKeysFromIamTaskRole();
+                        }
                     }
                 }
 
@@ -186,4 +186,8 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 

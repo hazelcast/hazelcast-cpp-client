@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,53 +22,77 @@
 //
 
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
-#include <iostream>
+
+#include <hazelcast/client/exception/IllegalStateException.h>
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory)
-            :factory(factory)
-            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT))
-            , isShutDown(false), useSSL(false) {
-            }
-
-            HazelcastServer::HazelcastServer(HazelcastServerFactory& factory, bool useSSL)
-            :factory(factory)
-            , id(factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL))
-            , isShutDown(false), useSSL(useSSL) {
+            HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) : factory(factory), isStarted(false),
+                                                                                logger(new util::ILogger(
+                                                                                        "HazelcastServer",
+                                                                                        "HazelcastServer",
+                                                                                        "testversion",
+                                                                                        config::LoggerConfig())) {
+                start();
             }
 
             bool HazelcastServer::start() {
-                bool result = false;
-
-                if (isShutDown) {
-                    id = factory.getInstanceId(DEFAULT_RETRY_COUNT, useSSL);
-                    isShutDown = false;
-                    result = true;
+                if (isStarted) {
+                    return true;
                 }
 
-                return result;
+                try {
+                    member = factory.startServer();
+                    isStarted = true;
+                    return true;
+                } catch (exception::IllegalStateException &illegalStateException) {
+                    std::ostringstream out;
+                    out << "Could not start new member!!! " << illegalStateException.what();
+                    logger->severe(out.str());
+                    return false;
+                }
             }
 
             bool HazelcastServer::shutdown() {
-                bool result = false;
-                try{
-                    if (!isShutDown) {
-                        factory.shutdownInstance(id);
-                        isShutDown = true;
-                        result = true;
-                    }
-                }catch(std::exception& e){
-                    isShutDown = true;
-                    std::cerr << e.what() << std::endl;
+                if (!isStarted) {
+                    return true;
                 }
-                return result;
+
+                if (!factory.shutdownServer(member)) {
+                    return false;
+                }
+
+                isStarted = false;
+                return true;
+            }
+
+            bool HazelcastServer::terminate() {
+                if (!isStarted) {
+                    return true;
+                }
+
+                if (!factory.terminateServer(member)) {
+                    return false;
+                }
+
+                isStarted = false;
+                return true;
             }
 
             HazelcastServer::~HazelcastServer() {
                 shutdown();
+            }
+
+            bool HazelcastServer::setAttributes(int memberStartOrder) {
+                if (!isStarted) {
+                    return false;
+                }
+                return factory.setAttributes(memberStartOrder);
+            }
+
+            const HazelcastServerFactory::MemberInfo &HazelcastServer::getMember() const {
+                return member;
             }
 
         }

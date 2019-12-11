@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 // Created by sancar koyunlu on 21/08/14.
 //
 
-
 #ifndef HAZELCAST_ClientProperties
 #define HAZELCAST_ClientProperties
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <string>
-#include <map>
+
+#include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/IOUtil.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -41,25 +41,22 @@ namespace hazelcast {
         */
         class HAZELCAST_API ClientProperty {
         public:
-            ClientProperty(ClientConfig& config, const std::string& name, const std::string& defaultValue);
+            ClientProperty(const std::string &name, const std::string &defaultValue);
 
-            std::string getName() const;
+            const std::string &getName() const;
 
-            std::string getValue() const;
+            const std::string &getDefaultValue() const;
 
-            int getInteger() const;
-
-            byte getByte() const;
-
-            bool getBoolean() const;
-
-            std::string getString() const;
-
-            long getLong() const;
+            /**
+             * Gets the system environment property value of the property.
+             *
+             * @return the value of the property. NULL if no such environment property exist.
+             */
+            const char *getSystemProperty() const;
 
         private:
             std::string name;
-            std::string value;
+            std::string defaultValue;
         };
 
 
@@ -70,17 +67,35 @@ namespace hazelcast {
         */
         class HAZELCAST_API ClientProperties {
         public:
-            ClientProperties(ClientConfig& clientConfig);
+            ClientProperties(const std::map<std::string, std::string> &properties);
 
             const ClientProperty& getHeartbeatTimeout() const;
 
             const ClientProperty& getHeartbeatInterval() const;
 
-            const ClientProperty& getRetryCount() const;
-
-            const ClientProperty& getRetryWaitTime() const;
-
             const ClientProperty& getAwsMemberPort() const;
+
+            const ClientProperty &getCleanResourcesPeriodMillis() const;
+
+            const ClientProperty &getInvocationRetryPauseMillis() const;
+
+            const ClientProperty &getInvocationTimeoutSeconds() const;
+
+            const ClientProperty &getEventThreadCount() const;
+
+            const ClientProperty &getEventQueueCapacity() const;
+
+            const ClientProperty &getInternalExecutorPoolSize() const;
+
+            const ClientProperty &getShuffleMemberList() const;
+
+            const ClientProperty &getMaxConcurrentInvocations() const;
+
+            const ClientProperty &getBackpressureBackoffTimeoutMillis() const;
+
+            const ClientProperty &getStatisticsEnabled() const;
+
+            const ClientProperty &getStatisticsPeriodSeconds() const;
 
             /**
             * Client will be sending heartbeat messages to members and this is the timeout. If there is no any message
@@ -133,12 +148,146 @@ namespace hazelcast {
              */
             static const std::string PROP_AWS_MEMBER_PORT;
             static const std::string PROP_AWS_MEMBER_PORT_DEFAULT;
+
+            /**
+             * The period in milliseconds at which the resource cleaning is run (e.g. invocations).
+             */
+            static const std::string CLEAN_RESOURCES_PERIOD_MILLIS;
+            static const std::string CLEAN_RESOURCES_PERIOD_MILLIS_DEFAULT;
+
+            /**
+             * Pause time between each retry cycle of an invocation in milliseconds.
+             */
+            static const std::string INVOCATION_RETRY_PAUSE_MILLIS;
+            static const std::string INVOCATION_RETRY_PAUSE_MILLIS_DEFAULT;
+
+            /**
+             * When an invocation gets an exception because :
+             * - Member throws an exception.
+             * - Connection between the client and member is closed.
+             * - Client's heartbeat requests are timed out.
+             * Time passed since invocation started is compared with this property.
+             * If the time is already passed, then the exception is delegated to the user. If not, the invocation is retried.
+             * Note that, if invocation gets no exception and it is a long running one, then it will not get any exception,
+             * no matter how small this timeout is set.
+             */
+            static const std::string INVOCATION_TIMEOUT_SECONDS;
+            static const std::string INVOCATION_TIMEOUT_SECONDS_DEFAULT;
+
+            /**
+             * Number of the threads to handle the incoming event packets.
+             */
+            static const std::string EVENT_THREAD_COUNT;
+            static const std::string EVENT_THREAD_COUNT_DEFAULT;
+
+            /**
+             * Capacity of the executor that handles the incoming event packets.
+             */
+            static const std::string EVENT_QUEUE_CAPACITY;
+            static const std::string EVENT_QUEUE_CAPACITY_DEFAULT;
+
+            static const std::string INTERNAL_EXECUTOR_POOL_SIZE;
+            static const std::string INTERNAL_EXECUTOR_POOL_SIZE_DEFAULT;
+
+            /**
+             * Client shuffles the given member list to prevent all clients to connect to the same node when
+             * this property is set to true. When it is set to false, the client tries to connect to the nodes
+             * in the given order.
+             */
+            static const std::string SHUFFLE_MEMBER_LIST;
+            static const std::string SHUFFLE_MEMBER_LIST_DEFAULT;
+
+            /**
+             * The maximum number of concurrent invocations allowed.
+             * <p/>
+             * To prevent the system from overloading, user can apply a constraint on the number of concurrent invocations.
+             * If the maximum number of concurrent invocations has been exceeded and a new invocation comes in,
+             * then hazelcast will throw HazelcastOverloadException
+             * <p/>
+             * By default it is configured as INT32_MAX.
+             */
+            static const std::string MAX_CONCURRENT_INVOCATIONS;
+            static const std::string MAX_CONCURRENT_INVOCATIONS_DEFAULT;
+
+            /**
+             * Control the maximum timeout in millis to wait for an invocation space to be available.
+             * <p/>
+             * If an invocation can't be made because there are too many pending invocations, then an exponential backoff is done
+             * to give the system time to deal with the backlog of invocations. This property controls how long an invocation is
+             * allowed to wait before getting a {@link com.hazelcast.core.HazelcastOverloadException}.
+             * <p/>
+             * <p>
+             * When set to -1 then <code>HazelcastOverloadException</code> is thrown immediately without any waiting.
+             * </p>
+             */
+            static const std::string BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS;
+            static const std::string BACKPRESSURE_BACKOFF_TIMEOUT_MILLIS_DEFAULT;
+
+            /**
+             * Use to enable the client statistics collection.
+             * <p>
+             * The default is false.
+             */
+            static const std::string STATISTICS_ENABLED;
+            static const std::string STATISTICS_ENABLED_DEFAULT;
+
+            /**
+             * The period in seconds the statistics sent to the cluster.
+             */
+            static const std::string STATISTICS_PERIOD_SECONDS;
+            static const std::string STATISTICS_PERIOD_SECONDS_DEFAULT;
+
+            /**
+             * Returns the configured boolean value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as bool
+             */
+            bool getBoolean(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured int32_t value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as int32_t
+             */
+            int32_t getInteger(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured int64_t value of a {@link ClientProperty}.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value as int64_t
+             */
+            int64_t getLong(const ClientProperty &property) const;
+
+            /**
+             * Returns the configured value of a {@link ClientProperty} as std::string.
+             *
+             * @param property the {@link ClientProperty} to get the value from
+             * @return the value
+             */
+            std::string getString(const ClientProperty &property) const;
+
         private:
             ClientProperty heartbeatTimeout;
             ClientProperty heartbeatInterval;
             ClientProperty retryCount;
             ClientProperty retryWaitTime;
             ClientProperty awsMemberPort;
+            ClientProperty cleanResourcesPeriod;
+            ClientProperty invocationRetryPauseMillis;
+            ClientProperty invocationTimeoutSeconds;
+            ClientProperty eventThreadCount;
+            ClientProperty eventQueueCapacity;
+            ClientProperty internalExecutorPoolSize;
+            ClientProperty shuffleMemberList;
+            ClientProperty maxConcurrentInvocations;
+            ClientProperty backpressureBackoffTimeoutMillis;
+            ClientProperty statisticsEnabled;
+            ClientProperty statisticsPeriodSeconds;
+
+            std::map<std::string, std::string> propertiesMap;
         };
 
     }

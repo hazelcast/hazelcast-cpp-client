@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,41 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "ClientTxnTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/exception/InstanceNotActiveException.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class ClientTxnTest : public ClientTestSupport {
+            public:
+                ClientTxnTest();
+
+                ~ClientTxnTest();
+
+            protected:
+                HazelcastServerFactory & hazelcastInstanceFactory;
+                std::auto_ptr<HazelcastServer> server;
+                std::auto_ptr<HazelcastServer> second;
+                std::auto_ptr<HazelcastClient> client;
+                std::auto_ptr<LoadBalancer> loadBalancer;
+            };
+
             class MyLoadBalancer : public impl::AbstractLoadBalancer {
             public:
                 const Member next() {
                     std::vector<Member> members = getMembers();
                     size_t len = members.size();
                     if (len == 0) {
-                        throw exception::IException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                        throw exception::IOException("const Member& RoundRobinLB::next()", "No member in member list!!");
                     }
                     for (size_t i = 0; i < len; i++) {
                         if (members[i].getAddress().getPort() == 5701) {
@@ -42,9 +62,9 @@ namespace hazelcast {
 
             };
 
-            class MyLifecycleListener : public MembershipListener {
+            class MyMembershipListener : public MembershipListener {
             public:
-                MyLifecycleListener(util::CountDownLatch& countDownLatch)
+                MyMembershipListener(util::CountDownLatch& countDownLatch)
                 : countDownLatch(countDownLatch) {
 
                 }
@@ -68,67 +88,166 @@ namespace hazelcast {
             ClientTxnTest::ClientTxnTest()
             : hazelcastInstanceFactory(*g_srvFactory) {
                 server.reset(new HazelcastServer(hazelcastInstanceFactory));
-                second.reset(new HazelcastServer(hazelcastInstanceFactory));
-                std::auto_ptr<ClientConfig> clientConfig = getConfig();
-                clientConfig->setRedoOperation(true);
+                ClientConfig clientConfig = getConfig();
+                clientConfig.setRedoOperation(true);
                 //always start the txn on first member
                 loadBalancer.reset(new MyLoadBalancer());
-                clientConfig->setLoadBalancer(loadBalancer.get());
-                client.reset(new HazelcastClient(*clientConfig));
+                clientConfig.setLoadBalancer(loadBalancer.get());
+                client.reset(new HazelcastClient(clientConfig));
+                second.reset(new HazelcastServer(hazelcastInstanceFactory));
             }
 
             ClientTxnTest::~ClientTxnTest() {
-                g_srvFactory->shutdownAll();
                 client->shutdown();
                 client.reset();
             }
 
-            TEST_F(ClientTxnTest, testTxnRollback) {
-                util::CountDownLatch memberRemovedLatch(1);
-                std::string queueName = "testTxnRollback";
-                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
-                client->getCluster().addMembershipListener(&myLifecycleListener);
+            TEST_F(ClientTxnTest, testTxnConnectAfterClientShutdown) {
+                client->shutdown();
+                ASSERT_THROW(client->newTransactionContext(), exception::HazelcastClientNotActiveException);
+            }
 
+            TEST_F(ClientTxnTest, testTxnCommitAfterClusterShutdown) {
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+
+                server->shutdown();
+                second->shutdown();
+
+                ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommit) {
+                std::string queueName = randomString();
+                TransactionContext context = client->newTransactionContext();
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitUniSocket) {
+                ClientConfig clientConfig;
+                clientConfig.getNetworkConfig().setSmartRouting(false);
+                HazelcastClient uniSocketClient(clientConfig);
+
+                std::string queueName = randomString();
+                TransactionContext context = uniSocketClient.newTransactionContext();
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = uniSocketClient.getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitWithOptions) {
+                std::string queueName = randomString();
+                TransactionOptions transactionOptions;
+                transactionOptions.setTransactionType(TransactionType::TWO_PHASE);
+                transactionOptions.setTimeout(60);
+                transactionOptions.setDurability(2);
+                TransactionContext context = client->newTransactionContext(transactionOptions);
+
+                context.beginTransaction();
+                ASSERT_FALSE(context.getTxnId().empty());
+                TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                string value = randomString();
+                queue.offer(value);
+
+                context.commitTransaction();
+
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                boost::shared_ptr<std::string> retrievedElement = q.poll();
+                ASSERT_NOTNULL(retrievedElement.get(), std::string);
+                ASSERT_EQ(value, *retrievedElement);
+            }
+
+            TEST_F(ClientTxnTest, testTxnCommitAfterClientShutdown) {
+                std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
-                queue.offer("item");
-                server->shutdown();
+                string value = randomString();
+                queue.offer(value);
 
-                ASSERT_THROW(context.commitTransaction(), exception::IException);
+                client->shutdown();
 
-                context.rollbackTransaction();
+                ASSERT_THROW(context.commitTransaction(), exception::HazelcastClientNotActiveException);
+            }
 
-                ASSERT_TRUE(memberRemovedLatch.await(10));
 
-                IQueue<std::string> q = client->getQueue<std::string>(queueName);
+            TEST_F(ClientTxnTest, testTxnRollback) {
+                std::string queueName = randomString();
+                TransactionContext context = client->newTransactionContext();
+                util::CountDownLatch txnRollbackLatch(1);
+                util::CountDownLatch memberRemovedLatch(1);
+                MyMembershipListener myLifecycleListener(memberRemovedLatch);
+                client->getCluster().addMembershipListener(&myLifecycleListener);
+
                 try {
-                    ASSERT_EQ(0, q.size());
-                    ASSERT_EQ(q.poll().get(), (std::string *)NULL);
-                } catch (exception::IException& e) {
-                    std::cout << e.what() << std::endl;
+                    context.beginTransaction();
+                    ASSERT_FALSE(context.getTxnId().empty());
+                    TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
+                    queue.offer(randomString());
+
+                    server->shutdown();
+
+                    context.commitTransaction();
+                    FAIL();
+                } catch (exception::TransactionException &) {
+                    context.rollbackTransaction();
+                    txnRollbackLatch.countDown();
                 }
+
+                ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
+                ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
+
+                IQueue <string> q = client->getQueue<std::string>(queueName);
+                ASSERT_NULL("Poll result should be null since it is rolled back", q.poll().get(), std::string);
+                ASSERT_EQ(0, q.size());
             }
 
             TEST_F(ClientTxnTest, testTxnRollbackOnServerCrash) {
-                std::string queueName = "testTxnRollbackOnServerCrash";
+                std::string queueName = randomString();
                 TransactionContext context = client->newTransactionContext();
+                util::CountDownLatch txnRollbackLatch(1);
                 util::CountDownLatch memberRemovedLatch(1);
+
                 context.beginTransaction();
+
                 TransactionalQueue<std::string> queue = context.getQueue<std::string>(queueName);
                 queue.offer("str");
-                MyLifecycleListener myLifecycleListener(memberRemovedLatch);
+
+                MyMembershipListener myLifecycleListener(memberRemovedLatch);
                 client->getCluster().addMembershipListener(&myLifecycleListener);
+
                 server->shutdown();
 
-                ASSERT_THROW(context.commitTransaction(), exception::IException);
+                ASSERT_THROW(context.commitTransaction(), exception::TransactionException);
 
                 context.rollbackTransaction();
+                txnRollbackLatch.countDown();
 
-                ASSERT_TRUE(memberRemovedLatch.await(10));
+                ASSERT_OPEN_EVENTUALLY(txnRollbackLatch);
+                ASSERT_OPEN_EVENTUALLY(memberRemovedLatch);
 
                 IQueue<std::string> q = client->getQueue<std::string>(queueName);
-                ASSERT_EQ(q.poll().get(), (std::string *)NULL);
+                ASSERT_NULL("queue poll should return null", q.poll().get(), std::string);
                 ASSERT_EQ(0, q.size());
             }
         }

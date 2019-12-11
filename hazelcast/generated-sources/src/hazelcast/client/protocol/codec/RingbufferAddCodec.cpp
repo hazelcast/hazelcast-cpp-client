@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferAddCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferAddCodec::RequestParameters::TYPE = HZ_RINGBUFFER_ADD;
-                const bool RingbufferAddCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferAddCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> RingbufferAddCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int32_t overflowPolicy, 
+                const RingbufferMessageType RingbufferAddCodec::REQUEST_TYPE = HZ_RINGBUFFER_ADD;
+                const bool RingbufferAddCodec::RETRYABLE = false;
+                const ResponseMessageConst RingbufferAddCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> RingbufferAddCodec::encodeRequest(
+                        const std::string &name,
+                        int32_t overflowPolicy,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, overflowPolicy, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferAddCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferAddCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(overflowPolicy);
@@ -42,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t RingbufferAddCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int32_t overflowPolicy, 
+                int32_t RingbufferAddCodec::calculateDataSize(
+                        const std::string &name,
+                        int32_t overflowPolicy,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,21 +55,17 @@ namespace hazelcast {
                 }
 
                 RingbufferAddCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferAddCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                RingbufferAddCodec::ResponseParameters RingbufferAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferAddCodec::ResponseParameters
+                RingbufferAddCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferAddCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferAddCodec::ResponseParameters::ResponseParameters(const RingbufferAddCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

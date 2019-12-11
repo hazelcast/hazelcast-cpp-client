@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API RingbufferMessageType {
 
-                    HZ_RINGBUFFER_SIZE=0x1901,
-                    HZ_RINGBUFFER_TAILSEQUENCE=0x1902,
-                    HZ_RINGBUFFER_HEADSEQUENCE=0x1903,
-                    HZ_RINGBUFFER_CAPACITY=0x1904,
-                    HZ_RINGBUFFER_REMAININGCAPACITY=0x1905,
-                    HZ_RINGBUFFER_ADD=0x1906,
-                    HZ_RINGBUFFER_READONE=0x1908,
-                    HZ_RINGBUFFER_ADDALL=0x1909,
-                    HZ_RINGBUFFER_READMANY=0x190a
+                    HZ_RINGBUFFER_SIZE = 0x1901,
+                    HZ_RINGBUFFER_TAILSEQUENCE = 0x1902,
+                    HZ_RINGBUFFER_HEADSEQUENCE = 0x1903,
+                    HZ_RINGBUFFER_CAPACITY = 0x1904,
+                    HZ_RINGBUFFER_REMAININGCAPACITY = 0x1905,
+                    HZ_RINGBUFFER_ADD = 0x1906,
+                    HZ_RINGBUFFER_READONE = 0x1908,
+                    HZ_RINGBUFFER_ADDALL = 0x1909,
+                    HZ_RINGBUFFER_READMANY = 0x190a
                 };
             }
         }

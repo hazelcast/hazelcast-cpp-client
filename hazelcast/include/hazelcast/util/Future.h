@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 31/03/14.
-//
 
-#ifndef HAZELCAST_Future
-#define HAZELCAST_Future
+#ifndef HAZELCAST_UTIL_FUTURE_H_
+#define HAZELCAST_UTIL_FUTURE_H_
 
-#include "hazelcast/client/exception/IException.h"
+#include <memory>
+#include <vector>
+#include <cassert>
+#include <boost/shared_ptr.hpp>
+#include <ostream>
+
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/LockGuard.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Mutex.h"
-
-#include <memory>
-#include <cassert>
+#include "hazelcast/util/Executor.h"
+#include "hazelcast/util/concurrent/Cancellable.h"
+#include "hazelcast/util/concurrent/CancellationException.h"
+#include "hazelcast/client/ExecutionCallback.h"
+#include "hazelcast/client/exception/IException.h"
+#include "hazelcast/client/IFuture.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,46 +43,153 @@
 namespace hazelcast {
     namespace util {
         template<typename T>
-        class Future {
+        class Future : public IFuture<T> {
         public:
-            Future()
-            : resultReady(false)
-            , exceptionReady(false) {
+            class SuccessCallbackRunner : public Runnable {
+            public:
+                SuccessCallbackRunner(const boost::shared_ptr<T> &sharedObj,
+                                      const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
+                                      ILogger &logger, Future &future) : sharedObj(sharedObj), callback(callback),
+                                                                         logger(logger), future(future) {}
 
+                virtual ~SuccessCallbackRunner() {
+                }
+
+                virtual void run() {
+                    try {
+                        callback->onResponse(sharedObj);
+                    } catch (client::exception::IException &cause) {
+                        logger.severe() << "Failed asynchronous execution of execution success callback: " << callback
+                                        << "for call " << future.invocationToString() << ", Cause:" << cause;
+                    }
+                }
+
+                virtual const std::string getName() const {
+                    return "SuccessCallbackRunner";
+                }
+
+            private:
+                boost::shared_ptr<T> sharedObj;
+                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                util::ILogger &logger;
+                Future<T> &future;
+            };
+
+            class ExceptionCallbackRunner : public Runnable {
+            public:
+                ExceptionCallbackRunner(const boost::shared_ptr<client::exception::IException> &exception,
+                                        const boost::shared_ptr<client::ExecutionCallback<T> > &callback,
+                                        ILogger &logger, Future &future)
+                        : exception(exception), callback(callback), logger(logger), future(future) {}
+
+                virtual ~ExceptionCallbackRunner() {
+                }
+
+                virtual void run() {
+                    try {
+                        callback->onFailure(boost::shared_ptr<client::exception::IException>(exception->clone()));
+                    } catch (client::exception::IException &cause) {
+                        logger.severe() << "Failed asynchronous execution of execution failure callback: " << callback
+                                        << "for call " << future << ", Cause:" << cause;
+                    }
+                }
+
+                virtual const std::string getName() const {
+                    return "ExceptionCallbackRunner";
+                }
+
+            private:
+                boost::shared_ptr<client::exception::IException> exception;
+                const boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                util::ILogger &logger;
+                Future<T> &future;
+            };
+
+            Future(ILogger &logger) : resultReady(false), exceptionReady(false), cancelled(false), logger(logger) {}
+
+            virtual ~Future() {
             }
 
-            void set_value(T& value) {
+            void set_value(const boost::shared_ptr<T> &value) {
                 LockGuard guard(mutex);
+                if (cancelled) {
+                    return;
+                }
+
                 if (exceptionReady || resultReady) {
-                    util::ILogger::getLogger().warning(std::string("Future.set_value should not be called twice"));
+                    logger.warning(std::string("Future.set_value should not be called twice"));
+                    return;
                 }
                 sharedObject = value;
                 resultReady = true;
                 conditionVariable.notify_all();
+                for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
+                     it != callbacks.end(); ++it) {
+                    (*it).getExecutor().execute(
+                            boost::shared_ptr<Runnable>(
+                                    new SuccessCallbackRunner(sharedObject, (*it).getCallback(), logger, *this)));
+                }
+                onComplete();
             }
 
             void set_exception(std::auto_ptr<client::exception::IException> exception) {
                 LockGuard guard(mutex);
+                if (cancelled) {
+                    return;
+                }
 
                 if (exceptionReady || resultReady) {
-                    util::ILogger::getLogger().warning(std::string("Future.set_exception should not be called twice : details ") + exception->what());
+                    logger.warning(std::string("Future.set_exception should not be called twice : details ") +
+                                   exception->what());
+                    return;
                 }
 
                 this->exception = exception;
                 exceptionReady = true;
                 conditionVariable.notify_all();
+                for (typename std::vector<CallbackInfo>::const_iterator it = callbacks.begin();
+                     it != callbacks.end(); ++it) {
+                    (*it).getExecutor().execute(boost::shared_ptr<Runnable>(
+                            new ExceptionCallbackRunner(this->exception, (*it).getCallback(), logger, *this)));
+                }
+
+                onComplete();
             }
 
-            void reset_exception(std::auto_ptr<client::exception::IException> exception) {
-                LockGuard guard(mutex);
-
-                this->exception = exception;
-                exceptionReady = true;
-                conditionVariable.notify_all();
+            void complete(const boost::shared_ptr<T> &value) {
+                set_value(value);
             }
 
-            T get() {
+            void complete(const client::exception::IException &exception) {
+                set_exception(exception.clone());
+            }
+
+            /**
+             * Waits if necessary for the computation to complete, and then
+             * retrieves its result.
+             *
+             * @return the computed result
+             * @throws CancellationException if the computation was cancelled
+             * @throws ExecutionException if the computation threw an
+             * exception
+             * @throws InterruptedException if the current thread was interrupted
+             * while waiting
+             */
+            boost::shared_ptr<T> get() {
                 LockGuard guard(mutex);
+
+                if (resultReady) {
+                    return sharedObject;
+                }
+                if (exceptionReady) {
+                    exception->raise();
+                }
+
+                // wait for condition variable to be notified
+                while (!resultReady && !exceptionReady && !cancelled) {
+                    conditionVariable.wait(mutex);
+                }
+
                 if (resultReady) {
                     return sharedObject;
                 }
@@ -88,9 +200,14 @@ namespace hazelcast {
                 return sharedObject;
             }
 
+            virtual boost::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
+                waitFor(unit.toMillis(timeout));
+                return get();
+            }
+
             /**
              *
-             * @return true if result or exception is ready. false otherwise when timeout expires.
+             * @return true if result or exception is ready. git pufalse otherwise when timeout expires.
              *
              * Does not throw
              */
@@ -105,23 +222,119 @@ namespace hazelcast {
                 return resultReady || exceptionReady;
             }
 
-            void reset() {
+            void
+            andThen(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, util::Executor &executor) {
                 LockGuard guard(mutex);
+                if (resultReady) {
+                    executor.execute(boost::shared_ptr<Runnable>(
+                            new SuccessCallbackRunner(sharedObject, callback, logger, *this)));
+                    return;
+                }
 
-                resultReady = false;
-                exceptionReady = false;
+                if (exceptionReady) {
+                    executor.execute(boost::shared_ptr<Runnable>(
+                            new ExceptionCallbackRunner(exception, callback, logger, *this)));
+                    return;
+                }
+
+                callbacks.push_back(CallbackInfo(callback, &executor));
             }
-        private:
+
+            virtual void onComplete() {}
+
+            virtual std::string invocationToString() {
+                return "";
+            }
+
+            /**
+             * Attempts to cancel execution of this task.  This attempt will
+             * fail if the task has already completed, has already been cancelled,
+             * or could not be cancelled for some other reason.
+             *
+             * <p>After this method returns, subsequent calls to {@link #isDone} will
+             * always return {@code true}.  Subsequent calls to {@link #isCancelled}
+             * will always return {@code true} if this method returned {@code true}.
+             *
+             * @return {@code false} if the task could not be cancelled,
+             * typically because it has already completed normally;
+             * {@code true} otherwise
+             */
+            bool cancel(bool mayInterruptIfRunning = false) {
+                LockGuard guard(mutex);
+                if (resultReady || exceptionReady) {
+                    return false;
+                }
+
+                if (cancelled) {
+                    return true;
+                }
+
+                cancelled = true;
+
+                exception = boost::shared_ptr<client::exception::IException>(
+                        new concurrent::CancellationException("Future::cancel", "Future is cancelled."));
+
+                exceptionReady = true;
+
+                return true;
+            }
+
+            bool isCancelled() {
+                LockGuard guard(mutex);
+                return cancelled;
+            }
+
+            /**
+             * Returns {@code true} if this task completed.
+             *
+             * Completion may be due to normal termination, an exception, or
+             * cancellation -- in all of these cases, this method will return
+             * {@code true}.
+             *
+             * @return {@code true} if this task completed
+             */
+            bool isDone() {
+                LockGuard guard(mutex);
+                return resultReady || exceptionReady || cancelled;
+            }
+
+            friend std::ostream &operator<<(std::ostream &os, const Future &future) {
+                os << "resultReady: " << future.resultReady << " exceptionReady: " << future.exceptionReady;
+                return os;
+            }
+
+        protected:
+            class CallbackInfo {
+            public:
+                CallbackInfo(const boost::shared_ptr<client::ExecutionCallback<T> > &callback, Executor *executor)
+                        : callback(callback), executor(executor) {}
+
+                const boost::shared_ptr<client::ExecutionCallback<T> > &getCallback() const {
+                    return callback;
+                }
+
+                Executor &getExecutor() const {
+                    return *executor;
+                }
+
+            private:
+                boost::shared_ptr<client::ExecutionCallback<T> > callback;
+                Executor *executor;
+            };
+
             bool resultReady;
             bool exceptionReady;
+            bool cancelled;
             ConditionVariable conditionVariable;
             Mutex mutex;
-            T sharedObject;
-            std::auto_ptr<client::exception::IException> exception;
+            boost::shared_ptr<T> sharedObject;
+            boost::shared_ptr<client::exception::IException> exception;
+            std::vector<CallbackInfo> callbacks;
+            ILogger &logger;
 
-            Future(const Future& rhs);
+            Future(const Future &rhs) : logger(rhs.logger) { assert(false); }
 
-            void operator=(const Future& rhs);
+            void operator=(const Future &rhs) { assert(false); }
         };
     }
 }
@@ -130,5 +343,5 @@ namespace hazelcast {
 #pragma warning(pop)
 #endif
 
-#endif //HAZELCAST_Future
+#endif //HAZELCAST_UTIL_FUTURE_H_
 

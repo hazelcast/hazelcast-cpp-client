@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,49 +14,37 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetClearCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetClearCodec::RequestParameters::TYPE = HZ_SET_CLEAR;
-                const bool SetClearCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetClearCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> SetClearCodec::RequestParameters::encode(
+                const SetMessageType SetClearCodec::REQUEST_TYPE = HZ_SET_CLEAR;
+                const bool SetClearCodec::RETRYABLE = false;
+                const ResponseMessageConst SetClearCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> SetClearCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetClearCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetClearCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SetClearCodec::RequestParameters::calculateDataSize(
+                int32_t SetClearCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     return dataSize;
                 }
 
-                SetClearCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetClearCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                SetClearCodec::ResponseParameters SetClearCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return SetClearCodec::ResponseParameters(clientMessage);
-                }
-
-                SetClearCodec::ResponseParameters::ResponseParameters(const SetClearCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

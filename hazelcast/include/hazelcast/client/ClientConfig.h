@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 #include <vector>
 #include <set>
-#include <memory>
+#include <boost/shared_ptr.hpp>
 
 #include "hazelcast/client/Address.h"
 #include "hazelcast/client/GroupConfig.h"
@@ -28,10 +28,15 @@
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/client/impl/RoundRobinLB.h"
 #include "hazelcast/util/ILogger.h"
+#include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/config/ClientNetworkConfig.h"
-#include "hazelcast/util/SynchronizedMap.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
+#include "hazelcast/client/config/ClientFlakeIdGeneratorConfig.h"
+#include "hazelcast/client/config/matcher/MatchingPointConfigPatternMatcher.h"
+#include "hazelcast/client/internal/config/ConfigUtils.h"
+#include "hazelcast/client/config/LoggerConfig.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -46,10 +51,13 @@ namespace hazelcast {
 
         class LifecycleListener;
 
+        class InitialMembershipEvent;
+
         /**
         * HazelcastClient configuration class.
         */
         class HAZELCAST_API ClientConfig {
+            friend class spi::impl::ClientClusterServiceImpl;
         public:
 
             /**
@@ -63,6 +71,8 @@ namespace hazelcast {
             ClientConfig();
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#addAddress(const Address &)}.
+            *
             * Adds an address to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
@@ -72,6 +82,8 @@ namespace hazelcast {
             ClientConfig &addAddress(const Address &address);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#addAddresses(const std::vector<Address> &)}.
+            *
             * Adds all address in given vector to list of the initial addresses.
             * Client will use this list to find a running Member, connect to it.
             *
@@ -81,12 +93,14 @@ namespace hazelcast {
             ClientConfig &addAddresses(const std::vector<Address> &addresses);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getAddresses()}.
+            *
             * Returns set of the initial addresses.
             * Client will use this vector to find a running Member, connect to it.
             *
             * @return vector of addresses
             */
-            std::set<Address, addressComparator> &getAddresses();
+            std::set<Address> getAddresses();
 
             /**
             * The Group Configuration properties like:
@@ -95,7 +109,7 @@ namespace hazelcast {
             * @param groupConfig
             * @return itself ClientConfig
             */
-            ClientConfig &setGroupConfig(GroupConfig &groupConfig);
+            ClientConfig &setGroupConfig(const GroupConfig &groupConfig);
 
             /**
             *
@@ -116,6 +130,8 @@ namespace hazelcast {
             const Credentials *getCredentials();
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)}
+            *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
@@ -126,6 +142,8 @@ namespace hazelcast {
             ClientConfig &setConnectionAttemptLimit(int connectionAttemptLimit);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getConnectionAttemptLimit()}
+            *
             * While client is trying to connect initially to one of the members in the ClientConfig#addressList,
             * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
             * attempt to retry as much as ClientConfig#connectionAttemptLimit times.
@@ -147,6 +165,8 @@ namespace hazelcast {
             int getConnectionTimeout() const;
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#setAttemptPeriod(int32_t)}
+            *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
             * @param attemptPeriodInMillis
@@ -155,6 +175,8 @@ namespace hazelcast {
             ClientConfig &setAttemptPeriod(int attemptPeriodInMillis);
 
             /**
+            * @deprecated Please use {@link ClientNetworkConfig#getAttemptPeriod()}
+            *
             * Period for the next attempt to find a member to connect. (see ClientConfig#connectionAttemptLimit ).
             *
             * @return int attemptPeriodInMillis
@@ -182,12 +204,16 @@ namespace hazelcast {
             bool isRedoOperation() const;
 
             /**
+            * @deprecated Please use ClientNetworkConfig#isSmartRouting
+            *
             * @return true if client configured as smart
             * see setSmart()
             */
             bool isSmart() const;
 
             /**
+            * @deprecated Please use ClientNetworkConfig#setSmartRouting
+            *
             * If true, client will route the key based operations to owner of the key at the best effort.
             * Note that it uses a cached version of PartitionService#getPartitions() and doesn't
             * guarantee that the operation will always be executed on the owner.
@@ -230,6 +256,8 @@ namespace hazelcast {
             const std::set<LifecycleListener *> &getLifecycleListeners() const;
 
             /**
+            * @deprecated Please use addListener(const boost::shared_ptr<MembershipListener> &listener) instead.
+            *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
             * otherwise it will slow down the system.
@@ -242,6 +270,18 @@ namespace hazelcast {
             ClientConfig &addListener(MembershipListener *listener);
 
             /**
+            * Adds a listener to configuration to be registered when HazelcastClient starts.
+            * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
+            * otherwise it will slow down the system.
+            *
+            * Warning 2: Do not make a call to hazelcast. It can cause deadlock.
+            *
+            * @param listener MembershipListener *listener
+            * @return itself ClientConfig
+            */
+            ClientConfig &addListener(const boost::shared_ptr<MembershipListener> &listener);
+
+            /**
             * Returns registered membershipListeners
             *
             * @return registered membershipListeners
@@ -249,6 +289,16 @@ namespace hazelcast {
             const std::set<MembershipListener *> &getMembershipListeners() const;
 
             /**
+             * Returns registered membershipListeners
+             *
+             * @return registered membership listeners. This method returns the same list as the
+             * getMembershipListeners method but as a set of shared_ptr.
+             */
+            const std::set<boost::shared_ptr<MembershipListener> > &getManagedMembershipListeners() const;
+
+            /**
+            * @deprecated Please use addListener(const boost::shared_ptr<InitialMembershipListener> &listener)
+            *
             * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
             * @param listener InitialMembershipListener *listener
@@ -257,11 +307,12 @@ namespace hazelcast {
             ClientConfig &addListener(InitialMembershipListener *listener);
 
             /**
-            * Returns registered initialMembershipListeners
+            * Adds a listener to configuration to be registered when HazelcastClient starts.
             *
-            * @return registered initialMembershipListeners
+            * @param listener InitialMembershipListener *listener
+            * @return itself ClientConfig
             */
-            const std::set<InitialMembershipListener *> &getInitialMembershipListeners() const;
+            ClientConfig &addListener(const boost::shared_ptr<InitialMembershipListener> &listener);
 
             /**
             * Used to distribute the operations to multiple Endpoints.
@@ -281,22 +332,22 @@ namespace hazelcast {
             ClientConfig &setLoadBalancer(LoadBalancer *loadBalancer);
 
             /**
-            *  enum LogLevel { SEVERE = 100, WARNING = 90, INFO = 50 };
+            *  enum LogLevel { SEVERE, WARNING, INFO, FINEST };
             *  set INFO to see every log.
             *  set WARNING to see only possible warnings and serious errors.
             *  set SEVERE to see only serious errors
+            *  set FINEST to see all messages including debug messages.
             *
-            *  Default log level is INFO
-            * @return itself ClientConfig
-            */
+            * @param loggerLevel The log level to be set.
+            * @return The configured client configuration for chaining.
+             */
             ClientConfig &setLogLevel(LogLevel loggerLevel);
-
 
             /**
             *
             *  @return serializationConfig
             */
-            SerializationConfig const &getSerializationConfig() const;
+            SerializationConfig &getSerializationConfig();
 
             /**
             * SerializationConfig is used to
@@ -359,6 +410,20 @@ namespace hazelcast {
             }
 
             /**
+             * Helper method to add a new NearCacheConfig
+             *
+             * @param nearCacheConfig {@link com.hazelcast.config.NearCacheConfig} to be added
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             * @see com.hazelcast.config.NearCacheConfig
+             *
+             * Memory ownership of the config is passed to the client config
+             */
+            ClientConfig &addMixedNearCacheConfig(const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> nearCacheConfig) {
+                nearCacheConfigMap.put(nearCacheConfig->getName(), nearCacheConfig);
+                return *this;
+            }
+
+            /**
              * Gets the {@link NearCacheConfig} configured for the map / cache with name
              *
              * @param name name of the map / cache
@@ -366,15 +431,18 @@ namespace hazelcast {
              * @see com.hazelcast.config.NearCacheConfig
              */
             template <typename K, typename V>
-            const config::NearCacheConfig<K, V> *getNearCacheConfig(const std::string &name) {
-                boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = lookupByPattern(name);
+            const boost::shared_ptr<config::NearCacheConfig<K, V> > getNearCacheConfig(const std::string &name) {
+                boost::shared_ptr<config::NearCacheConfigBase> nearCacheConfig = internal::config::ConfigUtils::lookupByPattern<config::NearCacheConfigBase>(
+                        configPatternMatcher, nearCacheConfigMap, name);
                 if (nearCacheConfig.get() == NULL) {
                     nearCacheConfig = nearCacheConfigMap.get("default");
                 }
                 // not needed for c++ client since it is always native memory
                 //initDefaultMaxSizeForOnHeapMaps(nearCacheConfig);
-                return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig).get();
+                return boost::static_pointer_cast<config::NearCacheConfig<K, V> >(nearCacheConfig);
             }
+
+            const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig> getMixedNearCacheConfig(const std::string &name);
 
             /**
              * Gets {@link com.hazelcast.client.config.ClientNetworkConfig}
@@ -393,50 +461,133 @@ namespace hazelcast {
              */
             ClientConfig &setNetworkConfig(const config::ClientNetworkConfig &networkConfig);
 
-        private:
+            const boost::shared_ptr<std::string> &getInstanceName() const;
 
+            void setInstanceName(const boost::shared_ptr<std::string> &instanceName);
+
+            /**
+             * Pool size for internal ExecutorService which handles responses etc.
+             *
+             * @return int Executor pool size.
+             */
+            int32_t getExecutorPoolSize() const;
+
+            /**
+             * Sets Client side Executor pool size.
+             *
+             * @param executorPoolSize pool size
+             * @return configured {@link com.hazelcast.client.config.ClientConfig} for chaining
+             */
+            void setExecutorPoolSize(int32_t executorPoolSize);
+
+            config::ClientConnectionStrategyConfig &getConnectionStrategyConfig();
+
+            ClientConfig &
+            setConnectionStrategyConfig(const config::ClientConnectionStrategyConfig &connectionStrategyConfig);
+
+            /**
+             * Returns a {@link ClientFlakeIdGeneratorConfig} configuration for the given flake ID generator name.
+             * <p>
+             * The name is matched by pattern to the configuration and by stripping the
+             * partition ID qualifier from the given {@code name}.
+             * If there is no config found by the name, it will return the configuration
+             * with the name {@code "default"}.
+             *
+             * @param name name of the flake ID generator config
+             * @return the flake ID generator configuration
+             * @throws ConfigurationException if ambiguous configurations are found
+             * @see StringPartitioningStrategy#getBaseName(std::string)
+             * @see #setConfigPatternMatcher(ConfigPatternMatcher)
+             * @see #getConfigPatternMatcher()
+             */
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> findFlakeIdGeneratorConfig(const std::string &name);
+
+            /**
+             * Returns the {@link ClientFlakeIdGeneratorConfig} for the given name, creating
+             * one if necessary and adding it to the collection of known configurations.
+             * <p>
+             * The configuration is found by matching the the configuration name
+             * pattern to the provided {@code name} without the partition qualifier
+             * (the part of the name after {@code '@'}).
+             * If no configuration matches, it will create one by cloning the
+             * {@code "default"} configuration and add it to the configuration
+             * collection.
+             * <p>
+             * This method is intended to easily and fluently create and add
+             * configurations more specific than the default configuration without
+             * explicitly adding it by invoking {@link #addFlakeIdGeneratorConfig(ClientFlakeIdGeneratorConfig)}.
+             * <p>
+             * Because it adds new configurations if they are not already present,
+             * this method is intended to be used before this config is used to
+             * create a hazelcast instance. Afterwards, newly added configurations
+             * may be ignored.
+             *
+             * @param name name of the flake ID generator config
+             * @return the cache configuration
+             * @throws ConfigurationException if ambiguous configurations are found
+             * @see StringPartitioningStrategy#getBaseName(std::string)
+             */
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> getFlakeIdGeneratorConfig(const std::string &name);
+
+            /**
+             * Adds a flake ID generator configuration. The configuration is saved under the config
+             * name, which may be a pattern with which the configuration will be
+             * obtained in the future.
+             *
+             * @param config the flake ID configuration
+             * @return this config instance
+             */
+            ClientConfig &addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config);
+
+
+            /**
+             *
+             * @return The logger configuration.
+             */
+            config::LoggerConfig &getLoggerConfig();
+
+        private:
             GroupConfig groupConfig;
 
             config::ClientNetworkConfig networkConfig;
 
             SerializationConfig serializationConfig;
 
-            std::set<Address, addressComparator> addressList;
-
             LoadBalancer *loadBalancer;
 
-            std::auto_ptr<impl::RoundRobinLB> defaultLoadBalancer;
+            impl::RoundRobinLB defaultLoadBalancer;
 
             std::set<MembershipListener *> membershipListeners;
-
-            std::set<InitialMembershipListener *> initialMembershipListeners;
+            std::set<boost::shared_ptr<MembershipListener> > managedMembershipListeners;
 
             std::set<LifecycleListener *> lifecycleListeners;
 
             std::map<std::string, std::string> properties;
 
-            bool smart;
-
             bool redoOperation;
-
-            int connectionAttemptLimit;
-
-            int attemptPeriod;
 
             SocketInterceptor *socketInterceptor;
 
             Credentials *credentials;
 
-            std::auto_ptr<Credentials> defaultCredentials;
-
             std::map<std::string, config::ReliableTopicConfig> reliableTopicConfigMap;
 
             util::SynchronizedMap<std::string, config::NearCacheConfigBase> nearCacheConfigMap;
 
-            const boost::shared_ptr<config::NearCacheConfigBase> lookupByPattern(const std::string &name) {
-                    // TODO: implement the lookup
-                    return nearCacheConfigMap.get(name);
-            }
+            boost::shared_ptr<std::string> instanceName;
+
+            /**
+             * pool-size for internal ExecutorService which handles responses etc.
+             */
+            int32_t executorPoolSize;
+
+            config::ClientConnectionStrategyConfig connectionStrategyConfig;
+
+            util::SynchronizedMap<std::string, config::ClientFlakeIdGeneratorConfig> flakeIdGeneratorConfigMap;
+
+            config::matcher::MatchingPointConfigPatternMatcher configPatternMatcher;
+
+            config::LoggerConfig loggerConfig;
         };
 
     }

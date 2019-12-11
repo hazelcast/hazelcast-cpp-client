@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapExecuteOnKeyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapExecuteOnKeyCodec::RequestParameters::TYPE = HZ_MAP_EXECUTEONKEY;
-                const bool MapExecuteOnKeyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapExecuteOnKeyCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> MapExecuteOnKeyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &entryProcessor, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapExecuteOnKeyCodec::REQUEST_TYPE = HZ_MAP_EXECUTEONKEY;
+                const bool MapExecuteOnKeyCodec::RETRYABLE = false;
+                const ResponseMessageConst MapExecuteOnKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> MapExecuteOnKeyCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &entryProcessor,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapExecuteOnKeyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapExecuteOnKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(entryProcessor);
@@ -44,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapExecuteOnKeyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &entryProcessor, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapExecuteOnKeyCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &entryProcessor,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,21 +59,21 @@ namespace hazelcast {
                 }
 
                 MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapExecuteOnKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                MapExecuteOnKeyCodec::ResponseParameters MapExecuteOnKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapExecuteOnKeyCodec::ResponseParameters
+                MapExecuteOnKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapExecuteOnKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(const MapExecuteOnKeyCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(
+                        const MapExecuteOnKeyCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

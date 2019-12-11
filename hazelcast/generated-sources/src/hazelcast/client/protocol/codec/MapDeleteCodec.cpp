@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapDeleteCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapDeleteCodec::RequestParameters::TYPE = HZ_MAP_DELETE;
-                const bool MapDeleteCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapDeleteCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapDeleteCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapDeleteCodec::REQUEST_TYPE = HZ_MAP_DELETE;
+                const bool MapDeleteCodec::RETRYABLE = false;
+                const ResponseMessageConst MapDeleteCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapDeleteCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapDeleteCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapDeleteCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -42,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapDeleteCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapDeleteCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,19 +54,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapDeleteCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapDeleteCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                MapDeleteCodec::ResponseParameters MapDeleteCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapDeleteCodec::ResponseParameters(clientMessage);
-                }
-
-                MapDeleteCodec::ResponseParameters::ResponseParameters(const MapDeleteCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

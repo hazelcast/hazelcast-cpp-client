@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@
 
 #include <fstream>
 #include <asio.hpp>
-#include <gtest/gtest.h>
 
+#include "ClientTestSupport.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 
@@ -29,7 +29,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             namespace aws {
-                class CloudUtilityTest : public ::testing::Test {
+                class CloudUtilityTest : public ClientTestSupport {
                 };
 
                 TEST_F (CloudUtilityTest, testUnmarshallResponseXml) {
@@ -38,7 +38,8 @@ namespace hazelcast {
                     std::istream responseStream(&fb);
 
                     config::ClientAwsConfig awsConfig;
-                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(responseStream);
+                    std::map<std::string, std::string> results = awsutil::CloudUtility::unmarshalTheResponse(
+                            responseStream, getLogger());
                     ASSERT_EQ(4U, results.size());
                     ASSERT_NE(results.end(), results.find("10.0.16.13"));
                     ASSERT_EQ("", results["10.0.16.13"]);

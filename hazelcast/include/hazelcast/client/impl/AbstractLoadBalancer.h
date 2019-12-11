@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 #define HAZELCAST_ABSTRACT_LOAD_BALANCER
 
 #include "hazelcast/client/Member.h"
-#include "hazelcast/client/MembershipListener.h"
+#include "hazelcast/client/InitialMembershipListener.h"
 #include "hazelcast/client/LoadBalancer.h"
 #include "hazelcast/util/Mutex.h"
 
@@ -36,8 +36,13 @@ namespace hazelcast {
         class Cluster;
 
         namespace impl {
-            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public MembershipListener {
+            class HAZELCAST_API AbstractLoadBalancer : public LoadBalancer, public InitialMembershipListener {
             public:
+                AbstractLoadBalancer();
+
+                AbstractLoadBalancer(const AbstractLoadBalancer &rhs);
+
+                void operator=(const AbstractLoadBalancer &rhs);
 
                 void setMembersRef();
 
@@ -48,6 +53,8 @@ namespace hazelcast {
                 void memberAdded(const MembershipEvent &membershipEvent);
 
                 void memberRemoved(const MembershipEvent &membershipEvent);
+
+                virtual void init(const InitialMembershipEvent &event);
 
                 void memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent);
 

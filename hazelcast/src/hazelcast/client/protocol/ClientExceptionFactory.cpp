@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,6 @@ namespace hazelcast {
         namespace protocol {
             ExceptionFactory::~ExceptionFactory() {
             }
-
-            template <typename EXCEPTION>
-            class ExceptionFactoryImpl : public ExceptionFactory {
-                std::auto_ptr<exception::IException> createException(const std::string &message,
-                                                                    const std::string &details,
-                                                                    int32_t errorCode,
-                                                                    int32_t causeErrorCode) {
-                    return std::auto_ptr<exception::IException>(new EXCEPTION(message, details, errorCode, causeErrorCode));
-                }
-            };
 
             ClientExceptionFactory::ClientExceptionFactory() {
                 registerException(ARRAY_INDEX_OUT_OF_BOUNDS, new ExceptionFactoryImpl<exception::ArrayIndexOutOfBoundsException>());
@@ -119,6 +109,7 @@ namespace hazelcast {
                 registerException(STACK_OVERFLOW_ERROR, new ExceptionFactoryImpl<exception::StackOverflowError>());
                 registerException(NATIVE_OUT_OF_MEMORY_ERROR, new ExceptionFactoryImpl<exception::NativeOutOfMemoryError>());
                 registerException(SERVICE_NOT_FOUND, new ExceptionFactoryImpl<exception::ServiceNotFoundException>());
+                registerException(CONSISTENCY_LOST, new ExceptionFactoryImpl<exception::ConsistencyLostException>());
             }
 
             ClientExceptionFactory::~ClientExceptionFactory() {
@@ -129,22 +120,29 @@ namespace hazelcast {
                 }
             }
 
-            std::auto_ptr<exception::IException> ClientExceptionFactory::createException(protocol::ClientMessage &message) const {
-                codec::ErrorCodec error = codec::ErrorCodec::decode(message);
-                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(error.errorCode);
+            std::auto_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
+                                                                                         protocol::ClientMessage &clientMessage) const {
+                codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
+                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
+                        error.errorCode);
                 if (errorCodeToFactory.end() == it) {
-                    return std::auto_ptr<exception::IException>(new exception::UndefinedErrorCodeException(error.errorCode, message.getCorrelationId(), error.toString()));
+                    return std::auto_ptr<exception::IException>(
+                            new exception::UndefinedErrorCodeException(source, "",
+                                                                       error.errorCode,
+                                                                       clientMessage.getCorrelationId(),
+                                                                       error.toString()));
                 }
 
-                return it->second->createException(*error.message, error.toString(), error.errorCode, error.causeErrorCode);
+                return it->second->createException(source, error.message, error.toString(), error.causeErrorCode);
             }
 
             void ClientExceptionFactory::registerException(int32_t errorCode, ExceptionFactory *factory) {
-                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(errorCode);
+                std::map<int, hazelcast::client::protocol::ExceptionFactory *>::iterator it = errorCodeToFactory.find(
+                        errorCode);
                 if (errorCodeToFactory.end() != it) {
                     char msg[100];
-                    util::snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
-                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg, ILLEGAL_STATE, -1);
+                    util::hz_snprintf(msg, 100, "Error code %d was already registered!!!", errorCode);
+                    throw exception::IllegalStateException("ClientExceptionFactory::registerException", msg);
                 }
 
                 errorCodeToFactory[errorCode] = factory;

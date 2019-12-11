@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 #define HAZELCAST_UTIL_ATOMIC_H_
 
 #include <ostream>
+#include <boost/noncopyable.hpp>
 
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
@@ -32,25 +33,14 @@
 namespace hazelcast {
     namespace util {
         template<typename T>
-        class Atomic {
+        class Atomic : private boost::noncopyable {
         public:
-            Atomic() {
-            }
+            Atomic() {}
 
-            Atomic(T v) : v(v) {
+            Atomic(const T &v) : v(v) {
             }
 
             virtual ~Atomic() {
-            }
-
-            Atomic(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
-            }
-
-            void operator=(const Atomic<T> &rhs) {
-                LockGuard lockGuardRhs(rhs.mutex);
-                v = rhs.v;
             }
 
             T operator--(int) {
@@ -58,7 +48,7 @@ namespace hazelcast {
                 return v--;
             }
 
-            T operator-=(T &delta) {
+            T operator-=(const T &delta) {
                 LockGuard lockGuard(mutex);
                 v -= delta;
                 return v;
@@ -74,18 +64,27 @@ namespace hazelcast {
                 return ++v;
             }
 
-            T operator+=(T &delta) {
+            T operator+=(const T &delta) {
                 LockGuard lockGuard(mutex);
                 v += delta;
                 return v;
             }
 
-            void operator=(T i) {
+            void operator=(const T &i) {
+                LockGuard lockGuard(mutex);
+                v = i;
+            }
+
+            void set(const T &i) {
                 LockGuard lockGuard(mutex);
                 v = i;
             }
 
             operator T() {
+                return get();
+            }
+
+            T get() {
                 LockGuard lockGuard(mutex);
                 return v;
             }
@@ -95,17 +94,17 @@ namespace hazelcast {
                 return --v;
             }
 
-            bool operator<=(T i) {
+            bool operator<=(const T &i) {
                 LockGuard lockGuard(mutex);
                 return v <= i;
             }
 
-            bool operator==(T i) {
+            bool operator==(const T &i) {
                 LockGuard lockGuard(mutex);
                 return i == v;
             }
 
-            bool operator!=(T i) {
+            bool operator!=(const T &i) {
                 LockGuard lockGuard(mutex);
                 return i != v;
             }
@@ -119,13 +118,9 @@ namespace hazelcast {
                 return false;
             }
 
-            std::ostream &operator<<(std::ostream &out) const {
-                LockGuard lockGuard(mutex);
-                out << v;
-                return out;
-            }
         protected:
-            mutable Mutex mutex;
+
+            Mutex mutex;
             T v;
         };
     }

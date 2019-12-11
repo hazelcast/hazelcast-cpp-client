@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,17 @@
 #include <hazelcast/client/HazelcastClient.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<std::string, std::string> map = hz.getMap<std::string, std::string>("somemap");
 
     std::ostringstream out;
     out << time(NULL);
+    const std::string &key = out.str();
 
-    map.put(out.str(), "1");
-    map.put(out.str(), "2");
-    map.deleteEntry(out.str());
+    map.put(key, "1");
+    map.put(key, "2");
+    map.deleteEntry(key);
 
     std::cout << "Finished" << std::endl;
 

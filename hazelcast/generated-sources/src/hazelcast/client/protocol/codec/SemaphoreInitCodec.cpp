@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreInitCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SemaphoreMessageType SemaphoreInitCodec::RequestParameters::TYPE = HZ_SEMAPHORE_INIT;
-                const bool SemaphoreInitCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SemaphoreInitCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SemaphoreInitCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const SemaphoreMessageType SemaphoreInitCodec::REQUEST_TYPE = HZ_SEMAPHORE_INIT;
+                const bool SemaphoreInitCodec::RETRYABLE = false;
+                const ResponseMessageConst SemaphoreInitCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SemaphoreInitCodec::encodeRequest(
+                        const std::string &name,
                         int32_t permits) {
                     int32_t requiredDataSize = calculateDataSize(name, permits);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreInitCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreInitCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(permits);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SemaphoreInitCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t SemaphoreInitCodec::calculateDataSize(
+                        const std::string &name,
                         int32_t permits) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,21 +50,17 @@ namespace hazelcast {
                 }
 
                 SemaphoreInitCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreInitCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SemaphoreInitCodec::ResponseParameters SemaphoreInitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreInitCodec::ResponseParameters
+                SemaphoreInitCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreInitCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreInitCodec::ResponseParameters::ResponseParameters(const SemaphoreInitCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

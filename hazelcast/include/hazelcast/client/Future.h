@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,12 @@
 #include <stdint.h>
 #include <memory>
 #include <assert.h>
+#include <boost/shared_ptr.hpp>
 
-#include "hazelcast/client/connection/CallFuture.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/connection/CallPromise.h"
+#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -92,14 +94,6 @@ namespace hazelcast {
             int value;
         };
 
-        namespace exception {
-            class HAZELCAST_API FutureUninitialized : public IException {
-            public:
-                FutureUninitialized(const std::string &source, const std::string &message) : IException(source,
-                                                                                                        message) { }
-            };
-        }
-
         /**
          * This is a unique Future. It can not be shared. The copy constructor actually moves and invalidates the moved
          * from Future. It acts similar to std::future (avaialable since C++11)
@@ -115,9 +109,9 @@ namespace hazelcast {
             /**
              * This constructor is only for internal use!!!!
              */
-            Future(connection::CallFuture &callFuture,
+            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
                    serialization::pimpl::SerializationService &serializationService,
-                   Decoder decoder) : callFuture(new connection::CallFuture(callFuture)),
+                   Decoder decoder) : clientInvocationFuture(invocationFuture),
                                       serializationService(serializationService), decoderFunction(decoder) {
             }
 
@@ -126,9 +120,10 @@ namespace hazelcast {
              * Constructs a Future with the shared state of movedFuture using move semantics. After construction,
              * movedFuture.valid() == false.
              */
-            Future(const Future &movedFuture) : callFuture(movedFuture.callFuture),
+            Future(const Future &movedFuture) : clientInvocationFuture(movedFuture.clientInvocationFuture),
                                                 serializationService(movedFuture.serializationService),
                                                 decoderFunction(movedFuture.decoderFunction) {
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
             }
 
             /**
@@ -138,7 +133,8 @@ namespace hazelcast {
              * the assignment.
              */
             Future &operator=(const Future &movedFuture) {
-                this->callFuture = movedFuture.callFuture;
+                this->clientInvocationFuture = movedFuture.clientInvocationFuture;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
                 this->decoderFunction = movedFuture.decoderFunction;
                 return *this;
             }
@@ -163,16 +159,16 @@ namespace hazelcast {
              * the future
              */
             std::auto_ptr<V> get() {
-                if (!callFuture.get()) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized. "
                             "It may have been moved from.");
                 }
 
-                std::auto_ptr<protocol::ClientMessage> responseMsg = callFuture->get();
+                boost::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
 
                 assert(responseMsg.get());
 
-                callFuture.reset();
+                clientInvocationFuture.reset();
 
                 std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
 
@@ -193,11 +189,16 @@ namespace hazelcast {
              * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
              */
             future_status wait_for(int64_t timeoutInMilliseconds) const {
-                if (!callFuture.get()) {
+                if (!clientInvocationFuture.get()) {
                     throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
                 }
 
-                return callFuture->waitFor(timeoutInMilliseconds) ? future_status::ready : future_status::timeout;
+                try {
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
+                    return future_status::ready;
+                } catch (exception::TimeoutException &) {
+                    return future_status::timeout;
+                }
             }
 
             /**
@@ -218,11 +219,139 @@ namespace hazelcast {
              * @return true if *this refers to a shared state, otherwise false.
              */
             bool valid() const {
-                return callFuture.get() != NULL;
+                return clientInvocationFuture.get() != NULL;
             }
 
         private:
-            mutable std::auto_ptr<connection::CallFuture> callFuture;
+            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
+            serialization::pimpl::SerializationService &serializationService;
+            Decoder decoderFunction;
+        };
+
+        /**
+         * This specialization overwrites the get method to return TypedData.
+         */
+        template<>
+        class Future<TypedData> {
+        public:
+            typedef std::auto_ptr<serialization::pimpl::Data> (*Decoder)(protocol::ClientMessage &response);
+
+            /**
+             * This constructor is only for internal use!!!!
+             */
+            Future(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &invocationFuture,
+                   serialization::pimpl::SerializationService &serializationService,
+                   Decoder decoder) : clientInvocationFuture(invocationFuture),
+                                      serializationService(serializationService), decoderFunction(decoder) {
+            }
+
+            /**
+             * This is actually a move constructor
+             * Constructs a Future with the shared state of movedFuture using move semantics. After construction,
+             * movedFuture.valid() == false.
+             */
+            Future(const Future &movedFuture) : clientInvocationFuture(movedFuture.clientInvocationFuture),
+                                                serializationService(movedFuture.serializationService),
+                                                decoderFunction(movedFuture.decoderFunction) {
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
+            }
+
+            /**
+             * Assigns the contents of another future object.
+             * 1) Releases any shared state and move-assigns the contents of movedFuture to *this. After the assignment,
+             * movedFuture.valid() == false and this->valid() will yield the same value as movedFuture.valid() before
+             * the assignment.
+             */
+            Future &operator=(const Future &movedFuture) {
+                this->clientInvocationFuture = movedFuture.clientInvocationFuture;
+                const_cast<Future &>(movedFuture).clientInvocationFuture.reset();
+                this->decoderFunction = movedFuture.decoderFunction;
+                return *this;
+            }
+
+            virtual ~Future() {
+            }
+
+            /**
+             * The get method waits until the future has a valid result and retrieves it. It effectively calls wait()
+             * in order to wait for the result.
+             *
+             * Important Note: get moves the result at the first call and hence it should not be called more than one
+             * time. The second call will result in undefined behaviour.
+             *
+             * The behaviour is undefined if valid() is false before the call to this function (Our implementation
+             * throws FutureUninitialized). Any shared state is
+             * released. valid() is false after a call to this method.
+             *
+             * @return The returned value.
+             *
+             * @throws one of the hazelcast exceptions, if an exception was stored in the shared state referenced by
+             * the future
+             */
+            TypedData get() {
+                if (!clientInvocationFuture.get()) {
+                    throw exception::FutureUninitialized("Future::get", "Future needs to be initialized. "
+                            "It may have been moved from.");
+                }
+
+                boost::shared_ptr<protocol::ClientMessage> responseMsg = clientInvocationFuture->get();
+
+                assert(responseMsg.get());
+
+                clientInvocationFuture.reset();
+
+                std::auto_ptr<serialization::pimpl::Data> response = decoderFunction(*responseMsg);
+
+                return TypedData(response, serializationService);
+            }
+
+            /**
+             * Waits for the result to become available. Blocks until specified timeout_duration has elapsed or the
+             * result becomes available, whichever comes first. Returns value identifies the state of the result. A
+             * steady clock is used to measure the duration. This function may block for longer than timeout_duration
+             * due to scheduling or resource contention delays.
+             *
+             * The behaviour is undefined if valid()== false before the call to this function (Our implementation throws
+             * FutureUninitialized).
+             *
+             * @param timeoutInMilliseconds    maximum duration in milliseconds to block for
+             */
+            future_status wait_for(int64_t timeoutInMilliseconds) const {
+                if (!clientInvocationFuture.get()) {
+                    throw exception::FutureUninitialized("Future::get", "Future needs to be initialized.");
+                }
+
+                try {
+                    clientInvocationFuture->get(timeoutInMilliseconds, concurrent::TimeUnit::MILLISECONDS());
+                    return future_status::ready;
+                } catch (exception::TimeoutException &) {
+                    return future_status::timeout;
+                }
+            }
+
+            /**
+             * Blocks until the result becomes available. valid() == true after the call.
+             *
+             * The behaviour is undefined if valid()== false before the call to this function (Our implementation throws
+             * FutureUninitialized).
+             */
+            void wait() const {
+                wait_for(INT64_MAX);
+            }
+
+            /**
+             * Checks if the future refers to a shared state.
+             *
+             * This is the case only for futures that were not moved from until the first time get() is called.
+             *
+             * @return true if *this refers to a shared state, otherwise false.
+             */
+            bool valid() const {
+                return clientInvocationFuture.get() != NULL;
+            }
+
+        private:
+            boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture;
             serialization::pimpl::SerializationService &serializationService;
             Decoder decoderFunction;
         };

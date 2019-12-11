@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@
 #include <asio.hpp>
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/asio/include/asio/ssl/context.hpp>
-#include <asio/asio/include/asio/ssl/stream.hpp>
+#include <asio/ssl/context.hpp>
+#include <asio/ssl/stream.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
 #include "hazelcast/util/HazelcastDll.h"

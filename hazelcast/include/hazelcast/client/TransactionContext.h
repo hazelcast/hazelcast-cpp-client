@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,11 +35,13 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            class ClientContext;
+            namespace impl {
+                class ClientTransactionManagerServiceImpl;
+            }
         }
 
         namespace connection {
-            class ConnectionManager;
+            class ClientConnectionManagerImpl;
 			class Connection;
         }
 
@@ -55,7 +57,7 @@ namespace hazelcast {
              *  Constructor to be used internally. Not public API.
              *
              */
-            TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &);
+            TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager, const TransactionOptions &);
             /**
              *  @return txn id.
              */
@@ -162,14 +164,9 @@ namespace hazelcast {
             }
 
         private :
-            const int CONNECTION_TRY_COUNT;
-            spi::ClientContext &clientContext;
             TransactionOptions options;
             boost::shared_ptr<connection::Connection> txnConnection;
             txn::TransactionProxy transaction;
-
-            boost::shared_ptr<connection::Connection> connect();
-
         };
 
     }

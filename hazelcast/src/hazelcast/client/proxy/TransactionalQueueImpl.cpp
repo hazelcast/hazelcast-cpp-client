@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,24 +35,24 @@ namespace hazelcast {
 
             bool TransactionalQueueImpl::offer(const serialization::pimpl::Data& e, long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueueOfferCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), e, timeoutInMillis);
+                        protocol::codec::TransactionalQueueOfferCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), e, timeoutInMillis);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalQueueOfferCodec::ResponseParameters>(request);
             }
 
             std::auto_ptr<serialization::pimpl::Data> TransactionalQueueImpl::pollData(long timeoutInMillis) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueuePollCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), timeoutInMillis);
+                        protocol::codec::TransactionalQueuePollCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), timeoutInMillis);
 
                 return invokeAndGetResult<std::auto_ptr<serialization::pimpl::Data>, protocol::codec::TransactionalQueuePollCodec::ResponseParameters>(request);
             }
 
             int TransactionalQueueImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalQueueSizeCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId());
+                        protocol::codec::TransactionalQueueSizeCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalQueueSizeCodec::ResponseParameters>(request);
             }

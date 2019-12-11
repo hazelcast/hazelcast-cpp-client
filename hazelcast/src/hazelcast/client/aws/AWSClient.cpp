@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@
 namespace hazelcast {
     namespace client {
         namespace aws {
-            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig) : awsConfig(awsConfig) {
+            AWSClient::AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger) : awsConfig(awsConfig),
+            logger(logger) {
                 this->endpoint = awsConfig.getHostHeader();
                 if (!awsConfig.getRegion().empty() && awsConfig.getRegion().length() > 0) {
                     if (awsConfig.getHostHeader().find("ec2.") != 0) {
@@ -35,7 +36,7 @@ namespace hazelcast {
             }
 
             std::map<std::string, std::string> AWSClient::getAddresses() {
-                return impl::DescribeInstances(awsConfig, endpoint).execute();
+                return impl::DescribeInstances(awsConfig, endpoint, logger).execute();
             }
         }
     }

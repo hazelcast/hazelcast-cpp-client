@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockGetLockCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockGetLockCountCodec::RequestParameters::TYPE = HZ_LOCK_GETLOCKCOUNT;
-                const bool LockGetLockCountCodec::RequestParameters::RETRYABLE = true;
-                const int32_t LockGetLockCountCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> LockGetLockCountCodec::RequestParameters::encode(
+                const LockMessageType LockGetLockCountCodec::REQUEST_TYPE = HZ_LOCK_GETLOCKCOUNT;
+                const bool LockGetLockCountCodec::RETRYABLE = true;
+                const ResponseMessageConst LockGetLockCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> LockGetLockCountCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockGetLockCountCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockGetLockCountCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t LockGetLockCountCodec::RequestParameters::calculateDataSize(
+                int32_t LockGetLockCountCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,21 +46,17 @@ namespace hazelcast {
                 }
 
                 LockGetLockCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockGetLockCountCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                LockGetLockCountCodec::ResponseParameters LockGetLockCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                LockGetLockCountCodec::ResponseParameters
+                LockGetLockCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return LockGetLockCountCodec::ResponseParameters(clientMessage);
                 }
 
-                LockGetLockCountCodec::ResponseParameters::ResponseParameters(const LockGetLockCountCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

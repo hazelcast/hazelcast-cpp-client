@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,56 +14,53 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapGetAllCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapGetAllCodec::RequestParameters::TYPE = HZ_MAP_GETALL;
-                const bool MapGetAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapGetAllCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MapGetAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &keys) {
+                const MapMessageType MapGetAllCodec::REQUEST_TYPE = HZ_MAP_GETALL;
+                const bool MapGetAllCodec::RETRYABLE = false;
+                const ResponseMessageConst MapGetAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MapGetAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &keys) {
                     int32_t requiredDataSize = calculateDataSize(name, keys);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapGetAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapGetAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(keys);
+                    clientMessage->setArray<serialization::pimpl::Data>(keys);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapGetAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &keys) {
+                int32_t MapGetAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &keys) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(keys);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(keys);
                     return dataSize;
                 }
 
                 MapGetAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapGetAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MapGetAllCodec::ResponseParameters MapGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapGetAllCodec::ResponseParameters
+                MapGetAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapGetAllCodec::ResponseParameters(clientMessage);
                 }
 
-                MapGetAllCodec::ResponseParameters::ResponseParameters(const MapGetAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

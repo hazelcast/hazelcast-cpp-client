@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 13 Jan 2017.
-//
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 #include <set>
 #include <boost/shared_ptr.hpp>
+#include <hazelcast/client/query/EqualPredicate.h>
+#include <hazelcast/client/query/QueryConstants.h>
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
-
 namespace hazelcast {
     namespace client {
         namespace test {
-            class ClientMapNearCacheTest
-                    : public ClientTestSupport, public ::testing::WithParamInterface<bool> {
-            public:
-                virtual void TearDown() {
-                    g_srvFactory->shutdownAll();
-                }
-
+            class ClientMapNearCacheTest : public ClientTestSupport {
             protected:
                 /**
                  * The default name used for the data structures which have a Near Cache.
                  */
                 static const std::string DEFAULT_NEAR_CACHE_NAME;
+
+                static void SetUpTestCase() {
+                    instance = new HazelcastServer(*g_srvFactory);
+                    instance2 = new HazelcastServer(*g_srvFactory);
+                }
+
+                static void TearDownTestCase() {
+                    delete instance2;
+                    delete instance;
+                    instance2 = NULL;
+                    instance = NULL;
+                }
+
+
+                virtual void TearDown() {
+                    if (map.get()) {
+                        map->destroy();
+                    }
+                }
 
                 boost::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
                     boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
@@ -59,11 +74,9 @@ namespace hazelcast {
                     return std::auto_ptr<ClientConfig>(new ClientConfig());
                 }
 
-                IMap<int, int> getNearCachedMapFromClient(
+                IMap<int, int> &getNearCachedMapFromClient(
                         boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
-                    servers.push_back(
-                            boost::shared_ptr<HazelcastServer>(new HazelcastServer(*g_srvFactory)));
 
                     nearCacheConfig->setName(mapName);
 
@@ -71,7 +84,8 @@ namespace hazelcast {
                     clientConfig->addNearCacheConfig(nearCacheConfig);
 
                     client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
-                    return client->getMap<int, int>(mapName);
+                    map.reset(new IMap<int, int>(client->getMap<int, int>(mapName)));
+                    return *map;
                 }
 
                 monitor::NearCacheStats *getNearCacheStats(IMap<int, int> &map) {
@@ -85,13 +99,17 @@ namespace hazelcast {
                 std::auto_ptr<ClientConfig> clientConfig;
                 boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
                 std::auto_ptr<HazelcastClient> client;
-                std::vector<boost::shared_ptr<HazelcastServer> > servers;
+                boost::shared_ptr<IMap<int, int> > map;
+                static HazelcastServer *instance;
+                static HazelcastServer *instance2;
             };
 
             const std::string ClientMapNearCacheTest::DEFAULT_NEAR_CACHE_NAME = "defaultNearCache";
+            HazelcastServer *ClientMapNearCacheTest::instance = NULL;
+            HazelcastServer *ClientMapNearCacheTest::instance2 = NULL;
 
-            TEST_P(ClientMapNearCacheTest, testGetAllChecksNearCacheFirst) {
-                IMap<int, int> map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+            TEST_F(ClientMapNearCacheTest, testGetAllChecksNearCacheFirst) {
+                IMap<int, int> &map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 std::set<int> keys;
 
@@ -112,8 +130,8 @@ namespace hazelcast {
                 ASSERT_EQ(size, stats->getHits());
             }
 
-            TEST_P(ClientMapNearCacheTest, testGetAllPopulatesNearCache) {
-                IMap<int, int> map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+            TEST_F(ClientMapNearCacheTest, testGetAllPopulatesNearCache) {
+                IMap<int, int> &map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 std::set<int> keys;
 
@@ -132,8 +150,25 @@ namespace hazelcast {
                 assertThatOwnedEntryCountEquals(map, size);
             }
 
-            INSTANTIATE_TEST_CASE_P(ClientMapNearCacheTestInstance, ClientMapNearCacheTest,
-                                    ::testing::Values(true, false));
+            TEST_F(ClientMapNearCacheTest, testRemoveAllNearCache) {
+                IMap<int, int> &map = getNearCachedMapFromClient(newNearCacheConfig());
+
+                std::set<int> keys;
+
+                int size = 1214;
+                for (int i = 0; i < size; i++) {
+                    map.put(i, i);
+                    keys.insert(i);
+                }
+                // populate Near Cache
+                for (int i = 0; i < size; i++) {
+                    map.get(i);
+                }
+
+                map.removeAll(query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 20));
+
+                assertThatOwnedEntryCountEquals(map, 0);
+            }
         }
     }
 }

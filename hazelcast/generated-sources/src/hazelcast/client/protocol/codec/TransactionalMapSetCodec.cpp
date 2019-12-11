@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapSetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapSetCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_SET;
-                const bool TransactionalMapSetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapSetCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> TransactionalMapSetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                const TransactionalMapMessageType TransactionalMapSetCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_SET;
+                const bool TransactionalMapSetCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> TransactionalMapSetCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapSetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapSetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -46,11 +47,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapSetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
-                        const serialization::pimpl::Data &key, 
+                int32_t TransactionalMapSetCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
+                        const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -61,19 +62,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMapSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapSetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                TransactionalMapSetCodec::ResponseParameters TransactionalMapSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionalMapSetCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionalMapSetCodec::ResponseParameters::ResponseParameters(const TransactionalMapSetCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

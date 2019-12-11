@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapGetEntryViewCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/map/DataEntryView.h"
 
@@ -25,16 +25,17 @@ namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapGetEntryViewCodec::RequestParameters::TYPE = HZ_MAP_GETENTRYVIEW;
-                const bool MapGetEntryViewCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapGetEntryViewCodec::ResponseParameters::TYPE = 111;
-                std::auto_ptr<ClientMessage> MapGetEntryViewCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MapMessageType MapGetEntryViewCodec::REQUEST_TYPE = HZ_MAP_GETENTRYVIEW;
+                const bool MapGetEntryViewCodec::RETRYABLE = true;
+                const ResponseMessageConst MapGetEntryViewCodec::RESPONSE_TYPE = (ResponseMessageConst) 111;
+
+                std::auto_ptr<ClientMessage> MapGetEntryViewCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapGetEntryViewCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapGetEntryViewCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -43,9 +44,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapGetEntryViewCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MapGetEntryViewCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -55,21 +56,21 @@ namespace hazelcast {
                 }
 
                 MapGetEntryViewCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapGetEntryViewCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getNullable<map::DataEntryView >();
+
+                    response = clientMessage.getNullable<map::DataEntryView>();
+
                 }
 
-                MapGetEntryViewCodec::ResponseParameters MapGetEntryViewCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapGetEntryViewCodec::ResponseParameters
+                MapGetEntryViewCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapGetEntryViewCodec::ResponseParameters(clientMessage);
                 }
 
-                MapGetEntryViewCodec::ResponseParameters::ResponseParameters(const MapGetEntryViewCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
+                MapGetEntryViewCodec::ResponseParameters::ResponseParameters(
+                        const MapGetEntryViewCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<map::DataEntryView>(new map::DataEntryView(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

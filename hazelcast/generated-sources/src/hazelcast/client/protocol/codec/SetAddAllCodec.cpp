@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,57 +14,54 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SetAddAllCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SetMessageType SetAddAllCodec::RequestParameters::TYPE = HZ_SET_ADDALL;
-                const bool SetAddAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SetAddAllCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SetAddAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &valueList) {
+                const SetMessageType SetAddAllCodec::REQUEST_TYPE = HZ_SET_ADDALL;
+                const bool SetAddAllCodec::RETRYABLE = false;
+                const ResponseMessageConst SetAddAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SetAddAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &valueList) {
                     int32_t requiredDataSize = calculateDataSize(name, valueList);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SetAddAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SetAddAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(valueList);
+                    clientMessage->setArray<serialization::pimpl::Data>(valueList);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t SetAddAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &valueList) {
+                int32_t SetAddAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &valueList) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(valueList);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(valueList);
                     return dataSize;
                 }
 
                 SetAddAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SetAddAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SetAddAllCodec::ResponseParameters SetAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SetAddAllCodec::ResponseParameters
+                SetAddAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SetAddAllCodec::ResponseParameters(clientMessage);
                 }
 
-                SetAddAllCodec::ResponseParameters::ResponseParameters(const SetAddAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

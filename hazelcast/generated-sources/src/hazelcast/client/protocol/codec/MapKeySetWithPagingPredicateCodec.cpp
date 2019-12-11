@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapKeySetWithPagingPredicateCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapKeySetWithPagingPredicateCodec::RequestParameters::TYPE = HZ_MAP_KEYSETWITHPAGINGPREDICATE;
-                const bool MapKeySetWithPagingPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapKeySetWithPagingPredicateCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> MapKeySetWithPagingPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapKeySetWithPagingPredicateCodec::REQUEST_TYPE = HZ_MAP_KEYSETWITHPAGINGPREDICATE;
+                const bool MapKeySetWithPagingPredicateCodec::RETRYABLE = true;
+                const ResponseMessageConst MapKeySetWithPagingPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> MapKeySetWithPagingPredicateCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapKeySetWithPagingPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapKeySetWithPagingPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapKeySetWithPagingPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapKeySetWithPagingPredicateCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -48,22 +49,19 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapKeySetWithPagingPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapKeySetWithPagingPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
+                MapKeySetWithPagingPredicateCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                MapKeySetWithPagingPredicateCodec::ResponseParameters MapKeySetWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapKeySetWithPagingPredicateCodec::ResponseParameters
+                MapKeySetWithPagingPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapKeySetWithPagingPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapKeySetWithPagingPredicateCodec::ResponseParameters::ResponseParameters(const MapKeySetWithPagingPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

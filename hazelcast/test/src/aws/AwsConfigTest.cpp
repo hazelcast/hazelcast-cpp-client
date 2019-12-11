@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,11 @@
  */
 
 #ifdef HZ_BUILD_WITH_SSL
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4996) //for unsafe getenv
+#endif
 
 #include <cmath>
 #include <gtest/gtest.h>
@@ -101,8 +106,6 @@ namespace hazelcast {
                             setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
                             setTagKey("aws-test-tag").setTagValue("aws-tag-value-1").setInsideAws(true);
 
-                    ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
-
                     clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "-1";
 
                     ASSERT_THROW(HazelcastClient hazelcastClient(clientConfig), exception::InvalidConfigurationException);
@@ -111,4 +114,10 @@ namespace hazelcast {
         }
     }
 }
+
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif // HZ_BUILD_WITH_SSL

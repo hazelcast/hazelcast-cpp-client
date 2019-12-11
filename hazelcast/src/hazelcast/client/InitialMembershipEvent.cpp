@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,27 @@
 // Created by sancar koyunlu on 22/01/14.
 //
 
+#include <boost/foreach.hpp>
 #include "hazelcast/client/InitialMembershipEvent.h"
 #include "hazelcast/client/Cluster.h"
 
 
 namespace hazelcast {
     namespace client {
-
-        InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, const std::vector<Member> &members)
-        : members(members)
-        , cluster(cluster) {
-
-        }
-
         const std::vector<Member> &InitialMembershipEvent::getMembers() const {
             return members;
         }
 
         Cluster &InitialMembershipEvent::getCluster() {
             return cluster;
+        }
+
+        InitialMembershipEvent::InitialMembershipEvent(Cluster &cluster, const std::set<Member> &members) : cluster(
+                cluster) {
+            BOOST_FOREACH(const Member &member, members) {
+                            this->members.push_back(Member(member));
+                        }
+
         }
     }
 }

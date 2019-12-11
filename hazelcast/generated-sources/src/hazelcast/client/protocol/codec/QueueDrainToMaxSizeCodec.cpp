@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueDrainToMaxSizeCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueDrainToMaxSizeCodec::RequestParameters::TYPE = HZ_QUEUE_DRAINTOMAXSIZE;
-                const bool QueueDrainToMaxSizeCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueDrainToMaxSizeCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> QueueDrainToMaxSizeCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const QueueMessageType QueueDrainToMaxSizeCodec::REQUEST_TYPE = HZ_QUEUE_DRAINTOMAXSIZE;
+                const bool QueueDrainToMaxSizeCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueDrainToMaxSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> QueueDrainToMaxSizeCodec::encodeRequest(
+                        const std::string &name,
                         int32_t maxSize) {
                     int32_t requiredDataSize = calculateDataSize(name, maxSize);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueDrainToMaxSizeCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueDrainToMaxSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(maxSize);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t QueueDrainToMaxSizeCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t QueueDrainToMaxSizeCodec::calculateDataSize(
+                        const std::string &name,
                         int32_t maxSize) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,21 +50,17 @@ namespace hazelcast {
                 }
 
                 QueueDrainToMaxSizeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueDrainToMaxSizeCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                QueueDrainToMaxSizeCodec::ResponseParameters QueueDrainToMaxSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueDrainToMaxSizeCodec::ResponseParameters
+                QueueDrainToMaxSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueDrainToMaxSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueDrainToMaxSizeCodec::ResponseParameters::ResponseParameters(const QueueDrainToMaxSizeCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

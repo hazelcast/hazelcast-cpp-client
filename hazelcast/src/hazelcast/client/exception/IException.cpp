@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,18 +21,46 @@
 namespace hazelcast {
     namespace client {
         namespace exception {
-            IException::IException()
-            : std::exception(), src(""), msg(""), report("") {
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, const std::string &details,
+                                   int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), details(details),
+                                                                         errorCode(errorNo), causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
+                std::ostringstream out;
+                out << exceptionName << " {" << message << ". Details:" << details << " Error code:" << errorNo
+                    << ", Cause error code:" << causeCode << "} at " + source;
+                report = out.str();
             }
 
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo,
+                                   int32_t causeCode, bool isRuntime, bool retryable) : src(source), msg(message), errorCode(errorNo),
+                                                        causeErrorCode(causeCode), runtimeException(isRuntime), retryable(retryable) {
+                std::ostringstream out;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << ", Cause error code:"
+                    << causeCode << "} at " + source;
+                report = out.str();
+            }
 
-            IException::IException(const std::string& source, const std::string& message)
-            : std::exception(), src(source), msg(message) {
-                report = "ExceptionMessage {" + message + "} at " + source;
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo, bool isRuntime, bool retryable) : src(
+                    source), msg(message), errorCode(errorNo), runtimeException(isRuntime), retryable(retryable) {
+                std::ostringstream out;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << "} at " + source;
+                report = out.str();
+            }
+
+            IException::IException(const std::string &exceptionName, const std::string &source,
+                                   const std::string &message, int32_t errorNo,
+                                   const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable) : src(source), msg(message),
+                                                                                 errorCode(errorNo), cause(cause), runtimeException(isRuntime), retryable(retryable) {
+                std::ostringstream out;
+                out << exceptionName << " {" << message << " Error code:" << errorNo << ", Caused by:" << *cause
+                    << "} at " + source;
+                report = out.str();
+
             }
 
             IException::~IException() throw() {
-
             }
 
             char const *IException::what() const throw() {
@@ -47,8 +75,41 @@ namespace hazelcast {
                 return msg;
             }
 
-            void IException::raise() {
+            void IException::raise() const {
                 throw *this;
+            }
+
+            std::ostream &operator<<(std::ostream &os, const IException &exception) {
+                os << exception.what();
+                return os;
+            }
+
+            const boost::shared_ptr<IException> &IException::getCause() const {
+                return cause;
+            }
+
+            std::auto_ptr<IException> IException::clone() const {
+                return std::auto_ptr<IException>(new IException(*this));
+            }
+
+            const std::string &IException::getDetails() const {
+                return details;
+            }
+
+            int32_t IException::getErrorCode() const {
+                return errorCode;
+            }
+
+            int32_t IException::getCauseErrorCode() const {
+                return causeErrorCode;
+            }
+
+            bool IException::isRuntimeException() const {
+                return runtimeException;
+            }
+
+            bool IException::isRetryable() const {
+                return retryable;
             }
         }
     }

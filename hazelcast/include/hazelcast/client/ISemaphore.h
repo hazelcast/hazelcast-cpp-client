@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@
 #ifndef HAZELCAST_ISEMAPHORE
 #define HAZELCAST_ISEMAPHORE
 
+#include <string>
+#include <stdint.h>
+#include <stdexcept>
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/exception/IException.h"
-#include <string>
-#include <stdexcept>
 
 namespace hazelcast {
     namespace client {
@@ -54,7 +55,7 @@ namespace hazelcast {
          *
          */
         class HAZELCAST_API ISemaphore : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 
@@ -153,6 +154,16 @@ namespace hazelcast {
              * @throws IllegalArgumentException if reduction is negative
              */
             void reducePermits(int reduction);
+
+            /**
+             * Increases the number of available permits by the indicated
+             * amount. This method differs from {@code release} in that it does not
+             * effect the amount of permits this caller has attached.
+             *
+             * @param increase the number of permits to add
+             * @throws IllegalArgumentException if {@code increase} is negative
+             */
+            void increasePermits(int32_t increase);
 
             /**
              * Releases a permit, increasing the number of available permits by
@@ -294,6 +305,8 @@ namespace hazelcast {
         private:
 
             ISemaphore(const std::string &instanceName, spi::ClientContext *context);
+
+            void checkNegative(int32_t permits) const;
 
             int partitionId;
         };

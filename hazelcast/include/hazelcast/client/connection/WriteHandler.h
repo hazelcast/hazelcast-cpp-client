@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,19 @@
 // Created by sancar koyunlu on 25/12/13.
 //
 
-
 #ifndef HAZELCAST_WriteHandler
 #define HAZELCAST_WriteHandler
 
 #include <stdint.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/ByteBuffer.h"
-#include "hazelcast/util/ConcurrentQueue.h"
+#include "hazelcast/util/SynchronizedQueue.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -37,10 +39,6 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-        }
-
-        namespace protocol {
-            class ClientMessage;
         }
 
         namespace connection {
@@ -56,15 +54,15 @@ namespace hazelcast {
 
                 void handle();
 
-                void enqueueData(protocol::ClientMessage *message);
+                bool enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message);
 
                 void run();
 
             private:
-                util::ConcurrentQueue<protocol::ClientMessage> writeQueue;
+                util::SynchronizedQueue<protocol::ClientMessage> writeQueue;
                 bool ready;
                 util::AtomicBoolean informSelector;
-                protocol::ClientMessage *lastMessage;
+                boost::shared_ptr<protocol::ClientMessage> lastMessage;
                 int32_t numBytesWrittenToSocketForMessage;
                 int32_t lastMessageFrameLen;
             };

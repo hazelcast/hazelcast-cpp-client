@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapEntrySetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapEntrySetCodec::RequestParameters::TYPE = HZ_MAP_ENTRYSET;
-                const bool MapEntrySetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapEntrySetCodec::ResponseParameters::TYPE = 117;
-                std::auto_ptr<ClientMessage> MapEntrySetCodec::RequestParameters::encode(
+                const MapMessageType MapEntrySetCodec::REQUEST_TYPE = HZ_MAP_ENTRYSET;
+                const bool MapEntrySetCodec::RETRYABLE = true;
+                const ResponseMessageConst MapEntrySetCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
+
+                std::auto_ptr<ClientMessage> MapEntrySetCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapEntrySetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapEntrySetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapEntrySetCodec::RequestParameters::calculateDataSize(
+                int32_t MapEntrySetCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,21 +46,17 @@ namespace hazelcast {
                 }
 
                 MapEntrySetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapEntrySetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > >();
+
+                    response = clientMessage.getArray<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> >();
+
                 }
 
-                MapEntrySetCodec::ResponseParameters MapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapEntrySetCodec::ResponseParameters
+                MapEntrySetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapEntrySetCodec::ResponseParameters(clientMessage);
                 }
 
-                MapEntrySetCodec::ResponseParameters::ResponseParameters(const MapEntrySetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

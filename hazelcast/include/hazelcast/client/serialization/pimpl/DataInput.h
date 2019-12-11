@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,16 @@
 #ifndef HAZELCAST_DataInput
 #define HAZELCAST_DataInput
 
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/Bits.h"
 #include "hazelcast/client/exception/HazelcastSerializationException.h"
-
-#include <boost/smart_ptr/shared_ptr.hpp>
+#include "hazelcast/util/UTFUtil.h"
 
 #include <vector>
 #include <string>
 #include <memory>
 #include <stdint.h>
+#include <sstream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -42,15 +41,17 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                class HAZELCAST_API DataInput {
+                class HAZELCAST_API DataInput : public util::UTFUtil::ByteReadable {
                 public:
+                    static const int MAX_UTF_CHAR_SIZE = 4;
+
                     DataInput(const std::vector<byte> &buffer);
 
                     DataInput(const std::vector<byte> &buffer, int offset);
 
-                    void readFully(std::vector<byte> &);
+                    virtual ~DataInput();
 
-                    void readFully(std::vector<char> &);
+                    void readFully(std::vector<byte> &);
 
                     int skipBytes(int i);
 
@@ -91,12 +92,15 @@ namespace hazelcast {
 
                     std::auto_ptr<std::vector<std::string> > readUTFArray();
 
+                    std::auto_ptr<std::vector<std::string *> > readUTFPointerArray();
+
                     int position();
 
                     void position(int position);
 
                 private:
                     const std::vector<byte> &buffer;
+                    std::vector<char> utfBuffer;
 
                     int pos;
 
@@ -117,19 +121,22 @@ namespace hazelcast {
                             return std::auto_ptr<std::vector<T> > (NULL);
                         }
 
-                        if (len > 0) {
-                            checkAvailable((size_t)len * getSize((T *)NULL));
-                            std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
-                            for (int32_t i = 0; i < len; i++) {
-                                (*values)[i] = read<T>();
-                            }
-                            return values;
+                        if (len == 0) {
+                            return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
                         }
 
-                        return std::auto_ptr<std::vector<T> > (new std::vector<T>(0));
-                    }
+                        if (len < 0) {
+                            std::ostringstream out;
+                            out << "Incorrect negative array size found in the byte stream. The size is: " << len;
+                            throw exception::HazelcastSerializationException("DataInput::readArray", out.str());
+                        }
 
-                    int getNumBytesForUtf8Char(const byte *start) const;
+                        std::auto_ptr<std::vector<T> > values(new std::vector<T>((size_t)len));
+                        for (int32_t i = 0; i < len; i++) {
+                            (*values)[i] = read<T>();
+                        }
+                        return values;
+                    }
 
                     DataInput(const DataInput &);
 
@@ -137,21 +144,21 @@ namespace hazelcast {
 
                     void checkAvailable(size_t requestedLength);
 
-                    int getSize(byte *dummy);
+                    char readCharUnchecked();
 
-                    int getSize(char *dummy);
+                    int16_t readShortUnchecked();
 
-                    int getSize(bool *dummy);
+                    int32_t readIntUnchecked();
 
-                    int getSize(int16_t *dummy);
+                    int64_t readLongUnchecked();
 
-                    int getSize(int32_t *dummy);
+                    byte readByteUnchecked();
 
-                    int getSize(int64_t *dummy);
+                    bool readBooleanUnchecked();
 
-                    int getSize(float *dummy);
+                    float readFloatUnchecked();
 
-                    int getSize(double *dummy);
+                    double readDoubleUnchecked();
                 };
 
                 template <>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,10 +46,6 @@ namespace hazelcast{
         int MurmurHash3_x86_32(const void * key, int len);
 
         void MurmurHash3_x86_32  ( const void * key, int len, uint32_t seed, void * out );
-
-        void MurmurHash3_x86_128 ( const void * key, int len, uint32_t seed, void * out );
-
-        void MurmurHash3_x64_128 ( const void * key, int len, uint32_t seed, void * out );
 
         //-----------------------------------------------------------------------------
 

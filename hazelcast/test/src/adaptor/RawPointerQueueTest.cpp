@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
  */
 //
 // Created by ihsan demir on 21/3/16.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "HazelcastServer.h"
 #include "ClientTestSupport.h"
-#include "HazelcastServerFactory.h"
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
@@ -55,9 +59,7 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient(getConfig());
                         legacy = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
                         q = new client::adaptor::RawPointerQueue<std::string>(*legacy);
                     }
@@ -66,25 +68,21 @@ namespace hazelcast {
                         delete q;
                         delete legacy;
                         delete client;
-                        delete clientConfig;
                         delete instance;
 
                         q = NULL;
                         legacy = NULL;
                         client = NULL;
-                        clientConfig = NULL;
                         instance = NULL;
                     }
 
                     static HazelcastServer *instance;
-                    static ClientConfig *clientConfig;
                     static HazelcastClient *client;
                     static IQueue<std::string> *legacy;
                     static client::adaptor::RawPointerQueue<std::string> *q;
                 };
 
                 HazelcastServer *RawPointerQueueTest::instance = NULL;
-                ClientConfig *RawPointerQueueTest::clientConfig = NULL;
                 HazelcastClient *RawPointerQueueTest::client = NULL;
                 IQueue<std::string> *RawPointerQueueTest::legacy = NULL;
                 client::adaptor::RawPointerQueue<std::string> *RawPointerQueueTest::q = NULL;
@@ -111,7 +109,6 @@ namespace hazelcast {
                     client::adaptor::RawPointerQueue<std::string> *q = (client::adaptor::RawPointerQueue<std::string> *) args.arg0;
                     util::sleep(2);
                     q->offer("item1");
-                    util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
                 }
 
                 TEST_F(RawPointerQueueTest, testOfferPoll) {
@@ -129,7 +126,7 @@ namespace hazelcast {
                     }
                     ASSERT_EQ(0, q->size());
 
-                    util::Thread t2(testOfferPollThread2, q);
+                    util::StartedThread t2(testOfferPollThread2, q);
 
                     std::auto_ptr<std::string> item = q->poll(30 * 1000);
                     ASSERT_NE(item.get(), (std::string *) NULL);
@@ -174,7 +171,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->isEmpty());
 
                     // start a thread to insert an item
-                    util::Thread t2(testOfferPollThread2, q);
+                    util::StartedThread t2(testOfferPollThread2, q);
 
                     item = q->take();  //  should block till it gets an item
                     ASSERT_NE((std::string *)NULL, item.get());

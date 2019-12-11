@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -222,17 +222,29 @@ namespace hazelcast {
 
                 std::string EC2RequestSigner::sha256Hashhex(const std::string &in) const {
                     #ifdef HZ_BUILD_WITH_SSL
-                    unsigned char hash[SHA256_DIGEST_LENGTH];
-                    SHA256_CTX sha256;
-                    SHA256_Init(&sha256);
-                    SHA256_Update(&sha256, in.c_str(), in.size());
-                    SHA256_Final(hash, &sha256);
+                        #ifdef OPENSSL_FIPS
+                        unsigned int hashLen = 0;
+                        unsigned char hash[EVP_MAX_MD_SIZE];
+                        EVP_MD_CTX ctx;
+                        EVP_MD_CTX_init(&ctx);
+                        EVP_DigestInit_ex(&ctx, EVP_sha256(), NULL);
+                        EVP_DigestUpdate(&ctx, in.c_str(), in.size());
+                        EVP_DigestFinal_ex(&ctx, hash, &hashLen);
+                        EVP_MD_CTX_cleanup(&ctx);
+                        return convertToHexString(hash, hashLen);
+                        #else
+                        unsigned char hash[SHA256_DIGEST_LENGTH];
+                        SHA256_CTX sha256;
+                        SHA256_Init(&sha256);
+                        SHA256_Update(&sha256, in.c_str(), in.size());
+                        SHA256_Final(hash, &sha256);
 
-                    return convertToHexString(hash, SHA256_DIGEST_LENGTH);
+                        return convertToHexString(hash, SHA256_DIGEST_LENGTH);
+                        #endif // OPENSSL_FIPS
                     #else
                     util::Preconditions::checkSSL("EC2RequestSigner::hmacSHA256Bytes");
                     return "";
-                    #endif
+                    #endif // HZ_BUILD_WITH_SSL
                 }
             }
         }

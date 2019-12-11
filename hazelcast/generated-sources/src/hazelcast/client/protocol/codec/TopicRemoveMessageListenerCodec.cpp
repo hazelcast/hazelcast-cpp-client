@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,25 +18,21 @@
 #include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TopicRemoveMessageListenerCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TopicMessageType TopicRemoveMessageListenerCodec::RequestParameters::TYPE = HZ_TOPIC_REMOVEMESSAGELISTENER;
-                const bool TopicRemoveMessageListenerCodec::RequestParameters::RETRYABLE = true;
-                const int32_t TopicRemoveMessageListenerCodec::ResponseParameters::TYPE = 101;
+                const TopicMessageType TopicRemoveMessageListenerCodec::REQUEST_TYPE = HZ_TOPIC_REMOVEMESSAGELISTENER;
+                const bool TopicRemoveMessageListenerCodec::RETRYABLE = true;
+                const ResponseMessageConst TopicRemoveMessageListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                TopicRemoveMessageListenerCodec::~TopicRemoveMessageListenerCodec() {
-                }
-
-                std::auto_ptr<ClientMessage> TopicRemoveMessageListenerCodec::RequestParameters::encode(
-                        const std::string &name, 
+                std::auto_ptr<ClientMessage> TopicRemoveMessageListenerCodec::encodeRequest(
+                        const std::string &name,
                         const std::string &registrationId) {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TopicRemoveMessageListenerCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TopicRemoveMessageListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(registrationId);
@@ -44,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TopicRemoveMessageListenerCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t TopicRemoveMessageListenerCodec::calculateDataSize(
+                        const std::string &name,
                         const std::string &registrationId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,43 +50,17 @@ namespace hazelcast {
                 }
 
                 TopicRemoveMessageListenerCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TopicRemoveMessageListenerCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TopicRemoveMessageListenerCodec::ResponseParameters TopicRemoveMessageListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TopicRemoveMessageListenerCodec::ResponseParameters
+                TopicRemoveMessageListenerCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TopicRemoveMessageListenerCodec::ResponseParameters(clientMessage);
                 }
 
-                TopicRemoveMessageListenerCodec::ResponseParameters::ResponseParameters(const TopicRemoveMessageListenerCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
-
-                TopicRemoveMessageListenerCodec::TopicRemoveMessageListenerCodec (const std::string &name, const std::string &registrationId)
-                        : name_(name), registrationId_(registrationId) {
-                }
-
-                //************************ IRemoveListenerCodec interface start ************************************************//
-                std::auto_ptr<ClientMessage> TopicRemoveMessageListenerCodec::encodeRequest() const {
-                    return RequestParameters::encode(name_, registrationId_);
-                }
-
-                const std::string &TopicRemoveMessageListenerCodec::getRegistrationId() const {
-                    return registrationId_;
-                }
-
-                void TopicRemoveMessageListenerCodec::setRegistrationId(const std::string &id) {
-                    registrationId_ = id;
-                }
-
-                bool TopicRemoveMessageListenerCodec::decodeResponse(ClientMessage &responseMessage) const {
-                    return ResponseParameters::decode(responseMessage).response;
-                }
-                //************************ IRemoveListenerCodec interface ends *************************************************//
 
             }
         }

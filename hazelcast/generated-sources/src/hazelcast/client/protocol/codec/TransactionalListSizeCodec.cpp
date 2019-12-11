@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalListSizeCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalListMessageType TransactionalListSizeCodec::RequestParameters::TYPE = HZ_TRANSACTIONALLIST_SIZE;
-                const bool TransactionalListSizeCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalListSizeCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> TransactionalListSizeCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                const TransactionalListMessageType TransactionalListSizeCodec::REQUEST_TYPE = HZ_TRANSACTIONALLIST_SIZE;
+                const bool TransactionalListSizeCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalListSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> TransactionalListSizeCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalListSizeCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalListSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -41,9 +42,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalListSizeCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
+                int32_t TransactionalListSizeCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,21 +54,17 @@ namespace hazelcast {
                 }
 
                 TransactionalListSizeCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalListSizeCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                TransactionalListSizeCodec::ResponseParameters TransactionalListSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalListSizeCodec::ResponseParameters
+                TransactionalListSizeCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalListSizeCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalListSizeCodec::ResponseParameters::ResponseParameters(const TransactionalListSizeCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

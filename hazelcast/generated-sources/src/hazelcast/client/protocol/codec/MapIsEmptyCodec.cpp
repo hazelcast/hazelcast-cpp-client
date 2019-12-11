@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapIsEmptyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapIsEmptyCodec::RequestParameters::TYPE = HZ_MAP_ISEMPTY;
-                const bool MapIsEmptyCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MapIsEmptyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapIsEmptyCodec::RequestParameters::encode(
+                const MapMessageType MapIsEmptyCodec::REQUEST_TYPE = HZ_MAP_ISEMPTY;
+                const bool MapIsEmptyCodec::RETRYABLE = true;
+                const ResponseMessageConst MapIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapIsEmptyCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapIsEmptyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapIsEmptyCodec::RequestParameters::calculateDataSize(
+                int32_t MapIsEmptyCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,21 +46,17 @@ namespace hazelcast {
                 }
 
                 MapIsEmptyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapIsEmptyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapIsEmptyCodec::ResponseParameters MapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapIsEmptyCodec::ResponseParameters
+                MapIsEmptyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapIsEmptyCodec::ResponseParameters(clientMessage);
                 }
 
-                MapIsEmptyCodec::ResponseParameters::ResponseParameters(const MapIsEmptyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

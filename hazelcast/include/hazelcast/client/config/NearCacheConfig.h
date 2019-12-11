@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/client/config/EvictionConfig.h"
 #include "hazelcast/client/config/NearCacheConfigBase.h"
+#include "hazelcast/client/serialization/pimpl/Data.h"
+#include "hazelcast/client/TypedData.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -78,7 +80,7 @@ namespace hazelcast {
                                     evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(DEFAULT_MEMORY_FORMAT),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
@@ -86,7 +88,7 @@ namespace hazelcast {
                                                          evictionConfig(new EvictionConfig<K, V>()) {
                 }
 
-                NearCacheConfig(const char *cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
+                NearCacheConfig(const std::string &cacheName, InMemoryFormat memoryFormat) : name(cacheName), timeToLiveSeconds(DEFAULT_TTL_SECONDS),
                                                          maxIdleSeconds(DEFAULT_MAX_IDLE_SECONDS),
                                                          inMemoryFormat(memoryFormat),
                                                          localUpdatePolicy(INVALIDATE), invalidateOnChange(true),
@@ -123,6 +125,9 @@ namespace hazelcast {
                     }
                 }
 
+                virtual ~NearCacheConfig() {
+                }
+
                 /**
                  * Gets the name of the Near Cache.
                  *
@@ -156,7 +161,7 @@ namespace hazelcast {
                 /**
                  * Sets the maximum number of seconds for each entry to stay in the Near Cache. Entries that are
                  * older than time-to-live-seconds will get automatically evicted from the Near Cache.
-                 * Any integer between 0 and Integer.MAX_VALUE. 0 means infinite. Default is 0.
+                 * Any integer between 0 and INT32_MAX. 0 means infinite. Default is 0.
                  *
                  * @param timeToLiveSeconds The maximum number of seconds for each entry to stay in the Near Cache.
                  * @return This Near Cache config instance.
@@ -183,7 +188,7 @@ namespace hazelcast {
                  * Maximum number of seconds each entry can stay in the Near Cache as untouched (not-read).
                  * Entries that are not read (touched) more than max-idle-seconds value will get removed
                  * from the Near Cache.
-                 * Any integer between 0 and Integer.MAX_VALUE. 0 means Integer.MAX_VALUE. Default is 0.
+                 * Any integer between 0 and Integer.MAX_VALUE. 0 means INT32_MAX. Default is 0.
                  *
                  * @param maxIdleSeconds Maximum number of seconds each entry can stay in the Near Cache as
                  *                       untouched (not-read).
@@ -243,7 +248,7 @@ namespace hazelcast {
                  * @param inMemoryFormat The data type used to store entries.
                  * @return This Near Cache config instance.
                  */
-                NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
+                virtual NearCacheConfig &setInMemoryFormat(const InMemoryFormat &inMemoryFormat) {
                     this->inMemoryFormat = inMemoryFormat;
                     return *this;
                 }
@@ -350,6 +355,28 @@ namespace hazelcast {
 
             template<typename K, typename V>
             const InMemoryFormat NearCacheConfig<K, V>::DEFAULT_MEMORY_FORMAT = BINARY;
+
+        }
+
+        namespace mixedtype {
+            namespace config {
+                class HAZELCAST_API MixedNearCacheConfig : public client::config::NearCacheConfig<TypedData, TypedData> {
+                public:
+                    MixedNearCacheConfig(const char *cacheName)
+                            : client::config::NearCacheConfig<TypedData, TypedData>(cacheName) {
+                    }
+
+                    virtual MixedNearCacheConfig &setInMemoryFormat(const client::config::InMemoryFormat &inMemoryFormat) {
+                        if (client::config::OBJECT == inMemoryFormat) {
+                            throw exception::IllegalArgumentException(
+                                    "MixedNearCacheConfig does not allow setting the in memory format different from BINARY.");
+                        }
+
+                        client::config::NearCacheConfig<TypedData, TypedData>::setInMemoryFormat(inMemoryFormat);
+                        return *this;
+                    }
+                };
+            }
         }
     }
 }

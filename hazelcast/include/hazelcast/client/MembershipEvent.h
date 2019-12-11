@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,15 @@ namespace hazelcast {
             enum MembershipEventType {
                 MEMBER_ADDED = 1,
                 MEMBER_REMOVED = 2,
+                MEMBER_ATTRIBUTE_CHANGED = 5
             };
 
             /**
              * Internal API.
              * Constructor.
              */
-            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType, const std::vector<Member> &membersList);
+            MembershipEvent(Cluster &cluster, const Member &member, MembershipEventType eventType,
+                            const std::vector<Member> &membersList);
 
             /**
              * Destructor
@@ -65,14 +67,14 @@ namespace hazelcast {
 
             /**
              * Returns a consistent view of the the members exactly after this MembershipEvent has been processed. So if a
-             * member is removed, the returned set will not include this member. And if a member is added it will include
+             * member is removed, the returned vector will not include this member. And if a member is added it will include
              * this member.
              *
              * The problem with calling the Cluster#getMembers() is that the content could already
              * have changed while processing this event so it becomes very difficult to write a deterministic algorithm since
              * you can't get a deterministic view of the members. This method solves that problem.
              *
-             * The set is immutable and ordered. For more information see Cluster#getMembers().
+             * The vector is immutable and ordered. For more information see Cluster#getMembers().
              *
              * @return the members at the moment after this event.
              */

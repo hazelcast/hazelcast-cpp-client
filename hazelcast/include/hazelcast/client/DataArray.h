@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,8 @@
 #ifndef HAZELCAST_CLIENT_DATAARRAY_H_
 #define HAZELCAST_CLIENT_DATAARRAY_H_
 
-#include <vector>
-
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
-#include "hazelcast/util/Comparator.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "EntryArray.h"
 
 namespace hazelcast {
     namespace client {

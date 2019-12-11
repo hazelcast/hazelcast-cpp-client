@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace hazelcast {
         */
         template<typename E>
         class ITopic : public proxy::ITopicImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 
@@ -79,8 +79,8 @@ namespace hazelcast {
             template<typename L>
             std::string addMessageListener(L& listener) {
                 impl::BaseEventHandler *topicEventHandler = new topic::impl::TopicEventHandlerImpl<E>(getName(),
-                                                                                                      context->getClusterService(),
-                                                                                                      context->getSerializationService(),
+                                                                                                      getContext().getClientClusterService(),
+                                                                                                      getContext().getSerializationService(),
                                                                                                       listener);
                 return proxy::ITopicImpl::addMessageListener(topicEventHandler);
             }

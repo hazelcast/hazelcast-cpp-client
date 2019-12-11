@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,19 @@
 //
 // Created by sancar koyunlu on 8/5/13.
 #include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
+#include "hazelcast/client/spi/impl/ClientTransactionManagerServiceImpl.h"
 #include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
     namespace client {
-        TransactionContext::TransactionContext(spi::ClientContext &clientContext, const TransactionOptions &txnOptions)
-        : CONNECTION_TRY_COUNT(5)
-        , clientContext(clientContext)
-        , options(txnOptions)
-        , txnConnection(connect())
-        , transaction(options, clientContext, txnConnection) {
-
+        TransactionContext::TransactionContext(spi::impl::ClientTransactionManagerServiceImpl &transactionManager,
+                                               const TransactionOptions &txnOptions) : options(txnOptions),
+                                                                                       txnConnection(
+                                                                                               transactionManager.connect()),
+                                                                                       transaction(options,
+                                                                                                   transactionManager.getClient(),
+                                                                                                   txnConnection) {
         }
 
         std::string TransactionContext::getTxnId() const {
@@ -45,10 +46,5 @@ namespace hazelcast {
         void TransactionContext::rollbackTransaction() {
             transaction.rollback();
         }
-
-        boost::shared_ptr<connection::Connection> TransactionContext::connect() {
-            return clientContext.getConnectionManager().getRandomConnection(CONNECTION_TRY_COUNT);
-        }
-
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,8 @@ namespace hazelcast {
 
 			bool waitFor(Mutex &mutex, int64_t timeInMilliseconds);
 
+            bool waitNanos(Mutex& mutex, int64_t nanos);
+
             void notify();
 
             void notify_all();
@@ -76,6 +78,8 @@ namespace hazelcast {
 
             bool waitFor(Mutex &mutex, int64_t timeInMilliseconds);
 
+            bool waitNanos(Mutex& mutex, int64_t nanos);
+
             void notify();
 
             void notify_all();
@@ -86,6 +90,10 @@ namespace hazelcast {
             ConditionVariable(const ConditionVariable &rhs);
 
             void operator = (const ConditionVariable &rhs);
+
+            struct timespec calculateTimeFromMilliseconds(int64_t timeInMilliseconds) const;
+
+            struct timespec calculateTimeFromNanos(int64_t nanos) const;
         };
     }
 }

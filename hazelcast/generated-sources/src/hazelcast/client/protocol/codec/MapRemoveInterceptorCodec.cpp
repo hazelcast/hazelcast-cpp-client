@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapRemoveInterceptorCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapRemoveInterceptorCodec::RequestParameters::TYPE = HZ_MAP_REMOVEINTERCEPTOR;
-                const bool MapRemoveInterceptorCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapRemoveInterceptorCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapRemoveInterceptorCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapRemoveInterceptorCodec::REQUEST_TYPE = HZ_MAP_REMOVEINTERCEPTOR;
+                const bool MapRemoveInterceptorCodec::RETRYABLE = false;
+                const ResponseMessageConst MapRemoveInterceptorCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapRemoveInterceptorCodec::encodeRequest(
+                        const std::string &name,
                         const std::string &id) {
                     int32_t requiredDataSize = calculateDataSize(name, id);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapRemoveInterceptorCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapRemoveInterceptorCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(id);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapRemoveInterceptorCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapRemoveInterceptorCodec::calculateDataSize(
+                        const std::string &name,
                         const std::string &id) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,21 +50,17 @@ namespace hazelcast {
                 }
 
                 MapRemoveInterceptorCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapRemoveInterceptorCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapRemoveInterceptorCodec::ResponseParameters MapRemoveInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveInterceptorCodec::ResponseParameters
+                MapRemoveInterceptorCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapRemoveInterceptorCodec::ResponseParameters(clientMessage);
                 }
 
-                MapRemoveInterceptorCodec::ResponseParameters::ResponseParameters(const MapRemoveInterceptorCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

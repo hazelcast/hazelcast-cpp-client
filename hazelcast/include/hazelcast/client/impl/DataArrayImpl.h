@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,16 +139,17 @@ namespace hazelcast {
                     size_t len = values.size();
                     if (0 == len) {
                         char msg[200];
-                        util::snprintf(msg, 200,
-                                       "The are no elements in the array, you should not try accessing any element of the "
-                                               "array. Provided index (%lu) id out of range.", index);
+                        util::hz_snprintf(msg, 200,
+                                          "The are no elements in the array, you should not try accessing any element of the "
+                                                  "array. Provided index (%lu) id out of range.", index);
                         throw client::exception::IllegalArgumentException("DataArrayImpl", msg);
                     }
 
                     if (index >= len) {
                         char msg[200];
-                        util::snprintf(msg, 200, "Provided index (%lu) id out of range. Maximum allowed index is %lu",
-                                       index, (len - 1));
+                        util::hz_snprintf(msg, 200,
+                                          "Provided index (%lu) id out of range. Maximum allowed index is %lu",
+                                          index, (len - 1));
                         throw client::exception::IllegalArgumentException("DataArrayImpl", msg);
                     }
                 }

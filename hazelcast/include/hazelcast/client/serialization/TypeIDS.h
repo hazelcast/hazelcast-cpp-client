@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef HAZELCAST_TypeIDS
-#define HAZELCAST_TypeIDS
+#ifndef HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H
+#define HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H
 
 #include <string>
 #include <vector>
@@ -25,6 +25,8 @@
 
 namespace hazelcast {
     namespace client {
+        class HazelcastJsonValue;
+
         namespace serialization {
             class Portable;
             class IdentifiedDataSerializable;
@@ -50,9 +52,32 @@ namespace hazelcast {
             int32_t HAZELCAST_API getHazelcastTypeId(const double *object);
 
             int32_t HAZELCAST_API getHazelcastTypeId(const std::string *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<char> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<bool> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<byte> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int16_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int32_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<int64_t> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<float> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<double> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string *> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const std::vector<std::string> *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const void *object);
+
+            int32_t HAZELCAST_API getHazelcastTypeId(const HazelcastJsonValue *object);
         }
     }
 }
 
-
-#endif //HAZELCAST_TypeIDS
+#endif //HAZELCAST_CLIENT_SERIALIZATION_TYPEIDS_H

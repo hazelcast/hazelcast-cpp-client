@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ public:
         attributes["tripStart"] = "0";
         attributes["tripStop"] = "0";
         char buf[50];
-        hazelcast::util::snprintf(buf, 50, "%d", breakHorsePower);
+        hazelcast::util::hz_snprintf(buf, 50, "%d", breakHorsePower);
         attributes["bhp"] = buf;
-        hazelcast::util::snprintf(buf, 50, "%d", mileage);
+        hazelcast::util::hz_snprintf(buf, 50, "%d", mileage);
         attributes["mileage"] = buf;
     }
 
@@ -105,8 +105,7 @@ std::ostream &operator<<(std::ostream &out, const Car &c) {
 }
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<int, Car> map = hz.getMap<int, Car>("cars");
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,35 +49,41 @@ namespace hazelcast {
                 class HAZELCAST_API DefaultPortableReader : public PortableReaderBase {
                 public:
 
-                    DefaultPortableReader(PortableContext &portableContext, DataInput &input, boost::shared_ptr<ClassDefinition> cd);
+                    DefaultPortableReader(PortableContext &portableContext, ObjectDataInput &input, boost::shared_ptr<ClassDefinition> cd);
 
                     template<typename T>
                     boost::shared_ptr<T> readPortable(const char *fieldName) {
-                        boost::shared_ptr<T> portableInstance(new T);
-
-                        Portable * p = portableInstance.get();
-                        getPortableInstance(fieldName, p);
-                        return portableInstance;
-                    };
+                        return getPortableInstance<T>(fieldName);
+                    }
 
                     template<typename T>
                     std::vector<T> readPortableArray(const char *fieldName) {
                         PortableReaderBase::setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
 
-                        int len = dataInput.readInt();
-                        std::vector<T> portables(len);
+                        dataInput.readInt();
+                        std::vector<T> portables;
 
-                        std::vector<Portable *> baseArray(len);
-                        int i = 0;
-                        for (typename std::vector<T>::iterator it = portables.begin();
-                             portables.end() != it; ++it) {
-                            baseArray[i++] = (Portable *)(&(*it));
+                        setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
+
+                        int32_t len = dataInput.readInt();
+                        int32_t factoryId = dataInput.readInt();
+                        int32_t classId = dataInput.readInt();
+
+                        checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
+
+                        if (len > 0) {
+                            int offset = dataInput.position();
+                            for (int i = 0; i < len; i++) {
+                                dataInput.position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
+                                int32_t start = dataInput.readInt();
+                                dataInput.position(start);
+
+                                portables.push_back(*read<T>(dataInput, factoryId, classId));
+                            }
                         }
 
-                        getPortableInstancesArray(fieldName, baseArray);
                         return portables;
-                    };
-
+                    }
                 };
             }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,6 +137,18 @@ namespace hazelcast {
                 */
                 bool remove(const K &key, const V &value) {
                     return map.remove(key, value);
+                }
+
+                /**
+                 * Removes all entries which match with the supplied predicate.
+                 * If this map has index, matching entries will be found via index search, otherwise they will be found by full-scan.
+                 *
+                 * Note that calling this method also removes all entries from callers Near Cache.
+                 *
+                 * @param predicate matching entries with this predicate will be removed from this map
+                 */
+                void removeAll(const query::Predicate &predicate) {
+                    map.removeAll(predicate);
                 }
 
                 /**
@@ -782,7 +794,7 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<ResultType> executeOnKey(const K &key, EntryProcessor &entryProcessor) {
+                std::auto_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = serializationService->toData<K>(&key);
                     serialization::pimpl::Data processorData = serializationService->toData<EntryProcessor>(&entryProcessor);
 
@@ -801,13 +813,13 @@ namespace hazelcast {
                  * @return Future from which the result of the operation can be retrieved.
                  */
                 template<typename ResultType, typename EntryProcessor>
-                Future<ResultType> submitToKey(const K &key, EntryProcessor &entryProcessor) {
+                Future<ResultType> submitToKey(const K &key, const EntryProcessor &entryProcessor) {
                     return map.template submitToKey<ResultType, EntryProcessor>(key, entryProcessor);
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, EntryProcessor &entryProcessor) {
-                    EntryVector results = mapProxy.template executeOnKeysInternal<ResultType, EntryProcessor>(keys, entryProcessor);
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
+                    EntryVector results = mapProxy.template executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
                             new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
@@ -828,7 +840,7 @@ namespace hazelcast {
                 * @return Returns an array of (Key, Result) pairs.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor) {
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(
@@ -850,7 +862,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
                     return std::auto_ptr<EntryArray<K, ResultType> >(

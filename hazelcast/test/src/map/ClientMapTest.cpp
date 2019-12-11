@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,19 @@
 //
 // Created by sancar koyunlu on 8/27/13.
 
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "HazelcastServer.h"
+#include "serialization/Employee.h"
+#include "TestHelperFunctions.h"
+#include "ClientTestSupport.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/IMap.h"
 #include "hazelcast/client/query/OrPredicate.h"
 #include "hazelcast/client/query/RegexPredicate.h"
 #include "hazelcast/client/query/PagingPredicate.h"
@@ -37,23 +50,57 @@
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/EntryEvent.h"
-
-#include "HazelcastServerFactory.h"
-#include "serialization/Employee.h"
-#include "TestHelperFunctions.h"
-#include "ClientTestSupport.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/IMap.h"
-#include "HazelcastServer.h"
+#include "hazelcast/client/HazelcastJsonValue.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class PartitionAwareInt : public serialization::IdentifiedDataSerializable, public PartitionAware<int> {
+            public:
+                PartitionAwareInt() : partitionKey(0), actualKey(0) {}
+
+                PartitionAwareInt(int partitionKey, int actualKey)
+                        : partitionKey(partitionKey), actualKey(actualKey) {}
+
+                virtual const int *getPartitionKey() const {
+                    return &partitionKey;
+                }
+
+                int getActualKey() const {
+                    return actualKey;
+                }
+
+                virtual int getFactoryId() const {
+                    return 666;
+                }
+
+                virtual int getClassId() const {
+                    return 9;
+                }
+
+                virtual void writeData(serialization::ObjectDataOutput &writer) const {
+                    writer.writeInt(actualKey);
+                }
+
+                virtual void readData(serialization::ObjectDataInput &reader) {
+                    actualKey = reader.readInt();
+                }
+
+            private:
+                int partitionKey;
+                int actualKey;
+            };
+
+            bool operator<(const PartitionAwareInt &lhs, const PartitionAwareInt &rhs) {
+                return lhs.getActualKey() < rhs.getActualKey();
+            }
+
             class MapClientConfig : public ClientConfig {
             public:
                 static const char *intMapName;
                 static const char *employeesMapName;
                 static const char *imapName;
+                static const std::string ONE_SECOND_MAP_NAME;
 
                 MapClientConfig() {
                     addAddress(Address(g_srvFactory->getServerAddress(), 5701));
@@ -61,64 +108,36 @@ namespace hazelcast {
 
                 virtual ~MapClientConfig() {
                 }
-
-                /**
-                 * @return true if expiry at the server side should be seen by the client
-                 */
-                virtual bool shouldExpireWhenTLLExpiresAtServer() {
-                    return true;
-                }
             };
 
             const char *MapClientConfig::intMapName = "IntMap";
             const char *MapClientConfig::employeesMapName = "EmployeesMap";
             const char *MapClientConfig::imapName = "clientMapTest";
+            const std::string MapClientConfig::ONE_SECOND_MAP_NAME = "OneSecondTtlMap";
 
             class NearCachedDataMapClientConfig : public MapClientConfig {
             public:
                 NearCachedDataMapClientConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
-                            new config::NearCacheConfig<int, int>(intMapName));
-                    addNearCacheConfig<int, int>(intMapNearCacheConfig);
+                    addNearCacheConfig<int, int>(boost::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>(intMapName)));
 
-                    boost::shared_ptr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
-                            new config::NearCacheConfig<int, Employee>(employeesMapName));
-                    addNearCacheConfig<int, Employee>(employeesCacheConfig);
+                    addNearCacheConfig<int, Employee>(boost::shared_ptr<config::NearCacheConfig<int, Employee> >(new config::NearCacheConfig<int, Employee>(employeesMapName)));
 
-                    boost::shared_ptr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
-                            new config::NearCacheConfig<std::string, std::string>(imapName));
-                    addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
-                }
+                    addNearCacheConfig<std::string, std::string>(boost::shared_ptr<config::NearCacheConfig<std::string, std::string> >(new config::NearCacheConfig<std::string, std::string>(imapName)));
 
-                /**
-                 * @return true if expiry at the server side should be seen by the client
-                 */
-                virtual bool shouldExpireWhenTLLExpiresAtServer() {
-                    return false;
+                    addNearCacheConfig<std::string, std::string>(boost::shared_ptr<config::NearCacheConfig<std::string, std::string> >(new config::NearCacheConfig<std::string, std::string>(ONE_SECOND_MAP_NAME)));
                 }
             };
 
             class NearCachedObjectMapClientConfig : public MapClientConfig {
             public:
                 NearCachedObjectMapClientConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > intMapNearCacheConfig(
-                            new config::NearCacheConfig<int, int>(intMapName, config::OBJECT));
-                    addNearCacheConfig<int, int>(intMapNearCacheConfig);
+                    addNearCacheConfig<int, int>(boost::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>(intMapName, config::OBJECT)));
 
-                    boost::shared_ptr<config::NearCacheConfig<int, Employee> > employeesCacheConfig(
-                            new config::NearCacheConfig<int, Employee>(employeesMapName, config::OBJECT));
-                    addNearCacheConfig<int, Employee>(employeesCacheConfig);
+                    addNearCacheConfig<int, Employee>(boost::shared_ptr<config::NearCacheConfig<int, Employee> >(new config::NearCacheConfig<int, Employee>(employeesMapName, config::OBJECT)));
 
-                    boost::shared_ptr<config::NearCacheConfig<std::string, std::string> > imapNearCacheConfig(
-                            new config::NearCacheConfig<std::string, std::string>(imapName, config::OBJECT));
-                    addNearCacheConfig<std::string, std::string>(imapNearCacheConfig);
-                }
+                    addNearCacheConfig<std::string, std::string>(boost::shared_ptr<config::NearCacheConfig<std::string, std::string> >(new config::NearCacheConfig<std::string, std::string>(imapName, config::OBJECT)));
 
-                /**
-                 * @return true if expiry at the server side should be seen by the client
-                 */
-                virtual bool shouldExpireWhenTLLExpiresAtServer() {
-                    return false;
+                    addNearCacheConfig<std::string, std::string>(boost::shared_ptr<config::NearCacheConfig<std::string, std::string> >(new config::NearCacheConfig<std::string, std::string>(ONE_SECOND_MAP_NAME, config::OBJECT)));
                 }
             };
 
@@ -132,12 +151,6 @@ namespace hazelcast {
                     clientConfig = new CONFIGTYPE();
 
                     client = new HazelcastClient(*clientConfig);
-
-                    imap = new IMap<std::string, std::string>(
-                            client->getMap<std::string, std::string>(MapClientConfig::imapName));
-                    intMap = new IMap<int, int>(client->getMap<int, int>(MapClientConfig::intMapName));
-                    employees = new IMap<int, Employee>(
-                            client->getMap<int, Employee>(MapClientConfig::employeesMapName));
                 }
 
                 static void TearDownTestCase() {
@@ -183,11 +196,20 @@ namespace hazelcast {
                     std::auto_ptr<std::string> prefix;
                 };
 
+                virtual void SetUp() {
+                    imap = new IMap<std::string, std::string>(
+                            client->getMap<std::string, std::string>(MapClientConfig::imapName));
+                    intMap = new IMap<int, int>(client->getMap<int, int>(MapClientConfig::intMapName));
+                    employees = new IMap<int, Employee>(
+                            client->getMap<int, Employee>(MapClientConfig::employeesMapName));
+                }
+
                 virtual void TearDown() {
                     // clear maps
-                    employees->clear();
-                    intMap->clear();
-                    imap->clear();
+                    employees->destroy();
+                    intMap->destroy();
+                    imap->destroy();
+                    client->getMap<std::string, std::string>(MapClientConfig::ONE_SECOND_MAP_NAME).destroy();
                 }
 
 
@@ -268,6 +290,20 @@ namespace hazelcast {
                 }
 
                 template<typename K, typename V>
+                class EvictedEntryListener : public EntryAdapter<K, V> {
+                public:
+                    EvictedEntryListener(const boost::shared_ptr<CountDownLatch> &evictLatch) : evictLatch(
+                            evictLatch) {}
+
+                    virtual void entryEvicted(const EntryEvent<K, V> &event) {
+                        evictLatch->countDown();
+                    }
+
+                private:
+                    boost::shared_ptr<util::CountDownLatch> evictLatch;
+                };
+
+                template<typename K, typename V>
                 class CountdownListener : public EntryAdapter<K, V> {
                 public:
                     CountdownListener(util::CountDownLatch &addLatch, util::CountDownLatch &removeLatch,
@@ -277,34 +313,18 @@ namespace hazelcast {
                     }
 
                     void entryAdded(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryAdded] " << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         addLatch.countDown();
                     }
 
                     void entryRemoved(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryRemoved] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         removeLatch.countDown();
                     }
 
                     void entryUpdated(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryUpdated] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         updateLatch.countDown();
                     }
 
                     void entryEvicted(const EntryEvent<K, V> &event) {
-                        std::ostringstream out;
-                        out << "[entryEvicted] Key:" << event.getKey();
-                        util::ILogger::getLogger().info(out.str());
-
                         evictLatch.countDown();
                     }
 
@@ -536,6 +556,184 @@ namespace hazelcast {
                 }
             }
 
+            TYPED_TEST(ClientMapTest, testAsyncGet) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->getAsync(
+                        "key1");
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPut) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key3", "value");
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value3", *value);
+                value = ClientMapTest<TypeParam>::imap->get("key3");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPutWithTtl) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key", "value1", 3, util::concurrent::TimeUnit::SECONDS());
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NULL("no value for key should exist", value.get(), std::string);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
+                        (monitor::impl::NearCacheStatsImpl *) ClientMapTest<TypeParam>::imap->getLocalMapStats().getNearCacheStats();
+
+                // When ttl expires at server, the server does not send near cache invalidation, hence below is for
+                // non-near cache test case.
+                if (!nearCacheStatsImpl) {
+                    value = ClientMapTest<TypeParam>::imap->get("key");
+                    ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+                }
+
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId));
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncPutWithMaxIdle) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<std::string> > future = ClientMapTest<TypeParam>::imap->putAsync(
+                        "key", "value1", 0, util::concurrent::TimeUnit::SECONDS(), 3,
+                        util::concurrent::TimeUnit::SECONDS());
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NULL("no value for key should exist", value.get(), std::string);
+                value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
+                        (monitor::impl::NearCacheStatsImpl *) ClientMapTest<TypeParam>::imap->getLocalMapStats().getNearCacheStats();
+
+                // When ttl expires at server, the server does not send near cache invalidation, hence below is for
+                // non-near cache test case.
+                if (!nearCacheStatsImpl) {
+                    value = ClientMapTest<TypeParam>::imap->get("key");
+                    ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+                }
+
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId));
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSet) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key3",
+                                                                                                               "value");
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key3");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSetWithTtl) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key",
+                                                                                                               "value1",
+                                                                                                               3,
+                                                                                                               util::concurrent::TimeUnit::SECONDS());
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
+                        (monitor::impl::NearCacheStatsImpl *) ClientMapTest<TypeParam>::imap->getLocalMapStats().getNearCacheStats();
+
+                // When ttl expires at server, the server does not send near cache invalidation, hence below is for 
+                // non-near cache test case.
+                if (!nearCacheStatsImpl) {
+                    value = ClientMapTest<TypeParam>::imap->get("key");
+                    ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+                }
+
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId));
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncSetWithMaxIdle) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<util::CountDownLatch> evictLatch(new util::CountDownLatch(1));
+                typename ClientMapTest<TypeParam>::template EvictedEntryListener<std::string, std::string> listener(
+                        evictLatch);
+                std::string listenerId = ClientMapTest<TypeParam>::imap->addEntryListener(listener, true);
+
+                boost::shared_ptr<ICompletableFuture<void> > future = ClientMapTest<TypeParam>::imap->setAsync("key",
+                                                                                                               "value1",
+                                                                                                               0,
+                                                                                                               util::concurrent::TimeUnit::SECONDS(),
+                                                                                                               3,
+                                                                                                               util::concurrent::TimeUnit::SECONDS());
+                future->get();
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key");
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value1", *value);
+
+                ASSERT_OPEN_EVENTUALLY(*evictLatch);
+
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl =
+                        (monitor::impl::NearCacheStatsImpl *) ClientMapTest<TypeParam>::imap->getLocalMapStats().getNearCacheStats();
+
+                // When ttl expires at server, the server does not send near cache invalidation, hence below is for 
+                // non-near cache test case.
+                if (!nearCacheStatsImpl) {
+                    value = ClientMapTest<TypeParam>::imap->get("key");
+                    ASSERT_NULL("The value for key should have expired and not exist", value.get(), std::string);
+                }
+
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(listenerId));
+            }
+
+            TYPED_TEST(ClientMapTest, testAsyncRemove) {
+                ClientMapTest<TypeParam>::fillMap();
+                boost::shared_ptr<ICompletableFuture<string> > future = ClientMapTest<TypeParam>::imap->removeAsync(
+                        "key4");
+                future->get();
+                boost::shared_ptr<std::string> value = future->get();
+                ASSERT_NOTNULL(value.get(), std::string);
+                ASSERT_EQ("value4", *value);
+            }
+
+            TYPED_TEST(ClientMapTest, testPartitionAwareKey) {
+                int partitionKey = 5;
+                int value = 25;
+                IMap<PartitionAwareInt, int> map =
+                        ClientMapTest<TypeParam>::client->template getMap<PartitionAwareInt, int>(MapClientConfig::intMapName);
+                PartitionAwareInt partitionAwareInt(partitionKey, 7);
+                map.put(partitionAwareInt, value);
+                boost::shared_ptr<int> val = map.get(partitionAwareInt);
+                ASSERT_NOTNULL(val.get(), int);
+                ASSERT_EQ(*val, value);
+            }
+
             TYPED_TEST(ClientMapTest, testRemoveAndDelete) {
                 ClientMapTest<TypeParam>::fillMap();
                 boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->remove("key10");
@@ -564,6 +762,22 @@ namespace hazelcast {
 
             }
 
+            TYPED_TEST(ClientMapTest, testRemoveAll) {
+                ClientMapTest<TypeParam>::fillMap();
+
+                ClientMapTest<TypeParam>::imap->removeAll(
+                        query::EqualPredicate<std::string>(query::QueryConstants::getKeyAttributeName(), "key5"));
+
+                boost::shared_ptr<std::string> value = ClientMapTest<TypeParam>::imap->get("key5");
+                
+                ASSERT_NULL("key5 should not exist", value.get(), std::string);
+
+                ClientMapTest<TypeParam>::imap->removeAll(
+                        query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value%"));
+
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isEmpty());
+            }
+
             TYPED_TEST(ClientMapTest, testGetAllPutAll) {
 
                 std::map<std::string, std::string> mapTemp;
@@ -571,6 +785,7 @@ namespace hazelcast {
                 for (int i = 0; i < 100; i++) {
                     mapTemp[util::IOUtil::to_string(i)] = util::IOUtil::to_string(i);
                 }
+                ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 0);
                 ClientMapTest<TypeParam>::imap->putAll(mapTemp);
                 ASSERT_EQ(ClientMapTest<TypeParam>::imap->size(), 100);
 
@@ -601,8 +816,8 @@ namespace hazelcast {
 
                 util::CountDownLatch latch(2);
 
-                util::Thread t1(ClientMapTest<TypeParam>::tryPutThread, &latch, ClientMapTest<TypeParam>::imap);
-                util::Thread t2(ClientMapTest<TypeParam>::tryRemoveThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::tryPutThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t2(ClientMapTest<TypeParam>::tryRemoveThread, &latch, ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(20));
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
@@ -618,38 +833,70 @@ namespace hazelcast {
                         dummy, dummy, dummy, evict);
                 std::string id = ClientMapTest<TypeParam>::imap->addEntryListener(sampleEntryListener, false);
 
-                ClientMapTest<TypeParam>::imap->put("key1", "value1", 2000);
-                boost::shared_ptr<std::string> temp = ClientMapTest<TypeParam>::imap->get("key1");
-                ASSERT_EQ(*temp, "value1");
-                util::sleep(2);
-                // trigger eviction at server
-                boost::shared_ptr<std::string> temp2 = ClientMapTest<TypeParam>::imap->get("key1");
-                // When ttl expires at server, the server does not send near cache invalidation
-                if (ClientMapTest<TypeParam>::clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
-                    ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
-                    ASSERT_TRUE(evict.await(10));
-                } else {
-                    temp = ClientMapTest<TypeParam>::imap->get("key1");
-                    ASSERT_EQ(*temp, "value1");
+                IMap<std::string, std::string> &map = *ClientMapTest<TypeParam>::imap;
+
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                int64_t initialInvalidationRequests = 0;
+                if (nearCacheStatsImpl) {
+                    initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
                 }
+
+                // put will cause an invalidation event sent from the server to the client
+                map.put("key1", "value1", 1000);
+
+                // if near cache is enabled
+                if (nearCacheStatsImpl) {
+                    ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                    // populate near cache
+                    ClientMapTest<TypeParam>::imap->get("key1").get();
+
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                } else {
+                    // trigger eviction
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+                }
+
+                ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
             }
 
             TYPED_TEST(ClientMapTest, testPutConfigTtl) {
                 IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
-                        "OneSecondTtlMap");
+                        MapClientConfig::ONE_SECOND_MAP_NAME);
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
                 typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                int64_t initialInvalidationRequests = 0;
+                if (nearCacheStatsImpl) {
+                    initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
+                }
+
+                // put will cause an invalidation event sent from the server to the client
                 map.put("key1", "value1");
-                boost::shared_ptr<std::string> temp = map.get("key1");
-                ASSERT_EQ(*temp, "value1");
-                // trigger eviction
-                ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+
+                // if near cache is enabled
+                if (nearCacheStatsImpl) {
+                    ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                    // populate near cache
+                    ClientMapTest<TypeParam>::imap->get("key1").get();
+
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                } else {
+                    // trigger eviction
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+                }
+
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -676,51 +923,79 @@ namespace hazelcast {
 
                 ClientMapTest<TypeParam>::imap->set("key1", "value2");
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
-
-                ClientMapTest<TypeParam>::imap->set("key1", "value3", 1000);
-                ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
-                // When ttl expires at server, the server does not send near cache invalidation
-                if (ClientMapTest<TypeParam>::clientConfig->shouldExpireWhenTLLExpiresAtServer()) {
-                    ASSERT_NULL_EVENTUALLY(ClientMapTest<TypeParam>::imap->get("key1").get(), std::string);
-                } else {
-                    util::sleep(2);
-                    ASSERT_EQ("value3", *(ClientMapTest<TypeParam>::imap->get("key1")));
-                }
             }
 
             TYPED_TEST(ClientMapTest, testSetTtl) {
-                IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
-                        "OneSecondTtlMap");
+                IMap<std::string, std::string> &map = *ClientMapTest<TypeParam>::imap;
+
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
                 typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                int64_t initialInvalidationRequests = 0;
+                if (nearCacheStatsImpl) {
+                    initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
+                }
+
+                // set will cause an invalidation event sent from the server to the client
                 map.set("key1", "value1", 1000);
-                boost::shared_ptr<std::string> temp = map.get("key1");
-                ASSERT_EQ(*temp, "value1");
-                util::sleep(2);
-                // trigger eviction
-                boost::shared_ptr<std::string> temp2 = map.get("key1");
-                ASSERT_NULL("The value for key1 needs to be null", temp2.get(), std::string);
+
+                // if near cache is enabled
+                if (nearCacheStatsImpl) {
+                    ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                    // populate near cache
+                    ClientMapTest<TypeParam>::imap->get("key1").get();
+
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                } else {
+                    // trigger eviction
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+                }
+
                 ASSERT_TRUE(evict.await(5));
 
-                ASSERT_TRUE(map.removeEntryListener(id));
+                ASSERT_TRUE(ClientMapTest<TypeParam>::imap->removeEntryListener(id));
             }
 
             TYPED_TEST(ClientMapTest, testSetConfigTtl) {
                 IMap<std::string, std::string> map = ClientMapTest<TypeParam>::client->template getMap<std::string, std::string>(
-                        "OneSecondTtlMap");
+                        MapClientConfig::ONE_SECOND_MAP_NAME);
                 util::CountDownLatch dummy(10);
                 util::CountDownLatch evict(1);
                 typename ClientMapTest<TypeParam>::template CountdownListener<std::string, std::string> sampleEntryListener(
                         dummy, dummy, dummy, evict);
                 std::string id = map.addEntryListener(sampleEntryListener, false);
 
+                monitor::impl::NearCacheStatsImpl *nearCacheStatsImpl = (monitor::impl::NearCacheStatsImpl *) map.getLocalMapStats().getNearCacheStats();
+
+                int64_t initialInvalidationRequests = 0;
+                if (nearCacheStatsImpl) {
+                    initialInvalidationRequests = nearCacheStatsImpl->getInvalidationRequests();
+                }
+
+                // put will cause an invalidation event sent from the server to the client
                 map.set("key1", "value1");
-                // trigger eviction
-                ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+
+                // if near cache is enabled
+                if (nearCacheStatsImpl) {
+                    ASSERT_EQ_EVENTUALLY(initialInvalidationRequests + 1,  nearCacheStatsImpl->getInvalidationRequests());
+
+                    // populate near cache
+                    ClientMapTest<TypeParam>::imap->get("key1").get();
+
+                    // When ttl expires at server, the server does not send near cache invalidation.
+                    ASSERT_TRUE_ALL_THE_TIME((map.get("key1").get() && nearCacheStatsImpl->getInvalidationRequests() == initialInvalidationRequests + 1), 2);
+                } else {
+                    // trigger eviction
+                    ASSERT_NULL_EVENTUALLY(map.get("key1").get(), std::string);
+                }
+
                 ASSERT_TRUE(evict.await(5));
 
                 ASSERT_TRUE(map.removeEntryListener(id));
@@ -731,7 +1006,7 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
@@ -742,7 +1017,7 @@ namespace hazelcast {
                 ASSERT_EQ("value1", *(ClientMapTest<TypeParam>::imap->get("key1")));
                 ClientMapTest<TypeParam>::imap->lock("key1", 2 * 1000);
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockTTLThread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockTTLThread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
                 ASSERT_FALSE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
                 ASSERT_EQ("value2", *(ClientMapTest<TypeParam>::imap->get("key1")));
@@ -752,7 +1027,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testLockTtl2) {
                 ClientMapTest<TypeParam>::imap->lock("key1", 3 * 1000);
                 util::CountDownLatch latch(2);
-                util::Thread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
+                util::StartedThread t1(ClientMapTest<TypeParam>::testLockTTL2Thread, &latch, ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(10));
                 ClientMapTest<TypeParam>::imap->forceUnlock("key1");
             }
@@ -760,7 +1035,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testTryLock) {
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->tryLock("key1", 2 * 1000));
                 util::CountDownLatch latch(1);
-                util::Thread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
+                util::StartedThread t1(ClientMapTest<TypeParam>::testMapTryLockThread1, &latch,
                                 ClientMapTest<TypeParam>::imap);
 
                 ASSERT_TRUE(latch.await(100));
@@ -768,7 +1043,7 @@ namespace hazelcast {
                 ASSERT_TRUE(ClientMapTest<TypeParam>::imap->isLocked("key1"));
 
                 util::CountDownLatch latch2(1);
-                util::Thread t2(ClientMapTest<TypeParam>::testMapTryLockThread2, &latch2,
+                util::StartedThread t2(ClientMapTest<TypeParam>::testMapTryLockThread2, &latch2,
                                 ClientMapTest<TypeParam>::imap);
 
                 util::sleep(1);
@@ -781,7 +1056,7 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testForceUnlock) {
                 ClientMapTest<TypeParam>::imap->lock("key1");
                 util::CountDownLatch latch(1);
-                util::Thread t2(ClientMapTest<TypeParam>::testMapForceUnlockThread, &latch,
+                util::StartedThread t2(ClientMapTest<TypeParam>::testMapForceUnlockThread, &latch,
                                 ClientMapTest<TypeParam>::imap);
                 ASSERT_TRUE(latch.await(100));
                 t2.join();
@@ -1042,7 +1317,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 values = ClientMapTest<TypeParam>::intMap->values(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) values.size());
                 std::sort(values.begin(), values.end());
@@ -1451,7 +1726,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 keys = ClientMapTest<TypeParam>::intMap->keySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) keys.size());
                 std::sort(keys.begin(), keys.end());
@@ -1861,7 +2136,7 @@ namespace hazelcast {
                 // SqlPredicate
                 // __key BETWEEN 4 and 7 : {4, 5, 6, 7} -> {8, 10, 12, 14}
                 char sql[100];
-                util::snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
+                util::hz_snprintf(sql, 50, "%s BETWEEN 4 and 7", query::QueryConstants::getKeyAttributeName());
                 entries = ClientMapTest<TypeParam>::intMap->entrySet(query::SqlPredicate(sql));
                 ASSERT_EQ(4, (int) entries.size());
                 std::sort(entries.begin(), entries.end());
@@ -3012,7 +3287,7 @@ namespace hazelcast {
 
                 typename ClientMapTest<TypeParam>::EntryMultiplier processor(4);
                 std::map<int, boost::shared_ptr<int> > result = ClientMapTest<TypeParam>::employees->template executeOnEntries<int, typename ClientMapTest<TypeParam>::EntryMultiplier>(
-                        processor, query::InstanceOfPredicate("Employee"));
+                        processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                 ASSERT_EQ(3, (int) result.size());
                 ASSERT_TRUE((result.end() != result.find(3)));
@@ -3079,8 +3354,8 @@ namespace hazelcast {
             TYPED_TEST(ClientMapTest, testAddInterceptor) {
                 std::string prefix("My Prefix");
                 typename ClientMapTest<TypeParam>::MapGetInterceptor interceptor(prefix);
-                ClientMapTest<TypeParam>::imap->template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(
-                        interceptor);
+                std::string interceptorId = ClientMapTest<TypeParam>::imap->
+                        template addInterceptor<typename ClientMapTest<TypeParam>::MapGetInterceptor>(interceptor);
 
                 boost::shared_ptr<std::string> val = ClientMapTest<TypeParam>::imap->get("nonexistent");
                 ASSERT_NE((std::string *) NULL, val.get());
@@ -3092,6 +3367,45 @@ namespace hazelcast {
                 val = ClientMapTest<TypeParam>::imap->get("key1");
                 ASSERT_NE((std::string *) NULL, val.get());
                 ASSERT_EQ(prefix + "value1", *val);
+
+                ClientMapTest<TypeParam>::imap->removeInterceptor(interceptorId);
+            }
+
+            TYPED_TEST(ClientMapTest, testJsonPutGet) {
+                IMap<string, HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, HazelcastJsonValue>(
+                        ClientMapTest<TypeParam>::getTestName());
+                HazelcastJsonValue value("{ \"age\": 4 }");
+                map.put("item1", value);
+                boost::shared_ptr<HazelcastJsonValue> retrieved = map.get("item1");
+
+                ASSERT_EQ_PTR(value, retrieved.get(), HazelcastJsonValue);
+            }
+
+            TYPED_TEST(ClientMapTest, testQueryOverJsonObject) {
+                IMap<string, HazelcastJsonValue> map = ClientMapTest<TypeParam>::client->template getMap<std::string, HazelcastJsonValue>(
+                        ClientMapTest<TypeParam>::getTestName());
+                HazelcastJsonValue young("{ \"age\": 4 }");
+                HazelcastJsonValue old("{ \"age\": 20 }");
+                map.put("item1", young);
+                map.put("item2", old);
+
+                ASSERT_EQ(2, map.size());
+
+                // Get the objects whose age is less than 6
+                std::vector<HazelcastJsonValue> result = map.values(
+                        query::GreaterLessPredicate<int>("age", 6, false, true));
+                ASSERT_EQ(1U, result.size());
+                ASSERT_EQ(young, result[0]);
+            }
+
+            TYPED_TEST(ClientMapTest, testExtendedAsciiString) {
+                std::string key = "Num\xc3\xa9ro key";
+                std::string value = "Num\xc3\xa9ro value";
+                ClientMapTest<TypeParam>::imap->put(key, value);
+
+                boost::shared_ptr<std::string> actualValue = ClientMapTest<TypeParam>::imap->get(key);
+
+                ASSERT_EQ_PTR(value, actualValue.get(), std::string);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,13 @@
 namespace hazelcast {
     namespace client {
         namespace serialization {
-            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput,
-                                               pimpl::PortableContext &portableContext)
-                    : dataOutput(&dataOutput), context(&portableContext),
-                      serializerHolder(&portableContext.getSerializerHolder()), isEmpty(false) {
+            ObjectDataOutput::ObjectDataOutput(pimpl::DataOutput &dataOutput, pimpl::SerializerHolder *serializerHolder)
+                    : dataOutput(&dataOutput), serializerHolder(serializerHolder), isEmpty(false) {
 
             }
 
             ObjectDataOutput::ObjectDataOutput()
-                    : dataOutput(NULL), context(NULL), serializerHolder(NULL), isEmpty(true) {
-
+                    : dataOutput(NULL), serializerHolder(NULL), isEmpty(true) {
             }
 
             std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
@@ -171,6 +168,22 @@ namespace hazelcast {
 
             void ObjectDataOutput::position(size_t newPos) {
                 dataOutput->position(newPos);
+            }
+
+            pimpl::DataOutput *ObjectDataOutput::getDataOutput() const {
+                return dataOutput;
+            }
+
+            template <>
+            void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
+                                                 boost::shared_ptr<StreamSerializer> &streamSerializer) {
+                std::vector<std::string> *stringVector = const_cast<std::vector<std::string> *>(object);
+                std::auto_ptr<std::vector<std::string *> > result(new std::vector<std::string *>());
+                for (std::vector<std::string>::iterator it = stringVector->begin();it != stringVector->end(); ++it) {
+                    result->push_back(&(*it));
+                }
+
+                streamSerializer->write(*this, result.get());
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/31/13.
-
-
 
 #include "hazelcast/client/impl/RoundRobinLB.h"
+#include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/exception/IException.h"
 
 namespace hazelcast {
     namespace client {
@@ -36,11 +32,17 @@ namespace hazelcast {
             const Member RoundRobinLB::next() {
                 std::vector<Member> members = getMembers();
                 if (members.size() == 0) {
-                    throw exception::IException("const Member& RoundRobinLB::next()", "No member in member list!!");
+                    throw exception::IllegalStateException("const Member& RoundRobinLB::next()", "No member in member list!!");
                 }
                 return members[++index % members.size()];
             }
 
+            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(const_cast<RoundRobinLB &>(rhs).index.get()) {
+            }
+
+            void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
+                index.set(const_cast<RoundRobinLB &>(rhs).index.get());
+            }
 
         }
     }

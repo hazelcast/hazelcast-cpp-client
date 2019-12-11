@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,17 @@
 #ifndef HAZELCAST_ReadHandler
 #define HAZELCAST_ReadHandler
 
-#include "hazelcast/util/HazelcastDll.h"
+#include<stdint.h>
+
+#include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/connection/IOHandler.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +47,8 @@ namespace hazelcast {
 
             class HAZELCAST_API ReadHandler : public IOHandler {
             public:
-                ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize, spi::ClientContext& clientContext);
+                ReadHandler(Connection &connection, InSelector &iListener, size_t bufferSize,
+                            spi::ClientContext &clientContext);
 
                 ~ReadHandler();
 
@@ -48,15 +56,22 @@ namespace hazelcast {
 
                 void run();
 
+                int64_t getLastReadTimeMillis();
+
             private:
-                char* buffer;
+                char *buffer;
                 util::ByteBuffer byteBuffer;
 
                 protocol::ClientMessageBuilder builder;
+                util::Atomic<int64_t> lastReadTimeMillis;
             };
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_ReadHandler
 

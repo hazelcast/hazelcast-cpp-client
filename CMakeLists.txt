@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ project (HazelcastClient)
 
 INCLUDE(TestBigEndian)
 
-SET(HZ_VERSION 3.8.1)
+SET(HZ_VERSION 3.13-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
@@ -74,17 +74,37 @@ message(STATUS "Preparing hazelcast client ..... ")
 #detect endianness
 TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
 if (${IS_BIG_ENDIAN})
+	message(STATUS "Current system is a BIG-ENDIAN system")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BIG_ENDIAN")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BIG_ENDIAN")
+else()
+	message(STATUS "Current system is a LITTLE-ENDIAN system")
 ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
+FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
-include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/generated-sources/include)
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/external/include/ ${CMAKE_SOURCE_DIR}/external/include/asio/asio/include/)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include)
+
+if (HZ_FIND_EXTERNAL_BOOST)
+	find_package(Boost REQUIRED)
+	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
+else ()
+	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/)
+endif(HZ_FIND_EXTERNAL_BOOST)
+
+include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
+message(STATUS "Using HZ_BOOST_INCLUDE_DIR: ${HZ_BOOST_INCLUDE_DIR}")
+
+if ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
+	set(HZ_ASIO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/asio/asio/include/)
+endif ("${HZ_ASIO_INCLUDE_DIR}" STREQUAL "")
+
+include_directories(SYSTEM ${HZ_ASIO_INCLUDE_DIR})
+message(STATUS "Using HZ_ASIO_INCLUDE_DIR: ${HZ_ASIO_INCLUDE_DIR}")
 
 IF(NOT (${HZ_BIT} MATCHES "32") AND NOT (${HZ_BIT} MATCHES "64") )
   message( STATUS "Build needs HZ_BIT. Setting default as -DHZ_BIT=64 (other option -DHZ_BIT=32)" )
@@ -103,27 +123,27 @@ SET(HZ_LIB_NAME HazelcastClient${HZ_VERSION}_${HZ_BIT})
 set(HZ_CODE_COVERAGE_COMPILE_FLAGS " ")
 set(HZ_CODE_COVERAGE_LINK_FLAGS " ")
 
-IF(${HZ_CODE_COVERAGE} MATCHES "ON")
+IF(HZ_CODE_COVERAGE)
 	message(STATUS "Code coverage is on")
 	set(HZ_CODE_COVERAGE_COMPILE_FLAGS " -fprofile-arcs -ftest-coverage -fPIC -O0 ")
 	set(HZ_CODE_COVERAGE_LINK_FLAGS " -lgcov -fprofile-arcs -ftest-coverage -fPIC -O0 ")
-ENDIF(${HZ_CODE_COVERAGE} MATCHES "ON")
+ENDIF(HZ_CODE_COVERAGE)
 
 set(HZ_VALGRIND_COMPILE_FLAGS " ")
 set(HZ_VALGRIND_LINK_FLAGS " ")
-IF(${HZ_VALGRIND} MATCHES "ON")
+IF(HZ_VALGRIND)
 	message(STATUS "Valgrind is on")
 	set(HZ_VALGRIND_COMPILE_FLAGS " -O0 ")
 	set(HZ_VALGRIND_LINK_FLAGS " -O0 ")
-ENDIF(${HZ_VALGRIND} MATCHES "ON")
+ENDIF(HZ_VALGRIND)
 
 set(HZ_C11_FLAGS "")
-IF(${HZ_USE_C11} MATCHES "ON")
+IF(HZ_USE_C11)
 	set(HZ_C11_FLAGS "-std=c++11")
 	message(STATUS "C++11 compiler is turned on.")
-ENDIF(${HZ_USE_C11} MATCHES "ON")
+ENDIF(HZ_USE_C11)
 
-if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+if (HZ_COMPILE_WITH_SSL)
 	message(STATUS "Building the library with SSL support.")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
@@ -138,7 +158,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror ${HZ_C11_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall ${HZ_C11_FLAGS}")
 
-	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+	if (HZ_COMPILE_WITH_SSL)
 		if ("${HZ_OPENSSL_LIB_DIR}" STREQUAL "")
 			SET(HZ_OPENSSL_LIB_DIR /usr/local/opt/openssl/lib/)
 		endif ()
@@ -157,7 +177,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		link_libraries(ssl crypto)
 	ENDIF()
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
@@ -166,21 +186,33 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	message(STATUS "LINUX ENVIRONMENT DETECTED")
 
-	SET(HZ_BIT_FLAG " ")
 	IF(${HZ_BIT} MATCHES "32")
 		SET(HZ_BIT_FLAG " -m32 ")
+	ELSE()
+		SET(HZ_BIT_FLAG " -m64 ")
 	ENDIF(${HZ_BIT} MATCHES "32")
 
 	message(STATUS "${HZ_BIT} Bit")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -g -Wall -Werror -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME} pthread rt)
 
-	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+	if (HZ_COMPILE_WITH_SSL)
+		if (HZ_OPENSSL_LIB_DIR)
+			message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
+			# We need to set link directories before adding library for the path to be used
+			link_directories(${HZ_OPENSSL_LIB_DIR})
+		endif ()
+
+		if (HZ_OPENSSL_INCLUDE_DIR)
+			message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
+			include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
+		endif ()
+
 		link_libraries(ssl crypto)
 	ENDIF()
 
@@ -199,7 +231,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
 
-	if (${HZ_COMPILE_WITH_SSL} MATCHES "ON")
+	if (HZ_COMPILE_WITH_SSL)
 		if ("x${HZ_OPENSSL_INCLUDE_DIR}" MATCHES "x")
 			set (HZ_OPENSSL_INCLUDE_DIR C:\\OpenSSL-Win64\\include)
 		endif()
@@ -230,20 +262,20 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		link_libraries(${SSL_LIBS})
 	ENDIF()
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
-IF(${HZ_BUILD_TESTS} MATCHES "ON")
+IF(HZ_BUILD_TESTS)
 	SET(BUILD_GTEST "ON")
 	SET(BUILD_GMOCK "OFF")
 	ADD_SUBDIRECTORY(hazelcast/test)
 	message(STATUS "Configured to build the tests. BUILD_GTEST=${BUILD_GTEST} BUILD_GMOCK=${BUILD_GMOCK}")
-ENDIF(${HZ_BUILD_TESTS} MATCHES "ON")
+ENDIF(HZ_BUILD_TESTS)
 
-IF(${HZ_BUILD_EXAMPLES} MATCHES "ON")
+IF(HZ_BUILD_EXAMPLES)
 	ADD_SUBDIRECTORY(examples)
 	message(STATUS "Configured to build the examples.")
-ENDIF(${HZ_BUILD_EXAMPLES} MATCHES "ON")
+ENDIF(HZ_BUILD_EXAMPLES)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/21/13.
 
 #ifndef HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 #define HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
 
+#include <map>
+#include <vector>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/LockGuard.h"
-#include <boost/shared_ptr.hpp>
-#include <map>
-#include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
-#pragma warning(disable: 4251) //for dll export	
+#pragma warning(disable: 4251) //for dll export
 #endif
 
 namespace hazelcast {
     namespace util {
+
+        /**
+         * This is the base synchronized map which works with any provided value and key types.
+         * @tparam K The type of the key for the map.
+         * @tparam V The type of the value for the map. The shared_ptr<V> is being kept in the map.
+         * @tparam Comparator The comparator to be used for the key type.
+         */
         template <typename K, typename V, typename Comparator  = std::less<K> >
         class SynchronizedMap {
         public:
@@ -40,6 +46,10 @@ namespace hazelcast {
             }
 
             SynchronizedMap(const SynchronizedMap<K, V, Comparator> &rhs) {
+                *this = rhs;
+            }
+
+            void operator=(const SynchronizedMap<K, V, Comparator> &rhs) {
                 util::LockGuard lg(mapLock);
                 util::LockGuard lgRhs(rhs.mapLock);
                 internalMap = rhs.internalMap;
@@ -115,24 +125,34 @@ namespace hazelcast {
                     return boost::shared_ptr<V>();
             };
 
+            bool remove(const K &key, const boost::shared_ptr<V> &value) {
+                util::LockGuard lg(mapLock);
+                for (typename std::map<K, boost::shared_ptr<V> >::iterator it = internalMap.find(key);
+                     it != internalMap.end(); ++it) {
+                    if (it->second == value) {
+                        internalMap.erase(it);
+                        return true;
+                    }
+                }
+                return false;
+            }
+
             std::vector<std::pair<K, boost::shared_ptr<V> > > entrySet() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
+                std::vector<std::pair<K, boost::shared_ptr<V> > > entries;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries.push_back(std::pair<K, boost::shared_ptr<V> >(it->first, it->second));
                 }
                 return entries;
             }
 
             std::vector<std::pair<K, boost::shared_ptr<V> > > clear() {
                 util::LockGuard lg(mapLock);
-                std::vector<std::pair<K, boost::shared_ptr<V> > > entries(internalMap.size());
+                std::vector<std::pair<K, boost::shared_ptr<V> > > entries;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    entries[i++] = std::pair<K, boost::shared_ptr<V> >(it->first, it->second);
+                    entries.push_back(std::pair<K, boost::shared_ptr<V> >(it->first, it->second));
                 }
                 internalMap.clear();
                 return entries;
@@ -140,22 +160,20 @@ namespace hazelcast {
 
             std::vector<boost::shared_ptr<V> > values() {
                 util::LockGuard lg(mapLock);
-                std::vector<boost::shared_ptr<V> > valueArray(internalMap.size());
+                std::vector<boost::shared_ptr<V> > valueArray;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    valueArray[i++] = it->second;
+                    valueArray.push_back(it->second);
                 }
                 return valueArray;
             }
 
             std::vector<K> keys() {
                 util::LockGuard lg(mapLock);
-                std::vector<K> keysArray(internalMap.size());
+                std::vector<K> keysArray;
                 typename std::map<K, boost::shared_ptr<V>, Comparator>::iterator it;
-                int i = 0;
                 for (it = internalMap.begin(); it != internalMap.end(); it++) {
-                    keysArray[i++] = it->first;
+                    keysArray.push_back(it->first);
                 }
                 return keysArray;
             }
@@ -199,4 +217,6 @@ namespace hazelcast {
 #endif
 
 #endif //HAZELCAST_UTIL_SYNCHRONIZEDMAP_H_
+
+
 

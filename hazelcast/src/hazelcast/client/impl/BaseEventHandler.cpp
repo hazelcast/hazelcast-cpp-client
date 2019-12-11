@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 
 
 #include "hazelcast/client/impl/BaseEventHandler.h"
+#include "hazelcast/client/protocol/ClientMessage.h"
 
 namespace hazelcast {
     namespace client {
@@ -26,7 +27,20 @@ namespace hazelcast {
             BaseEventHandler::~BaseEventHandler(){
             }
 
+            void BaseEventHandler::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
+                std::auto_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
+                handle(e);
+            }
 
+            BaseEventHandler::BaseEventHandler() : logger(NULL) {}
+
+            void BaseEventHandler::setLogger(util::ILogger *logger) {
+                BaseEventHandler::logger = logger;
+            }
+
+            util::ILogger *BaseEventHandler::getLogger() const {
+                return logger;
+            }
         }
     }
 }

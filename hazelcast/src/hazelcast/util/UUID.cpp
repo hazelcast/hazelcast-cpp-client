@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@
 //  Copyright (c) 2015 ihsan demir. All rights reserved.
 //
 
+#include <sstream>
 #include "hazelcast/util/UUID.h"
 
 namespace hazelcast {
     namespace util {
+        UUID::UUID() : mostSigBits(0), leastSigBits(0) {}
+
         UUID::UUID(int64_t mostBits, int64_t leastBits) :mostSigBits(mostBits), leastSigBits(leastBits) {
         }
 
@@ -41,5 +44,30 @@ namespace hazelcast {
         bool UUID::equals(const UUID &rhs) const {
             return (mostSigBits == rhs.mostSigBits && leastSigBits == rhs.leastSigBits);
         }
+
+        std::string UUID::toString() const {
+            return (digits(mostSigBits >> 32, 8) + "-" +
+                    digits(mostSigBits >> 16, 4) + "-" +
+                    digits(mostSigBits, 4) + "-" +
+                    digits(leastSigBits >> 48, 4) + "-" +
+                    digits(leastSigBits, 12));
+        }
+
+        std::string UUID::digits(int64_t val, int32_t digits) {
+            int64_t hi = 1LL << (digits * 4);
+            std::ostringstream out;
+            out << std::hex << (hi | (val & (hi - 1)));
+            std::string value = out.str();
+            return value.substr(1);
+        }
+
+        bool UUID::operator==(const UUID &rhs) const {
+            return this->equals(rhs);
+        }
+
+        bool UUID::operator!=(const UUID &rhs) const {
+            return !(rhs == *this);
+        }
+
     }
 }

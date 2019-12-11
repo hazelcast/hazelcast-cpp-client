@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/SSLConfig.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
+#include "hazelcast/client/config/SocketOptions.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -89,11 +90,114 @@ namespace hazelcast {
                  * @return ClientAwsConfig
                  */
                 ClientAwsConfig &getAwsConfig();
+
+                /**
+                 * See {@link com.hazelcast.client.config.ClientNetworkConfig#setSmartRouting(boolean)}  for details
+                 *
+                 * @return true if client is smart
+                 */
+                bool isSmartRouting() const;
+
+                /**
+                 * If {@code true}, client will route the key based operations to owner of the key on best-effort basis.
+                 * Note that it uses a cached version of {@link com.hazelcast.core.PartitionService#getPartitions()} and doesn't
+                 * guarantee that the operation will always be executed on the owner. The cached table is updated every 10 seconds.
+                 * <p>
+                 * If {@code smartRouting == false}, all operations will be routed to single member. Operations will need two
+                 * hops if the chosen member is not owner of the key. Client will have only single open connection. Useful, if
+                 * there are many clients and we want to avoid each of them connecting to each member.
+                 * <p>
+                 * Default value is {@code true}.
+                 *
+                 * @param smartRouting true if smart routing should be enabled.
+                 * @return configured {@link com.hazelcast.client.config.ClientNetworkConfig} for chaining
+                 */
+                ClientNetworkConfig &setSmartRouting(bool smartRouting);
+
+                /**
+                 * See {@link ClientNetworkConfig#setConnectionAttemptLimit(int32_t)} for details
+                 *
+                 * @return connection attempt Limit
+                 */
+                int32_t getConnectionAttemptLimit() const;
+
+                /**
+                 * While client is trying to connect initially to one of the members in the {@link ClientNetworkConfig#addressList},
+                 * all might be not available. Instead of giving up, throwing Exception and stopping client, it will
+                 * attempt to retry as much as {@link ClientNetworkConfig#connectionAttemptLimit} times.
+                 *
+                 * @param connectionAttemptLimit number of times to attempt to connect
+                 *                               A zero value means try forever.
+                 *                               A negative value means default value
+                 * @return configured {@link ClientNetworkConfig} for chaining
+                 */
+                ClientNetworkConfig &setConnectionAttemptLimit(int32_t connectionAttemptLimit);
+
+                /**
+                 * Period for the next attempt to find a member to connect.
+                 * <p>
+                 * See {@link ClientNetworkConfig#connectionAttemptLimit}.
+                 *
+                 * @return connection attempt period in millis
+                 */
+                int32_t getConnectionAttemptPeriod() const;
+
+                /**
+                 * Period for the next attempt to find a member to connect.
+                 *
+                 * @param connectionAttemptPeriod time to wait before another attempt in millis
+                 * @return configured {@link ClientNetworkConfig} for chaining
+                 */
+                ClientNetworkConfig  &setConnectionAttemptPeriod(int32_t connectionAttemptPeriod);
+
+                /**
+                 * Returns the list of candidate addresses that client will use to establish initial connection
+                 *
+                 * @return list of addresses
+                 */
+                std::vector<Address> getAddresses() const;
+
+                /**
+                 * Adds given addresses to candidate address list that client will use to establish initial connection
+                 *
+                 * @param addresses to be added to initial address list
+                 * @return configured {@link com.hazelcast.client.config.ClientNetworkConfig} for chaining
+                 */
+                ClientNetworkConfig &addAddresses(const std::vector<Address> &addresses);
+
+                /**
+                 * Adds given addresses to candidate address list that client will use to establish initial connection
+                 *
+                 * @param addresses to be added to initial address list
+                 * @return configured {@link ClientNetworkConfig} for chaining
+                 */
+                ClientNetworkConfig &setAddresses(const std::vector<Address> &addresses);
+
+                /**
+                * Adds given address to candidate address list that client will use to establish initial connection
+                *
+                * @param address to be added to initial address list
+                * @return configured {@link ClientNetworkConfig} for chaining
+                */
+                ClientNetworkConfig &addAddress(const Address &address);
+
+                SocketOptions &getSocketOptions();
+
             private:
+                static int32_t CONNECTION_ATTEMPT_PERIOD;
+
                 config::SSLConfig sslConfig;
                 config::ClientAwsConfig clientAwsConfig;
 
                 int64_t connectionTimeout;
+                bool smartRouting;
+
+                int32_t connectionAttemptLimit;
+                int32_t connectionAttemptPeriod;
+
+                std::vector<Address> addressList;
+
+                SocketOptions socketOptions;
             };
         }
     }

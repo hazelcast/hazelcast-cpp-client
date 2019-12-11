@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ namespace hazelcast {
                 sockets.insert(socketId);
             } else {
                 char msg[200];
-                util::snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
-                               socketId);
-                util::ILogger::getLogger().warning(msg);
+                util::hz_snprintf(msg, 200, "[SocketSet::insertSocket] Socket id:%d, Should be 0 or greater than 0.",
+                                  socketId);
+                logger.warning(msg);
             }
         }
 
@@ -67,11 +67,8 @@ namespace hazelcast {
             }
 
             if (!found) {
-                char msg[200];
-                util::snprintf(msg, 200,
-                               "[SocketSet::removeSocket] Socket with id %d  was not found among the sockets.",
-                               socketId);
-                util::ILogger::getLogger().finest(msg);
+                logger.finest() << "[SocketSet::removeSocket] Socket with id " << socketId
+                                                    << "  was not found among the sockets.";
             }
         }
 
@@ -94,5 +91,7 @@ namespace hazelcast {
 
             return result;
         }
+
+        SocketSet::SocketSet(ILogger &logger) : logger(logger) {}
     }
 }

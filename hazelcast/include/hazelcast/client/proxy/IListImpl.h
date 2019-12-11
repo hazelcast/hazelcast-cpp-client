@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,8 @@ namespace hazelcast {
 
                 int size();
 
+                bool isEmpty();
+
                 bool contains(const serialization::pimpl::Data& element);
 
                 std::vector<serialization::pimpl::Data> toArrayData();
@@ -72,7 +74,27 @@ namespace hazelcast {
                 std::vector<serialization::pimpl::Data> subListData(int fromIndex, int toIndex);
 
             private:
+                class ListListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    ListListenerMessageCodec(const std::string &name, bool includeValue);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                };
+
                 int partitionId;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

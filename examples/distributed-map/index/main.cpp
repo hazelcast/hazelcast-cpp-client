@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,8 +81,7 @@ private:
 };
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IMap<std::string, Person> map =
             hz.getMap<std::string, Person>("personsWithIndex");
@@ -95,8 +94,8 @@ int main() {
     char name[30];
     time_t start = time(NULL);
     for (int i = 0; i < mapSize; ++i) {
-        hazelcast::util::snprintf(buf, 30, "person-%d", i);
-        hazelcast::util::snprintf(name, 50, "myname-%d", i % 1000);
+        hazelcast::util::hz_snprintf(buf, 30, "person-%d", i);
+        hazelcast::util::hz_snprintf(name, 50, "myname-%d", i % 1000);
         Person p(name, (i % 2 == 0), (i % 100));
         map.put(buf, p);
     }

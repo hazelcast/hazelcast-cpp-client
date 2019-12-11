@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,20 @@
 //
 // Created by İhsan Demir on Mar 6 2016.
 //
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServer.h"
+
 #include <gtest/gtest.h>
+#include <boost/foreach.hpp>
+
+#include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
 #include "ClientTestSupport.h"
-#include "HazelcastServer.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -32,61 +40,76 @@ namespace hazelcast {
             namespace faulttolerance {
                 class LoadTest : public ClientTestSupport {
                 public:
-                    std::auto_ptr<hazelcast::client::ClientConfig> getLoadTestConfig() {
-                        std::auto_ptr<ClientConfig> config = ClientTestSupport::getConfig();
-                        config->setRedoOperation(true);
-                        config->setLogLevel(FINEST);
+                    hazelcast::client::ClientConfig getLoadTestConfig() {
+                        ClientConfig config = ClientTestSupport::getConfig();
+                        config.setRedoOperation(true);
+                        config.setLogLevel(FINEST);
                         return config;
                     }
 
-                    static void loadClient(hazelcast::util::ThreadArgs &args) {
-                        IMap<int, int> *map = (IMap<int, int> *) args.arg0;
-                        int numberOfOps = *((int *) args.arg1);
-                        util::CountDownLatch *latch = (util::CountDownLatch *) args.arg2;
+                    class LoadClientTask : public util::Runnable {
+                    public:
+                        LoadClientTask(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) : map(map),
+                                                                                                            numberOfOps(
+                                                                                                                    numberOfOps),
+                                                                                                            latch(latch) {}
 
-                        latch->countDown();
+                        virtual void run() {
+                            latch.countDown();
 
-                        latch->await(20);
+                            latch.await(20);
 
-                        for (int i = 0; i < numberOfOps; ++i) {
-                            int mod = rand() % 3;
-                            switch (mod) {
-                                case 0:
-                                    ASSERT_NO_THROW(map->put(i, i));
-                                    break;
-                                case 1:
-                                    ASSERT_NO_THROW(map->remove(i));
-                                case 2: {
-                                    boost::shared_ptr<int> val;
-                                    ASSERT_NO_THROW(val = map->get(i));
-                                    if ((int *) NULL != val.get()) {
-                                        ASSERT_EQ(*val, i);
+                            for (int i = 0; i < numberOfOps; ++i) {
+                                int mod = rand() % 3;
+                                switch (mod) {
+                                    case 0:
+                                        ASSERT_NO_THROW(map.put(i, i));
+                                        break;
+                                    case 1:
+                                        ASSERT_NO_THROW(map.remove(i));
+                                    case 2: {
+                                        boost::shared_ptr<int> val;
+                                        ASSERT_NO_THROW(val = map.get(i));
+                                        if ((int *) NULL != val.get()) {
+                                            ASSERT_EQ(*val, i);
+                                        }
+                                        break;
                                     }
-                                    break;
+                                    default:
+                                        abort();
                                 }
-                                default:
-                                    abort();
                             }
                         }
-                    }
 
-                    void addThread(util::Thread *thr) {
-                        threads.push_back(thr);
-                    }
-
-                    util::Thread *getThread(size_t i) const {
-                        return threads[i];
-                    }
-
-                    ~LoadTest() {
-                        for (std::vector<util::Thread *>::const_iterator it = threads.begin();
-                             it != threads.end(); ++it) {
-                            delete *it;
+                        virtual const string getName() const {
+                            return "LoadClientTask";
                         }
+
+                    private:
+                        IMap<int, int> &map;
+                        int numberOfOps;
+                        util::CountDownLatch &latch;
+                    };
+
+                    void addThread(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) {
+                        boost::shared_ptr<util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
+                        threads.push_back(boost::shared_ptr<util::Thread>(new util::Thread(task, getLogger())));
+                    }
+
+                    void startThreads() {
+                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                                        t->start();
+                                    }
+                    }
+
+                    void waitForThreadsToFinish() {
+                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                                        t->join();
+                                    }
                     }
 
                 protected:
-                    std::vector<util::Thread *> threads;
+                    std::vector<boost::shared_ptr<util::Thread> > threads;
                 };
 
                 void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {
@@ -103,52 +126,38 @@ namespace hazelcast {
                     util::CountDownLatch startLatch(numThreads);
 
                     for (int i = 0; i < numThreads; ++i) {
-                        test.addThread(new util::Thread(LoadTest::loadClient, &imap, &numOps, &startLatch));
+                        test.addThread(imap, numOps, startLatch);
                     }
+
+                    test.startThreads();
 
                     startLatch.await(20);
 
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 1");
                     instance1.shutdown();
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 2");
                     instance2.shutdown();
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Shutting down server instance 3");
                     instance3.shutdown();
 
-                    util::ILogger::getLogger().info("[LoadTest::loadIntMapTestWithConfig] Starting server instance 5");
                     HazelcastServer instance5(*g_srvFactory);
 
                     /*Note: Could not shutdown instance 5 here, since there may be some incomplete synchronization
                      * between instance 5 and instance 4. This caused problems in Linux environment. */
 
-                    for (int i = 0; i < numThreads; ++i) {
-                        util::Thread *thr = test.getThread(i);
-                        char msg[100];
-                        util::snprintf(msg, 100, "[LoadTest::loadIntMapTestWithConfig] Waiting to join for thread %ld",
-                                       thr->getThreadID());
-                        util::ILogger::getLogger().info(msg);
-                        ASSERT_TRUE(thr->join());
-                    }
+                    test.waitForThreadsToFinish();
 
-                    util::ILogger::getLogger().info(
-                            "[LoadTest::loadIntMapTestWithConfig] Finished the test successfully :)");
                 }
 
-                TEST_F(LoadTest, testIntMapSmartClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
-                    config->setSmart(true);
+                TEST_F(LoadTest, DISABLED_testIntMapSmartClientServerRestart) {
+                    ClientConfig config = getLoadTestConfig();
+                    config.setSmart(true);
 
-                    loadIntMapTestWithConfig(*config, *this);
+                    loadIntMapTestWithConfig(config, *this);
                 }
 
-                TEST_F(LoadTest, testIntMapDummyClientServerRestart) {
-                    std::auto_ptr<ClientConfig> config = getLoadTestConfig();
-                    config->setSmart(false);
+                TEST_F(LoadTest, DISABLED_testIntMapDummyClientServerRestart) {
+                    ClientConfig config = getLoadTestConfig();
+                    config.setSmart(false);
 
-                    loadIntMapTestWithConfig(*config, *this);
+                    loadIntMapTestWithConfig(config, *this);
                 }
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ namespace hazelcast {
             }
 
             void AndPredicate::writeData(serialization::ObjectDataOutput &out) const {
-                out.writeInt((int)predicates.size());
+                out.writeInt((int) predicates.size());
                 for (std::vector<Predicate *>::const_iterator it = predicates.begin();
                      it != predicates.end(); ++it) {
                     out.writeObject<serialization::IdentifiedDataSerializable>(*it);
@@ -52,7 +52,8 @@ namespace hazelcast {
 
             void AndPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("AndPredicate::readData", "Client should not need to use readData method!!!");
+                throw exception::HazelcastSerializationException("AndPredicate::readData",
+                                                                 "Client should not need to use readData method!!!");
             }
         }
     }

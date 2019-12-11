@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,10 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API CountDownLatchMessageType {
 
-                    HZ_COUNTDOWNLATCH_AWAIT=0x0c01,
-                    HZ_COUNTDOWNLATCH_COUNTDOWN=0x0c02,
-                    HZ_COUNTDOWNLATCH_GETCOUNT=0x0c03,
-                    HZ_COUNTDOWNLATCH_TRYSETCOUNT=0x0c04
+                    HZ_COUNTDOWNLATCH_AWAIT = 0x0c01,
+                    HZ_COUNTDOWNLATCH_COUNTDOWN = 0x0c02,
+                    HZ_COUNTDOWNLATCH_GETCOUNT = 0x0c03,
+                    HZ_COUNTDOWNLATCH_TRYSETCOUNT = 0x0c04
                 };
             }
         }

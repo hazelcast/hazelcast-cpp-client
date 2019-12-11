@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 //
 // Created by sancar koyunlu on 6/27/13.
 
-
-
 #include <limits.h>
+
 #include "hazelcast/client/ILock.h"
 
 // Includes for parameters classes
@@ -32,13 +31,17 @@
 #include "hazelcast/client/protocol/codec/LockTryLockCodec.h"
 
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/impl/ClientLockReferenceIdGenerator.h"
 
 namespace hazelcast {
     namespace client {
-        ILock::ILock(const std::string& instanceName, spi::ClientContext *context)
-        : proxy::ProxyImpl("hz:impl:lockService", instanceName, context)
-        , key(toData<std::string>(instanceName)) {
+        ILock::ILock(const std::string &instanceName, spi::ClientContext *context)
+                : proxy::ProxyImpl("hz:impl:lockService", instanceName, context),
+                  key(toData<std::string>(instanceName)) {
             partitionId = getPartitionId(key);
+
+            // TODO: remove this line once the client instance getDistributedObject works as expected in Java for this proxy type
+            referenceIdGenerator = context->getLockReferenceIdGenerator();
         }
 
         void ILock::lock() {
@@ -47,51 +50,60 @@ namespace hazelcast {
 
         void ILock::lock(long leaseTimeInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockLockCodec::RequestParameters::encode(getName(), leaseTimeInMillis, util::getThreadId());
+                    protocol::codec::LockLockCodec::encodeRequest(getName(), leaseTimeInMillis,
+                                                                  util::getCurrentThreadId(),
+                                                                  referenceIdGenerator->getNextReferenceId());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ILock::unlock() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockUnlockCodec::RequestParameters::encode(getName(), util::getThreadId());
+                    protocol::codec::LockUnlockCodec::encodeRequest(getName(), util::getCurrentThreadId(),
+                                                                    referenceIdGenerator->getNextReferenceId());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         void ILock::forceUnlock() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockForceUnlockCodec::RequestParameters::encode(getName());
+                    protocol::codec::LockForceUnlockCodec::encodeRequest(getName(),
+                                                                         referenceIdGenerator->getNextReferenceId());
 
-            invoke(request, partitionId);
+            invokeOnPartition(request, partitionId);
         }
 
         bool ILock::isLocked() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockIsLockedCodec::RequestParameters::encode(getName());
+                    protocol::codec::LockIsLockedCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<bool, protocol::codec::LockIsLockedCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::LockIsLockedCodec::ResponseParameters>(request,
+                                                                                                    partitionId);
         }
 
         bool ILock::isLockedByCurrentThread() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockIsLockedByCurrentThreadCodec::RequestParameters::encode(getName(), util::getThreadId());
+                    protocol::codec::LockIsLockedByCurrentThreadCodec::encodeRequest(getName(),
+                                                                                     util::getCurrentThreadId());
 
-            return invokeAndGetResult<bool, protocol::codec::LockIsLockedByCurrentThreadCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::LockIsLockedByCurrentThreadCodec::ResponseParameters>(
+                    request, partitionId);
         }
 
         int ILock::getLockCount() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockGetLockCountCodec::RequestParameters::encode(getName());
+                    protocol::codec::LockGetLockCountCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<int,  protocol::codec::LockGetLockCountCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<int, protocol::codec::LockGetLockCountCodec::ResponseParameters>(request,
+                                                                                                       partitionId);
         }
 
         long ILock::getRemainingLeaseTime() {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockGetRemainingLeaseTimeCodec::RequestParameters::encode(getName());
+                    protocol::codec::LockGetRemainingLeaseTimeCodec::encodeRequest(getName());
 
-            return invokeAndGetResult<long, protocol::codec::LockGetRemainingLeaseTimeCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<long, protocol::codec::LockGetRemainingLeaseTimeCodec::ResponseParameters>(
+                    request, partitionId);
         }
 
         bool ILock::tryLock() {
@@ -100,9 +112,18 @@ namespace hazelcast {
 
         bool ILock::tryLock(long timeInMillis) {
             std::auto_ptr<protocol::ClientMessage> request =
-                    protocol::codec::LockTryLockCodec::RequestParameters::encode(getName(), util::getThreadId(), LONG_MAX, timeInMillis);
+                    protocol::codec::LockTryLockCodec::encodeRequest(getName(), util::getCurrentThreadId(), LONG_MAX,
+                                                                     timeInMillis,
+                                                                     referenceIdGenerator->getNextReferenceId());
 
-            return invokeAndGetResult<bool, protocol::codec::LockTryLockCodec::ResponseParameters>(request, partitionId);
+            return invokeAndGetResult<bool, protocol::codec::LockTryLockCodec::ResponseParameters>(request,
+                                                                                                   partitionId);
+        }
+
+        void ILock::onInitialize() {
+            ProxyImpl::onInitialize();
+
+            referenceIdGenerator = getContext().getLockReferenceIdGenerator();
         }
     }
 }

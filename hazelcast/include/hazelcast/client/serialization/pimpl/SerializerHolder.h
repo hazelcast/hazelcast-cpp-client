@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,12 @@
 // Created by sancar koyunlu on 7/31/13.
 
 
-
-
-
 #ifndef HAZELCAST_SerializerHolder
 #define HAZELCAST_SerializerHolder
 
+#include "hazelcast/util/Disposable.h"
+#include "hazelcast/util/AtomicBoolean.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/client/serialization/pimpl/DataSerializer.h"
-#include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -36,28 +33,26 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
 
-            class SerializerBase;
+            class StreamSerializer;
 
             namespace pimpl {
-                class PortableContext;
-
-                class HAZELCAST_API SerializerHolder {
+                class HAZELCAST_API SerializerHolder : public util::Disposable {
 
                 public:
-                    SerializerHolder(PortableContext &context);
+                    SerializerHolder(const boost::shared_ptr<StreamSerializer> &globalSerializer);
 
-                    bool registerSerializer(boost::shared_ptr<SerializerBase> serializer);
+                    bool registerSerializer(const boost::shared_ptr<StreamSerializer> &serializer);
 
-                    boost::shared_ptr<SerializerBase> serializerFor(int typeId);
+                    boost::shared_ptr<StreamSerializer> serializerFor(int typeId);
 
-                    PortableSerializer &getPortableSerializer();
-
-                    DataSerializer &getDataSerializer();
+                    void dispose();
 
                 private:
-                    hazelcast::util::SynchronizedMap<int, SerializerBase> serializers;
-                    PortableSerializer portableSerializer;
-                    DataSerializer dataSerializer;
+                    boost::shared_ptr<StreamSerializer> lookupGlobalSerializer(int typeId);
+
+                    hazelcast::util::SynchronizedMap<int, StreamSerializer> serializers;
+                    util::AtomicBoolean active;
+                    const boost::shared_ptr<StreamSerializer> globalSerializer;
 
                 };
             }

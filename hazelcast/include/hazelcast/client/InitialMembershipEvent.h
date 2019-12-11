@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,11 @@
 #ifndef HAZELCAST_InitialMembershipEvent
 #define HAZELCAST_InitialMembershipEvent
 
-#include "hazelcast/client/Member.h"
-
 #include <vector>
+#include <set>
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/client/Member.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -44,11 +46,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API InitialMembershipEvent {
         public:
-
-            /**
-             * Constructor
-             */
-            InitialMembershipEvent(Cluster &cluster, const std::vector<Member> &members);
+            InitialMembershipEvent(Cluster &cluster, const std::set<Member> &members);
 
             /**
              * Returns an immutable set of ordered members at the moment this InitialMembershipListener is

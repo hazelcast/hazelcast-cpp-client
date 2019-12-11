@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@
 #define HAZELCAST_MEMBER
 
 #include <map>
+#include <memory>
+
 #include "hazelcast/client/Address.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -31,9 +33,6 @@
 
 namespace hazelcast {
     namespace client {
-        namespace connection {
-            class ClusterListenerThread;
-        }
 
         /**
          * Cluster member class. The default implementation
@@ -43,8 +42,6 @@ namespace hazelcast {
          */
         class HAZELCAST_API Member {
         public:
-            friend class connection::ClusterListenerThread;
-
             /**
             * PUT even type representing an addition of an attribute
             * REMOVE event type representing a deletion of an attribute
@@ -60,6 +57,8 @@ namespace hazelcast {
                    const std::map<std::string, std::string> &attr);
 
             Member(const Address &memberAddress);
+
+            Member(const std::string &uuid);
 
             /**
              * comparison operation
@@ -107,11 +106,12 @@ namespace hazelcast {
              */
             bool lookupAttribute(const std::string &key) const;
 
+            bool operator<(const Member &rhs) const;
+
+            void updateAttribute(MemberAttributeOperationType operationType, const std::string &key,
+                                 std::auto_ptr<std::string> &value);
+
         private:
-            void setAttribute(const std::string &key, const std::string &value);
-
-            bool removeAttribute(const std::string &key);
-
             Address address;
             std::string uuid;
             bool liteMember;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,7 @@
 #ifndef HAZELCAST_CLIENT
 #define HAZELCAST_CLIENT
 
-#include <memory>
-
-#include "hazelcast/client/map/impl/ClientMapProxyFactory.h"
-#include "hazelcast/client/internal/nearcache/NearCacheManager.h"
-#include "hazelcast/client/proxy/RingbufferImpl.h"
-#include "hazelcast/client/IMap.h"
-#include "hazelcast/client/MultiMap.h"
-#include "hazelcast/client/IQueue.h"
-#include "hazelcast/client/ISet.h"
-#include "hazelcast/client/IList.h"
-#include "hazelcast/client/ITopic.h"
-#include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/TransactionContext.h"
-#include "hazelcast/client/Cluster.h"
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/ClientProperties.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/PartitionService.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/ProxyManager.h"
-#include "hazelcast/client/Ringbuffer.h"
-#include "hazelcast/client/ReliableTopic.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -405,49 +383,6 @@ namespace hazelcast {
  *  or as an Item in IQueue.
  *
  */
-        namespace connection {
-            class ConnectionManager;
-        }
-
-        namespace serialization {
-            namespace pimpl {
-                class SerializationService;
-            }
-        }
-        namespace spi {
-            class ClientContext;
-
-            class InvocationService;
-
-            class ClusterService;
-
-            class PartitionService;
-
-            class LifecycleService;
-
-            class ServerListenerService;
-
-            class ClientProxyFactory;
-
-        }
-
-        class ClientConfig;
-
-        class IdGenerator;
-
-        class IAtomicLong;
-
-        class ICountDownLatch;
-
-        class ISemaphore;
-
-        class ILock;
-
-        class TransactionContext;
-
-        class TransactionOptions;
-
-        class Cluster;
 
         /**
         * Hazelcast Client enables you to do all Hazelcast operations without
@@ -458,19 +393,25 @@ namespace hazelcast {
         */
         class HAZELCAST_API HazelcastClient {
             friend class spi::ClientContext;
-
         public:
+            /**
+            * Constructs a hazelcastClient with default configurations.
+            */
+            HazelcastClient();
+            
             /**
             * Constructs a hazelcastClient with given ClientConfig.
             * Note: ClientConfig will be copied.
             * @param config client configuration to start the client with
             */
-            HazelcastClient(ClientConfig&);
+            HazelcastClient(const ClientConfig &config);
 
             /**
-            * Destructor
-            */
-            ~HazelcastClient();
+             * Returns the name of this Hazelcast instance.
+             *
+             * @return name of this Hazelcast instance
+             */
+            const std::string &getName() const;
 
             /**
             *
@@ -480,12 +421,10 @@ namespace hazelcast {
             */
             template<typename T>
             T getDistributedObject(const std::string& name) {
-                T t(name, &(clientContext));
-                return t;
+                return clientImpl->getDistributedObject<T>(name);
             }
 
             /**
-            * @deprecated "Please use api::IMap<K, V> getMap(const char *name)."
             *
             * Returns the distributed map instance with the specified name.
             *
@@ -496,11 +435,7 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             IMap<K, V> getMap(const std::string &name) {
-                map::impl::ClientMapProxyFactory<K, V> factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
-                        getDistributedObjectForService(IMap<K, V>::SERVICE_NAME, name, factory);
-
-                return IMap<K, V>(proxy);
+                return clientImpl->getMap<K, V>(name);
             }
 
             /**
@@ -511,7 +446,12 @@ namespace hazelcast {
             */
             template<typename K, typename V>
             MultiMap<K, V> getMultiMap(const std::string& name) {
-                return getDistributedObject<MultiMap<K, V> >(name);
+                return clientImpl->getMultiMap<K, V>(name);
+            }
+
+            template<typename K, typename V>
+            boost::shared_ptr<ReplicatedMap<K, V> > getReplicatedMap(const std::string &name) {
+                return clientImpl->getReplicatedMap<K, V>(name);
             }
 
             /**
@@ -522,7 +462,7 @@ namespace hazelcast {
             */
             template<typename E>
             IQueue<E> getQueue(const std::string& name) {
-                return getDistributedObject<IQueue<E> >(name);
+                return clientImpl->getQueue<E>(name);
             }
 
             /**
@@ -535,7 +475,7 @@ namespace hazelcast {
 
             template<typename E>
             ISet<E> getSet(const std::string& name) {
-                return getDistributedObject<ISet<E> >(name);
+                return clientImpl->getSet<E>(name);
             }
 
             /**
@@ -547,7 +487,7 @@ namespace hazelcast {
             */
             template<typename E>
             IList<E> getList(const std::string& name) {
-                return getDistributedObject<IList<E> >(name);
+                return clientImpl->getList<E>(name);
             }
 
             /**
@@ -558,7 +498,7 @@ namespace hazelcast {
             */
             template<typename E>
             ITopic<E> getTopic(const std::string& name) {
-                return getDistributedObject<ITopic<E> >(name);
+                return clientImpl->getTopic<E>(name);
             };
 
             /**
@@ -569,9 +509,7 @@ namespace hazelcast {
             */
             template<typename E>
             boost::shared_ptr<ReliableTopic<E> > getReliableTopic(const std::string& name) {
-                boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb =
-                        getRingbuffer<topic::impl::reliable::ReliableTopicMessage>(TOPIC_RB_PREFIX + name);
-                return boost::shared_ptr<ReliableTopic<E> >(new ReliableTopic<E>(name, &clientContext, rb));
+                return clientImpl->getReliableTopic<E>(name);
             }
 
             /**
@@ -585,6 +523,26 @@ namespace hazelcast {
             IdGenerator getIdGenerator(const std::string& name);
 
             /**
+             * Returns a generator that creates a cluster-wide unique IDs. Generated IDs are {@code long}
+             * primitive values and are k-ordered (roughly ordered). IDs are in the range from {@code 0} to {@code
+             * Long.MAX_VALUE}.
+             * <p>
+             * The IDs contain timestamp component and a node ID component, which is assigned when the member
+             * joins the cluster. This allows the IDs to be ordered and unique without any coordination between
+             * members, which makes the generator safe even in split-brain scenario (for caveats,
+             * {@link com.hazelcast.internal.cluster.ClusterService#getMemberListJoinVersion() see here}).
+             * <p>
+             * For more details and caveats, see class documentation for {@link FlakeIdGenerator}.
+             * <p>
+             * Note: this implementation doesn't share namespace with {@link #getIdGenerator(String)}.
+             * That is, {@code getIdGenerator("a")} is distinct from {@code getFlakeIdGenerator("a")}.
+             *
+             * @param name name of the {@link FlakeIdGenerator}
+             * @return FlakeIdGenerator for the given name
+             */
+            FlakeIdGenerator getFlakeIdGenerator(const std::string& name);
+
+            /**
             * Creates cluster-wide atomic long. Hazelcast IAtomicLong is distributed
             * implementation of <tt>java.util.concurrent.atomic.AtomicLong</tt>.
             *
@@ -592,6 +550,20 @@ namespace hazelcast {
             * @return IAtomicLong proxy for the given name
             */
             IAtomicLong getIAtomicLong(const std::string& name);
+
+            /**
+             * Obtain a {@link com.hazelcast.crdt.pncounter.PNCounter} with the given
+             * name.
+             * <p>
+             * The PN counter can be used as a counter with strong eventual consistency
+             * guarantees - if operations to the counters stop, the counter values
+             * of all replicas that can communicate with each other should eventually
+             * converge to the same value.
+             *
+             * @param name the name of the PN counter
+             * @return a {@link com.hazelcast.crdt.pncounter.PNCounter}
+             */
+            boost::shared_ptr<crdt::pncounter::PNCounter> getPNCounter(const std::string& name);
 
             /**
             * Creates cluster-wide CountDownLatch. Hazelcast ICountDownLatch is distributed
@@ -637,7 +609,7 @@ namespace hazelcast {
              */
             template <typename E>
             boost::shared_ptr<Ringbuffer<E> > getRingbuffer(const std::string& name) {
-                return boost::shared_ptr<Ringbuffer<E> >(new proxy::RingbufferImpl<E>(name, &clientContext));
+                return clientImpl->getRingbuffer<E>(name);
             }
 
             /**
@@ -648,6 +620,19 @@ namespace hazelcast {
             * @return ISemaphore proxy for the given name
             */
             ISemaphore getISemaphore(const std::string& name);
+
+            /**
+             * Creates or returns the distributed executor service for the given name.
+             * Executor service enables you to run your <tt>Runnable</tt>s and <tt>Callable</tt>s
+             * on the Hazelcast cluster.
+             * <p>
+             * <p><b>Note:</b> Note that it doesn't support {@code invokeAll/Any}
+             * and doesn't have standard shutdown behavior</p>
+             *
+             * @param name name of the executor service
+             * @return the distributed executor service for the given name
+             */
+            boost::shared_ptr<IExecutorService> getExecutorService(const std::string &name);
 
             /**
             *
@@ -680,6 +665,15 @@ namespace hazelcast {
             Cluster& getCluster();
 
             /**
+             * Returns the local endpoint which this HazelcastInstance belongs to.
+             * <p>
+             *
+             * @return the local enpoint which this client belongs to
+             * @see Client
+             */
+            Client getLocalEndpoint() const;
+
+            /**
             * Add listener to listen lifecycle events.
             *
             * Warning 1: If listener should do a time consuming operation, off-load the operation to another thread.
@@ -703,33 +697,23 @@ namespace hazelcast {
             */
             void shutdown();
 
-            internal::nearcache::NearCacheManager &getNearCacheManager();
+            /**
+             * Adopts the current map to the mixed type support interface. You can use the mixedtype::HazelcastClient
+             * interface to get data structures that support manipulating unrelated mixed data types.
+             * @return The mixed type supporting HazelcastClient.
+             */
+            mixedtype::HazelcastClient &toMixedType() const;
 
-            serialization::pimpl::SerializationService &getSerializationService();
+            /**
+             * Returns the lifecycle service for this instance.
+             * <p>
+             * LifecycleService allows you to shutdown this HazelcastInstance and listen for the lifecycle events.
+             *
+             * @return the lifecycle service for this instance
+             */
+            spi::LifecycleService &getLifecycleService();
         private:
-            boost::shared_ptr<spi::ClientProxy> getDistributedObjectForService(const std::string &serviceName,
-                                                                               const std::string &name,
-                                                                               spi::ClientProxyFactory &factory);
-
-            ClientConfig clientConfig;
-            ClientProperties clientProperties;
-            spi::ClientContext clientContext;
-            spi::LifecycleService lifecycleService;
-            serialization::pimpl::SerializationService serializationService;
-            std::auto_ptr<connection::ConnectionManager> connectionManager;
-            internal::nearcache::NearCacheManager nearCacheManager;
-            spi::ClusterService clusterService;
-            spi::PartitionService partitionService;
-            spi::InvocationService invocationService;
-            spi::ServerListenerService serverListenerService;
-            Cluster cluster;
-            spi::ProxyManager proxyManager;
-
-            HazelcastClient(const HazelcastClient& rhs);
-
-            void operator=(const HazelcastClient& rhs);
-
-            const std::string TOPIC_RB_PREFIX;
+            boost::shared_ptr<impl::HazelcastClientInstanceImpl> clientImpl;
         };
 
     }

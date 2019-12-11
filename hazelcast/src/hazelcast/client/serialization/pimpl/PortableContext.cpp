@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
-#include "hazelcast/client/serialization/pimpl/DataInput.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
+#include "hazelcast/client/SerializationConfig.h"
 
 using namespace hazelcast::util;
 using namespace hazelcast::client::serialization;
@@ -38,10 +39,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableContext::PortableContext(int version, const SerializationConstants& constants)
-                : contextVersion(version), serializerHolder(*this) , constants(constants){
+                PortableContext::PortableContext(const SerializationConfig &serializationConf) :
+                        serializationConfig(serializationConf),
+                        serializerHolder(serializationConf.getGlobalSerializer()) {
                 }
-
 
                 int PortableContext::getClassVersion(int factoryId, int classId) {
                     return getClassDefinitionContext(factoryId).getClassVersion(classId);
@@ -55,7 +56,7 @@ namespace hazelcast {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(DataInput& in, int factoryId, int classId, int version) {
+                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(ObjectDataInput& in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -71,14 +72,15 @@ namespace hazelcast {
                         in.position(pos);
 
                         short len = in.readShort();
-                        vector<char> chars(len);
+                        vector<byte> chars(len);
                         in.readFully(chars);
                         chars.push_back('\0');
 
                         FieldType type(in.readByte());
-                        std::string name(&(chars[0]));
+                        std::string name((char *)&(chars[0]));
                         int fieldFactoryId = 0;
                         int fieldClassId = 0;
+                        int fieldVersion = version;
                         if (type == FieldTypes::TYPE_PORTABLE) {
                             // is null
                             if (in.readBoolean()) {
@@ -89,7 +91,7 @@ namespace hazelcast {
 
                             // TODO: what if there's a null inner Portable field
                             if (shouldRegister) {
-                                int fieldVersion = in.readInt();
+                                fieldVersion = in.readInt();
                                 readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
                             }
                         } else if (type == FieldTypes::TYPE_PORTABLE_ARRAY) {
@@ -102,14 +104,14 @@ namespace hazelcast {
                                 in.position(p);
 
                                 // TODO: what if there's a null inner Portable field
-                                int fieldVersion = in.readInt();
+                                fieldVersion = in.readInt();
                                 readClassDefinition(in, fieldFactoryId, fieldClassId, fieldVersion);
                             } else {
                                 shouldRegister = false;
                             }
 
                         }
-                        FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId);
+                        FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId, fieldVersion);
                         builder.addField(fieldDef);
                     }
                     boost::shared_ptr<ClassDefinition> classDefinition = builder.build();
@@ -124,7 +126,7 @@ namespace hazelcast {
                 }
 
                 boost::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
-                    int portableVersion = PortableVersionHelper::getVersion(&portable, contextVersion);
+                    int portableVersion = PortableVersionHelper::getVersion(&portable, serializationConfig.getPortableVersion());
                     boost::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
                     if (cd.get() == NULL) {
                         ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(), portableVersion);
@@ -137,28 +139,27 @@ namespace hazelcast {
                 }
 
                 int PortableContext::getVersion() {
-                    return contextVersion;
+                    return serializationConfig.getPortableVersion();
                 }
 
                 SerializerHolder& PortableContext::getSerializerHolder() {
                     return serializerHolder;
                 }
 
-
-                SerializationConstants const& PortableContext::getConstants() const {
-                    return constants;
-                }
-
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
                     boost::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
                     if (value == NULL) {
-                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(this));
+                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
                         boost::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
                         if (current != NULL) {
                             value = current;
                         }
                     }
                     return *value;
+                }
+
+                const SerializationConfig &PortableContext::getSerializationConfig() const {
+                    return serializationConfig;
                 }
 
             }

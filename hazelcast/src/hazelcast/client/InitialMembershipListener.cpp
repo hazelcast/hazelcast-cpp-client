@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,5 +19,45 @@ namespace hazelcast {
     namespace client {
         InitialMembershipListener::~InitialMembershipListener() {
         }
+
+        bool InitialMembershipListener::shouldRequestInitialMembers() const {
+            return true;
+        }
+
+        void InitialMembershipListenerDelegator::init(
+                const InitialMembershipEvent &event) {
+            listener->init(event);
+        }
+
+        void InitialMembershipListenerDelegator::memberRemoved(
+                const MembershipEvent &membershipEvent) {
+            listener->memberRemoved(membershipEvent);
+        }
+
+        void InitialMembershipListenerDelegator::memberAdded(
+                const MembershipEvent &membershipEvent) {
+            listener->memberAdded(membershipEvent);
+        }
+
+        void InitialMembershipListenerDelegator::memberAttributeChanged(
+                const MemberAttributeEvent &memberAttributeEvent) {
+            listener->memberAttributeChanged(memberAttributeEvent);
+        }
+
+        InitialMembershipListenerDelegator::InitialMembershipListenerDelegator(
+                InitialMembershipListener *listener) : listener(listener) {}
+
+        bool InitialMembershipListenerDelegator::shouldRequestInitialMembers() const {
+            return listener->shouldRequestInitialMembers();
+        }
+
+        const std::string &InitialMembershipListenerDelegator::getRegistrationId() const {
+            return listener->getRegistrationId();
+        }
+
+        void InitialMembershipListenerDelegator::setRegistrationId(const std::string &registrationId) {
+            listener->setRegistrationId(registrationId);
+        }
+
     }
 }

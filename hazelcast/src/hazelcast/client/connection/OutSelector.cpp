@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 #include <errno.h>
 
 #include "hazelcast/client/connection/OutSelector.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/Connection.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -33,11 +33,9 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            OutSelector::OutSelector(ConnectionManager &connectionManager)
-            :IOSelector(connectionManager) {
-
+            OutSelector::OutSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions)
+            :IOSelector(connectionManager, socketOptions), wakeUpSocketSet(connectionManager.getLogger()) {
             }
-
 
             bool OutSelector::start() {
                 return initListenSocket(wakeUpSocketSet);
@@ -45,7 +43,7 @@ namespace hazelcast {
 
             void OutSelector::listenInternal() {
                 fd_set write_fds;
-               util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
+                util::SocketSet::FdRange socketRange = socketSet.fillFdSet(write_fds);
 
                 fd_set wakeUp_fds;
                 util::SocketSet::FdRange wakeupSocketRange = wakeUpSocketSet.fillFdSet(wakeUp_fds);
@@ -76,7 +74,7 @@ namespace hazelcast {
                 for (int fd = socketRange.min;numSelected > 0 && fd <= socketRange.max; ++fd) {
                     if (FD_ISSET(fd, &write_fds)) {
                         --numSelected;
-                        boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+                        boost::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
 
                         if (conn.get() != NULL) {
                             socketSet.removeSocket(&conn->getSocket());
@@ -85,6 +83,11 @@ namespace hazelcast {
                     }
                 }
             }
+
+            const std::string OutSelector::getName() const {
+                return "OutSelector";
+            }
+
         }
     }
 }

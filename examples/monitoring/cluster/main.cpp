@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,8 +77,7 @@ int main() {
 
     hazelcast::client::Cluster *clusterPtr = NULL;
     try {
-        hazelcast::client::ClientConfig config;
-        hazelcast::client::HazelcastClient hz(config);
+        hazelcast::client::HazelcastClient hz;
 
         hazelcast::client::Cluster &cluster = hz.getCluster();
         clusterPtr = &cluster;

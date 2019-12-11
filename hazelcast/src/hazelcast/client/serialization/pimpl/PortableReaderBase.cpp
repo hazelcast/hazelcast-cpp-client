@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,10 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-
-
-                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, DataInput& input, boost::shared_ptr<ClassDefinition> cd)
+                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, ObjectDataInput& input, boost::shared_ptr<ClassDefinition> cd)
                 : cd(cd)
                 , dataInput(input)
                 , serializerHolder(portableContext.getSerializerHolder())
-                , objectDataInput(input, portableContext)
                 , raw(false) {
                     int fieldCount;
                     try {
@@ -45,7 +42,8 @@ namespace hazelcast {
                     }
                     if (fieldCount != cd->getFieldCount()) {
                         char msg[50];
-                        util::snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount, cd->getFieldCount());
+                        util::hz_snprintf(msg, 50, "Field count[%d] in stream does not match %d", fieldCount,
+                                          cd->getFieldCount());
                         throw new exception::IllegalStateException("[DefaultPortableReader::DefaultPortableReader]", msg);
                     }
                     this->offset = input.position();
@@ -140,47 +138,10 @@ namespace hazelcast {
                     return dataInput.readShortArray();
                 }
 
-				std::auto_ptr<std::vector<std::string> > PortableReaderBase::readUTFArray(const char *fieldName) {
+
+        				std::auto_ptr<std::vector<std::string> > PortableReaderBase::readUTFArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_UTF_ARRAY);
                     return dataInput.readUTFArray();
-                }
-
-				
-                void PortableReaderBase::getPortableInstance(char const *fieldName, Portable *& portableInstance) {
-                    setPosition(fieldName, FieldTypes::TYPE_PORTABLE);
-
-                    bool isNull = dataInput.readBoolean();
-                    int32_t factoryId = dataInput.readInt();
-                    int32_t classId = dataInput.readInt();
-
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
-
-                    if (isNull) {
-                        portableInstance = NULL;
-                    } else {
-                        read(dataInput, *portableInstance, factoryId, classId);
-                    }
-                }
-
-                void PortableReaderBase::getPortableInstancesArray(char const *fieldName, std::vector<Portable *>& portableInstances) {
-                    setPosition(fieldName, FieldTypes::TYPE_PORTABLE_ARRAY);
-
-                    int32_t len = dataInput.readInt();
-                    int32_t factoryId = dataInput.readInt();
-                    int32_t classId = dataInput.readInt();
-
-                    checkFactoryAndClass(cd->getField(fieldName), factoryId, classId);
-
-                    if (len > 0) {
-                        int offset = dataInput.position();
-                        for (int i = 0; i < len; i++) {
-                            dataInput.position(offset + i * util::Bits::INT_SIZE_IN_BYTES);
-                            int32_t start = dataInput.readInt();
-                            dataInput.position(start);
-
-                            read(dataInput, *(portableInstances[i]), factoryId, classId);
-                        }
-                    }
                 }
 
                 void PortableReaderBase::setPosition(char const *fieldName, FieldType const& fieldType) {
@@ -218,11 +179,7 @@ namespace hazelcast {
                         dataInput.position(pos);
                     }
                     raw = true;
-                    return objectDataInput;
-                }
-
-                void PortableReaderBase::read(DataInput& dataInput, Portable& object, int32_t factoryId, int32_t classId) const {
-                    serializerHolder.getPortableSerializer().read(dataInput, object, factoryId, classId);
+                    return dataInput;
                 }
 
                 void PortableReaderBase::end() {
@@ -232,12 +189,14 @@ namespace hazelcast {
                 void PortableReaderBase::checkFactoryAndClass(FieldDefinition fd, int32_t factoryId, int32_t classId) const {
                     if (factoryId != fd.getFactoryId()) {
                         char msg[100];
-                        util::snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(), factoryId);
+                        util::hz_snprintf(msg, 100, "Invalid factoryId! Expected: %d, Current: %d", fd.getFactoryId(),
+                                          factoryId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                     if (classId != fd.getClassId()) {
                         char msg[100];
-                        util::snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(), classId);
+                        util::hz_snprintf(msg, 100, "Invalid classId! Expected: %d, Current: %d", fd.getClassId(),
+                                          classId);
                         throw exception::HazelcastSerializationException("DefaultPortableReader::checkFactoryAndClass ", std::string(msg));
                     }
                 }

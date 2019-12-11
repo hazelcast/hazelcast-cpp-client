@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,9 +32,10 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                TcpSocket::TcpSocket(const client::Address &address) : configAddress(address) {
+                TcpSocket::TcpSocket(const client::Address &address, const client::config::SocketOptions *socketOptions)
+                        : configAddress(address) {
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-                    int n= WSAStartup(MAKEWORD(2, 0), &wsa_data);
+                    int n = WSAStartup(MAKEWORD(2, 0), &wsa_data);
                     if(n == -1) throw exception::IOException("TcpSocket::TcpSocket ", "WSAStartup error");
                     #endif
                     struct addrinfo hints;
@@ -57,20 +58,12 @@ namespace hazelcast {
                     if (-1 == socketId) {
                         throwIOException("TcpSocket", "[TcpSocket::TcpSocket] Failed to obtain socket.");
                     }
+
+                    if (socketOptions) {
+                        setSocketOptions(*socketOptions);
+                    }
+
                     isOpen = true;
-                    int size = 32 * 1024;
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof(size))) {
-                        throwIOException("Socket", "Failed set socket receive buffer size.");
-                    }
-                    if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &size, sizeof(size))) {
-                        throwIOException("TcpSocket", "Failed set socket send buffer size.");
-                    }
-                    #if defined(SO_NOSIGPIPE)
-                    int on = 1;
-                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(int))) {
-                        throwIOException("TcpSocket", "Failed set socket option SO_NOSIGPIPE.");
-                    }
-                    #endif
                 }
 
                 TcpSocket::TcpSocket(int socketId)
@@ -111,7 +104,6 @@ namespace hazelcast {
                     FD_SET(socketId, &err);
                     errno = 0;
                     if (select(socketId + 1, NULL, &mySet, &err, &tv) > 0) {
-                        setBlocking(true);
                         return 0;
                     }
                     #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -120,14 +112,12 @@ namespace hazelcast {
                     int error = errno;
                     #endif
 
-                    setBlocking(true);
-
                     if (error) {
                         throwIOException(error, "connect", "Failed to connect the socket.");
                     } else {
                         char msg[200];
-                        util::snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
-                                       configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
+                        util::hz_snprintf(msg, 200, "Failed to connect to %s:%d in %d milliseconds",
+                                          configAddress.getHost().c_str(), configAddress.getPort(), timeoutInMillis);
                         throw exception::IOException("TcpSocket::connect ", msg);
                     }
 
@@ -168,7 +158,7 @@ namespace hazelcast {
                     #endif
                 }
 
-                int TcpSocket::send(const void *buffer, int len) const {
+                int TcpSocket::send(const void *buffer, int len, int flag) {
                     #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
                     #endif
@@ -181,6 +171,11 @@ namespace hazelcast {
                      * Requests not to send SIGPIPE on errors on stream oriented sockets when the other end breaks the connection.
                      * The EPIPE error is still returned.
                      */
+
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(true);
+                    }
+
                     if ((bytesSend = ::send(socketId, (char *) buffer, (size_t) len, MSG_NOSIGNAL)) == -1) {
                         #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
                         int error = WSAGetLastError();
@@ -189,15 +184,24 @@ namespace hazelcast {
                         int error = errno;
                         if (EAGAIN == error) {
                         #endif
+                            if (flag == MSG_WAITALL) {
+                                setBlocking(false);
+                            }
                             return 0;
                         }
 
+                        if (flag == MSG_WAITALL) {
+                            setBlocking(false);
+                        }
                         throwIOException(error, "send", "Send failed.");
+                    }
+                    if (flag == MSG_WAITALL) {
+                        setBlocking(false);
                     }
                     return bytesSend;
                 }
 
-                int TcpSocket::receive(void *buffer, int len, int flag) const {
+                int TcpSocket::receive(void *buffer, int len, int flag) {
                     #if !defined(WIN32) && !defined(_WIN32) && !defined(WIN64) && !defined(_WIN64)
                     errno = 0;
                     #endif
@@ -224,14 +228,6 @@ namespace hazelcast {
 
                 int TcpSocket::getSocketId() const {
                     return socketId;
-                }
-
-                void TcpSocket::setRemoteEndpoint(const client::Address &address) {
-                    remoteEndpoint = address;
-                }
-
-                const client::Address &TcpSocket::getRemoteEndpoint() const {
-                    return remoteEndpoint;
                 }
 
                 client::Address TcpSocket::getAddress() const {
@@ -261,7 +257,6 @@ namespace hazelcast {
                         ::close(socketId);
                         #endif
 
-                        socketId = -1; // set it to invalid descriptor to avoid misuse of the socket for this connection
                     }
                 }
 
@@ -279,6 +274,64 @@ namespace hazelcast {
                     char errorMsg[200];
                     util::strerror_s(error, errorMsg, 200, prefix);
                     throw client::exception::IOException(std::string("TcpSocket::") + methodName, errorMsg);
+                }
+
+                std::auto_ptr<Address> TcpSocket::localSocketAddress() const {
+                    struct sockaddr_in sin;
+                    socklen_t addrlen = sizeof(sin);
+                    if (getsockname(socketId, (struct sockaddr *) &sin, &addrlen) == 0 &&
+                        sin.sin_family == AF_INET &&
+                        addrlen == sizeof(sin)) {
+                        int localPort = ntohs(sin.sin_port);
+                        char *localIp = inet_ntoa(sin.sin_addr);
+                        return std::auto_ptr<Address>(new Address(localIp ? localIp : "", localPort));
+                    } else {
+                        return std::auto_ptr<Address>();
+                    }
+                }
+
+                void TcpSocket::setSocketOptions(const client::config::SocketOptions &socketOptions) {
+                    int optionValue = socketOptions.getBufferSizeInBytes();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_RCVBUF, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set socket receive buffer size.");
+                    }
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_SNDBUF, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set socket send buffer size.");
+                    }
+
+                    optionValue = socketOptions.isTcpNoDelay();
+                    if (::setsockopt(socketId, IPPROTO_TCP, TCP_NODELAY, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set TCP_NODELAY option on the socket.");
+                    }
+
+                    optionValue = socketOptions.isKeepAlive();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_KEEPALIVE, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set SO_KEEPALIVE option on the socket.");
+                    }
+
+                    optionValue = socketOptions.isReuseAddress();
+                    if (::setsockopt(socketId, SOL_SOCKET, SO_REUSEADDR, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("setSocketOptions", "Failed to set SO_REUSEADDR option on the socket.");
+                    }
+
+                    optionValue = socketOptions.getLingerSeconds();
+                    if (optionValue > 0) {
+                        struct linger so_linger;
+                        so_linger.l_onoff = 1;
+                        so_linger.l_linger = optionValue;
+
+                        if (::setsockopt(socketId, SOL_SOCKET, SO_LINGER, (char *) &so_linger, sizeof(so_linger))) {
+                            throwIOException("setSocketOptions", "Failed to set SO_LINGER option on the socket.");
+                        }
+                    }
+
+                    #if defined(SO_NOSIGPIPE)
+                    optionValue = 1;
+                    if (setsockopt(socketId, SOL_SOCKET, SO_NOSIGPIPE, (char *) &optionValue, sizeof(optionValue))) {
+                        throwIOException("TcpSocket", "Failed to set socket option SO_NOSIGPIPE.");
+                    }
+                    #endif
+
                 }
             }
         }

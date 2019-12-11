@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,12 @@
 //
 // Created by sancar koyunlu on 27/02/14.
 //
-
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/Cluster.h"
 #include "hazelcast/client/InitialMembershipEvent.h"
@@ -41,8 +45,9 @@ namespace hazelcast {
 
             TEST_F(MemberAttributeTest, testInitialValues) {
                 HazelcastServer instance(*g_srvFactory);
-                std::auto_ptr<HazelcastClient> hazelcastClient(getNewClient());
-                Cluster cluster = hazelcastClient->getCluster();
+                ASSERT_TRUE(instance.setAttributes(0));
+                HazelcastClient hazelcastClient(getNewClient());
+                Cluster cluster = hazelcastClient.getCluster();
                 std::vector<Member> members = cluster.getMembers();
                 ASSERT_EQ(1U,members.size());
                 Member &member = members[0];
@@ -134,13 +139,14 @@ namespace hazelcast {
                 util::CountDownLatch attributeLatch(7);
                 AttributeListener sampleListener(attributeLatch);
 
-                std::auto_ptr<ClientConfig> clientConfig(getConfig());
-                clientConfig->addListener(&sampleListener);
+                ClientConfig clientConfig(getConfig());
+                clientConfig.addListener(&sampleListener);
 
                 HazelcastServer instance(*g_srvFactory);
-                HazelcastClient hazelcastClient(*clientConfig);
+                HazelcastClient hazelcastClient(clientConfig);
 
                 HazelcastServer instance2(*g_srvFactory);
+                ASSERT_TRUE(instance2.setAttributes(1));
 
                 ASSERT_TRUE(attributeLatch.await(30));
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,13 @@
 #include "hazelcast/client/proxy/TransactionalMapImpl.h"
 
 namespace hazelcast {
-    namespace serialization {
-        namespace pimpl {
-            class Data;
-        }
-    }
     namespace client {
+        namespace serialization {
+            namespace pimpl {
+                class Data;
+            }
+        }
+
         namespace adaptor {
             template <typename K, typename V>
             class RawPointerTransactionalMap;
@@ -78,7 +79,7 @@ namespace hazelcast {
             * @see IMap#isEmpty()
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::TransactionalMapImpl::isEmpty();
             }
 
             /**

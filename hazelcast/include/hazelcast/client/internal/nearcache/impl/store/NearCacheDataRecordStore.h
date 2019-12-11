@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,33 +39,25 @@ namespace hazelcast {
                         public:
                             typedef AbstractNearCacheRecordStore<K, V, KS, record::NearCacheDataRecord, HeapNearCacheRecordMap<K, V, KS, record::NearCacheDataRecord> > ANCRS;
 
+                            static const int64_t REFERENCE_SIZE = sizeof(boost::shared_ptr<serialization::pimpl::Data>);
+
                             NearCacheDataRecordStore(const std::string &name,
-                                                     const config::NearCacheConfig<K, V> &config,
+                                                     const client::config::NearCacheConfig<K, V> &config,
                                                      serialization::pimpl::SerializationService &ss)
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheDataRecord>(name, config, ss) {
                             }
                         protected:
                             //@Override
                         virtual int64_t getKeyStorageMemoryCost(KS *key) const {
-/*TODO
-                                if (key instanceof Data) {
-                                    return
-                                        // reference to this key data inside map ("store" field)
-                                            REFERENCE_SIZE
-                                            // heap cost of this key data
-                                            + ((Data) key).getHeapCost();
-                                } else {
-                                    // memory cost for non-data typed instance is not supported
-                                    return 0L;
-                                }
-*/
-                                return 1L;
+                                return
+                                    // reference to this key data inside map ("store" field)
+                                        REFERENCE_SIZE
+                                        // cost of this key data
+                                        + (key != NULL ? key->totalSize() : 0);
                             }
 
                             //@Override
                             virtual int64_t getRecordStorageMemoryCost(record::NearCacheDataRecord *record) const {
-                                return 1L;
-/*TODO
                                 if (record == NULL) {
                                     return 0L;
                                 }
@@ -76,14 +68,13 @@ namespace hazelcast {
                                         // reference to "value" field
                                         + REFERENCE_SIZE
                                         // heap cost of this value data
-                                        + (value != null ? value.getHeapCost() : 0)
+                                        + (value.get() != NULL ? (int64_t) value->totalSize() : 0)
                                         // 3 primitive int64_t typed fields: "creationTime", "expirationTime" and "accessTime"
-                                        + (3 * (Long.SIZE / Byte.SIZE))
+                                        + (3 * (sizeof(hazelcast::util::Atomic<int64_t>)))
                                         // reference to "accessHit" field
                                         + REFERENCE_SIZE
                                         // primitive int typed "value" field in "AtomicInteger" typed "accessHit" field
-                                        + (Integer.SIZE / Byte.SIZE);
-*/
+                                        + (sizeof(hazelcast::util::Atomic<int32_t>));
                             }
 
                             //@Override
@@ -104,9 +95,9 @@ namespace hazelcast {
                                 const boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 if (value.get() == NULL) {
                                     ANCRS::nearCacheStats.incrementMisses();
-                                    return NearCache<K, V>::NULL_OBJECT;
+                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
-                                return ANCRS::dataToValue(value);
+                                return ANCRS::dataToValue(value, (V *)NULL);
                             }
 
                             //@Override

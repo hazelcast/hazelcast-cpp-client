@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,13 @@ namespace hazelcast {
                  * @return number of TTL and max-idle expirations of Near Cache entries owned by this member.
                  */
                 virtual int64_t getExpirations() = 0;
+
+                /**
+                 * Returns the number of invalidations of Near Cache entries owned by this member.
+                 *
+                 * @return number of invalidations of Near Cache entries owned by this member
+                 */
+                virtual int64_t getInvalidations() = 0;
 
                 /**
                  * Returns the number of Near Cache key persistences (when the pre-load feature is enabled).

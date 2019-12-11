@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapSetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapSetCodec::RequestParameters::TYPE = HZ_MAP_SET;
-                const bool MapSetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapSetCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapSetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
-                        int64_t threadId, 
+                const MapMessageType MapSetCodec::REQUEST_TYPE = HZ_MAP_SET;
+                const bool MapSetCodec::RETRYABLE = false;
+                const ResponseMessageConst MapSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapSetCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
+                        int64_t threadId,
                         int64_t ttl) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapSetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapSetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -46,11 +47,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapSetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
-                        int64_t threadId, 
+                int32_t MapSetCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
+                        int64_t threadId,
                         int64_t ttl) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -61,19 +62,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                MapSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapSetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                MapSetCodec::ResponseParameters MapSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapSetCodec::ResponseParameters(clientMessage);
-                }
-
-                MapSetCodec::ResponseParameters::ResponseParameters(const MapSetCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

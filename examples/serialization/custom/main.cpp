@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,7 +80,8 @@ std::ostream &operator<<(std::ostream &out, const test1::test2::Person &p) {
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.registerSerializer(boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(new CustomSerializer()));
+    serializationConfig.registerSerializer(boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(
+            new CustomSerializer()));
     config.setSerializationConfig(serializationConfig);
     hazelcast::client::HazelcastClient hz(config);
 

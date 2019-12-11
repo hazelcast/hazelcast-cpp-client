@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@
 #include <list>
 #include <stdint.h>
 #include <memory>
+#include <boost/shared_ptr.hpp>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -52,7 +53,7 @@ namespace hazelcast {
             class HAZELCAST_API ClientMessageBuilder {
 
             public:
-                ClientMessageBuilder(IMessageHandler &service, connection::Connection &connection);
+                ClientMessageBuilder(connection::Connection &connection);
 
                 virtual ~ClientMessageBuilder();
 
@@ -60,11 +61,6 @@ namespace hazelcast {
                 * @returns true if message is completed, false otherwise
                 */
                 bool onData(util::ByteBuffer &buffer);
-
-                /**
-                 * Reset the builder so that the message is null pointer
-                 */
-                void reset();
 
             private:
                 void addToPartialMessages(std::auto_ptr<ClientMessage> message);
@@ -74,15 +70,11 @@ namespace hazelcast {
                 */
                 bool appendExistingPartialMessage(std::auto_ptr<ClientMessage> message);
 
-                typedef std::map<int64_t, ClientMessage * > MessageMap;
+                typedef std::map<int64_t, boost::shared_ptr<ClientMessage> > MessageMap;
 
                 MessageMap partialMessages;
 
-                ClientMessage wrapperMessage;
-
                 std::auto_ptr<ClientMessage> message;
-
-                IMessageHandler &messageHandler;
                 connection::Connection &connection;
 
                 int32_t frameLen;

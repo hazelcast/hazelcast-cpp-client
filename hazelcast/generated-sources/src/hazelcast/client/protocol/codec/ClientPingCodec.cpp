@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,45 +14,33 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ClientPingCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ClientMessageType ClientPingCodec::RequestParameters::TYPE = HZ_CLIENT_PING;
-                const bool ClientPingCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ClientPingCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> ClientPingCodec::RequestParameters::encode() {
+                const ClientMessageType ClientPingCodec::REQUEST_TYPE = HZ_CLIENT_PING;
+                const bool ClientPingCodec::RETRYABLE = true;
+                const ResponseMessageConst ClientPingCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> ClientPingCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ClientPingCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ClientPingCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t ClientPingCodec::RequestParameters::calculateDataSize() {
+                int32_t ClientPingCodec::calculateDataSize() {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     return dataSize;
                 }
 
-                ClientPingCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ClientPingCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                ClientPingCodec::ResponseParameters ClientPingCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return ClientPingCodec::ResponseParameters(clientMessage);
-                }
-
-                ClientPingCodec::ResponseParameters::ResponseParameters(const ClientPingCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

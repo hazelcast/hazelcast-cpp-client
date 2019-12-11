@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_FIELD_TYPE
 #define HAZELCAST_FIELD_TYPE
 
+#include <ostream>
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -36,6 +37,8 @@ namespace hazelcast {
                 bool operator==(FieldType const& rhs) const;
 
                 bool operator!=(FieldType const& rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const FieldType &type);
 
                 byte id;
             };

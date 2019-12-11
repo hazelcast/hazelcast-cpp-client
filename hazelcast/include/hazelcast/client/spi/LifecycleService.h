@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,14 @@
 //
 // Created by sancar koyunlu on 6/17/13.
 
-
-
-
 #ifndef HAZELCAST_LIFECYCLE_SERVICE
 #define HAZELCAST_LIFECYCLE_SERVICE
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Mutex.h"
 #include "hazelcast/util/AtomicBoolean.h"
+#include "hazelcast/util/CountDownLatch.h"
+
 #include <set>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -40,6 +39,10 @@ namespace hazelcast {
 
         class ClientConfig;
 
+        class LoadBalancer;
+
+        class Cluster;
+
         namespace spi {
 
             class ClientContext;
@@ -47,7 +50,10 @@ namespace hazelcast {
             class HAZELCAST_API LifecycleService {
             public:
 
-                LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig);
+                LifecycleService(ClientContext &clientContext, const std::set<LifecycleListener *> &lifecycleListeners,
+                                 util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer, Cluster &cluster);
+
+                virtual ~LifecycleService();
 
                 bool start();
 
@@ -67,7 +73,9 @@ namespace hazelcast {
                 std::set<LifecycleListener *> listeners;
                 util::Mutex listenerLock;
                 util::AtomicBoolean active;
-
+                util::CountDownLatch &shutdownLatch;
+                LoadBalancer *loadBalancer;
+                Cluster &cluster;
             };
 
         }

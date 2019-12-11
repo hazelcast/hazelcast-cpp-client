@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/util/Atomic.h"
+#include "hazelcast/client/connection/AddressTranslator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -29,19 +30,15 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
-        class Address;
-
         namespace aws {
             namespace impl {
-                class HAZELCAST_API AwsAddressTranslator {
+                class HAZELCAST_API AwsAddressTranslator : public connection::AddressTranslator {
                 public:
-                    /**
-                     * AwsAddressTranslator loads EC2 IP addresses with given AWS credentials.
-                     *
-                     * Keeps a lookup table of private to public IP addresses.
-                     */
-                    AwsAddressTranslator(config::ClientAwsConfig &awsConfig);
+                    AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
 
                     /**
                      * Translates an IP address from the private AWS network to the public network.
@@ -53,16 +50,17 @@ namespace hazelcast {
                      */
                     Address translate(const Address &address);
 
-                private:
                     /**
                      * Update the internal lookup table from AWS.
                      */
                     void refresh();
 
+                private:
                     bool findFromCache(const Address &address, Address &translatedAddress);
 
                     std::auto_ptr<AWSClient> awsClient;
                     util::Atomic<boost::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
+                    util::ILogger &logger;
                 };
             };
         }

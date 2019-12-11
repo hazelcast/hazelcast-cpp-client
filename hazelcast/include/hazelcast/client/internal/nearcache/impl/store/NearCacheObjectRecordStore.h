@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ namespace hazelcast {
                             typedef AbstractNearCacheRecordStore <K, V, KS, record::NearCacheObjectRecord<V>, HeapNearCacheRecordMap<K, V, KS, record::NearCacheObjectRecord<V> > > ANCRS;
 
                             NearCacheObjectRecordStore(const std::string &name,
-                                                       const config::NearCacheConfig<K, V> &config,
+                                                       const client::config::NearCacheConfig<K, V> &config,
                                                        serialization::pimpl::SerializationService &ss)
                                     : BaseHeapNearCacheRecordStore<K, V, serialization::pimpl::Data, record::NearCacheObjectRecord<V> >(
                                     name, config, ss) {
@@ -75,7 +75,7 @@ namespace hazelcast {
                             boost::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
                                 const boost::shared_ptr<V> value = record->getValue();
                                 if (value.get() == NULL) {
-                                    return NearCache<K, V>::NULL_OBJECT;
+                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return value;
                             }

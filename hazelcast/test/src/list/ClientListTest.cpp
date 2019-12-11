@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,49 @@
  */
 //
 // Created by sancar koyunlu on 9/13/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/ClientConfig.h"
 
+#include "hazelcast/client/ClientConfig.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 #include "hazelcast/client/IList.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
             class ClientListTest : public ClientTestSupport {
             protected:
+                class MyListItemListener : public ItemListener<std::string> {
+                public:
+                    MyListItemListener(util::CountDownLatch& latch)
+                            : latch(latch) {
+
+                    }
+
+                    void itemAdded(const ItemEvent<std::string>& itemEvent) {
+                        int type = itemEvent.getEventType();
+                        assertEquals((int) ItemEventType::ADDED, type);
+                        assertEquals("MyList", itemEvent.getName());
+                        std::string host = itemEvent.getMember().getAddress().getHost();
+                        assertTrue(host == "localhost" || host == "127.0.0.1");
+                        assertEquals(5701, itemEvent.getMember().getAddress().getPort());
+                        assertEquals("item-1", itemEvent.getItem());
+                        latch.countDown();
+                    }
+
+                    void itemRemoved(const ItemEvent<std::string>& item) {
+                    }
+
+                private:
+                    util::CountDownLatch& latch;
+                };
+
                 virtual void TearDown() {
                     // clear list
                     list->clear();
@@ -36,47 +65,47 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    instance = new HazelcastServer(*g_srvFactory, true);
+                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
                     #endif
 
-                    clientConfig = getConfig().release();
+                    ClientConfig clientConfig = getConfig();
 
                     #ifdef HZ_BUILD_WITH_SSL
                     config::ClientNetworkConfig networkConfig;
                     config::SSLConfig sslConfig;
                     sslConfig.setEnabled(true).addVerifyFile(getCAFilePath()).setCipherList("HIGH");
                     networkConfig.setSSLConfig(sslConfig);
-                    clientConfig->setNetworkConfig(networkConfig);
+                    clientConfig.setNetworkConfig(networkConfig);
                     #endif // HZ_BUILD_WITH_SSL
 
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(clientConfig);
                     list = new IList<std::string>(client->getList<std::string>("MyList"));
                 }
 
                 static void TearDownTestCase() {
                     delete list;
                     delete client;
-                    delete clientConfig;
                     delete instance;
+                    delete sslFactory;
 
                     list = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static IList<std::string> *list;
+                static HazelcastServerFactory *sslFactory;
             };
 
             HazelcastServer *ClientListTest::instance = NULL;
-            ClientConfig *ClientListTest::clientConfig = NULL;
             HazelcastClient *ClientListTest::client = NULL;
             IList<std::string> *ClientListTest::list = NULL;
+            HazelcastServerFactory *ClientListTest::sslFactory = NULL;
 
             TEST_F(ClientListTest, testAddAll) {
                 std::vector<std::string> l;
@@ -194,38 +223,25 @@ namespace hazelcast {
 
             }
 
-            class MyListItemListener : public ItemListener<std::string> {
-            public:
-                MyListItemListener(util::CountDownLatch& latch)
-                : latch(latch) {
-
-                }
-
-                void itemAdded(const ItemEvent<std::string>& itemEvent) {
-                    latch.countDown();
-                }
-
-                void itemRemoved(const ItemEvent<std::string>& item) {
-                }
-
-            private:
-                util::CountDownLatch& latch;
-            };
-
             TEST_F(ClientListTest, testListener) {
-                util::CountDownLatch latch(5);
+                util::CountDownLatch latch(1);
 
                 MyListItemListener listener(latch);
                 std::string registrationId = list->addItemListener(listener, true);
 
-                for (int i = 0; i < 5; i++) {
-                    list->add(std::string("item") + util::IOUtil::to_string(i));
-                }
+                list->add("item-1");
 
                 ASSERT_TRUE(latch.await(20));
 
                 ASSERT_TRUE(list->removeItemListener(registrationId));
             }
+
+            TEST_F(ClientListTest, testIsEmpty) {
+                ASSERT_TRUE(list->isEmpty());
+                ASSERT_TRUE(list->add("item1"));
+                ASSERT_FALSE(list->isEmpty());
+            }
+
         }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -327,7 +327,7 @@ namespace hazelcast {
                  */
                 void readData(serialization::ObjectDataInput &in) {
                     // Not need to read at the client side
-                    throw exception::IException("PagingPredicate::readData",
+                    throw exception::HazelcastSerializationException("PagingPredicate::readData",
                                                 "Client should not need to use readData method!!!");
                 }
 
@@ -342,8 +342,8 @@ namespace hazelcast {
                         anchorList.push_back(std::pair<size_t, std::pair<K *, V *> >(page, anchorEntry));
                     } else {
                         char msg[200];
-                        util::snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
-                                       anchorCount);
+                        util::hz_snprintf(msg, 200, "Anchor index is not correct, expected: %d but found: %d", page,
+                                          anchorCount);
                         throw exception::IllegalArgumentException("PagingPredicate::setAnchor", msg);
                     }
                 }

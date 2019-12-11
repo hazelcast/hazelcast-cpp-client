@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/12/13.
 
-
-
-
-#ifndef __TestMobile_H_
-#define __TestMobile_H_
+#ifndef HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
+#define HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
 
 #include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
+#include "hazelcast/client/serialization/DataSerializableFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class TestDataSerializableFactory : public serialization::DataSerializableFactory {
+            public:
+                virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId);
+            };
+            
             class TestDataSerializable : public serialization::IdentifiedDataSerializable {
             public:
                 TestDataSerializable();
@@ -48,9 +49,8 @@ namespace hazelcast {
                 int i;
                 char c;
             };
-
         }
     }
 }
-#endif //__TestMobile_H_
+#endif //HAZELCAST_CLIENT_TEST_TESTDATASERIALIZABLE_H_
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,49 +14,37 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapFlushCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapFlushCodec::RequestParameters::TYPE = HZ_MAP_FLUSH;
-                const bool MapFlushCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapFlushCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> MapFlushCodec::RequestParameters::encode(
+                const MapMessageType MapFlushCodec::REQUEST_TYPE = HZ_MAP_FLUSH;
+                const bool MapFlushCodec::RETRYABLE = false;
+                const ResponseMessageConst MapFlushCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> MapFlushCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapFlushCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapFlushCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t MapFlushCodec::RequestParameters::calculateDataSize(
+                int32_t MapFlushCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
                     return dataSize;
                 }
 
-                MapFlushCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapFlushCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                MapFlushCodec::ResponseParameters MapFlushCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return MapFlushCodec::ResponseParameters(clientMessage);
-                }
-
-                MapFlushCodec::ResponseParameters::ResponseParameters(const MapFlushCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMultiMapValueCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMultiMapMessageType TransactionalMultiMapValueCountCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMULTIMAP_VALUECOUNT;
-                const bool TransactionalMultiMapValueCountCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMultiMapValueCountCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> TransactionalMultiMapValueCountCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMultiMapMessageType TransactionalMultiMapValueCountCodec::REQUEST_TYPE = HZ_TRANSACTIONALMULTIMAP_VALUECOUNT;
+                const bool TransactionalMultiMapValueCountCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMultiMapValueCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> TransactionalMultiMapValueCountCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMultiMapValueCountCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMultiMapValueCountCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMultiMapValueCountCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMultiMapValueCountCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -57,22 +58,19 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionalMultiMapValueCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMultiMapValueCountCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
+                TransactionalMultiMapValueCountCodec::ResponseParameters::ResponseParameters(
+                        ClientMessage &clientMessage) {
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                TransactionalMultiMapValueCountCodec::ResponseParameters TransactionalMultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMultiMapValueCountCodec::ResponseParameters
+                TransactionalMultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMultiMapValueCountCodec::ResponseParameters::ResponseParameters(const TransactionalMultiMapValueCountCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 #ifndef HAZELCAST_IQUEUE
 #define HAZELCAST_IQUEUE
 
+#include <stdexcept>
+
 #include "hazelcast/client/proxy/IQueueImpl.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
-#include <stdexcept>
 
 namespace hazelcast {
     namespace client {
@@ -36,7 +37,7 @@ namespace hazelcast {
         */
         template<typename E>
         class IQueue : public proxy::IQueueImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerQueue<E>;
 
         public:
@@ -55,8 +56,8 @@ namespace hazelcast {
             * @return returns registration id.
             */
             std::string addItemListener(ItemListener<E>& listener, bool includeValue) {
-                spi::ClusterService& cs = context->getClusterService();
-                serialization::pimpl::SerializationService& ss = context->getSerializationService();
+                spi::ClientClusterService &cs = getContext().getClientClusterService();
+                serialization::pimpl::SerializationService& ss = getContext().getSerializationService();
                 impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler> *itemEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::QueueAddListenerCodec::AbstractEventHandler>(getName(), cs, ss, listener, includeValue);
                 return proxy::IQueueImpl::addItemListener(itemEventHandler, includeValue);
@@ -158,7 +159,12 @@ namespace hazelcast {
             * @return number of elements drained.
             */
             size_t drainTo(std::vector<E>& elements) {
-                return drainTo(elements, -1);
+                std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData();
+                for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
+                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
+                    elements.push_back(*e);
+                }
+                return coll.size();
             }
 
             /**
@@ -171,7 +177,7 @@ namespace hazelcast {
             size_t drainTo(std::vector<E>& elements, size_t maxElements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    std::auto_ptr<E> e = context->getSerializationService().template toObject<E>(*it);
+                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
@@ -208,7 +214,7 @@ namespace hazelcast {
             * @return true if queue is empty
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::IQueueImpl::isEmpty();
             }
 
             /**

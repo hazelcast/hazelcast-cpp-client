@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ namespace hazelcast {
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                                 boost::shared_ptr<serialization::pimpl::Data> key = getSharedKey(i);
-                                ASSERT_TRUE(nearCacheRecordStore->remove(key));
+                                ASSERT_TRUE(nearCacheRecordStore->invalidate(key));
                                 ASSERT_NULL("Should not exist", nearCacheRecordStore->get(key).get(), std::string);
                             }
 
@@ -162,7 +162,7 @@ namespace hazelcast {
 
                             for (int i = 0; i < DEFAULT_RECORD_COUNT; i++) {
                                 int selectedKey = i * 3;
-                                if (nearCacheRecordStore->remove(getSharedKey(selectedKey))) {
+                                if (nearCacheRecordStore->invalidate(getSharedKey(selectedKey))) {
                                     expectedEntryCount--;
                                 }
                             }
@@ -356,7 +356,7 @@ namespace hazelcast {
 
                         boost::shared_ptr<std::string> getSharedValue(int value) const {
                             char buf[30];
-                            util::snprintf(buf, 30, "Record-%ld", value);
+                            util::hz_snprintf(buf, 30, "Record-%ld", value);
                             return boost::shared_ptr<std::string>(new std::string(buf));
                         }
 

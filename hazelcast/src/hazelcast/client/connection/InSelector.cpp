@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
 
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/connection/ReadHandler.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/Connection.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -33,8 +33,8 @@
 namespace hazelcast {
     namespace client {
         namespace connection {
-            InSelector::InSelector(ConnectionManager& connectionManager)
-            : IOSelector(connectionManager) {
+            InSelector::InSelector(ClientConnectionManagerImpl& connectionManager, const config::SocketOptions &socketOptions)
+            : IOSelector(connectionManager, socketOptions) {
             }
 
             bool InSelector::start() {
@@ -65,13 +65,17 @@ namespace hazelcast {
                             int wakeUpSignal;
                             sleepingSocket->receive(&wakeUpSignal, sizeof(int));
                         } else {
-                            boost::shared_ptr<Connection> conn = connectionManager.getConnectionIfAvailable(fd);
+                            boost::shared_ptr<Connection> conn = connectionManager.getActiveConnection(fd);
                             if (conn.get() != NULL) {
                                 conn->getReadHandler().handle();
                             }
                         }
                     }
                 }
+            }
+
+            const std::string InSelector::getName() const {
+                return "InSelector";
             }
         }
     }

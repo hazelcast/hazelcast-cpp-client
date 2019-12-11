@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 #include "hazelcast/util/ConcurrentQueue.h"
 #include "hazelcast/util/SocketSet.h"
 #include "hazelcast/util/AtomicBoolean.h"
-#include "hazelcast/util/ThreadArgs.h"
+#include "hazelcast/util/Runnable.h"
 #include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -32,19 +32,25 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         class Socket;
 
+        namespace config {
+            class SocketOptions;
+        }
         namespace connection {
             class ListenerTask;
 
             class IOHandler;
 
-            class ConnectionManager;
+            class ClientConnectionManagerImpl;
 
-            class HAZELCAST_API IOSelector {
+            class HAZELCAST_API IOSelector : public util::Runnable {
             public:
-                IOSelector(ConnectionManager &connectionManager);
+                IOSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions);
 
                 virtual ~IOSelector();
 
@@ -52,11 +58,7 @@ namespace hazelcast {
 
                 bool initListenSocket(util::SocketSet &wakeUpSocketSet);
 
-                static void staticListen(util::ThreadArgs& args);
-
-                void listen();
-
-                virtual void listenInternal() = 0;
+                void run();
 
                 void addTask(ListenerTask *listenerTask);
 
@@ -74,19 +76,23 @@ namespace hazelcast {
                 struct timeval t;
                 util::SocketSet socketSet;
                 int wakeUpListenerSocketId;
-                ConnectionManager &connectionManager;
+                ClientConnectionManagerImpl &connectionManager;
                 std::auto_ptr<Socket> sleepingSocket;
+                util::ILogger &logger;
+
+                virtual void listenInternal() = 0;
 
                 /**
                  * @return true if should return from the calling method
                  */
                 bool checkError(const char *messagePrefix, int numSelected) const;
-            private:
+
                 void processListenerQueue();
 
                 std::auto_ptr<Socket> wakeUpSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
                 util::AtomicBoolean isAlive;
+                const config::SocketOptions &socketOptions;
             };
         }
     }

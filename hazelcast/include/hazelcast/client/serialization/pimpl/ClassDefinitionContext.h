@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,9 @@
 #ifndef HAZELCAST_PORTABLE_CONTEXT
 #define HAZELCAST_PORTABLE_CONTEXT
 
-#include "hazelcast/util/SynchronizedMap.h"
+#include <stdint.h>
 
+#include "hazelcast/util/SynchronizedMap.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +36,7 @@ namespace hazelcast {
                 class ClassDefinitionContext {
                 public:
 
-                    ClassDefinitionContext(PortableContext *portableContext);
+                    ClassDefinitionContext(int portableContext, PortableContext *pContext);
 
                     int getClassVersion(int classId);
 
@@ -46,8 +47,9 @@ namespace hazelcast {
                     boost::shared_ptr<ClassDefinition> registerClassDefinition(boost::shared_ptr<ClassDefinition>);
 
                 private:
-                    long long combineToLong(int x, int y) const;
+                    int64_t combineToLong(int x, int y) const;
 
+                    const int factoryId;
                     util::SynchronizedMap<long long, ClassDefinition> versionedDefinitions;
                     util::SynchronizedMap<int, int> currentClassVersions;
                     PortableContext *portableContext;

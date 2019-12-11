@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapValueCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapValueCountCodec::RequestParameters::TYPE = HZ_MULTIMAP_VALUECOUNT;
-                const bool MultiMapValueCountCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MultiMapValueCountCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> MultiMapValueCountCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                const MultiMapMessageType MultiMapValueCountCodec::REQUEST_TYPE = HZ_MULTIMAP_VALUECOUNT;
+                const bool MultiMapValueCountCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapValueCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> MultiMapValueCountCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapValueCountCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapValueCountCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -42,9 +43,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapValueCountCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
+                int32_t MultiMapValueCountCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -54,21 +55,17 @@ namespace hazelcast {
                 }
 
                 MultiMapValueCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapValueCountCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                MultiMapValueCountCodec::ResponseParameters MultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapValueCountCodec::ResponseParameters
+                MultiMapValueCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapValueCountCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapValueCountCodec::ResponseParameters::ResponseParameters(const MultiMapValueCountCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

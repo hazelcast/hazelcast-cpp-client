@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Address.h"
+#include "hazelcast/client/config/SocketOptions.h"
 #include "hazelcast/util/AtomicBoolean.h"
 
 #if !defined(MSG_NOSIGNAL)
@@ -54,8 +55,8 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    SSLSocket(const client::Address &address, asio::io_service &ioService,
-                              asio::ssl::context &sslContext);
+                    SSLSocket(const client::Address &address, asio::ssl::context &sslContext,
+                            client::config::SocketOptions &socketOptions);
 
                     /**
                      * Destructor
@@ -72,10 +73,11 @@ namespace hazelcast {
                     /**
                      * @param buffer
                      * @param len length of the buffer
+                     * @param flag bsd sockets options flag. Only MSG_WAITALL is supported when SSL is enabled.
                      * @return number of bytes send
                      * @throw IOException in failure.
                      */
-                    int send(const void *buffer, int len) const;
+                    int send(const void *buffer, int len, int flag = 0);
 
                     /**
                      * @param buffer
@@ -84,22 +86,12 @@ namespace hazelcast {
                      * @return number of bytes received.
                      * @throw IOException in failure.
                      */
-                    int receive(void *buffer, int len, int flag = 0) const;
+                    int receive(void *buffer, int len, int flag = 0);
 
                     /**
                      * return socketId
                      */
                     int getSocketId() const;
-
-                    /**
-                     * @param address remote endpoint address.
-                     */
-                    void setRemoteEndpoint(const client::Address &address);
-
-                    /**
-                     * @return remoteEndpoint
-                     */
-                    const client::Address &getRemoteEndpoint() const;
 
                     /**
                      * closes the socket. Automatically called in destructor.
@@ -115,10 +107,28 @@ namespace hazelcast {
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
+
+                    std::auto_ptr<Address> localSocketAddress() const;
+
                 private:
                     SSLSocket(const Socket &rhs);
 
                     SSLSocket &operator=(const Socket &rhs);
+
+                    class ReadHandler {
+                    public:
+                        ReadHandler(size_t &numRead, asio::error_code &ec);
+
+                        void operator()(const asio::error_code &err, std::size_t bytes_transferred);
+
+                        size_t &getNumRead() const;
+
+                        asio::error_code &getErrorCode() const;
+
+                    private:
+                        size_t &numRead;
+                        asio::error_code &errorCode;
+                    };
 
                     /**
                      * @return numBytes if the no error or error is try_again or would_block
@@ -126,16 +136,21 @@ namespace hazelcast {
                      */
                     int handleError(const std::string &source, size_t numBytes, const asio::error_code &error) const;
 
-                    void startTimer();
+                    void handleConnect(const asio::error_code &error);
+
+                    void checkDeadline(const asio::error_code &ec);
+
+                    void setSocketOptions();
 
                     client::Address remoteEndpoint;
 
-                    util::AtomicBoolean isOpen;
-
-                    asio::io_service &ioService;
+                    asio::io_service ioService;
                     asio::ssl::context &sslContext;
                     std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
                     asio::deadline_timer deadline;
+                    asio::error_code errorCode;
+                    int socketId;
+                    const client::config::SocketOptions &socketOptions;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

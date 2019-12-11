@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,15 @@
 #ifndef HAZELCAST_CLIENT_CONTEXT
 #define HAZELCAST_CLIENT_CONTEXT
 
+#include <string>
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
 
         class Cluster;
@@ -37,8 +43,18 @@ namespace hazelcast {
 
         class ClientProperties;
 
+        namespace impl {
+            class HazelcastClientInstanceImpl;
+            class ClientLockReferenceIdGenerator;
+
+            namespace statistics {
+                class Statistics;
+            }
+        }
+
         namespace connection {
-            class ConnectionManager;
+            class ClientConnectionManagerImpl;
+            class Connection;
         }
 
         namespace internal {
@@ -46,49 +62,86 @@ namespace hazelcast {
                 class NearCacheManager;
             }
         }
+
+        namespace protocol {
+            class ClientExceptionFactory;
+        }
+
         namespace spi {
-            class InvocationService;
+            class ClientInvocationService;
 
-            class ClusterService;
+            class ClientPartitionService;
 
-            class PartitionService;
-
-            class ServerListenerService;
+            class ClientListenerService;
 
             class LifecycleService;
 
+            class ClientInvocationService;
+
+            class ClientClusterService;
+
+            class ProxyManager;
+
+            namespace impl {
+                class ClientExecutionServiceImpl;
+
+                namespace sequence {
+                    class CallIdSequence;
+                }
+            }
+
             class HAZELCAST_API ClientContext {
             public:
+                ClientContext(client::HazelcastClient &hazelcastClient);
 
-                ClientContext(HazelcastClient &hazelcastClient);
+                ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
                 serialization::pimpl::SerializationService &getSerializationService();
 
-                ClusterService &getClusterService();
+                ClientClusterService &getClientClusterService();
 
-                InvocationService &getInvocationService();
+                ClientInvocationService & getInvocationService();
 
                 ClientConfig &getClientConfig();
 
-                PartitionService &getPartitionService();
+                ClientPartitionService &getPartitionService();
 
                 LifecycleService &getLifecycleService();
 
-                ServerListenerService &getServerListenerService();
+                ClientListenerService &getClientListenerService();
 
-                connection::ConnectionManager &getConnectionManager();
+                connection::ClientConnectionManagerImpl &getConnectionManager();
 
-                internal::nearcache::NearCacheManager &getNearCacheManager() const;
+                internal::nearcache::NearCacheManager &getNearCacheManager();
 
                 ClientProperties &getClientProperties();
 
                 Cluster &getCluster();
 
+                boost::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
+
+                const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
+
+                const std::string &getName() const;
+
+                impl::ClientExecutionServiceImpl &getClientExecutionService() const;
+
+                void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+
+                const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+
+                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+
+                spi::ProxyManager &getProxyManager();
+
+                util::ILogger &getLogger();
+
+                client::impl::statistics::Statistics &getClientstatistics();
             private:
-                HazelcastClient &hazelcastClient;
+                client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };
         }
     }
 }
 
-#endif
+#endif // HAZELCAST_CLIENT_CONTEXT

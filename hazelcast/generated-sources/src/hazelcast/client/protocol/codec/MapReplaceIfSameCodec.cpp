@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,29 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapReplaceIfSameCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapReplaceIfSameCodec::RequestParameters::TYPE = HZ_MAP_REPLACEIFSAME;
-                const bool MapReplaceIfSameCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapReplaceIfSameCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapReplaceIfSameCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &testValue, 
-                        const serialization::pimpl::Data &value, 
+                const MapMessageType MapReplaceIfSameCodec::REQUEST_TYPE = HZ_MAP_REPLACEIFSAME;
+                const bool MapReplaceIfSameCodec::RETRYABLE = false;
+                const ResponseMessageConst MapReplaceIfSameCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapReplaceIfSameCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &testValue,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, testValue, value, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapReplaceIfSameCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapReplaceIfSameCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -46,11 +47,11 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapReplaceIfSameCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &testValue, 
-                        const serialization::pimpl::Data &value, 
+                int32_t MapReplaceIfSameCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &testValue,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -62,21 +63,17 @@ namespace hazelcast {
                 }
 
                 MapReplaceIfSameCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapReplaceIfSameCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapReplaceIfSameCodec::ResponseParameters MapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapReplaceIfSameCodec::ResponseParameters
+                MapReplaceIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapReplaceIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                MapReplaceIfSameCodec::ResponseParameters::ResponseParameters(const MapReplaceIfSameCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

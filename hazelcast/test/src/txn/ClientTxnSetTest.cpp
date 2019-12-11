@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,29 +16,42 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "ClientTxnSetTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
-            ClientTxnSetTest::ClientTxnSetTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()) {
+            class ClientTxnSetTest : public ClientTestSupport {
+            public:
+                ClientTxnSetTest();
+
+                ~ClientTxnSetTest();
+
+            protected:
+                HazelcastServer instance;
+                HazelcastClient client;
+            };
+
+            ClientTxnSetTest::ClientTxnSetTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
             
             ClientTxnSetTest::~ClientTxnSetTest() {
             }
 
             TEST_F(ClientTxnSetTest, testAddRemove) {
-                ISet<std::string> s = client->getSet<std::string>("testAddRemove");
+                ISet<std::string> s = client.getSet<std::string>("testAddRemove");
                 s.add("item1");
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalSet<std::string> set = context.getSet<std::string>("testAddRemove");
                 ASSERT_TRUE(set.add("item2"));

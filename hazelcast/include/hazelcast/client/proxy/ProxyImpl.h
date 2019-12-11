@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,18 @@
 #ifndef HAZELCAST_ProxyImpl
 #define HAZELCAST_ProxyImpl
 
-#include "hazelcast/client/protocol/codec/IRemoveListenerCodec.h"
-#include "hazelcast/client/connection/CallFuture.h"
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/spi/ClientProxy.h"
+#include "hazelcast/client/TypedData.h"
+#include "hazelcast/client/spi/ClientInvocationService.h"
 
 namespace hazelcast {
     namespace client {
         namespace connection {
             class Connection;
-        }
-
-        namespace impl {
-            class BaseEventHandler;
         }
 
         namespace serialization {
@@ -44,16 +39,10 @@ namespace hazelcast {
             }
         }
 
-        namespace protocol {
-            namespace codec {
-                class IAddListenerCodec;
-            }
-        }
-
         typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > EntryVector;
 
         namespace proxy {
-            class HAZELCAST_API ProxyImpl : public DistributedObject, public spi::ClientProxy {
+            class HAZELCAST_API ProxyImpl : public spi::ClientProxy {
             protected:
                 /**
                 * Constructor
@@ -66,14 +55,6 @@ namespace hazelcast {
                 virtual ~ProxyImpl();
 
                 /**
-                 * Called when proxy is created.
-                 * Overriding implementations can add initialization specific logic into this method
-                 * like registering a listener, creating a cleanup task etc.
-                 */
-                virtual void onInitialize() {
-                }
-
-                /**
                 * Internal API.
                 * method to be called by distributed objects.
                 * memory ownership is moved to DistributedObject.
@@ -81,11 +62,15 @@ namespace hazelcast {
                 * @param partitionId that given request will be send to.
                 * @param request Client request message to be sent.
                 */
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
+                boost::shared_ptr<protocol::ClientMessage> invokeOnPartition(std::auto_ptr<protocol::ClientMessage> request,
+                                                                         int partitionId);
+
+                boost::shared_ptr<spi::impl::ClientInvocationFuture> invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request,
                                                               int partitionId);
 
-                connection::CallFuture invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request,
-                                                              int partitionId);
+                boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                invokeOnKeyOwner(std::auto_ptr<protocol::ClientMessage> request,
+                                 const serialization::pimpl::Data &keyData);
 
                 /**
                 * Internal API.
@@ -94,29 +79,10 @@ namespace hazelcast {
                 *
                 * @param request ClientMessage ptr.
                 */
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
 
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request,
-                                                              boost::shared_ptr<connection::Connection> conn);
-
-                /**
-                * Internal API.
-                *
-                * @param registrationRequest ClientMessage ptr.
-                * @param partitionId
-                * @param handler
-                */
-                std::string registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
-                                             int partitionId, impl::BaseEventHandler *handler);
-
-                /**
-                * Internal API.
-                *
-                * @param addListenerCodec Codec for encoding the listener addition request and the response.
-                * @param handler The handler to use when the event arrives.
-                */
-                std::string registerListener(std::auto_ptr<protocol::codec::IAddListenerCodec> addListenerCodec,
-                                             impl::BaseEventHandler *handler);
+                boost::shared_ptr<protocol::ClientMessage> invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request,
+                                                                  const Address &address);
 
                 /**
                 * Internal API.
@@ -126,12 +92,17 @@ namespace hazelcast {
 
                 template<typename T>
                 serialization::pimpl::Data toData(const T &object) {
-                    return context->getSerializationService().template toData<T>(&object);
+                    return getContext().getSerializationService().template toData<T>(&object);
+                }
+
+                template<typename T>
+                boost::shared_ptr<serialization::pimpl::Data> toSharedData(const T &object) {
+                    return toShared(toData<T>(object));
                 }
 
                 template<typename T>
                 std::auto_ptr<T> toObject(const serialization::pimpl::Data &data) {
-                    return context->getSerializationService().template toObject<T>(data);
+                    return getContext().getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
@@ -141,6 +112,11 @@ namespace hazelcast {
                     } else {
                         return toObject<T>(*data);
                     }
+                }
+
+                template <typename T>
+                boost::shared_ptr<T> toSharedObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                    return boost::shared_ptr<T>(toObject<T>(data));
                 }
 
                 template<typename V>
@@ -153,6 +129,9 @@ namespace hazelcast {
                     }
                     return objectArray;
                 }
+
+                std::vector<TypedData>
+                toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values);
 
                 template<typename T>
                 const std::vector<serialization::pimpl::Data> toDataCollection(const std::vector<T> &elements) {
@@ -178,6 +157,9 @@ namespace hazelcast {
                     return entrySet;
                 }
 
+                std::vector<std::pair<TypedData, TypedData> > toTypedDataEntrySet(
+                        const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &dataEntrySet);
+
                 template<typename K, typename V>
                 EntryVector toDataEntries(std::map<K, V> const &m) {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > entries(
@@ -191,41 +173,32 @@ namespace hazelcast {
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request);
-
-                    return (T)CODEC::decode(*response).response;
-                }
-
-                template<typename T, typename CODEC>
-                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     boost::shared_ptr<connection::Connection> conn) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, partitionId);
+                    boost::shared_ptr<protocol::ClientMessage> response = invokeOnPartition(request, partitionId);
 
                     return (T)CODEC::decode(*response).response;
                 }
 
                 template<typename T, typename CODEC>
                 T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request,
-                                     int partitionId, boost::shared_ptr<connection::Connection> conn) {
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request, conn);
-
+                                     const serialization::pimpl::Data &key) {
+                    boost::shared_ptr<protocol::ClientMessage> response;
+                    try {
+                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request, key);
+                        response = future->get();
+                    } catch (exception::IException &e) {
+                        util::ExceptionUtil::rethrow(e);
+                    }
                     return (T)CODEC::decode(*response).response;
                 }
 
-                spi::ClientContext *context;
-            public:
-                /**
-                * Destroys this object cluster-wide.
-                * Clears and releases all resources for this object.
-                */
-                virtual void destroy();
+                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data);
             };
         }
     }

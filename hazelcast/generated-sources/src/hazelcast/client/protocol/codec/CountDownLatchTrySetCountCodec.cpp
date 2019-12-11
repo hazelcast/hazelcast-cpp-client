@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/CountDownLatchTrySetCountCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const CountDownLatchMessageType CountDownLatchTrySetCountCodec::RequestParameters::TYPE = HZ_COUNTDOWNLATCH_TRYSETCOUNT;
-                const bool CountDownLatchTrySetCountCodec::RequestParameters::RETRYABLE = false;
-                const int32_t CountDownLatchTrySetCountCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> CountDownLatchTrySetCountCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const CountDownLatchMessageType CountDownLatchTrySetCountCodec::REQUEST_TYPE = HZ_COUNTDOWNLATCH_TRYSETCOUNT;
+                const bool CountDownLatchTrySetCountCodec::RETRYABLE = false;
+                const ResponseMessageConst CountDownLatchTrySetCountCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> CountDownLatchTrySetCountCodec::encodeRequest(
+                        const std::string &name,
                         int32_t count) {
                     int32_t requiredDataSize = calculateDataSize(name, count);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)CountDownLatchTrySetCountCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) CountDownLatchTrySetCountCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(count);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t CountDownLatchTrySetCountCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t CountDownLatchTrySetCountCodec::calculateDataSize(
+                        const std::string &name,
                         int32_t count) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,21 +50,17 @@ namespace hazelcast {
                 }
 
                 CountDownLatchTrySetCountCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("CountDownLatchTrySetCountCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                CountDownLatchTrySetCountCodec::ResponseParameters CountDownLatchTrySetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                CountDownLatchTrySetCountCodec::ResponseParameters
+                CountDownLatchTrySetCountCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return CountDownLatchTrySetCountCodec::ResponseParameters(clientMessage);
                 }
 
-                CountDownLatchTrySetCountCodec::ResponseParameters::ResponseParameters(const CountDownLatchTrySetCountCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

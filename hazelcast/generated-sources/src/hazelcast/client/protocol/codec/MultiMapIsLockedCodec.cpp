@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MultiMapIsLockedCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MultiMapMessageType MultiMapIsLockedCodec::RequestParameters::TYPE = HZ_MULTIMAP_ISLOCKED;
-                const bool MultiMapIsLockedCodec::RequestParameters::RETRYABLE = true;
-                const int32_t MultiMapIsLockedCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MultiMapIsLockedCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MultiMapMessageType MultiMapIsLockedCodec::REQUEST_TYPE = HZ_MULTIMAP_ISLOCKED;
+                const bool MultiMapIsLockedCodec::RETRYABLE = true;
+                const ResponseMessageConst MultiMapIsLockedCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MultiMapIsLockedCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MultiMapIsLockedCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MultiMapIsLockedCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -40,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MultiMapIsLockedCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MultiMapIsLockedCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,21 +51,17 @@ namespace hazelcast {
                 }
 
                 MultiMapIsLockedCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MultiMapIsLockedCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MultiMapIsLockedCodec::ResponseParameters MultiMapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MultiMapIsLockedCodec::ResponseParameters
+                MultiMapIsLockedCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MultiMapIsLockedCodec::ResponseParameters(clientMessage);
                 }
 
-                MultiMapIsLockedCodec::ResponseParameters::ResponseParameters(const MultiMapIsLockedCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

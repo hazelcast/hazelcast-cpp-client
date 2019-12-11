@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 26/05/15.
-//
 
 #include "ClientTestSupport.h"
-
-#include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            std::string ClientTestSupport::getCAFilePath() {
-                return "hazelcast/test/resources/cpp_client.crt";
+            ClientTestSupport::ClientTestSupport() {
+                const testing::TestInfo *testInfo = testing::UnitTest::GetInstance()->current_test_info();
+                std::ostringstream out;
+                out << testInfo->test_case_name() << "_" << testInfo->name();
+                testName = out.str();
+                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
             }
 
-            std::auto_ptr<hazelcast::client::ClientConfig> ClientTestSupport::getConfig() {
-                std::auto_ptr<hazelcast::client::ClientConfig> clientConfig(new ClientConfig());
-                clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                return clientConfig;
+            util::ILogger &ClientTestSupport::getLogger() {
+                return *logger;
             }
 
-            std::auto_ptr<HazelcastClient> ClientTestSupport::getNewClient() {
-                std::auto_ptr<HazelcastClient> result(new HazelcastClient(*getConfig()));
-                return result;
+            const std::string &ClientTestSupport::getTestName() const {
+                return testName;
             }
         }
     }

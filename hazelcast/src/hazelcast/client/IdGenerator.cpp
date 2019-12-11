@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,50 +17,17 @@
 
 namespace hazelcast {
     namespace client {
-
-        IdGenerator::IdGenerator(const std::string& instanceName, spi::ClientContext *context)
-        : proxy::ProxyImpl("idGeneratorService", instanceName, context)
-        , atomicLong("hz:atomic:idGenerator:" + instanceName, context)
-        , local(new util::Atomic<int64_t>(-1))
-        , residue(new util::AtomicInt(BLOCK_SIZE))
-        , localLock(new util::Mutex) {
-
+        bool IdGenerator::init(int64_t id) {
+            return impl->init(id);
         }
 
-
-        bool IdGenerator::init(long id) {
-            if (id <= 0) {
-                return false;
-            }
-            int64_t step = (id / BLOCK_SIZE);
-
-            util::LockGuard lg(*localLock);
-            bool init = atomicLong.compareAndSet(0, step + 1);
-            if (init) {
-                *local = step;
-                *residue = (id % BLOCK_SIZE) + 1;
-            }
-            return init;
+        int64_t IdGenerator::newId() {
+            return impl->newId();
         }
 
-        long IdGenerator::newId() {
-            int value = (*residue)++;
-            if (value >= BLOCK_SIZE) {
-                util::LockGuard lg(*localLock);
-                value = *residue;
-                if (value >= BLOCK_SIZE) {
-                    *local = atomicLong.getAndIncrement();
-                    *residue = 0;
-                }
-                return newId();
+        IdGenerator::IdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : impl(impl) {}
 
-            }
-            return int(*local) * BLOCK_SIZE + value;
+        IdGenerator::~IdGenerator() {
         }
-
-        void IdGenerator::onDestroy() {
-            atomicLong.onDestroy();
-        }
-
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TopicMessageType {
 
-                    HZ_TOPIC_PUBLISH=0x0401,
-                    HZ_TOPIC_ADDMESSAGELISTENER=0x0402,
-                    HZ_TOPIC_REMOVEMESSAGELISTENER=0x0403
+                    HZ_TOPIC_PUBLISH = 0x0401,
+                    HZ_TOPIC_ADDMESSAGELISTENER = 0x0402,
+                    HZ_TOPIC_REMOVEMESSAGELISTENER = 0x0403
                 };
             }
         }

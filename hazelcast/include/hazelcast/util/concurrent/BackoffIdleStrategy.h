@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+#ifndef HAZELCAST_UTIL_CONCURRENT_BACKOFFIDLESTRATEGY_H_
+#define HAZELCAST_UTIL_CONCURRENT_BACKOFFIDLESTRATEGY_H_
+
+#include <stdint.h>
+
+#include "hazelcast/util/concurrent/IdleStrategy.h"
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
+namespace hazelcast {
+    namespace util {
+        namespace concurrent {
+            /**
+             * Idling strategy for threads when they have no work to do.
+             * <p/>
+             * Spin for maxSpins, then
+             * {@link Thread#yield()} for maxYields, then
+             * {@link LockSupport#parkNanos(int64_t)} on an exponential backoff to maxParkPeriodNs
+             */
+            class HAZELCAST_API BackoffIdleStrategy : public IdleStrategy {
+            public:
+                /**
+                 * Create a set of state tracking idle behavior
+                 *
+                 * @param maxSpins        to perform before moving to {@link Thread#yield()}
+                 * @param maxYields       to perform before moving to {@link LockSupport#parkNanos(int64_t)}
+                 * @param minParkPeriodNs to use when initiating parking
+                 * @param maxParkPeriodNs to use when parking
+                 */
+                BackoffIdleStrategy(int64_t maxSpins, int64_t maxYields, int64_t minParkPeriodNs,
+                                    int64_t maxParkPeriodNs);
+
+                virtual bool idle(int64_t n);
+
+            private:
+                int64_t parkTime(int64_t n) const;
+
+                static const int ARG_COUNT = 5;
+                static const int ARG_MAX_SPINS = 1;
+                static const int ARG_MAX_YIELDS = 2;
+                static const int ARG_MIN_PARK_PERIOD = 3;
+                static const int ARG_MAX_PARK_PERIOD = 4;
+
+                int64_t yieldThreshold;
+                int64_t parkThreshold;
+                int64_t minParkPeriodNs;
+                int64_t maxParkPeriodNs;
+                int maxShift;
+
+            };
+        }
+    }
+}
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
+#endif //HAZELCAST_UTIL_CONCURRENT_BACKOFFIDLESTRATEGY_H_

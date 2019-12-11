@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@
 #define HAZELCAST_CONNECTION
 
 #include <memory>
+#include <ostream>
+#include <stdint.h>
+#include <boost/enable_shared_from_this.hpp>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
@@ -26,6 +29,7 @@
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Atomic.h"
 #include "hazelcast/util/Closeable.h"
+#include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
@@ -38,10 +42,13 @@
 
 namespace hazelcast {
     namespace client {
+        namespace exception {
+            class IException;
+        }
         namespace spi {
             class ClientContext;
 
-            class InvocationService;
+            class ClientInvocationService;
         }
 
         namespace internal {
@@ -57,71 +64,87 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable, public protocol::IMessageHandler {
+            class HAZELCAST_API Connection : public util::Closeable, public boost::enable_shared_from_this<Connection> {
             public:
-                Connection(const Address& address, spi::ClientContext& clientContext, InSelector& iListener,
-                           OutSelector& listener, internal::socket::SocketFactory &socketFactory, bool isOwner);
+                Connection(const Address& address, spi::ClientContext& clientContext, int connectionId, InSelector& iListener,
+                           OutSelector& listener, internal::socket::SocketFactory &socketFactory);
 
-                ~Connection();
-
-                void init(const std::vector<byte>& PROTOCOL);
+                virtual ~Connection();
 
                 void connect(int timeoutInMillis);
 
-                void close();
+                void close(const char *reason = NULL);
 
-                void write(protocol::ClientMessage *message);
+                void close(const char *reason, const boost::shared_ptr<exception::IException> &cause);
 
-                const Address& getRemoteEndpoint() const;
+                bool write(const boost::shared_ptr<protocol::ClientMessage> &message);
 
-                void setRemoteEndpoint(const Address& remoteEndpoint);
+                const boost::shared_ptr<Address> &getRemoteEndpoint() const;
+
+                void setRemoteEndpoint(const boost::shared_ptr<Address> &remoteEndpoint);
 
                 Socket& getSocket();
-
-                std::auto_ptr<protocol::ClientMessage> sendAndReceive(protocol::ClientMessage &clientMessage);
 
                 ReadHandler& getReadHandler();
 
                 WriteHandler& getWriteHandler();
 
-                void setAsOwnerConnection(bool isOwnerConnection);
+                bool isAuthenticatedAsOwner();
 
-                void writeBlocking(protocol::ClientMessage &packet);
+                void setIsAuthenticatedAsOwner();
 
-                std::auto_ptr<protocol::ClientMessage> readBlocking();
-
-                bool isHeartBeating();
-
-                void heartBeatingFailed();
-
-                void heartBeatingSucceed();
-
-                bool isOwnerConnection() const;
-
-                virtual void handleMessage(connection::Connection &connection, std::auto_ptr<protocol::ClientMessage> message);
+                virtual void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &message);
 
                 int getConnectionId() const;
 
-                void setConnectionId(int connectionId);
+                bool isAlive();
 
-                util::Atomic<time_t> lastRead;
-                util::AtomicBoolean live;
+                int64_t lastReadTimeMillis();
+
+                const std::string &getCloseReason() const;
+
+                bool operator==(const Connection &rhs) const;
+
+                bool operator!=(const Connection &rhs) const;
+
+                bool operator<(const Connection &rhs) const;
+
+                const std::string &getConnectedServerVersionString() const;
+
+                void setConnectedServerVersion(const std::string &connectedServerVersionString);
+
+                std::auto_ptr<Address> getLocalSocketAddress() const;
+
+                int getConnectedServerVersion() const;
+
+                int64_t getStartTimeInMillis() const;
+
+                friend std::ostream &operator<<(std::ostream &os, const Connection &connection);
+
             private:
+                void logClose();
+
+                void innerClose();
+
+                int64_t startTimeInMillis;
+                util::Atomic<int64_t> closedTimeMillis;
                 spi::ClientContext& clientContext;
-                spi::InvocationService& invocationService;
+                protocol::IMessageHandler &invocationService;
                 std::auto_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
-                bool _isOwnerConnection;
-                util::AtomicBoolean heartBeating;
-                byte* receiveBuffer;
-                util::ByteBuffer receiveByteBuffer;
-
-                protocol::ClientMessageBuilder messageBuilder;
-                protocol::ClientMessage wrapperMessage;
-                std::auto_ptr<protocol::ClientMessage> responseMessage;
+                util::AtomicBoolean authenticatedAsOwner;
 
                 int connectionId;
+                std::string closeReason;
+                boost::shared_ptr<exception::IException> closeCause;
+
+                std::string connectedServerVersionString;
+                int connectedServerVersion;
+
+                boost::shared_ptr<Address> remoteEndpoint;
+
+                util::ILogger &logger;
             };
         }
     }

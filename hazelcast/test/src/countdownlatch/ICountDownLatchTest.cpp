@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,34 @@
  */
 //
 // Created by sancar koyunlu on 9/5/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include <HazelcastServer.h>
 
-
-
-#include "ICountDownLatchTest.h"
+#include <ClientTestSupport.h>
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ICountDownLatch.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
+            class ICountDownLatchTest : public ClientTestSupport {
+            public:
+                ICountDownLatchTest();
+
+                ~ICountDownLatchTest();
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                HazelcastClient client;
+                std::auto_ptr<ICountDownLatch> l;
+            };
+
             ICountDownLatchTest::ICountDownLatchTest()
             : instance(*g_srvFactory)
-            , client(getNewClient())
-            , l(new ICountDownLatch(client->getICountDownLatch("ICountDownLatchTest"))) {
+            , client(getNewClient()), l(new ICountDownLatch(client.getICountDownLatch("ICountDownLatchTest"))) {
             }
 
             ICountDownLatchTest::~ICountDownLatchTest() {
@@ -45,7 +60,7 @@ namespace hazelcast {
                 ASSERT_FALSE(l->trySetCount(10));
                 ASSERT_EQ(20, l->getCount());
 
-                util::Thread t(testLatchThread, l.get());
+                util::StartedThread t(testLatchThread, l.get());
 
                 ASSERT_TRUE(l->await(10 * 1000));
 

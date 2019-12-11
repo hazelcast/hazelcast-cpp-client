@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-#include "hazelcast/client/proxy/RingbufferImpl.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
+#include "hazelcast/client/proxy/ClientRingbufferProxy.h"
+#include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
 
 namespace hazelcast {
     namespace client {
         namespace topic {
             namespace impl {
                 namespace reliable {
-                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb)
-                    : ringbuffer(rb), q(10), shutdown(false) {
+                    ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb, util::ILogger &logger)
+                    : ringbuffer(rb), runnerThread(boost::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
+                      q(10), shutdown(false) {
                     }
 
                     ReliableTopicExecutor::~ReliableTopicExecutor() {
@@ -31,9 +33,7 @@ namespace hazelcast {
                     }
 
                     void ReliableTopicExecutor::start() {
-                        if (NULL == runnerThread.get()) {
-                            runnerThread = std::auto_ptr<util::Thread>(new util::Thread(executerRun, &shutdown, &q, ringbuffer));
-                        }
+                        runnerThread.start();
                     }
 
                     void ReliableTopicExecutor::stop() {
@@ -46,50 +46,52 @@ namespace hazelcast {
                         m.callback = NULL;
                         m.sequence = -1;
                         execute(m);
-
-                        runnerThread->cancel();
-                        runnerThread->join();
-                        runnerThread.reset();
+                        runnerThread.join();
                     }
 
                     void ReliableTopicExecutor::execute(const Message &m) {
                         q.push(m);
                     }
 
-                    void ReliableTopicExecutor::executerRun(util::ThreadArgs &args) {
-                        util::AtomicBoolean *shutdownFlag = (util::AtomicBoolean *)args.arg0;
-                        util::BlockingConcurrentQueue<Message> *q = (util::BlockingConcurrentQueue<Message> *)args.arg1;
-                        Ringbuffer<topic::impl::reliable::ReliableTopicMessage> * rb = (Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *)args.arg2;
-
-                        while (!(*shutdownFlag)) {
-                            Message m = q->pop();
+                    void ReliableTopicExecutor::Task::run() {
+                        while (!shutdown) {
+                            Message m = q.pop();
                             if (CANCEL == m.type) {
                                 // exit the thread
                                 return;
                             }
                             try {
-                                proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *ringbuffer =
-                                        (proxy::RingbufferImpl<topic::impl::reliable::ReliableTopicMessage> *)rb;
-
-                                connection::CallFuture future = ringbuffer->readManyAsync(m.sequence, 1, m.maxCount);
-                                std::auto_ptr<protocol::ClientMessage> responseMsg;
+                                proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbuffer =
+                                        static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
+                                boost::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
+                                boost::shared_ptr<protocol::ClientMessage> responseMsg;
                                 do {
-                                    if (future.waitFor(1000)) {
-                                        responseMsg = future.get(); // every one second
+                                    if (future->get(1000, TimeUnit::MILLISECONDS())) {
+                                        responseMsg = future->get(); // every one second
                                     }
-                                } while (!(*shutdownFlag) && (protocol::ClientMessage *)NULL == responseMsg.get());
+                                } while (!shutdown && (protocol::ClientMessage *)NULL == responseMsg.get());
 
-                                if (!(*shutdownFlag)) {
-                                    std::auto_ptr<DataArray<ReliableTopicMessage> > allMessages = ringbuffer->getReadManyAsyncResponseObject(
-                                            responseMsg);
+                                if (!shutdown) {
+                                    boost::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(ringbuffer.getReadManyAsyncResponseObject(
+                                            responseMsg));
 
-                                    m.callback->onResponse(allMessages.get());
+                                    m.callback->onResponse(allMessages);
                                 }
-                            } catch (exception::ProtocolException &e) {
-                                m.callback->onFailure(&e);
+                            } catch (exception::IException &e) {
+                                m.callback->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
                             }
                         }
+
                     }
+
+                    const std::string ReliableTopicExecutor::Task::getName() const {
+                        return "ReliableTopicExecutor Task";
+                    }
+
+                    ReliableTopicExecutor::Task::Task(Ringbuffer<ReliableTopicMessage> &rb,
+                                                      util::BlockingConcurrentQueue<ReliableTopicExecutor::Message> &q,
+                                                      util::AtomicBoolean &shutdown) : rb(rb), q(q),
+                                                                                       shutdown(shutdown) {}
                 }
             }
         }

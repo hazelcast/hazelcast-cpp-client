@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,16 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class ClientMembershipEvent;
+            AbstractLoadBalancer::AbstractLoadBalancer(const AbstractLoadBalancer &rhs) {
+                *this = rhs;
+            }
+
+            void AbstractLoadBalancer::operator=(const AbstractLoadBalancer &rhs) {
+                util::LockGuard lg(const_cast<util::Mutex &>(rhs.membersLock));
+                util::LockGuard lg2(membersLock);
+                membersRef = rhs.membersRef;
+                cluster = rhs.cluster;
+            }
 
             void AbstractLoadBalancer::init(Cluster &cluster) {
                 this->cluster = &cluster;
@@ -45,9 +54,7 @@ namespace hazelcast {
                 setMembersRef();
             }
 
-
             void AbstractLoadBalancer::memberAttributeChanged(const MemberAttributeEvent &memberAttributeEvent) {
-
             }
 
             std::vector<Member>  AbstractLoadBalancer::getMembers() {
@@ -56,7 +63,13 @@ namespace hazelcast {
             }
 
             AbstractLoadBalancer::~AbstractLoadBalancer() {
+            }
 
+            AbstractLoadBalancer::AbstractLoadBalancer() : cluster(NULL) {
+            }
+
+            void AbstractLoadBalancer::init(const InitialMembershipEvent &event) {
+                setMembersRef();
             }
         }
     }

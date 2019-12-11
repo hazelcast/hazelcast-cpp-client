@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 06 June 2016.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "../ClientTestSupport.h"
+#include "../HazelcastServer.h"
+#include "../serialization/Employee.h"
 
 #include "hazelcast/client/ReliableTopic.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/util/ConcurrentQueue.h"
-
-#include "../HazelcastServerFactory.h"
-#include "../ClientTestSupport.h"
-#include "../HazelcastServer.h"
-#include "../serialization/Employee.h"
 
 namespace hazelcast {
     namespace client {
@@ -54,10 +56,6 @@ namespace hazelcast {
                     }
 
                     virtual ~GenericListener() {
-                        T *e = NULL;
-                        while ((e = objects.poll()) != NULL) {
-                            delete(e);
-                        }
                         topic::Message<T> *m = NULL;
                         while ((m = messages.poll()) != NULL) {
                             delete(m);
@@ -67,20 +65,9 @@ namespace hazelcast {
                     virtual void onMessage(std::auto_ptr<topic::Message<T> > message) {
                         ++numberOfMessagesReceived;
 
-                        const T *object = message->getMessageObject();
-                        std::ostringstream out;
-                        if (NULL != object) {
-                            out << "[GenericListener::onMessage] Received message: " << *message->getMessageObject() <<
-                            " for topic:" << message->getName();
-                        } else {
-                            out << "[GenericListener::onMessage] Received message with NULL object for topic:" << message->getName();
-                        }
-                        util::ILogger::getLogger().info(out.str());
-
-                        objects.offer(message->releaseMessageObject().release());
-                        latch.countDown();
-
                         messages.offer(message.release());
+
+                        latch.countDown();
                     }
 
                     virtual int64_t retrieveInitialSequence() const {
@@ -103,10 +90,6 @@ namespace hazelcast {
                         return value;
                     }
 
-                    util::ConcurrentQueue<T> &getObjects() {
-                        return objects;
-                    }
-
                     util::ConcurrentQueue<topic::Message<T> > &getMessages() {
                         return messages;
                     }
@@ -114,7 +97,6 @@ namespace hazelcast {
                     util::CountDownLatch &latch;
                     int64_t startSequence;
                     util::AtomicInt numberOfMessagesReceived;
-                    util::ConcurrentQueue<T> objects;
                     util::ConcurrentQueue<topic::Message<T> > messages;
                 };
 
@@ -139,28 +121,22 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
             };
 
             HazelcastServer *ReliableTopicTest::instance = NULL;
-            ClientConfig *ReliableTopicTest::clientConfig = NULL;
             HazelcastClient *ReliableTopicTest::client = NULL;
 
             TEST_F(ReliableTopicTest, testBasics) {
@@ -182,7 +158,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(2));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                Employee *employee = listener.getObjects().poll();
+                const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *)NULL, employee);
                 ASSERT_EQ(empl1, *employee);
 
@@ -209,7 +185,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(1));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                Employee *employee = listener.getObjects().poll();
+                const Employee *employee = listener.getMessages().poll()->getMessageObject();
                 ASSERT_NE((Employee *)NULL, employee);
                 ASSERT_EQ(empl2, *employee);
 
@@ -260,8 +236,8 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                int *val = listener.getObjects().poll();
-                ASSERT_EQ((int *)NULL, val);
+                const int *val = listener.getMessages().poll()->getMessageObject();
+                ASSERT_EQ((const int *)NULL, val);
             }
 
             TEST_F(ReliableTopicTest, publishMultiple) {
@@ -283,10 +259,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
-                    std::string *val = queue.poll();
-                    ASSERT_NE((std::string *)NULL, val);
+                    const std::string *val = queue.poll()->getMessageObject();
+                    ASSERT_NE((const std::string *)NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -317,10 +293,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(5, listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<std::string> &queue = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<std::string> > &queue = listener.getMessages();
                 for (int k = 0; k < 5; k++) {
-                    std::string *val = queue.poll();
-                    ASSERT_NE((std::string *)NULL, val);
+                    const std::string *val = queue.poll()->getMessageObject();
+                    ASSERT_NE((const std::string *)NULL, val);
                     ASSERT_EQ(items[k], *val);
                 }
             }
@@ -342,10 +318,10 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(5));
                 ASSERT_EQ(1, listener.getNumberOfMessagesReceived());
-                int *val = listener.getObjects().poll();
+                topic::Message<int> *message = listener.getMessages().poll();
+                const int *val = message->getMessageObject();
                 ASSERT_EQ(publishedValue, *val);
 
-                topic::Message<int> *message = listener.getMessages().poll();
                 ASSERT_LE(timeBeforePublish, message->getPublishTime());
                 ASSERT_GE(timeAfterPublish, message->getPublishTime());
                 ASSERT_EQ(intTopic->getName(), message->getSource());
@@ -371,7 +347,7 @@ namespace hazelcast {
                 expectedValues.push_back(6);
 
                 // spawn a thread for publishing new data
-                util::Thread t(publishTopics, intTopic.get(), &expectedValues);
+                util::StartedThread t(publishTopics, intTopic.get(), &expectedValues);
 
                 util::CountDownLatch latch(3);
                 IntListener listener(latch);
@@ -381,11 +357,11 @@ namespace hazelcast {
 
                 ASSERT_TRUE(latch.await(10));
                 ASSERT_EQ((int)expectedValues.size(), listener.getNumberOfMessagesReceived());
-                util::ConcurrentQueue<int> &objects = listener.getObjects();
+                util::ConcurrentQueue<topic::Message<int> > &objects = listener.getMessages();
 
                 for (std::vector<int>::const_iterator it = expectedValues.begin();it != expectedValues.end(); ++it) {
-                    int *val = objects.poll();
-                    ASSERT_NE((int *)NULL, val);
+                    std::auto_ptr<int> val = objects.poll()->releaseMessageObject();
+                    ASSERT_NE((int *)NULL, val.get());
                     ASSERT_EQ(*it, *val);
                 }
             }

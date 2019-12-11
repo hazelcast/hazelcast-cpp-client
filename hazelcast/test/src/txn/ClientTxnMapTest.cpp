@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,35 @@
  */
 //
 // Created by sancar koyunlu on 9/18/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
-
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 #include "hazelcast/client/query/SqlPredicate.h"
-#include "ClientTxnMapTest.h"
-#include "HazelcastServerFactory.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "serialization/Employee.h"
 
 namespace hazelcast {
     namespace client {
-
-        class HazelcastClient;
-
         namespace test {
-            ClientTxnMapTest::ClientTxnMapTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()) {
+            class ClientTxnMapTest : public ClientTestSupport {
+            public:
+                ClientTxnMapTest();
+
+                ~ClientTxnMapTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                HazelcastClient client;
+            };
+
+            ClientTxnMapTest::ClientTxnMapTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
             
             ClientTxnMapTest::~ClientTxnMapTest() {
@@ -41,32 +52,32 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testPutGet) {
                 std::string name = "testPutGet";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 context.commitTransaction();
 
-                ASSERT_EQ("value1", *(client->getMap<std::string, std::string>(name).get("key1")));
+                ASSERT_EQ("value1", *(client.getMap<std::string, std::string>(name).get("key1")));
             }
 
             TEST_F(ClientTxnMapTest, testRemove) {
                 std::string name = "testRemove";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
@@ -76,24 +87,21 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                IMap<std::string, std::string> regularMap = client.getMap<std::string, std::string>(name);
                 ASSERT_TRUE(regularMap.isEmpty());
             }
 
-            /**
-             * TODO: Enable this test when https://github.com/hazelcast/hazelcast/issues/8238 is solved
-             */
-            TEST_F(ClientTxnMapTest, DISABLED_testRemoveIfSame) {
+            TEST_F(ClientTxnMapTest, testRemoveIfSame) {
                 std::string name = "testRemoveIfSame";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
@@ -101,14 +109,14 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                IMap<std::string, std::string> regularMap = client.getMap<std::string, std::string>(name);
                 ASSERT_TRUE(regularMap.isEmpty());
             }
 
             TEST_F(ClientTxnMapTest, testDeleteEntry) {
                 std::string name = "testDeleteEntry";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
@@ -117,7 +125,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_NO_THROW(map.deleteEntry("key1"));
@@ -126,34 +134,34 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                IMap<std::string, std::string> regularMap = client.getMap<std::string, std::string>(name);
                 ASSERT_TRUE(regularMap.isEmpty());
             }
 
             TEST_F(ClientTxnMapTest, testReplace) {
                 std::string name = "testReplace";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ("value1", *map.replace("key1", "myNewValue"));
 
                 context.commitTransaction();
 
-                ASSERT_EQ("myNewValue", *(client->getMap<std::string, std::string>(name).get("key1")));
+                ASSERT_EQ("myNewValue", *(client.getMap<std::string, std::string>(name).get("key1")));
             }
 
             TEST_F(ClientTxnMapTest, testSet) {
                 std::string name = "testSet";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
@@ -164,7 +172,7 @@ namespace hazelcast {
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
-                val = client->getMap<std::string, std::string>(name).get("key1");
+                val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_NO_THROW(map.set("key1", "myNewValue"));
@@ -175,7 +183,7 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                val = client->getMap<std::string, std::string>(name).get("key1");
+                val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("myNewValue", *val);
             }
@@ -183,7 +191,7 @@ namespace hazelcast {
             TEST_F(ClientTxnMapTest, testContains) {
                 std::string name = "testContains";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
@@ -200,21 +208,21 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                IMap <std::string, std::string> regularMap = client->getMap<std::string, std::string>(name);
+                IMap<std::string, std::string> regularMap = client.getMap<std::string, std::string>(name);
                 ASSERT_TRUE(regularMap.containsKey("key1"));
             }
 
             TEST_F(ClientTxnMapTest, testReplaceIfSame) {
                 std::string name = "testReplaceIfSame";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_FALSE(map.replace("key1", "valueNonExistent", "myNewValue"));
@@ -222,13 +230,13 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                ASSERT_EQ("myNewValue", *(client->getMap<std::string, std::string>(name).get("key1")));
+                ASSERT_EQ("myNewValue", *(client.getMap<std::string, std::string>(name).get("key1")));
             }
 
             TEST_F(ClientTxnMapTest, testPutIfSame) {
                 std::string name = "testPutIfSame";
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
@@ -238,7 +246,7 @@ namespace hazelcast {
                 val = map.get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value1", *val);
-                val = client->getMap<std::string, std::string>(name).get("key1");
+                val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 val = map.putIfAbsent("key1", "value1");
@@ -247,7 +255,7 @@ namespace hazelcast {
 
                 context.commitTransaction();
 
-                val = client->getMap<std::string, std::string>(name).get("key1");
+                val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value1", *val);
             }
@@ -291,11 +299,11 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetValues) {
                 std::string name = "testKeySetValues";
-                IMap<std::string, std::string> map = client->getMap<std::string, std::string>(name);
+                IMap<std::string, std::string> map = client.getMap<std::string, std::string>(name);
                 map.put("key1", "value1");
                 map.put("key2", "value2");
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalMap<std::string, std::string> txMap = context.getMap<std::string, std::string>(name);
                 ASSERT_EQ(txMap.put("key3", "value3").get(), (std::string *)NULL);
@@ -314,14 +322,14 @@ namespace hazelcast {
 
             TEST_F(ClientTxnMapTest, testKeySetAndValuesWithPredicates) {
                 std::string name = "testKeysetAndValuesWithPredicates";
-                IMap<Employee, Employee> map = client->getMap<Employee, Employee>(name);
+                IMap<Employee, Employee> map = client.getMap<Employee, Employee>(name);
 
                 Employee emp1("abc-123-xvz", 34);
                 Employee emp2("abc-123-xvz", 20);
 
                 map.put(emp1, emp1);
 
-                TransactionContext context = client->newTransactionContext();
+                TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
 
                 TransactionalMap<Employee, Employee> txMap = context.getMap<Employee, Employee>(name);
@@ -341,6 +349,28 @@ namespace hazelcast {
                 ASSERT_EQ(2, (int)map.size());
                 ASSERT_EQ(2, (int)map.values().size());
             }
+
+            TEST_F(ClientTxnMapTest, testIsEmpty) {
+                std::string name = "testIsEmpty";
+
+                TransactionContext context = client.newTransactionContext();
+                context.beginTransaction();
+
+                TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
+
+                ASSERT_TRUE(map.isEmpty());
+
+                boost::shared_ptr<std::string> oldValue = map.put("key1", "value1");
+                ASSERT_NULL("old value should be null", oldValue.get(), std::string);
+
+                ASSERT_FALSE(map.isEmpty());
+
+                context.commitTransaction();
+
+                IMap<std::string, std::string> regularMap = client.getMap<std::string, std::string>(name);
+                ASSERT_FALSE(regularMap.isEmpty());
+            }
+
         }
     }
 }

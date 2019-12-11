@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
  */
 //
 // Created by ihsan demir on 24/03/16.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/query/SqlPredicate.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerTransactionalMap.h"
 
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
 #include "serialization/Employee.h"
 
@@ -32,28 +36,22 @@ namespace hazelcast {
             protected:
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                 }
 
                 static void TearDownTestCase() {
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
             };
 
             HazelcastServer *RawPointerClientTxnMapTest::instance = NULL;
-            ClientConfig *RawPointerClientTxnMapTest::clientConfig = NULL;
             HazelcastClient *RawPointerClientTxnMapTest::client = NULL;
 
             TEST_F(RawPointerClientTxnMapTest, testPutGet) {

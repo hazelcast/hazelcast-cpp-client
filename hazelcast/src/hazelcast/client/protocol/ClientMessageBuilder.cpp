@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-/*
- * ClientMessageBuilder.cpp
- *
- *  Created on: Apr 10, 2015
- *      Author: ihsan
- */
-
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
 #include "hazelcast/client/protocol/IMessageHandler.h"
 #include "hazelcast/util/ByteBuffer.h"
+#include "hazelcast/client/connection/Connection.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
-            ClientMessageBuilder::ClientMessageBuilder(IMessageHandler &service, connection::Connection &connection)
-            : messageHandler(service), connection(connection) {
+            ClientMessageBuilder::ClientMessageBuilder(connection::Connection &connection)
+                    : connection(connection) {
             }
 
             ClientMessageBuilder::~ClientMessageBuilder() {
-                for (MessageMap::iterator it = partialMessages.begin(); it != partialMessages.end(); ++it) {
-                    delete it->second;
-                }
             }
 
             bool ClientMessageBuilder::onData(util::ByteBuffer &buffer) {
@@ -43,8 +34,9 @@ namespace hazelcast {
 
                 if (NULL == message.get()) {
                     if (buffer.remaining() >= ClientMessage::HEADER_SIZE) {
-                        wrapperMessage.wrapForDecode((byte *) buffer.ix(), (int32_t) buffer.remaining(), false);
-                        frameLen = wrapperMessage.getFrameLength();
+                        util::Bits::littleEndianToNative4(
+                                ((byte *) buffer.ix()) + ClientMessage::FRAME_LENGTH_FIELD_OFFSET, &frameLen);
+
                         message = ClientMessage::create(frameLen);
                         offset = 0;
                     }
@@ -56,7 +48,7 @@ namespace hazelcast {
                     if (offset == frameLen) {
                         if (message->isFlagSet(ClientMessage::BEGIN_AND_END_FLAGS)) {
                             //MESSAGE IS COMPLETE HERE
-                            messageHandler.handleMessage(connection, message);
+                            connection.handleClientMessage(boost::shared_ptr<ClientMessage>(message));
                             isCompleted = true;
                         } else {
                             if (message->isFlagSet(ClientMessage::BEGIN_FLAG)) {
@@ -76,7 +68,7 @@ namespace hazelcast {
 
             void ClientMessageBuilder::addToPartialMessages(std::auto_ptr<ClientMessage> message) {
                 int64_t id = message->getCorrelationId();
-                partialMessages[id] = message.release();
+                partialMessages[id] = message;
             }
 
             bool ClientMessageBuilder::appendExistingPartialMessage(std::auto_ptr<ClientMessage> message) {
@@ -87,11 +79,11 @@ namespace hazelcast {
                     foundItemIter->second->append(message.get());
                     if (message->isFlagSet(ClientMessage::END_FLAG)) {
                         // remove from message from map
-                        std::auto_ptr<ClientMessage> foundMessage(foundItemIter->second);
+                        boost::shared_ptr<ClientMessage> foundMessage(foundItemIter->second);
 
                         partialMessages.erase(foundItemIter, foundItemIter);
 
-                        messageHandler.handleMessage(connection, foundMessage);
+                        connection.handleClientMessage(foundMessage);
 
                         result = true;
                     }
@@ -101,10 +93,6 @@ namespace hazelcast {
                 }
 
                 return result;
-            }
-
-            void ClientMessageBuilder::reset() {
-                message.reset(NULL);
             }
         }
     }

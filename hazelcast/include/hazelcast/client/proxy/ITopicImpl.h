@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,26 @@ namespace hazelcast {
                 virtual bool removeMessageListener(const std::string& registrationId);
 
             private:
+                class TopicListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    TopicListenerMessageCodec(const std::string &name);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                };
+
                 int partitionId;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
             };
         }
     }

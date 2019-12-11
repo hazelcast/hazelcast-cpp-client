@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,30 +20,19 @@
 #define HAZELCAST_DistributedObject
 
 #include "hazelcast/util/HazelcastDll.h"
-#include "hazelcast/client/impl/DistributedObjectInfo.h"
-#include "hazelcast/client/IDistributedObject.h"
 
 #include <string>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
+#pragma warning(disable: 4250) //for warning class1' : inherits 'class2::member' via dominance
 #endif
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            class BaseEventHandler;
-
-            class BaseRemoveListenerRequest;
-
-            class ClientRequest;
-        }
-
-        namespace serialization {
-            namespace pimpl {
-                class Data;
-            }
+            class HazelcastClientInstanceImpl;
         }
 
         /**
@@ -66,21 +55,21 @@ namespace hazelcast {
         * @see TransactionalSet
         * @see TransactionalList
         */
-        class HAZELCAST_API DistributedObject : public IDistributedObject {
-            friend class HazelcastClient;
+        class HAZELCAST_API DistributedObject {
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
             /**
             * Returns the service name for this object.
             */
-            const std::string& getServiceName() const;
+            virtual const std::string& getServiceName() const = 0;
 
             /**
             * Returns the unique name for this DistributedObject.
             *
             * @return the unique name for this object.
             */
-            const std::string& getName() const;
+            virtual const std::string& getName() const = 0;
 
             /**
             * Destroys this object cluster-wide.
@@ -91,20 +80,7 @@ namespace hazelcast {
             /**
             * Destructor
             */
-            virtual ~DistributedObject();
-
-        protected:
-            /**
-            * Constructor.
-            */
-            DistributedObject(const std::string& serviceName, const std::string& objectName);
-
-            /**
-            * method to be called when cluster-wide destroy method is called.
-            */
-            virtual void onDestroy();
-
-            impl::DistributedObjectInfo info;
+            virtual ~DistributedObject() {}
         };
 
     }

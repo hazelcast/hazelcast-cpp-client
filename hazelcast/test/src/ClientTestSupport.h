@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,14 @@
 #include <memory>
 #include <gtest/gtest.h>
 
-#include "hazelcast/util/Util.h"
+#include "ClientTestSupportBase.h"
+
+#include <hazelcast/util/ILogger.h>
+
+#define assertEquals ASSERT_EQ
+#define assertTrue ASSERT_TRUE
+#define assertFalse ASSERT_FALSE
+#define assertOpenEventually ASSERT_OPEN_EVENTUALLY
 
 namespace hazelcast {
     namespace client {
@@ -36,13 +43,17 @@ namespace hazelcast {
 
             extern HazelcastServerFactory *g_srvFactory;
 
-            class ClientTestSupport : public ::testing::Test {
+        class ClientTestSupport : public ClientTestSupportBase, public ::testing::Test {
+            public:
+                ClientTestSupport();
+
             protected:
-                static std::string getCAFilePath();
+                util::ILogger &getLogger();
+                const std::string &getTestName() const;
 
-                static std::auto_ptr<hazelcast::client::ClientConfig> getConfig();
-
-                static std::auto_ptr<HazelcastClient> getNewClient();
+            private:
+                boost::shared_ptr<hazelcast::util::ILogger> logger;
+                std::string testName;
             };
         }
     }

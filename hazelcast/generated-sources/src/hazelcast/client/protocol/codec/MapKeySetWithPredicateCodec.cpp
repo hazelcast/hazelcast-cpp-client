@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapKeySetWithPredicateCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapKeySetWithPredicateCodec::RequestParameters::TYPE = HZ_MAP_KEYSETWITHPREDICATE;
-                const bool MapKeySetWithPredicateCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapKeySetWithPredicateCodec::ResponseParameters::TYPE = 106;
-                std::auto_ptr<ClientMessage> MapKeySetWithPredicateCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const MapMessageType MapKeySetWithPredicateCodec::REQUEST_TYPE = HZ_MAP_KEYSETWITHPREDICATE;
+                const bool MapKeySetWithPredicateCodec::RETRYABLE = true;
+                const ResponseMessageConst MapKeySetWithPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
+
+                std::auto_ptr<ClientMessage> MapKeySetWithPredicateCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapKeySetWithPredicateCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapKeySetWithPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(predicate);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapKeySetWithPredicateCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t MapKeySetWithPredicateCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -49,21 +50,17 @@ namespace hazelcast {
                 }
 
                 MapKeySetWithPredicateCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapKeySetWithPredicateCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getArray<serialization::pimpl::Data >();
+
+                    response = clientMessage.getArray<serialization::pimpl::Data>();
+
                 }
 
-                MapKeySetWithPredicateCodec::ResponseParameters MapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapKeySetWithPredicateCodec::ResponseParameters
+                MapKeySetWithPredicateCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapKeySetWithPredicateCodec::ResponseParameters(clientMessage);
                 }
 
-                MapKeySetWithPredicateCodec::ResponseParameters::ResponseParameters(const MapKeySetWithPredicateCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

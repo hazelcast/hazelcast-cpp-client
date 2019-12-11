@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ namespace hazelcast {
         class HAZELCAST_API CountDownLatch {
         public:
             static const size_t CHECK_INTERVAL = 100; //msecs
+            static const size_t MILLISECONDS_IN_A_SECOND = 1000;
 
             CountDownLatch(int count);
 
@@ -45,9 +46,9 @@ namespace hazelcast {
 
             bool await(int seconds);
 
-            bool awaitMillis(size_t milliseconds);
+            bool awaitMillis(int64_t milliseconds);
 
-            bool awaitMillis(size_t milliseconds, size_t &elapsed);
+            bool awaitMillis(int64_t milliseconds, int64_t &elapsed);
 
             void await();
 
@@ -60,7 +61,6 @@ namespace hazelcast {
 
         private:
             util::AtomicInt count;
-            static const size_t MILLISECONDS_IN_A_SECOND = 1000;
             static const size_t HZ_INFINITE = UINT_MAX;
         };
 
@@ -68,7 +68,7 @@ namespace hazelcast {
         public:
             CountDownLatchWaiter &add(CountDownLatch &latch);
 
-            bool awaitMillis(size_t milliseconds);
+            bool awaitMillis(int64_t milliseconds);
 
             void reset();
         private:

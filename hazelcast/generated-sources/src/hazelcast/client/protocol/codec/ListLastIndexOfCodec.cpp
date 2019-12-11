@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListLastIndexOfCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListLastIndexOfCodec::RequestParameters::TYPE = HZ_LIST_LASTINDEXOF;
-                const bool ListLastIndexOfCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ListLastIndexOfCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> ListLastIndexOfCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const ListMessageType ListLastIndexOfCodec::REQUEST_TYPE = HZ_LIST_LASTINDEXOF;
+                const bool ListLastIndexOfCodec::RETRYABLE = true;
+                const ResponseMessageConst ListLastIndexOfCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> ListLastIndexOfCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListLastIndexOfCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListLastIndexOfCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListLastIndexOfCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t ListLastIndexOfCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,21 +51,17 @@ namespace hazelcast {
                 }
 
                 ListLastIndexOfCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListLastIndexOfCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                ListLastIndexOfCodec::ResponseParameters ListLastIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListLastIndexOfCodec::ResponseParameters
+                ListLastIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListLastIndexOfCodec::ResponseParameters(clientMessage);
                 }
 
-                ListLastIndexOfCodec::ResponseParameters::ResponseParameters(const ListLastIndexOfCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

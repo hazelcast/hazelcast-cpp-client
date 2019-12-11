@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,49 +14,41 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/LockForceUnlockCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const LockMessageType LockForceUnlockCodec::RequestParameters::TYPE = HZ_LOCK_FORCEUNLOCK;
-                const bool LockForceUnlockCodec::RequestParameters::RETRYABLE = false;
-                const int32_t LockForceUnlockCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> LockForceUnlockCodec::RequestParameters::encode(
-                        const std::string &name) {
-                    int32_t requiredDataSize = calculateDataSize(name);
+                const LockMessageType LockForceUnlockCodec::REQUEST_TYPE = HZ_LOCK_FORCEUNLOCK;
+                const bool LockForceUnlockCodec::RETRYABLE = true;
+                const ResponseMessageConst LockForceUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> LockForceUnlockCodec::encodeRequest(
+                        const std::string &name,
+                        int64_t referenceId) {
+                    int32_t requiredDataSize = calculateDataSize(name, referenceId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)LockForceUnlockCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) LockForceUnlockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
+                    clientMessage->set(referenceId);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t LockForceUnlockCodec::RequestParameters::calculateDataSize(
-                        const std::string &name) {
+                int32_t LockForceUnlockCodec::calculateDataSize(
+                        const std::string &name,
+                        int64_t referenceId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
+                    dataSize += ClientMessage::calculateDataSize(referenceId);
                     return dataSize;
                 }
 
-                LockForceUnlockCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("LockForceUnlockCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                LockForceUnlockCodec::ResponseParameters LockForceUnlockCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return LockForceUnlockCodec::ResponseParameters(clientMessage);
-                }
-
-                LockForceUnlockCodec::ResponseParameters::ResponseParameters(const LockForceUnlockCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

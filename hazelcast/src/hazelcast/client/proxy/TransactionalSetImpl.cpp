@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,24 +37,24 @@ namespace hazelcast {
 
             bool TransactionalSetImpl::add(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetAddCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), e);
+                        protocol::codec::TransactionalSetAddCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalSetAddCodec::ResponseParameters>(request);
             }
 
             bool TransactionalSetImpl::remove(const serialization::pimpl::Data& e) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetRemoveCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), e);
+                        protocol::codec::TransactionalSetRemoveCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), e);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalSetRemoveCodec::ResponseParameters>(request);
             }
 
             int TransactionalSetImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalSetSizeCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId());
+                        protocol::codec::TransactionalSetSizeCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalSetSizeCodec::ResponseParameters>(request);
             }

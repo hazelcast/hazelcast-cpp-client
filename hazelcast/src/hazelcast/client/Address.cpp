@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "hazelcast/client/Address.h"
+#include "hazelcast/util/AddressUtil.h"
 #include "hazelcast/client/cluster/impl/ClusterDataSerializerHook.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -30,6 +31,10 @@ namespace hazelcast {
 
         Address::Address(const std::string &url, int port)
         : host(url), port(port), type(IPV4) {
+        }
+
+        Address::Address(const std::string &hostname, int port,  unsigned long scopeId) : host(hostname), port(port),
+                                                                                         type(IPV6), scopeId(scopeId) {
         }
 
         bool Address::operator ==(const Address &rhs) const {
@@ -76,17 +81,38 @@ namespace hazelcast {
             }
         }
 
-        bool addressComparator::operator ()(const Address &lhs, const Address &rhs) const {
-            int i = lhs.getHost().compare(rhs.getHost());
-            if (i == 0) {
-                return lhs.getPort() > rhs.getPort();
+        bool Address::operator<(const Address &rhs) const {
+            if (host < rhs.host) {
+                return true;
             }
-            return i > 0;
+            if (rhs.host < host) {
+                return false;
+            }
+            if (port < rhs.port) {
+                return true;
+            }
+            if (rhs.port < port) {
+                return false;
+            }
+            return type < rhs.type;
+        }
 
+        bool Address::isIpV4() const {
+            return type == IPV4;
+        }
+
+        unsigned long Address::getScopeId() const {
+            return scopeId;
+        }
+
+        std::string Address::toString() const {
+            std::ostringstream out;
+            out << "Address[" << getHost() << ":" << getPort() << "]";
+            return out.str();
         }
 
         std::ostream &operator <<(std::ostream &stream, const Address &address) {
-            return stream << "Address[" << address.getHost() << ":" << address.getPort() << "]";
+            return stream << address.toString();
         }
 
     }

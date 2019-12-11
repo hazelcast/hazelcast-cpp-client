@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "hazelcast/client/Member.h"
+#include "hazelcast/client/TypedData.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -115,13 +116,21 @@ namespace hazelcast {
             , mergingValue(mergingValue) {
             }
 
+            EntryEvent(const std::string &name, const Member &member, EntryEventType eventType)
+                    : name(name)
+                    , member(member)
+                    , eventType(eventType) {
+            }
+
+            virtual ~EntryEvent() {}
+
             /**
              *
              * Returns the key of the entry event
              *
              * @return the key
              */
-            const K *getKeyObject() const {
+            virtual const K *getKeyObject() const {
                 return key.get();
             }
 
@@ -145,7 +154,7 @@ namespace hazelcast {
              * @return the key
              */
             const K &getKey() const {
-                return *key;
+                return *getKeyObject();
             }
 
             /**
@@ -153,7 +162,7 @@ namespace hazelcast {
              *
              * @return The older value for the entry
              */
-            const V *getOldValueObject() const {
+            virtual const V *getOldValueObject() const {
                 return oldValue.get();
             }
 
@@ -178,7 +187,7 @@ namespace hazelcast {
              * @return The older value for the entry
              */
             const V &getOldValue() const {
-                return *oldValue;
+                return *getOldValueObject();
             }
 
             /**
@@ -186,7 +195,7 @@ namespace hazelcast {
              *
              * @return The value for the entry
              */
-            const V *getValueObject() const {
+            virtual const V *getValueObject() const {
                 return value.get();
             }
 
@@ -211,7 +220,7 @@ namespace hazelcast {
              * @return The value of for the entry
              */
             const V &getValue() const {
-                return *value;
+                return *getValueObject();
             }
 
             /**
@@ -219,7 +228,7 @@ namespace hazelcast {
             *
             * @return The merging value
             */
-            const V *getMergingValueObject() const {
+            virtual const V *getMergingValueObject() const {
                 return mergingValue.get();
             }
 
@@ -244,7 +253,7 @@ namespace hazelcast {
             * @return merging value
             */
             const V &getMergingValue() const {
-                return *mergingValue;
+                return *getMergingValueObject();
             }
 
             /**
@@ -270,13 +279,13 @@ namespace hazelcast {
              *
              * @return name of the map.
              */
-            std::string &getName() const {
+            const std::string &getName() const {
                 return name;
             };
 
             std::ostream &operator<< (std::ostream &out) const {
-                out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
-                ", member=" << member << ", name='" << name << "', key=" << *key;
+                out << "EntryEvent{entryEventType=" << eventType <<
+                    ", member=" << member << ", name='" << name << "', key=" << *key;
                 if (value.get()) {
                     out << ", value=" << *value;
                 }
@@ -288,7 +297,7 @@ namespace hazelcast {
                 }
                 return out;
             }
-        private:
+        protected:
             std::string name;
             Member member;
             EntryEventType eventType;
@@ -298,6 +307,118 @@ namespace hazelcast {
             std::auto_ptr<V> mergingValue;
 
         };
+
+        namespace mixedtype {
+            class HAZELCAST_API MixedEntryEvent {
+            public:
+                /**
+                 * Constructor
+                 */
+                MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                                TypedData key, TypedData value)
+                        : name(name)
+                        , member(member)
+                        , eventType(eventType)
+                        , key(key)
+                        , value(value) {
+                }
+
+                /**
+                 * Constructor
+                 */
+                MixedEntryEvent(const std::string &name, const Member &member, EntryEventType eventType,
+                                TypedData key, TypedData value,
+                                TypedData oldValue, TypedData mergingValue)
+                        : name(name)
+                        , member(member)
+                        , eventType(eventType)
+                        , key(key)
+                        , value(value)
+                        , oldValue(new TypedData(oldValue))
+                        , mergingValue(new TypedData(mergingValue)) {
+                }
+
+                /**
+                 *
+                 * Returns the key of the entry event
+                 *
+                 * @return the key
+                 */
+                const TypedData &getKey() const {
+                    return key;
+                }
+
+                /**
+                 *
+                 * Returns the old value of the entry event
+                 *
+                 * @return The older value for the entry
+                 */
+                const TypedData *getOldValue() const {
+                    return oldValue.get();
+                }
+
+                /**
+                 *
+                 * Returns the value of the entry event
+                 *
+                 * @return The value of for the entry
+                 */
+                const TypedData &getValue() const {
+                    return value;
+                }
+
+                /**
+                * Returns the incoming merging value of the entry event.
+                *
+                * @return The merging value
+                */
+                const TypedData *getMergingValue() const {
+                    return mergingValue.get();
+                }
+
+                /**
+                 * Returns the member fired this event.
+                 *
+                 * @return the member fired this event.
+                 */
+                const Member &getMember() const {
+                    return member;
+                };
+
+                /**
+                 * Return the event type
+                 *
+                 * @return event type
+                 */
+                EntryEventType getEventType() const {
+                    return eventType;
+                };
+
+                /**
+                 * Returns the name of the map for this event.
+                 *
+                 * @return name of the map.
+                 */
+                const std::string &getName() const {
+                    return name;
+                };
+
+                std::ostream &operator<< (std::ostream &out) const {
+                    out << "EntryEvent{entryEventType=" << eventType.value << eventType <<
+                        ", member=" << member << ", name='" << name;
+                    return out;
+                }
+            private:
+                std::string name;
+                Member member;
+                EntryEventType eventType;
+                TypedData key;
+                TypedData value;
+                std::auto_ptr<TypedData> oldValue;
+                std::auto_ptr<TypedData> mergingValue;
+            };
+        }
     }
 }
 

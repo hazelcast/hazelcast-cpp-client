@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,102 +20,129 @@
 
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
-#include "hazelcast/util/LockGuard.h"
-
-#include <stdio.h>
-#include <iostream>
-#include <time.h>
-#include <assert.h>
 
 namespace hazelcast {
     namespace util {
+        ILogger::ILogger(const std::string &instanceName, const std::string &groupName, const std::string &version,
+                const client::config::LoggerConfig &loggerConfig)
+                : instanceName(instanceName), groupName(groupName), version(version), loggerConfig(loggerConfig) {
+            std::stringstream out;
+            out << instanceName << "[" << groupName << "] [" << HAZELCAST_VERSION << "]";
+            prefix = out.str();
 
-#define TIME_STRING_LENGTH 25
+            easyLogger = easyloggingpp::Loggers::getLogger(instanceName);
 
-        ILogger& ILogger::getLogger() {
-            static ILogger singleton;
-            return singleton;
-        }
-
-        ILogger::ILogger() : HazelcastLogLevel(client::INFO) {
+            init();
         }
 
         ILogger::~ILogger() {
         }
 
-        void ILogger::setLogLevel(int logLevel) {
-            HazelcastLogLevel = logLevel;
-        }
-
-        void ILogger::severe(const std::string& message) {
-            if (isEnabled(client::SEVERE)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                // Due to the problem faced in Linux environment which is described
-                // in https://gcc.gnu.org/ml/gcc/2003-12/msg00743.html, we could not use
-                // std::cout here. outstream flush() function in stdlib 3.4.4 does not handle pthread_cancel call
-                // appropriately.
-                printf("%s SEVERE: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
-        }
-
-        void ILogger::warning(const std::string& message) {
-            if (isEnabled(client::WARNING)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s WARNING: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
-        }
-
-        void ILogger::info(const std::string& message) {
-            if (isEnabled(client::INFO)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s INFO: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
-        }
-
-
-        void ILogger::finest(const std::string& message) {
-            if (isEnabled(client::FINEST)) {
-                char buffer [TIME_STRING_LENGTH];
-                util::LockGuard l(lockMutex);
-                printf("%s FINEST: %s [%ld] %s\n", getTime(buffer, TIME_STRING_LENGTH), prefix.c_str(), util::getThreadId(), message.c_str());
-                fflush(stdout);
-            }
-        }
-
-        void ILogger::setPrefix(const std::string& prefix) {
-            this->prefix = prefix;
-        }
-
-        bool ILogger::isEnabled(int logLevel) const {
-            return logLevel >= HazelcastLogLevel;
-        }
-
-        const char *ILogger::getTime(char *buffer, size_t length) const {
-            time_t rawtime;
-            struct tm timeinfo;
-
-            time (&rawtime);
-            int timeResult = hazelcast::util::localtime (&rawtime, &timeinfo);
-            assert(0 == timeResult);
-
-            if (0 == timeResult) { // this if is needed for release build
-                if (0 == strftime (buffer, length, "%b %d, %Y %I:%M:%S %p", &timeinfo)) {
-                    buffer[0] = '\0'; // In case the strftime fails, just return an empty string
-                }
+        void ILogger::init() {
+            std::string configurationFileName = loggerConfig.getConfigurationFileName();
+            if (!configurationFileName.empty()) {
+                easyloggingpp::Configurations confFromFile(configurationFileName);
+                easyloggingpp::Loggers::reconfigureLogger(easyLogger, confFromFile);
+                return;
             }
 
-            // TODO: Change to thread specific stored buffer
-            return buffer;
+            easyloggingpp::Configurations defaultConf;
+
+            defaultConf.setAll(easyloggingpp::ConfigurationType::Format,
+                    std::string("%datetime %level: [%thread] ") + prefix + " %log");
+
+            defaultConf.setAll(easyloggingpp::ConfigurationType::ToStandardOutput, "true");
+
+            defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "false");
+
+            // Disable all levels first and then enable the desired levels
+            defaultConf.setAll(easyloggingpp::ConfigurationType::Enabled, "false");
+
+            client::LoggerLevel::Level logLevel = loggerConfig.getLogLevel();
+            if (logLevel <= client::LoggerLevel::FINEST) {
+                defaultConf.set(easyloggingpp::Level::Debug, easyloggingpp::ConfigurationType::Enabled, "true");
+            }
+            if (logLevel <= client::LoggerLevel::INFO) {
+                defaultConf.set(easyloggingpp::Level::Info, easyloggingpp::ConfigurationType::Enabled, "true");
+            }
+            if (logLevel <= client::LoggerLevel::WARNING) {
+                defaultConf.set(easyloggingpp::Level::Warning, easyloggingpp::ConfigurationType::Enabled, "true");
+            }
+            if (logLevel <= client::LoggerLevel::SEVERE) {
+                defaultConf.set(easyloggingpp::Level::Fatal, easyloggingpp::ConfigurationType::Enabled, "true");
+            }
+            easyloggingpp::Loggers::reconfigureLogger(easyLogger, defaultConf);
+        }
+
+        void ILogger::severe(const std::string &message) {
+            CFATAL(instanceName) << message;
+        }
+
+        void ILogger::warning(const std::string &message) {
+            CWARNING(instanceName) << message;
+        }
+
+        void ILogger::info(const std::string &message) {
+            CINFO(instanceName) << message;
+        }
+
+        void ILogger::finest(const std::string &message) {
+            CDEBUG(instanceName) << message;
+        }
+
+        LeveledLogger ILogger::finest() {
+            return LeveledLogger(*this, client::LoggerLevel::FINEST);
+        }
+
+        LeveledLogger ILogger::info() {
+            return LeveledLogger(*this, client::LoggerLevel::INFO);
+        }
+
+        LeveledLogger ILogger::warning() {
+            return LeveledLogger(*this, client::LoggerLevel::WARNING);
+        }
+
+        LeveledLogger ILogger::severe() {
+            return LeveledLogger(*this, client::LoggerLevel::SEVERE);
+        }
+
+        bool ILogger::isEnabled(const client::LoggerLevel::Level &logLevel) const {
+            return logLevel >= this->loggerConfig.getLogLevel();
+        }
+
+        bool ILogger::isEnabled(int level) const {
+            return isEnabled(static_cast<client::LoggerLevel::Level>(level));
         }
 
         bool ILogger::isFinestEnabled() const {
-            return isEnabled(client::FINEST);
+            return isEnabled(client::LoggerLevel::FINEST);
+        }
+
+        LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
+                                                                                             requestedLogLevel(
+                                                                                                     logLevel) {
+        }
+
+        LeveledLogger::~LeveledLogger() {
+            switch (requestedLogLevel) {
+                case client::LoggerLevel::FINEST:
+                    CDEBUG(logger.instanceName) << out.str();
+                    break;
+                case client::LoggerLevel::INFO:
+                    CINFO(logger.instanceName) << out.str();
+                    break;
+                case client::LoggerLevel::WARNING:
+                    CWARNING(logger.instanceName) << out.str();
+                    break;
+                case client::LoggerLevel::SEVERE:
+                    CFATAL(logger.instanceName) << out.str();
+                    break;
+            }
+        }
+
+        LeveledLogger::LeveledLogger(const LeveledLogger &rhs) : logger(rhs.logger),
+                                                                 requestedLogLevel(rhs.requestedLogLevel) {
+            out << out.str();
         }
     }
 }

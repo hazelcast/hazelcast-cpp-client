@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,7 @@
 #include "hazelcast/util/HazelcastDll.h"
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/connection/CallFuture.h"
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
@@ -46,8 +44,6 @@ namespace hazelcast {
 
         namespace spi {
             class ClientContext;
-
-            class ClusterService;
         }
 
         namespace serialization {
@@ -56,9 +52,11 @@ namespace hazelcast {
             }
         }
 
-        namespace txn {
-            class BaseTxnRequest;
+        namespace protocol {
+            class ClientMessage;
+        }
 
+        namespace txn {
             class HAZELCAST_API TxnState {
             public:
                 enum State {
@@ -87,6 +85,8 @@ namespace hazelcast {
 
                 TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
 
+                TransactionProxy(const TransactionProxy &rhs);
+
                 const std::string &getTxnId() const;
 
                 TxnState getState() const;
@@ -101,28 +101,28 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService& getSerializationService();
 
-                spi::InvocationService& getInvocationService();
-
                 boost::shared_ptr<connection::Connection> getConnection();
+
+                spi::ClientContext &getClientContext() const;
 
             private:
                 TransactionOptions& options;
                 spi::ClientContext& clientContext;
                 boost::shared_ptr<connection::Connection> connection;
 
-                long threadId;
+                util::AtomicBoolean TRANSACTION_EXISTS;
+
+                int64_t threadId;
                 std::string txnId;
 
                 TxnState state;
-                time_t startTime;
-
-                void onTxnEnd();
+                int64_t startTime;
 
                 void checkThread();
 
                 void checkTimeout();
 
-                std::auto_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
             };
         }
     }

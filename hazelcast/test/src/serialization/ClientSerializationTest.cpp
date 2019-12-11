@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 // Created by sancar koyunlu on 8/27/13.
 
 #include <stdint.h>
+#include <gtest/gtest.h>
+#include <TestHelperFunctions.h>
 
 #include "customSerialization/TestCustomSerializerX.h"
 #include "customSerialization/TestCustomXSerializable.h"
@@ -31,28 +33,57 @@
 #include "serialization/ObjectCarryingPortable.h"
 #include "serialization/TestInnerPortable.h"
 #include "serialization/TestMainPortable.h"
+#include "TestNamedPortableV3.h"
+
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "serialization/ClientSerializationTest.h"
 #include "hazelcast/client/SerializationConfig.h"
 #include "hazelcast/util/MurmurHash3.h"
-#include "TestNamedPortableV3.h"
 
 namespace hazelcast {
     namespace client {
         namespace test {
-            static const unsigned int LARGE_ARRAY_SIZE =
-                    5 * 1024 * 1024;   // 5 MB. Previously it was 10 MB but then the
-            // test fails when using Windows 32-bit DLL
-            // library with std::bad_alloc with 10 MB
+            class ClientSerializationTest : public ::testing::Test {
+            protected:
+                class NonSerializableObject {};
+
+                class DummyGlobalSerializer : public serialization::StreamSerializer {
+                public:
+                    virtual int32_t getHazelcastTypeId() const {
+                        return 123;
+                    }
+
+                    virtual void write(serialization::ObjectDataOutput &out, const void *object) {
+                        std::string value("Dummy string");
+                        out.writeUTF(&value);
+                    }
+
+                    virtual void *read(serialization::ObjectDataInput &in) {
+                        return in.readUTF().release();
+                    }
+                };
+
+                template<typename T>
+                T toDataAndBackToObject(serialization::pimpl::SerializationService& ss, T& value) {
+                    serialization::pimpl::Data data = ss.toData<T>(&value);
+                    return *(ss.toObject<T>(data));
+                }
+
+                static const unsigned int LARGE_ARRAY_SIZE;
+            };
+
+            const unsigned int ClientSerializationTest::LARGE_ARRAY_SIZE =
+                    1 * 1024 * 1024;   // 1 MB. Previously it was 10 MB but then the
+                                        // test fails when using Windows 32-bit DLL
+                                        // library with std::bad_alloc with 10 MB
 
             TEST_F(ClientSerializationTest, testCustomSerialization) {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
                 serialization::pimpl::SerializationService serializationService(serializationConfig);
 
-                boost::shared_ptr<serialization::SerializerBase> serializer1(
+                boost::shared_ptr<serialization::StreamSerializer> serializer1(
                         new TestCustomSerializerX<TestCustomXSerializable>());
-                boost::shared_ptr<serialization::SerializerBase> serializer2(new TestCustomPersonSerializer());
+                boost::shared_ptr<serialization::StreamSerializer> serializer2(new TestCustomPersonSerializer());
 
                 serializationService.registerSerializer(serializer1);
                 serializationService.registerSerializer(serializer2);
@@ -106,6 +137,42 @@ namespace hazelcast {
                 ASSERT_EQ(x, y);
             }
 
+            TEST_F(ClientSerializationTest, testIdentifiedDataSerializableWithFactory) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serializationConfig.addDataSerializableFactory(TestSerializationConstants::TEST_DATA_FACTORY,
+                                                               boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                       new TestDataSerializableFactory()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                serialization::pimpl::Data data;
+                TestDataSerializable np(4, 'k');
+                data = serializationService.toData<TestDataSerializable>(&np);
+
+                std::auto_ptr<TestDataSerializable> tnp1;
+                tnp1 = serializationService.toObject<TestDataSerializable>(data);
+                ASSERT_EQ(np, *tnp1);
+            }
+
+            TEST_F(ClientSerializationTest, testPortableWithFactory) {
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serializationConfig.addPortableFactory(TestSerializationConstants::TEST_PORTABLE_FACTORY,
+                                                               boost::shared_ptr<serialization::PortableFactory>(
+                                                                       new TestDataPortableFactory()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                char charA[] = "test chars";
+                std::vector<char> chars(charA, charA + 10);
+                std::vector<byte> bytes;
+                bytes.resize(5, 0);
+                TestNamedPortable np("named portable", 34567);
+                TestDataSerializable ds(123, 's');
+                TestRawDataPortable p(123213, chars, np, 22, "Testing raw portable", ds);
+                serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
+
+                std::auto_ptr<TestRawDataPortable> object = serializationService.toObject<TestRawDataPortable>(data);
+                ASSERT_EQ(p, *object);
+            }
+
             TEST_F(ClientSerializationTest, testRawDataWithoutRegistering) {
                 SerializationConfig serializationConfig;
                 serializationConfig.setPortableVersion(1);
@@ -121,9 +188,7 @@ namespace hazelcast {
                 serialization::pimpl::Data data = serializationService.toData<TestRawDataPortable>(&p);
                 std::auto_ptr<TestRawDataPortable> x = serializationService.toObject<TestRawDataPortable>(data);
                 ASSERT_EQ(p, *x);
-
             }
-
 
             TEST_F(ClientSerializationTest, testInvalidWrite) {
                 SerializationConfig serializationConfig;
@@ -377,7 +442,6 @@ namespace hazelcast {
                 ASSERT_EQ(main, *tmp2);
             }
 
-
             TEST_F(ClientSerializationTest, testTemplatedPortable_whenMultipleTypesAreUsed) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
@@ -433,6 +497,8 @@ namespace hazelcast {
                 char charArray[] = {'c', 'h', 'a', 'r'};
                 std::vector<char> cc(charArray, charArray + 4);
                 bool boolArray[] = {true, false, false, true};
+                byte byteArray[] = {0, 1, 2};
+                std::vector<byte> bb(byteArray, byteArray + 3);
                 std::vector<bool> ba(boolArray, boolArray + 4);
                 int16_t shortArray[] = {3, 4, 5};
                 std::vector<int16_t> ss(shortArray, shortArray + 3);
@@ -452,6 +518,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(cc, toDataAndBackToObject<std::vector<char> >(serializationService, cc));
                 ASSERT_EQ(ba, toDataAndBackToObject<std::vector<bool> >(serializationService, ba));
+                ASSERT_EQ(bb, toDataAndBackToObject<std::vector<byte> >(serializationService, bb));
                 ASSERT_EQ(ss, toDataAndBackToObject<std::vector<int16_t> >(serializationService, ss));
                 ASSERT_EQ(ii, toDataAndBackToObject<std::vector<int32_t> >(serializationService, ii));
                 ASSERT_EQ(ll, toDataAndBackToObject<std::vector<int64_t> >(serializationService, ll));
@@ -490,7 +557,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomXSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(
+                boost::shared_ptr<serialization::StreamSerializer> serializer(
                         new TestCustomSerializerX<TestCustomXSerializable>());
 
                 ss.registerSerializer(serializer);
@@ -507,7 +574,7 @@ namespace hazelcast {
             TEST_F(ClientSerializationTest, testWriteObjectWithCustomPersonSerializable) {
                 SerializationConfig serializationConfig;
                 serialization::pimpl::SerializationService ss(serializationConfig);
-                boost::shared_ptr<serialization::SerializerBase> serializer(new TestCustomPersonSerializer());
+                boost::shared_ptr<serialization::StreamSerializer> serializer(new TestCustomPersonSerializer());
 
                 ss.registerSerializer(serializer);
 
@@ -548,11 +615,12 @@ namespace hazelcast {
             }
 
             TEST_F(ClientSerializationTest, ObjectDataInputOutput) {
-                serialization::pimpl::SerializationConstants constants;
-                serialization::pimpl::PortableContext context(1, constants);
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
 
                 serialization::pimpl::DataOutput dataOutput;
-                serialization::ObjectDataOutput out(dataOutput, context);
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
 
                 byte by = 2;
                 bool boolean = true;
@@ -616,10 +684,13 @@ namespace hazelcast {
                 out.writeObject<double>(&d);
                 out.writeObject<std::string>(&str);
                 out.writeObject<std::string>(&utfStr);
+                out.writeInt(5);
+                out.writeUTF(NULL);
+                out.writeUTFArray(NULL);
 
                 std::auto_ptr<std::vector<byte> > buffer = dataOutput.toByteArray();
                 serialization::pimpl::DataInput dataInput(*buffer);
-                serialization::ObjectDataInput in(dataInput, context);
+                serialization::ObjectDataInput in(dataInput, serializationService.getSerializerHolder());
 
                 ASSERT_EQ(by, in.readByte());
                 ASSERT_EQ(c, in.readChar());
@@ -655,7 +726,61 @@ namespace hazelcast {
                 ASSERT_EQ(d, *in.readObject<double>());
                 ASSERT_EQ(str, *in.readObject<std::string>());
                 ASSERT_EQ(utfStr, *in.readObject<std::string>());
+                ASSERT_EQ(4, in.skipBytes(4));
+                ASSERT_NULL("Expected null string", in.readUTF().get(), std::string);
+                ASSERT_NULL("Expected null string array", in.readUTFArray().get(), std::vector<std::string>);
+            }
 
+            TEST_F(ClientSerializationTest, testGetUTF8CharCount) {
+                std::string utfStr = "xyzä123";
+
+                SerializationConfig serializationConfig;
+                serializationConfig.setPortableVersion(1);
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                serialization::pimpl::DataOutput dataOutput;
+                serialization::ObjectDataOutput out(dataOutput, &serializationService.getSerializerHolder());
+
+                out.writeUTF(&utfStr);
+                std::auto_ptr<std::vector<byte> > byteArray = out.toByteArray();
+                int strLen = util::Bits::readIntB(*byteArray, 0);
+                ASSERT_EQ(7, strLen);
+            }
+
+            TEST_F(ClientSerializationTest, testExtendedAscii) {
+                std::string utfStr = "Num\xc3\xa9ro";
+
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                serialization::pimpl::Data data = serializationService.toData<std::string>(&utfStr);
+                std::auto_ptr<std::string> deserializedString = serializationService.toObject<std::string>(data);
+                ASSERT_EQ_PTR(utfStr, deserializedString.get(), std::string);
+            }
+
+            TEST_F(ClientSerializationTest, testExtendedAsciiIncorrectUtf8Write) {
+                std::string utfStr = "Num\351ro";
+
+                SerializationConfig serializationConfig;
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+
+                ASSERT_THROW(serializationService.toData<std::string>(&utfStr), exception::UTFDataFormatException);
+            }
+
+            TEST_F(ClientSerializationTest, testGlobalSerializer) {
+                SerializationConfig serializationConfig;
+
+                serializationConfig.setGlobalSerializer(
+                        boost::shared_ptr<serialization::StreamSerializer>(new DummyGlobalSerializer()));
+                serialization::pimpl::SerializationService serializationService(serializationConfig);
+                
+                NonSerializableObject obj;
+
+                serialization::pimpl::Data data = serializationService.toData<NonSerializableObject>(&obj);
+
+                std::auto_ptr<std::string> deserializedValue = serializationService.toObject<std::string>(data);
+                ASSERT_NE((std::string *) NULL, deserializedValue.get());
+                ASSERT_EQ("Dummy string", *deserializedValue);
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,32 @@
 //
 // Created by sancar koyunlu on 9/18/13.
 
-#include "ClientTxnQueueTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
 #include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/util/Thread.h"
 #include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
-        namespace test {
-            ClientTxnQueueTest::ClientTxnQueueTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient()) {
+            namespace test {
+                class ClientTxnQueueTest : public ClientTestSupport {
+                public:
+                    ClientTxnQueueTest();
+
+                    ~ClientTxnQueueTest();
+                protected:
+                    HazelcastServer instance;
+                    HazelcastClient client;
+                };
+
+                ClientTxnQueueTest::ClientTxnQueueTest() : instance(*g_srvFactory), client(getNewClient()) {
             }
             
             ClientTxnQueueTest::~ClientTxnQueueTest() {
@@ -36,7 +50,7 @@ namespace hazelcast {
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll1) {
                 std::string name = "defQueue";
 
-                TransactionContext context = client->newTransactionContext();
+                    TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q = context.getQueue<std::string>(name);
                 ASSERT_TRUE(q.offer("ali"));
@@ -44,7 +58,22 @@ namespace hazelcast {
                 ASSERT_EQ("ali", *(q.poll()));
                 ASSERT_EQ(0, q.size());
                 context.commitTransaction();
-                ASSERT_EQ(0, client->getQueue<std::string>(name).size());
+                    ASSERT_EQ(0, client.getQueue<std::string>(name).size());
+            }
+
+            TEST_F(ClientTxnQueueTest, testTransactionalOfferPollByteVector) {
+                std::string name = "defQueue";
+
+                    TransactionContext context = client.newTransactionContext();
+                context.beginTransaction();
+                TransactionalQueue<std::vector<byte> > q = context.getQueue<std::vector<byte> >(name);
+                std::vector<byte> value(3);
+                ASSERT_TRUE(q.offer(value));
+                ASSERT_EQ(1, q.size());
+                ASSERT_EQ(value, *(q.poll()));
+                ASSERT_EQ(0, q.size());
+                context.commitTransaction();
+                    ASSERT_EQ(0, client.getQueue<std::vector<byte> >(name).size());
             }
 
             void testTransactionalOfferPoll2Thread(util::ThreadArgs& args) {
@@ -56,8 +85,8 @@ namespace hazelcast {
 
             TEST_F(ClientTxnQueueTest, testTransactionalOfferPoll2) {
                 util::CountDownLatch latch(1);
-                util::Thread t(testTransactionalOfferPoll2Thread, &latch, client.get());
-                TransactionContext context = client->newTransactionContext();
+                    util::StartedThread t(testTransactionalOfferPoll2Thread, &latch, &client);
+                    TransactionContext context = client.newTransactionContext();
                 context.beginTransaction();
                 TransactionalQueue<std::string> q0 = context.getQueue<std::string>("defQueue0");
                 TransactionalQueue<std::string> q1 = context.getQueue<std::string>("defQueue1");
@@ -69,8 +98,8 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(context.commitTransaction());
 
-                ASSERT_EQ(0, client->getQueue<std::string>("defQueue0").size());
-                ASSERT_EQ("item0", *(client->getQueue<std::string>("defQueue1").poll()));
+                    ASSERT_EQ(0, client.getQueue<std::string>("defQueue0").size());
+                    ASSERT_EQ("item0", *(client.getQueue<std::string>("defQueue1").poll()));
             }
         }
     }

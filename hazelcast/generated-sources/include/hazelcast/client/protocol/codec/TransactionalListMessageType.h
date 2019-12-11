@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TransactionalListMessageType {
 
-                    HZ_TRANSACTIONALLIST_ADD=0x1301,
-                    HZ_TRANSACTIONALLIST_REMOVE=0x1302,
-                    HZ_TRANSACTIONALLIST_SIZE=0x1303
+                    HZ_TRANSACTIONALLIST_ADD = 0x1301,
+                    HZ_TRANSACTIONALLIST_REMOVE = 0x1302,
+                    HZ_TRANSACTIONALLIST_SIZE = 0x1303
                 };
             }
         }

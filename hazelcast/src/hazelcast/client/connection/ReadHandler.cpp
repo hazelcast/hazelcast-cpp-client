@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@
 
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/connection/InSelector.h"
 #include "hazelcast/client/exception/IOException.h"
-
+#include "hazelcast/client/spi/ClientInvocationService.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
+#include "hazelcast/util/Util.h"
+
 #include <ctime>
 
 //#define BOOST_THREAD_PROVIDES_FUTURE
@@ -36,8 +37,8 @@ namespace hazelcast {
             : IOHandler(connection, iListener)
             , buffer(new char[bufferSize])
             , byteBuffer(buffer, bufferSize)
-            , builder(clientContext.getInvocationService(), connection) {
-		        connection.lastRead = time(NULL);
+            , builder(connection) {
+		        lastReadTimeMillis = util::currentTimeMillis();
             }
 
             ReadHandler::~ReadHandler() {
@@ -49,7 +50,7 @@ namespace hazelcast {
             }
 
             void ReadHandler::handle() {
-                connection.lastRead = time(NULL);
+                lastReadTimeMillis = util::currentTimeMillis();
                 try {
                     byteBuffer.readFrom(connection.getSocket());
                 } catch (exception::IOException &e) {
@@ -71,6 +72,10 @@ namespace hazelcast {
                 } else {
                     byteBuffer.clear();
                 }
+            }
+
+            int64_t ReadHandler::getLastReadTimeMillis() {
+                return lastReadTimeMillis;
             }
         }
     }

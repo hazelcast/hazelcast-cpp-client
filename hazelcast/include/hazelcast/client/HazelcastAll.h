@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,12 @@
 #include "hazelcast/client/TransactionOptions.h"
 #include "hazelcast/client/monitor/LocalMapStats.h"
 #include "hazelcast/client/monitor/NearCacheStats.h"
+#include "hazelcast/client/PartitionAware.h"
+#include "hazelcast/client/mixedtype/IList.h"
+#include "hazelcast/client/mixedtype/IQueue.h"
+#include "hazelcast/client/mixedtype/Ringbuffer.h"
+#include "hazelcast/client/crdt/pncounter/PNCounter.h"
+#include <hazelcast/client/cluster/memberselector/MemberSelectors.h>
 
 #endif //HAZELCAST_HazelcastAll
 

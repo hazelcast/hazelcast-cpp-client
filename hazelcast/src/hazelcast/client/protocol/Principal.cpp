@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ namespace hazelcast {
         namespace protocol {
 
             Principal::Principal(std::auto_ptr<std::string> id, std::auto_ptr<std::string> owner) : uuid(id),
-                                                                              ownerUuid(owner) {
+                                                                                                    ownerUuid(owner) {
             }
 
             const std::string *Principal::getUuid() const {
@@ -32,6 +32,25 @@ namespace hazelcast {
 
             const std::string *Principal::getOwnerUuid() const {
                 return ownerUuid.get();
+            }
+
+            bool Principal::operator==(const Principal &rhs) const {
+                if (ownerUuid.get() != NULL ? (rhs.ownerUuid.get() == NULL || *ownerUuid != *rhs.ownerUuid) :
+                    ownerUuid.get() != NULL) {
+                    return false;
+                }
+
+                if (uuid.get() != NULL ? (rhs.uuid.get() == NULL || *uuid != *rhs.uuid) : rhs.uuid.get() != NULL) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            std::ostream &operator<<(std::ostream &os, const Principal &principal) {
+                os << "uuid: " << (principal.uuid.get() ? *principal.uuid : "null") << " ownerUuid: "
+                   << (principal.ownerUuid ? *principal.ownerUuid : "null");
+                return os;
             }
         }
     }

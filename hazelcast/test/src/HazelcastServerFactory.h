@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,64 +17,95 @@
 // Created by sancar koyunlu on 8/26/13.
 
 
-#ifndef HAZELCAST_HazelcastServerFactory
-#define HAZELCAST_HazelcastServerFactory
+#ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
+#define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
-#include <memory>
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+/**
+ * This include is needed due to the Python.h include so that we do not see the linkage error:
+ * unresolved external symbol __imp__invalid_parameter_noinfo_noreturn
+ * It should be before the Python.h include
+ */
+#include <crtdefs.h>
+#endif
 
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/Socket.h"
-#include "hazelcast/client/connection/OutputSocketStream.h"
-#include "hazelcast/client/connection/InputSocketStream.h"
-#include "hazelcast/client/internal/socket/TcpSocket.h"
+#include <Python.h>
+
+#include <boost/shared_ptr.hpp>
+
+#include <ostream>
+
+#include <hazelcast/util/ILogger.h>
+#include <hazelcast/client/Address.h>
+
+using namespace std;
 
 namespace hazelcast {
-    namespace util {
-        class ILogger;
-    }
     namespace client {
         namespace test {
 
-            class HazelcastServer;
-
             class HazelcastServerFactory {
-                friend class HazelcastServer;
-
-                enum {
-                    OK = 5678,
-                    FAIL = -1,
-                    END = 1,
-                    START = 2,
-                    SHUTDOWN = 3,
-                    SHUTDOWN_ALL = 4,
-                    START_SSL = 5
-                };
             public:
-                HazelcastServerFactory(const char* hostAddress);
+                enum Lang {
+                    JAVASCRIPT = 1,
+                    GROOVY = 2,
+                    PYTHON = 3,
+                    RUBY = 4
+                };
 
-                const std::string& getServerAddress() const;
+                struct Response {
+                    bool success;
+                    std::string message;
+                    std::string result;
+                    /*3:binary result;*/
+                };
 
-                void shutdownAll();
+                class MemberInfo {
+                public:
+                    MemberInfo();
 
-                int getInstanceId(int retryNumber = 0, bool useSSL = false);
+                    MemberInfo(const string &uuid, const string &ip, int port);
+
+                    friend ostream &operator<<(ostream &os, const MemberInfo &info);
+
+                    const string &getUuid() const;
+
+                    Address getAddress() const;
+                private:
+                    std::string uuid;
+                    std::string ip;
+                    int port;
+                };
+
+                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
+
+                static const std::string& getServerAddress();
+
+                MemberInfo startServer();
+
+                bool setAttributes(int memberStartOrder);
+
+                bool shutdownServer(const MemberInfo &member);
+
+                bool terminateServer(const MemberInfo &member);
 
                 ~HazelcastServerFactory();
 
+                static void init(const std::string &server);
+
+                Response executeOnController(const std::string &script, Lang language);
+
             private:
-                void checkConnection();
+                boost::shared_ptr<util::ILogger> logger;
+                static std::string serverAddress;
+                static PyObject *rcObject;
+                std::string clusterId;
 
-                Address address;
-                internal::socket::TcpSocket socket;
-                connection::OutputSocketStream outputSocketStream;
-                connection::InputSocketStream inputSocketStream;
-                util::ILogger &logger;
-                bool connected;
-
-                void shutdownInstance(int id);
+                std::string readFromXmlFile(const std::string &xmlFilePath);
             };
         }
     }
 }
 
-#endif //HAZELCAST_HazelcastServerFactory
+#endif //HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 

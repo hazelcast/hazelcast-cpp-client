@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,9 @@
 //
 // Created by sancar koyunlu on 25/12/13.
 //
-
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/client/connection/OutSelector.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/client/exception/IOException.h"
 
@@ -29,7 +28,7 @@ namespace hazelcast {
     namespace client {
         namespace connection {
             WriteHandler::WriteHandler(Connection &connection, OutSelector &oListener, size_t bufferSize)
-                    : IOHandler(connection, oListener), ready(false), informSelector(true), lastMessage(NULL) {
+                    : IOHandler(connection, oListener), ready(false), informSelector(true) {
             }
 
 
@@ -38,7 +37,7 @@ namespace hazelcast {
             }
 
             void WriteHandler::run() {
-                if (this->connection.live) {
+                if (this->connection.isAlive()) {
                     informSelector = true;
                     if (ready) {
                         handle();
@@ -50,37 +49,39 @@ namespace hazelcast {
             }
 
             // TODO: Add a fragmentation layer here before putting the message into the write queue
-            void WriteHandler::enqueueData(protocol::ClientMessage *message) {
+            bool WriteHandler::enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message) {
+                if (!this->connection.isAlive()) {
+                    return false;
+                }
                 writeQueue.offer(message);
                 if (informSelector.compareAndSet(true, false)) {
                     ioSelector.addTask(this);
                     ioSelector.wakeUp();
                 }
+                return true;
             }
 
             void WriteHandler::handle() {
-                if (lastMessage == NULL) {
-                    lastMessage = writeQueue.poll();
-                    if (lastMessage == NULL) {
+                if (lastMessage.get() == NULL) {
+                    if (!(lastMessage = writeQueue.poll()).get()) {
                         ready = true;
                         return;
                     }
 
-                    if (NULL != lastMessage) {
+                    if (NULL != lastMessage.get()) {
                         numBytesWrittenToSocketForMessage = 0;
                         lastMessageFrameLen = lastMessage->getFrameLength();
                     }
                 }
 
-                while (NULL != lastMessage) {
+                while (NULL != lastMessage.get()) {
                     try {
                         numBytesWrittenToSocketForMessage += lastMessage->writeTo(connection.getSocket(),
                                                                numBytesWrittenToSocketForMessage, lastMessageFrameLen);
 
                         if (numBytesWrittenToSocketForMessage >= lastMessageFrameLen) {
                             // Not deleting message since its memory management is at the future object
-                            lastMessage = writeQueue.poll();
-                            if (NULL != lastMessage) {
+                            if ((lastMessage = writeQueue.poll()).get()) {
                                 numBytesWrittenToSocketForMessage = 0;
                                 lastMessageFrameLen = lastMessage->getFrameLength();
                             }

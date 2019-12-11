@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/SemaphoreTryAcquireCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const SemaphoreMessageType SemaphoreTryAcquireCodec::RequestParameters::TYPE = HZ_SEMAPHORE_TRYACQUIRE;
-                const bool SemaphoreTryAcquireCodec::RequestParameters::RETRYABLE = false;
-                const int32_t SemaphoreTryAcquireCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> SemaphoreTryAcquireCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int32_t permits, 
+                const SemaphoreMessageType SemaphoreTryAcquireCodec::REQUEST_TYPE = HZ_SEMAPHORE_TRYACQUIRE;
+                const bool SemaphoreTryAcquireCodec::RETRYABLE = false;
+                const ResponseMessageConst SemaphoreTryAcquireCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> SemaphoreTryAcquireCodec::encodeRequest(
+                        const std::string &name,
+                        int32_t permits,
                         int64_t timeout) {
                     int32_t requiredDataSize = calculateDataSize(name, permits, timeout);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)SemaphoreTryAcquireCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) SemaphoreTryAcquireCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(permits);
@@ -41,9 +42,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t SemaphoreTryAcquireCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int32_t permits, 
+                int32_t SemaphoreTryAcquireCodec::calculateDataSize(
+                        const std::string &name,
+                        int32_t permits,
                         int64_t timeout) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,21 +54,17 @@ namespace hazelcast {
                 }
 
                 SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("SemaphoreTryAcquireCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                SemaphoreTryAcquireCodec::ResponseParameters SemaphoreTryAcquireCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                SemaphoreTryAcquireCodec::ResponseParameters
+                SemaphoreTryAcquireCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return SemaphoreTryAcquireCodec::ResponseParameters(clientMessage);
                 }
 
-                SemaphoreTryAcquireCodec::ResponseParameters::ResponseParameters(const SemaphoreTryAcquireCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

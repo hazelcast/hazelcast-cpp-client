@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,70 @@ namespace hazelcast {
             virtual void mapCleared(const MapEvent& event) = 0;
 
         };
+
+        namespace mixedtype {
+            class HAZELCAST_API MixedEntryListener {
+            public:
+                virtual ~MixedEntryListener() {
+
+                }
+
+                /**
+                * Invoked when an entry is added.
+                *
+                * @param event entry event
+                */
+                virtual void entryAdded(const MixedEntryEvent& event) = 0;
+
+                /**
+                * Invoked when an entry is removed.
+                *
+                * @param event entry event
+                */
+                virtual void entryRemoved(const MixedEntryEvent& event) = 0;
+
+                /**
+                * Invoked when an entry is removed.
+                *
+                * @param event entry event
+                */
+                virtual void entryUpdated(const MixedEntryEvent& event) = 0;
+
+                /**
+                * Invoked when an entry is evicted.
+                *
+                * @param event entry event
+                */
+                virtual void entryEvicted(const MixedEntryEvent& event) = 0;
+
+                /**
+                * Invoked upon expiration of an entry.
+                *
+                * @param event the event invoked when an entry is expired.
+                */
+                virtual void entryExpired(const MixedEntryEvent& event) = 0;
+
+                /**
+                *  Invoked after WAN replicated entry is merged.
+                *
+                * @param event the event invoked when an entry is expired.
+                */
+                virtual void entryMerged(const MixedEntryEvent& event) = 0;
+
+                /**
+                * Invoked when all entries evicted by {@link IMap#evictAll()}.
+                *
+                * @param event map event
+                */
+                virtual void mapEvicted(const MapEvent& event) = 0;
+
+                /**
+                * Invoked when all entries are removed by {@link IMap#clear()}.}
+                */
+                virtual void mapCleared(const MapEvent& event) = 0;
+
+            };
+        }
     }
 }
 

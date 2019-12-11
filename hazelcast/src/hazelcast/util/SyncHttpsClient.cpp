@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@
 //
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-#include <WinSock2.h>
+#include <winsock2.h>
 #endif
 
 #ifdef HZ_BUILD_WITH_SSL
-#include <asio/asio/include/asio/ssl/rfc2818_verification.hpp>
+#include <asio/ssl/rfc2818_verification.hpp>
 #endif // HZ_BUILD_WITH_SSL
 
-#include <hazelcast/util/Preconditions.h>
+#include "hazelcast/util/Preconditions.h"
 
 #include "hazelcast/util/SyncHttpsClient.h"
 

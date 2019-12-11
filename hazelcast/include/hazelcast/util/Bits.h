@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,11 @@ namespace hazelcast {
              * for null arrays, this value writen to stream to represent null array size.
              */
             static const int NULL_ARRAY = -1;
+
+            /**
+             * Length of the data blocks used by the CPU cache sub-system in bytes.
+             */
+            static const int CACHE_LINE_LENGTH = 64;
 
             /**
             * Fills the target with 2 bytes in native bytes order
@@ -280,13 +285,6 @@ namespace hazelcast {
             // ------------------ BIG ENDIAN Conversions ends ------------------------
 
         private :
-            /**
-            * Make the default constructor and the destructor inaccessible from public.
-            */
-            Bits();
-
-            virtual ~Bits();
-
             inline static void swap_2(const void *orig, void* target) {
                 *reinterpret_cast<uint16_t *> (target) =
                         bswap16 (*reinterpret_cast<uint16_t const *> (orig));

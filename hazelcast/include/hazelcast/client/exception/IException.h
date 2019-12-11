@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,27 @@
 #ifndef HAZELCAST_EXCEPTION
 #define HAZELCAST_EXCEPTION
 
-#include "hazelcast/util/HazelcastDll.h"
 #include <string>
+#include <sstream>
 #include <stdexcept>
+#include <ostream>
+#include <memory>
+
+#include <boost/shared_ptr.hpp>
+
+#include "hazelcast/util/HazelcastDll.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export	
 #pragma warning(disable: 4275) //for dll export	
-#endif 
+#endif
 
 namespace hazelcast {
     namespace client {
         namespace exception {
             /**
              * Base class for all exception originated from Hazelcast methods.
-             * If exception coming from hazelcast servers cannot be identified,
-             * it will be fired as IException.
              *
              *
              * @see InstanceNotActiveException
@@ -48,23 +52,23 @@ namespace hazelcast {
              */
             class HAZELCAST_API IException : public std::exception {
             public:
-                /**
-                 * Constructor
-                 */
-                IException();
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           const std::string &details, int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
 
-                /**
-                 * Constructor
-                 */
-                IException(const std::string &source, const std::string &message);
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, int32_t causeCode, bool isRuntime, bool retryable = false);
 
-                /**
-                 * Destructor
-                 */
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, bool isRuntime, bool retryable = false);
+
+                IException(const std::string &exceptionName, const std::string &source, const std::string &message,
+                           int32_t errorNo, const boost::shared_ptr<IException> &cause, bool isRuntime, bool retryable = false);
+
                 virtual ~IException() throw();
 
                 /**
-                 * return exception explanation string.
+                 *
+                 * return  pointer to the explanation string.
                  */
                 virtual char const *what() const throw();
 
@@ -72,20 +76,78 @@ namespace hazelcast {
 
                 const std::string &getMessage() const;
 
-                virtual void raise();
-            private:
+                virtual void raise() const;
+
+                /**
+                 * We need this method to clone the specific derived exception when needed. The exception has to be the
+                 * derived type so that the exception rethrowing works as expected by throwing the derived exception.
+                 * Exception throwing internals works by making a temporary copy of the exception.
+                 * @return The copy of this exception
+                 */
+                virtual std::auto_ptr<IException> clone() const;
+
+                const std::string &getDetails() const;
+
+                int32_t getErrorCode() const;
+
+                int32_t getCauseErrorCode() const;
+
+                const boost::shared_ptr<IException> &getCause() const;
+
+                bool isRuntimeException() const;
+
+                bool isRetryable() const;
+
+                friend std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+
+            protected:
                 std::string src;
                 std::string msg;
+                std::string details;
                 std::string report;
+                int32_t errorCode;
+                int32_t causeErrorCode;
+                boost::shared_ptr<IException> cause;
+                bool runtimeException;
+                bool retryable;
             };
+
+            std::ostream HAZELCAST_API &operator<<(std::ostream &os, const IException &exception);
+
+            template<typename EXCEPTIONCLASS>
+            class ExceptionBuilder {
+            public:
+                ExceptionBuilder(const std::string &source) : source(source) {}
+
+                template<typename T>
+                ExceptionBuilder &operator<<(const T &message) {
+                    msg << message;
+                    return *this;
+                }
+
+                /**
+                 *
+                 * @return The constructed exception.
+                 */
+                EXCEPTIONCLASS build() {
+                    return EXCEPTIONCLASS(source, msg.str());
+                }
+
+                boost::shared_ptr<EXCEPTIONCLASS> buildShared() {
+                    return boost::shared_ptr<EXCEPTIONCLASS>(new EXCEPTIONCLASS(source, msg.str()));
+                }
+
+            private:
+                std::string source;
+                std::ostringstream msg;
+            };
+
         }
     }
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(pop)
-#endif 
+#endif
 
 #endif //HAZELCAST_EXCEPTION
-
-

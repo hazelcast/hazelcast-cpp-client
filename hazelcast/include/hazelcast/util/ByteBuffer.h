@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,14 +47,7 @@ namespace hazelcast {
 
             size_t position() const;
 
-            void position(size_t );
-
-            size_t readFrom(const client::Socket &socket, int flag = 0);
-
-            /**
-            * returns number of bytes that could actually be read
-            */
-            size_t readFrom(const client::Socket &socket, int numBytesToRead, int flag = 0);
+            size_t readFrom(client::Socket &socket, int flag = 0);
 
             int readInt();
 

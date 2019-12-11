@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,57 +14,54 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/QueueCompareAndRemoveAllCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const QueueMessageType QueueCompareAndRemoveAllCodec::RequestParameters::TYPE = HZ_QUEUE_COMPAREANDREMOVEALL;
-                const bool QueueCompareAndRemoveAllCodec::RequestParameters::RETRYABLE = false;
-                const int32_t QueueCompareAndRemoveAllCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> QueueCompareAndRemoveAllCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &dataList) {
+                const QueueMessageType QueueCompareAndRemoveAllCodec::REQUEST_TYPE = HZ_QUEUE_COMPAREANDREMOVEALL;
+                const bool QueueCompareAndRemoveAllCodec::RETRYABLE = false;
+                const ResponseMessageConst QueueCompareAndRemoveAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> QueueCompareAndRemoveAllCodec::encodeRequest(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &dataList) {
                     int32_t requiredDataSize = calculateDataSize(name, dataList);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)QueueCompareAndRemoveAllCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) QueueCompareAndRemoveAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
-                    clientMessage->setArray<serialization::pimpl::Data >(dataList);
+                    clientMessage->setArray<serialization::pimpl::Data>(dataList);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t QueueCompareAndRemoveAllCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::vector<serialization::pimpl::Data > &dataList) {
+                int32_t QueueCompareAndRemoveAllCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::vector<serialization::pimpl::Data> &dataList) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
-                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data >(dataList);
+                    dataSize += ClientMessage::calculateDataSize<serialization::pimpl::Data>(dataList);
                     return dataSize;
                 }
 
                 QueueCompareAndRemoveAllCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("QueueCompareAndRemoveAllCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                QueueCompareAndRemoveAllCodec::ResponseParameters QueueCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                QueueCompareAndRemoveAllCodec::ResponseParameters
+                QueueCompareAndRemoveAllCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return QueueCompareAndRemoveAllCodec::ResponseParameters(clientMessage);
                 }
 
-                QueueCompareAndRemoveAllCodec::ResponseParameters::ResponseParameters(const QueueCompareAndRemoveAllCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,13 +24,14 @@
 #include <memory>
 #include <string>
 
-
-#include "hazelcast/client/protocol/codec/MapMessageType.h"
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/client/protocol/codec/MapMessageType.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
 #include "hazelcast/client/impl/BaseEventHandler.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
-#include "hazelcast/client/protocol/codec/IAddListenerCodec.h"
 
+
+using namespace hazelcast::client::serialization::pimpl;
 
 namespace hazelcast {
     namespace client {
@@ -42,78 +43,61 @@ namespace hazelcast {
 
         namespace protocol {
             namespace codec {
-                class HAZELCAST_API MapAddEntryListenerCodec : public IAddListenerCodec{
+                class HAZELCAST_API MapAddEntryListenerCodec {
                 public:
-                    virtual ~MapAddEntryListenerCodec();
+                    static const MapMessageType REQUEST_TYPE;
+                    static const bool RETRYABLE;
+                    static const ResponseMessageConst RESPONSE_TYPE;
+
                     //************************ REQUEST STARTS ******************************************************************//
-                    class HAZELCAST_API RequestParameters {
-                        public:
-                            static const enum MapMessageType TYPE;
-                            static const bool RETRYABLE;
+                    static std::auto_ptr<ClientMessage> encodeRequest(
+                            const std::string &name,
+                            bool includeValue,
+                            int32_t listenerFlags,
+                            bool localOnly);
 
-                        static std::auto_ptr<ClientMessage> encode(
-                                const std::string &name, 
-                                bool includeValue, 
-                                int32_t listenerFlags, 
-                                bool localOnly);
-
-                        static int32_t calculateDataSize(
-                                const std::string &name, 
-                                bool includeValue, 
-                                int32_t listenerFlags, 
-                                bool localOnly);
-
-                        private:
-                            // Preventing public access to constructors
-                            RequestParameters();
-                    };
+                    static int32_t calculateDataSize(
+                            const std::string &name,
+                            bool includeValue,
+                            int32_t listenerFlags,
+                            bool localOnly);
                     //************************ REQUEST ENDS ********************************************************************//
 
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
-                        public:
-                            static const int TYPE;
+                    public:
+                        std::string response;
 
-                            std::string response;
-                            
-                            static ResponseParameters decode(ClientMessage &clientMessage);
 
-                            // define copy constructor (needed for auto_ptr variables)
-                            ResponseParameters(const ResponseParameters &rhs);
-                        private:
-                            ResponseParameters(ClientMessage &clientMessage);
+                        static ResponseParameters decode(ClientMessage &clientMessage);
+
+                    private:
+                        ResponseParameters(ClientMessage &clientMessage);
                     };
                     //************************ RESPONSE ENDS *******************************************************************//
 
+
                     //************************ EVENTS START*********************************************************************//
                     class HAZELCAST_API AbstractEventHandler : public impl::BaseEventHandler {
-                        public:
-                            virtual ~AbstractEventHandler();
+                    public:
+                        virtual ~AbstractEventHandler();
 
-                            void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::auto_ptr<protocol::ClientMessage> message);
 
-                            virtual void handleEntry(std::auto_ptr<serialization::pimpl::Data > key, std::auto_ptr<serialization::pimpl::Data > value, std::auto_ptr<serialization::pimpl::Data > oldValue, std::auto_ptr<serialization::pimpl::Data > mergingValue, const int32_t &eventType, const std::string &uuid, const int32_t &numberOfAffectedEntries) = 0;
+
+                        virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data> key,
+                                                         std::auto_ptr<serialization::pimpl::Data> value,
+                                                         std::auto_ptr<serialization::pimpl::Data> oldValue,
+                                                         std::auto_ptr<serialization::pimpl::Data> mergingValue,
+                                                         const int32_t &eventType, const std::string &uuid,
+                                                         const int32_t &numberOfAffectedEntries) = 0;
 
                     };
 
                     //************************ EVENTS END **********************************************************************//
-
-                    MapAddEntryListenerCodec (const std::string &name, const bool &includeValue, const int32_t &listenerFlags, const bool &localOnly);
-
-                    //************************ IAddListenerCodec interface starts *******************************************//
-                    std::auto_ptr<ClientMessage> encodeRequest() const;
-
-                    std::string decodeResponse(ClientMessage &responseMessage) const;
-
-                    //************************ IAddListenerCodec interface ends *********************************************//
-                    private:
-                        // Preventing public access to constructors
-                        MapAddEntryListenerCodec ();
-
-                        std::string name_;
-                        bool includeValue_;
-                        int32_t listenerFlags_;
-                        bool localOnly_;
+                private:
+                    // Preventing public access to constructors
+                    MapAddEntryListenerCodec();
                 };
             }
         }

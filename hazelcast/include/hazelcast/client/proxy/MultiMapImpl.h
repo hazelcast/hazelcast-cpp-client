@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,13 @@
 #ifndef HAZELCAST_MULTI_MAP_IMPL
 #define HAZELCAST_MULTI_MAP_IMPL
 
-
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
 
 namespace hazelcast {
     namespace client {
@@ -55,7 +59,7 @@ namespace hazelcast {
 
                 std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, bool includeValue);
 
-                std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, const serialization::pimpl::Data& key, bool includeValue);
+                std::string addEntryListener(impl::BaseEventHandler *entryEventHandler, serialization::pimpl::Data& key, bool includeValue);
 
                 bool removeEntryListener(const std::string& registrationId);
 
@@ -73,10 +77,62 @@ namespace hazelcast {
 
                 void forceUnlock(const serialization::pimpl::Data& key);
 
+                virtual void onInitialize();
+
+            private:
+                class MultiMapEntryListenerMessageCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    MultiMapEntryListenerMessageCodec(const std::string &name, bool includeValue);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                };
+
+                class MultiMapEntryListenerToKeyCodec : public spi::impl::ListenerMessageCodec {
+                public:
+                    MultiMapEntryListenerToKeyCodec(const std::string &name, bool includeValue,
+                                                    serialization::pimpl::Data &key);
+
+                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+
+                    virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
+
+                    virtual std::auto_ptr<protocol::ClientMessage>
+                    encodeRemoveRequest(const std::string &realRegistrationId) const;
+
+                    virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
+
+                private:
+                    std::string name;
+                    bool includeValue;
+                    serialization::pimpl::Data key;
+                };
+
+                boost::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec> createMultiMapEntryListenerCodec(bool includeValue);
+
+                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                createMultiMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &key);
+
             };
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif /* HAZELCAST_MULTI_MAP_IMPL */
 

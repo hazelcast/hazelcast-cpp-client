@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 
 #ifndef HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
 #define HAZELCAST_MAP_SIMPLE_ENTRY_VIEW
+
+#include <stdint.h>
 
 #include "hazelcast/client/map/DataEntryView.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
@@ -66,35 +68,35 @@ namespace hazelcast {
             /**
              * memory cost of entry
              */
-            long cost;
+            int64_t cost;
             /**
              * entry creation time
              */
-            long creationTime;
+            int64_t creationTime;
             /**
              * entry expiration time if ttl is defined.
              */
-            long expirationTime;
+            int64_t expirationTime;
             /**
              * number of hits.
              */
-            long hits;
+            int64_t hits;
             /**
              * last access time
              */
-            long lastAccessTime;
+            int64_t lastAccessTime;
             /**
              * last stored time.
              */
-            long lastStoredTime;
+            int64_t lastStoredTime;
             /**
              * last update time.
              */
-            long lastUpdateTime;
+            int64_t lastUpdateTime;
             /**
              * version.
              */
-            long version;
+            int64_t version;
         };
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@
 
 #include "hazelcast/client/Ringbuffer.h"
 #include "hazelcast/client/DataArray.h"
-#include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
-#include "hazelcast/client/impl/ExecutionCallback.h"
+#include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicMessage.h"
 
@@ -51,10 +50,10 @@ namespace hazelcast {
                             MessageType type;
                             int64_t sequence;
                             int32_t maxCount;
-                            client::impl::ExecutionCallback<DataArray<ReliableTopicMessage> > *callback;
+                            client::ExecutionCallback<DataArray<topic::impl::reliable::ReliableTopicMessage> > *callback;
                         };
 
-                        ReliableTopicExecutor(Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *rb);
+                        ReliableTopicExecutor(Ringbuffer <ReliableTopicMessage> &rb, util::ILogger &logger);
 
                         virtual ~ReliableTopicExecutor();
 
@@ -66,11 +65,25 @@ namespace hazelcast {
                         void stop();
 
                         void execute(const Message &m);
-                    private:
-                        static void executerRun(util::ThreadArgs &args);
 
-                        Ringbuffer<topic::impl::reliable::ReliableTopicMessage> *ringbuffer;
-                        std::auto_ptr<util::Thread> runnerThread;
+                    private:
+                        class Task : public util::Runnable {
+                        public:
+                            Task(Ringbuffer <ReliableTopicMessage> &rb, util::BlockingConcurrentQueue<Message> &q,
+                                 util::AtomicBoolean &shutdown);
+
+                            virtual void run();
+
+                            virtual const std::string getName() const;
+
+                        private:
+                            Ringbuffer <ReliableTopicMessage> &rb;
+                            util::BlockingConcurrentQueue<Message> &q;
+                            util::AtomicBoolean &shutdown;
+                        };
+
+                        Ringbuffer <ReliableTopicMessage> &ringbuffer;
+                        util::Thread runnerThread;
                         util::BlockingConcurrentQueue<Message> q;
                         util::AtomicBoolean shutdown;
                     };

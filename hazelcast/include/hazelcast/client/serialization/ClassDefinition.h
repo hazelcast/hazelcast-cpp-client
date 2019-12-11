@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@
 #include <vector>
 #include <memory>
 #include <boost/shared_ptr.hpp>
+#include <ostream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -133,6 +134,12 @@ namespace hazelcast {
                 */
                 void readData(pimpl::DataInput& dataInput);
 
+                bool operator==(const ClassDefinition &rhs) const;
+
+                bool operator!=(const ClassDefinition &rhs) const;
+
+                friend std::ostream &operator<<(std::ostream &os, const ClassDefinition &definition);
+
             private:
                 int factoryId;
                 int classId;
@@ -142,7 +149,6 @@ namespace hazelcast {
 
                 ClassDefinition& operator=(const ClassDefinition& rhs);
 
-                std::vector<FieldDefinition> fieldDefinitions;
                 std::map<std::string, FieldDefinition> fieldDefinitionsMap;
 
                 std::auto_ptr<std::vector<byte> > binary;

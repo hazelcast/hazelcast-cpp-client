@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,16 @@ namespace hazelcast {
             void TestDataSerializable::readData(serialization::ObjectDataInput& reader) {
                 c = reader.readChar();
                 i = reader.readInt();
+            }
+
+            std::auto_ptr<serialization::IdentifiedDataSerializable>
+            TestDataSerializableFactory::create(int32_t classId) {
+                switch(classId) {
+                    case TestSerializationConstants::TEST_DATA_SERIALIZABLE:
+                        return std::auto_ptr<serialization::IdentifiedDataSerializable>(new TestDataSerializable());
+                    default:
+                        return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                }
             }
         }
     }

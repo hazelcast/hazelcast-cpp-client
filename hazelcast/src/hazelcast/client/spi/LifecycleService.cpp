@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,62 +17,78 @@
 // Created by sancar koyunlu on 6/17/13.
 
 #include "hazelcast/util/Util.h"
+#include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
+#include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
+#include "hazelcast/client/spi/impl/ClientPartitionServiceImpl.h"
 #include "hazelcast/client/spi/LifecycleService.h"
-#include "hazelcast/client/spi/PartitionService.h"
+#include "hazelcast/client/spi/ClientPartitionService.h"
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
-#include "hazelcast/client/spi/ClusterService.h"
+#include "hazelcast/client/spi/ProxyManager.h"
+#include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/connection/ConnectionManager.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 #include "hazelcast/client/LifecycleListener.h"
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
+#include "hazelcast/client/impl/statistics/Statistics.h"
 
 namespace hazelcast {
     namespace client {
         namespace spi {
 
-            LifecycleService::LifecycleService(ClientContext &clientContext, const ClientConfig &clientConfig)
-            :clientContext(clientContext)
-            , active(false) {
-                std::set<LifecycleListener *> const &lifecycleListeners = clientConfig.getLifecycleListeners();
+            LifecycleService::LifecycleService(ClientContext &clientContext,
+                                               const std::set<LifecycleListener *> &lifecycleListeners,
+                                               util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer,
+                                               Cluster &cluster) : clientContext(clientContext),
+                                                                   shutdownLatch(shutdownLatch),
+                                                                   loadBalancer(loadBalancer),
+                                                                   cluster(cluster) {
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
-
             }
 
             bool LifecycleService::start() {
-                fireLifecycleEvent(LifecycleEvent::STARTING);
-                active = true;
+                if (!active.compareAndSet(false, true)) {
+                    return false;
+                }
+
+                fireLifecycleEvent(LifecycleEvent::STARTED);
+
+                if (!((impl::AbstractClientInvocationService &) clientContext.getInvocationService()).start()) {
+                    return false;
+                }
+
+                ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).start();
 
                 if (!clientContext.getConnectionManager().start()) {
                     return false;
                 }
 
-                if (!clientContext.getClusterService().start()) {
-                    return false;
-                }
+                loadBalancer->init(cluster);
 
-                if (!clientContext.getInvocationService().start()) {
-                    return false;
-                }
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
 
-                if (!clientContext.getPartitionService().start()) {
-                    return false;
-                }
+                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
 
-                fireLifecycleEvent(LifecycleEvent::STARTED);
+                clientContext.getClientstatistics().start();
+
                 return true;
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false))
+                if (!active.compareAndSet(true, false)) {
                     return;
+                }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
-                clientContext.getInvocationService().shutdown();
-                clientContext.getPartitionService().shutdown();
-                clientContext.getClusterService().shutdown();
+                clientContext.getProxyManager().destroy();
                 clientContext.getConnectionManager().shutdown();
+                ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
+                ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
+                ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
+                clientContext.getClientExecutionService().shutdown();
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
+                clientContext.getSerializationService().dispose();
+                shutdownLatch.countDown();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
@@ -87,18 +103,17 @@ namespace hazelcast {
 
             void LifecycleService::fireLifecycleEvent(const LifecycleEvent &lifecycleEvent) {
                 util::LockGuard lg(listenerLock);
-                util::ILogger &logger = util::ILogger::getLogger();
+                util::ILogger &logger = clientContext.getLogger();
                 switch (lifecycleEvent.getState()) {
-                    case LifecycleEvent::STARTING :
-                    {
+                    case LifecycleEvent::STARTING : {
                         // convert the date string from "2016-04-20" to 20160420
                         std::string date(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_DATE));
                         util::gitDateToHazelcastLogDate(date);
                         std::string commitId(HAZELCAST_STRINGIZE(HAZELCAST_GIT_COMMIT_ID));
                         commitId.erase(std::remove(commitId.begin(), commitId.end(), '"'), commitId.end());
                         char msg[100];
-                        util::snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
-                                       commitId.c_str());
+                        util::hz_snprintf(msg, 100, "(%s:%s) LifecycleService::LifecycleEvent STARTING", date.c_str(),
+                                          commitId.c_str());
                         logger.info(msg);
                         break;
                     }
@@ -127,6 +142,13 @@ namespace hazelcast {
 
             bool LifecycleService::isRunning() {
                 return active;
+            }
+
+            LifecycleService::~LifecycleService() {
+                if (active) {
+                    shutdown();
+                    shutdownLatch.await();
+                }
             }
         }
     }

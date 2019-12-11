@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@
 #include <vector>
 #include <assert.h>
 #include <map>
+#include <ostream>
 
 #include "hazelcast/util/LittleEndianBufferWrapper.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -69,6 +70,7 @@
 namespace hazelcast {
     namespace util {
         class ByteBuffer;
+        class UUID;
     }
 
     namespace client {
@@ -89,7 +91,6 @@ namespace hazelcast {
         }
 
         namespace impl {
-            class MemberAttributeChange;
             class DistributedObjectInfo;
         }
 
@@ -104,12 +105,11 @@ namespace hazelcast {
             };
 
 			class HAZELCAST_API ClientMessage : public util::LittleEndianBufferWrapper {
-
             public:
                 /**
                 * Current protocol version
                 */
-                static const uint8_t VERSION = 1;
+                static const uint8_t HAZELCAST_CLIENT_PROTOCOL_VERSION = 1;
 
                 /**
                 * Begin Flag
@@ -142,11 +142,7 @@ namespace hazelcast {
                 */
                 static const uint16_t HEADER_SIZE = DATA_OFFSET_FIELD_OFFSET + UINT16_SIZE;
 
-                ClientMessage();
-
                 virtual ~ClientMessage();
-
-                void wrapForDecode(byte *buffer, int32_t size, bool owner);
 
                 static std::auto_ptr<ClientMessage> createForEncode(int32_t size);
 
@@ -162,7 +158,9 @@ namespace hazelcast {
 
                 void setVersion(uint8_t value);
 
-                void setFlags(uint8_t value);
+                uint8_t getFlags();
+
+                void addFlag(uint8_t flags);
 
                 void setCorrelationId(int64_t id);
 
@@ -183,25 +181,11 @@ namespace hazelcast {
 
                 void set(const std::string *data);
 
+                void set(const Address &data);
+
                 void set(const serialization::pimpl::Data &data);
 
                 void set(const serialization::pimpl::Data *data);
-
-                void set(const Address &value);
-
-                void set(const Address *value);
-
-                void set(const Member &value);
-
-                void set(const Member *value);
-
-                void set(const map::DataEntryView &value);
-
-                void set(const map::DataEntryView *value);
-
-                void set(const impl::DistributedObjectInfo &value);
-
-                void set(const impl::DistributedObjectInfo *value);
 
                 template<typename K, typename V>
                 void set(const std::pair<K, V> &entry) {
@@ -228,28 +212,6 @@ namespace hazelcast {
                     if (!isNull) {
                         setArray<T>(*value);
                     }
-                }
-
-                template<typename K, typename V>
-                void setEntryArray(const std::vector<std::pair<K, V> > &values) {
-                    setArray<std::pair<K, V> >(values);
-                }
-
-                template<typename K, typename V>
-                void setMap(const std::map<K, V> &values) {
-                    int32_t len = (int32_t) values.size();
-                    set(len);
-
-                    if (len > 0) {
-                        for (typename std::map<K, V>::const_iterator it = values.begin(); it != values.end(); ++it) {
-                            set(*it);
-                        }
-                    }
-                }
-
-                template<typename K, typename V>
-                void setNullableEntryArray(const std::vector<std::pair<K, V> > *values) {
-                    setArray<std::pair<K, V> >(values);
                 }
                 //----- Setter methods end ---------------------
 
@@ -341,21 +303,12 @@ namespace hazelcast {
                 //----- Data size calculation functions BEGIN -------
                 static int32_t calculateDataSize(uint8_t param);
 
-                static int32_t calculateDataSize(int8_t param);
-
                 static int32_t calculateDataSize(bool param);
-
-                static int32_t calculateDataSize(int16_t param);
-
-                static int32_t calculateDataSize(uint16_t param);
 
                 static int32_t calculateDataSize(int32_t param);
 
-                static int32_t calculateDataSize(uint32_t param);
-
                 static int32_t calculateDataSize(int64_t param);
 
-                static int32_t calculateDataSize(uint64_t param);
 
                 template<typename T>
                 static int32_t calculateDataSizeNullable(const T *param) {
@@ -370,25 +323,11 @@ namespace hazelcast {
 
                 static int32_t calculateDataSize(const std::string *param);
 
+                static int32_t calculateDataSize(const Address &param);
+
                 static int32_t calculateDataSize(const serialization::pimpl::Data &param);
 
                 static int32_t calculateDataSize(const serialization::pimpl::Data *param);
-
-                static int32_t calculateDataSize(const Address &param);
-
-                static int32_t calculateDataSize(const Address *param);
-
-                static int32_t calculateDataSize(const Member &param);
-
-                static int32_t calculateDataSize(const Member *param);
-
-                static int32_t calculateDataSize(const map::DataEntryView &param);
-
-                static int32_t calculateDataSize(const map::DataEntryView *param);
-
-                static int32_t calculateDataSize(const impl::DistributedObjectInfo &param);
-
-                static int32_t calculateDataSize(const impl::DistributedObjectInfo *param);
 
                 template<typename K, typename V>
                 static int32_t calculateDataSize(const std::pair<K, V> &param) {
@@ -445,27 +384,30 @@ namespace hazelcast {
 
                 void setRetryable(bool shouldRetry);
 
-                bool isBindToSingleConnection() const;
-
-                void setIsBoundToSingleConnection(bool isSingleConnection);
-
                 /**
                  * Returns the number of bytes sent on the socket
                  **/
                 int32_t writeTo(Socket &socket, int32_t offset, int32_t frameLen);
+
+                /**
+                 * Checks the frame size and total data size to validate the message size.
+                 *
+                 * @return true if the message is constructed.
+                 */
+                bool isComplete() const;
+
+                friend std::ostream &operator<<(std::ostream &os, const ClientMessage &message);
+
             private:
                 ClientMessage(int32_t size);
 
-                inline void wrapForEncode(byte *buffer, int32_t size, bool owner);
+                inline void wrapForEncode(int32_t size);
 
                 void ensureBufferSize(int32_t newCapacity);
 
                 int32_t findSuitableCapacity(int32_t requiredCapacity, int32_t existingCapacity) const;
 
-                bool isOwner;
-
                 bool retryable;
-                bool isBoundToSingleConnection;
             };
 
             template<>
@@ -502,6 +444,9 @@ namespace hazelcast {
             Address ClientMessage::get();
 
             template<>
+            util::UUID ClientMessage::get();
+
+            template<>
             Member ClientMessage::get();
 
             template<>
@@ -522,8 +467,16 @@ namespace hazelcast {
             template<>
             std::pair<serialization::pimpl::Data, serialization::pimpl::Data> ClientMessage::get();
 
-        }
+            template<>
+            std::pair<Address, std::vector<int32_t> > ClientMessage::get();
 
+            template<>
+            std::pair<Address, std::vector<int64_t> > ClientMessage::get();
+
+            template<>
+            std::pair<std::string, int64_t> ClientMessage::get();
+
+        }
 
     }
 }

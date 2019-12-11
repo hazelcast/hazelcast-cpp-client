@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,11 @@
 #include <sstream>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+// We need to include this header before asio/ip/address.hpp
+#include <winsock2.h>
+#endif
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4251) //for dll export
 #endif
@@ -35,6 +40,8 @@ namespace hazelcast {
          */
         class HAZELCAST_API Address : public serialization::IdentifiedDataSerializable {
         public:
+            Address(const std::string &hostname, int port, unsigned long scopeId);
+
             static const int ID;
 
             /**
@@ -65,6 +72,12 @@ namespace hazelcast {
             int getPort() const;
 
             /**
+             *
+             * @return true if the address is ip V4 address, false otherwise.
+             */
+            bool isIpV4() const;
+
+            /**
              * @return host address as string
              */
             const std::string& getHost() const;
@@ -79,28 +92,25 @@ namespace hazelcast {
             virtual void readData(serialization::ObjectDataInput &reader);
 
             /***** serialization::IdentifiedDataSerializable interface implementation end here ************************/
+
+            unsigned long getScopeId() const;
+
+            bool operator<(const Address &rhs) const;
+
+            std::string toString() const;
         private:
             std::string host;
             int port;
             byte type;
+            unsigned long scopeId;
 
             static const byte IPV4;
             static const byte IPV6;
         };
 
-        /**
-         * Address comparator functor
-         */
-        struct HAZELCAST_API addressComparator {
-            /**
-             * Address comparator functor
-             * @param lhs
-             * @param rhs
-             */
-            bool operator ()(const Address &lhs, const Address &rhs) const;
-        };
+        typedef std::less<Address> addressComparator;
 
-		std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
+        std::ostream HAZELCAST_API &operator << (std::ostream &stream, const Address &address);
 
     }
 };

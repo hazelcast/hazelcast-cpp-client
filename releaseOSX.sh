@@ -1,50 +1,60 @@
 #!/usr/bin/env bash
-set -e #abort the script at first faiure
 
-echo "Cleanup release directories"
-rm -rf ./Release*
+function removeBuildFolders {
+    rm -rf buildSTATIC64Release
+    rm -rf buildSHARED32Release
+    rm -rf buildSTATIC32Release
+    rm -rf buildSHARED64Release
+    rm -rf buildSTATIC64Release_SSL
+    rm -rf buildSHARED32Release_SSL
+    rm -rf buildSTATIC32Release_SSL
+    rm -rf buildSHARED64Release_SSL
+}
+
+function cleanup {
+    removeBuildFolders
+}
+
+trap cleanup EXIT
+
 rm -rf ./cpp
 
-echo "Compiling Static Library"
-mkdir ReleaseStatic
-cd ReleaseStatic
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
-make -j 4 VERBOSE=1
-cd ..
-
-echo "Compiling Static Library with TLS support"
-mkdir ReleaseStaticTLS
-cd ReleaseStaticTLS
-cmake .. -DHZ_LIB_TYPE=STATIC -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=ON
-make -j 4 VERBOSE=1
-cd ..
-
-echo "Compiling Shared Library"
-mkdir ReleaseShared
-cd ReleaseShared
-cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON
-make -j 4 VERBOSE=1
-cd ..
-
-echo "Compiling Shared Library with TLS support"
-mkdir ReleaseSharedTLS
-cd ReleaseSharedTLS
-cmake .. -DHZ_LIB_TYPE=SHARED -DHZ_BIT=64 -DCMAKE_BUILD_TYPE=Release -DHZ_BUILD_TESTS=ON -DHZ_BUILD_EXAMPLES=ON -DHZ_COMPILE_WITH_SSL=ON
-make -j 4 VERBOSE=1
-cd ..
-
-#STANDART PART
 mkdir -p ./cpp/Mac_64/hazelcast/include/hazelcast/
 mkdir -p ./cpp/Mac_64/hazelcast/lib/tls
 
-echo "Moving headers to target"
-cp -R hazelcast/include/hazelcast/ cpp/Mac_64/hazelcast/include/hazelcast/
+cp -R hazelcast/include/hazelcast/* cpp/Mac_64/hazelcast/include/hazelcast/
 cp -R hazelcast/generated-sources/include/hazelcast/* cpp/Mac_64/hazelcast/include/hazelcast/
-echo "Moving libraries to target"
-cp ReleaseStatic/libHazelcastClient*.a cpp/Mac_64/hazelcast/lib/
-cp ReleaseStaticTLS/libHazelcastClient*.a cpp/Mac_64/hazelcast/lib/tls/
-cp ReleaseShared/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/
-cp ReleaseSharedTLS/libHazelcastClient*.dylib cpp/Mac_64/hazelcast/lib/tls/
+
+scripts/build-linux.sh 64 STATIC Release COMPILE_WITHOUT_SSL &> STATIC_64_linux.txt &
+STATIC_64_pid=$!
+
+scripts/build-linux.sh 64 SHARED Release COMPILE_WITHOUT_SSL &> SHARED_64_linux.txt &
+SHARED_64_pid=$!
+
+scripts/build-linux.sh 64 STATIC Release &> STATIC_64_SSL_linux.txt &
+STATIC_64_SSL_pid=$!
+
+scripts/build-linux.sh 64 SHARED Release &> SHARED_64_SSL_linux.txt &
+SHARED_64_SSL_pid=$!
+
+FAIL=0
+wait ${STATIC_64_pid} || let "FAIL+=1"
+wait ${STATIC_64_SSL_pid} || let "FAIL+=1"
+wait ${SHARED_64_pid} || let "FAIL+=1"
+wait ${SHARED_64_SSL_pid} || let "FAIL+=1"
+
+if [ $FAIL -ne 0 ]; then
+    echo "$FAIL builds FAILED!!!"
+    exit $FAIL
+fi
+
+cp buildSTATIC64Release/libHazelcastClient* cpp/Mac_64/hazelcast/lib/
+
+cp buildSHARED64Release/libHazelcastClient* cpp/Mac_64/hazelcast/lib/
+
+cp buildSTATIC64Release_SSL/libHazelcastClient* cpp/Mac_64/hazelcast/lib/tls/
+
+cp buildSHARED64Release_SSL/libHazelcastClient* cpp/Mac_64/hazelcast/lib/tls/
 
 echo "Copying external libraries and the examples"
 mkdir -p cpp/external
@@ -52,7 +62,7 @@ cp -R external/release_include cpp/external/include
 mkdir -p cpp/examples
 cp -r examples cpp/examples/src
 
-echo "Linking to external libraries and examples"
+echo "Linking to external libraries and examples for 64-bit release"
 cd cpp/Mac_64
 ln -s ../examples .
 ln -s ../external .
@@ -66,19 +76,12 @@ install_name_tool -id ${HAZELCAST_SHARED_LIB_NAME} ${HAZELCAST_SHARED_LIB_NAME}
 cd ../../../../
 
 # Uncomment below if you want to generate doxygen docs
-##mkdir -p ./cpp/docs/
 
 #echo "Generating docs "
-#doxygen docsConfig
+doxygen docsConfig
 
 #echo "Moving docs to target"
-#mv  docs/ cpp
-
-echo "Removing temporary files"
-rm -rf ./ReleaseShared
-rm -rf ./ReleaseSharedTLS
-rm -rf ./ReleaseStatic
-rm -rf ./ReleaseStaticTLS
+mv  docs cpp/
 
 # Verify release
 scripts/verifyReleaseOSX.sh

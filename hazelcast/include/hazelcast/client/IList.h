@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ namespace hazelcast {
         */
         template<typename E>
         class IList : public proxy::IListImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
             friend class adaptor::RawPointerList<E>;
 
         public:
@@ -58,7 +58,7 @@ namespace hazelcast {
             std::string addItemListener(ItemListener<E> &listener, bool includeValue) {
                 impl::ItemEventHandler<E, protocol::codec::ListAddListenerCodec::AbstractEventHandler> *entryEventHandler =
                         new impl::ItemEventHandler<E, protocol::codec::ListAddListenerCodec::AbstractEventHandler>(
-                                getName(), context->getClusterService(), context->getSerializationService(), listener,
+                                getName(), getContext().getClientClusterService(), getContext().getSerializationService(), listener,
                                 includeValue);
                 return proxy::IListImpl::addItemListener(entryEventHandler, includeValue);
             }
@@ -88,7 +88,7 @@ namespace hazelcast {
             * @return true if empty
             */
             bool isEmpty() {
-                return size() == 0;
+                return proxy::IListImpl::isEmpty();
             }
 
             /**

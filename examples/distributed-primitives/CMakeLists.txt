@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,3 +18,4 @@ add_subdirectory(countdownlatch)
 add_subdirectory(idgenerator)
 add_subdirectory(lock)
 add_subdirectory(semaphore)
+add_subdirectory(crdt-pncounter)

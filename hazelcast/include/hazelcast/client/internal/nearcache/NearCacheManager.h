@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/client/internal/nearcache/impl/DefaultNearCache.h"
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -39,9 +38,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API NearCacheManager {
                 public:
-                    NearCacheManager(serialization::pimpl::SerializationService &ss)
-                            : serializationService(ss) {
-                    }
+                    NearCacheManager(serialization::pimpl::SerializationService &ss, util::ILogger &logger);
 
                     /**
                      * Gets the {@link NearCache} instance associated with given {@code name}.
@@ -60,12 +57,10 @@ namespace hazelcast {
                     /**
                      * Creates a new {@link NearCache} with given configurations or returns existing one.
                      *
-                     * Triggers the pre-loading of the created {@link NearCache} via the supplied {@link DataStructureAdapter}.
                      *
                      * @param name                 the name of the {@link NearCache}
                      *                             to be created or existing one
                      * @param nearCacheConfig      the {@link NearCacheConfig} of the {@link NearCache} to be created
-                     * @param dataStructureAdapter the {@link DataStructureAdapter} of the {@link NearCache} to be created
                      * @param <K>           the key type of the {@link NearCache}
                      * @param <KS>          the key type of the underlying cache store (this is usually Data)
                      * @param <V>                  the value type of the {@link NearCache}
@@ -73,8 +68,7 @@ namespace hazelcast {
                      */
                     template<typename K, typename V, typename KS>
                     boost::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
-                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig,
-                            std::auto_ptr<adapter::DataStructureAdapter<K, V> > &dataStructureAdapter) {
+                            const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                         boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
@@ -93,38 +87,17 @@ namespace hazelcast {
                     }
 
                     /**
-                     * Lists all existing {@link NearCache} instances.
-                     *
-                     * @return all existing {@link NearCache} instances
-                     */
-/*
-                    virtual std::vector<boost::shared_ptr<NearCache<K, V> > > listAllNearCaches() const = 0;
-*/
-
-                    /**
                      * Clears {@link NearCache} instance associated with given {@code name} but not removes it.
                      *
                      * @param name name of the {@link NearCache} to be cleared
                      * @return {@code true} if {@link NearCache} was found and cleared, {@code false} otherwise
                      */
-                    bool clearNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
-                        if (nearCache.get() != NULL) {
-                            nearCache->clear();
-                        }
-                        return nearCache.get() != NULL;
-                    }
+                    bool clearNearCache(const std::string &name);
 
                     /**
                      * Clears all defined {@link NearCache} instances.
                      */
-                    void clearAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
-                             it != caches.end(); ++it) {
-                            (*it)->clear();
-                        }
-                    }
+                    void clearAllNearCaches();
 
                     /**
                      * Destroys {@link NearCache} instance associated with given {@code name} and also removes it.
@@ -132,34 +105,30 @@ namespace hazelcast {
                      * @param name name of the {@link NearCache} to be destroyed
                      * @return {@code true} if {@link NearCache} was found and destroyed, {@code false} otherwise
                      */
-                    bool destroyNearCache(const std::string &name) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.remove(name);
-                        if (nearCache.get() != NULL) {
-                            nearCache->destroy();
-                        }
-                        return nearCache.get() != NULL;
-                    }
+                    bool destroyNearCache(const std::string &name);
 
                     /**
                      * Destroys all defined {@link NearCache} instances.
                      */
-                    void destroyAllNearCaches() {
-                        std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                        for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
-                             it != caches.end(); ++it) {
-                            (*it)->destroy();
-                        }
-                    }
+                    void destroyAllNearCaches();
+
+                    /**
+                     * Lists all existing {@link NearCache} instances.
+                     *
+                     * @return all existing {@link NearCache} instances
+                     */
+                    std::vector<boost::shared_ptr<BaseNearCache> > listAllNearCaches();
                 protected:
                     template<typename K, typename V, typename KS>
                     std::auto_ptr<NearCache<KS, V> > createNearCache(
-                            const std::string &name, const config::NearCacheConfig<K, V> &nearCacheConfig) {
+                            const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                         return std::auto_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
-                                        name, nearCacheConfig, serializationService));
+                                        name, nearCacheConfig, serializationService, logger));
                     }
                 private:
                     serialization::pimpl::SerializationService &serializationService;
+                    util::ILogger &logger;
                     util::SynchronizedMap<std::string, BaseNearCache> nearCacheMap;
                     util::Mutex mutex;
                 };

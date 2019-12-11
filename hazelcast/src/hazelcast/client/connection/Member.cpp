@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 
 namespace hazelcast {
     namespace client {
-        Member::Member() {
+        Member::Member() : liteMember(false) {
         }
 
         Member::Member(const Address &address, const std::string &uuid, bool lite,
@@ -29,7 +29,10 @@ namespace hazelcast {
                 address(address), uuid(uuid), liteMember(lite), attributes(attr) {
         }
 
-        Member::Member(const Address &memberAddress) : address(memberAddress) {
+        Member::Member(const Address &memberAddress) : address(memberAddress), liteMember(false) {
+        }
+
+        Member::Member(const std::string &uuid) : uuid(uuid), liteMember(false) {
         }
 
         bool Member::operator==(const Member &rhs) const {
@@ -76,12 +79,23 @@ namespace hazelcast {
             return attributes.find(key) != attributes.end();
         }
 
-        void Member::setAttribute(const std::string &key, const std::string &value) {
-            attributes[key] = value;
+        bool Member::operator<(const Member &rhs) const {
+            return uuid < rhs.uuid;
         }
 
-        bool Member::removeAttribute(const std::string &key) {
-            return 0 != attributes.erase(key);
+        void Member::updateAttribute(Member::MemberAttributeOperationType operationType, const std::string &key,
+                                     std::auto_ptr<std::string> &value) {
+            switch (operationType) {
+                case PUT:
+                    attributes[key] = *value;
+                    break;
+                case REMOVE:
+                    attributes.erase(key);
+                    break;
+                default:
+                    throw (exception::ExceptionBuilder<exception::IllegalArgumentException>("Member::updateAttribute")
+                            << "Not a known OperationType: " << operationType).build();
+            }
         }
     }
 }

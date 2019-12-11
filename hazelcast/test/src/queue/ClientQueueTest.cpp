@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 9/4/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ItemListener.h"
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IQueue.h"
-
-#include "ClientTestSupport.h"
-#include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
@@ -37,32 +39,26 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     q = new IQueue<std::string>(client->getQueue<std::string>("MyQueue"));
                 }
 
                 static void TearDownTestCase() {
                     delete q;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     q = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static IQueue<std::string> *q;
             };
             
             HazelcastServer *ClientQueueTest::instance = NULL;
-            ClientConfig *ClientQueueTest::clientConfig = NULL;
             HazelcastClient *ClientQueueTest::client = NULL;
             IQueue<std::string> *ClientQueueTest::q = NULL;
 
@@ -109,7 +105,6 @@ namespace hazelcast {
                 IQueue<std::string> *q = (IQueue<std::string> *) args.arg0;
                 util::sleep(2);
                 q->offer("item1");
-                util::ILogger::getLogger().info("[testOfferPollThread2] item1 is offered");
             }
 
             TEST_F(ClientQueueTest, testOfferPoll) {
@@ -127,7 +122,7 @@ namespace hazelcast {
                 }
                 ASSERT_EQ(0, q->size());
 
-                util::Thread t2(testOfferPollThread2, q);
+                util::StartedThread t2(testOfferPollThread2, q);
 
                 boost::shared_ptr<std::string> item = q->poll(30 * 1000);
                 ASSERT_NE(item.get(), (std::string *) NULL);
@@ -146,7 +141,7 @@ namespace hazelcast {
             }
             
             TEST_F(ClientQueueTest, testTake) {
-                ASSERT_TRUE(q->offer("peek 1"));
+                q->put("peek 1");
                 ASSERT_TRUE(q->offer("peek 2"));
                 ASSERT_TRUE(q->offer("peek 3"));
 
@@ -165,7 +160,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->isEmpty());
 
                 // start a thread to insert an item
-                util::Thread t2(testOfferPollThread2, q);
+                util::StartedThread t2(testOfferPollThread2, q);
 
                 item = q->take();  //  should block till it gets an item
                 ASSERT_NE((std::string *)NULL, item.get());
@@ -318,6 +313,17 @@ namespace hazelcast {
 
                 ASSERT_EQ(0, q->size());
                 ASSERT_EQ(q->poll().get(), (std::string *) NULL);
+            }
+
+            TEST_F(ClientQueueTest, testIsEmpty) {
+                ASSERT_TRUE(q->isEmpty());
+                ASSERT_TRUE(q->offer("item1"));
+                ASSERT_FALSE(q->isEmpty());
+            }
+
+            TEST_F(ClientQueueTest, testPut) {
+                q->put("item1");
+                ASSERT_EQ(1, q->size());
             }
         }
     }

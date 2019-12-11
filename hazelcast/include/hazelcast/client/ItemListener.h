@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@
 #define HAZELCAST_ItemListener
 
 #include "hazelcast/client/ItemEvent.h"
+#include "hazelcast/client/TypedData.h"
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +41,6 @@ namespace hazelcast {
         class ItemListener {
         public:
             virtual ~ItemListener() {
-
             }
 
             /**
@@ -57,6 +57,10 @@ namespace hazelcast {
             */
             virtual void itemRemoved(const ItemEvent<E>& item) = 0;
         };
+
+        namespace mixedtype {
+            typedef ItemListener<TypedData> MixedItemListener;
+        }
     }
 }
 

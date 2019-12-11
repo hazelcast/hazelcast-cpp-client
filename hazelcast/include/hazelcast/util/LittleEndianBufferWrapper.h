@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,18 @@
 
 #include "hazelcast/util/Bits.h"
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4251) //for dll export
+#endif
+
 namespace hazelcast {
     namespace util {
         class HAZELCAST_API LittleEndianBufferWrapper {
         public:
+            virtual ~LittleEndianBufferWrapper() {
+            }
+
             enum TypeSizes {
                 INT8_SIZE = 1,
                 UINT8_SIZE = 1,
@@ -41,15 +49,13 @@ namespace hazelcast {
                 INT64_SIZE = 8
             };
 
-            inline void wrapForWrite(byte *buf, int32_t size, int32_t offset) {
-                buffer = buf;
+            inline void wrapForWrite(int32_t size, int32_t offset) {
                 capacity = size;
                 index = offset;
                 readOnly = false;
             }
 
-            inline void wrapForRead(byte *buf, int32_t size, int32_t offset) {
-                buffer = buf;
+            inline void wrapForRead(int32_t size, int32_t offset) {
                 capacity = size;
                 index = offset;
                 readOnly = true;
@@ -213,7 +219,7 @@ namespace hazelcast {
             }
 
         protected:
-            LittleEndianBufferWrapper() : buffer(NULL), capacity(-1), index(-1), readOnly(true) {}
+            LittleEndianBufferWrapper(int32_t size) : buffer(size, 0), capacity(-1), index(-1), readOnly(true) {}
 
             inline int32_t getIndex() const {
                 return index;
@@ -224,31 +230,31 @@ namespace hazelcast {
             }
 
         protected:
-            inline byte *ix() const {
-                return buffer + index;
+            inline byte *ix() {
+                return &buffer[index];
             }
 
             inline bool checkWriteAvailable(int32_t requestedBytes) const {
-                bool result = false;
-                if (!readOnly) {
-                    return checkAvailable(requestedBytes);
+                if (readOnly) {
+                    return false;
                 }
-                return result;
+
+                return checkAvailable(requestedBytes);
             }
 
             inline bool checkReadAvailable(int32_t requestedBytes) const {
-                bool result = false;
-                if (readOnly) {
-                    return checkAvailable(requestedBytes);
+                if (!readOnly) {
+                    return false;
                 }
-                return result;
+
+                return checkAvailable(requestedBytes);
             }
 
             inline bool checkAvailable(int32_t requestedBytes) const {
                 return index + requestedBytes <= capacity;
             }
 
-            byte *buffer;
+            std::vector<byte> buffer;
             int32_t capacity;
             int32_t index;
             bool readOnly;
@@ -256,7 +262,8 @@ namespace hazelcast {
     }
 }
 
-
-
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
 
 #endif //HAZELCAST_CLIENT_COMMON_CONTAINERS_LITTLEENDIANBUFFERWRAPPER_H

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@
 
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include "hazelcast/client/exception/IllegalArgumentException.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
 
-                ClassDefinitionContext::ClassDefinitionContext(PortableContext *portableContext)
-                : portableContext(portableContext) {
-
+                ClassDefinitionContext::ClassDefinitionContext(int factoryId, PortableContext *portableContext)
+                : factoryId(factoryId), portableContext(portableContext) {
                 }
 
                 int ClassDefinitionContext::getClassVersion(int classId) {
@@ -50,21 +48,37 @@ namespace hazelcast {
 
                 }
 
-                boost::shared_ptr<ClassDefinition>  ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                    if (cd.get() == NULL) {
+                        return boost::shared_ptr<ClassDefinition>();
+                    }
+                    if (cd->getFactoryId() != factoryId) {
+                        throw (exception::ExceptionBuilder<exception::HazelcastSerializationException>(
+                                "ClassDefinitionContext::registerClassDefinition") << "Invalid factory-id! "
+                                                                                   << factoryId << " -> "
+                                                                                   << cd).build();
+                    }
+
                     cd->setVersionIfNotSet(portableContext->getVersion());
 
                     long long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    boost::shared_ptr<ClassDefinition> currentCD = versionedDefinitions.putIfAbsent(versionedClassId, cd);
-                    if (currentCD == NULL) {
+                    boost::shared_ptr<ClassDefinition> currentCd = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    if (currentCd.get() == NULL) {
                         return cd;
                     }
 
-                    versionedDefinitions.put(versionedClassId, cd);
-                    return cd;
+                    if (currentCd.get() != cd.get() && *currentCd != *cd) {
+                        throw (exception::ExceptionBuilder<exception::HazelcastSerializationException>(
+                                "ClassDefinitionContext::registerClassDefinition")
+                                << "Incompatible class-definitions with same class-id: " << *cd << " VS "
+                                << *currentCd).build();
+                    }
+
+                    return currentCd;
                 }
 
-                long long ClassDefinitionContext::combineToLong(int x, int y) const {
-                    return ((long long)x) << 32 | (((long long)y) & 0xFFFFFFFL);
+                int64_t ClassDefinitionContext::combineToLong(int x, int y) const {
+                    return ((int64_t)x) << 32 | (((int64_t)y) & 0xFFFFFFFL);
                 }
 
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ namespace hazelcast {
                 /**
                  * Return the time when the message is published
                  *
-                 * @return the time when the message is published
+                 * @return the time when the message is published in milliseconds since 1970.01.01.
                  */
                 virtual int64_t getPublishTime() const = 0;
 

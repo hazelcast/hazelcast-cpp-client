@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 #include "hazelcast/client/serialization/PortableWriter.h"
 #include "hazelcast/client/serialization/pimpl/DefaultPortableReader.h"
 #include "hazelcast/client/serialization/PortableReader.h"
+#include "hazelcast/client/serialization/ObjectDataInput.h"
 
 namespace hazelcast {
     namespace client {
@@ -34,30 +35,21 @@ namespace hazelcast {
             namespace pimpl {
                 PortableSerializer::PortableSerializer(PortableContext& portableContext)
                 : context(portableContext) {
-
                 }
 
-                void PortableSerializer::write(DataOutput& out, const Portable& p) const {
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(p);
-                    out.writeInt(cd->getVersion());
-
-                    DefaultPortableWriter dpw(context, cd, out);
-                    PortableWriter portableWriter(&dpw);
-                    p.writePortable(portableWriter);
-                    portableWriter.end();
-                }
-
-                void PortableSerializer::read(DataInput &in, Portable &p, int factoryId, int classId) const {
+                std::auto_ptr<Portable> PortableSerializer::read(ObjectDataInput &in, std::auto_ptr<Portable> portable,
+                                                                 int32_t factoryId, int32_t classId) {
                     int version = in.readInt();
 
-                    int portableVersion = findPortableVersion(factoryId, classId, p);
+                    int portableVersion = findPortableVersion(factoryId, classId, *portable);
 
                     PortableReader reader = createReader(in, factoryId, classId, version, portableVersion);
-                    p.readPortable(reader);
+                    portable->readPortable(reader);
                     reader.end();
+                    return portable;
                 }
 
-                PortableReader PortableSerializer::createReader(DataInput& input, int factoryId, int classId, int version, int portableVersion) const {
+                PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
 
                     int effectiveVersion = version;
                     if (version < 0) {
@@ -89,6 +81,57 @@ namespace hazelcast {
                         }
                     }
                     return currentVersion;
+                }
+
+                std::auto_ptr<Portable>
+                PortableSerializer::createNewPortableInstance(int32_t factoryId, int32_t classId) {
+                    const std::map<int32_t, boost::shared_ptr<PortableFactory> > &portableFactories =
+                            context.getSerializationConfig().getPortableFactories();
+                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::PortableFactory> >::const_iterator factoryIt =
+                            portableFactories.find(factoryId);
+                    
+                    if (portableFactories.end() == factoryIt) {
+                        return std::auto_ptr<Portable>();
+                    }
+
+                    return factoryIt->second->create(classId);
+                }
+
+                int32_t PortableSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_PORTABLE;
+                }
+
+                void PortableSerializer::write(ObjectDataOutput &out, const void *object) {
+                    const Portable *p = static_cast<const Portable *>(object);
+
+                    if (p->getClassId() == 0) {
+                        throw exception::IllegalArgumentException("Portable class ID cannot be zero!");
+                    }
+
+                    out.writeInt(p->getFactoryId());
+                    out.writeInt(p->getClassId());
+
+                    writeInternal(out, p);
+                }
+
+                void PortableSerializer::writeInternal(ObjectDataOutput &out, const Portable *p) const {
+                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(*p);
+                    out.writeInt(cd->getVersion());
+
+                    DefaultPortableWriter dpw(context, cd, out);
+                    PortableWriter portableWriter(&dpw);
+                    p->writePortable(portableWriter);
+                    portableWriter.end();
+                }
+
+                void *PortableSerializer::read(ObjectDataInput &in) {
+                    // should not be called
+                    assert(0);
+                    return NULL;
+                }
+
+                int32_t PortableSerializer::readInt(ObjectDataInput &in) const {
+                    return in.readInt();
                 }
             }
         }

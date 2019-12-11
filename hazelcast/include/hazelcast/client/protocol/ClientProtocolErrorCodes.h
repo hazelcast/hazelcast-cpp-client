@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"),
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,22 @@ namespace hazelcast {
                 OUT_OF_MEMORY_ERROR = 76,
                 STACK_OVERFLOW_ERROR = 77,
                 NATIVE_OUT_OF_MEMORY_ERROR = 78,
-                SERVICE_NOT_FOUND = 79
+                SERVICE_NOT_FOUND = 79,
+                STALE_TASK_ID = 80,
+                DUPLICATE_TASK = 81,
+                STALE_TASK = 82,
+                LOCAL_MEMBER_RESET = 83,
+                INDETERMINATE_OPERATION_STATE = 84,
+                FLAKE_ID_NODE_ID_OUT_OF_RANGE_EXCEPTION = 85,
+                TARGET_NOT_REPLICA_EXCEPTION = 86,
+                MUTATION_DISALLOWED_EXCEPTION = 87,
+                CONSISTENCY_LOST = 88,
+
+                // Non protocol exceptions, thrown locally
+                        HAZELCAST_CLIENT_OFFLINE = -1,
+                UNKNOWN_HOST = -2,
+                FUTURE_UNINITIALIZED = -3,
+                UNEXPECTED_MESSAGE_TYPE = -4
             };
         }
     }

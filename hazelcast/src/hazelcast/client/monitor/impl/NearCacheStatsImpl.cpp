@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 #include <limits>
 #include <sstream>
 
-#include <hazelcast/client/monitor/impl/NearCacheStatsImpl.h>
-#include <hazelcast/util/Util.h>
+#include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace client {
@@ -31,6 +31,8 @@ namespace hazelcast {
                                                            misses(0),
                                                            evictions(0),
                                                            expirations(0),
+                                                           invalidations(0),
+                                                           invalidationRequests(0),
                                                            persistenceCount(0),
                                                            lastPersistenceTime(0),
                                                            lastPersistenceDuration(0),
@@ -129,6 +131,26 @@ namespace hazelcast {
                     ++expirations;
                 }
 
+                int64_t NearCacheStatsImpl::getInvalidations() {
+                    return invalidations.get();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidations() {
+                    ++invalidations;
+                }
+
+                int64_t NearCacheStatsImpl::getInvalidationRequests() {
+                    return invalidationRequests.get();
+                }
+
+                void NearCacheStatsImpl::incrementInvalidationRequests() {
+                    ++invalidationRequests;
+                }
+
+                void NearCacheStatsImpl::resetInvalidationEvents() {
+                    invalidationRequests = 0;
+                }
+
                 int64_t NearCacheStatsImpl::getPersistenceCount() {
                     return persistenceCount;
                 }
@@ -174,6 +196,8 @@ namespace hazelcast {
                     << ", ratio=" << std::setprecision(1) << getRatio()
                     << ", evictions=" << evictions
                     << ", expirations=" << expirations
+                    << ", invalidations=" << invalidations.get()
+                    << ", invalidationRequests=" << invalidationRequests.get()
                     << ", lastPersistenceTime=" << lastPersistenceTime
                     << ", persistenceCount=" << persistenceCount
                     << ", lastPersistenceDuration=" << lastPersistenceDuration

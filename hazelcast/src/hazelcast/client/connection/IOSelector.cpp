@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@
 #include "hazelcast/util/ServerSocket.h"
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/ILogger.h"
-#include "hazelcast/util/Thread.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -38,16 +38,11 @@ namespace hazelcast {
     namespace client {
         namespace connection {
 
-            IOSelector::IOSelector(ConnectionManager &connectionManager)
-            :connectionManager(connectionManager) {
+            IOSelector::IOSelector(ClientConnectionManagerImpl &connectionManager, const config::SocketOptions &socketOptions)
+            : socketSet(connectionManager.getLogger()), connectionManager(connectionManager),
+            logger(connectionManager.getLogger()), socketOptions(socketOptions) {
                 t.tv_sec = 5;
                 t.tv_usec = 0;
-                isAlive = true;
-            }
-
-            void IOSelector::staticListen(util::ThreadArgs &args) {
-                IOSelector *inSelector = (IOSelector *) args.arg0;
-                inSelector->listen();
             }
 
             IOSelector::~IOSelector() {
@@ -55,22 +50,26 @@ namespace hazelcast {
             }
 
             void IOSelector::wakeUp() {
+                if (!wakeUpSocket.get()) {
+                    return;
+                }
+
                 int wakeUpSignal = 9;
                 try {
-                    wakeUpSocket->send(&wakeUpSignal, sizeof(int));
+                    wakeUpSocket->send(&wakeUpSignal, sizeof(int), MSG_WAITALL);
                 } catch(exception::IOException &e) {
-                    util::ILogger::getLogger().warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
+                    logger.warning(std::string("Exception at IOSelector::wakeUp ") + e.what());
                     throw;
                 }
             }
 
-            void IOSelector::listen() {
+            void IOSelector::run() {
                 while (isAlive) {
                     try{
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException &e){
-                        util::ILogger::getLogger().warning(std::string("Exception at IOSelector::listen() ") + e.what());
+                        logger.warning(std::string("Exception at IOSelector::listen() ") + e.what());
                     }
                 }
             }
@@ -84,22 +83,30 @@ namespace hazelcast {
                 else
                     localAddress = "::1";
 
-                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p)));
+                wakeUpSocket.reset(new internal::socket::TcpSocket(Address(localAddress, p), NULL));
                 int error = wakeUpSocket->connect(5000);
                 if (error == 0) {
                     sleepingSocket.reset(serverSocket.accept());
                     sleepingSocket->setBlocking(false);
                     wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
+                    isAlive = true;
                     return true;
                 } else {
-                    util::ILogger::getLogger().severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
+                    logger.severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
                     return false;
                 }
             }
 
             void IOSelector::shutdown() {
-                isAlive = false;
+                if (!isAlive.compareAndSet(true, false)) {
+                    return;
+                }
+                try {
+                    wakeUp();
+                } catch (exception::IOException &) {
+                    // suppress io exception
+                }
             }
 
             void IOSelector::addTask(ListenerTask *listenerTask) {
@@ -129,15 +136,15 @@ namespace hazelcast {
                 if (numSelected == SOCKET_ERROR) {
                     int error = WSAGetLastError();
                     if (WSAENOTSOCK == error) {
-                        if (util::ILogger::getLogger().isEnabled(FINEST)) {
+                        if (logger.isEnabled(FINEST)) {
                             char errorMsg[200];
                             util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            util::ILogger::getLogger().finest(errorMsg);
+                            logger.finest(errorMsg);
                         }
                     } else {
                         char errorMsg[200];
                         util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        util::ILogger::getLogger().severe(errorMsg);
+                        logger.severe(errorMsg);
                     }
                     return true;
                 }
@@ -145,15 +152,15 @@ namespace hazelcast {
                 if (numSelected == -1) {
                     int error = errno;
                     if (EINTR == error || EBADF == error /* This case may happen if socket closed by cluster listener thread */) {
-                        if (util::ILogger::getLogger().isEnabled(FINEST)) {
+                        if (logger.isEnabled(FINEST)) {
                             char errorMsg[200];
                             util::strerror_s(error, errorMsg, 200, messagePrefix);
-                            util::ILogger::getLogger().finest(errorMsg);
+                            logger.finest(errorMsg);
                         }
                     } else{
                         char errorMsg[200];
                         util::strerror_s(error, errorMsg, 200, messagePrefix);
-                        util::ILogger::getLogger().severe(errorMsg);
+                        logger.severe(errorMsg);
                     }
                     return true;
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/client/aws/impl/AwsAddressTranslator.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
-#include "hazelcast/client/Address.h"
-#include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/ILogger.h"
 
 namespace hazelcast {
     namespace client {
         namespace aws {
             namespace impl {
-                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig) {
+                AwsAddressTranslator::AwsAddressTranslator(config::ClientAwsConfig &awsConfig, util::ILogger &logger)
+                : logger(logger) {
                     if (awsConfig.isEnabled() && !awsConfig.isInsideAws()) {
-                        awsClient = std::auto_ptr<AWSClient>(new AWSClient(awsConfig));
+                        awsClient = std::auto_ptr<AWSClient>(new AWSClient(awsConfig, logger));
                     }
                 }
 
@@ -59,7 +58,7 @@ namespace hazelcast {
                         privateToPublic = boost::shared_ptr<std::map<std::string, std::string> >(
                                 new std::map<std::string, std::string>(awsClient->getAddresses()));
                     } catch (exception::IException &e) {
-                        util::ILogger::getLogger().warning(std::string("AWS addresses failed to load: ") + e.what());
+                        logger.warning(std::string("AWS addresses failed to load: ") + e.what());
                     }
                 }
 

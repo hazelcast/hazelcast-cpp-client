@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,63 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <boost/foreach.hpp>
+
+#include "hazelcast/client/internal/partition/strategy/StringPartitioningStrategy.h"
+#include "hazelcast/client/internal/config/ConfigUtils.h"
+#include "hazelcast/client/config/ClientConnectionStrategyConfig.h"
 #include "hazelcast/client/ClientConfig.h"
-#include "hazelcast/client/config/NearCacheConfig.h"
 #include "hazelcast/client/LifecycleListener.h"
-#include "hazelcast/client/InitialMembershipListener.h"
-#include "hazelcast/client/protocol/UsernamePasswordCredentials.h"
 
 namespace hazelcast {
     namespace client {
 
         ClientConfig::ClientConfig()
-        : loadBalancer(NULL)
-        , defaultLoadBalancer(new impl::RoundRobinLB)
-        , smart(true)
-        , redoOperation(false)
-        , connectionAttemptLimit(2)
-        , attemptPeriod(3000)
-        , socketInterceptor(NULL)
-        , credentials(NULL)
-        , defaultCredentials(NULL){
+                : loadBalancer(NULL), redoOperation(false), socketInterceptor(NULL), credentials(NULL),
+                  executorPoolSize(-1) {
         }
 
-        ClientConfig& ClientConfig::addAddress(const Address& address) {
-            addressList.insert(address);
+        ClientConfig &ClientConfig::addAddress(const Address &address) {
+            networkConfig.addAddress(address);
             return (*this);
         }
 
-        ClientConfig& ClientConfig::addAddresses(const std::vector<Address>& addresses) {
-            addressList.insert(addresses.begin(), addresses.end());
+        ClientConfig &ClientConfig::addAddresses(const std::vector<Address> &addresses) {
+            networkConfig.addAddresses(addresses);
             return (*this);
         }
 
 
-        std::set<Address, addressComparator>& ClientConfig::getAddresses() {
-            return addressList;
+        std::set<Address> ClientConfig::getAddresses() {
+            std::set<Address> result;
+            BOOST_FOREACH(const Address &address, networkConfig.getAddresses()) {
+                            result.insert(address);
+                        }
+            return result;
         }
 
-        ClientConfig& ClientConfig::setGroupConfig(GroupConfig& groupConfig) {
+        ClientConfig &ClientConfig::setGroupConfig(const GroupConfig &groupConfig) {
             this->groupConfig = groupConfig;
             return *this;
         }
 
 
-        GroupConfig& ClientConfig::getGroupConfig() {
+        GroupConfig &ClientConfig::getGroupConfig() {
             return groupConfig;
         }
 
 
-        ClientConfig& ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
-            this->connectionAttemptLimit = connectionAttemptLimit;
+        ClientConfig &ClientConfig::setConnectionAttemptLimit(int connectionAttemptLimit) {
+            networkConfig.setConnectionAttemptLimit(connectionAttemptLimit);
             return *this;
         }
 
         int ClientConfig::getConnectionAttemptLimit() const {
-            return connectionAttemptLimit;
+            return networkConfig.getConnectionAttemptLimit();
         }
 
-        ClientConfig& ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
+        ClientConfig &ClientConfig::setConnectionTimeout(int connectionTimeoutInMillis) {
             this->networkConfig.setConnectionTimeout(connectionTimeoutInMillis);
             return *this;
         }
@@ -78,16 +77,16 @@ namespace hazelcast {
             return (int) this->networkConfig.getConnectionTimeout();
         }
 
-        ClientConfig& ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
-            this->attemptPeriod = attemptPeriodInMillis;
+        ClientConfig &ClientConfig::setAttemptPeriod(int attemptPeriodInMillis) {
+            networkConfig.setConnectionAttemptPeriod(attemptPeriodInMillis);
             return *this;
         }
 
         int ClientConfig::getAttemptPeriod() const {
-            return attemptPeriod;
+            return networkConfig.getConnectionAttemptPeriod();
         }
 
-        ClientConfig& ClientConfig::setRedoOperation(bool redoOperation) {
+        ClientConfig &ClientConfig::setRedoOperation(bool redoOperation) {
             this->redoOperation = redoOperation;
             return *this;
         }
@@ -98,90 +97,115 @@ namespace hazelcast {
 
         LoadBalancer *const ClientConfig::getLoadBalancer() {
             if (loadBalancer == NULL)
-                return defaultLoadBalancer.get();
+                return &defaultLoadBalancer;
             return loadBalancer;
         }
 
-        ClientConfig& ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
+        ClientConfig &ClientConfig::setLoadBalancer(LoadBalancer *loadBalancer) {
             this->loadBalancer = loadBalancer;
             return *this;
         }
 
-        ClientConfig& ClientConfig::setLogLevel(LogLevel loggerLevel) {
-            util::ILogger::getLogger().setLogLevel(loggerLevel);
+        ClientConfig &ClientConfig::setLogLevel(LogLevel loggerLevel) {
+            this->loggerConfig.setLogLevel((LoggerLevel::Level) loggerLevel);
             return *this;
         }
 
-        ClientConfig& ClientConfig::addListener(LifecycleListener *listener) {
+        config::LoggerConfig &ClientConfig::getLoggerConfig() {
+            return loggerConfig;
+        }
+
+        ClientConfig &ClientConfig::addListener(LifecycleListener *listener) {
             lifecycleListeners.insert(listener);
             return *this;
         }
 
-        ClientConfig& ClientConfig::addListener(MembershipListener *listener) {
+        ClientConfig &ClientConfig::addListener(MembershipListener *listener) {
+            if (listener == NULL) {
+                throw exception::NullPointerException("ClientConfig::addListener(MembershipListener *)",
+                                                      "listener can't be null");
+            }
+
             membershipListeners.insert(listener);
+            managedMembershipListeners.insert(
+                    boost::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
             return *this;
         }
 
-        ClientConfig& ClientConfig::addListener(InitialMembershipListener *listener) {
-            initialMembershipListeners.insert(listener);
+        ClientConfig &ClientConfig::addListener(InitialMembershipListener *listener) {
+            if (listener == NULL) {
+                throw exception::NullPointerException("ClientConfig::addListener(InitialMembershipListener *)",
+                                                      "listener can't be null");
+            }
+
+            membershipListeners.insert(listener);
+            managedMembershipListeners.insert(
+                    boost::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
             return *this;
         }
 
+        ClientConfig &ClientConfig::addListener(const boost::shared_ptr<MembershipListener> &listener) {
+            membershipListeners.insert(listener.get());
+            managedMembershipListeners.insert(listener);
+            return *this;
+        }
 
-        const std::set<LifecycleListener *>& ClientConfig::getLifecycleListeners() const {
+        ClientConfig &ClientConfig::addListener(const boost::shared_ptr<InitialMembershipListener> &listener) {
+            membershipListeners.insert(listener.get());
+            managedMembershipListeners.insert(listener);
+            return *this;
+        }
+
+        const std::set<LifecycleListener *> &ClientConfig::getLifecycleListeners() const {
             return lifecycleListeners;
         }
 
-        const std::set<MembershipListener *>& ClientConfig::getMembershipListeners() const {
+        const std::set<MembershipListener *> &ClientConfig::getMembershipListeners() const {
             return membershipListeners;
         }
 
-        const std::set<InitialMembershipListener *>& ClientConfig::getInitialMembershipListeners() const {
-            return initialMembershipListeners;
-        }
-
-        ClientConfig& ClientConfig::setCredentials(Credentials *credentials) {
+        ClientConfig &ClientConfig::setCredentials(Credentials *credentials) {
             this->credentials = credentials;
             return *this;
         }
 
         const Credentials *ClientConfig::getCredentials() {
-            return defaultCredentials.get();
+            return credentials;
         }
 
-        ClientConfig& ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
+        ClientConfig &ClientConfig::setSocketInterceptor(SocketInterceptor *socketInterceptor) {
             this->socketInterceptor = socketInterceptor;
             return *this;
         }
 
-        SocketInterceptor* ClientConfig::getSocketInterceptor() {
+        SocketInterceptor *ClientConfig::getSocketInterceptor() {
             return socketInterceptor;
         }
 
-        ClientConfig& ClientConfig::setSmart(bool smart) {
-            this->smart = smart;
+        ClientConfig &ClientConfig::setSmart(bool smart) {
+            networkConfig.setSmartRouting(smart);
             return *this;
         }
 
         bool ClientConfig::isSmart() const {
-            return smart;
+            return networkConfig.isSmartRouting();
         }
 
-        SerializationConfig const& ClientConfig::getSerializationConfig() const {
+        SerializationConfig &ClientConfig::getSerializationConfig() {
             return serializationConfig;
         }
 
-        ClientConfig& ClientConfig::setSerializationConfig(SerializationConfig const& serializationConfig) {
+        ClientConfig &ClientConfig::setSerializationConfig(SerializationConfig const &serializationConfig) {
             this->serializationConfig = serializationConfig;
             return *this;
         }
 
 
-        std::map<std::string, std::string>& ClientConfig::getProperties() {
+        std::map<std::string, std::string> &ClientConfig::getProperties() {
             return properties;
         }
 
-        ClientConfig& ClientConfig::setProperty(const std::string& name, const std::string& value) {
+        ClientConfig &ClientConfig::setProperty(const std::string &name, const std::string &value) {
             properties[name] = value;
             return *this;
         }
@@ -207,5 +231,76 @@ namespace hazelcast {
             this->networkConfig = networkConfig;
             return *this;
         }
+
+        const boost::shared_ptr<mixedtype::config::MixedNearCacheConfig>
+        ClientConfig::getMixedNearCacheConfig(const std::string &name) {
+            return boost::static_pointer_cast<mixedtype::config::MixedNearCacheConfig>(
+                    getNearCacheConfig<TypedData, TypedData>(name));
+        }
+
+        const boost::shared_ptr<std::string> &ClientConfig::getInstanceName() const {
+            return instanceName;
+        }
+
+        void ClientConfig::setInstanceName(const boost::shared_ptr<std::string> &instanceName) {
+            ClientConfig::instanceName = instanceName;
+        }
+
+        int32_t ClientConfig::getExecutorPoolSize() const {
+            return executorPoolSize;
+        }
+
+        void ClientConfig::setExecutorPoolSize(int32_t executorPoolSize) {
+            ClientConfig::executorPoolSize = executorPoolSize;
+        }
+
+        config::ClientConnectionStrategyConfig &ClientConfig::getConnectionStrategyConfig() {
+            return connectionStrategyConfig;
+        }
+
+        ClientConfig &ClientConfig::setConnectionStrategyConfig(
+                const config::ClientConnectionStrategyConfig &connectionStrategyConfig) {
+            ClientConfig::connectionStrategyConfig = connectionStrategyConfig;
+            return *this;
+        }
+
+        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::findFlakeIdGeneratorConfig(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+            if (config.get() != NULL) {
+                return config;
+            }
+            return getFlakeIdGeneratorConfig("default");
+        }
+
+
+        boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> ClientConfig::getFlakeIdGeneratorConfig(const std::string &name) {
+            std::string baseName = internal::partition::strategy::StringPartitioningStrategy::getBaseName(name);
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> config = internal::config::ConfigUtils::lookupByPattern<config::ClientFlakeIdGeneratorConfig>(
+                    configPatternMatcher, flakeIdGeneratorConfigMap, baseName);
+            if (config.get() != NULL) {
+                return config;
+            }
+            boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> defConfig = flakeIdGeneratorConfigMap.get("default");
+            if (defConfig.get() == NULL) {
+                defConfig.reset(new config::ClientFlakeIdGeneratorConfig("default"));
+                flakeIdGeneratorConfigMap.put(defConfig->getName(), defConfig);
+            }
+            config.reset(new config::ClientFlakeIdGeneratorConfig(*defConfig));
+            config->setName(name);
+            flakeIdGeneratorConfigMap.put(config->getName(), config);
+            return config;
+        }
+
+        ClientConfig &ClientConfig::addFlakeIdGeneratorConfig(const boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> &config) {
+            flakeIdGeneratorConfigMap.put(config->getName(), config);
+            return *this;
+        }
+
+        const std::set<boost::shared_ptr<MembershipListener> > &ClientConfig::getManagedMembershipListeners() const {
+            return managedMembershipListeners;
+        }
+
     }
 }

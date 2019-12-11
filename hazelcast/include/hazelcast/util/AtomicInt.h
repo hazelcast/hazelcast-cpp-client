@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@
 #ifndef HAZELCAST_AtomicInt
 #define HAZELCAST_AtomicInt
 
-#include <stdint.h>
-
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Atomic.h"
 
@@ -32,11 +30,15 @@
 
 namespace hazelcast {
     namespace util {
-        class HAZELCAST_API AtomicInt : public Atomic<int32_t> {
+        class HAZELCAST_API AtomicInt : public Atomic<int> {
         public:
             AtomicInt();
 
-            AtomicInt(int value);
+            AtomicInt(const int &v);
+
+        private:
+            AtomicInt(const AtomicInt &rhs);
+            void operator=(const AtomicInt &rhs);
         };
     }
 }

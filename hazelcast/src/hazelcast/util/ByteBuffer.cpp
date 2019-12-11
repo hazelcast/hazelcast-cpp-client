@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@
 // Created by sancar koyunlu on 31/12/13.
 //
 
+#include <cassert>
+#include <string.h>
+
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/client/Socket.h"
-#include <cassert>
-#include <algorithm>
-#include <string.h>
+#include "hazelcast/util/Util.h"
 
 namespace hazelcast {
     namespace util {
@@ -63,21 +64,9 @@ namespace hazelcast {
             return pos;
         }
 
-
-        void ByteBuffer::position(size_t i) {
-            pos = i;
-        }
-
-        size_t ByteBuffer::readFrom(const client::Socket& socket, int flag) {
+        size_t ByteBuffer::readFrom(client::Socket& socket, int flag) {
             size_t rm = remaining();
             size_t bytesReceived = (size_t)socket.receive(ix(), (int)rm, flag);
-            safeIncrementPosition(bytesReceived);
-            return bytesReceived;
-        }
-
-        size_t ByteBuffer::readFrom(client::Socket const &socket, int numBytesToRead, int flag) {
-            size_t calculatedNumber = std::min<size_t>(remaining(), numBytesToRead);
-            size_t bytesReceived = (size_t)socket.receive(ix(), (int)calculatedNumber, flag);
             safeIncrementPosition(bytesReceived);
             return bytesReceived;
         }
@@ -134,7 +123,7 @@ namespace hazelcast {
         }
 
         size_t ByteBuffer::readBytes(byte *target, size_t len) {
-            size_t numBytesToCopy = std::min<size_t>(lim - pos, len);
+            size_t numBytesToCopy = util::min<size_t>(lim - pos, len);
             memcpy(target, ix(), numBytesToCopy);
             pos += numBytesToCopy;
             return numBytesToCopy;

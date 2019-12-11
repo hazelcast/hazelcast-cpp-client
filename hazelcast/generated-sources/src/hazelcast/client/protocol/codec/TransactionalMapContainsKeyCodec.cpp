@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapContainsKeyCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapContainsKeyCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_CONTAINSKEY;
-                const bool TransactionalMapContainsKeyCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapContainsKeyCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> TransactionalMapContainsKeyCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMapMessageType TransactionalMapContainsKeyCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_CONTAINSKEY;
+                const bool TransactionalMapContainsKeyCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapContainsKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> TransactionalMapContainsKeyCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapContainsKeyCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapContainsKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapContainsKeyCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMapContainsKeyCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,21 +59,17 @@ namespace hazelcast {
                 }
 
                 TransactionalMapContainsKeyCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapContainsKeyCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                TransactionalMapContainsKeyCodec::ResponseParameters TransactionalMapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapContainsKeyCodec::ResponseParameters
+                TransactionalMapContainsKeyCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapContainsKeyCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapContainsKeyCodec::ResponseParameters::ResponseParameters(const TransactionalMapContainsKeyCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

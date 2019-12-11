@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,16 @@
  */
 //
 // Created by ihsan demir on 21/3/16.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
 
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/adaptor/RawPointerList.h"
 
 #include "HazelcastServer.h"
-#include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
 
 namespace hazelcast {
@@ -55,9 +59,7 @@ namespace hazelcast {
                     static void SetUpTestCase() {
                         instance = new HazelcastServer(*g_srvFactory);
                         instance2 = new HazelcastServer(*g_srvFactory);
-                        clientConfig = new ClientConfig();
-                        clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                        client = new HazelcastClient(*clientConfig);
+                        client = new HazelcastClient();
                         legacyList = new IList<std::string>(client->getList<std::string>("MyList"));
                         list = new client::adaptor::RawPointerList<std::string>(*legacyList);
                     }
@@ -66,21 +68,18 @@ namespace hazelcast {
                         delete list;
                         delete legacyList;
                         delete client;
-                        delete clientConfig;
                         delete instance2;
                         delete instance;
 
                         list = NULL;
                         legacyList = NULL;
                         client = NULL;
-                        clientConfig = NULL;
                         instance2 = NULL;
                         instance = NULL;
                     }
 
                     static HazelcastServer *instance;
                     static HazelcastServer *instance2;
-                    static ClientConfig *clientConfig;
                     static HazelcastClient *client;
                     static IList<std::string> *legacyList;
                     static client::adaptor::RawPointerList<std::string> *list;
@@ -88,7 +87,6 @@ namespace hazelcast {
 
                 HazelcastServer *RawPointerListTest::instance = NULL;
                 HazelcastServer *RawPointerListTest::instance2 = NULL;
-                ClientConfig *RawPointerListTest::clientConfig = NULL;
                 HazelcastClient *RawPointerListTest::client = NULL;
                 IList<std::string> *RawPointerListTest::legacyList = NULL;
                 client::adaptor::RawPointerList<std::string> *RawPointerListTest::list = NULL;

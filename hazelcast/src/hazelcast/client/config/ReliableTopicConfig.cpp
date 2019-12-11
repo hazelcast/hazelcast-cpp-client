@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,7 @@ namespace hazelcast {
             ReliableTopicConfig &ReliableTopicConfig::setReadBatchSize(int batchSize) {
                 if (batchSize <= 0) {
                     throw exception::IllegalArgumentException("ReliableTopicConfig::setReadBatchSize",
-                                                              "readBatchSize should be positive",
-                                                              protocol::ILLEGAL_ARGUMENT, -1);
+                                                              "readBatchSize should be positive");
                 }
 
                 this->readBatchSize = batchSize;

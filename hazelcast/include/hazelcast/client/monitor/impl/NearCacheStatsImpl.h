@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,16 @@ namespace hazelcast {
 
                     void incrementExpirations();
 
+                    int64_t getInvalidations();
+
+                    void incrementInvalidations();
+
+                    int64_t getInvalidationRequests();
+
+                    void incrementInvalidationRequests();
+
+                    void resetInvalidationEvents();
+
                     virtual int64_t getPersistenceCount();
 
                     void addPersistence(int64_t duration, int32_t writtenBytes, int32_t keyCount);
@@ -92,6 +102,7 @@ namespace hazelcast {
                     virtual std::string getLastPersistenceFailure();
 
                     virtual std::string toString();
+
                 private:
                     util::Atomic<int64_t> creationTime;
                     util::Atomic<int64_t> ownedEntryCount;
@@ -100,6 +111,9 @@ namespace hazelcast {
                     util::Atomic<int64_t> misses;
                     util::Atomic<int64_t> evictions;
                     util::Atomic<int64_t> expirations;
+
+                    util::Atomic<int64_t> invalidations;
+                    util::Atomic<int64_t> invalidationRequests;
 
                     util::Atomic<int64_t> persistenceCount;
                     util::Atomic<int64_t> lastPersistenceTime;

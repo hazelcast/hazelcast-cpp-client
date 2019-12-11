@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/MapRemoveIfSameCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const MapMessageType MapRemoveIfSameCodec::RequestParameters::TYPE = HZ_MAP_REMOVEIFSAME;
-                const bool MapRemoveIfSameCodec::RequestParameters::RETRYABLE = false;
-                const int32_t MapRemoveIfSameCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> MapRemoveIfSameCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
+                const MapMessageType MapRemoveIfSameCodec::REQUEST_TYPE = HZ_MAP_REMOVEIFSAME;
+                const bool MapRemoveIfSameCodec::RETRYABLE = false;
+                const ResponseMessageConst MapRemoveIfSameCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> MapRemoveIfSameCodec::encodeRequest(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)MapRemoveIfSameCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) MapRemoveIfSameCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(key);
@@ -44,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t MapRemoveIfSameCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const serialization::pimpl::Data &key, 
-                        const serialization::pimpl::Data &value, 
+                int32_t MapRemoveIfSameCodec::calculateDataSize(
+                        const std::string &name,
+                        const serialization::pimpl::Data &key,
+                        const serialization::pimpl::Data &value,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,21 +59,17 @@ namespace hazelcast {
                 }
 
                 MapRemoveIfSameCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("MapRemoveIfSameCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                MapRemoveIfSameCodec::ResponseParameters MapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                MapRemoveIfSameCodec::ResponseParameters
+                MapRemoveIfSameCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return MapRemoveIfSameCodec::ResponseParameters(clientMessage);
                 }
 
-                MapRemoveIfSameCodec::ResponseParameters::ResponseParameters(const MapRemoveIfSameCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

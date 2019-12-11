@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,6 @@
  */
 //
 // Created by sancar koyunlu on 6/28/13.
-
-
-
 
 #ifndef HAZELCAST_Portable
 #define HAZELCAST_Portable
@@ -55,7 +52,6 @@ namespace hazelcast {
                 * Destructor
                 */
                 virtual ~Portable(){
-
                 }
 
                 /**
@@ -83,10 +79,7 @@ namespace hazelcast {
             };
         }
     }
-
-
 }
-
 
 #endif //HAZELCAST_Portable
 

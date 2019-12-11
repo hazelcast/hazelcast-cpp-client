@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 #ifndef HAZELCAST_MAP_IMPL_NEARCACHE_INVALIDATIONAWAREWRAPPER_H_
 #define HAZELCAST_MAP_IMPL_NEARCACHE_INVALIDATIONAWAREWRAPPER_H_
 
-#include "hazelcast/client/internal/adapter/DataStructureAdapter.h"
 #include "hazelcast/client/internal/nearcache/NearCache.h"
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/internal/nearcache/impl/KeyStateMarkerImpl.h"
@@ -85,9 +84,9 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        bool remove(const boost::shared_ptr<K> &key) {
+                        bool invalidate(const boost::shared_ptr<K> &key) {
                             keyStateMarker->tryRemove(*key);
-                            return nearCache->remove(key);
+                            return nearCache->invalidate(key);
                         }
 
                         //@Override

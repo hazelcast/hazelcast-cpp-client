@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,25 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionRollbackCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionMessageType TransactionRollbackCodec::RequestParameters::TYPE = HZ_TRANSACTION_ROLLBACK;
-                const bool TransactionRollbackCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionRollbackCodec::ResponseParameters::TYPE = 100;
-                std::auto_ptr<ClientMessage> TransactionRollbackCodec::RequestParameters::encode(
-                        const std::string &transactionId, 
+                const TransactionMessageType TransactionRollbackCodec::REQUEST_TYPE = HZ_TRANSACTION_ROLLBACK;
+                const bool TransactionRollbackCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionRollbackCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
+
+                std::auto_ptr<ClientMessage> TransactionRollbackCodec::encodeRequest(
+                        const std::string &transactionId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(transactionId, threadId);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionRollbackCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionRollbackCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(transactionId);
                     clientMessage->set(threadId);
@@ -39,8 +40,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionRollbackCodec::RequestParameters::calculateDataSize(
-                        const std::string &transactionId, 
+                int32_t TransactionRollbackCodec::calculateDataSize(
+                        const std::string &transactionId,
                         int64_t threadId) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(transactionId);
@@ -48,19 +49,6 @@ namespace hazelcast {
                     return dataSize;
                 }
 
-                TransactionRollbackCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionRollbackCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
-                }
-
-                TransactionRollbackCodec::ResponseParameters TransactionRollbackCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
-                    return TransactionRollbackCodec::ResponseParameters(clientMessage);
-                }
-
-                TransactionRollbackCodec::ResponseParameters::ResponseParameters(const TransactionRollbackCodec::ResponseParameters &rhs) {
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

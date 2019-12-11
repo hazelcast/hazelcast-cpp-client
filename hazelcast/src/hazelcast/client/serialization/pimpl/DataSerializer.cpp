@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,43 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 5/15/13.
-
-
 
 #include "hazelcast/client/serialization/pimpl/DataSerializer.h"
 #include "hazelcast/client/serialization/ObjectDataOutput.h"
 #include "hazelcast/client/serialization/ObjectDataInput.h"
-#include "hazelcast/client/serialization/IdentifiedDataSerializable.h"
 
 namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                DataSerializer::DataSerializer() {
+                DataSerializer::DataSerializer(const SerializationConfig &serializationConfig)
+                        : serializationConfig(serializationConfig) {
                 }
 
                 DataSerializer::~DataSerializer() {
                 }
 
-                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable &object) const {
-                    out.writeBoolean(true);
-                    out.writeInt(object.getFactoryId());
-                    out.writeInt(object.getClassId());
-                    object.writeData(out);
-                }
-
-                void DataSerializer::read(ObjectDataInput &in, IdentifiedDataSerializable &object) const {
+                void DataSerializer::checkIfIdentifiedDataSerializable(ObjectDataInput &in) const {
                     bool identified = in.readBoolean();
                     if (!identified) {
                         throw exception::HazelcastSerializationException("void DataSerializer::read", " DataSerializable is not identified");
                     }
-                    in.readInt(); //factoryId
-                    in.readInt(); //classId
-                    object.readData(in);
                 }
 
+                int32_t DataSerializer::getHazelcastTypeId() const {
+                    return SerializationConstants::CONSTANT_TYPE_DATA;
+                }
+
+                void DataSerializer::write(ObjectDataOutput &out, const IdentifiedDataSerializable *dataSerializable) {
+                    out.writeBoolean(true);
+                    out.writeInt(dataSerializable->getFactoryId());
+                    out.writeInt(dataSerializable->getClassId());
+                    dataSerializable->writeData(out);
+                }
+
+                void DataSerializer::write(ObjectDataOutput &out, const void *object) {
+                    // should not be called
+                    assert(0);
+                }
+
+                void *DataSerializer::read(ObjectDataInput &in) {
+                    // should not be called
+                    assert(0);
+                    return NULL;
+                }
+
+                int32_t DataSerializer::readInt(ObjectDataInput &in) const {
+                    return in.readInt();
+                }
             }
         }
     }

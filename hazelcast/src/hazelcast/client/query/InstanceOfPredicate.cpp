@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ namespace hazelcast {
 
             void InstanceOfPredicate::readData(serialization::ObjectDataInput &in) {
                 // Not need to read at the client side
-                throw exception::IException("InstanceOfPredicate::readData",
+                throw exception::HazelcastSerializationException("InstanceOfPredicate::readData",
                                             "Client should not need to use readData method!!!");
             }
         }

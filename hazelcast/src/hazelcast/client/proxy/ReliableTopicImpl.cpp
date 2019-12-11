@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 01/10/14.
-//
 
-#include "hazelcast/util/Util.h"
 #include "hazelcast/client/proxy/ReliableTopicImpl.h"
 #include "hazelcast/client/topic/impl/TopicEventHandlerImpl.h"
-#include "hazelcast/client/spi/ServerListenerService.h"
-#include "hazelcast/client/HazelcastClient.h"
-#include "hazelcast/client/connection/Connection.h"
+#include "hazelcast/client/ClientConfig.h"
 
 namespace hazelcast {
     namespace client {
@@ -30,7 +24,7 @@ namespace hazelcast {
             ReliableTopicImpl::ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
                                                  boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ProxyImpl("hz:impl:topicService", instanceName, context), ringbuffer(rb),
-                      logger(util::ILogger::getLogger()), config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
+                      logger(context->getLogger()), config(context->getClientConfig().getReliableTopicConfig(instanceName)) {
             }
 
             void ReliableTopicImpl::publish(const serialization::pimpl::Data &data) {

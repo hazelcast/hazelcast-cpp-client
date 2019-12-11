@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "ClientTopicTest.h"
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
 #include "HazelcastServerFactory.h"
+
+#include "ClientTestSupport.h"
+#include "HazelcastServer.h"
+
+#include "hazelcast/client/ClientConfig.h"
+#include "hazelcast/client/ITopic.h"
 #include "hazelcast/client/HazelcastClient.h"
 
 namespace hazelcast {
     namespace client {
 
-        class HazelcastClient;
-
         namespace test {
-            ClientTopicTest::ClientTopicTest()
-            : instance(*g_srvFactory)
-            , client(getNewClient())
-            , topic(client->getTopic<std::string>("ClientTopicTest")) {
+            class ClientTopicTest : public ClientTestSupport {
+            public:
+                ClientTopicTest();
+
+            protected:
+                HazelcastServer instance;
+                ClientConfig clientConfig;
+                HazelcastClient client;
+                ITopic<std::string> topic;
+            };
+
+            ClientTopicTest::ClientTopicTest() : instance(*g_srvFactory), client(getNewClient()),
+                                                 topic(client.getTopic<std::string>("ClientTopicTest")) {
             }
 
             class MyMessageListener : public topic::MessageListener<std::string> {
@@ -43,7 +59,6 @@ namespace hazelcast {
             };
 
             TEST_F(ClientTopicTest, testTopicListeners) {
-
                 util::CountDownLatch latch(10);
                 MyMessageListener listener(latch);
                 std::string id = topic.addMessageListener(listener);

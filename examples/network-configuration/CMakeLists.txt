@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+# Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,3 +15,5 @@
 #
 add_subdirectory(tcpip)
 add_subdirectory(socket-interceptor)
+add_subdirectory(shuffle-memberlist)
+add_subdirectory(connection-strategy)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,8 @@ namespace hazelcast {
             bool TransactionalMultiMapImpl::put(const serialization::pimpl::Data &key,
                                                 const serialization::pimpl::Data &value) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapPutCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), key, value);
+                        protocol::codec::TransactionalMultiMapPutCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalMultiMapPutCodec::ResponseParameters>(
                         request);
@@ -51,8 +51,8 @@ namespace hazelcast {
             std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::getData(
                     const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapGetCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), key);
+                        protocol::codec::TransactionalMultiMapGetCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMultiMapGetCodec::ResponseParameters>(
                         request);
@@ -62,8 +62,8 @@ namespace hazelcast {
             bool TransactionalMultiMapImpl::remove(const serialization::pimpl::Data &key,
                                                    const serialization::pimpl::Data &value) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapRemoveEntryCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), key, value);
+                        protocol::codec::TransactionalMultiMapRemoveEntryCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key, value);
 
                 return invokeAndGetResult<bool, protocol::codec::TransactionalMultiMapRemoveEntryCodec::ResponseParameters>(
                         request);
@@ -73,8 +73,8 @@ namespace hazelcast {
             std::vector<serialization::pimpl::Data> TransactionalMultiMapImpl::removeData(
                     const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapRemoveCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), key);
+                        protocol::codec::TransactionalMultiMapRemoveCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::TransactionalMultiMapRemoveCodec::ResponseParameters>(
                         request);
@@ -83,8 +83,8 @@ namespace hazelcast {
 
             int TransactionalMultiMapImpl::valueCount(const serialization::pimpl::Data &key) {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapValueCountCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId(), key);
+                        protocol::codec::TransactionalMultiMapValueCountCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId(), key);
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalMultiMapValueCountCodec::ResponseParameters>(
                         request);
@@ -92,8 +92,8 @@ namespace hazelcast {
 
             int TransactionalMultiMapImpl::size() {
                 std::auto_ptr<protocol::ClientMessage> request =
-                        protocol::codec::TransactionalMultiMapSizeCodec::RequestParameters::encode(
-                                getName(), getTransactionId(), util::getThreadId());
+                        protocol::codec::TransactionalMultiMapSizeCodec::encodeRequest(
+                                getName(), getTransactionId(), util::getCurrentThreadId());
 
                 return invokeAndGetResult<int, protocol::codec::TransactionalMultiMapSizeCodec::ResponseParameters>(
                         request);

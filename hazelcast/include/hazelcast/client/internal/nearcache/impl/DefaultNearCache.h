@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,9 @@ namespace hazelcast {
                     template<typename K, typename V, typename KS>
                     class DefaultNearCache : public NearCache<KS, V> {
                     public:
-                        DefaultNearCache(const std::string &cacheName, const config::NearCacheConfig<K, V> &config,
-                                         serialization::pimpl::SerializationService &ss)
-                                : name(cacheName), nearCacheConfig(config), serializationService(ss) {
+                        DefaultNearCache(const std::string &cacheName, const client::config::NearCacheConfig<K, V> &config,
+                                         serialization::pimpl::SerializationService &ss, util::ILogger &logger)
+                                : name(cacheName), nearCacheConfig(config), serializationService(ss), logger(logger) {
                         }
 
                         virtual ~DefaultNearCache() {
@@ -92,11 +92,10 @@ namespace hazelcast {
                             nearCacheRecordStore->put(key, value);
                         }
 
-                        //@Override
-                        bool remove(const boost::shared_ptr<KS> &key) {
-                            util::Preconditions::checkNotNull(key, "key cannot be null on remove!");
+                        bool invalidate(const boost::shared_ptr<KS> &key) {
+                            util::Preconditions::checkNotNull(key, "key cannot be null on invalidate!");
 
-                            return nearCacheRecordStore->remove(key);
+                            return nearCacheRecordStore->invalidate(key);
                         }
 
                         //@Override
@@ -118,7 +117,7 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        const config::InMemoryFormat getInMemoryFormat() const {
+                        const client::config::InMemoryFormat getInMemoryFormat() const {
                             return nearCacheConfig.getInMemoryFormat();
                         }
 
@@ -138,14 +137,14 @@ namespace hazelcast {
 
                     private:
                         std::auto_ptr<NearCacheRecordStore<KS, V> > createNearCacheRecordStore(const std::string &name,
-                                                                                               const config::NearCacheConfig<K, V> &nearCacheConfig) {
-                            config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
+                                                                                               const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
+                            client::config::InMemoryFormat inMemoryFormat = nearCacheConfig.getInMemoryFormat();
                             switch (inMemoryFormat) {
-                                case config::BINARY:
+                                case client::config::BINARY:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheDataRecordStore<K, V, KS>(name, nearCacheConfig,
                                                                                           serializationService));
-                                case config::OBJECT:
+                                case client::config::OBJECT:
                                     return std::auto_ptr<NearCacheRecordStore<KS, V> >(
                                             new store::NearCacheObjectRecordStore<K, V, KS>(name, nearCacheConfig,
                                                                                             serializationService));
@@ -156,21 +155,25 @@ namespace hazelcast {
                             }
                         }
 
-                        class ExpirationTask {
+                        class ExpirationTask : public util::Runnable {
                         public:
-                            ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store)
+                            ExpirationTask(const std::string &mapName, NearCacheRecordStore<KS, V> &store,
+                                    util::ILogger &logger)
                                     : expirationInProgress(false), nearCacheRecordStore(store),
                                       initialDelayInSeconds(
                                               NearCache<K, V>::DEFAULT_EXPIRATION_TASK_INITIAL_DELAY_IN_SECONDS),
                                       periodInSeconds(NearCache<K, V>::DEFAULT_EXPIRATION_TASK_DELAY_IN_SECONDS),
-                                      cancelled(false), name(mapName) {
+                                      cancelled(false), name(mapName), logger(logger) {
                             }
 
-                            void run() {
+                            virtual ~ExpirationTask() {
+                            }
+
+                            virtual void run() {
                                 std::ostringstream out;
                                 out << "Near cache expiration thread started for map " << name << ". The period is:" <<
                                 periodInSeconds << " seconds.";
-                                util::ILogger::getLogger().info(out.str());
+                                logger.info(out.str());
                                 int periodInMillis = periodInSeconds * 1000;
 
                                 util::sleep(initialDelayInSeconds);
@@ -188,7 +191,7 @@ namespace hazelcast {
                                             << e.what() << " This mat NOT a vital problem since this doExpiration runs "
                                                     "periodically every " << periodInMillis <<
                                             "milliseconds and it should recover eventually.";
-                                            util::ILogger::getLogger().info(out.str());
+                                            logger.info(out.str());
                                         }
                                     }
 
@@ -200,24 +203,28 @@ namespace hazelcast {
                                 }
                             }
 
+                            virtual const std::string getName() const {
+                                return "ExpirationTask";
+                            }
+
                             void schedule() {
-                                task = std::auto_ptr<util::Thread>(new util::Thread(taskStarter, this));
+                                task = std::auto_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
+                                        new ExpirationTask(name, nearCacheRecordStore, logger)), logger));
+                                task->start();
+                                cancelled = false;
                             }
 
                             void cancel() {
-                                cancelled = true;
+                                if(!cancelled.compareAndSet(false, true)) {
+                                    return;
+                                }
+
                                 task->cancel();
                                 task->join();
-                                std::ostringstream out;
-                                out << "Near cache expiration thread is stopped for map "
-                                << name << " since near cache is being destroyed.";
-                                util::ILogger::getLogger().info(out.str());
+                                logger.info() << "Near cache expiration thread is stopped for map "
+                                                                     << name << " since near cache is being destroyed.";
                             }
 
-                            static void taskStarter(util::ThreadArgs &args) {
-                                ExpirationTask *expirationTask = (ExpirationTask *) args.arg0;
-                                expirationTask->run();
-                            }
                         private:
                             util::AtomicBoolean expirationInProgress;
                             NearCacheRecordStore<KS, V> &nearCacheRecordStore;
@@ -226,13 +233,14 @@ namespace hazelcast {
                             std::auto_ptr<util::Thread> task;
                             util::AtomicBoolean cancelled;
                             std::string name;
+                            util::ILogger &logger;
                         };
 
                         std::auto_ptr<ExpirationTask> createAndScheduleExpirationTask() {
                             if (nearCacheConfig.getMaxIdleSeconds() > 0L ||
                                 nearCacheConfig.getTimeToLiveSeconds() > 0L) {
                                 std::auto_ptr<ExpirationTask> expirationTask(
-                                        new ExpirationTask(name, *nearCacheRecordStore));
+                                        new ExpirationTask(name, *nearCacheRecordStore, logger));
                                 expirationTask->schedule();
                                 return expirationTask;
                             }
@@ -240,8 +248,9 @@ namespace hazelcast {
                         }
 
                         const std::string &name;
-                        const config::NearCacheConfig<K, V> &nearCacheConfig;
+                        const client::config::NearCacheConfig<K, V> &nearCacheConfig;
                         serialization::pimpl::SerializationService &serializationService;
+                        util::ILogger &logger;
 
                         std::auto_ptr<NearCacheRecordStore<KS, V> > nearCacheRecordStore;
                         std::auto_ptr<ExpirationTask> expirationTaskFuture;

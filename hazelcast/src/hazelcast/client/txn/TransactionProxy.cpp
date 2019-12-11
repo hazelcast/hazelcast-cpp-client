@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/5/13.
 
-
-
+#include <hazelcast/client/txn/ClientTransactionUtil.h>
 #include "hazelcast/client/txn/TransactionProxy.h"
 #include "hazelcast/client/TransactionOptions.h"
-#include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/util/Util.h"
-#include <ctime>
+#include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
 
 #include "hazelcast/client/protocol/codec/TransactionCreateCodec.h"
 #include "hazelcast/client/protocol/codec/TransactionCommitCodec.h"
@@ -31,13 +28,24 @@
 namespace hazelcast {
     namespace client {
         namespace txn {
-            #define MILLISECOND_IN_A_SECOND 1000
+#define MILLISECOND_IN_A_SECOND 1000
 
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
                                                boost::shared_ptr<connection::Connection> connection)
                     : options(txnOptions), clientContext(clientContext), connection(connection),
-                      threadId(util::getThreadId()), state(TxnState::NO_TXN), startTime(0) {
+                      threadId(util::getCurrentThreadId()), state(TxnState::NO_TXN), startTime(0) {
+            }
 
+
+            TransactionProxy::TransactionProxy(const TransactionProxy &rhs) : options(rhs.options),
+                                                                              clientContext(rhs.clientContext),
+                                                                              connection(rhs.connection),
+                                                                              threadId(rhs.threadId), txnId(rhs.txnId),
+                                                                              state(rhs.state),
+                                                                              startTime(rhs.startTime) {
+                TransactionProxy &nonConstRhs = const_cast<TransactionProxy &>(rhs);
+
+                TRANSACTION_EXISTS = static_cast<bool>(nonConstRhs.TRANSACTION_EXISTS);
             }
 
             const std::string &TransactionProxy::getTxnId() const {
@@ -55,36 +63,35 @@ namespace hazelcast {
 
             void TransactionProxy::begin() {
                 try {
+                    if (clientContext.getConnectionManager().getOwnerConnection().get() == NULL) {
+                        throw exception::TransactionException("TransactionProxy::begin()",
+                                                              "Owner connection needs to be present to begin a transaction");
+                    }
                     if (state == TxnState::ACTIVE) {
                         throw exception::IllegalStateException("TransactionProxy::begin()",
                                                                "Transaction is already active");
                     }
                     checkThread();
-//                    if (threadFlag.get() != null) {  MTODO
-//                        throw new IllegalStateException("Nested transactions are not allowed!");
-//                    }
-//                    threadFlag.set(Boolean.TRUE);
-                    startTime = time(NULL);
+                    if (TRANSACTION_EXISTS) {
+                        throw exception::IllegalStateException("TransactionProxy::begin()",
+                                                               "Nested transactions are not allowed!");
+                    }
+                    TRANSACTION_EXISTS = true;
+                    startTime = util::currentTimeMillis();
+                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::TransactionCreateCodec::encodeRequest(
+                            options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
+                            options.getTransactionType(), threadId);
 
-                    // TODO: change this to use XID which is not null in the future
-                    std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::TransactionCreateCodec::RequestParameters::encode(
-                                    options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
-                                    options.getTransactionType(), threadId);
-
-
-                    std::auto_ptr<protocol::ClientMessage> response = invoke(request);
+                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     protocol::codec::TransactionCreateCodec::ResponseParameters result =
                             protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
-
                     txnId = result.response;
                     state = TxnState::ACTIVE;
                 } catch (exception::IException &) {
-                    onTxnEnd();
+                    TRANSACTION_EXISTS = false;
                     throw;
                 }
-
             }
 
             void TransactionProxy::commit() {
@@ -93,22 +100,21 @@ namespace hazelcast {
                         throw exception::IllegalStateException("TransactionProxy::commit()",
                                                                "Transaction is not active");
                     }
+                    state = TxnState::COMMITTING;
                     checkThread();
                     checkTimeout();
 
                     std::auto_ptr<protocol::ClientMessage> request =
-                            protocol::codec::TransactionCommitCodec::RequestParameters::encode(txnId, threadId);
+                            protocol::codec::TransactionCommitCodec::encodeRequest(txnId, threadId);
 
                     invoke(request);
 
                     state = TxnState::COMMITTED;
-                } catch (...) {
-                    state = TxnState::ROLLING_BACK;
-                    onTxnEnd();
-                    throw;
+                } catch (exception::IException &e) {
+                    state = TxnState::COMMIT_FAILED;
+                    TRANSACTION_EXISTS = false;
+                    util::ExceptionUtil::rethrow(e);
                 }
-                onTxnEnd();
-
             }
 
             void TransactionProxy::rollback() {
@@ -117,56 +123,44 @@ namespace hazelcast {
                         throw exception::IllegalStateException("TransactionProxy::rollback()",
                                                                "Transaction is not active");
                     }
-                    if (state == TxnState::ROLLING_BACK) {
-                        state = TxnState::ROLLED_BACK;
-                        return;
-                    }
+                    state = TxnState::ROLLING_BACK;
                     checkThread();
                     try {
                         std::auto_ptr<protocol::ClientMessage> request =
-                                protocol::codec::TransactionRollbackCodec::RequestParameters::encode(txnId, threadId);
+                                protocol::codec::TransactionRollbackCodec::encodeRequest(txnId, threadId);
 
                         invoke(request);
-                    } catch (std::exception &) {
+                    } catch (exception::IException &exception) {
+                        clientContext.getLogger().warning()
+                                << "Exception while rolling back the transaction. Exception:" << exception;
                     }
                     state = TxnState::ROLLED_BACK;
+                    TRANSACTION_EXISTS = false;
                 } catch (exception::IException &) {
-                    onTxnEnd();
+                    TRANSACTION_EXISTS = false;
                     throw;
                 }
-                onTxnEnd();
-
             }
 
             serialization::pimpl::SerializationService &TransactionProxy::getSerializationService() {
                 return clientContext.getSerializationService();
             }
 
-            spi::InvocationService &TransactionProxy::getInvocationService() {
-                return clientContext.getInvocationService();
-            }
-
-            boost::shared_ptr<connection::Connection>TransactionProxy::getConnection() {
-                return connection;
-            }
-
-            void TransactionProxy::onTxnEnd() {
-                //threadFlag.set(null);
+            boost::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
+                    return connection;
             }
 
             void TransactionProxy::checkThread() {
-                if (threadId != util::getThreadId()) {
+                if (threadId != util::getCurrentThreadId()) {
                     throw exception::IllegalStateException("TransactionProxy::checkThread()",
                                                            "Transaction cannot span multiple threads!");
                 }
             }
 
             void TransactionProxy::checkTimeout() {
-                time_t current = time(NULL);
-                time_t timeoutPoint = startTime + options.getTimeout();
-                if (difftime(timeoutPoint, current) < 0) {//timeout - current should be positive 0
-                    throw exception::IllegalStateException("TransactionProxy::checkTimeout()",
-                                                           "Transaction is timed-out!");
+                if (startTime + options.getTimeoutMillis() < util::currentTimeMillis()) {
+                    throw exception::TransactionException("TransactionProxy::checkTimeout()",
+                                                          "Transaction is timed-out!");
                 }
             }
 
@@ -192,12 +186,13 @@ namespace hazelcast {
                 value = values[i];
             }
 
-            std::auto_ptr<protocol::ClientMessage> TransactionProxy::invoke(
+            boost::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
                     std::auto_ptr<protocol::ClientMessage> request) {
-                connection::CallFuture future = clientContext.getInvocationService().invokeOnConnection(request,
-                                                                                                        connection);
+                return ClientTransactionUtil::invoke(request, getTxnId(), clientContext, connection);
+            }
 
-                return future.get();
+            spi::ClientContext &TransactionProxy::getClientContext() const {
+                return clientContext;
             }
         }
     }

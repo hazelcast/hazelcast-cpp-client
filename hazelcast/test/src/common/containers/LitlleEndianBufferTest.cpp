@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,10 @@ namespace hazelcast {
                 namespace containers {
                     class LittleEndianBufferTest : public ::testing::Test,
                                                    public util::LittleEndianBufferWrapper /* Need this in order to test*/
-                    {};
+                    {
+                    public:
+                        LittleEndianBufferTest() : LittleEndianBufferWrapper(0) {}
+                    };
 
                     TEST_F (LittleEndianBufferTest, testBinaryFormat) {
                         #define TEST_DATA_SIZE 8
@@ -46,27 +49,26 @@ namespace hazelcast {
                         uint64_t sevenBytesFactor = ONE << 56;
 
                         byte buf[TEST_DATA_SIZE] = {0x8A, 0x9A, 0xAA, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B};
-                        byte largeBuffer[LARGE_BUFFER_SIZE];
-                        memcpy(largeBuffer + START_BYTE_NUMBER, buf, TEST_DATA_SIZE);
+                        buffer.resize(LARGE_BUFFER_SIZE);
+                        memcpy(&buffer[START_BYTE_NUMBER], buf, TEST_DATA_SIZE);
 
                         // ----- Test unsigned get starts ---------------------------------
                         // NOTE: When the first bit of the highest byte is equal to 1, than the number is negative,
                         // and the value is (-1 * (1s complement + 1)) (i.e. this is twos complement)
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint8_t result = getUint8();
                             ASSERT_EQ(0x8A, result);
                         }
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint16_t result = getUint16();
-                            ASSERT_EQ(0x8A +
-                                         0x9A * oneByteFactor, result);
+                            ASSERT_EQ(0x8A + 0x9A * oneByteFactor, result);
                         }
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint32_t result = getUint32();
                             ASSERT_EQ(0x8A +
                                          0x9A * oneByteFactor +
@@ -75,7 +77,7 @@ namespace hazelcast {
                         }
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             uint64_t result = getUint64();
                             ASSERT_EQ(0x8A +
                                          0x9A * oneByteFactor +
@@ -91,14 +93,14 @@ namespace hazelcast {
                         // ----- Test signed get starts ---------------------------------
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int16_t result = getInt16();
                             ASSERT_EQ(-1 * (~((int16_t)(0x8A +
                                          0x9A * oneByteFactor)) + 1), result);
                         }
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int32_t result = getInt32();
                             ASSERT_EQ(-1 * (~((int32_t)(
                                     0x8A +
@@ -108,7 +110,7 @@ namespace hazelcast {
                         }
 
                         {
-                            wrapForRead(largeBuffer, LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
+                            wrapForRead(LARGE_BUFFER_SIZE, START_BYTE_NUMBER);
                             int64_t result = getInt64();
                             ASSERT_EQ(-1 * (~((int64_t)(
                                     0x8A +
@@ -126,8 +128,10 @@ namespace hazelcast {
                         byte strBytes[8] = {4, 0, 0, 0, /* This part is the len field which is 4 bytes */
                                             firstChar, firstChar + 1, firstChar + 2, firstChar + 3}; // This is string BCDE
 
+                        buffer.clear();
+                        buffer.insert(buffer.begin(), strBytes, strBytes + 8);
                         {
-                            wrapForRead(strBytes, 8, 0);
+                            wrapForRead(8, 0);
                             ASSERT_EQ("BCDE", getStringUtf8());
                         }
                         
@@ -140,8 +144,11 @@ namespace hazelcast {
                                                                        4, 0, 0, 0, /* This part is the len field which is 4 bytes */
                                                                        firstChar, firstChar + 1, firstChar + 2, firstChar + 3,
                                                                        0x8A, 0x01, 0x00, 0xBA, 0xCA, 0xDA, 0xEA, 0x8B};
-                            
-                            wrapForRead(continousBuffer, 8 * 10, 0);
+
+                            buffer.clear();
+                            buffer.insert(buffer.begin(), continousBuffer, continousBuffer + 45);
+
+                            wrapForRead(8 * 10, 0);
 
                             {
                                 uint8_t result = getUint8();
@@ -225,47 +232,48 @@ namespace hazelcast {
                         // ---- Test consecutive gets ends ---------------------------
 
                         // ---- Write related tests starts --------------------------
-                        byte writeBuffer[30];
-                        wrapForWrite(writeBuffer, 30, 0);
+                        buffer.clear();
+                        buffer.resize(30, 0);
+                        wrapForWrite(30, 0);
 
                         set((uint8_t) 0x8A);
-                        ASSERT_EQ(0x8A, writeBuffer[0]);
+                        ASSERT_EQ(0x8A, buffer[0]);
                         
                         set(true);
-                        ASSERT_EQ(0x01, writeBuffer[1]);
+                        ASSERT_EQ(0x01, buffer[1]);
 
                         set(false);
-                        ASSERT_EQ(0x00, writeBuffer[2]);
+                        ASSERT_EQ(0x00, buffer[2]);
 
                         set('C');
-                        ASSERT_EQ('C', writeBuffer[3]);
+                        ASSERT_EQ('C', buffer[3]);
 
                         int16_t int16Val = 0x7BCD;
                         set(int16Val);
-                        ASSERT_EQ(0xCD, writeBuffer[4]);
-                        ASSERT_EQ(0x7B, writeBuffer[5]);
+                        ASSERT_EQ(0xCD, buffer[4]);
+                        ASSERT_EQ(0x7B, buffer[5]);
 
                         uint16_t uInt16Val = 0xABCD;
                         set(uInt16Val);
-                        ASSERT_EQ(0xCD, writeBuffer[6]);
-                        ASSERT_EQ(0xAB, writeBuffer[7]);
+                        ASSERT_EQ(0xCD, buffer[6]);
+                        ASSERT_EQ(0xAB, buffer[7]);
 
                         int32_t int32Val = 0xAEBCEEFF;
                         set(int32Val);
-                        ASSERT_EQ(0xFF, writeBuffer[8]);
-                        ASSERT_EQ(0xEE, writeBuffer[9]);
-                        ASSERT_EQ(0xBC, writeBuffer[10]);
-                        ASSERT_EQ(0xAE, writeBuffer[11]);
+                        ASSERT_EQ(0xFF, buffer[8]);
+                        ASSERT_EQ(0xEE, buffer[9]);
+                        ASSERT_EQ(0xBC, buffer[10]);
+                        ASSERT_EQ(0xAE, buffer[11]);
 
 
                         set(std::string("Test Data"));
-                        ASSERT_EQ(0x09, (int)writeBuffer[12]);
-                        ASSERT_EQ(0x0, writeBuffer[13]);
-                        ASSERT_EQ(0x0, writeBuffer[14]);
-                        ASSERT_EQ(0x0, writeBuffer[15]);
-                        ASSERT_EQ('T', writeBuffer[16]);
-                        ASSERT_EQ('e', writeBuffer[17]);
-                        ASSERT_EQ('a', writeBuffer[24]);
+                        ASSERT_EQ(0x09, (int)buffer[12]);
+                        ASSERT_EQ(0x0, buffer[13]);
+                        ASSERT_EQ(0x0, buffer[14]);
+                        ASSERT_EQ(0x0, buffer[15]);
+                        ASSERT_EQ('T', buffer[16]);
+                        ASSERT_EQ('e', buffer[17]);
+                        ASSERT_EQ('a', buffer[24]);
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on 21/12/15.
-//
+
+ /**
+  * Pleasee NOTE that this id generator usage is deprecated in favor of using Flake Id Generator.
+  * See FlakeIdGenerator.cpp example.
+  */
+
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/IdGenerator.h>
 
 int main() {
-    hazelcast::client::ClientConfig config;
-    hazelcast::client::HazelcastClient hz(config);
+    hazelcast::client::HazelcastClient hz;
 
     hazelcast::client::IdGenerator generator = hz.getIdGenerator("idGenerator");
     for (int i = 0; i < 10000; ++i) {

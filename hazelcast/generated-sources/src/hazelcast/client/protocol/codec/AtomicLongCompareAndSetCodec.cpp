@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/AtomicLongCompareAndSetCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const AtomicLongMessageType AtomicLongCompareAndSetCodec::RequestParameters::TYPE = HZ_ATOMICLONG_COMPAREANDSET;
-                const bool AtomicLongCompareAndSetCodec::RequestParameters::RETRYABLE = false;
-                const int32_t AtomicLongCompareAndSetCodec::ResponseParameters::TYPE = 101;
-                std::auto_ptr<ClientMessage> AtomicLongCompareAndSetCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        int64_t expected, 
+                const AtomicLongMessageType AtomicLongCompareAndSetCodec::REQUEST_TYPE = HZ_ATOMICLONG_COMPAREANDSET;
+                const bool AtomicLongCompareAndSetCodec::RETRYABLE = false;
+                const ResponseMessageConst AtomicLongCompareAndSetCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
+
+                std::auto_ptr<ClientMessage> AtomicLongCompareAndSetCodec::encodeRequest(
+                        const std::string &name,
+                        int64_t expected,
                         int64_t updated) {
                     int32_t requiredDataSize = calculateDataSize(name, expected, updated);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)AtomicLongCompareAndSetCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) AtomicLongCompareAndSetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(expected);
@@ -41,9 +42,9 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t AtomicLongCompareAndSetCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        int64_t expected, 
+                int32_t AtomicLongCompareAndSetCodec::calculateDataSize(
+                        const std::string &name,
+                        int64_t expected,
                         int64_t updated) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -53,21 +54,17 @@ namespace hazelcast {
                 }
 
                 AtomicLongCompareAndSetCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("AtomicLongCompareAndSetCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<bool >();
+
+                    response = clientMessage.get<bool>();
+
                 }
 
-                AtomicLongCompareAndSetCodec::ResponseParameters AtomicLongCompareAndSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                AtomicLongCompareAndSetCodec::ResponseParameters
+                AtomicLongCompareAndSetCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return AtomicLongCompareAndSetCodec::ResponseParameters(clientMessage);
                 }
 
-                AtomicLongCompareAndSetCodec::ResponseParameters::ResponseParameters(const AtomicLongCompareAndSetCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

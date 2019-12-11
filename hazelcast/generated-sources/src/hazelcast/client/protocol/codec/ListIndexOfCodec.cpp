@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,26 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/ListIndexOfCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const ListMessageType ListIndexOfCodec::RequestParameters::TYPE = HZ_LIST_INDEXOF;
-                const bool ListIndexOfCodec::RequestParameters::RETRYABLE = true;
-                const int32_t ListIndexOfCodec::ResponseParameters::TYPE = 102;
-                std::auto_ptr<ClientMessage> ListIndexOfCodec::RequestParameters::encode(
-                        const std::string &name, 
+                const ListMessageType ListIndexOfCodec::REQUEST_TYPE = HZ_LIST_INDEXOF;
+                const bool ListIndexOfCodec::RETRYABLE = true;
+                const ResponseMessageConst ListIndexOfCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
+
+                std::auto_ptr<ClientMessage> ListIndexOfCodec::encodeRequest(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)ListIndexOfCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) ListIndexOfCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(value);
@@ -40,8 +41,8 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t ListIndexOfCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
+                int32_t ListIndexOfCodec::calculateDataSize(
+                        const std::string &name,
                         const serialization::pimpl::Data &value) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -50,21 +51,17 @@ namespace hazelcast {
                 }
 
                 ListIndexOfCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("ListIndexOfCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int32_t >();
+
+                    response = clientMessage.get<int32_t>();
+
                 }
 
-                ListIndexOfCodec::ResponseParameters ListIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                ListIndexOfCodec::ResponseParameters
+                ListIndexOfCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return ListIndexOfCodec::ResponseParameters(clientMessage);
                 }
 
-                ListIndexOfCodec::ResponseParameters::ResponseParameters(const ListIndexOfCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #define HAZELCAST_ICOUNT_DOWN_LATCH
 
 #include "hazelcast/client/spi/ClientContext.h"
-#include "hazelcast/client/spi/InvocationService.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 #include "hazelcast/client/exception/IException.h"
@@ -60,7 +59,7 @@ namespace hazelcast {
          *
          */
         class HAZELCAST_API ICountDownLatch : public proxy::ProxyImpl {
-            friend class HazelcastClient;
+            friend class impl::HazelcastClientInstanceImpl;
 
         public:
 

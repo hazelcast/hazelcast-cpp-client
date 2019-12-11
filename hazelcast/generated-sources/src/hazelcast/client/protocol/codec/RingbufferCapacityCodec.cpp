@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,31 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/RingbufferCapacityCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const RingbufferMessageType RingbufferCapacityCodec::RequestParameters::TYPE = HZ_RINGBUFFER_CAPACITY;
-                const bool RingbufferCapacityCodec::RequestParameters::RETRYABLE = false;
-                const int32_t RingbufferCapacityCodec::ResponseParameters::TYPE = 103;
-                std::auto_ptr<ClientMessage> RingbufferCapacityCodec::RequestParameters::encode(
+                const RingbufferMessageType RingbufferCapacityCodec::REQUEST_TYPE = HZ_RINGBUFFER_CAPACITY;
+                const bool RingbufferCapacityCodec::RETRYABLE = true;
+                const ResponseMessageConst RingbufferCapacityCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
+
+                std::auto_ptr<ClientMessage> RingbufferCapacityCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)RingbufferCapacityCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) RingbufferCapacityCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->updateFrameLength();
                     return clientMessage;
                 }
 
-                int32_t RingbufferCapacityCodec::RequestParameters::calculateDataSize(
+                int32_t RingbufferCapacityCodec::calculateDataSize(
                         const std::string &name) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -45,21 +46,17 @@ namespace hazelcast {
                 }
 
                 RingbufferCapacityCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("RingbufferCapacityCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.get<int64_t >();
+
+                    response = clientMessage.get<int64_t>();
+
                 }
 
-                RingbufferCapacityCodec::ResponseParameters RingbufferCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                RingbufferCapacityCodec::ResponseParameters
+                RingbufferCapacityCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return RingbufferCapacityCodec::ResponseParameters(clientMessage);
                 }
 
-                RingbufferCapacityCodec::ResponseParameters::ResponseParameters(const RingbufferCapacityCodec::ResponseParameters &rhs) {
-                        response = rhs.response;
-                }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

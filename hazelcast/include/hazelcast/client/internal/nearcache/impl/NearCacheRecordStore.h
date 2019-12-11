@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,12 +87,12 @@ namespace hazelcast {
                         }
 
                         /**
-                         * Removes the value associated with the given {@code key}.
+                         * Removes the value associated with the given {@code key}
+                         * and increases the invalidation statistics.
                          *
-                         * @param key the key from which the value will be removed.
-                         * @return {@code true} if the value was removed, otherwise {@code false}.
+                         * @param key the key of the value will be invalidated
                          */
-                        virtual bool remove(const boost::shared_ptr<K> &key) {
+                        virtual bool invalidate(const boost::shared_ptr<K> &key) {
                             assert(0);
                             return false;
                         }

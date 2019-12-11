@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,27 +14,28 @@
  * limitations under the License.
  */
 
-
+#include "hazelcast/util/Util.h"
+#include "hazelcast/util/ILogger.h"
 
 #include "hazelcast/client/protocol/codec/TransactionalMapRemoveCodec.h"
-#include "hazelcast/client/exception/UnexpectedMessageTypeException.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
 
 namespace hazelcast {
     namespace client {
         namespace protocol {
             namespace codec {
-                const TransactionalMapMessageType TransactionalMapRemoveCodec::RequestParameters::TYPE = HZ_TRANSACTIONALMAP_REMOVE;
-                const bool TransactionalMapRemoveCodec::RequestParameters::RETRYABLE = false;
-                const int32_t TransactionalMapRemoveCodec::ResponseParameters::TYPE = 105;
-                std::auto_ptr<ClientMessage> TransactionalMapRemoveCodec::RequestParameters::encode(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                const TransactionalMapMessageType TransactionalMapRemoveCodec::REQUEST_TYPE = HZ_TRANSACTIONALMAP_REMOVE;
+                const bool TransactionalMapRemoveCodec::RETRYABLE = false;
+                const ResponseMessageConst TransactionalMapRemoveCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
+
+                std::auto_ptr<ClientMessage> TransactionalMapRemoveCodec::encodeRequest(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key);
                     std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
-                    clientMessage->setMessageType((uint16_t)TransactionalMapRemoveCodec::RequestParameters::TYPE);
+                    clientMessage->setMessageType((uint16_t) TransactionalMapRemoveCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
                     clientMessage->set(txnId);
@@ -44,10 +45,10 @@ namespace hazelcast {
                     return clientMessage;
                 }
 
-                int32_t TransactionalMapRemoveCodec::RequestParameters::calculateDataSize(
-                        const std::string &name, 
-                        const std::string &txnId, 
-                        int64_t threadId, 
+                int32_t TransactionalMapRemoveCodec::calculateDataSize(
+                        const std::string &name,
+                        const std::string &txnId,
+                        int64_t threadId,
                         const serialization::pimpl::Data &key) {
                     int32_t dataSize = ClientMessage::HEADER_SIZE;
                     dataSize += ClientMessage::calculateDataSize(name);
@@ -58,21 +59,21 @@ namespace hazelcast {
                 }
 
                 TransactionalMapRemoveCodec::ResponseParameters::ResponseParameters(ClientMessage &clientMessage) {
-                    if (TYPE != clientMessage.getMessageType()) {
-                        throw exception::UnexpectedMessageTypeException("TransactionalMapRemoveCodec::ResponseParameters::decode", clientMessage.getMessageType(), TYPE);
-                    }
 
-                    response = clientMessage.getNullable<serialization::pimpl::Data >();
+
+                    response = clientMessage.getNullable<serialization::pimpl::Data>();
+
                 }
 
-                TransactionalMapRemoveCodec::ResponseParameters TransactionalMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
+                TransactionalMapRemoveCodec::ResponseParameters
+                TransactionalMapRemoveCodec::ResponseParameters::decode(ClientMessage &clientMessage) {
                     return TransactionalMapRemoveCodec::ResponseParameters(clientMessage);
                 }
 
-                TransactionalMapRemoveCodec::ResponseParameters::ResponseParameters(const TransactionalMapRemoveCodec::ResponseParameters &rhs) {
-                        response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                TransactionalMapRemoveCodec::ResponseParameters::ResponseParameters(
+                        const TransactionalMapRemoveCodec::ResponseParameters &rhs) {
+                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
-                //************************ EVENTS END **************************************************************************//
 
             }
         }

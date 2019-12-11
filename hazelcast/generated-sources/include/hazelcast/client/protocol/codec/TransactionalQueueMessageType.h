@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ namespace hazelcast {
             namespace codec {
                 enum HAZELCAST_API TransactionalQueueMessageType {
 
-                    HZ_TRANSACTIONALQUEUE_OFFER=0x1401,
-                    HZ_TRANSACTIONALQUEUE_TAKE=0x1402,
-                    HZ_TRANSACTIONALQUEUE_POLL=0x1403,
-                    HZ_TRANSACTIONALQUEUE_PEEK=0x1404,
-                    HZ_TRANSACTIONALQUEUE_SIZE=0x1405
+                    HZ_TRANSACTIONALQUEUE_OFFER = 0x1401,
+                    HZ_TRANSACTIONALQUEUE_TAKE = 0x1402,
+                    HZ_TRANSACTIONALQUEUE_POLL = 0x1403,
+                    HZ_TRANSACTIONALQUEUE_PEEK = 0x1404,
+                    HZ_TRANSACTIONALQUEUE_SIZE = 0x1405
                 };
             }
         }

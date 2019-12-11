@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@
 #endif
 
 namespace hazelcast {
+    namespace util {
+        class ILogger;
+    }
     namespace client {
         namespace config {
             class ClientAwsConfig;
@@ -34,13 +37,14 @@ namespace hazelcast {
         namespace aws {
             class HAZELCAST_API AWSClient {
             public:
-                AWSClient(config::ClientAwsConfig &awsConfig);
+                AWSClient(config::ClientAwsConfig &awsConfig, util::ILogger &logger);
 
                 std::map<std::string, std::string> getAddresses();
 
             private:
                 config::ClientAwsConfig &awsConfig;
                 std::string endpoint;
+                util::ILogger &logger;
             };
         }
     }

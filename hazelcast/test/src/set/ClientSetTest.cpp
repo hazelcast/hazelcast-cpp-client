@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 9/13/13.
+/**
+ * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
+ * "_POSIX_C_SOURCE" redefined occurs.
+ */
+#include "HazelcastServerFactory.h"
+
+#include "HazelcastServer.h"
+#include "ClientTestSupport.h"
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/ISet.h"
 #include "hazelcast/client/HazelcastClient.h"
-
-#include "HazelcastServer.h"
-#include "ClientTestSupport.h"
-#include "HazelcastServerFactory.h"
 
 namespace hazelcast {
     namespace client {
@@ -53,21 +55,17 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
-                    clientConfig = new ClientConfig();
-                    clientConfig->addAddress(Address(g_srvFactory->getServerAddress(), 5701));
-                    client = new HazelcastClient(*clientConfig);
+                    client = new HazelcastClient(getConfig());
                     set = new ISet<std::string>(client->getSet<std::string>("MySet"));
                 }
 
                 static void TearDownTestCase() {
                     delete set;
                     delete client;
-                    delete clientConfig;
                     delete instance;
 
                     set = NULL;
                     client = NULL;
-                    clientConfig = NULL;
                     instance = NULL;
                 }
 
@@ -83,13 +81,11 @@ namespace hazelcast {
                 }
 
                 static HazelcastServer *instance;
-                static ClientConfig *clientConfig;
                 static HazelcastClient *client;
                 static ISet<std::string> *set;
             };
 
             HazelcastServer *ClientSetTest::instance = NULL;
-            ClientConfig *ClientSetTest::clientConfig = NULL;
             HazelcastClient *ClientSetTest::client = NULL;
             ISet<std::string> *ClientSetTest::set = NULL;
 
@@ -196,6 +192,11 @@ namespace hazelcast {
                 ASSERT_TRUE(set->removeItemListener(registrationId));
             }
 
+            TEST_F(ClientSetTest, testIsEmpty) {
+                ASSERT_TRUE(set->isEmpty());
+                ASSERT_TRUE(set->add("item1"));
+                ASSERT_FALSE(set->isEmpty());
+            }
         }
     }
 }

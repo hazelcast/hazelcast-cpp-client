@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,8 @@ namespace hazelcast {
 
         MemberAttributeEvent::MemberAttributeEvent(Cluster &cluster, const Member &member,
                                                    MemberAttributeEvent::MemberAttributeOperationType operationType,
-                                                   const std::string &key, std::string &value,
-                                                   const std::vector<Member> &memberList)
-                : MembershipEvent(cluster, member, MembershipEvent::MEMBER_ADDED, memberList),
+                                                   const std::string &key, const std::string &value)
+                : MembershipEvent(cluster, member, MembershipEvent::MEMBER_ATTRIBUTE_CHANGED, std::vector<Member>()),
                   operationType(operationType), key(key), value(value) {
         }
 

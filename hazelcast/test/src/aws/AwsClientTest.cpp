@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2017, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,16 @@
 
 #ifdef HZ_BUILD_WITH_SSL
 
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(push)
+#pragma warning(disable: 4996) //for unsafe getenv
+#endif
+
 #include <cmath>
 #include <gtest/gtest.h>
+#include <openssl/crypto.h>
 
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/client/ClientConfig.h>
 
 namespace hazelcast {
     namespace client {
@@ -76,6 +81,31 @@ namespace hazelcast {
                     ASSERT_EQ(20, *val);
                 }
 
+                TEST_F (AwsClientTest, testFipsEnabledAwsDiscovery) {
+                    ClientConfig clientConfig;
+
+                    clientConfig.getProperties()[ClientProperties::PROP_AWS_MEMBER_PORT] = "60000";
+                    clientConfig.getNetworkConfig().getAwsConfig().setEnabled(true).
+                            setAccessKey(getenv("AWS_ACCESS_KEY_ID")).setSecretKey(getenv("AWS_SECRET_ACCESS_KEY")).
+                            setTagKey("aws-test-tag").setTagValue("aws-tag-value-1");
+
+                    #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(true);
+                    #else
+                    clientConfig.getNetworkConfig().getAwsConfig().setInsideAws(false);
+                    #endif
+
+                    // Turn Fips mode on
+                    FIPS_mode_set(1);
+
+                    HazelcastClient hazelcastClient(clientConfig);
+                    IMap<int, int> map = hazelcastClient.getMap<int, int>("myMap");
+                    map.put(5, 20);
+                    boost::shared_ptr<int> val = map.get(5);
+                    ASSERT_NE((int *) NULL, val.get());
+                    ASSERT_EQ(20, *val);
+                }
+
                 /**
                  * Following test can only run from inside the AWS network
                  */
@@ -104,4 +134,9 @@ namespace hazelcast {
         }
     }
 }
+
+#if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#pragma warning(pop)
+#endif
+
 #endif // HZ_BUILD_WITH_SSL
