@@ -1135,7 +1135,7 @@ namespace hazelcast {
                 virtual boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
                     return boost::shared_ptr<ICompletableFuture<V> >(
                             new internal::ClientDelegatingFuture<V>(getAsyncInternal(key), getSerializationService(),
-                                                                    PUT_ASYNC_RESPONSE_DECODER()));
+                                                                    GET_ASYNC_RESPONSE_DECODER()));
                 }
 
                 boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
