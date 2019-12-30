@@ -495,12 +495,12 @@ namespace hazelcast {
                 }
 
                 void removeNearCacheInvalidationListener() {
-                    std::string invalidationListenerId = this->invalidationListenerId;
-                    if (invalidationListenerId.empty()) {
+                    std::string listenerId = this->invalidationListenerId;
+                    if (listenerId.empty()) {
                         return;
                     }
 
-                    proxy::ProxyImpl::deregisterListener(invalidationListenerId);
+                    proxy::ProxyImpl::deregisterListener(listenerId);
                 }
 
 

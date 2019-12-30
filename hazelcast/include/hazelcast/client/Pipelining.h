@@ -103,10 +103,10 @@ namespace hazelcast {
              * @throws IException if something fails getting the results.
              */
             std::vector<boost::shared_ptr<E> > results() {
-                std::vector<boost::shared_ptr<E> > result(futures.size());
-                size_t index = 0;
-                for (typename FuturesVector::const_iterator it = futures.begin(); it != futures.end(); ++it, ++index) {
-                    result[index] = (*it)->get();
+                std::vector<boost::shared_ptr<E> > result;
+                result.reserve(futures.size());
+                for (typename FuturesVector::const_iterator it = futures.begin(); it != futures.end(); ++it) {
+                    result.push_back((*it)->get());
                 }
                 return result;
             }
@@ -172,7 +172,7 @@ namespace hazelcast {
 
             typedef std::vector<boost::shared_ptr<ICompletableFuture<E> > > FuturesVector;
             int permits;
-            std::vector<boost::shared_ptr<ICompletableFuture<E> > > futures;
+            FuturesVector futures;
             util::ConditionVariable conditionVariable;
             util::Mutex mutex;
         };
