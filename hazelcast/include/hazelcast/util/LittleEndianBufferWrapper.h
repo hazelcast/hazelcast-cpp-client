@@ -24,6 +24,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include "hazelcast/util/Bits.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -72,12 +74,12 @@ namespace hazelcast {
 
             inline uint8_t getUint8() {
                 assert(checkReadAvailable(UINT8_SIZE));
-                return buffer[index++];
+                return (*buffer)[index++];
             }
 
             inline int8_t getInt8() {
                 assert(checkReadAvailable(INT8_SIZE));
-                return buffer[index++];
+                return (*buffer)[index++];
             }
 
             inline bool getBoolean() {
@@ -219,7 +221,8 @@ namespace hazelcast {
             }
 
         protected:
-            LittleEndianBufferWrapper(int32_t size) : buffer(size, 0), capacity(-1), index(-1), readOnly(true) {}
+            LittleEndianBufferWrapper(int32_t size) : buffer(new std::vector<byte>(size, 0)), capacity(-1), index(-1),
+                                                      readOnly(true) {}
 
             inline int32_t getIndex() const {
                 return index;
@@ -231,7 +234,7 @@ namespace hazelcast {
 
         protected:
             inline byte *ix() {
-                return &buffer[index];
+                return &(*buffer)[index];
             }
 
             inline bool checkWriteAvailable(int32_t requestedBytes) const {
@@ -254,7 +257,7 @@ namespace hazelcast {
                 return index + requestedBytes <= capacity;
             }
 
-            std::vector<byte> buffer;
+            boost::shared_ptr<std::vector<byte> > buffer;
             int32_t capacity;
             int32_t index;
             bool readOnly;

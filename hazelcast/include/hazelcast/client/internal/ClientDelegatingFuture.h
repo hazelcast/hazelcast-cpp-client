@@ -153,15 +153,16 @@ namespace hazelcast {
                     if (decodedResponse != boost::static_pointer_cast<V>(VOIDOBJ)) {
                         return decodedResponse;
                     }
-                    // TODO: Java uses a message wrapper here --> ClientMessage message = ClientMessage.createForDecode(clientMessage.buffer(), 0);
-                    boost::shared_ptr<V> newDecodedResponse = clientMessageDecoder->decodeClientMessage(clientMessage,
+
+                    boost::shared_ptr<protocol::ClientMessage> message(
+                            protocol::ClientMessage::createForDecode(*clientMessage));
+                    boost::shared_ptr<V> newDecodedResponse = clientMessageDecoder->decodeClientMessage(message,
                                                                                                         serializationService);
 
                     decodedResponse.compareAndSet(boost::static_pointer_cast<V>(VOIDOBJ), newDecodedResponse);
                     return newDecodedResponse;
                 }
 
-                /* TODO: Java client does deserialization inside this method, do we need it ? */
                 boost::shared_ptr<V>
                 resolveResponse(const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     if (defaultValue.get() != NULL) {

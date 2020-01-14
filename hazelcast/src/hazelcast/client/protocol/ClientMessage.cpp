@@ -65,41 +65,48 @@ namespace hazelcast {
                 return msg;
             }
 
+            std::auto_ptr<ClientMessage> ClientMessage::createForDecode(const ClientMessage &msg) {
+                // copy constructor does not do deep copy of underlying buffer but just uses a shared_ptr
+                std::auto_ptr<ClientMessage> copy(new ClientMessage(msg));
+                copy->wrapForRead(copy->getCapacity(), ClientMessage::HEADER_SIZE);
+                return copy;
+            }
+
             std::auto_ptr<ClientMessage> ClientMessage::create(int32_t size) {
                 return std::auto_ptr<ClientMessage>(new ClientMessage(size));
             }
 
             //----- Setter methods begin --------------------------------------
             void ClientMessage::setFrameLength(int32_t length) {
-                util::Bits::nativeToLittleEndian4(&length, &buffer[FRAME_LENGTH_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian4(&length, &(*buffer)[FRAME_LENGTH_FIELD_OFFSET]);
             }
 
             void ClientMessage::setMessageType(uint16_t type) {
-                util::Bits::nativeToLittleEndian2(&type, &buffer[TYPE_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian2(&type, &(*buffer)[TYPE_FIELD_OFFSET]);
             }
 
             void ClientMessage::setVersion(uint8_t value) {
-                buffer[VERSION_FIELD_OFFSET] = value;
+                (*buffer)[VERSION_FIELD_OFFSET] = value;
             }
 
             uint8_t ClientMessage::getFlags() {
-                return buffer[FLAGS_FIELD_OFFSET];
+                return (*buffer)[FLAGS_FIELD_OFFSET];
             }
 
             void ClientMessage::addFlag(uint8_t flags) {
-                buffer[FLAGS_FIELD_OFFSET] = getFlags() | flags;
+                (*buffer)[FLAGS_FIELD_OFFSET] = getFlags() | flags;
             }
 
             void ClientMessage::setCorrelationId(int64_t id) {
-                util::Bits::nativeToLittleEndian8(&id, &buffer[CORRELATION_ID_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian8(&id, &(*buffer)[CORRELATION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setPartitionId(int32_t partitionId) {
-                util::Bits::nativeToLittleEndian4(&partitionId, &buffer[PARTITION_ID_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian4(&partitionId, &(*buffer)[PARTITION_ID_FIELD_OFFSET]);
             }
 
             void ClientMessage::setDataOffset(uint16_t offset) {
-                util::Bits::nativeToLittleEndian2(&offset, &buffer[DATA_OFFSET_FIELD_OFFSET]);
+                util::Bits::nativeToLittleEndian2(&offset, &(*buffer)[DATA_OFFSET_FIELD_OFFSET]);
             }
 
             void ClientMessage::updateFrameLength() {
@@ -127,7 +134,7 @@ namespace hazelcast {
 
             int32_t ClientMessage::fillMessageFrom(util::ByteBuffer &byteBuff, int32_t offset, int32_t frameLen) {
                 size_t numToRead = (size_t) (frameLen - offset);
-                size_t numRead = byteBuff.readBytes(&buffer[offset], numToRead);
+                size_t numRead = byteBuff.readBytes(&(*buffer)[offset], numToRead);
 
                 if (numRead == numToRead) {
                     wrapForRead(frameLen, ClientMessage::HEADER_SIZE);
@@ -140,8 +147,7 @@ namespace hazelcast {
             int32_t ClientMessage::getFrameLength() const {
                 int32_t result;
 
-                util::Bits::littleEndianToNative4(
-                        &buffer[FRAME_LENGTH_FIELD_OFFSET], &result);
+                util::Bits::littleEndianToNative4(&(*buffer)[FRAME_LENGTH_FIELD_OFFSET], &result);
 
                 return result;
             }
@@ -149,35 +155,35 @@ namespace hazelcast {
             uint16_t ClientMessage::getMessageType() const {
                 uint16_t type;
 
-                util::Bits::littleEndianToNative2(&buffer[TYPE_FIELD_OFFSET], &type);
+                util::Bits::littleEndianToNative2(&(*buffer)[TYPE_FIELD_OFFSET], &type);
 
                 return type;
             }
 
             uint8_t ClientMessage::getVersion() {
-                return buffer[VERSION_FIELD_OFFSET];
+                return (*buffer)[VERSION_FIELD_OFFSET];
             }
 
             int64_t ClientMessage::getCorrelationId() const {
                 int64_t value;
-                util::Bits::littleEndianToNative8(&buffer[CORRELATION_ID_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative8(&(*buffer)[CORRELATION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             int32_t ClientMessage::getPartitionId() const {
                 int32_t value;
-                util::Bits::littleEndianToNative4(&buffer[PARTITION_ID_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative4(&(*buffer)[PARTITION_ID_FIELD_OFFSET], &value);
                 return value;
             }
 
             uint16_t ClientMessage::getDataOffset() const {
                 uint16_t value;
-                util::Bits::littleEndianToNative2(&buffer[DATA_OFFSET_FIELD_OFFSET], &value);
+                util::Bits::littleEndianToNative2(&(*buffer)[DATA_OFFSET_FIELD_OFFSET], &value);
                 return value;
             }
 
             bool ClientMessage::isFlagSet(uint8_t flag) const {
-                return flag == (buffer[FLAGS_FIELD_OFFSET] & flag);
+                return flag == ((*buffer)[FLAGS_FIELD_OFFSET] & flag);
             }
 
             template<>
@@ -229,7 +235,7 @@ namespace hazelcast {
             serialization::pimpl::Data ClientMessage::get() {
                 int32_t len = getInt32();
 
-                checkAvailable(len);
+                assert(checkReadAvailable(len));
 
                 byte *start = ix();
                 std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(new std::vector<byte>(start,
@@ -318,7 +324,7 @@ namespace hazelcast {
                 int32_t existingFrameLen = getFrameLength();
                 int32_t newFrameLen = existingFrameLen + dataSize;
                 ensureBufferSize(newFrameLen);
-                memcpy(&buffer[existingFrameLen], &msg->buffer[0], (size_t) dataSize);
+                memcpy(&(*buffer)[existingFrameLen], &(*msg->buffer)[0], (size_t) dataSize);
                 setFrameLength(newFrameLen);
             }
 
@@ -332,7 +338,7 @@ namespace hazelcast {
                     // allocate new memory
                     int32_t newSize = findSuitableCapacity(requiredCapacity, currentCapacity);
 
-                    buffer.resize(newSize, 0);
+                    buffer->resize(newSize, 0);
                     wrapForWrite(newSize, getIndex());
                 } else {
                     // Should never be here
@@ -362,7 +368,7 @@ namespace hazelcast {
 
                 int32_t numBytesLeft = frameLen - offset;
                 if (numBytesLeft > 0) {
-                    numBytesSent = socket.send(&buffer[offset], numBytesLeft);
+                    numBytesSent = socket.send(&(*buffer)[offset], numBytesLeft);
                 }
 
                 return numBytesSent;

@@ -146,6 +146,8 @@ namespace hazelcast {
 
                 static std::auto_ptr<ClientMessage> createForEncode(int32_t size);
 
+                static std::auto_ptr<ClientMessage> createForDecode(const ClientMessage &msg);
+
                 static std::auto_ptr<ClientMessage> create(int32_t size);
 
                 //----- Setter methods begin --------------------------------------
