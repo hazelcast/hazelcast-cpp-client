@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by İhsan Demir on Mar 6 2016.
-//
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServer.h"
+#include "ClientTestSupport.h"
 
 #include <gtest/gtest.h>
 #include <boost/foreach.hpp>
@@ -29,7 +23,6 @@
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/util/ILogger.h"
-#include "ClientTestSupport.h"
 #include "hazelcast/client/IMap.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/ClientConfig.h"

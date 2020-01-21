@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 26/02/14.
-//
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
-#include "HazelcastServer.h"
-
 #include <gtest/gtest.h>
+
+#include "HazelcastServer.h"
 #include "ClientTestSupportBase.h"
 #include "HazelcastServerFactory.h"
+
 #include "hazelcast/util/CountDownLatch.h"
 #include "hazelcast/client/MembershipListener.h"
 #include "hazelcast/client/InitialMembershipEvent.h"

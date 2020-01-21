@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by ihsan demir on 24/03/16.
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
-
 #include <HazelcastServer.h>
+#include "ClientTestSupport.h"
+
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/HazelcastClient.h"
 #include "hazelcast/client/EntryAdapter.h"
 #include "hazelcast/client/MultiMap.h"
 #include "hazelcast/client/adaptor/RawPointerMultiMap.h"
-
-#include "ClientTestSupport.h"
 
 namespace hazelcast {
     namespace client {
