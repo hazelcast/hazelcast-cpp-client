@@ -28,7 +28,7 @@ project (HazelcastClient)
 
 INCLUDE(TestBigEndian)
 
-SET(HZ_VERSION 3.13-SNAPSHOT)
+SET(HZ_VERSION 3.12.1-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	message(STATUS "Build needs CMAKE_BUILD_TYPE. Setting default as -DCMAKE_BUILD_TYPE=Debug (other option -DCMAKE_BUILD_TYPE=Release)")
 	SET(CMAKE_BUILD_TYPE Debug)
