@@ -28,7 +28,7 @@ namespace hazelcast {
                 std::string AwsURLEncoder::urlEncode(const std::string &value) {
                     std::string result = escapeEncode(value);
                     std::regex re("\\+");
-                    return std::regex_replace(result, re, "%20");
+                    return std::regex_replace(result, re, std::string("%20"));
                 }
 
                 std::string AwsURLEncoder::escapeEncode(const std::string &value) {
