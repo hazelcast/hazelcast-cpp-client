@@ -144,11 +144,11 @@ namespace hazelcast {
 
                 virtual ~ClientMessage();
 
-                static std::auto_ptr<ClientMessage> createForEncode(int32_t size);
+                static std::unique_ptr<ClientMessage> createForEncode(int32_t size);
 
-                static std::auto_ptr<ClientMessage> createForDecode(const ClientMessage &msg);
+                static std::unique_ptr<ClientMessage> createForDecode(const ClientMessage &msg);
 
-                static std::auto_ptr<ClientMessage> create(int32_t size);
+                static std::unique_ptr<ClientMessage> create(int32_t size);
 
                 //----- Setter methods begin --------------------------------------
                 // bring base class set methods into the derived class
@@ -251,12 +251,12 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                std::auto_ptr<T> getNullable() {
-                    std::auto_ptr<T> result;
+                std::unique_ptr<T> getNullable() {
+                    std::unique_ptr<T> result;
                     if (getBoolean()) {
                         return result;
                     }
-                    return std::auto_ptr<T>(new T(get<T>()));
+                    return std::unique_ptr<T>(new T(get<T>()));
                 }
 
                 template<typename T>
@@ -271,12 +271,12 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                std::auto_ptr<std::vector<T> > getNullableArray() {
-                    std::auto_ptr<std::vector<T> > result;
+                std::unique_ptr<std::vector<T> > getNullableArray() {
+                    std::unique_ptr<std::vector<T> > result;
                     if (getBoolean()) {
                         return result;
                     }
-                    return std::auto_ptr<std::vector<T> >(new std::vector<T>(getArray<T>()));
+                    return std::unique_ptr<std::vector<T> >(new std::vector<T>(getArray<T>()));
                 }
 
                 template<typename KEY, typename VALUE>
@@ -291,13 +291,13 @@ namespace hazelcast {
                 }
 
                 template<typename KEY, typename VALUE>
-                std::auto_ptr<std::vector<std::pair<KEY, VALUE> > > getNullableEntryArray() {
-                    std::auto_ptr<std::vector<std::pair<KEY, VALUE> > > result;
+                std::unique_ptr<std::vector<std::pair<KEY, VALUE> > > getNullableEntryArray() {
+                    std::unique_ptr<std::vector<std::pair<KEY, VALUE> > > result;
                     if (getBoolean()) {
                         return result;
                     }
 
-                    return std::auto_ptr<std::vector<std::pair<KEY, VALUE> > >(
+                    return std::unique_ptr<std::vector<std::pair<KEY, VALUE> > >(
                             new std::vector<std::pair<KEY, VALUE> >(getEntryArray<KEY, VALUE>()));
                 }
                 //----- Getter methods end --------------------------

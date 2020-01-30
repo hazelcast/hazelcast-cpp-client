@@ -41,21 +41,17 @@
 #include "hazelcast/client/proxy/ClientAtomicLongProxy.h"
 #include "hazelcast/client/atomiclong/impl/AtomicLongProxyFactory.h"
 
-#ifndef HAZELCAST_VERSION
-#define HAZELCAST_VERSION "NOT_FOUND"
-#endif
-
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
 #pragma warning(disable: 4355) //for strerror	
 #endif
 
-_INITIALIZE_EASYLOGGINGPP
+INITIALIZE_EASYLOGGINGPP
 
 namespace hazelcast {
     namespace client {
         namespace impl {
-            util::Atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
+            std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
                     : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
@@ -65,7 +61,7 @@ namespace hazelcast {
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(), shutdownLatch,
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID), TOPIC_RB_PREFIX("_hz_rb_") {
-                const boost::shared_ptr<std::string> &name = config.getInstanceName();
+                const std::shared_ptr<std::string> &name = config.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
                 } else {
@@ -89,7 +85,7 @@ namespace hazelcast {
                                                                                        maxAllowedConcurrentInvocations,
                                                                                        backofftimeoutMs);
 
-                std::vector<boost::shared_ptr<connection::AddressProvider> > addressProviders = createAddressProviders();
+                std::vector<std::shared_ptr<connection::AddressProvider> > addressProviders = createAddressProviders();
 
 
                 connectionManager = initConnectionManagerService(addressProviders);
@@ -164,10 +160,10 @@ namespace hazelcast {
 
             IdGenerator HazelcastClientInstanceImpl::getIdGenerator(const std::string &name) {
                 idgen::impl::IdGeneratorProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(proxy::ClientIdGeneratorProxy::SERVICE_NAME, name, factory);
 
-                boost::shared_ptr<impl::IdGeneratorInterface> impl = boost::static_pointer_cast<proxy::ClientIdGeneratorProxy>(
+                std::shared_ptr<impl::IdGeneratorInterface> impl = std::static_pointer_cast<proxy::ClientIdGeneratorProxy>(
                         proxy);
                 
                 return IdGenerator(impl);
@@ -175,10 +171,10 @@ namespace hazelcast {
 
             IAtomicLong HazelcastClientInstanceImpl::getIAtomicLong(const std::string &name) {
                 atomiclong::impl::AtomicLongProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(proxy::ClientAtomicLongProxy::SERVICE_NAME, name, factory);
 
-                boost::shared_ptr<proxy::ClientAtomicLongProxy> impl = boost::static_pointer_cast<proxy::ClientAtomicLongProxy>(
+                std::shared_ptr<proxy::ClientAtomicLongProxy> impl = std::static_pointer_cast<proxy::ClientAtomicLongProxy>(
                         proxy);
 
                 return IAtomicLong(impl);
@@ -186,10 +182,10 @@ namespace hazelcast {
 
             FlakeIdGenerator HazelcastClientInstanceImpl::getFlakeIdGenerator(const std::string &name) {
                 flakeidgen::impl::FlakeIdGeneratorProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(proxy::ClientFlakeIdGeneratorProxy::SERVICE_NAME, name, factory);
 
-                boost::shared_ptr<impl::IdGeneratorInterface> impl = boost::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(
+                std::shared_ptr<impl::IdGeneratorInterface> impl = std::static_pointer_cast<proxy::ClientFlakeIdGeneratorProxy>(
                         proxy);
 
                 return FlakeIdGenerator(impl);
@@ -224,7 +220,7 @@ namespace hazelcast {
                 return serializationService;
             }
 
-            boost::shared_ptr<spi::ClientProxy> HazelcastClientInstanceImpl::getDistributedObjectForService(
+            std::shared_ptr<spi::ClientProxy> HazelcastClientInstanceImpl::getDistributedObjectForService(
                     const std::string &serviceName,
                     const std::string &name,
                     spi::ClientProxyFactory &factory) {
@@ -239,42 +235,42 @@ namespace hazelcast {
                 return exceptionFactory;
             }
 
-            boost::shared_ptr<spi::ClientListenerService> HazelcastClientInstanceImpl::initListenerService() {
+            std::shared_ptr<spi::ClientListenerService> HazelcastClientInstanceImpl::initListenerService() {
                 int eventQueueCapacity = clientProperties.getInteger(clientProperties.getEventQueueCapacity());
                 int eventThreadCount = clientProperties.getInteger(clientProperties.getEventThreadCount());
                 config::ClientNetworkConfig &networkConfig = clientConfig.getNetworkConfig();
                 if (networkConfig.isSmartRouting()) {
-                    return boost::shared_ptr<spi::ClientListenerService>(
+                    return std::shared_ptr<spi::ClientListenerService>(
                             new spi::impl::listener::SmartClientListenerService(clientContext, eventThreadCount,
                                                                                 eventQueueCapacity));
                 } else {
-                    return boost::shared_ptr<spi::ClientListenerService>(
+                    return std::shared_ptr<spi::ClientListenerService>(
                             new spi::impl::listener::NonSmartClientListenerService(clientContext, eventThreadCount,
                                                                                    eventQueueCapacity));
                 }
             }
 
-            std::auto_ptr<spi::ClientInvocationService> HazelcastClientInstanceImpl::initInvocationService() {
+            std::unique_ptr<spi::ClientInvocationService> HazelcastClientInstanceImpl::initInvocationService() {
                 if (clientConfig.getNetworkConfig().isSmartRouting()) {
-                    return std::auto_ptr<spi::ClientInvocationService>(
+                    return std::unique_ptr<spi::ClientInvocationService>(
                             new spi::impl::SmartClientInvocationService(clientContext));
                 } else {
-                    return std::auto_ptr<spi::ClientInvocationService>(
+                    return std::unique_ptr<spi::ClientInvocationService>(
                             new spi::impl::NonSmartClientInvocationService(clientContext));
                 }
             }
 
-            boost::shared_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
-                return boost::shared_ptr<spi::impl::ClientExecutionServiceImpl>(
+            std::shared_ptr<spi::impl::ClientExecutionServiceImpl> HazelcastClientInstanceImpl::initExecutionService() {
+                return std::shared_ptr<spi::impl::ClientExecutionServiceImpl>(
                         new spi::impl::ClientExecutionServiceImpl(instanceName, clientProperties,
                                 clientConfig.getExecutorPoolSize(), *logger));
             }
 
-            std::auto_ptr<connection::ClientConnectionManagerImpl>
+            std::unique_ptr<connection::ClientConnectionManagerImpl>
             HazelcastClientInstanceImpl::initConnectionManagerService(
-                    const std::vector<boost::shared_ptr<connection::AddressProvider> > &addressProviders) {
+                    const std::vector<std::shared_ptr<connection::AddressProvider> > &addressProviders) {
                 config::ClientAwsConfig &awsConfig = clientConfig.getNetworkConfig().getAwsConfig();
-                boost::shared_ptr<connection::AddressTranslator> addressTranslator;
+                std::shared_ptr<connection::AddressTranslator> addressTranslator;
                 if (awsConfig.isEnabled()) {
                     try {
                         addressTranslator.reset(new aws::impl::AwsAddressTranslator(awsConfig, *logger));
@@ -285,23 +281,23 @@ namespace hazelcast {
                 } else {
                     addressTranslator.reset(new spi::impl::DefaultAddressTranslator());
                 }
-                return std::auto_ptr<connection::ClientConnectionManagerImpl>(
+                return std::unique_ptr<connection::ClientConnectionManagerImpl>(
                         new connection::ClientConnectionManagerImpl(
                                 clientContext, addressTranslator, addressProviders));
 
             }
 
             void HazelcastClientInstanceImpl::onClusterConnect(
-                    const boost::shared_ptr<connection::Connection> &ownerConnection) {
+                    const std::shared_ptr<connection::Connection> &ownerConnection) {
                 partitionService->listenPartitionTable(ownerConnection);
                 clusterService.listenMembershipEvents(ownerConnection);
             }
 
-            std::vector<boost::shared_ptr<connection::AddressProvider> >
+            std::vector<std::shared_ptr<connection::AddressProvider> >
             HazelcastClientInstanceImpl::createAddressProviders() {
                 config::ClientNetworkConfig &networkConfig = getClientConfig().getNetworkConfig();
                 config::ClientAwsConfig &awsConfig = networkConfig.getAwsConfig();
-                std::vector<boost::shared_ptr<connection::AddressProvider> > addressProviders;
+                std::vector<std::shared_ptr<connection::AddressProvider> > addressProviders;
 
                 if (awsConfig.isEnabled()) {
                     int awsMemberPort = clientProperties.getInteger(clientProperties.getAwsMemberPort());
@@ -311,11 +307,11 @@ namespace hazelcast {
                                                                                        << awsMemberPort
                                                                                        << " is not a valid port number. It should be between 0-65535 inclusive.").build();
                     }
-                    addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(
+                    addressProviders.push_back(std::shared_ptr<connection::AddressProvider>(
                             new spi::impl::AwsAddressProvider(awsConfig, awsMemberPort, *logger)));
                 }
 
-                addressProviders.push_back(boost::shared_ptr<connection::AddressProvider>(
+                addressProviders.push_back(std::shared_ptr<connection::AddressProvider>(
                         new spi::impl::DefaultAddressProvider(networkConfig, addressProviders.empty())));
 
                 return addressProviders;
@@ -329,18 +325,18 @@ namespace hazelcast {
                 return lifecycleService;
             }
 
-            const boost::shared_ptr<ClientLockReferenceIdGenerator> &
+            const std::shared_ptr<ClientLockReferenceIdGenerator> &
             HazelcastClientInstanceImpl::getLockReferenceIdGenerator() const {
                 return lockReferenceIdGenerator;
             }
 
-            boost::shared_ptr<crdt::pncounter::PNCounter>
+            std::shared_ptr<crdt::pncounter::PNCounter>
             HazelcastClientInstanceImpl::getPNCounter(const std::string &name) {
                 crdt::pncounter::impl::PNCounterProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(proxy::ClientPNCounterProxy::SERVICE_NAME, name, factory);
 
-                return boost::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
+                return std::static_pointer_cast<proxy::ClientPNCounterProxy>(proxy);
             }
 
             spi::ProxyManager &HazelcastClientInstanceImpl::getProxyManager() {
@@ -351,13 +347,13 @@ namespace hazelcast {
                 nearCacheManager.reset(new internal::nearcache::NearCacheManager(serializationService, *logger));
             }
 
-            boost::shared_ptr<IExecutorService>
+            std::shared_ptr<IExecutorService>
             HazelcastClientInstanceImpl::getExecutorService(const std::string &name) {
                 executor::impl::ExecutorServiceProxyFactory factory(&clientContext);
-                boost::shared_ptr<spi::ClientProxy> proxy =
+                std::shared_ptr<spi::ClientProxy> proxy =
                         getDistributedObjectForService(IExecutorService::SERVICE_NAME, name, factory);
 
-                return boost::static_pointer_cast<IExecutorService>(proxy);
+                return std::static_pointer_cast<IExecutorService>(proxy);
             }
 
             Client HazelcastClientInstanceImpl::getLocalEndpoint() const {

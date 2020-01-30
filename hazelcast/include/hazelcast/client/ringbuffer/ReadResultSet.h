@@ -37,11 +37,11 @@ namespace hazelcast {
 
                 ReadResultSet(int32_t readCount, const std::vector<serialization::pimpl::Data> &dataItems,
                               serialization::pimpl::SerializationService &serializationService,
-                              std::auto_ptr<std::vector<int64_t> > &itemSeqs, bool itemSeqsExist,
+                              std::unique_ptr<std::vector<int64_t> > &itemSeqs, bool itemSeqsExist,
                               int64_t nextSeq) : itemsReadCount(readCount),
                                                  items(new client::impl::DataArrayImpl<E>(dataItems,
                                                                                           serializationService)),
-                                                 itemSeqs(itemSeqs),
+                                                 itemSeqs(std::move(itemSeqs)),
                                                  itemSeqsExist(itemSeqsExist),
                                                  nextSeq(nextSeq) {}
 
@@ -118,8 +118,8 @@ namespace hazelcast {
 
             private:
                 int32_t itemsReadCount;
-                std::auto_ptr<client::impl::DataArrayImpl<E> > items;
-                std::auto_ptr<std::vector<int64_t> > itemSeqs;
+                std::unique_ptr<client::impl::DataArrayImpl<E> > items;
+                std::unique_ptr<std::vector<int64_t> > itemSeqs;
                 bool itemSeqsExist;
                 int64_t nextSeq;
             };

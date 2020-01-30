@@ -52,7 +52,7 @@ namespace hazelcast {
                 *
                 * @see IMap#get(key)
                 */
-                std::auto_ptr<V> get(const K &key) {
+                std::unique_ptr<V> get(const K &key) {
                     return serializationService.toObject<V>(map.getData(serializationService.toData<K>(&key)).get());
                 }
 
@@ -81,7 +81,7 @@ namespace hazelcast {
                 *
                 * @see IMap#put(key, value)
                 */
-                std::auto_ptr<V> put(const K &key, const V &value) {
+                std::unique_ptr<V> put(const K &key, const V &value) {
                     return serializationService.toObject<V>(map.putData(serializationService.toData<K>(&key),
                                                                         serializationService.toData<V>(&value)).get());
                 };
@@ -104,7 +104,7 @@ namespace hazelcast {
                 *
                 * @see IMap#putIfAbsent(key, value)
                 */
-                std::auto_ptr<V> putIfAbsent(const K &key, const V &value) {
+                std::unique_ptr<V> putIfAbsent(const K &key, const V &value) {
                     return serializationService.toObject<V>(map.putIfAbsentData(serializationService.toData<K>(&key),
                                                                                 serializationService.toData<V>(
                                                                                         &value)).get());
@@ -117,7 +117,7 @@ namespace hazelcast {
                 *
                 * @see IMap#replace(key, value)
                 */
-                std::auto_ptr<V> replace(const K &key, const V &value) {
+                std::unique_ptr<V> replace(const K &key, const V &value) {
                     return serializationService.toObject<V>(map.replaceData(serializationService.toData<K>(&key),
                                                                             serializationService.toData<V>(
                                                                                     &value)).get());
@@ -141,7 +141,7 @@ namespace hazelcast {
                 *
                 * @see IMap#remove(key)
                 */
-                std::auto_ptr<V> remove(const K &key) {
+                std::unique_ptr<V> remove(const K &key) {
                     return serializationService.toObject<V>(map.removeData(serializationService.toData<K>(&key)).get());
                 };
 
@@ -174,8 +174,8 @@ namespace hazelcast {
                 *
                 * @see IMap#keySet()
                 */
-                std::auto_ptr<DataArray<K> > keySet() {
-                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(), serializationService));
+                std::unique_ptr<DataArray<K> > keySet() {
+                    return std::unique_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(), serializationService));
                 }
 
                 /**
@@ -184,8 +184,8 @@ namespace hazelcast {
                 *
                 * @see IMap#keySet(predicate)
                 */
-                std::auto_ptr<DataArray<K> > keySet(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(predicate), serializationService));
+                std::unique_ptr<DataArray<K> > keySet(const serialization::IdentifiedDataSerializable *predicate) {
+                    return std::unique_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(map.keySetData(predicate), serializationService));
                 }
 
                 /**
@@ -194,8 +194,8 @@ namespace hazelcast {
                 *
                 * @see IMap#values()
                 */
-                std::auto_ptr<DataArray<V> > values() {
-                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(), serializationService));
+                std::unique_ptr<DataArray<V> > values() {
+                    return std::unique_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(), serializationService));
                 }
 
                 /**
@@ -203,8 +203,8 @@ namespace hazelcast {
                 *
                 * @see IMap#values(Predicate)
                 */
-                std::auto_ptr<DataArray<V> > values(const serialization::IdentifiedDataSerializable *predicate) {
-                    return std::auto_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(predicate), serializationService));
+                std::unique_ptr<DataArray<V> > values(const serialization::IdentifiedDataSerializable *predicate) {
+                    return std::unique_ptr<DataArray<V> >(new hazelcast::client::impl::DataArrayImpl<V>(map.valuesData(predicate), serializationService));
                 }
 
             private:

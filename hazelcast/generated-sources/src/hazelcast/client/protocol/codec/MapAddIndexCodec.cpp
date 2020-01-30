@@ -27,12 +27,12 @@ namespace hazelcast {
                 const bool MapAddIndexCodec::RETRYABLE = false;
                 const ResponseMessageConst MapAddIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> MapAddIndexCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapAddIndexCodec::encodeRequest(
                         const std::string &name,
                         const std::string &attribute,
                         bool ordered) {
                     int32_t requiredDataSize = calculateDataSize(name, attribute, ordered);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

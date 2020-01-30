@@ -48,7 +48,7 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             asio::ssl::context sslContext;
-            std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+            std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
             #endif // HZ_BUILD_WITH_SSL
 
             asio::streambuf response;

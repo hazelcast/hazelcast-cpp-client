@@ -47,7 +47,7 @@ namespace hazelcast {
              * @return Deserializes the data and returns the key object for the data at the provided index.
              * @throws IllegalArgumentException If provided index is greater than the maximum array index.
              */
-            virtual std::auto_ptr<K> releaseKey(size_t index) = 0;
+            virtual std::unique_ptr<K> releaseKey(size_t index) = 0;
 
             /**
              * Please note that this operation is costly due to de-serialization. It will cache the de-serialized data.
@@ -65,7 +65,7 @@ namespace hazelcast {
              * @return Deserializes the data and returns the value object for the data at the provided index.
              * @throws IllegalArgumentException If provided index is greater than the maximum array index.
              */
-            virtual std::auto_ptr<V> releaseValue(size_t index) = 0;
+            virtual std::unique_ptr<V> releaseValue(size_t index) = 0;
 
             /**
              * @param index The index of the desired item in the array.

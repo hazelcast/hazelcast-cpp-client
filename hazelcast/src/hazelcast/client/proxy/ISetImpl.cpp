@@ -55,83 +55,83 @@ namespace hazelcast {
             }
 
             int ISetImpl::size() {
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::SetSizeCodec::encodeRequest(getName());
+                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetSizeCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<int, protocol::codec::SetSizeCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::isEmpty() {
-                std::auto_ptr<protocol::ClientMessage> request = protocol::codec::SetIsEmptyCodec::encodeRequest(getName());
+                std::unique_ptr<protocol::ClientMessage> request = protocol::codec::SetIsEmptyCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<bool, protocol::codec::SetIsEmptyCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::contains(const serialization::pimpl::Data& element) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetContainsCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::SetContainsCodec::ResponseParameters>(request, partitionId);
             }
 
             std::vector<serialization::pimpl::Data>  ISetImpl::toArrayData() {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetGetAllCodec::encodeRequest(getName());
 
                 return invokeAndGetResult<std::vector<serialization::pimpl::Data>, protocol::codec::SetGetAllCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::add(const serialization::pimpl::Data& element) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetAddCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::SetAddCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::remove(const serialization::pimpl::Data& element) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetRemoveCodec::encodeRequest(getName(), element);
 
                 return invokeAndGetResult<bool, protocol::codec::SetRemoveCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::containsAll(const std::vector<serialization::pimpl::Data>& elements) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetContainsAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::SetContainsAllCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::addAll(const std::vector<serialization::pimpl::Data>& elements) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetAddAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::SetAddAllCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::removeAll(const std::vector<serialization::pimpl::Data>& elements) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetCompareAndRemoveAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::SetCompareAndRemoveAllCodec::ResponseParameters>(request, partitionId);
             }
 
             bool ISetImpl::retainAll(const std::vector<serialization::pimpl::Data>& elements) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetCompareAndRetainAllCodec::encodeRequest(getName(), elements);
 
                 return invokeAndGetResult<bool, protocol::codec::SetCompareAndRetainAllCodec::ResponseParameters>(request, partitionId);
             }
 
             void ISetImpl::clear() {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::SetClearCodec::encodeRequest(getName());
 
                 invokeOnPartition(request, partitionId);
             }
 
-            boost::shared_ptr<spi::impl::ListenerMessageCodec>
+            std::shared_ptr<spi::impl::ListenerMessageCodec>
             ISetImpl::createItemListenerCodec(bool includeValue) {
-                return boost::shared_ptr<spi::impl::ListenerMessageCodec>(
+                return std::shared_ptr<spi::impl::ListenerMessageCodec>(
                         new SetListenerMessageCodec(getName(), includeValue));
             }
 
@@ -140,7 +140,7 @@ namespace hazelcast {
                                                                                                   includeValue(
                                                                                                           includeValue) {}
 
-            std::auto_ptr<protocol::ClientMessage>
+            std::unique_ptr<protocol::ClientMessage>
             ISetImpl::SetListenerMessageCodec::encodeAddRequest(bool localOnly) const {
                 return protocol::codec::SetAddListenerCodec::encodeRequest(name, includeValue, localOnly);
             }
@@ -150,7 +150,7 @@ namespace hazelcast {
                 return protocol::codec::SetAddListenerCodec::ResponseParameters::decode(responseMessage).response;
             }
 
-            std::auto_ptr<protocol::ClientMessage>
+            std::unique_ptr<protocol::ClientMessage>
             ISetImpl::SetListenerMessageCodec::encodeRemoveRequest(const std::string &realRegistrationId) const {
                 return protocol::codec::SetRemoveListenerCodec::encodeRequest(name, realRegistrationId);
             }

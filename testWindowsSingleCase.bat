@@ -31,11 +31,6 @@ call scripts/build-windows.bat %HZ_BIT_VERSION% %HZ_LIB_TYPE% %HZ_BUILD_TYPE% %C
     exit /b 1
 )
 
-pip install --user -r hazelcast/test/test_requirements.txt || (
-    echo "Failed to install python hazelcast-remote-controller library."
-    exit /b 1
-)
-
 call scripts/start-rc.bat || (
     echo "Failed to start the remote controller"
     exit /b 1

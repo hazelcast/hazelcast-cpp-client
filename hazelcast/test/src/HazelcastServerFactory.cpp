@@ -30,9 +30,14 @@
 namespace hazelcast {
     namespace client {
         namespace test {
+            extern HazelcastServerFactory *g_srvFactory;
 
-            HazelcastServerFactory::HazelcastServerFactory(const char *serverAddress,
-                                                           const char *serverXmlConfigFilePath)
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
+                    : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->getServerAddress(),
+                                                                     serverXmlConfigFilePath) {
+            }
+            HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
+                                                           const std::string &serverXmlConfigFilePath)
                     : logger("HazelcastServerFactory", "HazelcastServerFactory", "testversion", config::LoggerConfig()),
                       serverAddress(serverAddress), remoteController(make_shared<TBinaryProtocol>(
                                     make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, 9701)))) {
@@ -103,6 +108,14 @@ namespace hazelcast {
                 xmlFile.close();
 
                 return buffer.str();
+            }
+
+            RemoteControllerClient &HazelcastServerFactory::getRemoteController() {
+                return remoteController;
+            }
+
+            const string &HazelcastServerFactory::getClusterId() const {
+                return clusterId;
             }
 
         }

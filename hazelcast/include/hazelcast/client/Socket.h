@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_SOCKET_H_
 
 #include <memory>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Address.h"
 
@@ -84,7 +84,7 @@ namespace hazelcast {
              *
              * @returns An address that represents the local endpoint of the socket.
              */
-            virtual std::auto_ptr<Address> localSocketAddress() const = 0;
+            virtual std::unique_ptr<Address> localSocketAddress() const = 0;
         };
 
     }

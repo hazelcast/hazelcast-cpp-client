@@ -71,7 +71,7 @@ int main() {
     std::cout << "Starting" << std::endl;
     for (int k = 0; k < 1000; k++) {
         for (; ;) {
-            boost::shared_ptr<Value> oldValue = map.get(key);
+            std::shared_ptr<Value> oldValue = map.get(key);
             Value newValue(*oldValue);
             hazelcast::util::sleepmillis(10);
             newValue.amount++;

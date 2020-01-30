@@ -91,7 +91,7 @@ namespace hazelcast {
                 return factory.setAttributes(memberStartOrder);
             }
 
-            const HazelcastServerFactory::MemberInfo &HazelcastServer::getMember() const {
+            const Member &HazelcastServer::getMember() const {
                 return member;
             }
 

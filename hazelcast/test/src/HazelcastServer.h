@@ -26,6 +26,8 @@
 
 #include "HazelcastServerFactory.h"
 
+using namespace hazelcast::client::test::remote;
+
 namespace hazelcast {
     namespace client {
         namespace test {
@@ -48,13 +50,13 @@ namespace hazelcast {
 
                 bool setAttributes(int memberStartOrder);
 
-                const HazelcastServerFactory::MemberInfo &getMember() const;
+                const Member &getMember() const;
 
             private:
                 HazelcastServerFactory & factory;
                 bool isStarted;
-                HazelcastServerFactory::MemberInfo member;
-                boost::shared_ptr<util::ILogger> logger;
+                Member member;
+                std::shared_ptr<util::ILogger> logger;
             };
         }
     }

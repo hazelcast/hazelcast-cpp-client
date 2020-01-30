@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool ListRemoveWithIndexCodec::RETRYABLE = false;
                 const ResponseMessageConst ListRemoveWithIndexCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> ListRemoveWithIndexCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ListRemoveWithIndexCodec::encodeRequest(
                         const std::string &name,
                         int32_t index) {
                     int32_t requiredDataSize = calculateDataSize(name, index);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ListRemoveWithIndexCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -64,7 +64,7 @@ namespace hazelcast {
 
                 ListRemoveWithIndexCodec::ResponseParameters::ResponseParameters(
                         const ListRemoveWithIndexCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

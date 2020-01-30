@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool QueueRemoveListenerCodec::RETRYABLE = true;
                 const ResponseMessageConst QueueRemoveListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> QueueRemoveListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> QueueRemoveListenerCodec::encodeRequest(
                         const std::string &name,
                         const std::string &registrationId) {
                     int32_t requiredDataSize = calculateDataSize(name, registrationId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueRemoveListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

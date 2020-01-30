@@ -31,7 +31,7 @@ namespace hazelcast {
 
         void Cluster::addMembershipListener(MembershipListener *listener) {
             clusterService.addMembershipListener(
-                    boost::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
+                    std::shared_ptr<MembershipListener>(new MembershipListenerDelegator(listener)));
         }
 
         bool Cluster::removeMembershipListener(MembershipListener *listener) {
@@ -42,7 +42,7 @@ namespace hazelcast {
             return clusterService.getMemberList();
         }
 
-        std::string Cluster::addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) {
+        std::string Cluster::addMembershipListener(const std::shared_ptr<MembershipListener> &listener) {
             return clusterService.addMembershipListener(listener);
         }
 
@@ -50,13 +50,13 @@ namespace hazelcast {
             return clusterService.removeMembershipListener(registrationId);
         }
 
-        std::string Cluster::addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &listener) {
+        std::string Cluster::addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener) {
             return clusterService.addMembershipListener(listener);
         }
 
         std::string Cluster::addMembershipListener(InitialMembershipListener *listener) {
             return clusterService.addMembershipListener(
-                    boost::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
+                    std::shared_ptr<MembershipListener>(new InitialMembershipListenerDelegator(listener)));
 
         }
     }

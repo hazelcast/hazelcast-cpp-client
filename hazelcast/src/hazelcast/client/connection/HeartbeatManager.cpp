@@ -42,7 +42,7 @@ namespace hazelcast {
                 spi::impl::ClientExecutionServiceImpl &clientExecutionService = client.getClientExecutionService();
 
                 clientExecutionService.scheduleWithRepetition(
-                        boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), heartbeatInterval,
+                        std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), heartbeatInterval,
                         heartbeatInterval);
             }
 
@@ -52,8 +52,7 @@ namespace hazelcast {
                 }
 
                 int64_t now = util::currentTimeMillis();
-                BOOST_FOREACH (boost::shared_ptr<Connection> connection,
-                               clientConnectionManager.getActiveConnections()) {
+                for (std::shared_ptr<Connection> connection : clientConnectionManager.getActiveConnections()) {
                                 checkConnection(now, connection);
                             }
             }
@@ -62,7 +61,7 @@ namespace hazelcast {
                 return "HeartbeatManager";
             }
 
-            void HeartbeatManager::checkConnection(int64_t now, boost::shared_ptr<Connection> &connection) {
+            void HeartbeatManager::checkConnection(int64_t now, std::shared_ptr<Connection> &connection) {
                 if (!connection->isAlive()) {
                     return;
                 }
@@ -75,15 +74,15 @@ namespace hazelcast {
                 }
 
                 if (now - connection->lastReadTimeMillis() > heartbeatInterval) {
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
-                    boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ClientPingCodec::encodeRequest();
+                    std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                             client, request, "", connection);
                     clientInvocation->invokeUrgent();
                 }
             }
 
             void
-            HeartbeatManager::onHeartbeatStopped(boost::shared_ptr<Connection> &connection, const std::string &reason) {
+            HeartbeatManager::onHeartbeatStopped(std::shared_ptr<Connection> &connection, const std::string &reason) {
                 connection->close(reason.c_str(), (exception::ExceptionBuilder<exception::TargetDisconnectedException>(
                         "HeartbeatManager::onHeartbeatStopped") << "Heartbeat timed out to connection "
                                                                 << *connection).buildShared());

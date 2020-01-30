@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool TransactionCommitCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionCommitCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> TransactionCommitCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionCommitCodec::encodeRequest(
                         const std::string &transactionId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(transactionId, threadId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionCommitCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(transactionId);

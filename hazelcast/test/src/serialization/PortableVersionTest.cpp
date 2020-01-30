@@ -96,14 +96,14 @@ namespace hazelcast {
 
                 class MyPortableFactory : public serialization::PortableFactory {
                 public:
-                    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+                    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
                         if (classId == 1) {
-                            return std::auto_ptr<serialization::Portable>(new Parent());
+                            return std::unique_ptr<serialization::Portable>(new Parent());
                         } else if (classId == 2) {
-                            return std::auto_ptr<serialization::Portable>(new Child());
+                            return std::unique_ptr<serialization::Portable>(new Child());
                         }
 
-                        return std::auto_ptr<serialization::Portable>();
+                        return std::unique_ptr<serialization::Portable>();
                     }
                 };
             };
@@ -111,11 +111,11 @@ namespace hazelcast {
             // Test for issue https://github.com/hazelcast/hazelcast/issues/12733
             TEST_F(PortableVersionTest, test_nestedPortable_versionedSerializer) {
                 SerializationConfig serializationConfig;
-                serializationConfig.addPortableFactory(1, boost::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
+                serializationConfig.addPortableFactory(1, std::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
                 serialization::pimpl::SerializationService ss1(serializationConfig);
 
                 SerializationConfig serializationConfig2;
-                serializationConfig2.setPortableVersion(6).addPortableFactory(1, boost::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
+                serializationConfig2.setPortableVersion(6).addPortableFactory(1, std::shared_ptr<serialization::PortableFactory>(new MyPortableFactory));
                 serialization::pimpl::SerializationService ss2(serializationConfig2);
 
                 //make sure ss2 cached class definition of Child

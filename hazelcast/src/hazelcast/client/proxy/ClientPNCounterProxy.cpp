@@ -27,13 +27,13 @@ namespace hazelcast {
     namespace client {
         namespace proxy {
             const std::string ClientPNCounterProxy::SERVICE_NAME = "hz:impl:PNCounterService";
-            const boost::shared_ptr<std::set<Address> > ClientPNCounterProxy::EMPTY_ADDRESS_LIST(
+            const std::shared_ptr<std::set<Address> > ClientPNCounterProxy::EMPTY_ADDRESS_LIST(
                     new std::set<Address>());
 
             ClientPNCounterProxy::ClientPNCounterProxy(const std::string &serviceName, const std::string &objectName,
                                                        spi::ClientContext *context)
                     : ProxyImpl(serviceName, objectName, context), maxConfiguredReplicaCount(0),
-                      observedClock(boost::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
+                      observedClock(std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock())),
                       logger(context->getLogger()) {
             }
 
@@ -43,13 +43,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::get() {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::get",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeGetInternal(EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeGetInternal(EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
                 protocol::codec::PNCounterGetCodec::ResponseParameters resultParameters = protocol::codec::PNCounterGetCodec::ResponseParameters::decode(
                         *response);
@@ -58,13 +58,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::getAndAdd(int64_t delta) {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndAdd",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, true, EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -74,14 +74,14 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::addAndGet(int64_t delta) {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::addAndGet",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, false,
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(delta, false,
                                                                                         EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -91,14 +91,14 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::getAndSubtract(int64_t delta) {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndSubtract",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, true,
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, true,
                                                                                         EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -108,14 +108,14 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::subtractAndGet(int64_t delta) {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::subtractAndGet",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, false,
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-delta, false,
                                                                                         EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -125,13 +125,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::decrementAndGet() {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::decrementAndGet",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, false, EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -141,13 +141,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::incrementAndGet() {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::incrementAndGet",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, false, EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -157,13 +157,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::getAndDecrement() {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndDecrement",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(-1, true, EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -173,13 +173,13 @@ namespace hazelcast {
             }
 
             int64_t ClientPNCounterProxy::getAndIncrement() {
-                boost::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
+                std::shared_ptr<Address> target = getCRDTOperationTarget(*EMPTY_ADDRESS_LIST);
                 if (target.get() == NULL) {
                     throw exception::NoDataMemberInClusterException("ClientPNCounterProxy::getAndIncrement",
                                                                     "Cannot invoke operations on a CRDT because the cluster does not contain any data members");
                 }
-                boost::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
-                                                                                        std::auto_ptr<exception::HazelcastException>(),
+                std::shared_ptr<protocol::ClientMessage> response = invokeAddInternal(1, true, EMPTY_ADDRESS_LIST,
+                                                                                        std::unique_ptr<exception::HazelcastException>(),
                                                                                         target);
 
                 protocol::codec::PNCounterAddCodec::ResponseParameters resultParameters = protocol::codec::PNCounterAddCodec::ResponseParameters::decode(
@@ -189,10 +189,10 @@ namespace hazelcast {
             }
 
             void ClientPNCounterProxy::reset() {
-                observedClock = boost::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
+                observedClock = std::shared_ptr<cluster::impl::VectorClock>(new cluster::impl::VectorClock());
             }
 
-            boost::shared_ptr<Address>
+            std::shared_ptr<Address>
             ClientPNCounterProxy::getCRDTOperationTarget(const std::set<Address> &excludedAddresses) {
                 if (currentTargetReplicaAddress.get().get() != NULL &&
                     excludedAddresses.find(*currentTargetReplicaAddress.get()) == excludedAddresses.end()) {
@@ -209,15 +209,15 @@ namespace hazelcast {
                 return currentTargetReplicaAddress;
             }
 
-            boost::shared_ptr<Address>
+            std::shared_ptr<Address>
             ClientPNCounterProxy::chooseTargetReplica(const std::set<Address> &excludedAddresses) {
                 std::vector<Address> replicaAddresses = getReplicaAddresses(excludedAddresses);
                 if (replicaAddresses.empty()) {
-                    return boost::shared_ptr<Address>();
+                    return std::shared_ptr<Address>();
                 }
                 // TODO: Use a random generator as used in Java (ThreadLocalRandomProvider) which is per thread
                 int randomReplicaIndex = std::abs(rand()) % (int) replicaAddresses.size();
-                return boost::shared_ptr<Address>(new Address(replicaAddresses[randomReplicaIndex]));
+                return std::shared_ptr<Address>(new Address(replicaAddresses[randomReplicaIndex]));
             }
 
             std::vector<Address> ClientPNCounterProxy::getReplicaAddresses(const std::set<Address> &excludedAddresses) {
@@ -240,7 +240,7 @@ namespace hazelcast {
                 if (maxConfiguredReplicaCount > 0) {
                     return maxConfiguredReplicaCount;
                 } else {
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetConfiguredReplicaCountCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetConfiguredReplicaCountCodec::encodeRequest(
                             getName());
                     maxConfiguredReplicaCount = invokeAndGetResult<int32_t, protocol::codec::PNCounterGetConfiguredReplicaCountCodec::ResponseParameters>(
                             request);
@@ -248,10 +248,10 @@ namespace hazelcast {
                 return maxConfiguredReplicaCount;
             }
 
-            boost::shared_ptr<protocol::ClientMessage>
-            ClientPNCounterProxy::invokeGetInternal(boost::shared_ptr<std::set<Address> > excludedAddresses,
-                                                    const std::auto_ptr<exception::IException> &lastException,
-                                                    const boost::shared_ptr<Address> &target) {
+            std::shared_ptr<protocol::ClientMessage>
+            ClientPNCounterProxy::invokeGetInternal(std::shared_ptr<std::set<Address> > excludedAddresses,
+                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    const std::shared_ptr<Address> &target) {
                 if (target.get() == NULL) {
                     if (lastException.get()) {
                         throw *lastException;
@@ -262,7 +262,7 @@ namespace hazelcast {
                     }
                 }
                 try {
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterGetCodec::encodeRequest(
                             getName(), observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
@@ -270,21 +270,21 @@ namespace hazelcast {
                                     ", choosing different target. Cause: " << e;
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
-                        excludedAddresses = boost::shared_ptr<std::set<Address> >(new std::set<Address>());
+                        excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
                     }
                     excludedAddresses->insert(*target);
-                    boost::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    std::auto_ptr<exception::IException> exception = e.clone();
+                    std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
+                    std::unique_ptr<exception::IException> exception = e.clone();
                     return invokeGetInternal(excludedAddresses, exception, newTarget);
                 }
             }
 
 
-            boost::shared_ptr<protocol::ClientMessage>
+            std::shared_ptr<protocol::ClientMessage>
             ClientPNCounterProxy::invokeAddInternal(int64_t delta, bool getBeforeUpdate,
-                                                    boost::shared_ptr<std::set<Address> > excludedAddresses,
-                                                    const std::auto_ptr<exception::IException> &lastException,
-                                                    const boost::shared_ptr<Address> &target) {
+                                                    std::shared_ptr<std::set<Address> > excludedAddresses,
+                                                    const std::unique_ptr<exception::IException> &lastException,
+                                                    const std::shared_ptr<Address> &target) {
                 if (target.get() == NULL) {
                     if (lastException.get()) {
                         throw *lastException;
@@ -296,7 +296,7 @@ namespace hazelcast {
                 }
 
                 try {
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterAddCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::PNCounterAddCodec::encodeRequest(
                             getName(), delta, getBeforeUpdate, observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
@@ -304,20 +304,20 @@ namespace hazelcast {
                                     ", choosing different target. Cause: " << e;
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
-                        excludedAddresses = boost::shared_ptr<std::set<Address> >(new std::set<Address>());
+                        excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
                     }
                     excludedAddresses->insert(*target);
-                    boost::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
-                    std::auto_ptr<exception::IException> exception = e.clone();
+                    std::shared_ptr<Address> newTarget = getCRDTOperationTarget(*excludedAddresses);
+                    std::unique_ptr<exception::IException> exception = e.clone();
                     return invokeAddInternal(delta, getBeforeUpdate, excludedAddresses, exception, newTarget);
                 }
             }
 
             void ClientPNCounterProxy::updateObservedReplicaTimestamps(
                     const std::vector<std::pair<std::string, int64_t> > &receivedLogicalTimestamps) {
-                boost::shared_ptr<cluster::impl::VectorClock> received = toVectorClock(receivedLogicalTimestamps);
+                std::shared_ptr<cluster::impl::VectorClock> received = toVectorClock(receivedLogicalTimestamps);
                 for (;;) {
-                    boost::shared_ptr<cluster::impl::VectorClock> currentClock = this->observedClock;
+                    std::shared_ptr<cluster::impl::VectorClock> currentClock = this->observedClock;
                     if (currentClock->isAfter(*received)) {
                         break;
                     }
@@ -327,13 +327,13 @@ namespace hazelcast {
                 }
             }
 
-            boost::shared_ptr<cluster::impl::VectorClock> ClientPNCounterProxy::toVectorClock(
+            std::shared_ptr<cluster::impl::VectorClock> ClientPNCounterProxy::toVectorClock(
                     const std::vector<std::pair<std::string, int64_t> > &replicaLogicalTimestamps) {
-                return boost::shared_ptr<cluster::impl::VectorClock>(
+                return std::shared_ptr<cluster::impl::VectorClock>(
                         new cluster::impl::VectorClock(replicaLogicalTimestamps));
             }
 
-            boost::shared_ptr<Address> ClientPNCounterProxy::getCurrentTargetReplicaAddress() {
+            std::shared_ptr<Address> ClientPNCounterProxy::getCurrentTargetReplicaAddress() {
                 return currentTargetReplicaAddress.get();
             }
         }

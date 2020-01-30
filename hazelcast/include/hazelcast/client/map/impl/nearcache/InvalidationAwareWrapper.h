@@ -40,15 +40,15 @@ namespace hazelcast {
                     template<typename K, typename V>
                     class InvalidationAwareWrapper : public internal::nearcache::NearCache<K, V> {
                     public:
-                        static boost::shared_ptr<internal::nearcache::NearCache<K, V> > asInvalidationAware(
-                                boost::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache,
+                        static std::shared_ptr<internal::nearcache::NearCache<K, V> > asInvalidationAware(
+                                std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache,
                                 int markerCount) {
-                            return boost::shared_ptr<internal::nearcache::NearCache<K, V> >(
+                            return std::shared_ptr<internal::nearcache::NearCache<K, V> >(
                                     new InvalidationAwareWrapper<K, V>(nearCache, markerCount));
                         }
 
                         InvalidationAwareWrapper(
-                                boost::shared_ptr<internal::nearcache::NearCache<K, V> > cache,
+                                std::shared_ptr<internal::nearcache::NearCache<K, V> > cache,
                                 int partitionCount)
                                 : nearCache(cache),
                                   keyStateMarker(new internal::nearcache::impl::KeyStateMarkerImpl(partitionCount)) {
@@ -68,23 +68,23 @@ namespace hazelcast {
                         }
 
                         //@Override
-                        boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
+                        std::shared_ptr<V> get(const std::shared_ptr<K> &key) {
                             return nearCache->get(key);
                         }
 
                         //@Override
-                        void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
+                        void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) {
                             nearCache->put(key, value);
                         }
 
                         //@Override
-                        void put(const boost::shared_ptr<K> &key,
-                                 const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                        void put(const std::shared_ptr<K> &key,
+                                 const std::shared_ptr<serialization::pimpl::Data> &value) {
                             nearCache->put(key, value);
                         }
 
                         //@Override
-                        bool invalidate(const boost::shared_ptr<K> &key) {
+                        bool invalidate(const std::shared_ptr<K> &key) {
                             keyStateMarker->tryRemove(*key);
                             return nearCache->invalidate(key);
                         }
@@ -125,8 +125,8 @@ namespace hazelcast {
                             return keyStateMarker.get();
                         }
                     private:
-                        boost::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache;
-                        std::auto_ptr<KeyStateMarker> keyStateMarker;
+                        std::shared_ptr<internal::nearcache::NearCache<K, V> > nearCache;
+                        std::unique_ptr<KeyStateMarker> keyStateMarker;
                     };
                 }
             }

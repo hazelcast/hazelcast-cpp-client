@@ -168,9 +168,9 @@ namespace hazelcast {
              * @return a ICompletableFuture representing pending completion of the task
              */
             template<typename HazelcastSerializable, typename T, typename K>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submitToKeyOwner(const HazelcastSerializable &task, const K &key) {
-                return submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, boost::shared_ptr<T>(), false);
+                return submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, std::shared_ptr<T>(), false);
             }
 
             /**
@@ -183,10 +183,10 @@ namespace hazelcast {
              * @return a ICompletableFuture representing pending completion of the task
              */
             template<typename HazelcastSerializable, typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submitToMember(const HazelcastSerializable &task, const Member &member) {
                 const Address memberAddress = getMemberAddress(member);
-                return submitToTargetInternal<HazelcastSerializable, T>(task, memberAddress, boost::shared_ptr<T>(),
+                return submitToTargetInternal<HazelcastSerializable, T>(task, memberAddress, std::shared_ptr<T>(),
                                                                         false);
             }
 
@@ -200,14 +200,14 @@ namespace hazelcast {
              * @return map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              */
             template<typename HazelcastSerializable, typename T>
-            std::map<Member, boost::shared_ptr<ICompletableFuture<T> > >
+            std::map<Member, std::shared_ptr<ICompletableFuture<T> > >
             submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members) {
-                std::map<Member, boost::shared_ptr<ICompletableFuture<T> > > futureMap;
+                std::map<Member, std::shared_ptr<ICompletableFuture<T> > > futureMap;
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
                     Address memberAddress = getMemberAddress(*it);
-                    boost::shared_ptr<ICompletableFuture<T> > f = submitToTargetInternal<HazelcastSerializable, T>(task,
+                    std::shared_ptr<ICompletableFuture<T> > f = submitToTargetInternal<HazelcastSerializable, T>(task,
                                                                                                                    memberAddress,
-                                                                                                                   boost::shared_ptr<T>(),
+                                                                                                                   std::shared_ptr<T>(),
                                                                                                                    true);
                     futureMap[*it] = f;
                 }
@@ -225,7 +225,7 @@ namespace hazelcast {
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
-            std::map<Member, boost::shared_ptr<ICompletableFuture<T> > >
+            std::map<Member, std::shared_ptr<ICompletableFuture<T> > >
             submitToMembers(const HazelcastSerializable &task,
                             const cluster::memberselector::MemberSelector &memberSelector) {
                 std::vector<Member> members = selectMembers(memberSelector);
@@ -241,15 +241,15 @@ namespace hazelcast {
              * @return map of Member-ICompletableFuture pairs representing pending completion of the task on each member
              */
             template<typename HazelcastSerializable, typename T>
-            std::map<Member, boost::shared_ptr<ICompletableFuture<T> > >
+            std::map<Member, std::shared_ptr<ICompletableFuture<T> > >
             submitToAllMembers(const HazelcastSerializable &task) {
                 std::vector<Member> members = getContext().getClientClusterService().getMemberList();
-                std::map<Member, boost::shared_ptr<ICompletableFuture<T> > > futureMap;
+                std::map<Member, std::shared_ptr<ICompletableFuture<T> > > futureMap;
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
                     Address memberAddress = getMemberAddress(*it);
-                    boost::shared_ptr<ICompletableFuture<T> > f = submitToTargetInternal<HazelcastSerializable, T>(task,
+                    std::shared_ptr<ICompletableFuture<T> > f = submitToTargetInternal<HazelcastSerializable, T>(task,
                                                                                                                    memberAddress,
-                                                                                                                   boost::shared_ptr<T>(),
+                                                                                                                   std::shared_ptr<T>(),
                                                                                                                    true);
                     futureMap[*it] = f;
                 }
@@ -270,8 +270,8 @@ namespace hazelcast {
              * @throws NullPointerException if the task is null
              */
             template<typename HazelcastSerializable, typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
-            submit(const HazelcastSerializable &task, const boost::shared_ptr<T> &result) {
+            std::shared_ptr<ICompletableFuture<T> >
+            submit(const HazelcastSerializable &task, const std::shared_ptr<T> &result) {
                 Data taskData = toData<HazelcastSerializable>(task);
 
                 if (taskData.hasPartitionHash()) {
@@ -302,8 +302,8 @@ namespace hazelcast {
              *         scheduled for execution
              */
             template<typename HazelcastSerializable, typename T>
-            boost::shared_ptr<ICompletableFuture<T> > submit(const HazelcastSerializable &task) {
-                return submit<HazelcastSerializable, T>(task, boost::shared_ptr<T>());
+            std::shared_ptr<ICompletableFuture<T> > submit(const HazelcastSerializable &task) {
+                return submit<HazelcastSerializable, T>(task, std::shared_ptr<T>());
             }
 
             /**
@@ -315,7 +315,7 @@ namespace hazelcast {
              * @param <T>      the response type of callback
              */
             template<typename HazelcastSerializable, typename T>
-            void submit(const HazelcastSerializable &task, const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+            void submit(const HazelcastSerializable &task, const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 Data taskData = toData<HazelcastSerializable>(task);
 
                 if (taskData.hasPartitionHash()) {
@@ -338,7 +338,7 @@ namespace hazelcast {
              * @throws RejectedExecutionException if no member is selected
              */
             template<typename HazelcastSerializable, typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector) {
                 std::vector<Member> members = selectMembers(memberSelector);
                 int selectedMember = rand() % (int) members.size();
@@ -358,7 +358,7 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void
             submit(const HazelcastSerializable &task, const cluster::memberselector::MemberSelector &memberSelector,
-                   const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                   const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 std::vector<Member> members = selectMembers(memberSelector);
                 int selectedMember = rand() % (int) members.size();
                 return submitToMember(task, members[selectedMember], callback);
@@ -375,7 +375,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T, typename K>
             void submitToKeyOwner(const HazelcastSerializable &task, const K &key,
-                                  const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                  const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 submitToKeyOwnerInternal<HazelcastSerializable, T, K>(task, key, callback);
             }
 
@@ -390,7 +390,7 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submitToMember(const HazelcastSerializable &task, const Member &member,
-                                const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 const Address memberAddress = getMemberAddress(member);
                 return submitToTargetInternal<HazelcastSerializable, T>(task, memberAddress, callback);
             }
@@ -406,12 +406,12 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submitToMembers(const HazelcastSerializable &task, const std::vector<Member> &members,
-                                 const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
-                boost::shared_ptr<MultiExecutionCallbackWrapper < T> >
+                                 const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
+                std::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) members.size(), callback));
 
                 for (std::vector<Member>::const_iterator it = members.begin(); it != members.end(); ++it) {
-                    boost::shared_ptr<ExecutionCallbackWrapper < T> >
+                    std::shared_ptr<ExecutionCallbackWrapper < T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
                     submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
                 }
@@ -430,14 +430,14 @@ namespace hazelcast {
             template<typename HazelcastSerializable, typename T>
             void submitToMembers(const HazelcastSerializable &task,
                                  const cluster::memberselector::MemberSelector &memberSelector,
-                                 const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
+                                 const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::vector<Member> members = selectMembers(memberSelector);
                 submitToMembers<HazelcastSerializable, T>(task, members, callback);
             }
 
             /**
              * Submits task to all the cluster members. Caller will be notified for the result of each task by
-             * {@link MultiExecutionCallback#onResponse(const Member &, const boost::shared_ptr<V> &)}, and when all tasks are completed,
+             * {@link MultiExecutionCallback#onResponse(const Member &, const std::shared_ptr<V> &)}, and when all tasks are completed,
              * {@link MultiExecutionCallback#onComplete(std::map)} will be called.
              *
              * @param task     the task submitted to all the cluster members
@@ -445,13 +445,13 @@ namespace hazelcast {
              */
             template<typename HazelcastSerializable, typename T>
             void submitToAllMembers(const HazelcastSerializable &task,
-                                    const boost::shared_ptr<MultiExecutionCallback<T> > &callback) {
+                                    const std::shared_ptr<MultiExecutionCallback<T> > &callback) {
                 std::vector<Member> memberList = getContext().getClientClusterService().getMemberList();
                 submitToMembers<HazelcastSerializable, T>(task, memberList, callback);
-                boost::shared_ptr<MultiExecutionCallbackWrapper < T> >
+                std::shared_ptr<MultiExecutionCallbackWrapper < T> >
                 multiExecutionCallbackWrapper(new MultiExecutionCallbackWrapper<T>((int) memberList.size(), callback));
                 for (std::vector<Member>::const_iterator it = memberList.begin(); it != memberList.end(); ++it) {
-                    boost::shared_ptr<ExecutionCallbackWrapper < T> >
+                    std::shared_ptr<ExecutionCallbackWrapper < T> >
                     executionCallback(new ExecutionCallbackWrapper<T>(multiExecutionCallbackWrapper, *it));
                     submitToMember<HazelcastSerializable, T>(task, *it, executionCallback);
                 }
@@ -491,12 +491,12 @@ namespace hazelcast {
             class MultiExecutionCallbackWrapper : MultiExecutionCallback<T> {
             public:
                 MultiExecutionCallbackWrapper(
-                        int memberSize, const boost::shared_ptr<MultiExecutionCallback<T> > &multiExecutionCallback)
+                        int memberSize, const std::shared_ptr<MultiExecutionCallback<T> > &multiExecutionCallback)
                         : multiExecutionCallback(multiExecutionCallback), members(memberSize) {
                 }
 
             public:
-                virtual void onResponse(const Member &member, const boost::shared_ptr<T> &value) {
+                virtual void onResponse(const Member &member, const std::shared_ptr<T> &value) {
                     multiExecutionCallback->onResponse(member, value);
                     values.put(member, value);
 
@@ -507,7 +507,7 @@ namespace hazelcast {
                 }
 
                 virtual void
-                onFailure(const Member &member, const boost::shared_ptr<exception::IException> &exception) {
+                onFailure(const Member &member, const std::shared_ptr<exception::IException> &exception) {
                     multiExecutionCallback->onFailure(member, exception);
                     exceptions.put(member, exception);
 
@@ -517,23 +517,23 @@ namespace hazelcast {
                     }
                 }
 
-                virtual void onComplete(const std::map<Member, boost::shared_ptr<T> > &values,
-                                        const std::map<Member, boost::shared_ptr<exception::IException> > &exceptions) {
+                virtual void onComplete(const std::map<Member, std::shared_ptr<T> > &values,
+                                        const std::map<Member, std::shared_ptr<exception::IException> > &exceptions) {
                     multiExecutionCallback->onComplete(values, exceptions);
                 }
 
             private:
                 void complete() {
-                    std::map<Member, boost::shared_ptr<T> > completedValues;
-                    typedef std::vector<std::pair<Member, boost::shared_ptr<T> > > ENTRYVECTOR;
+                    std::map<Member, std::shared_ptr<T> > completedValues;
+                    typedef std::vector<std::pair<Member, std::shared_ptr<T> > > ENTRYVECTOR;
                     ENTRYVECTOR entries = values.entrySet();
                     for (typename ENTRYVECTOR::const_iterator it = entries.begin();
                          it != entries.end(); ++it) {
                         completedValues[it->first] = it->second;
                     }
 
-                    std::map<Member, boost::shared_ptr<exception::IException> > completedExceptions;
-                    typedef std::vector<std::pair<Member, boost::shared_ptr<exception::IException> > > EXCEPTIONVECTOR;
+                    std::map<Member, std::shared_ptr<exception::IException> > completedExceptions;
+                    typedef std::vector<std::pair<Member, std::shared_ptr<exception::IException> > > EXCEPTIONVECTOR;
                     EXCEPTIONVECTOR exceptionEntries = exceptions.entrySet();
                     for (typename EXCEPTIONVECTOR::const_iterator it = exceptionEntries.begin();
                          it != exceptionEntries.end(); ++it) {
@@ -543,7 +543,7 @@ namespace hazelcast {
                     onComplete(completedValues, completedExceptions);
                 }
 
-                const boost::shared_ptr<MultiExecutionCallback<T> > multiExecutionCallback;
+                const std::shared_ptr<MultiExecutionCallback<T> > multiExecutionCallback;
                 util::SynchronizedMap<Member, T> values;
                 util::SynchronizedMap<Member, exception::IException> exceptions;
                 util::AtomicInt members;
@@ -553,33 +553,33 @@ namespace hazelcast {
             class ExecutionCallbackWrapper : public ExecutionCallback<T> {
             public:
                 ExecutionCallbackWrapper(
-                        const boost::shared_ptr<MultiExecutionCallbackWrapper<T> > &multiExecutionCallbackWrapper,
+                        const std::shared_ptr<MultiExecutionCallbackWrapper<T> > &multiExecutionCallbackWrapper,
                         const Member &member) : multiExecutionCallbackWrapper(multiExecutionCallbackWrapper),
                                                 member(member) {}
 
-                virtual void onResponse(const boost::shared_ptr<T> &response) {
+                virtual void onResponse(const std::shared_ptr<T> &response) {
                     multiExecutionCallbackWrapper->onResponse(member, response);
                 }
 
-                virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+                virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
                     multiExecutionCallbackWrapper->onFailure(member, e);
                 }
 
             private:
-                const boost::shared_ptr<MultiExecutionCallbackWrapper<T> > multiExecutionCallbackWrapper;
+                const std::shared_ptr<MultiExecutionCallbackWrapper<T> > multiExecutionCallbackWrapper;
                 const Member member;
             };
 
             std::vector<Member> selectMembers(const cluster::memberselector::MemberSelector &memberSelector);
 
             template<typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submitToPartitionInternal(const serialization::pimpl::Data &taskData,
-                                      const boost::shared_ptr<T> &defaultValue,
+                                      const std::shared_ptr<T> &defaultValue,
                                       bool preventSync, int partitionId) {
                 std::string uuid = util::UuidUtil::newUnsecureUuidString();
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnPartitionInternal(taskData,
+                std::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnPartitionInternal(taskData,
                                                                                                    partitionId, uuid);
 
                 return checkSync(f, uuid, partitionId, preventSync, defaultValue);
@@ -587,24 +587,24 @@ namespace hazelcast {
 
             template<typename T>
             void submitToPartitionInternal(const serialization::pimpl::Data &taskData, int partitionId,
-                                           const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                           const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 std::string uuid = util::UuidUtil::newUnsecureUuidString();
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnPartitionInternal(taskData,
+                std::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnPartitionInternal(taskData,
                                                                                                    partitionId, uuid);
 
 
-                boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
+                std::shared_ptr<ICompletableFuture<T> > delegatingFuture(
                         new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
                                                                 SUBMIT_TO_PARTITION_DECODER<T>(),
-                                                                boost::shared_ptr<T>()));
+                                                                std::shared_ptr<T>()));
 
                 delegatingFuture->andThen(callback);
             }
 
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
             invokeOnPartitionInternal(const Data &taskData, int partitionId, const std::string &uuid) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::ExecutorServiceSubmitToPartitionCodec::encodeRequest(name, uuid, taskData,
                                                                                               partitionId);
 
@@ -612,9 +612,9 @@ namespace hazelcast {
             }
 
             template<typename HazelcastSerializable, typename T, typename K>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key,
-                                     const boost::shared_ptr<T> &defaultValue, bool preventSync) {
+                                     const std::shared_ptr<T> &defaultValue, bool preventSync) {
 
                 Data dataKey = toData<K>(key);
 
@@ -626,7 +626,7 @@ namespace hazelcast {
 
             template<typename HazelcastSerializable, typename T, typename K>
             void submitToKeyOwnerInternal(const HazelcastSerializable &task, const K &key,
-                                          const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                          const std::shared_ptr<ExecutionCallback<T> > &callback) {
 
                 Data dataKey = toData<K>(key);
 
@@ -636,8 +636,8 @@ namespace hazelcast {
             }
 
             template<typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
-            submitToRandomInternal(const serialization::pimpl::Data &taskData, const boost::shared_ptr<T> &defaultValue,
+            std::shared_ptr<ICompletableFuture<T> >
+            submitToRandomInternal(const serialization::pimpl::Data &taskData, const std::shared_ptr<T> &defaultValue,
                                    bool preventSync) {
 
                 int partitionId = randomPartitionId();
@@ -647,7 +647,7 @@ namespace hazelcast {
 
             template<typename T>
             void submitToRandomInternal(const serialization::pimpl::Data &taskData,
-                                        const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                        const std::shared_ptr<ExecutionCallback<T> > &callback) {
 
                 int partitionId = randomPartitionId();
 
@@ -655,12 +655,12 @@ namespace hazelcast {
             }
 
             template<typename HazelcastSerializable, typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
+            std::shared_ptr<ICompletableFuture<T> >
             submitToTargetInternal(const HazelcastSerializable &task, const Address &address,
-                                   const boost::shared_ptr<T> &defaultValue, bool preventSync) {
+                                   const std::shared_ptr<T> &defaultValue, bool preventSync) {
                 std::string uuid = util::UuidUtil::newUnsecureUuidString();
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnAddressInternal<HazelcastSerializable>(
+                std::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnAddressInternal<HazelcastSerializable>(
                         task, address, uuid);
 
                 return checkSync<T>(f, uuid, address, preventSync, defaultValue);
@@ -668,57 +668,57 @@ namespace hazelcast {
 
             template<typename HazelcastSerializable, typename T>
             void submitToTargetInternal(const HazelcastSerializable &task, const Address &address,
-                                        const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                                        const std::shared_ptr<ExecutionCallback<T> > &callback) {
                 std::string uuid = util::UuidUtil::newUnsecureUuidString();
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnAddressInternal<HazelcastSerializable>(
+                std::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnAddressInternal<HazelcastSerializable>(
                         task, address, uuid);
 
-                boost::shared_ptr<ICompletableFuture<T> > delegatingFuture(
+                std::shared_ptr<ICompletableFuture<T> > delegatingFuture(
                         new internal::ClientDelegatingFuture<T>(f, getContext().getSerializationService(),
                                                                 SUBMIT_TO_ADDRESS_DECODER<T>(),
-                                                                boost::shared_ptr<T>()));
+                                                                std::shared_ptr<T>()));
 
                 delegatingFuture->andThen(callback);
             }
 
             template<typename HazelcastSerializable>
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
             invokeOnAddressInternal(const HazelcastSerializable &task, const Address &address,
                                     const std::string &uuid) {
-                std::auto_ptr<protocol::ClientMessage> request =
+                std::unique_ptr<protocol::ClientMessage> request =
                         protocol::codec::ExecutorServiceSubmitToAddressCodec::encodeRequest(name, uuid,
                                                                                             toData(
                                                                                                     task), address);
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnTarget(request, address);
+                std::shared_ptr<spi::impl::ClientInvocationFuture> f = invokeOnTarget(request, address);
                 return f;
             }
 
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
-            invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> &request, int partitionId);
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            invokeOnPartitionOwner(std::unique_ptr<protocol::ClientMessage> &request, int partitionId);
 
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
-            invokeOnTarget(std::auto_ptr<protocol::ClientMessage> &request, const Address &target);
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target);
 
             template<typename T>
-            boost::shared_ptr<T>
-            retrieveResultFromMessage(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &f) {
+            std::shared_ptr<T>
+            retrieveResultFromMessage(const std::shared_ptr<spi::impl::ClientInvocationFuture> &f) {
                 serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                std::auto_ptr<serialization::pimpl::Data> data = protocol::codec::ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(
+                std::unique_ptr<serialization::pimpl::Data> data = protocol::codec::ExecutorServiceSubmitToAddressCodec::ResponseParameters::decode(
                         *f->get()).response;
-                return boost::shared_ptr<T>(serializationService.toObject<T>(data.get()));
+                return std::shared_ptr<T>(serializationService.toObject<T>(data.get()));
             }
 
             template<typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
-            checkSync(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &f, const std::string &uuid,
-                      int partitionId, bool preventSync, boost::shared_ptr<T> defaultValue) {
+            std::shared_ptr<ICompletableFuture<T> >
+            checkSync(const std::shared_ptr<spi::impl::ClientInvocationFuture> &f, const std::string &uuid,
+                      int partitionId, bool preventSync, std::shared_ptr<T> defaultValue) {
                 bool sync = isSyncComputation(preventSync);
                 if (sync) {
                     return retrieveResultSync<T>(f);
                 } else {
-                    return boost::shared_ptr<ICompletableFuture<T> >(
+                    return std::shared_ptr<ICompletableFuture<T> >(
                             new proxy::IExecutorDelegatingFuture<T>(f, getContext(), uuid, defaultValue,
                                                                     SUBMIT_TO_PARTITION_DECODER<T>(), name,
                                                                     partitionId));
@@ -727,14 +727,14 @@ namespace hazelcast {
             }
 
             template<typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
-            checkSync(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &f, const std::string &uuid,
-                      const Address &address, bool preventSync, boost::shared_ptr<T> defaultValue) {
+            std::shared_ptr<ICompletableFuture<T> >
+            checkSync(const std::shared_ptr<spi::impl::ClientInvocationFuture> &f, const std::string &uuid,
+                      const Address &address, bool preventSync, std::shared_ptr<T> defaultValue) {
                 bool sync = isSyncComputation(preventSync);
                 if (sync) {
                     return retrieveResultSync<T>(f);
                 } else {
-                    return boost::shared_ptr<ICompletableFuture<T> >(
+                    return std::shared_ptr<ICompletableFuture<T> >(
                             new proxy::IExecutorDelegatingFuture<T>(f, getContext(), uuid, defaultValue,
                                                                     SUBMIT_TO_ADDRESS_DECODER<T>(), name, address));
                 }
@@ -742,18 +742,18 @@ namespace hazelcast {
             }
 
             template<typename T>
-            boost::shared_ptr<ICompletableFuture<T> >
-            retrieveResultSync(const boost::shared_ptr<spi::impl::ClientInvocationFuture> &f) {
+            std::shared_ptr<ICompletableFuture<T> >
+            retrieveResultSync(const std::shared_ptr<spi::impl::ClientInvocationFuture> &f) {
                 try {
-                    boost::shared_ptr<T> response = retrieveResultFromMessage<T>(f);
-                    boost::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
-                    return boost::shared_ptr<ICompletableFuture<T> >(
+                    std::shared_ptr<T> response = retrieveResultFromMessage<T>(f);
+                    std::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
+                    return std::shared_ptr<ICompletableFuture<T> >(
                             new internal::executor::CompletedFuture<T>(response, userExecutor));
                 } catch (exception::IException &e) {
-                    boost::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
-                    return boost::shared_ptr<ICompletableFuture<T> >(
+                    std::shared_ptr<ExecutorService> userExecutor = getContext().getClientExecutionService().getUserExecutor();
+                    return std::shared_ptr<ICompletableFuture<T> >(
                             new internal::executor::CompletedFuture<T>(
-                                    boost::shared_ptr<exception::IException>(e.clone()), userExecutor));
+                                    std::shared_ptr<exception::IException>(e.clone()), userExecutor));
                 }
             }
 
@@ -764,20 +764,20 @@ namespace hazelcast {
             int randomPartitionId();
 
             template<typename T>
-            static const boost::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_PARTITION_DECODER() {
+            static const std::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_PARTITION_DECODER() {
                 return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToPartitionCodec, T>::instance();
             }
 
             template<typename T>
-            static const boost::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_ADDRESS_DECODER() {
+            static const std::shared_ptr<impl::ClientMessageDecoder<T> > SUBMIT_TO_ADDRESS_DECODER() {
                 return impl::DataMessageDecoder<protocol::codec::ExecutorServiceSubmitToAddressCodec, T>::instance();
             }
 
             static const int32_t MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS = 10;
             static const int32_t MAX_CONSECUTIVE_SUBMITS = 100;
 
-            util::Atomic<int32_t> consecutiveSubmits;
-            util::Atomic<int64_t> lastSubmitTime;
+            std::atomic<int32_t> consecutiveSubmits;
+            std::atomic<int64_t> lastSubmitTime;
         };
     }
 }

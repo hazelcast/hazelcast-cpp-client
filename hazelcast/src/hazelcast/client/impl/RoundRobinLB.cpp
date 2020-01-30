@@ -37,11 +37,11 @@ namespace hazelcast {
                 return members[++index % members.size()];
             }
 
-            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(const_cast<RoundRobinLB &>(rhs).index.get()) {
+            RoundRobinLB::RoundRobinLB(const RoundRobinLB &rhs) : index(const_cast<RoundRobinLB &>(rhs).index.load()) {
             }
 
             void RoundRobinLB::operator=(const RoundRobinLB &rhs) {
-                index.set(const_cast<RoundRobinLB &>(rhs).index.get());
+                index.store(const_cast<RoundRobinLB &>(rhs).index.load());
             }
 
         }

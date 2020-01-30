@@ -24,10 +24,10 @@
 #include "hazelcast/client/exception/IOException.h"
 #include "hazelcast/util/IOUtil.h"
 
-#include <boost/bind.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <string.h>
+#include <functional>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -39,9 +39,11 @@ namespace hazelcast {
         namespace internal {
             namespace socket {
                 SSLSocket::SSLSocket(const client::Address &address, asio::ssl::context &context,
-                        client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
-                        sslContext(context), deadline(ioService), socketId(-1), socketOptions(socketOptions) {
-                    socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
+                                     client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
+                                                                                     sslContext(context),
+                                                                                     deadline(ioService), socketId(-1),
+                                                                                     socketOptions(socketOptions) {
+                    socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                             new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
                 }
 
@@ -63,7 +65,7 @@ namespace hazelcast {
                     // Check whether the deadline has passed. We compare the deadline against
                     // the current time since a new asynchronous operation may have moved the
                     // deadline before this actor had a chance to run.
-                    if (deadline.expires_at() <= asio::deadline_timer::traits_type::now()) {
+                    if (deadline.expires_at() <= std::chrono::steady_clock::now()) {
                         // The deadline has passed. The socket is closed so that any outstanding
                         // asynchronous operations are cancelled. This allows the blocked
                         // connect(), read_line() or write_line() functions to return.
@@ -74,7 +76,7 @@ namespace hazelcast {
                     }
 
                     // Put the actor back to sleep. _1 is for passing the error_code to the method.
-                    deadline.async_wait(boost::bind(&SSLSocket::checkDeadline, this, _1));
+                    deadline.async_wait(std::bind(&SSLSocket::checkDeadline, this, std::placeholders::_1));
                 }
 
                 int SSLSocket::connect(int timeoutInMillis) {
@@ -85,7 +87,7 @@ namespace hazelcast {
                         asio::ip::tcp::resolver::query query(remoteEndpoint.getHost(), out.str());
                         asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 
-                        deadline.expires_from_now(boost::posix_time::milliseconds(timeoutInMillis));
+                        deadline.expires_from_now(std::chrono::milliseconds(timeoutInMillis));
 
                         // Set up the variable that receives the result of the asynchronous
                         // operation. The error code is set to would_block to signal that the
@@ -98,8 +100,8 @@ namespace hazelcast {
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
-                        asio::async_connect(socket->lowest_layer(), iterator, boost::bind(&SSLSocket::handleConnect,
-                                                                                          this, _1));
+                        asio::async_connect(socket->lowest_layer(), iterator,
+                                            std::bind(&SSLSocket::handleConnect, this, std::placeholders::_1));
 
                         // Block until the asynchronous operation has completed.
                         asio::error_code ioRunErrorCode;
@@ -154,9 +156,9 @@ namespace hazelcast {
                 std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
                     STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket->native_handle());
                     std::vector<CipherInfo> supportedCiphers;
-                    for (int i = 0; i < sk_SSL_CIPHER_num (ciphers); ++i) {
+                    for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
-                        SSL_CIPHER *cipher = sk_SSL_CIPHER_value (ciphers, i);
+                        SSL_CIPHER *cipher = const_cast<SSL_CIPHER *>(sk_SSL_CIPHER_value(ciphers, i));
                         info.name = SSL_CIPHER_get_name(cipher);
                         info.numberOfBits = SSL_CIPHER_get_bits(cipher, 0);
                         info.version = SSL_CIPHER_get_version(cipher);
@@ -210,17 +212,17 @@ namespace hazelcast {
                 }
 
                 client::Address SSLSocket::getAddress() const {
-                    asio::ip::basic_endpoint<asio::ip::tcp> remoteEndpoint = socket->lowest_layer().remote_endpoint();
-                    return client::Address(remoteEndpoint.address().to_string(), remoteEndpoint.port());
+                    return client::Address(socket->lowest_layer().remote_endpoint().address().to_string(),
+                                           remoteEndpoint.getPort());
                 }
 
-                std::auto_ptr<Address> SSLSocket::localSocketAddress() const {
+                std::unique_ptr<Address> SSLSocket::localSocketAddress() const {
                     asio::error_code ec;
                     asio::ip::basic_endpoint<asio::ip::tcp> localEndpoint = socket->lowest_layer().local_endpoint(ec);
                     if (ec) {
-                        return std::auto_ptr<Address>();
+                        return std::unique_ptr<Address>();
                     }
-                    return std::auto_ptr<Address>(
+                    return std::unique_ptr<Address>(
                             new Address(localEndpoint.address().to_string(), localEndpoint.port()));
                 }
 

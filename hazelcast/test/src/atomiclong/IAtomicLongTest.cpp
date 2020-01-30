@@ -45,7 +45,7 @@ namespace hazelcast {
 
                 ClientConfig clientConfig;
                 HazelcastClient client;
-                std::auto_ptr<IAtomicLong> l;
+                std::unique_ptr<IAtomicLong> l;
 
                 static HazelcastServer *instance;
             };
@@ -74,10 +74,10 @@ namespace hazelcast {
             }
 
             TEST_F(IAtomicLongTest, testAsync) {
-                boost::shared_ptr<ICompletableFuture<int64_t> > future = l->getAndAddAsync(10);
+                std::shared_ptr<ICompletableFuture<int64_t> > future = l->getAndAddAsync(10);
                 ASSERT_EQ(0, *future->get());
 
-                boost::shared_ptr<ICompletableFuture<bool> > booleanFuture = l->compareAndSetAsync(10, 42);
+                std::shared_ptr<ICompletableFuture<bool> > booleanFuture = l->compareAndSetAsync(10, 42);
                 ASSERT_TRUE(booleanFuture->get());
 
                 future = l->getAsync();
@@ -104,7 +104,7 @@ namespace hazelcast {
                 future = l->getAsync();
                 ASSERT_EQ(16, *future->get());
 
-                boost::shared_ptr<ICompletableFuture<void> > voidFuture = l->setAsync(55);
+                std::shared_ptr<ICompletableFuture<void> > voidFuture = l->setAsync(55);
                 voidFuture->get();
 
                 future = l->getAsync();

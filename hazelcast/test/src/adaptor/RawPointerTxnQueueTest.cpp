@@ -55,7 +55,7 @@ namespace hazelcast {
                     TransactionalQueue<std::string> queue = context.getQueue<std::string>(name);
                     client::adaptor::RawPointerTransactionalQueue<std::string> q(queue);
                     ASSERT_TRUE(q.offer("ali"));
-                    std::auto_ptr<std::string> item = q.poll();
+                    std::unique_ptr<std::string> item = q.poll();
                     ASSERT_NE((std::string *)NULL, item.get());
                     ASSERT_EQ("ali", *item);
                     context.commitTransaction();
@@ -79,7 +79,7 @@ namespace hazelcast {
                     TransactionalQueue<std::string> queue1 = context.getQueue<std::string>("defQueue1");
                     client::adaptor::RawPointerTransactionalQueue<std::string> q1(queue1);
                     latch.countDown();
-                    std::auto_ptr<std::string> item = q0.poll(10 * 1000);
+                    std::unique_ptr<std::string> item = q0.poll(10 * 1000);
                     ASSERT_NE((std::string *)NULL, item.get());
                     ASSERT_EQ("item0", *item);
                     ASSERT_TRUE(q1.offer(*item));

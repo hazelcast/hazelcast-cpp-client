@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <vector>
-#include <boost/foreach.hpp>
+
 
 #include "HazelcastServerFactory.h"
 #include "HazelcastServer.h"
@@ -22,6 +22,7 @@
 
 #include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
     namespace client {
@@ -35,7 +36,7 @@ namespace hazelcast {
                 static void SetUpTestCase() {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig = getConfig();
-                    boost::shared_ptr<config::ClientFlakeIdGeneratorConfig> flakeIdConfig(
+                    std::shared_ptr<config::ClientFlakeIdGeneratorConfig> flakeIdConfig(
                             new config::ClientFlakeIdGeneratorConfig("test*"));
                     flakeIdConfig->setPrefetchCount(10).setPrefetchValidityMillis(20000);
                     clientConfig.addFlakeIdGeneratorConfig(flakeIdConfig);
@@ -54,7 +55,7 @@ namespace hazelcast {
                 class SmokeRunner : public util::Runnable {
                 public:
                     SmokeRunner(FlakeIdGenerator &flakeIdGenerator,
-                                util::CountDownLatch &startLatch, util::Atomic<boost::shared_ptr<set<int64_t> > > &ids)
+                                util::CountDownLatch &startLatch, util::Sync<std::shared_ptr<set<int64_t> > > &ids)
                             : flakeIdGenerator(flakeIdGenerator), startLatch(startLatch), ids(ids) {}
 
                     virtual const string getName() const {
@@ -62,7 +63,7 @@ namespace hazelcast {
                     }
 
                     virtual void run() {
-                        boost::shared_ptr<std::set<int64_t> > localIds = ids;
+                        std::shared_ptr<std::set<int64_t> > localIds = ids;
                         startLatch.await();
                         for (int j = 0; j < 100000; ++j) {
                             localIds->insert(flakeIdGenerator.newId());
@@ -74,7 +75,7 @@ namespace hazelcast {
                 private:
                     FlakeIdGenerator &flakeIdGenerator;
                     util::CountDownLatch &startLatch;
-                    util::Atomic<boost::shared_ptr<std::set<int64_t> > > &ids;
+                    util::Sync<std::shared_ptr<std::set<int64_t> > > &ids;
                 };
 
                 static HazelcastServer *instance;
@@ -98,12 +99,12 @@ namespace hazelcast {
 
             TEST_F (FlakeIdGeneratorApiTest, testSmoke) {
                 util::CountDownLatch startLatch(1);
-                std::vector<boost::shared_ptr<util::Thread> > threads(4);
-                util::Atomic<boost::shared_ptr<std::set<int64_t> > > ids[4];
+                std::vector<std::shared_ptr<util::Thread> > threads(4);
+                util::Sync<std::shared_ptr<std::set<int64_t> > > ids[4];
 
                 for (int i = 0; i < 4; ++i) {
-                    ids[i] = boost::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
-                    boost::shared_ptr<util::Thread> t(new util::Thread(boost::shared_ptr<util::Runnable>(
+                    ids[i] = std::shared_ptr<std::set<int64_t> >(new std::set<int64_t>());
+                    std::shared_ptr<util::Thread> t(new util::Thread(std::shared_ptr<util::Runnable>(
                             new SmokeRunner(flakeIdGenerator, startLatch, ids[i])), getLogger()));
                     t->start();
                     threads[i] = t;
@@ -117,8 +118,8 @@ namespace hazelcast {
 
                 std::set<int64_t> allIds;
                 for (int i = 0; i < 4; ++i) {
-                    boost::shared_ptr<std::set<int64_t> > threadIdSet = ids[i];
-                    BOOST_FOREACH(const int64_t &value, *threadIdSet) {
+                    std::shared_ptr<std::set<int64_t> > threadIdSet = ids[i];
+                    for (const int64_t &value : *threadIdSet) {
                                     allIds.insert(value);
                                 }
                 }

@@ -98,8 +98,8 @@ namespace hazelcast {
                 *
                 * @returns all elements in the list
                 */
-                std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
+                std::unique_ptr<DataArray<T> > toArray() {
+                    return std::unique_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
                             list.toArrayData(), serializationService));
                 }
 
@@ -189,16 +189,16 @@ namespace hazelcast {
                 /**
                 * You can check if element is available by
                 *
-                *      std::auto_ptr<int> e = list.get(5);
+                *      std::unique_ptr<int> e = list.get(5);
                 *      if(e.get() != NULL )
                 *          //......;
                 *
                 * @param index
-                * @return element in given index. If not available returns empty constructed auto_ptr.
+                * @return element in given index. If not available returns empty constructed unique_ptr.
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 *
                 */
-                std::auto_ptr<T> get(int index) {
+                std::unique_ptr<T> get(int index) {
                     return serializationService.toObject<T>(list.getData(index).get());
                 }
 
@@ -211,7 +211,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
-                std::auto_ptr<T> set(int index, const T &element) {
+                std::unique_ptr<T> set(int index, const T &element) {
                     return serializationService.toObject<T>(
                             list.setData(index, serializationService.toData<T>(&element)).get());
                 }
@@ -231,11 +231,11 @@ namespace hazelcast {
                 /**
                 *
                 * @param index
-                * @return element in given index.  If not available returns empty constructed auto_ptr.
+                * @return element in given index.  If not available returns empty constructed unique_ptr.
                 * @see get
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
-                std::auto_ptr<T> remove(int index) {
+                std::unique_ptr<T> remove(int index) {
                     return serializationService.toObject<T>(list.removeData(index).get());
                 }
 
@@ -265,8 +265,8 @@ namespace hazelcast {
                 * @return the sublist between given indexes.
                 * @throws IndexOutOfBoundsException if the index is out of range.
                 */
-                std::auto_ptr<DataArray<T> > subList(int fromIndex, int toIndex) {
-                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
+                std::unique_ptr<DataArray<T> > subList(int fromIndex, int toIndex) {
+                    return std::unique_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(
                             list.subListData(fromIndex, toIndex), serializationService));
                 }
 

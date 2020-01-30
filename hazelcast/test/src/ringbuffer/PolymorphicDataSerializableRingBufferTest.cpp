@@ -67,16 +67,16 @@ namespace hazelcast {
 
                 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
                 public:
-                    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
+                    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
                         switch (typeId) {
                             case 10:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
                             case 11:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
                             case 12:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
                             default:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
                         }
                     }
                 };
@@ -89,7 +89,7 @@ namespace hazelcast {
                     ClientConfig clientConfig = getConfig();
                     SerializationConfig &serializationConfig = clientConfig.getSerializationConfig();
                     serializationConfig.addDataSerializableFactory(666,
-                                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                   std::shared_ptr<serialization::DataSerializableFactory>(
                                                                            new PolymorphicDataSerializableFactory()));
                     client = new HazelcastClient(clientConfig);
                     rb = client->getRingbuffer<BaseDataSerializable>("rb-1");
@@ -105,13 +105,13 @@ namespace hazelcast {
 
                 static HazelcastServer *instance;
                 static HazelcastClient *client;
-                static boost::shared_ptr<Ringbuffer<BaseDataSerializable> > rb;
+                static std::shared_ptr<Ringbuffer<BaseDataSerializable> > rb;
             };
 
 
             HazelcastServer *PolymorphicDataSerializableRingbufferTest::instance = NULL;
             HazelcastClient *PolymorphicDataSerializableRingbufferTest::client = NULL;
-            boost::shared_ptr<Ringbuffer<PolymorphicDataSerializableRingbufferTest::BaseDataSerializable> > PolymorphicDataSerializableRingbufferTest::rb;
+            std::shared_ptr<Ringbuffer<PolymorphicDataSerializableRingbufferTest::BaseDataSerializable> > PolymorphicDataSerializableRingbufferTest::rb;
 
             TEST_F(PolymorphicDataSerializableRingbufferTest, testPolymorhism) {
                 BaseDataSerializable base;
@@ -122,7 +122,7 @@ namespace hazelcast {
                 rb->add(derived2);
 
                 int64_t sequence = rb->headSequence();
-                std::auto_ptr<BaseDataSerializable> value = rb->readOne(sequence);
+                std::unique_ptr<BaseDataSerializable> value = rb->readOne(sequence);
                 ASSERT_NE((BaseDataSerializable *)NULL, value.get());
                 ASSERT_EQ(base.getClassId(), value->getClassId());
 

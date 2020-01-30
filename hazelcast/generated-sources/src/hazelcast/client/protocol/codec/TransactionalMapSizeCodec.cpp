@@ -27,12 +27,12 @@ namespace hazelcast {
                 const bool TransactionalMapSizeCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalMapSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 102;
 
-                std::auto_ptr<ClientMessage> TransactionalMapSizeCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalMapSizeCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

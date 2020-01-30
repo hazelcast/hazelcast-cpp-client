@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_IFUTURE_H_
 #define HAZELCAST_CLIENT_IFUTURE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/exception/InterruptedException.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
@@ -105,7 +105,7 @@ namespace hazelcast {
              * @throws InterruptedException if the current thread was interrupted
              * while waiting
              */
-            virtual boost::shared_ptr<V> get() = 0;
+            virtual std::shared_ptr<V> get() = 0;
 
             /**
              * Waits if necessary for at most the given time for the computation
@@ -121,7 +121,7 @@ namespace hazelcast {
              * while waiting
              * @throws TimeoutException if the wait timed out
              */
-            virtual boost::shared_ptr<V> get(int64_t timeout,
+            virtual std::shared_ptr<V> get(int64_t timeout,
                                              const TimeUnit &unit) = 0;
 
         };

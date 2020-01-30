@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool ReplicatedMapIsEmptyCodec::RETRYABLE = true;
                 const ResponseMessageConst ReplicatedMapIsEmptyCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> ReplicatedMapIsEmptyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ReplicatedMapIsEmptyCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ReplicatedMapIsEmptyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

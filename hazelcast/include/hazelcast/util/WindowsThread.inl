@@ -36,14 +36,15 @@ namespace hazelcast {
 
         class HAZELCAST_API Thread : public impl::AbstractThread {
         public:
-            Thread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+            Thread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
                 : impl::AbstractThread(runnable, logger) {
             }
 
             virtual ~Thread() {
                 cancel();
 
-                if (handleClosed.compareAndSet(false, true)) {
+                bool expected = false;
+                if (handleClosed.compare_exchange_strong(expected, true)) {
                     CloseHandle(thread);
                 }
             }
@@ -60,7 +61,7 @@ namespace hazelcast {
             static DWORD WINAPI runnableThread(LPVOID args) {
                 RunnableInfo *info = static_cast<RunnableInfo *>(args);
 
-                boost::shared_ptr<Runnable> target = info->target;
+                std::shared_ptr<Runnable> target = info->target;
                 try {
                     target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {

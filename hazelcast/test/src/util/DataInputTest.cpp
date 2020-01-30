@@ -95,7 +95,7 @@ namespace hazelcast {
                     bytes.push_back('f');
                     bytes.push_back('h');
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::string> utf = dataInput.readUTF();
+                    std::unique_ptr<std::string> utf = dataInput.readUTF();
                     ASSERT_NE((std::string *) NULL, utf.get());
                     ASSERT_EQ("bdfh", *utf);
                 }
@@ -111,7 +111,7 @@ namespace hazelcast {
                     actualDataBytes.push_back(0x34);
                     bytes.insert(bytes.end(), actualDataBytes.begin(), actualDataBytes.end());
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<byte> > readBytes = dataInput.readByteArray();
+                    std::unique_ptr<std::vector<byte> > readBytes = dataInput.readByteArray();
                     ASSERT_NE((std::vector<byte> *) NULL, readBytes.get());
                     ASSERT_EQ(actualDataBytes, *readBytes);
                 }
@@ -125,7 +125,7 @@ namespace hazelcast {
                     bytes.push_back(0x00);
                     bytes.push_back(0x01);
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<bool> > booleanArray = dataInput.readBooleanArray();
+                    std::unique_ptr<std::vector<bool> > booleanArray = dataInput.readBooleanArray();
                     ASSERT_NE((std::vector<bool> *) NULL, booleanArray.get());
                     ASSERT_EQ(2U, booleanArray->size());
                     ASSERT_FALSE((*booleanArray)[0]);
@@ -143,7 +143,7 @@ namespace hazelcast {
                     bytes.push_back(0);
                     bytes.push_back('h');
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<char> > charArray = dataInput.readCharArray();
+                    std::unique_ptr<std::vector<char> > charArray = dataInput.readCharArray();
                     ASSERT_NE((std::vector<char> *) NULL, charArray.get());
                     ASSERT_EQ(2U, charArray->size());
                     ASSERT_EQ('f', (*charArray)[0]);
@@ -161,7 +161,7 @@ namespace hazelcast {
                     bytes.push_back(0x56);
                     bytes.push_back(0x78);
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<int16_t> > array = dataInput.readShortArray();
+                    std::unique_ptr<std::vector<int16_t> > array = dataInput.readShortArray();
                     ASSERT_NE((std::vector<int16_t> *) NULL, array.get());
                     ASSERT_EQ(2U, array->size());
                     ASSERT_EQ(0x1234, (*array)[0]);
@@ -183,7 +183,7 @@ namespace hazelcast {
                     bytes.push_back(0xDE);
                     bytes.push_back(0xEF);
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<int32_t> > array = dataInput.readIntArray();
+                    std::unique_ptr<std::vector<int32_t> > array = dataInput.readIntArray();
                     ASSERT_NE((std::vector<int32_t> *) NULL, array.get());
                     ASSERT_EQ(2U, array->size());
                     ASSERT_EQ(INT32_C(0x12345678), (*array)[0]);
@@ -213,7 +213,7 @@ namespace hazelcast {
                     bytes.push_back(0xA7);
                     bytes.push_back(0xA8);
                     serialization::pimpl::DataInput dataInput(bytes);
-                    std::auto_ptr<std::vector<int64_t> > array = dataInput.readLongArray();
+                    std::unique_ptr<std::vector<int64_t> > array = dataInput.readLongArray();
                     ASSERT_NE((std::vector<int64_t> *) NULL, array.get());
                     ASSERT_EQ(2U, array->size());
                     ASSERT_EQ(INT64_C(0x123456789ABCDEEF), (*array)[0]);

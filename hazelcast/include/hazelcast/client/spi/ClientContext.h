@@ -20,7 +20,7 @@
 #define HAZELCAST_CLIENT_CONTEXT
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -118,7 +118,7 @@ namespace hazelcast {
 
                 Cluster &getCluster();
 
-                boost::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
+                std::shared_ptr<impl::sequence::CallIdSequence> &getCallIdSequence() const;
 
                 const protocol::ClientExceptionFactory &getClientExceptionFactory() const;
 
@@ -126,11 +126,11 @@ namespace hazelcast {
 
                 impl::ClientExecutionServiceImpl &getClientExecutionService() const;
 
-                void onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection);
+                void onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
+                const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &getLockReferenceIdGenerator();
 
-                boost::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
+                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
 
                 spi::ProxyManager &getProxyManager();
 

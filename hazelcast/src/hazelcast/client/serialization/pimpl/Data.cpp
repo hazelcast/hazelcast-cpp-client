@@ -29,7 +29,6 @@
 
 #include <algorithm>
 
-
 using namespace hazelcast::util;
 
 namespace hazelcast {
@@ -48,7 +47,9 @@ namespace hazelcast {
                 Data::Data() : cachedHashValue(-1) {
                 }
 
-                Data::Data(std::auto_ptr<std::vector<byte> > buffer) : data(buffer), cachedHashValue(-1) {
+                Data::Data(std::unique_ptr<std::vector<byte> > &buffer) : Data::Data(std::move(buffer)) {}
+
+                Data::Data(std::unique_ptr<std::vector<byte> > &&buffer) : data(std::move(buffer)), cachedHashValue(-1) {
                     if (data.get()) {
                         size_t size = data->size();
                         if (size > 0 && size < Data::DATA_OVERHEAD) {
@@ -117,29 +118,25 @@ namespace hazelcast {
     }
 }
 
-namespace boost {
-    /**
-     * Template specialization for the less operator comparing two shared_ptr Data.
-     */
-    template<>
-    bool operator<(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
-                   const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) BOOST_NOEXCEPT {
-        const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
-        const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
-        if (leftPtr == rightPtr) {
-            return false;
-        }
-
-        if (leftPtr == NULL) {
-            return true;
-        }
-
-        if (rightPtr == NULL) {
-            return false;
-        }
-
-        return lhs->hash() < rhs->hash();
+bool std::less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data>>::operator() (
+        const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+        const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept {
+    const hazelcast::client::serialization::pimpl::Data *leftPtr = lhs.get();
+    const hazelcast::client::serialization::pimpl::Data *rightPtr = rhs.get();
+    if (leftPtr == rightPtr) {
+        return false;
     }
+
+    if (leftPtr == NULL) {
+        return true;
+    }
+
+    if (rightPtr == NULL) {
+        return false;
+    }
+
+    return lhs->hash() < rhs->hash();
 }
+
 
 

@@ -77,7 +77,7 @@ namespace hazelcast {
                 util::SocketSet socketSet;
                 int wakeUpListenerSocketId;
                 ClientConnectionManagerImpl &connectionManager;
-                std::auto_ptr<Socket> sleepingSocket;
+                std::unique_ptr<Socket> sleepingSocket;
                 util::ILogger &logger;
 
                 virtual void listenInternal() = 0;
@@ -89,7 +89,7 @@ namespace hazelcast {
 
                 void processListenerQueue();
 
-                std::auto_ptr<Socket> wakeUpSocket;
+                std::unique_ptr<Socket> wakeUpSocket;
                 util::ConcurrentQueue<ListenerTask> listenerTasks;
                 util::AtomicBoolean isAlive;
                 const config::SocketOptions &socketOptions;

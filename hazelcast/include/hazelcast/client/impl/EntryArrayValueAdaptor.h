@@ -34,9 +34,8 @@ namespace hazelcast {
                 template<typename K, typename V>
                 class EntryArrayValueAdaptor : public DataArray<V> {
                 public:
-                    EntryArrayValueAdaptor(std::auto_ptr<EntryArray<K, V> > array) : entryArray(array) {
+                    EntryArrayValueAdaptor(std::unique_ptr<EntryArray<K, V> > &array) : entryArray(std::move(array)) {
                     }
-
 
                     virtual ~EntryArrayValueAdaptor() {
                     }
@@ -67,7 +66,7 @@ namespace hazelcast {
                      * @return Deserializes the data and returns the pointer for the newly created object for the data at the provided index.
                      * @throws IllegalArgumentException If provided index is greater than the maximum array index.
                      */
-                    std::auto_ptr<V> release(size_t index) {
+                    std::unique_ptr<V> release(size_t index) {
                         return entryArray->releaseValue(index);
                     }
 
@@ -84,7 +83,7 @@ namespace hazelcast {
                     }
 
                 private:
-                    std::auto_ptr<EntryArray<K, V> > entryArray;
+                    std::unique_ptr<EntryArray<K, V> > entryArray;
 
                     // prevent copy operations
                     EntryArrayValueAdaptor(const EntryArrayValueAdaptor<K, V> &rhs);

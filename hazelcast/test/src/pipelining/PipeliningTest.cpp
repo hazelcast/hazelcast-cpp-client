@@ -55,12 +55,12 @@ namespace hazelcast {
                 }
 
             protected:
-                void testPipelining(const boost::shared_ptr<Pipelining<int> > &pipelining) {
+                void testPipelining(const std::shared_ptr<Pipelining<int> > &pipelining) {
                     for (int k = 0; k < MAP_SIZE; k++) {
                         pipelining->add(map->getAsync(k));
                     }
 
-                    vector<boost::shared_ptr<int> > results = pipelining->results();
+                    vector<std::shared_ptr<int> > results = pipelining->results();
                     ASSERT_EQ(expected->size(), results.size());
                     for (int k = 0; k < MAP_SIZE; ++k) {
                         ASSERT_EQ_PTR((*expected)[k], results[k].get(), int);
@@ -87,8 +87,8 @@ namespace hazelcast {
             }
 
             TEST_F(PipeliningTest, add_whenNull) {
-                boost::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(1);
-                ASSERT_THROW(pipelining->add(boost::shared_ptr<ICompletableFuture<string> >()),
+                std::shared_ptr<Pipelining<string> > pipelining = Pipelining<string>::create(1);
+                ASSERT_THROW(pipelining->add(std::shared_ptr<ICompletableFuture<string> >()),
                              exception::NullPointerException);
             }
 

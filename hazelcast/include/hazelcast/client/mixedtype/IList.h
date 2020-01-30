@@ -182,7 +182,7 @@ namespace hazelcast {
                 /**
                 * You can check if element is available by
                 *
-                *      std::auto_ptr<int> e = list.get(5).get<int>();
+                *      std::unique_ptr<int> e = list.get(5).get<int>();
                 *      if(e.get() != NULL )
                 *          //......;
                 *

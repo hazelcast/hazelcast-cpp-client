@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_SPI_TASKSCHEDULER_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/Executor.h"
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                  *         scheduled for execution
                  * @throws NullPointerException if command is null
                  */
-                virtual void schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) = 0;
+                virtual void schedule(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) = 0;
 
                 /**
                  * Creates and executes a periodic action that becomes enabled first
@@ -69,7 +69,7 @@ namespace hazelcast {
                  * @throws NullPointerException if command is null
                  * @throws IllegalArgumentException if period is less than or equal to zero
                  */
-                virtual void scheduleWithRepetition(const boost::shared_ptr<util::Runnable> &command,
+                virtual void scheduleWithRepetition(const std::shared_ptr<util::Runnable> &command,
                                                     int64_t initialDelayInMillis, int64_t periodInMillis) = 0;
 
             };

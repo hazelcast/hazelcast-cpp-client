@@ -78,12 +78,12 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.addDataSerializableFactory(666,
-                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                   std::shared_ptr<serialization::DataSerializableFactory>(
                                                            new PolymorphicDataSerializableFactory()));
 
     HazelcastClient client(config);
 
-    boost::shared_ptr<Ringbuffer<BaseDataSerializable> > ringBuffer =
+    std::shared_ptr<Ringbuffer<BaseDataSerializable> > ringBuffer =
             client.getRingbuffer<BaseDataSerializable>("MyRingBuffer");
 
     BaseDataSerializable base;

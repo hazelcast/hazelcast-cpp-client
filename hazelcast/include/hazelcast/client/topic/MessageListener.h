@@ -51,7 +51,7 @@ namespace hazelcast {
                 *
                 * @param message the message that is received for the added topic
                 */
-                virtual void onMessage(std::auto_ptr<Message<E> > message) = 0;
+                virtual void onMessage(std::unique_ptr<Message<E> > &message) = 0;
             };
 
         }
@@ -75,7 +75,7 @@ namespace hazelcast {
                     *
                     * @param message the message that is received for the added topic
                     */
-                    virtual void onMessage(std::auto_ptr<client::topic::Message<TypedData> > message) = 0;
+                    virtual void onMessage(std::unique_ptr<client::topic::Message<TypedData> > &message) = 0;
                 };
             }
         }

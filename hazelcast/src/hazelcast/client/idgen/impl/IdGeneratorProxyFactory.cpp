@@ -25,10 +25,10 @@ namespace hazelcast {
                 IdGeneratorProxyFactory::IdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
                         clientContext) {}
 
-                boost::shared_ptr<spi::ClientProxy> IdGeneratorProxyFactory::create(const std::string &id) {
+                std::shared_ptr<spi::ClientProxy> IdGeneratorProxyFactory::create(const std::string &id) {
                     IAtomicLong atomicLong = clientContext->getHazelcastClientImplementation()->getIAtomicLong(
                             proxy::ClientIdGeneratorProxy::ATOMIC_LONG_NAME + id);
-                    return boost::shared_ptr<spi::ClientProxy>(
+                    return std::shared_ptr<spi::ClientProxy>(
                             new proxy::ClientIdGeneratorProxy(id, clientContext, atomicLong));
                 }
             }

@@ -42,7 +42,7 @@
 #include "hazelcast/util/Disposable.h"
 #include "hazelcast/client/PartitionAware.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <string>
 #include <list>
 
@@ -91,7 +91,7 @@ namespace hazelcast {
                     *
                     *  return false if a serializer is already given corresponding to serializerId
                     */
-                    bool registerSerializer(boost::shared_ptr<StreamSerializer> serializer);
+                    bool registerSerializer(std::shared_ptr<StreamSerializer> serializer);
 
                     template<typename T>
                     inline Data toData(const T *object) {
@@ -109,25 +109,25 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline boost::shared_ptr<Data> toSharedData(const T *object) {
+                    inline std::shared_ptr<Data> toSharedData(const T *object) {
                         if (NULL == object) {
-                            return boost::shared_ptr<Data>();
+                            return std::shared_ptr<Data>();
                         }
-                        return boost::shared_ptr<Data>(new Data(toData<T>(object)));
+                        return std::shared_ptr<Data>(new Data(toData<T>(object)));
                     }
 
                     template<typename T>
-                    inline std::auto_ptr<T> toObject(const Data *data) {
+                    inline std::unique_ptr<T> toObject(const Data *data) {
                         if (NULL == data) {
-                            return std::auto_ptr<T>();
+                            return std::unique_ptr<T>();
                         }
                         return toObject<T>(*data);
                     }
 
                     template<typename T>
-                    inline std::auto_ptr<T> toObject(const Data &data) {
+                    inline std::unique_ptr<T> toObject(const Data &data) {
                         if (isNullData(data)) {
-                            return std::auto_ptr<T>();
+                            return std::unique_ptr<T>();
                         }
 
                         int32_t typeId = data.getType();
@@ -142,12 +142,12 @@ namespace hazelcast {
                     }
 
                     template<typename T>
-                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<Data> &data) {
-                        return boost::shared_ptr<T>(toObject<T>(data.get()));
+                    inline const std::shared_ptr<T> toSharedObject(const std::shared_ptr<Data> &data) {
+                        return std::shared_ptr<T>(toObject<T>(data.get()));
                     }
 
                     template<typename T>
-                    inline const boost::shared_ptr<T> toSharedObject(const boost::shared_ptr<T> &obj) {
+                    inline const std::shared_ptr<T> toSharedObject(const std::shared_ptr<T> &obj) {
                         return obj;
                     }
 

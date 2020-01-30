@@ -55,7 +55,7 @@ namespace hazelcast {
         }
 
 
-        boost::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
+        std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
             return clientImpl->getPNCounter(name);
         }
 
@@ -107,7 +107,7 @@ namespace hazelcast {
             return clientImpl->getLifecycleService();
         }
 
-        boost::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
+        std::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
             return clientImpl->getExecutorService(name);
         }
 

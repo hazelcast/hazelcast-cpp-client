@@ -17,11 +17,10 @@
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
-#include <boost/foreach.hpp>
+
 
 #include <hazelcast/client/ClientConfig.h>
 #include <hazelcast/client/HazelcastClient.h>
-#include <hazelcast/util/Atomic.h>
 
 namespace hazelcast {
     namespace client {
@@ -46,9 +45,9 @@ namespace hazelcast {
                     protected:
                         class IncrementerTask : public util::Runnable {
                         public:
-                            IncrementerTask(int loopsPerThread, util::Atomic<int64_t> &finalValue,
-                                            const boost::shared_ptr<client::crdt::pncounter::PNCounter> &counter1,
-                                            const boost::shared_ptr<client::crdt::pncounter::PNCounter> &counter2)
+                            IncrementerTask(int loopsPerThread, std::atomic<int64_t> &finalValue,
+                                            const std::shared_ptr<client::crdt::pncounter::PNCounter> &counter1,
+                                            const std::shared_ptr<client::crdt::pncounter::PNCounter> &counter2)
                                     : loopsPerThread(loopsPerThread), finalValue(finalValue), counter1(counter1),
                                       counter2(counter2) {}
 
@@ -67,9 +66,9 @@ namespace hazelcast {
 
                         private:
                             int loopsPerThread;
-                            util::Atomic<int64_t> &finalValue;
-                            boost::shared_ptr<client::crdt::pncounter::PNCounter> counter1;
-                            boost::shared_ptr<client::crdt::pncounter::PNCounter> counter2;
+                            std::atomic<int64_t> &finalValue;
+                            std::shared_ptr<client::crdt::pncounter::PNCounter> counter1;
+                            std::shared_ptr<client::crdt::pncounter::PNCounter> counter2;
                         };
 
                         static HazelcastServer *instance;
@@ -81,8 +80,8 @@ namespace hazelcast {
 
                     TEST_F(PnCounterFunctionalityTest, testSimpleReplication) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> counter1 = client->getPNCounter(name);
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> counter2 = client->getPNCounter(name);
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> counter1 = client->getPNCounter(name);
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> counter2 = client->getPNCounter(name);
 
                         assertEquals(5, counter1->addAndGet(5));
 
@@ -92,22 +91,22 @@ namespace hazelcast {
 
                     TEST_F(PnCounterFunctionalityTest, testParallelism) {
                         const char *name = testing::UnitTest::GetInstance()->current_test_info()->name();
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> counter1 = client->getPNCounter(name);
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> counter2 = client->getPNCounter(name);
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> counter1 = client->getPNCounter(name);
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> counter2 = client->getPNCounter(name);
 
                         int parallelism = 5;
                         int loopsPerThread = 100;
-                        util::Atomic<int64_t> finalValue(0);
+                        std::atomic<int64_t> finalValue(0);
 
-                        std::vector<boost::shared_ptr<util::Thread> > futures;
+                        std::vector<std::shared_ptr<util::Thread> > futures;
                         for (int i = 0; i < parallelism; i++) {
-                            boost::shared_ptr<Thread> thread = boost::shared_ptr<util::Thread>(new util::Thread(boost::shared_ptr<util::Runnable>(
+                            std::shared_ptr<Thread> thread = std::shared_ptr<util::Thread>(new util::Thread(std::shared_ptr<util::Runnable>(
                                                                 new IncrementerTask(loopsPerThread, finalValue, counter1, counter2)), getLogger()));
                             thread->start();
                             futures.push_back(thread);
                         }
 
-                        BOOST_FOREACH(const boost::shared_ptr<util::Thread> &future , futures) {
+                        for (const std::shared_ptr<util::Thread> &future  : futures) {
                             future->join();
                         }
 

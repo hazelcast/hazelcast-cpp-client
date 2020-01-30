@@ -42,7 +42,7 @@ namespace hazelcast {
                     #ifdef HZ_BUILD_WITH_SSL
                     const client::config::SSLConfig &sslConfig = clientContext.getClientConfig().getNetworkConfig().getSSLConfig();
                     if (sslConfig.isEnabled()) {
-                        sslContext = std::auto_ptr<asio::ssl::context>(new asio::ssl::context(
+                        sslContext = std::unique_ptr<asio::ssl::context>(new asio::ssl::context(
                                 (asio::ssl::context_base::method) sslConfig.getProtocol()));
 
                         const std::vector<std::string> &verifyFiles = sslConfig.getVerifyFiles();
@@ -89,15 +89,15 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::auto_ptr<Socket> SocketFactory::create(const Address &address) const {
+                std::unique_ptr<Socket> SocketFactory::create(const Address &address) const {
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        return std::auto_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
+                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
                                 clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
                     #endif
 
-                    return std::auto_ptr<Socket>(new internal::socket::TcpSocket(address,
+                    return std::unique_ptr<Socket>(new internal::socket::TcpSocket(address,
                             &clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                 }
             }

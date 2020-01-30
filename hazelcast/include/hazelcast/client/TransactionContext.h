@@ -165,7 +165,7 @@ namespace hazelcast {
 
         private :
             TransactionOptions options;
-            boost::shared_ptr<connection::Connection> txnConnection;
+            std::shared_ptr<connection::Connection> txnConnection;
             txn::TransactionProxy transaction;
         };
 

@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
-#include "hazelcast/util/Atomic.h"
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -52,7 +52,7 @@ namespace hazelcast {
                         int getSlot(const serialization::pimpl::Data &key);
 
                         const int markCount;
-                        util::Atomic<int32_t> *marks;
+                        std::atomic<int32_t> *marks;
                     };
                 }
             }

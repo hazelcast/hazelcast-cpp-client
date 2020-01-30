@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool MultiMapEntrySetCodec::RETRYABLE = true;
                 const ResponseMessageConst MultiMapEntrySetCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
 
-                std::auto_ptr<ClientMessage> MultiMapEntrySetCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MultiMapEntrySetCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MultiMapEntrySetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

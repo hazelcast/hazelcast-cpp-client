@@ -26,8 +26,7 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
-#define HAZELCAST_STRINGIZE(STR) STRINGIZE(STR)
-#define STRINGIZE(STR) #STR
+#define HAZELCAST_STRINGIZE(STR) #STR
 
 namespace hazelcast {
     namespace util {
@@ -37,8 +36,6 @@ namespace hazelcast {
         HAZELCAST_API void sleep(int seconds);
 
         HAZELCAST_API void sleepmillis(uint64_t milliseconds);
-
-        HAZELCAST_API char *strtok(char *str, const char *sep, char **context);
 
         /**
          * Fills the result with localtime if succesful

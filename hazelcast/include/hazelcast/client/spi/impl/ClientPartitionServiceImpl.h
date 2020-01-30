@@ -17,8 +17,6 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTPARTITIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTPARTITIONSERVICEIMPL_H_
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/AtomicInt.h"
@@ -49,7 +47,7 @@ namespace hazelcast {
 
             namespace impl {
                 class HAZELCAST_API ClientPartitionServiceImpl : public ClientPartitionService,
-                                                                 public boost::enable_shared_from_this<ClientPartitionServiceImpl>,
+                                                                 public std::enable_shared_from_this<ClientPartitionServiceImpl>,
                                                                  public protocol::codec::ClientAddPartitionListenerCodec::AbstractEventHandler {
                 public:
                     ClientPartitionServiceImpl(ClientContext &client);
@@ -58,7 +56,7 @@ namespace hazelcast {
 
                     void stop();
 
-                    void listenPartitionTable(const boost::shared_ptr<connection::Connection> &ownerConnection);
+                    void listenPartitionTable(const std::shared_ptr<connection::Connection> &ownerConnection);
 
                     void refreshPartitions();
 
@@ -70,13 +68,13 @@ namespace hazelcast {
 
                     virtual void onListenerRegister();
 
-                    virtual boost::shared_ptr<Address> getPartitionOwner(int partitionId);
+                    virtual std::shared_ptr<Address> getPartitionOwner(int partitionId);
 
                     virtual int getPartitionId(const serialization::pimpl::Data &key);
 
                     virtual int getPartitionCount();
 
-                    virtual boost::shared_ptr<client::impl::Partition> getPartition(int partitionId);
+                    virtual std::shared_ptr<client::impl::Partition> getPartition(int partitionId);
 
                 private:
                     class PartitionImpl : public client::impl::Partition {
@@ -86,7 +84,7 @@ namespace hazelcast {
 
                         virtual int getPartitionId() const;
 
-                        virtual boost::shared_ptr<Member> getOwner() const;
+                        virtual std::shared_ptr<Member> getOwner() const;
 
                     private:
                         int partitionId;
@@ -112,9 +110,9 @@ namespace hazelcast {
                     public:
                         RefreshTaskCallback(ClientPartitionServiceImpl &partitionService);
 
-                        virtual void onResponse(const boost::shared_ptr<protocol::ClientMessage> &responseMessage);
+                        virtual void onResponse(const std::shared_ptr<protocol::ClientMessage> &responseMessage);
 
-                        virtual void onFailure(const boost::shared_ptr<exception::IException> &e);
+                        virtual void onFailure(const std::shared_ptr<exception::IException> &e);
 
                     private:
                         ClientPartitionServiceImpl &partitionService;
@@ -127,14 +125,14 @@ namespace hazelcast {
                     ClientContext &client;
                     util::ILogger &logger;
                     ClientExecutionService &clientExecutionService;
-                    boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > refreshTaskCallback;
+                    std::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > refreshTaskCallback;
 
                     static const int64_t PERIOD = 10 * 1000;
                     static const int64_t INITIAL_DELAY = 10 * 1000;
 
                     util::SynchronizedMap<int, Address> partitions;
-                    util::Atomic<int32_t> partitionCount;
-                    util::Atomic<int32_t> lastPartitionStateVersion;
+                    std::atomic<int32_t> partitionCount;
+                    std::atomic<int32_t> lastPartitionStateVersion;
                     util::Mutex lock;
 
                     void waitForPartitionsFetchedOnce();

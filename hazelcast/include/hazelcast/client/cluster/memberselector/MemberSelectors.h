@@ -75,7 +75,7 @@ namespace hazelcast {
                         virtual void toString(std::ostream &os) const;
                     };
 
-                    static const std::auto_ptr<MemberSelector> DATA_MEMBER_SELECTOR;
+                    static const std::unique_ptr<MemberSelector> DATA_MEMBER_SELECTOR;
 
                 };
             }

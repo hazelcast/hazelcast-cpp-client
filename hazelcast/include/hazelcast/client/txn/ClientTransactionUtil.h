@@ -20,7 +20,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/ExceptionUtil.h"
 
@@ -49,9 +49,9 @@ namespace hazelcast {
                  * More specifically IOException, because in case of a IO problem in ClientInvocation that send to a connection
                  * sends IOException to user. This wraps that exception into a TransactionException.
                  */
-                static boost::shared_ptr<protocol::ClientMessage>
-                invoke(std::auto_ptr<protocol::ClientMessage> &request, const std::string &objectName,
-                       spi::ClientContext &client, const boost::shared_ptr<connection::Connection> &connection);
+                static std::shared_ptr<protocol::ClientMessage>
+                invoke(std::unique_ptr<protocol::ClientMessage> &request, const std::string &objectName,
+                       spi::ClientContext &client, const std::shared_ptr<connection::Connection> &connection);
 
             private:
                 class TransactionExceptionFactory : public util::ExceptionUtil::RuntimeExceptionFactory {
@@ -59,10 +59,10 @@ namespace hazelcast {
                     virtual void rethrow(const client::exception::IException &throwable, const std::string &message);
                 };
 
-                static const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
+                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> &
                 TRANSACTION_EXCEPTION_FACTORY();
 
-                static const boost::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> exceptionFactory;
+                static const std::shared_ptr<util::ExceptionUtil::RuntimeExceptionFactory> exceptionFactory;
             };
         }
     }

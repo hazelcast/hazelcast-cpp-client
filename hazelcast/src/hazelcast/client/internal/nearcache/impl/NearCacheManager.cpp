@@ -25,7 +25,7 @@ namespace hazelcast {
                 }
 
                 bool NearCacheManager::clearNearCache(const std::string &name) {
-                    boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
+                    std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                     if (nearCache.get() != NULL) {
                         nearCache->clear();
                     }
@@ -33,15 +33,15 @@ namespace hazelcast {
                 }
 
                 void NearCacheManager::clearAllNearCaches() {
-                    std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                    for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
+                    std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
+                    for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
                         (*it)->clear();
                     }
                 }
 
                 bool NearCacheManager::destroyNearCache(const std::string &name) {
-                    boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.remove(name);
+                    std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.remove(name);
                     if (nearCache.get() != NULL) {
                         nearCache->destroy();
                     }
@@ -49,14 +49,14 @@ namespace hazelcast {
                 }
 
                 void NearCacheManager::destroyAllNearCaches() {
-                    std::vector<boost::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
-                    for (std::vector<boost::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
+                    std::vector<std::shared_ptr<BaseNearCache> > caches = nearCacheMap.values();
+                    for (std::vector<std::shared_ptr<BaseNearCache> >::iterator it = caches.begin();
                          it != caches.end(); ++it) {
                         (*it)->destroy();
                     }
                 }
 
-                std::vector<boost::shared_ptr<BaseNearCache> > NearCacheManager::listAllNearCaches() {
+                std::vector<std::shared_ptr<BaseNearCache> > NearCacheManager::listAllNearCaches() {
                     return nearCacheMap.values();
                 }
 

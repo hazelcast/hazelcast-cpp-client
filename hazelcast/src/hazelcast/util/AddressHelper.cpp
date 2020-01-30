@@ -42,7 +42,7 @@ namespace hazelcast {
 
         std::vector<client::Address>
         AddressHelper::getPossibleSocketAddresses(int port, const std::string &scopedAddress, int portTryCount, ILogger &logger) {
-            std::auto_ptr<asio::ip::address> inetAddress;
+            std::unique_ptr<asio::ip::address> inetAddress;
             try {
                 inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {

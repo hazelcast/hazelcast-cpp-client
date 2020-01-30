@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/date_time.hpp>
-
 #include <asio.hpp>
 
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
@@ -48,7 +45,7 @@ namespace hazelcast {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
-                    rs = std::auto_ptr<security::EC2RequestSigner>(
+                    rs = std::unique_ptr<security::EC2RequestSigner>(
                             new security::EC2RequestSigner(awsConfig, timeStamp, endpoint));
                     attributes["Action"] = "DescribeInstances";
                     attributes["Version"] = impl::Constants::DOC_VERSION;
@@ -72,19 +69,16 @@ namespace hazelcast {
                 }
 
                 std::string DescribeInstances::getFormattedTimestamp() {
-                    using namespace boost::posix_time;
-                    ptime now = second_clock::universal_time();
+                    std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-                    std::ostringstream out;
-                    std::locale timeLocale(out.getloc(), new time_facet(impl::Constants::DATE_FORMAT));
-                    out.imbue(timeLocale);
-                    out << now;
-                    return out.str();
+                    std::string s(30, '\0');
+                    std::strftime(&s[0], s.size(), impl::Constants::DATE_FORMAT, std::localtime(&now));
+                    return s;
                 }
 
                 std::istream &DescribeInstances::callService() {
                     std::string query = rs->getCanonicalizedQueryString(attributes);
-                    httpsClient = std::auto_ptr<util::SyncHttpsClient>(
+                    httpsClient = std::unique_ptr<util::SyncHttpsClient>(
                             new util::SyncHttpsClient(endpoint.c_str(), QUERY_PREFIX + query));
                     return httpsClient->openConnection();
                 }

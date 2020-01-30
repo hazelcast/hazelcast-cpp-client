@@ -75,7 +75,7 @@ int main() {
 
     // Puts the key, value tokyo at the partition for "desiredKeyString" rather than the partition for "MyString"
     map.put(partitionKey, "Tokyo");
-    boost::shared_ptr<std::string> value = map.get(partitionKey);
+    std::shared_ptr<std::string> value = map.get(partitionKey);
 
     std::cout << "Got the value for key " << partitionKey.getActualKey() << ". Value is:" << *value << std::endl;
 

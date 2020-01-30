@@ -195,7 +195,7 @@ namespace hazelcast {
             /**
             * You can check if element is available by
             *
-            *      boost::shared_ptr<int> e = list.get(5);
+            *      std::shared_ptr<int> e = list.get(5);
             *      if(e.get() != NULL )
             *          //......;
             *
@@ -204,8 +204,8 @@ namespace hazelcast {
             * @throws IndexOutOfBoundsException if the index is out of range.
             *
             */
-            boost::shared_ptr<E> get(int index) {
-                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::getData(index)));
+            std::shared_ptr<E> get(int index) {
+                return std::shared_ptr<E>(toObject<E>(proxy::IListImpl::getData(index)));
             }
 
             /**
@@ -217,8 +217,8 @@ namespace hazelcast {
             * @throws IClassCastException if the type of the specified element is incompatible with the server side.
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            boost::shared_ptr<E> set(int index, const E &element) {
-                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::setData(index, toData(element))));
+            std::shared_ptr<E> set(int index, const E &element) {
+                return std::shared_ptr<E>(toObject<E>(proxy::IListImpl::setData(index, toData(element))));
             }
 
             /**
@@ -240,8 +240,8 @@ namespace hazelcast {
             * @see get
             * @throws IndexOutOfBoundsException if the index is out of range.
             */
-            boost::shared_ptr<E> remove(int index) {
-                return boost::shared_ptr<E>(toObject<E>(proxy::IListImpl::removeData(index)));
+            std::shared_ptr<E> remove(int index) {
+                return std::shared_ptr<E>(toObject<E>(proxy::IListImpl::removeData(index)));
             }
 
             /**

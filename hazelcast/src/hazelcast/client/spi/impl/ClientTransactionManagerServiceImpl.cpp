@@ -38,7 +38,7 @@ namespace hazelcast {
                                                                                          hazelcast::client::LoadBalancer &loadBalancer)
                         : client(client), loadBalancer(loadBalancer) {}
 
-                boost::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::connect() {
+                std::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::connect() {
                     AbstractClientInvocationService &invocationService = (AbstractClientInvocationService &) client.getInvocationService();
                     int64_t startTimeMillis = util::currentTimeMillis();
                     int64_t invocationTimeoutMillis = invocationService.getInvocationTimeoutMillis();
@@ -65,7 +65,7 @@ namespace hazelcast {
                                                                        "Client is shutdown");
                 }
 
-                boost::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::tryConnectSmart() {
+                std::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::tryConnectSmart() {
                     try {
                         Address address = getRandomAddress();
                         return client.getConnectionManager().getOrConnect(address);
@@ -73,7 +73,7 @@ namespace hazelcast {
                         // loadBalancer.next may throw IllegalStateException when no available member
                         throwException(true);
                     }
-                    return boost::shared_ptr<connection::Connection>();
+                    return std::shared_ptr<connection::Connection>();
                 }
 
                 Address ClientTransactionManagerServiceImpl::getRandomAddress() {
@@ -81,8 +81,8 @@ namespace hazelcast {
                     return member.getAddress();
                 }
 
-                boost::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::tryConnectUnisocket() {
-                    boost::shared_ptr<connection::Connection> connection = client.getConnectionManager().getOwnerConnection();
+                std::shared_ptr<connection::Connection> ClientTransactionManagerServiceImpl::tryConnectUnisocket() {
+                    std::shared_ptr<connection::Connection> connection = client.getConnectionManager().getOwnerConnection();
 
                     if (connection.get()) {
                         return connection;
@@ -90,7 +90,7 @@ namespace hazelcast {
                     return throwException(false);
                 }
 
-                boost::shared_ptr<connection::Connection>
+                std::shared_ptr<connection::Connection>
                 ClientTransactionManagerServiceImpl::throwException(bool smartRouting) {
                     ClientConfig clientConfig = client.getClientConfig();
                     const config::ClientConnectionStrategyConfig &connectionStrategyConfig = clientConfig.getConnectionStrategyConfig();
@@ -141,7 +141,7 @@ namespace hazelcast {
                             << (util::currentTimeMillis() - startTimeMillis) << " ms. ";
                     return exception::OperationTimeoutException(
                             "ClientTransactionManagerServiceImpl::newOperationTimeoutException", sb.str(),
-                            boost::shared_ptr<exception::IException>(throwable.clone()));
+                            std::shared_ptr<exception::IException>(throwable.clone()));
 
                 }
             }

@@ -40,7 +40,7 @@ namespace hazelcast {
                     public:
                         ReliableTopicMessage();
 
-                        ReliableTopicMessage(serialization::pimpl::Data payloadData, std::auto_ptr<Address> address);
+                        ReliableTopicMessage(serialization::pimpl::Data payloadData, std::unique_ptr<Address> &address);
 
                         int64_t getPublishTime() const;
 
@@ -57,7 +57,7 @@ namespace hazelcast {
                         virtual void readData(serialization::ObjectDataInput &reader);
                     private:
                         int64_t publishTime;
-                        std::auto_ptr<Address> publisherAddress;
+                        std::unique_ptr<Address> publisherAddress;
                         serialization::pimpl::Data payload;
                     };
                 }

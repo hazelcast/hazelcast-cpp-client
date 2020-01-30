@@ -30,9 +30,9 @@ namespace hazelcast {
 
                 IMap HazelcastClientImpl::getMap(const std::string &name) {
                     map::impl::MapMixedTypeProxyFactory factory(&client.clientContext);
-                    boost::shared_ptr<spi::ClientProxy> proxy =
+                    std::shared_ptr<spi::ClientProxy> proxy =
                             client.getDistributedObjectForService("hz:impl:mapService", name, factory);
-                    return IMap(boost::static_pointer_cast<ClientMapProxy>(proxy));
+                    return IMap(std::static_pointer_cast<ClientMapProxy>(proxy));
                 }
 
                 MultiMap HazelcastClientImpl::getMultiMap(const std::string &name) {

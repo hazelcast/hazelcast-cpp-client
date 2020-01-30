@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool MapRemoveAllCodec::RETRYABLE = false;
                 const ResponseMessageConst MapRemoveAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> MapRemoveAllCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapRemoveAllCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapRemoveAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_CONNECTION_AUTHENTICATIONFUTURE_H_
 #define HAZELCAST_CLIENT_CONNECTION_AUTHENTICATIONFUTURE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/CountDownLatch.h"
@@ -38,15 +38,15 @@ namespace hazelcast {
             public:
                 AuthenticationFuture();
 
-                void onSuccess(const boost::shared_ptr<Connection> &connection);
+                void onSuccess(const std::shared_ptr<Connection> &connection);
 
-                void onFailure(const boost::shared_ptr<exception::IException> &throwable);
+                void onFailure(const std::shared_ptr<exception::IException> &throwable);
 
-                boost::shared_ptr<Connection> get();
+                std::shared_ptr<Connection> get();
             private:
-                boost::shared_ptr<util::CountDownLatch> countDownLatch;
-                boost::shared_ptr<Connection> connection;
-                boost::shared_ptr<exception::IException> throwable;
+                std::shared_ptr<util::CountDownLatch> countDownLatch;
+                std::shared_ptr<Connection> connection;
+                std::shared_ptr<exception::IException> throwable;
             };
         }
     }

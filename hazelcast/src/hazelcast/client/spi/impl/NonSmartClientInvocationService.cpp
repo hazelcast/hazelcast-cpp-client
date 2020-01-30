@@ -29,36 +29,36 @@ namespace hazelcast {
                 }
 
                 void NonSmartClientInvocationService::invokeOnConnection(
-                        boost::shared_ptr<impl::ClientInvocation> invocation,
-                        boost::shared_ptr<connection::Connection> connection) {
+                        std::shared_ptr<impl::ClientInvocation> invocation,
+                        std::shared_ptr<connection::Connection> connection) {
                     assert(connection.get() != NULL);
                     send(invocation, connection);
                 }
 
                 void NonSmartClientInvocationService::invokeOnPartitionOwner(
-                        boost::shared_ptr<impl::ClientInvocation> invocation, int partitionId) {
+                        std::shared_ptr<impl::ClientInvocation> invocation, int partitionId) {
                     invocation->getClientMessage()->setPartitionId(partitionId);
                     send(invocation, getOwnerConnection());
                 }
 
                 void NonSmartClientInvocationService::invokeOnRandomTarget(
-                        boost::shared_ptr<impl::ClientInvocation> invocation) {
+                        std::shared_ptr<impl::ClientInvocation> invocation) {
                     send(invocation, getOwnerConnection());
                 }
 
                 void
-                NonSmartClientInvocationService::invokeOnTarget(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                                                const boost::shared_ptr<Address> &target) {
+                NonSmartClientInvocationService::invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
+                                                                const std::shared_ptr<Address> &target) {
                     send(invocation, getOwnerConnection());
                 }
 
-                boost::shared_ptr<connection::Connection> NonSmartClientInvocationService::getOwnerConnection() {
-                    boost::shared_ptr<Address> ownerConnectionAddress = connectionManager->getOwnerConnectionAddress();
+                std::shared_ptr<connection::Connection> NonSmartClientInvocationService::getOwnerConnection() {
+                    std::shared_ptr<Address> ownerConnectionAddress = connectionManager->getOwnerConnectionAddress();
                     if (ownerConnectionAddress.get() == NULL) {
                         throw exception::IOException("NonSmartClientInvocationService::getOwnerConnection",
                                                      "Owner connection address is not available.");
                     }
-                    boost::shared_ptr<connection::Connection> ownerConnection = connectionManager->getActiveConnection(
+                    std::shared_ptr<connection::Connection> ownerConnection = connectionManager->getActiveConnection(
                             *ownerConnectionAddress);
                     if (ownerConnection.get() == NULL) {
                         throw exception::IOException("NonSmartClientInvocationService::getOwnerConnection",

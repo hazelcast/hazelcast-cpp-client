@@ -19,34 +19,10 @@
 
 namespace hazelcast {
     namespace util {
-        AtomicBoolean::AtomicBoolean(): v(false){
+        AtomicBoolean::AtomicBoolean() : std::atomic<bool>(false){
         }
 
-        AtomicBoolean::AtomicBoolean(bool i) : v(i) {
-        }
-
-        bool AtomicBoolean::operator!(){
-            LockGuard lockGuard(mutex);
-            return !v;
-        }
-
-        void AtomicBoolean::operator =(bool i){
-            LockGuard lockGuard(mutex);
-            v = i;
-        }
-
-        AtomicBoolean::operator bool(){
-            LockGuard lockGuard(mutex);
-            return v;
-        }
-
-        bool AtomicBoolean::compareAndSet(bool compareValue, bool setValue){
-            LockGuard lockGuard(mutex);
-            if(compareValue == v){
-                v = setValue;
-                return true;
-            }
-            return false;
+        AtomicBoolean::AtomicBoolean(bool i) : std::atomic<bool>(i) {
         }
     }
 }

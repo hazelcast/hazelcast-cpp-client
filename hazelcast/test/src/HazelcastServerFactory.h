@@ -27,7 +27,7 @@
 
 #include "cpp-controller/RemoteController.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <ostream>
 
@@ -38,6 +38,7 @@ using namespace std;
 using namespace apache::thrift;
 using namespace apache::thrift::protocol;
 using namespace apache::thrift::transport;
+using namespace hazelcast::client::test::remote;
 
 namespace hazelcast {
     namespace client {
@@ -45,7 +46,9 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
-                HazelcastServerFactory(const char *serverAddress, const char *serverXmlConfigFilePath);
+                HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
+
+                HazelcastServerFactory(const std::string &serverAddress, const std::string &serverXmlConfigFilePath);
 
                 const std::string& getServerAddress();
 
@@ -58,6 +61,10 @@ namespace hazelcast {
                 bool terminateServer(const Member &member);
 
                 ~HazelcastServerFactory();
+
+                RemoteControllerClient &getRemoteController();
+
+                const string &getClusterId() const;
 
             private:
                 util::ILogger logger;

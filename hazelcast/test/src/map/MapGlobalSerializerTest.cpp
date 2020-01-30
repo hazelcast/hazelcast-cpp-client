@@ -46,7 +46,7 @@ namespace hazelcast {
                     instance = new HazelcastServer(*g_srvFactory);
                     ClientConfig clientConfig;
                     clientConfig.getSerializationConfig().setGlobalSerializer(
-                            boost::shared_ptr<serialization::StreamSerializer>(new WriteReadIntGlobalSerializer()));
+                            std::shared_ptr<serialization::StreamSerializer>(new WriteReadIntGlobalSerializer()));
                     client = new HazelcastClient(clientConfig);
                     imap = new mixedtype::IMap(client->toMixedType().getMap("UnknownObject"));
                 }
@@ -79,7 +79,7 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << data.getType();
                 ASSERT_TRUE(out.str().find("123") != std::string::npos);
-                std::auto_ptr<int> value = data.get<int>();
+                std::unique_ptr<int> value = data.get<int>();
                 ASSERT_NE((int *) NULL, value.get());
                 ASSERT_EQ(5, *value);
             }

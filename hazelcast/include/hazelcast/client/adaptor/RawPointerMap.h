@@ -78,11 +78,11 @@ namespace hazelcast {
                 /**
                 * get the value.
                 * @param key
-                * @return value value in auto_ptr, if there is no mapping for key
-                * then return NULL in auto_ptr.
+                * @return value value in unique_ptr, if there is no mapping for key
+                * then return NULL in unique_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                std::auto_ptr<V> get(const K &key) {
+                std::unique_ptr<V> get(const K &key) {
                     return serializationService->toObject<V>(
                             mapProxy.getData(serializationService->toData<K>(&key)).get());
                 }
@@ -91,11 +91,11 @@ namespace hazelcast {
                 * put new entry into map.
                 * @param key
                 * @param value
-                * @return the previous value in auto_ptr, if there is no mapping for key
+                * @return the previous value in unique_ptr, if there is no mapping for key
                 * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
-                * then returns NULL in auto_ptr.
+                * then returns NULL in unique_ptr.
                 */
-                std::auto_ptr<V> put(const K &key, const V &value) {
+                std::unique_ptr<V> put(const K &key, const V &value) {
                     return put(key, value, -1);
                 }
 
@@ -107,10 +107,10 @@ namespace hazelcast {
                 * @param key              key of the entry
                 * @param value            value of the entry
                 * @param ttlInMillis      maximum time for this entry to stay in the map in milliseconds,0 means infinite.
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in unique_ptr, if there is no mapping for key
+                * then returns NULL in unique_ptr.
                 */
-                std::auto_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
+                std::unique_ptr<V> put(const K &key, const V &value, long ttlInMillis) {
                     return serializationService->toObject<V>(
                             mapProxy.putData(serializationService->toData<K>(&key), serializationService->toData<V>(&value),
                                         ttlInMillis).get());
@@ -119,11 +119,11 @@ namespace hazelcast {
                 /**
                 * remove entry form map
                 * @param key
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in unique_ptr, if there is no mapping for key
+                * then returns NULL in unique_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                std::auto_ptr<V> remove(const K &key) {
+                std::unique_ptr<V> remove(const K &key) {
                     return serializationService->toObject<V>(
                             mapProxy.removeData(serializationService->toData<K>(&key)).get());
                 }
@@ -217,10 +217,10 @@ namespace hazelcast {
                 *
                 * @param key key with which the specified value is to be associated
                 * @param value
-                * @return the previous value in auto_ptr, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * @return the previous value in unique_ptr, if there is no mapping for key
+                * then returns NULL in unique_ptr.
                 */
-                std::auto_ptr<V> putIfAbsent(const K &key, const V &value) {
+                std::unique_ptr<V> putIfAbsent(const K &key, const V &value) {
                     return serializationService->toObject<V>(mapProxy.putIfAbsentData(serializationService->toData<K>(&key),
                                                                                 serializationService->toData<V>(&value),
                                                                                 -1).get());
@@ -235,9 +235,9 @@ namespace hazelcast {
                 * @param value          value of the entry
                 * @param ttlInMillis    maximum time in milliseconds for this entry to stay in the map
                 * @return the previous value of the entry, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * then returns NULL in unique_ptr.
                 */
-                std::auto_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
+                std::unique_ptr<V> putIfAbsent(const K &key, const V &value, long ttlInMillis) {
                     return serializationService->toObject<V>(
                             mapProxy.putIfAbsentData(serializationService->toData<K>(&key),
                                             serializationService->toData<V>(&value),
@@ -260,9 +260,9 @@ namespace hazelcast {
                 * @param key key with which the specified value is associated
                 * @param value
                 * @return the previous value of the entry, if there is no mapping for key
-                * then returns NULL in auto_ptr.
+                * then returns NULL in unique_ptr.
                 */
-                std::auto_ptr<V> replace(const K &key, const V &value) {
+                std::unique_ptr<V> replace(const K &key, const V &value) {
                     return serializationService->toObject<V>(mapProxy.replaceData(
                             serializationService->toData<K>(&key), serializationService->toData<V>(&value)).get());
                 }
@@ -507,12 +507,12 @@ namespace hazelcast {
                 * @return <tt>MapEntryView</tt> of the specified key
                 * @see MapEntryView
                 */
-                std::auto_ptr<MapEntryView<K, V> > getEntryView(const K &key) {
-                    std::auto_ptr<map::DataEntryView> dataView = mapProxy.getEntryViewData(serializationService->toData<K>(&key));
+                std::unique_ptr<MapEntryView<K, V> > getEntryView(const K &key) {
+                    std::unique_ptr<map::DataEntryView> dataView = mapProxy.getEntryViewData(serializationService->toData<K>(&key));
                     if ((map::DataEntryView *)NULL == dataView.get()) {
-                        return std::auto_ptr<MapEntryView<K, V> >();
+                        return std::unique_ptr<MapEntryView<K, V> >();
                     }
-                    return std::auto_ptr<MapEntryView<K, V> >(new MapEntryView<K, V>(dataView, *serializationService));
+                    return std::unique_ptr<MapEntryView<K, V> >(new MapEntryView<K, V>(dataView, *serializationService));
                 }
 
                 /**
@@ -550,9 +550,9 @@ namespace hazelcast {
                 * @param keys keys for which the entries shall be retrieved from the map.
                 * @return Array of entries for the provided keys
                 */
-                std::auto_ptr<EntryArray<K, V> > getAll(const std::set<K> &keys) {
+                std::unique_ptr<EntryArray<K, V> > getAll(const std::set<K> &keys) {
                     if (keys.empty()) {
-                        return std::auto_ptr<EntryArray<K, V> >();
+                        return std::unique_ptr<EntryArray<K, V> >();
                     }
 
                     std::map<int, std::vector<serialization::pimpl::Data> > partitionToKeyData;
@@ -567,7 +567,7 @@ namespace hazelcast {
 
                     EntryVector entrySet = mapProxy.getAllData(partitionToKeyData);
 
-                    return std::auto_ptr<EntryArray<K, V> >(
+                    return std::unique_ptr<EntryArray<K, V> >(
                             new client::impl::EntryArrayImpl<K, V>(entrySet, *serializationService));
                 }
 
@@ -578,9 +578,9 @@ namespace hazelcast {
                 *
                 * @return DataArray from which the key for each index can be retrieved.
                 */
-                std::auto_ptr<DataArray<K> > keySet() {
+                std::unique_ptr<DataArray<K> > keySet() {
                     std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetData();
-                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
+                    return std::unique_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
                             dataResult, *serializationService));
                 }
 
@@ -594,9 +594,9 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::auto_ptr<DataArray<K> > keySet(const query::Predicate &predicate) {
+                std::unique_ptr<DataArray<K> > keySet(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetData(predicate);
-                    return std::auto_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
+                    return std::unique_ptr<DataArray<K> >(new hazelcast::client::impl::DataArrayImpl<K>(
                             dataResult, *serializationService));
                 }
 
@@ -611,7 +611,7 @@ namespace hazelcast {
                   * @param predicate query criteria
                   * @return result key set of the query
                   */
-                std::auto_ptr<DataArray<K> > keySet(query::PagingPredicate<K, V> &predicate) {
+                std::unique_ptr<DataArray<K> > keySet(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::KEY);
 
                     std::vector<serialization::pimpl::Data> dataResult = mapProxy.keySetForPagingPredicateData(predicate);
@@ -628,10 +628,10 @@ namespace hazelcast {
 
                     std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::KEY);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(
+                    std::unique_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(
                             entries, range.first, range.second));
 
-                    std::auto_ptr<DataArray<K> > result = std::auto_ptr<DataArray<K> >(
+                    std::unique_ptr<DataArray<K> > result = std::unique_ptr<DataArray<K> >(
                             new impl::EntryArrayKeyAdaptor<K, V>(subList));
 
                     return result;
@@ -644,9 +644,9 @@ namespace hazelcast {
                 *
                 * @return clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values() {
+                std::unique_ptr<DataArray<V> > values() {
                     std::vector<serialization::pimpl::Data> dataResult = mapProxy.valuesData();
-                    return std::auto_ptr<DataArray<V> >(
+                    return std::unique_ptr<DataArray<V> >(
                             new hazelcast::client::impl::DataArrayImpl<V>(dataResult, *serializationService));
                 }
 
@@ -658,9 +658,9 @@ namespace hazelcast {
                 * @param predicate the criteria for values to match
                 * @return clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values(const query::Predicate &predicate) {
+                std::unique_ptr<DataArray<V> > values(const query::Predicate &predicate) {
                     std::vector<serialization::pimpl::Data> dataResult = mapProxy.valuesData(predicate);
-                    return std::auto_ptr<DataArray<V> >(
+                    return std::unique_ptr<DataArray<V> >(
                             new hazelcast::client::impl::DataArrayImpl<V>(dataResult, *serializationService));
                 }
 
@@ -672,7 +672,7 @@ namespace hazelcast {
                 * @param predicate the criteria for values to match
                 * @return clone of the values contained in this map
                 */
-                std::auto_ptr<DataArray<V> > values(query::PagingPredicate<K, V> &predicate) {
+                std::unique_ptr<DataArray<V> > values(query::PagingPredicate<K, V> &predicate) {
                     predicate.setIterationType(query::VALUE);
 
                     EntryVector entryResult = mapProxy.valuesForPagingPredicateData(predicate);
@@ -683,8 +683,8 @@ namespace hazelcast {
 
                     std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::VALUE);
 
-                    std::auto_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
-                    std::auto_ptr<DataArray<V> > result = std::auto_ptr<DataArray<V> >(
+                    std::unique_ptr<EntryArray<K, V> > subList(new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
+                    std::unique_ptr<DataArray<V> > result = std::unique_ptr<DataArray<V> >(
                             new impl::EntryArrayValueAdaptor<K, V>(subList));
 
                     return result;
@@ -697,9 +697,9 @@ namespace hazelcast {
                 *
                 * @return clone of the keys mappings in this map
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet() {
+                std::unique_ptr<EntryArray<K, V> > entrySet() {
                     EntryVector entries = mapProxy.entrySetData();
-                    return std::auto_ptr<EntryArray<K, V> >(
+                    return std::unique_ptr<EntryArray<K, V> >(
                             new client::impl::EntryArrayImpl<K, V>(entries, *serializationService));
                 }
 
@@ -713,9 +713,9 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry array of the query
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet(const query::Predicate &predicate) {
+                std::unique_ptr<EntryArray<K, V> > entrySet(const query::Predicate &predicate) {
                     EntryVector entries = mapProxy.entrySetData(predicate);
-                    return std::auto_ptr<EntryArray<K, V> >(
+                    return std::unique_ptr<EntryArray<K, V> >(
                             new client::impl::EntryArrayImpl<K, V>(entries, *serializationService));
                 }
 
@@ -729,7 +729,7 @@ namespace hazelcast {
                 * @param predicate query criteria
                 * @return result entry vector of the query
                 */
-                std::auto_ptr<EntryArray<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
+                std::unique_ptr<EntryArray<K, V> > entrySet(query::PagingPredicate<K, V> &predicate) {
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > dataResult =
                             mapProxy.entrySetForPagingPredicateData(predicate);
 
@@ -739,7 +739,7 @@ namespace hazelcast {
 
                     std::pair<size_t, size_t> range = mapProxy.template updateAnchor<K, V>(entries, predicate, query::ENTRY);
 
-                    return std::auto_ptr<EntryArray<K, V> >(
+                    return std::unique_ptr<EntryArray<K, V> >(
                             new client::impl::EntryArrayImpl<K, V>(entries, range.first, range.second));
                 }
 
@@ -794,11 +794,11 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
+                std::unique_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = serializationService->toData<K>(&key);
                     serialization::pimpl::Data processorData = serializationService->toData<EntryProcessor>(&entryProcessor);
 
-                    std::auto_ptr<serialization::pimpl::Data> resultData = mapProxy.executeOnKeyInternal(keyData, processorData);
+                    std::unique_ptr<serialization::pimpl::Data> resultData = mapProxy.executeOnKeyInternal(keyData, processorData);
 
                     return serializationService->toObject<ResultType>(resultData.get());
                 }
@@ -818,10 +818,10 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
+                std::unique_ptr<EntryArray<K, ResultType> > executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector results = mapProxy.template executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(
+                    return std::unique_ptr<EntryArray<K, ResultType> >(
                             new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
                 }
 
@@ -840,10 +840,10 @@ namespace hazelcast {
                 * @return Returns an array of (Key, Result) pairs.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
+                std::unique_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor);
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(
+                    return std::unique_ptr<EntryArray<K, ResultType> >(
                             new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
                 }
 
@@ -862,10 +862,10 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::auto_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
+                std::unique_ptr<EntryArray<K, ResultType> > executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector results = mapProxy.template executeOnEntriesData<EntryProcessor>(entryProcessor, predicate);
 
-                    return std::auto_ptr<EntryArray<K, ResultType> >(
+                    return std::unique_ptr<EntryArray<K, ResultType> >(
                             new client::impl::EntryArrayImpl<K, ResultType>(results, *serializationService));
                 }
 

@@ -28,10 +28,7 @@
 // We need to include this header before easylogging++/easylogging++.h
 #include <winsock2.h>
 #endif
-#include <easylogging++/easylogging++.h>
-
-
-#include <boost/enable_shared_from_this.hpp>
+#include <easylogging++.h>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/config/LoggerConfig.h"
@@ -47,7 +44,7 @@ namespace hazelcast {
     namespace util {
         class LeveledLogger;
 
-        class HAZELCAST_API ILogger : public boost::enable_shared_from_this<ILogger> {
+        class HAZELCAST_API ILogger : public std::enable_shared_from_this<ILogger> {
             friend class LeveledLogger;
 
         public:
@@ -88,7 +85,7 @@ namespace hazelcast {
             const std::string groupName;
             const std::string version;
             std::string prefix;
-            easyloggingpp::Logger *easyLogger;
+            el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
 
             void init();

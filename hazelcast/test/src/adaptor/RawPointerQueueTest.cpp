@@ -121,7 +121,7 @@ namespace hazelcast {
 
                     util::StartedThread t2(testOfferPollThread2, q);
 
-                    std::auto_ptr<std::string> item = q->poll(30 * 1000);
+                    std::unique_ptr<std::string> item = q->poll(30 * 1000);
                     ASSERT_NE(item.get(), (std::string *) NULL);
                     ASSERT_EQ("item1", *item);
                     t2.join();
@@ -139,7 +139,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("peek 2"));
                     ASSERT_TRUE(q->offer("peek 3"));
 
-                    std::auto_ptr<std::string> item = q->peek();
+                    std::unique_ptr<std::string> item = q->peek();
                     ASSERT_NE((std::string *)NULL, item.get());
                     ASSERT_EQ("peek 1", *item);
                 }
@@ -149,7 +149,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("peek 2"));
                     ASSERT_TRUE(q->offer("peek 3"));
 
-                    std::auto_ptr<std::string> item = q->take();
+                    std::unique_ptr<std::string> item = q->take();
                     ASSERT_NE((std::string *)NULL, item.get());
                     ASSERT_EQ("peek 1", *item);
 
@@ -218,7 +218,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("item4"));
                     ASSERT_TRUE(q->offer("item5"));
 
-                    std::auto_ptr<client::DataArray<std::string> > list = q->drainTo(2);
+                    std::unique_ptr<client::DataArray<std::string> > list = q->drainTo(2);
                     ASSERT_EQ((size_t)2U, list->size());
                     ASSERT_NE((std::string *)NULL, list->get(0));
                     ASSERT_NE((std::string *)NULL, list->get(1));
@@ -254,7 +254,7 @@ namespace hazelcast {
                     ASSERT_TRUE(q->offer("item4"));
                     ASSERT_TRUE(q->offer("item5"));
 
-                    std::auto_ptr<client::DataArray<std::string> > array = q->toArray();
+                    std::unique_ptr<client::DataArray<std::string> > array = q->toArray();
                     size_t size = array->size();
                     ASSERT_EQ(5U, size);
                     for (size_t i = 0; i < size; i++) {

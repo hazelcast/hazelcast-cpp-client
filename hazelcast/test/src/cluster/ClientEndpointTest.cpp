@@ -37,16 +37,16 @@ namespace hazelcast {
                 spi::ClientContext context(client);
                 ASSERT_EQ(context.getName(), endpoint.getName());
 
-                boost::shared_ptr<Address> endpointAddress = endpoint.getSocketAddress();
+                std::shared_ptr<Address> endpointAddress = endpoint.getSocketAddress();
                 ASSERT_NOTNULL(endpointAddress.get(), Address);
                 connection::ClientConnectionManagerImpl &connectionManager = context.getConnectionManager();
-                boost::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
+                std::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
                 ASSERT_NOTNULL(connection.get(), connection::Connection);
-                std::auto_ptr<Address> localAddress = connection->getLocalSocketAddress();
+                std::unique_ptr<Address> localAddress = connection->getLocalSocketAddress();
                 ASSERT_NOTNULL(localAddress.get(), Address);
                 ASSERT_EQ(*localAddress, *endpointAddress);
 
-                boost::shared_ptr<protocol::Principal> principal = connectionManager.getPrincipal();
+                std::shared_ptr<protocol::Principal> principal = connectionManager.getPrincipal();
                 ASSERT_NOTNULL(principal.get(), protocol::Principal);
                 ASSERT_NOTNULL(principal->getUuid(), std::string);
                 ASSERT_EQ_PTR((*principal->getUuid()), endpoint.getUuid().get(), std::string);

@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/DistributedObject.h"
 #include "hazelcast/client/EntryListener.h"
@@ -64,7 +64,7 @@ namespace hazelcast {
              * @param value    value to be associated with the specified key.
              * @param ttl      ttl in milliseconds to be associated with the specified key-value pair.
              */
-            virtual boost::shared_ptr<V> put(const K &key, const V &value, int64_t ttl) = 0;
+            virtual std::shared_ptr<V> put(const K &key, const V &value, int64_t ttl) = 0;
 
             /**
             * Copies all of the mappings from the specified map to this map
@@ -100,7 +100,7 @@ namespace hazelcast {
              *
              * @param listener entry listener
              */
-            virtual std::string addEntryListener(const boost::shared_ptr<EntryListener<K, V> > &listener) = 0;
+            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener) = 0;
 
             /**
              * Adds the specified entry listener for the specified key.
@@ -114,7 +114,7 @@ namespace hazelcast {
              * @param listener the entry listener to add
              * @param key      the key to listen to
              */
-            virtual std::string addEntryListener(const boost::shared_ptr<EntryListener<K, V> > &listener, const K &key) = 0;
+            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener, const K &key) = 0;
 
             /**
              * Adds an continuous entry listener for this map. The listener will be notified
@@ -123,7 +123,7 @@ namespace hazelcast {
              * @param listener  the entry listener to add
              * @param predicate the predicate for filtering entries
              */
-            virtual const std::string addEntryListener(const boost::shared_ptr<EntryListener<K, V> > &listener,
+            virtual const std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener,
                     const query::Predicate &predicate) = 0;
 
             /**
@@ -134,7 +134,7 @@ namespace hazelcast {
              * @param predicate the predicate for filtering entries
              * @param key       the key to listen to
              */
-            virtual std::string addEntryListener(const boost::shared_ptr<EntryListener<K, V> > &listener,
+            virtual std::string addEntryListener(const std::shared_ptr<EntryListener<K, V> > &listener,
                     const query::Predicate &predicate, const K &key) = 0;
 
             /**
@@ -150,7 +150,7 @@ namespace hazelcast {
              *
              * @return A collection view of the values contained in this map.
              */
-            virtual boost::shared_ptr<DataArray<V> > values() = 0;
+            virtual std::shared_ptr<DataArray<V> > values() = 0;
 
             /**
              * Returns a lazy {@link LazyEntryArray} view of the mappings contained in this map.<br/>
@@ -164,7 +164,7 @@ namespace hazelcast {
              *
              * @return A lazy set view of the mappings contained in this map.
              */
-            virtual boost::shared_ptr<LazyEntryArray<K, V> > entrySet() = 0;
+            virtual std::shared_ptr<LazyEntryArray<K, V> > entrySet() = 0;
 
             /**
              * Returns a lazy {@link DataArray} view of the key contained in this map.<br/>
@@ -178,7 +178,7 @@ namespace hazelcast {
              *
              * @return A lazy {@link Set} view of the keys contained in this map.
              */
-            virtual boost::shared_ptr<DataArray<K> > keySet() = 0;
+            virtual std::shared_ptr<DataArray<K> > keySet() = 0;
 
             /**
              *
@@ -211,7 +211,7 @@ namespace hazelcast {
              * @param key The key to be used to query from replicated map.
              * @return The value of the key if the key exist, null pointer otherwise.
              */
-            virtual boost::shared_ptr<V> get(const K &key) = 0;
+            virtual std::shared_ptr<V> get(const K &key) = 0;
 
             /**
              *
@@ -219,14 +219,14 @@ namespace hazelcast {
              * @param value The value of the key
              * @return The previous value if the key existed in the map or null pointer otherwise.
              */
-            virtual boost::shared_ptr<V> put(const K &key, const V &value) = 0;
+            virtual std::shared_ptr<V> put(const K &key, const V &value) = 0;
 
             /**
              *
              * @param key The key of the entry to be removed.
              * @return The value associated with the removed key.
              */
-            virtual boost::shared_ptr<V> remove(const K &key) = 0;
+            virtual std::shared_ptr<V> remove(const K &key) = 0;
         };
     }
 }

@@ -65,7 +65,7 @@ namespace hazelcast {
                 /**
                 * @return copy of internal byte array
                 */
-                std::auto_ptr<std::vector<byte> > toByteArray();
+                std::unique_ptr<std::vector<byte> > toByteArray();
 
                 /**
                 * Writes all the bytes in array to stream
@@ -188,7 +188,7 @@ namespace hazelcast {
                     } else {
                         int32_t type = getHazelcastTypeId(object);
 
-                        boost::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
+                        std::shared_ptr<SerializerBase> serializer = serializerHolder->serializerFor(type);
 
                         if (NULL == serializer.get()) {
                             const std::string message = "No serializer found for serializerId :"+
@@ -197,7 +197,7 @@ namespace hazelcast {
                             throw exception::HazelcastSerializationException("ObjectDataOutput::toData", message);
                         }
 
-                        boost::shared_ptr<StreamSerializer> streamSerializer = boost::static_pointer_cast<StreamSerializer>(
+                        std::shared_ptr<StreamSerializer> streamSerializer = std::static_pointer_cast<StreamSerializer>(
                                 serializer);
 
                         writeInt(streamSerializer->getHazelcastTypeId());
@@ -231,7 +231,7 @@ namespace hazelcast {
                  */
                 template <typename T>
                 void writeInternal(const T *object,
-                                   boost::shared_ptr<StreamSerializer> &streamSerializer) {
+                                   std::shared_ptr<StreamSerializer> &streamSerializer) {
                     int32_t typeId = streamSerializer->getHazelcastTypeId();
                     switch (typeId) {
                         case serialization::pimpl::SerializationConstants::CONSTANT_TYPE_DATA: {
@@ -254,7 +254,7 @@ namespace hazelcast {
 
             template <>
             HAZELCAST_API void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
-                               boost::shared_ptr<StreamSerializer> &streamSerializer);
+                               std::shared_ptr<StreamSerializer> &streamSerializer);
         }
     }
 }

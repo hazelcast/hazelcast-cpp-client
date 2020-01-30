@@ -16,7 +16,6 @@
 
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
 
 #include "hazelcast/client/aws/utility/CloudUtility.h"
 #include "hazelcast/client/config/ClientAwsConfig.h"
@@ -27,7 +26,7 @@ namespace hazelcast {
         namespace aws {
             namespace utility {
                 std::map<std::string, std::string> CloudUtility::unmarshalTheResponse(std::istream &stream,
-                        util::ILogger &logger) {
+                                                                                      util::ILogger &logger) {
                     std::map<std::string, std::string> privatePublicPairs;
 
                     pt::ptree tree;
@@ -41,32 +40,24 @@ namespace hazelcast {
 
                     // Use get_child to find the node containing the reservation set, and iterate over
                     // its children.
-                    BOOST_FOREACH(pt::ptree::value_type & item,
-                                  tree.get_child("DescribeInstancesResponse.reservationSet")) {
-                                    BOOST_FOREACH(pt::ptree::value_type & instanceItem,
-                                                  item.second.get_child("instancesSet")) {
-                                                    boost::optional<std::string> privateIp = instanceItem.second.get_optional<std::string>(
-                                                            "privateIpAddress");
-                                                    boost::optional<std::string> publicIp = instanceItem.second.get_optional<std::string>(
-                                                            "ipAddress");
-                                                    std::string prIp = privateIp.value_or("");
-                                                    std::string pubIp = publicIp.value_or("");
+                    for (pt::ptree::value_type &item : tree.get_child("DescribeInstancesResponse.reservationSet")) {
+                        for (pt::ptree::value_type &instanceItem : item.second.get_child("instancesSet")) {
+                            auto prIp = instanceItem.second.get_optional<std::string>("privateIpAddress").value_or("");
+                            auto pubIp = instanceItem.second.get_optional<std::string>("ipAddress").value_or("");
 
-                                                    if (privateIp) {
-                                                        privatePublicPairs[prIp] = pubIp;
-                                                        if (logger.isFinestEnabled()) {
-                                                            boost::optional<std::string> instanceName = instanceItem.second.get_optional<std::string>(
-                                                                    "tagset.item.value");
+                            if (prIp.empty()) {
+                                privatePublicPairs[prIp] = pubIp;
+                                if (logger.isFinestEnabled()) {
+                                    auto instName = instanceItem.second.get_optional<std::string>(
+                                            "tagset.item.value").value_or("");
 
-                                                            std::string instName = instanceName.value_or("");
-
-                                                            logger.finest(
-                                                                    std::string("Accepting EC2 instance [") + instName +
-                                                                    "][" + prIp + "]");
-                                                        }
-                                                    }
-                                                }
+                                    logger.finest(
+                                            std::string("Accepting EC2 instance [") + instName +
+                                            "][" + prIp + "]");
                                 }
+                            }
+                        }
+                    }
                     return privatePublicPairs;
                 }
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <boost/algorithm/string/replace.hpp>
+#include <regex>
 
 #include "hazelcast/client/aws/AWSClient.h"
 #include "hazelcast/client/aws/impl/DescribeInstances.h"
@@ -31,7 +31,10 @@ namespace hazelcast {
                         throw exception::InvalidConfigurationException("AWSClient::AWSClient",
                                                                        "HostHeader should start with \"ec2.\" prefix");
                     }
-                    boost::replace_all(this->endpoint, "ec2.", std::string("ec2.") + awsConfig.getRegion() + ".");
+                    std::regex re("ec2\\.");
+                    std::string replacement("ec2.");
+                    replacement += awsConfig.getRegion() + "\\.";
+                    endpoint = std::regex_replace(endpoint, re, replacement);
                 }
             }
 

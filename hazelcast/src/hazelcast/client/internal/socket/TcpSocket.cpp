@@ -63,7 +63,7 @@ namespace hazelcast {
                         setSocketOptions(*socketOptions);
                     }
 
-                    isOpen = true;
+                    isOpen.store(true);
                 }
 
                 TcpSocket::TcpSocket(int socketId)
@@ -240,7 +240,8 @@ namespace hazelcast {
                 }
 
                 void TcpSocket::close() {
-                    if (isOpen.compareAndSet(true, false)) {
+                    bool expected = true;
+                    if (isOpen.compare_exchange_strong(expected, false)) {
                         if (serverInfo != NULL)
                             ::freeaddrinfo(serverInfo);
 
@@ -276,7 +277,7 @@ namespace hazelcast {
                     throw client::exception::IOException(std::string("TcpSocket::") + methodName, errorMsg);
                 }
 
-                std::auto_ptr<Address> TcpSocket::localSocketAddress() const {
+                std::unique_ptr<Address> TcpSocket::localSocketAddress() const {
                     struct sockaddr_in sin;
                     socklen_t addrlen = sizeof(sin);
                     if (getsockname(socketId, (struct sockaddr *) &sin, &addrlen) == 0 &&
@@ -284,9 +285,9 @@ namespace hazelcast {
                         addrlen == sizeof(sin)) {
                         int localPort = ntohs(sin.sin_port);
                         char *localIp = inet_ntoa(sin.sin_addr);
-                        return std::auto_ptr<Address>(new Address(localIp ? localIp : "", localPort));
+                        return std::unique_ptr<Address>(new Address(localIp ? localIp : "", localPort));
                     } else {
-                        return std::auto_ptr<Address>();
+                        return std::unique_ptr<Address>();
                     }
                 }
 

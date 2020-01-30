@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_PROXY_FLAKEIDGENERATORPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_FLAKEIDGENERATORPROXY_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/flakeidgen/impl/AutoBatcher.h"
 #include "hazelcast/client/impl/IdGeneratorInterface.h"
@@ -56,7 +56,7 @@ namespace hazelcast {
 
             private:
 
-                boost::shared_ptr<flakeidgen::impl::AutoBatcher> batcher;
+                std::shared_ptr<flakeidgen::impl::AutoBatcher> batcher;
             };
         }
     }

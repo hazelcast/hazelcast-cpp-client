@@ -32,7 +32,7 @@ int main() {
 
     for (std::vector<std::pair<std::string, Employee> >::const_iterator it = entries.begin();
          it != entries.end(); ++it) {
-        boost::shared_ptr<Employee> employee = employees.get(it->first);
+        std::shared_ptr<Employee> employee = employees.get(it->first);
         employee->incSalary(10);
         employees.put(it->first, *employee);
     }

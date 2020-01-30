@@ -90,7 +90,7 @@ namespace hazelcast {
                     sleepingSocket->setBlocking(false);
                     wakeUpSocketSet.insertSocket(sleepingSocket.get());
                     wakeUpListenerSocketId = sleepingSocket->getSocketId();
-                    isAlive = true;
+                    isAlive.store(true);
                     return true;
                 } else {
                     logger.severe("IOSelector::initListenSocket " + std::string(strerror(errno)));
@@ -99,7 +99,8 @@ namespace hazelcast {
             }
 
             void IOSelector::shutdown() {
-                if (!isAlive.compareAndSet(true, false)) {
+                bool expected = false;
+                if (!isAlive.compare_exchange_strong(expected, false)) {
                     return;
                 }
                 try {

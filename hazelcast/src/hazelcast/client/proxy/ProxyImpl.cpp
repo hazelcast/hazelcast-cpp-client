@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 01/10/14.
 //
 
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"
@@ -44,71 +44,71 @@ namespace hazelcast {
                 return getContext().getPartitionService().getPartitionId(key);
             }
 
-            boost::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
-                    std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
+            std::shared_ptr<protocol::ClientMessage> ProxyImpl::invokeOnPartition(
+                    std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeAndGetFuture(request,
                                                                                                      partitionId);
                     return future->get();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);
                 }
-                return boost::shared_ptr<protocol::ClientMessage>();
+                return std::shared_ptr<protocol::ClientMessage>();
             }
 
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
-            ProxyImpl::invokeAndGetFuture(std::auto_ptr<protocol::ClientMessage> request, int partitionId) {
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            ProxyImpl::invokeAndGetFuture(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
                 try {
-                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                    std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName(), partitionId);
                     return invocation->invoke();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);
                 }
-                return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+                return std::shared_ptr<spi::impl::ClientInvocationFuture>();
             }
 
-            boost::shared_ptr<spi::impl::ClientInvocationFuture>
-            ProxyImpl::invokeOnKeyOwner(std::auto_ptr<protocol::ClientMessage> request,
+            std::shared_ptr<spi::impl::ClientInvocationFuture>
+            ProxyImpl::invokeOnKeyOwner(std::unique_ptr<protocol::ClientMessage> &request,
                                         const serialization::pimpl::Data &keyData) {
                 int partitionId = getPartitionId(keyData);
-                boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), partitionId);
                 return invocation->invoke();
             }
 
-            boost::shared_ptr<protocol::ClientMessage>
-            ProxyImpl::invoke(std::auto_ptr<protocol::ClientMessage> request) {
+            std::shared_ptr<protocol::ClientMessage>
+            ProxyImpl::invoke(std::unique_ptr<protocol::ClientMessage> &request) {
                 try {
-                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                    std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName());
                     return invocation->invoke()->get();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);
                 }
-                return boost::shared_ptr<protocol::ClientMessage>();
+                return std::shared_ptr<protocol::ClientMessage>();
             }
 
-            boost::shared_ptr<protocol::ClientMessage>
-            ProxyImpl::invokeOnAddress(std::auto_ptr<protocol::ClientMessage> request, const Address &address) {
+            std::shared_ptr<protocol::ClientMessage>
+            ProxyImpl::invokeOnAddress(std::unique_ptr<protocol::ClientMessage> &request, const Address &address) {
                 try {
 
-                    boost::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
+                    std::shared_ptr<spi::impl::ClientInvocation> invocation = spi::impl::ClientInvocation::create(
                             getContext(), request, getName(), address);
                     return invocation->invoke()->get();
                 } catch (exception::IException &e) {
                     util::ExceptionUtil::rethrow(e);
                 }
-                return boost::shared_ptr<protocol::ClientMessage>();
+                return std::shared_ptr<protocol::ClientMessage>();
             }
 
             std::vector<hazelcast::client::TypedData>
             ProxyImpl::toTypedDataCollection(const std::vector<serialization::pimpl::Data> &values) {
                 std::vector<hazelcast::client::TypedData> result;
                 typedef std::vector<serialization::pimpl::Data> VALUES;
-                BOOST_FOREACH(const VALUES::value_type &value, values) {
+                for (const VALUES::value_type &value : values) {
                                 result.push_back(TypedData(
-                                        std::auto_ptr<serialization::pimpl::Data>(
+                                        std::unique_ptr<serialization::pimpl::Data>(
                                                 new serialization::pimpl::Data(value)),
                                         getContext().getSerializationService()));
                             }
@@ -119,19 +119,19 @@ namespace hazelcast {
                     const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > &dataEntrySet) {
                 typedef std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > ENTRIES_DATA;
                 std::vector<std::pair<TypedData, TypedData> > result;
-                BOOST_FOREACH(const ENTRIES_DATA::value_type &value, dataEntrySet) {
+                for (const ENTRIES_DATA::value_type &value : dataEntrySet) {
                                 serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
-                                TypedData keyData(std::auto_ptr<serialization::pimpl::Data>(
+                                TypedData keyData(std::unique_ptr<serialization::pimpl::Data>(
                                         new serialization::pimpl::Data(value.first)), serializationService);
-                                TypedData valueData(std::auto_ptr<serialization::pimpl::Data>(
+                                TypedData valueData(std::unique_ptr<serialization::pimpl::Data>(
                                         new serialization::pimpl::Data(value.second)), serializationService);
                                 result.push_back(std::make_pair(keyData, valueData));
                             }
                 return result;
             }
 
-            boost::shared_ptr<serialization::pimpl::Data> ProxyImpl::toShared(const serialization::pimpl::Data &data) {
-                return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+            std::shared_ptr<serialization::pimpl::Data> ProxyImpl::toShared(const serialization::pimpl::Data &data) {
+                return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
             }
 
         }

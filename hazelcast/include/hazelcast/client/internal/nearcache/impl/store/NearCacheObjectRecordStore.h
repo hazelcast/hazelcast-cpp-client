@@ -57,46 +57,46 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &valueData) {
-                                boost::shared_ptr<serialization::pimpl::Data> data = boost::const_pointer_cast<serialization::pimpl::Data>(
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                                    const std::shared_ptr<serialization::pimpl::Data> &valueData) {
+                                std::shared_ptr<serialization::pimpl::Data> data = std::const_pointer_cast<serialization::pimpl::Data>(
                                         valueData);
-                                const boost::shared_ptr<V> value = ANCRS::toValue(data);
+                                const std::shared_ptr<V> value = ANCRS::toValue(data);
                                 return valueToRecordInternal(value);
                             }
 
                             //@Override
-                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
-                                    const boost::shared_ptr<V> &value) {
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecord(
+                                    const std::shared_ptr<V> &value) {
                                 return valueToRecordInternal(value);
                             }
 
                             //@Override
-                            boost::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
-                                const boost::shared_ptr<V> value = record->getValue();
+                            std::shared_ptr<V> recordToValue(const record::NearCacheObjectRecord<V> *record) {
+                                const std::shared_ptr<V> value = record->getValue();
                                 if (value.get() == NULL) {
-                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
+                                    return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return value;
                             }
 
                             //@Override
-                            void putToRecord(boost::shared_ptr<record::NearCacheObjectRecord<V> > &record,
-                                             const boost::shared_ptr<V> &value) {
+                            void putToRecord(std::shared_ptr<record::NearCacheObjectRecord<V> > &record,
+                                             const std::shared_ptr<V> &value) {
                                 record->setValue(value);
                             }
 
                         private:
-                            std::auto_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
-                                    const boost::shared_ptr<V> &value) {
+                            std::unique_ptr<record::NearCacheObjectRecord<V> > valueToRecordInternal(
+                                    const std::shared_ptr<V> &value) {
                                 int64_t creationTime = util::currentTimeMillis();
                                 if (ANCRS::timeToLiveMillis > 0) {
-                                    return std::auto_ptr<record::NearCacheObjectRecord<V> >(
+                                    return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,
                                                                                  creationTime +
                                                                                  ANCRS::timeToLiveMillis));
                                 } else {
-                                    return std::auto_ptr<record::NearCacheObjectRecord<V> >(
+                                    return std::unique_ptr<record::NearCacheObjectRecord<V> >(
                                             new record::NearCacheObjectRecord<V>(value, creationTime,
                                                                                  NearCacheRecord<V>::TIME_NOT_SET));
                                 }

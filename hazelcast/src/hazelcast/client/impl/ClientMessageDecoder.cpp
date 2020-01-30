@@ -21,15 +21,14 @@
 namespace hazelcast {
     namespace client {
         namespace impl {
-            const boost::shared_ptr<ClientMessageDecoder<void> > VoidMessageDecoder::singleton(new VoidMessageDecoder);
-
-            boost::shared_ptr<void>
-            VoidMessageDecoder::decodeClientMessage(const boost::shared_ptr<protocol::ClientMessage> &clientMessage,
+            std::shared_ptr<void>
+            VoidMessageDecoder::decodeClientMessage(const std::shared_ptr<protocol::ClientMessage> &clientMessage,
                                                     serialization::pimpl::SerializationService &serializationService) {
-                return boost::shared_ptr<void>();
+                return std::shared_ptr<void>();
             }
 
-            const boost::shared_ptr<ClientMessageDecoder<void> > &VoidMessageDecoder::instance() {
+            const std::shared_ptr<ClientMessageDecoder<void> > &VoidMessageDecoder::instance() {
+                static std::shared_ptr<ClientMessageDecoder<void> > singleton(new VoidMessageDecoder);
                 return singleton;
             }
         }

@@ -43,7 +43,7 @@ namespace hazelcast {
                 sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
                                                asio::ssl::context::single_dh_use);
 
-                socket = std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
+                socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
                         new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
                 #endif // HZ_BUILD_WITH_SSL
             }

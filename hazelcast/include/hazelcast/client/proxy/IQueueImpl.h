@@ -18,7 +18,7 @@
 
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace hazelcast {
     namespace client {
@@ -40,7 +40,7 @@ namespace hazelcast {
 
                 void put(const serialization::pimpl::Data& element);
 
-                std::auto_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
+                std::unique_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
 
                 int remainingCapacity();
 
@@ -52,7 +52,7 @@ namespace hazelcast {
 
                 std::vector<serialization::pimpl::Data> drainToData();
 
-                std::auto_ptr<serialization::pimpl::Data> peekData();
+                std::unique_ptr<serialization::pimpl::Data> peekData();
 
                 int size();
 
@@ -74,11 +74,11 @@ namespace hazelcast {
                 public:
                     QueueListenerMessageCodec(const std::string &name, bool includeValue);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -90,7 +90,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

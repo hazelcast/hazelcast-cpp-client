@@ -31,7 +31,7 @@ namespace hazelcast {
             }
 
             Ringbuffer::Ringbuffer(const Ringbuffer &rhs) : proxy::ProxyImpl(rhs), partitionId(rhs.partitionId), bufferCapacity(
-                    const_cast<Ringbuffer &>(rhs).bufferCapacity.get()) {
+                    const_cast<Ringbuffer &>(rhs).bufferCapacity.load()) {
             }
 
             Ringbuffer::~Ringbuffer() {
@@ -39,7 +39,7 @@ namespace hazelcast {
 
             int64_t Ringbuffer::capacity() {
                 if (-1 == bufferCapacity) {
-                    std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferCapacityCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferCapacityCodec::encodeRequest(
                             getName());
                     bufferCapacity = invokeAndGetResult<int64_t, protocol::codec::RingbufferCapacityCodec::ResponseParameters>(
                             msg, partitionId);
@@ -48,28 +48,28 @@ namespace hazelcast {
             }
 
             int64_t Ringbuffer::size() {
-                std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferSizeCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferSizeCodec::encodeRequest(
                         getName());
                 return invokeAndGetResult<int64_t, protocol::codec::RingbufferSizeCodec::ResponseParameters>(msg,
                                                                                                              partitionId);
             }
 
             int64_t Ringbuffer::tailSequence() {
-                std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferTailSequenceCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferTailSequenceCodec::encodeRequest(
                         getName());
                 return invokeAndGetResult<int64_t, protocol::codec::RingbufferTailSequenceCodec::ResponseParameters>(
                         msg, partitionId);
             }
 
             int64_t Ringbuffer::headSequence() {
-                std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferHeadSequenceCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferHeadSequenceCodec::encodeRequest(
                         getName());
                 return invokeAndGetResult<int64_t, protocol::codec::RingbufferHeadSequenceCodec::ResponseParameters>(
                         msg, partitionId);
             }
 
             int64_t Ringbuffer::remainingCapacity() {
-                std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferRemainingCapacityCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferRemainingCapacityCodec::encodeRequest(
                         getName());
                 return invokeAndGetResult<int64_t, protocol::codec::RingbufferRemainingCapacityCodec::ResponseParameters>(
                         msg, partitionId);
@@ -78,11 +78,11 @@ namespace hazelcast {
             TypedData Ringbuffer::readOne(int64_t sequence) {
                 checkSequence(sequence);
 
-                std::auto_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
+                std::unique_ptr<protocol::ClientMessage> msg = protocol::codec::RingbufferReadOneCodec::encodeRequest(
                         getName(), sequence);
 
-                std::auto_ptr<serialization::pimpl::Data> itemData = invokeAndGetResult<
-                        std::auto_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
+                std::unique_ptr<serialization::pimpl::Data> itemData = invokeAndGetResult<
+                        std::unique_ptr<serialization::pimpl::Data>, protocol::codec::RingbufferReadOneCodec::ResponseParameters>(
                         msg, partitionId);
 
                 return TypedData(itemData, getContext().getSerializationService());

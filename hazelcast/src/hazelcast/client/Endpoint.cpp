@@ -17,15 +17,15 @@
 
 namespace hazelcast {
     namespace client {
-        Endpoint::Endpoint(boost::shared_ptr<std::string> uuid, boost::shared_ptr<Address> socketAddress) : uuid(uuid),
+        Endpoint::Endpoint(std::shared_ptr<std::string> uuid, std::shared_ptr<Address> socketAddress) : uuid(uuid),
                                                                                                             socketAddress(
                                                                                                                     socketAddress) {}
 
-        const boost::shared_ptr<std::string> &Endpoint::getUuid() const {
+        const std::shared_ptr<std::string> &Endpoint::getUuid() const {
             return uuid;
         }
 
-        const boost::shared_ptr<Address> &Endpoint::getSocketAddress() const {
+        const std::shared_ptr<Address> &Endpoint::getSocketAddress() const {
             return socketAddress;
         }
     }

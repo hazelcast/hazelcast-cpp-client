@@ -118,7 +118,7 @@ namespace hazelcast {
                  * @return read object from input data
                  */
                 virtual void *read(ObjectDataInput &in) {
-                    std::auto_ptr<T> object(new T);
+                    std::unique_ptr<T> object(new T);
                     read(in, *object);
                     return object.release();
                 }

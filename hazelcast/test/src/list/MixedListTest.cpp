@@ -52,7 +52,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                     instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
@@ -114,7 +114,7 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add<std::string>("item2"));
                 list->add<std::string>(0, "item3");
                 ASSERT_EQ(3, list->size());
-                std::auto_ptr<std::string> temp = list->IList::set<std::string>(2, "item4").get<std::string>();
+                std::unique_ptr<std::string> temp = list->IList::set<std::string>(2, "item4").get<std::string>();
                 ASSERT_EQ("item2", *temp);
 
                 ASSERT_EQ(3, list->size());

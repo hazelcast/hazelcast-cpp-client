@@ -79,7 +79,7 @@ namespace hazelcast {
             */
             std::string addMessageListener(topic::ReliableMessageListener<E> &listener) {
                 int id = ++runnerCounter;
-                boost::shared_ptr<MessageRunner < E> >
+                std::shared_ptr<MessageRunner < E> >
                 runner(new MessageRunner<E>(id, &listener, ringbuffer.get(), getName(),
                                             &getContext().getSerializationService(), config, logger));
                 runnersMap.put(id, runner);
@@ -97,7 +97,7 @@ namespace hazelcast {
             */
             bool removeMessageListener(const std::string &registrationId) {
                 int id = util::IOUtil::to_value<int>(registrationId);
-                boost::shared_ptr<MessageRunner < E> > runner = runnersMap.get(id);
+                std::shared_ptr<MessageRunner < E> > runner = runnersMap.get(id);
                 if (NULL == runner) {
                     return false;
                 }
@@ -108,8 +108,8 @@ namespace hazelcast {
         protected:
             virtual void onDestroy() {
                 // cancel all runners
-                std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > > runners = runnersMap.clear();
-                for (typename std::vector<std::pair<int, boost::shared_ptr<MessageRunner < E> > > >
+                std::vector<std::pair<int, std::shared_ptr<MessageRunner < E> > > > runners = runnersMap.clear();
+                for (typename std::vector<std::pair<int, std::shared_ptr<MessageRunner < E> > > >
                      ::const_iterator it = runners.begin();it != runners.end();++it) {
                     it->second->cancel();
                 }
@@ -120,7 +120,7 @@ namespace hazelcast {
 
         private:
             ReliableTopic(const std::string &instanceName, spi::ClientContext *context,
-                          boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
+                          std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb)
                     : proxy::ReliableTopicImpl(instanceName, context, rb) {
             }
 
@@ -166,7 +166,7 @@ namespace hazelcast {
 
                 // This method is called from the provided executor.
                 void onResponse(
-                        const boost::shared_ptr<DataArray<topic::impl::reliable::ReliableTopicMessage> > &allMessages) {
+                        const std::shared_ptr<DataArray<topic::impl::reliable::ReliableTopicMessage> > &allMessages) {
                     if (cancelled) {
                         return;
                     }
@@ -193,7 +193,7 @@ namespace hazelcast {
                 }
 
                 // This method is called from the provided executor.
-                void onFailure(const boost::shared_ptr<exception::IException> &throwable) {
+                void onFailure(const std::shared_ptr<exception::IException> &throwable) {
                     if (cancelled) {
                         return;
                     }
@@ -255,7 +255,7 @@ namespace hazelcast {
                 }
 
                 void cancel() {
-                    cancelled = true;
+                    cancelled.store(true);
                     executor.stop();
                 }
 
@@ -265,14 +265,14 @@ namespace hazelcast {
                     listener->onMessage(toMessage(message));
                 }
 
-                std::auto_ptr<topic::Message<T> > toMessage(const topic::impl::reliable::ReliableTopicMessage *m) {
-                    boost::shared_ptr<Member> member;
+                std::unique_ptr<topic::Message<T> > toMessage(const topic::impl::reliable::ReliableTopicMessage *m) {
+                    std::shared_ptr<Member> member;
                     const Address *addr = m->getPublisherAddress();
                     if (addr != NULL) {
-                        member = boost::shared_ptr<Member>(new Member(*addr));
+                        member = std::shared_ptr<Member>(new Member(*addr));
                     }
-                    std::auto_ptr<T> msg = serializationService->toObject<T>(m->getPayload());
-                    return std::auto_ptr<topic::Message<T> >(
+                    std::unique_ptr<T> msg = serializationService->toObject<T>(m->getPayload());
+                    return std::unique_ptr<topic::Message<T> >(
                             new topic::impl::MessageImpl<T>(name, msg, m->getPublishTime(), member));
                 }
 

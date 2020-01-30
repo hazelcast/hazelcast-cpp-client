@@ -54,7 +54,7 @@ namespace hazelcast {
                     class MapGetInterceptor : public serialization::IdentifiedDataSerializable {
                     public:
                         MapGetInterceptor(const std::string &prefix) : prefix(
-                                std::auto_ptr<std::string>(new std::string(prefix))) {}
+                                std::unique_ptr<std::string>(new std::string(prefix))) {}
 
                         virtual int getFactoryId() const {
                             return 666;
@@ -73,7 +73,7 @@ namespace hazelcast {
                         }
 
                     private:
-                        std::auto_ptr<std::string> prefix;
+                        std::unique_ptr<std::string> prefix;
                     };
 
                     /**
@@ -118,7 +118,7 @@ namespace hazelcast {
 
                     static void SetUpTestCase() {
                         #ifdef HZ_BUILD_WITH_SSL
-                        sslFactory = new HazelcastServerFactory(getSslFilePath());
+                        sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                         instance = new HazelcastServer(*sslFactory);
                         instance2 = new HazelcastServer(*sslFactory);
                         #else
@@ -490,7 +490,7 @@ namespace hazelcast {
                     for (int i = 0; i < 10; i++) {
                         std::string key = "key";
                         key += util::IOUtil::to_string(i);
-                        std::auto_ptr<std::string> temp = imap->get(key);
+                        std::unique_ptr<std::string> temp = imap->get(key);
 
                         std::string value = "value";
                         value += util::IOUtil::to_string(i);
@@ -500,14 +500,14 @@ namespace hazelcast {
 
                 TEST_F(RawPointerMapTest, testRemoveAndDelete) {
                     fillMap();
-                    std::auto_ptr<std::string> temp = imap->remove("key10");
+                    std::unique_ptr<std::string> temp = imap->remove("key10");
                     ASSERT_EQ(temp.get(), (std::string *) NULL);
                     imap->deleteEntry("key9");
                     ASSERT_EQ(imap->size(), 9);
                     for (int i = 0; i < 9; i++) {
                         std::string key = "key";
                         key += util::IOUtil::to_string(i);
-                        std::auto_ptr<std::string> temp2 = imap->remove(key);
+                        std::unique_ptr<std::string> temp2 = imap->remove(key);
                         std::string value = "value";
                         value += util::IOUtil::to_string(i);
                         ASSERT_EQ(*temp2, value);
@@ -532,7 +532,7 @@ namespace hazelcast {
                     imap->removeAll(
                             query::EqualPredicate<std::string>(query::QueryConstants::getKeyAttributeName(), "key5"));
 
-                    std::auto_ptr<std::string> value = imap->get("key5");
+                    std::unique_ptr<std::string> value = imap->get("key5");
 
                     ASSERT_NULL("key5 should not exist", value.get(), std::string);
 
@@ -559,7 +559,7 @@ namespace hazelcast {
 
                     for (int i = 0; i < 100; i++) {
                         std::string expected = util::IOUtil::to_string(i);
-                        std::auto_ptr<std::string> actual = imap->get(util::IOUtil::to_string(i));
+                        std::unique_ptr<std::string> actual = imap->get(util::IOUtil::to_string(i));
                         ASSERT_EQ(expected, *actual);
                     }
 
@@ -567,12 +567,12 @@ namespace hazelcast {
                     tempSet.insert(util::IOUtil::to_string(1));
                     tempSet.insert(util::IOUtil::to_string(3));
 
-                    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
+                    std::unique_ptr<hazelcast::client::EntryArray<std::string, std::string> > m2 = imap->getAll(tempSet);
 
                     ASSERT_EQ(2U, m2->size());
-                    std::auto_ptr<std::string> key1 = m2->releaseKey(0);
+                    std::unique_ptr<std::string> key1 = m2->releaseKey(0);
                     ASSERT_NE((std::string *) NULL, key1.get());
-                    std::auto_ptr<std::string> value1 = m2->releaseValue(0);
+                    std::unique_ptr<std::string> value1 = m2->releaseValue(0);
                     ASSERT_NE((std::string *) NULL, value1.get());
                     ASSERT_EQ(*key1, *value1);
                     ASSERT_TRUE(*key1 == "1" || *key1 == "3");
@@ -604,7 +604,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testGetEntryViewForNonExistentData) {
-                    std::auto_ptr<MapEntryView<std::string, std::string> > view = imap->getEntryView("non-existent");
+                    std::unique_ptr<MapEntryView<std::string, std::string> > view = imap->getEntryView("non-existent");
 
                     ASSERT_EQ((MapEntryView<std::string, std::string> *) NULL, view.get());
 
@@ -622,7 +622,7 @@ namespace hazelcast {
                     std::string id = imap->addEntryListener(sampleEntryListener, false);
 
                     imap->put("key1", "value1", 1000);
-                    std::auto_ptr<std::string> temp = imap->get("key1");
+                    std::unique_ptr<std::string> temp = imap->get("key1");
                     // If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
@@ -644,7 +644,7 @@ namespace hazelcast {
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
                     map.put("key1", "value1");
-                    std::auto_ptr<std::string> temp = map.get("key1");
+                    std::unique_ptr<std::string> temp = map.get("key1");
                     // If the server response comes later than 1 second after put, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
@@ -657,7 +657,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testPutIfAbsent) {
-                    std::auto_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
+                    std::unique_ptr<std::string> o = imap->putIfAbsent("key1", "value1");
                     ASSERT_EQ(o.get(), (std::string *) NULL);
                     ASSERT_EQ("value1", *(imap->putIfAbsent("key1", "value3")));
                 }
@@ -693,7 +693,7 @@ namespace hazelcast {
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
                     map.set("key1", "value1", 1000);
-                    std::auto_ptr<std::string> temp = map.get("key1");
+                    std::unique_ptr<std::string> temp = map.get("key1");
                     // If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
@@ -715,7 +715,7 @@ namespace hazelcast {
                     std::string id = map.addEntryListener(sampleEntryListener, false);
 
                     map.set("key1", "value1");
-                    std::auto_ptr<std::string> temp = map.get("key1");
+                    std::unique_ptr<std::string> temp = map.get("key1");
                     // If the server response comes later than 1 second, the entry may have expired already.
                     if (temp.get()) {
                         ASSERT_EQ(*temp, "value1");
@@ -796,7 +796,7 @@ namespace hazelcast {
 
                     fillMap();
                     query::SqlPredicate predicate("this == value1");
-                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempVector = imap->values(predicate);
+                    std::unique_ptr<hazelcast::client::DataArray<std::string> > tempVector = imap->values(predicate);
                     ASSERT_EQ(1U, tempVector->size());
 
                     ASSERT_EQ("value1", *tempVector->get(0));
@@ -808,7 +808,7 @@ namespace hazelcast {
                         intMap->put(i, 2 * i);
                     }
 
-                    std::auto_ptr<DataArray<int> > values = intMap->values();
+                    std::unique_ptr<DataArray<int> > values = intMap->values();
                     ASSERT_EQ(numItems, (int) values->size());
                     std::vector<int> actualValues;
                     for (int i = 0; i < (int) values->size(); ++i) {
@@ -1026,7 +1026,7 @@ namespace hazelcast {
 
                     // NotPredicate
                     // !(5 <= key <= 10)
-                    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
                     query::NotPredicate notPredicate(bp);
@@ -1048,9 +1048,9 @@ namespace hazelcast {
 
                     // AndPredicate
                     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     values = intMap->values(query::AndPredicate().add(bp).add(inPred));
                     ASSERT_EQ(1, (int) values->size());
@@ -1058,9 +1058,9 @@ namespace hazelcast {
 
                     // OrPredicate
                     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    inPred = std::auto_ptr<query::Predicate>(
+                    inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     values = intMap->values(query::OrPredicate().add(bp).add(inPred));
                     ASSERT_EQ(7, (int) values->size());
@@ -1090,7 +1090,7 @@ namespace hazelcast {
 
                     // LikePredicate
                     // value LIKE "value1" : {"value1"}
-                    std::auto_ptr<DataArray<std::string> > strValues = imap->keySet(
+                    std::unique_ptr<DataArray<std::string> > strValues = imap->keySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strValues->size());
                     ASSERT_NE((const std::string *) NULL, strValues->get(0));
@@ -1166,7 +1166,7 @@ namespace hazelcast {
 
                     query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                    std::auto_ptr<DataArray<int> > values = intMap->values(predicate);
+                    std::unique_ptr<DataArray<int> > values = intMap->values(predicate);
                     ASSERT_EQ(predSize, (int) values->size());
                     for (int i = 0; i < predSize; ++i) {
                         ASSERT_NE((const int *) NULL, values->get(i));
@@ -1259,7 +1259,7 @@ namespace hazelcast {
                     }
 
                     // test PagingPredicate with inner predicate (value < 10)
-                    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
                                                                  true)));
@@ -1301,9 +1301,9 @@ namespace hazelcast {
 
                     predSize = 2;
                     query::PagingPredicate<int, Employee> predicate3(
-                            std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
+                            std::unique_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
                             (size_t) predSize);
-                    std::auto_ptr<DataArray<Employee> > result = employees->values(predicate3);
+                    std::unique_ptr<DataArray<Employee> > result = employees->values(predicate3);
                     ASSERT_EQ(2, (int) result->size());
                     ASSERT_NE((const Employee *) NULL, (*result)[0]);
                     ASSERT_NE((const Employee *) NULL, (*result)[1]);
@@ -1325,7 +1325,7 @@ namespace hazelcast {
                         intMap->put(i, 2 * i);
                     }
 
-                    std::auto_ptr<DataArray<int> > values = intMap->keySet();
+                    std::unique_ptr<DataArray<int> > values = intMap->keySet();
                     ASSERT_EQ(numItems, (int) values->size());
                     std::vector<int> actualValues;
                     for (int i = 0; i < (int) values->size(); ++i) {
@@ -1543,7 +1543,7 @@ namespace hazelcast {
 
                     // NotPredicate
                     // !(5 <= key <= 10)
-                    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
                     query::NotPredicate notPredicate(bp);
@@ -1565,9 +1565,9 @@ namespace hazelcast {
 
                     // AndPredicate
                     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     values = intMap->keySet(query::AndPredicate().add(bp).add(inPred));
                     ASSERT_EQ(1, (int) values->size());
@@ -1575,9 +1575,9 @@ namespace hazelcast {
 
                     // OrPredicate
                     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    inPred = std::auto_ptr<query::Predicate>(
+                    inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     values = intMap->keySet(query::OrPredicate().add(bp).add(inPred));
                     ASSERT_EQ(7, (int) values->size());
@@ -1607,7 +1607,7 @@ namespace hazelcast {
 
                     // LikePredicate
                     // value LIKE "value1" : {"value1"}
-                    std::auto_ptr<DataArray<std::string> > strValues = imap->keySet(
+                    std::unique_ptr<DataArray<std::string> > strValues = imap->keySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strValues->size());
                     ASSERT_NE((const std::string *) NULL, strValues->get(0));
@@ -1683,7 +1683,7 @@ namespace hazelcast {
 
                     query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                    std::auto_ptr<DataArray<int> > values = intMap->keySet(predicate);
+                    std::unique_ptr<DataArray<int> > values = intMap->keySet(predicate);
                     ASSERT_EQ(predSize, (int) values->size());
                     for (int i = 0; i < predSize; ++i) {
                         ASSERT_NE((const int *) NULL, values->get(i));
@@ -1769,7 +1769,7 @@ namespace hazelcast {
                     }
 
                     // test PagingPredicate with inner predicate (value < 10)
-                    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
                                                                  true)));
@@ -1811,9 +1811,9 @@ namespace hazelcast {
 
                     predSize = 2;
                     query::PagingPredicate<int, Employee> predicate3(
-                            std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()),
+                            std::unique_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryKeyComparator()),
                             (size_t) predSize);
-                    std::auto_ptr<DataArray<int> > result = employees->keySet(predicate3);
+                    std::unique_ptr<DataArray<int> > result = employees->keySet(predicate3);
                     // since keyset result only returns keys from the server, no ordering based on the value but ordered based on the keys
                     ASSERT_EQ(2, (int) result->size());
                     ASSERT_NE((const int *) NULL, (*result)[0]);
@@ -1839,7 +1839,7 @@ namespace hazelcast {
                         expected[i] = std::pair<int, int>(i, 2 * i);
                     }
 
-                    std::auto_ptr<EntryArray<int, int> > entries = intMap->entrySet();
+                    std::unique_ptr<EntryArray<int, int> > entries = intMap->entrySet();
                     ASSERT_EQ(numItems, (int) entries->size());
                     entries->sort(query::ENTRY);
                     for (int i = 0; i < numItems; ++i) {
@@ -2018,7 +2018,7 @@ namespace hazelcast {
 
                     // NotPredicate
                     // !(5 <= key <= 10)
-                    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(
                                     query::QueryConstants::getKeyAttributeName(), 5, 10));
                     query::NotPredicate notPredicate(bp);
@@ -2036,9 +2036,9 @@ namespace hazelcast {
 
                     // AndPredicate
                     // 5 <= key <= 10 AND Values in {4, 10, 19} = entries {4, 10}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     entries = intMap->entrySet(query::AndPredicate().add(bp).add(inPred));
                     ASSERT_EQ(1, (int) entries->size());
@@ -2048,9 +2048,9 @@ namespace hazelcast {
 
                     // OrPredicate
                     // 5 <= key <= 10 OR Values in {4, 10, 19} = entries keys {2, 5, 6, 7, 8, 9, 10}
-                    bp = std::auto_ptr<query::Predicate>(
+                    bp = std::unique_ptr<query::Predicate>(
                             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-                    inPred = std::auto_ptr<query::Predicate>(
+                    inPred = std::unique_ptr<query::Predicate>(
                             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
                     entries = intMap->entrySet(query::OrPredicate().add(bp).add(inPred));
                     ASSERT_EQ(7, (int) entries->size());
@@ -2080,7 +2080,7 @@ namespace hazelcast {
 
                     // LikePredicate
                     // value LIKE "value1" : {"value1"}
-                    std::auto_ptr<EntryArray<std::string, std::string> > strEntries = imap->entrySet(
+                    std::unique_ptr<EntryArray<std::string, std::string> > strEntries = imap->entrySet(
                             query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
                     ASSERT_EQ(1, (int) strEntries->size());
                     std::pair<std::string, std::string> strEntry(*strEntries->getKey(0), *strEntries->getValue(0));
@@ -2146,7 +2146,7 @@ namespace hazelcast {
 
                     query::PagingPredicate<int, int> predicate((size_t) predSize);
 
-                    std::auto_ptr<EntryArray<int, int> > values = intMap->entrySet(predicate);
+                    std::unique_ptr<EntryArray<int, int> > values = intMap->entrySet(predicate);
                     ASSERT_EQ(predSize, (int) values->size());
                     for (int i = 0; i < predSize; ++i) {
                         std::pair<int, int> expected(i, i);
@@ -2245,7 +2245,7 @@ namespace hazelcast {
                     }
 
                     // test PagingPredicate with inner predicate (value < 10)
-                    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9,
                                                                  false,
                                                                  true)));
@@ -2289,9 +2289,9 @@ namespace hazelcast {
 
                     predSize = 2;
                     query::PagingPredicate<int, Employee> predicate3(
-                            std::auto_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
+                            std::unique_ptr<query::EntryComparator<int, Employee> >(new EmployeeEntryComparator()),
                             (size_t) predSize);
-                    std::auto_ptr<EntryArray<int, Employee> > result = employees->entrySet(predicate3);
+                    std::unique_ptr<EntryArray<int, Employee> > result = employees->entrySet(predicate3);
                     ASSERT_EQ(2, (int) result->size());
                     std::pair<int, Employee> expected(8, empl6);
                     std::pair<int, Employee> actual(*result->getKey(0), *result->getValue(0));
@@ -2302,7 +2302,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testReplace) {
-                    std::auto_ptr<std::string> temp = imap->replace("key1", "value");
+                    std::unique_ptr<std::string> temp = imap->replace("key1", "value");
                     ASSERT_EQ(temp.get(), (std::string *) NULL);
 
                     std::string tempKey = "key1";
@@ -2391,7 +2391,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2423,7 +2423,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2456,7 +2456,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2493,7 +2493,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2531,7 +2531,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2567,7 +2567,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2602,7 +2602,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2642,7 +2642,7 @@ namespace hazelcast {
 
                     // update an entry
                     imap->set("hasan", "suphi");
-                    std::auto_ptr<std::string> value = imap->get("hasan");
+                    std::unique_ptr<std::string> value = imap->get("hasan");
                     ASSERT_NE((std::string *) NULL, value.get());
                     ASSERT_EQ("suphi", *value);
 
@@ -2679,7 +2679,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2699,7 +2699,7 @@ namespace hazelcast {
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
                     // key >= 3
-                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
                     query::NotPredicate notPredicate(greaterLessPred);
@@ -2716,7 +2716,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2740,11 +2740,11 @@ namespace hazelcast {
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
                     // key < 3
-                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, false,
                                                                  true));
                     // value == 1
-                    std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getKeyAttributeName(), 1));
                     query::AndPredicate predicate;
                     // key < 3 AND key == 1 --> (1, 1)
@@ -2762,7 +2762,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2786,11 +2786,11 @@ namespace hazelcast {
                     CountdownListener<int, int> listener(latchAdd, latchRemove, latchUpdate, latchEvict);
 
                     // key >= 3
-                    std::auto_ptr<query::Predicate> greaterLessPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> greaterLessPred = std::unique_ptr<query::Predicate>(
                             new query::GreaterLessPredicate<int>(query::QueryConstants::getKeyAttributeName(), 3, true,
                                                                  false));
                     // value == 1
-                    std::auto_ptr<query::Predicate> equalPred = std::auto_ptr<query::Predicate>(
+                    std::unique_ptr<query::Predicate> equalPred = std::unique_ptr<query::Predicate>(
                             new query::EqualPredicate<int>(query::QueryConstants::getValueAttributeName(), 2));
                     query::OrPredicate predicate;
                     // key >= 3 OR value == 2 --> (1, 1), (2, 2)
@@ -2808,7 +2808,7 @@ namespace hazelcast {
 
                     // update an entry
                     intMap->set(1, 5);
-                    std::auto_ptr<int> value = intMap->get(1);
+                    std::unique_ptr<int> value = intMap->get(1);
                     ASSERT_NE((int *) NULL, value.get());
                     ASSERT_EQ(5, *value);
 
@@ -2845,20 +2845,20 @@ namespace hazelcast {
                     fillMap();
 
                     query::SqlPredicate predicate("this = 'value1'");
-                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempArray = imap->values(predicate);
+                    std::unique_ptr<hazelcast::client::DataArray<std::string> > tempArray = imap->values(predicate);
 
-                    std::auto_ptr<std::string> actualVal = tempArray->release(0);
+                    std::unique_ptr<std::string> actualVal = tempArray->release(0);
                     ASSERT_NE((std::string *) NULL, actualVal.get());
                     ASSERT_EQ("value1", *actualVal);
 
-                    std::auto_ptr<hazelcast::client::DataArray<std::string> > tempArray2 = imap->keySet(predicate);
+                    std::unique_ptr<hazelcast::client::DataArray<std::string> > tempArray2 = imap->keySet(predicate);
 
                     const std::string *actual = (*tempArray2)[0];
                     ASSERT_NE((std::string *) NULL, actual);
                     ASSERT_EQ("key1", *actual);
 
 
-                    std::auto_ptr<hazelcast::client::EntryArray<std::string, std::string> > tempArray3 = imap->entrySet(
+                    std::unique_ptr<hazelcast::client::EntryArray<std::string, std::string> > tempArray3 = imap->entrySet(
                             predicate);
                     actual = tempArray3->getKey(0);
                     ASSERT_NE((std::string *) NULL, actual);
@@ -2893,13 +2893,13 @@ namespace hazelcast {
                 }
 
                 TEST_F(RawPointerMapTest, testMapWithPortable) {
-                    std::auto_ptr<Employee> n1 = employees->get(1);
+                    std::unique_ptr<Employee> n1 = employees->get(1);
                     ASSERT_EQ(n1.get(), (Employee *) NULL);
                     Employee employee("sancar", 24);
-                    std::auto_ptr<Employee> ptr = employees->put(1, employee);
+                    std::unique_ptr<Employee> ptr = employees->put(1, employee);
                     ASSERT_EQ(ptr.get(), (Employee *) NULL);
                     ASSERT_FALSE(employees->isEmpty());
-                    std::auto_ptr<hazelcast::client::MapEntryView<int, Employee> > view = employees->getEntryView(1);
+                    std::unique_ptr<hazelcast::client::MapEntryView<int, Employee> > view = employees->getEntryView(1);
                     ASSERT_EQ(*(view->getValue()), employee);
                     ASSERT_EQ(*(view->getKey()), 1);
 
@@ -2926,7 +2926,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(4, processor);
+                    std::unique_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(4, processor);
 
                     ASSERT_NE((int *) NULL, result.get());
                     ASSERT_EQ(4 * processor.getMultiplier(), *result);
@@ -2935,7 +2935,7 @@ namespace hazelcast {
                 TEST_F(RawPointerMapTest, testExecuteOnNonExistentKey) {
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(17, processor);
+                    std::unique_ptr<int> result = employees->executeOnKey<int, EntryMultiplier>(17, processor);
 
                     ASSERT_NE((int *) NULL, result.get());
                     ASSERT_EQ(-1, *result);
@@ -2968,7 +2968,7 @@ namespace hazelcast {
 
                     status = future.wait_for(3 * 1000);
                     ASSERT_EQ(future_status::ready, status);
-                    std::auto_ptr<int> result = future.get();
+                    std::unique_ptr<int> result = future.get();
                     ASSERT_NE((int *) NULL, result.get());
                     ASSERT_EQ(4 * processor.getMultiplier(), *result);
                     ASSERT_FALSE(future.valid());
@@ -3009,7 +3009,7 @@ namespace hazelcast {
                     }
 
                     for (std::vector<Future<int> >::iterator it = allFutures.begin(); it != allFutures.end(); ++it) {
-                        std::auto_ptr<int> result = (*it).get();
+                        std::unique_ptr<int> result = (*it).get();
                         ASSERT_NE((int *) NULL, result.get());
                         ASSERT_FALSE((*it).valid());
                     }
@@ -3032,7 +3032,7 @@ namespace hazelcast {
                     // put non existent key
                     keys.insert(999);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees->executeOnKeys<int, EntryMultiplier>(keys, processor);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3058,7 +3058,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor);
 
                     ASSERT_EQ(3, (int) result->size());
@@ -3081,7 +3081,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees->executeOnEntries<int, EntryMultiplier>(processor, query::TruePredicate());
 
                     ASSERT_EQ(3, (int) result->size());
@@ -3104,7 +3104,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees->executeOnEntries<int, EntryMultiplier>(processor, query::FalsePredicate());
 
                     ASSERT_EQ(0, (int) result->size());
@@ -3122,14 +3122,14 @@ namespace hazelcast {
                     query::AndPredicate andPredicate;
                     /* 25 <= age <= 35 AND age = 35 */
                     andPredicate.add(
-                            std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
-                            std::auto_ptr<query::Predicate>(
+                            std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35))).add(
+                            std::unique_ptr<query::Predicate>(
                                     new query::NotPredicate(
-                                            std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
+                                            std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 35)))));
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, andPredicate);
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3149,13 +3149,13 @@ namespace hazelcast {
                     query::OrPredicate orPredicate;
                     /* age == 21 OR age > 25 */
                     orPredicate.add(
-                            std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
-                            std::auto_ptr<query::Predicate>(
+                            std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 21))).add(
+                            std::unique_ptr<query::Predicate>(
                                     new query::GreaterLessPredicate<int>("a", 25, false, false)));
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, orPredicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3182,7 +3182,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::BetweenPredicate<int>("a", 25, 35));
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3209,7 +3209,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::EqualPredicate<int>("a", 25));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3228,7 +3228,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::NotEqualPredicate<int>("a", 25));
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3255,7 +3255,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::GreaterLessPredicate<int>("a", 25, false, true)); // <25 matching
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3311,7 +3311,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::LikePredicate("n", "deniz"));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3330,7 +3330,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::ILikePredicate("n", "deniz"));
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3353,7 +3353,7 @@ namespace hazelcast {
                     values.push_back("ahmet");
                     query::InPredicate<std::string> predicate("n", values);
                     predicate.add("mehmet");
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, predicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3379,7 +3379,7 @@ namespace hazelcast {
                     employees->put(5, empl3);
 
                     EntryMultiplier processor(4);
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::InstanceOfPredicate("com.hazelcast.client.test.Employee"));
 
                     ASSERT_EQ(3, (int) result->size());
@@ -3396,8 +3396,8 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
                     query::NotPredicate notEqualPredicate(
-                            std::auto_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25)));
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result =
+                            std::unique_ptr<query::Predicate>(new query::EqualPredicate<int>("a", 25)));
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result =
                             employees->executeOnEntries<int, EntryMultiplier>(processor, notEqualPredicate);
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3412,13 +3412,13 @@ namespace hazelcast {
                         ASSERT_EQ(3 * processor.getMultiplier(), *result->getValue(1));
                     }
 
-                    query::NotPredicate notFalsePredicate(std::auto_ptr<query::Predicate>(new query::FalsePredicate()));
+                    query::NotPredicate notFalsePredicate(std::unique_ptr<query::Predicate>(new query::FalsePredicate()));
                     result = employees->executeOnEntries<int, EntryMultiplier>(processor, notFalsePredicate);
 
                     ASSERT_EQ(3, (int) result->size());
 
                     query::NotPredicate notBetweenPredicate(
-                            std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
+                            std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("a", 25, 35)));
                     result = employees->executeOnEntries<int, EntryMultiplier>(processor, notBetweenPredicate);
 
                     ASSERT_EQ(1, (int) result->size());
@@ -3437,7 +3437,7 @@ namespace hazelcast {
 
                     EntryMultiplier processor(4);
 
-                    std::auto_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
+                    std::unique_ptr<hazelcast::client::EntryArray<int, int> > result = employees->executeOnEntries<int, EntryMultiplier>(
                             processor, query::RegexPredicate("n", ".*met"));
 
                     ASSERT_EQ(2, (int) result->size());
@@ -3458,7 +3458,7 @@ namespace hazelcast {
                     MapGetInterceptor interceptor(prefix);
                     imap->addInterceptor<MapGetInterceptor>(interceptor);
 
-                    std::auto_ptr<std::string> val = imap->get("nonexistent");
+                    std::unique_ptr<std::string> val = imap->get("nonexistent");
                     ASSERT_NE((std::string *) NULL, val.get());
                     ASSERT_EQ(prefix, *val);
 
@@ -3477,7 +3477,7 @@ namespace hazelcast {
                             "testReadUTFWrittenByJavaMap");
                     map.put(key, value);
                     UTFValueValidatorProcessor processor;
-                    boost::shared_ptr<bool> result = map.executeOnKey<bool, UTFValueValidatorProcessor>(key, processor);
+                    std::shared_ptr<bool> result = map.executeOnKey<bool, UTFValueValidatorProcessor>(key, processor);
                     ASSERT_NOTNULL(result.get(), bool);
                     ASSERT_TRUE(*result);
                 }

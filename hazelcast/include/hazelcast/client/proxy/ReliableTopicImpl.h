@@ -30,7 +30,7 @@
 #include "hazelcast/client/topic/impl/reliable/ReliableTopicExecutor.h"
 #include "hazelcast/client/config/ReliableTopicConfig.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <string>
 #include <stdint.h>
@@ -46,12 +46,12 @@ namespace hazelcast {
             class HAZELCAST_API ReliableTopicImpl : public proxy::ProxyImpl {
             protected:
                 ReliableTopicImpl(const std::string &instanceName, spi::ClientContext *context,
-                                  boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb);
+                                  std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > rb);
 
                 void publish(const serialization::pimpl::Data &data);
 
             protected:
-                boost::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > ringbuffer;
+                std::shared_ptr<Ringbuffer<topic::impl::reliable::ReliableTopicMessage> > ringbuffer;
                 util::ILogger &logger;
                 const config::ReliableTopicConfig *config;
             };

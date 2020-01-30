@@ -53,7 +53,7 @@ namespace hazelcast {
                     private:
                         int64_t backoffTimeoutNanos;
                         static const int MAX_DELAY_MS = 500;
-                        static const std::auto_ptr<util::concurrent::IdleStrategy> IDLER;
+                        static const std::unique_ptr<util::concurrent::IdleStrategy> IDLER;
                     };
                 }
             }

@@ -47,7 +47,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             bool localOnly);
 
                     static int32_t calculateDataSize(
@@ -73,7 +73,7 @@ namespace hazelcast {
                     public:
                         virtual ~AbstractEventHandler();
 
-                        void handle(std::auto_ptr<protocol::ClientMessage> message);
+                        void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 
                         virtual void handleMemberEventV10(const Member &member, const int32_t &eventType) = 0;
@@ -85,7 +85,7 @@ namespace hazelcast {
                         virtual void
                         handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                             const int32_t &operationType,
-                                                            std::auto_ptr<std::string> value) = 0;
+                                                            std::unique_ptr<std::string> &value) = 0;
 
                     };
 

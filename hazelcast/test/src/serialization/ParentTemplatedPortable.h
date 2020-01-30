@@ -61,7 +61,7 @@ namespace hazelcast {
                     child = reader.readPortable<T>("c");
                 }
 
-                boost::shared_ptr<T> child;
+                std::shared_ptr<T> child;
             };
         }
     }

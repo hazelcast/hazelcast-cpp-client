@@ -79,7 +79,7 @@ namespace hazelcast {
                 return hazelcastClient.cluster;
             }
 
-            boost::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
+            std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
                 return hazelcastClient.callIdSequence;
             }
 
@@ -95,18 +95,18 @@ namespace hazelcast {
                 return *hazelcastClient.executionService;
             }
 
-            void ClientContext::onClusterConnect(const boost::shared_ptr<connection::Connection> &ownerConnection) {
+            void ClientContext::onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection) {
                 hazelcastClient.onClusterConnect(ownerConnection);
             }
 
-            const boost::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
+            const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
             ClientContext::getLockReferenceIdGenerator() {
                 return hazelcastClient.getLockReferenceIdGenerator();
             }
 
-            boost::shared_ptr<client::impl::HazelcastClientInstanceImpl>
+            std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
                     ClientContext::getHazelcastClientImplementation() {
-                boost::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
+                std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
                 return clientImpl.lock();
             }
 

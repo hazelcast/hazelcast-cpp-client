@@ -24,7 +24,7 @@ namespace hazelcast {
                     return true;
                 }
 
-                const std::auto_ptr<EvictionChecker> EvictionChecker::EVICT_ALWAYS = std::auto_ptr<EvictionChecker>(
+                const std::unique_ptr<EvictionChecker> EvictionChecker::EVICT_ALWAYS = std::unique_ptr<EvictionChecker>(
                         new EvictAlways());
             }
         }

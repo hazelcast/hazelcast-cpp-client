@@ -37,8 +37,8 @@ namespace hazelcast {
                         virtual void start();
 
                         virtual std::string
-                        registerListener(const boost::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
-                                         const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
+                        registerListener(const std::shared_ptr<impl::ListenerMessageCodec> &listenerMessageCodec,
+                                         const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler);
 
                         void asyncConnectToAllMembersInternal();
                     protected:
@@ -49,25 +49,25 @@ namespace hazelcast {
                         class AsyncConnectToAllMembersTask : public util::Runnable {
                         public:
                             AsyncConnectToAllMembersTask(
-                                    const boost::shared_ptr<SmartClientListenerService> &listenerService);
+                                    const std::shared_ptr<SmartClientListenerService> &listenerService);
 
                             virtual void run();
 
                             virtual const std::string getName() const;
 
                         private:
-                            boost::shared_ptr<SmartClientListenerService> listenerService;
+                            std::shared_ptr<SmartClientListenerService> listenerService;
                         };
 
                         void trySyncConnectToAllMembers();
 
                         void timeOutOrSleepBeforeNextTry(int64_t startMillis, const Member &lastFailedMember,
-                                                         boost::shared_ptr<exception::IException> &lastException);
+                                                         std::shared_ptr<exception::IException> &lastException);
 
                         void
                         throwOperationTimeoutException(int64_t startMillis, int64_t nowInMillis, int64_t elapsedMillis,
                                                        const Member &lastFailedMember,
-                                                       boost::shared_ptr<exception::IException> &lastException);
+                                                       std::shared_ptr<exception::IException> &lastException);
 
                         void sleepBeforeNextTry();
 

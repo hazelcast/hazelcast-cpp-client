@@ -47,7 +47,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const std::string &name,
                             const serialization::pimpl::Data &entryProcessor,
                             const std::vector<serialization::pimpl::Data> &keys);

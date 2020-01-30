@@ -20,7 +20,7 @@
 #define HAZElCAST_CLUSTER
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Member.h"
 
@@ -45,7 +45,7 @@ namespace hazelcast {
             Cluster(spi::ClientClusterService &clusterService);
 
             /**
-             * @deprecated Please use {@link addMembershipListener(const boost::shared_ptr<MembershipListener> &)}
+             * @deprecated Please use {@link addMembershipListener(const std::shared_ptr<MembershipListener> &)}
              *
              * Adds MembershipListener to listen for membership updates.
              *
@@ -75,10 +75,10 @@ namespace hazelcast {
              * @throws NullPointerException if listener is null
              * @see #removeMembershipListener(const std::string &)
              */
-            std::string addMembershipListener(const boost::shared_ptr<MembershipListener> &listener);
+            std::string addMembershipListener(const std::shared_ptr<MembershipListener> &listener);
 
             /**
-             * @deprecated Please use {@link addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &)}
+             * @deprecated Please use {@link addMembershipListener(const std::shared_ptr<InitialMembershipListener> &)}
              *
              * Adds InitialMembershipListener to listen for membership updates.
              *
@@ -109,7 +109,7 @@ namespace hazelcast {
              * @throws NullPointerException if listener is null
              * @see #removeMembershipListener(const std::string &)
              */
-            std::string addMembershipListener(const boost::shared_ptr<InitialMembershipListener> &listener);
+            std::string addMembershipListener(const std::shared_ptr<InitialMembershipListener> &listener);
 
             /**
              * @deprecated Please use {@link removeMembershipListener(const std::string &)}
@@ -131,7 +131,7 @@ namespace hazelcast {
              *
              * @param registrationId the registrationId of MembershipListener to remove
              * @return true if the registration is removed, false otherwise
-             * @see #addMembershipListener(const boost::shared_ptr<MembershipListener> &)
+             * @see #addMembershipListener(const std::shared_ptr<MembershipListener> &)
              */
             bool removeMembershipListener(const std::string &registrationId);
 

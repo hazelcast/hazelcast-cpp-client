@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONCANDIDATE_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/internal/eviction/EvictableEntryView.h"
 
@@ -44,9 +44,9 @@ namespace hazelcast {
                      *
                      * @return the accessor (key or id) of {@link Evictable} entry or record or whatever
                      */
-                    virtual boost::shared_ptr<A> getAccessor() const {
+                    virtual std::shared_ptr<A> getAccessor() const {
                         assert(0);
-                        return boost::shared_ptr<A>();
+                        return std::shared_ptr<A>();
                     }
 
                     /**
@@ -54,9 +54,9 @@ namespace hazelcast {
                      *
                      * @return the value of {@link Evictable} entry or record or whatever
                      */
-                    virtual boost::shared_ptr<E> getEvictable() const {
+                    virtual std::shared_ptr<E> getEvictable() const {
                         assert(0);
-                        return boost::shared_ptr<E>();
+                        return std::shared_ptr<E>();
                     }
                 };
             }

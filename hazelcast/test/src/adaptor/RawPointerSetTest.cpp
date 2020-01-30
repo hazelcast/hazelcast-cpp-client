@@ -141,13 +141,13 @@ namespace hazelcast {
                     ASSERT_TRUE(set->add("item4"));
                     ASSERT_FALSE(set->add("item4"));
 
-                    std::auto_ptr<client::DataArray<std::string> > array = set->toArray();
+                    std::unique_ptr<client::DataArray<std::string> > array = set->toArray();
 
                     ASSERT_EQ((size_t)4, array->size());
                     std::vector<std::string> items;
 
                     for (size_t i = 0; i < array->size(); ++i) {
-                        std::auto_ptr<std::string> item = array->release(i);
+                        std::unique_ptr<std::string> item = array->release(i);
                         ASSERT_NE((std::string *)NULL, item.get());
                         items.push_back(*item);
                     }

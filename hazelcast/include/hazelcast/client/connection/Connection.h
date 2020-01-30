@@ -21,13 +21,13 @@
 #include <memory>
 #include <ostream>
 #include <stdint.h>
-#include <boost/enable_shared_from_this.hpp>
+#include <atomic>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/connection/ReadHandler.h"
 #include "hazelcast/client/connection/WriteHandler.h"
 #include "hazelcast/util/SynchronizedMap.h"
-#include "hazelcast/util/Atomic.h"
+
 #include "hazelcast/util/Closeable.h"
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/protocol/ClientMessageBuilder.h"
@@ -64,7 +64,7 @@ namespace hazelcast {
 
             class InSelector;
 
-            class HAZELCAST_API Connection : public util::Closeable, public boost::enable_shared_from_this<Connection> {
+            class HAZELCAST_API Connection : public util::Closeable, public std::enable_shared_from_this<Connection> {
             public:
                 Connection(const Address& address, spi::ClientContext& clientContext, int connectionId, InSelector& iListener,
                            OutSelector& listener, internal::socket::SocketFactory &socketFactory);
@@ -75,13 +75,13 @@ namespace hazelcast {
 
                 void close(const char *reason = NULL);
 
-                void close(const char *reason, const boost::shared_ptr<exception::IException> &cause);
+                void close(const char *reason, const std::shared_ptr<exception::IException> &cause);
 
-                bool write(const boost::shared_ptr<protocol::ClientMessage> &message);
+                bool write(const std::shared_ptr<protocol::ClientMessage> &message);
 
-                const boost::shared_ptr<Address> &getRemoteEndpoint() const;
+                const std::shared_ptr<Address> &getRemoteEndpoint() const;
 
-                void setRemoteEndpoint(const boost::shared_ptr<Address> &remoteEndpoint);
+                void setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint);
 
                 Socket& getSocket();
 
@@ -93,7 +93,7 @@ namespace hazelcast {
 
                 void setIsAuthenticatedAsOwner();
 
-                virtual void handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &message);
+                virtual void handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message);
 
                 int getConnectionId() const;
 
@@ -113,7 +113,7 @@ namespace hazelcast {
 
                 void setConnectedServerVersion(const std::string &connectedServerVersionString);
 
-                std::auto_ptr<Address> getLocalSocketAddress() const;
+                std::unique_ptr<Address> getLocalSocketAddress() const;
 
                 int getConnectedServerVersion() const;
 
@@ -127,22 +127,22 @@ namespace hazelcast {
                 void innerClose();
 
                 int64_t startTimeInMillis;
-                util::Atomic<int64_t> closedTimeMillis;
+                std::atomic<int64_t> closedTimeMillis;
                 spi::ClientContext& clientContext;
                 protocol::IMessageHandler &invocationService;
-                std::auto_ptr<Socket> socket;
+                std::unique_ptr<Socket> socket;
                 ReadHandler readHandler;
                 WriteHandler writeHandler;
                 util::AtomicBoolean authenticatedAsOwner;
 
                 int connectionId;
                 std::string closeReason;
-                boost::shared_ptr<exception::IException> closeCause;
+                std::shared_ptr<exception::IException> closeCause;
 
                 std::string connectedServerVersionString;
                 int connectedServerVersion;
 
-                boost::shared_ptr<Address> remoteEndpoint;
+                std::shared_ptr<Address> remoteEndpoint;
 
                 util::ILogger &logger;
             };

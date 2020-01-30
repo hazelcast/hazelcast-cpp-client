@@ -64,7 +64,7 @@ namespace hazelcast {
             protected:
                 std::streambuf *originalStdout;
                 std::stringstream buffer;
-                std::auto_ptr<util::ILogger> testLogger;
+                std::unique_ptr<util::ILogger> testLogger;
             };
 
             TEST_F(LoggerConfigFromFileTest, testFinest) {

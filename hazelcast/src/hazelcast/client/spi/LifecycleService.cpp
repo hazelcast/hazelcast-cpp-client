@@ -46,7 +46,8 @@ namespace hazelcast {
             }
 
             bool LifecycleService::start() {
-                if (!active.compareAndSet(false, true)) {
+                bool expected = false;
+                if (!active.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
@@ -74,7 +75,8 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false)) {
+                bool expected = true;
+                if (!active.compare_exchange_strong(expected, false)) {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);

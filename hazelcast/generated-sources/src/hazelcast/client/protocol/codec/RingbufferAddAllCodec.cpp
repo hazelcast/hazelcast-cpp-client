@@ -28,12 +28,12 @@ namespace hazelcast {
                 const bool RingbufferAddAllCodec::RETRYABLE = false;
                 const ResponseMessageConst RingbufferAddAllCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
 
-                std::auto_ptr<ClientMessage> RingbufferAddAllCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> RingbufferAddAllCodec::encodeRequest(
                         const std::string &name,
                         const std::vector<serialization::pimpl::Data> &valueList,
                         int32_t overflowPolicy) {
                     int32_t requiredDataSize = calculateDataSize(name, valueList, overflowPolicy);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferAddAllCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

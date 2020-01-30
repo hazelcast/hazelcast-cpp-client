@@ -35,16 +35,16 @@ namespace hazelcast {
                 public:
                     SmartClientInvocationService(ClientContext &client);
 
-                    void invokeOnConnection(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                            boost::shared_ptr<connection::Connection> connection);
+                    void invokeOnConnection(std::shared_ptr<impl::ClientInvocation> invocation,
+                                            std::shared_ptr<connection::Connection> connection);
 
-                    void invokeOnPartitionOwner(boost::shared_ptr<impl::ClientInvocation> invocation,
+                    void invokeOnPartitionOwner(std::shared_ptr<impl::ClientInvocation> invocation,
                                                 int partitionId);
 
-                    void invokeOnRandomTarget(boost::shared_ptr<impl::ClientInvocation> invocation);
+                    void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation);
 
-                    void invokeOnTarget(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                        const boost::shared_ptr<Address> &target);
+                    void invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
+                                        const std::shared_ptr<Address> &target);
 
 
                 private:
@@ -52,10 +52,10 @@ namespace hazelcast {
 
                     bool isMember(const Address &target) const;
 
-                    boost::shared_ptr<connection::Connection>
-                    getOrTriggerConnect(const boost::shared_ptr<Address> &target) const;
+                    std::shared_ptr<connection::Connection>
+                    getOrTriggerConnect(const std::shared_ptr<Address> &target) const;
 
-                    boost::shared_ptr<Address> getRandomAddress();
+                    std::shared_ptr<Address> getRandomAddress();
                 };
             }
         }

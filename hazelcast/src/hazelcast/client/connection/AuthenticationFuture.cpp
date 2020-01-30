@@ -22,17 +22,17 @@ namespace hazelcast {
             AuthenticationFuture::AuthenticationFuture() : countDownLatch(new util::CountDownLatch(1)) {
             }
 
-            void AuthenticationFuture::onSuccess(const boost::shared_ptr<Connection> &connection) {
+            void AuthenticationFuture::onSuccess(const std::shared_ptr<Connection> &connection) {
                 this->connection = connection;
                 countDownLatch->countDown();
             }
 
-            void AuthenticationFuture::onFailure(const boost::shared_ptr<exception::IException> &throwable) {
+            void AuthenticationFuture::onFailure(const std::shared_ptr<exception::IException> &throwable) {
                 this->throwable = throwable;
                 countDownLatch->countDown();
             }
 
-            boost::shared_ptr<Connection> AuthenticationFuture::get() {
+            std::shared_ptr<Connection> AuthenticationFuture::get() {
                 countDownLatch->await();
                 if (connection.get() != NULL) {
                     return connection;

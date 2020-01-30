@@ -27,14 +27,14 @@ namespace hazelcast {
                 const bool RingbufferReadManyCodec::RETRYABLE = true;
                 const ResponseMessageConst RingbufferReadManyCodec::RESPONSE_TYPE = (ResponseMessageConst) 115;
 
-                std::auto_ptr<ClientMessage> RingbufferReadManyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> RingbufferReadManyCodec::encodeRequest(
                         const std::string &name,
                         int64_t startSequence,
                         int32_t minCount,
                         int32_t maxCount,
                         const serialization::pimpl::Data *filter) {
                     int32_t requiredDataSize = calculateDataSize(name, startSequence, minCount, maxCount, filter);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferReadManyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -93,7 +93,7 @@ namespace hazelcast {
                         const RingbufferReadManyCodec::ResponseParameters &rhs) {
                     readCount = rhs.readCount;
                     items = rhs.items;
-                    itemSeqs = std::auto_ptr<std::vector<int64_t> >(new std::vector<int64_t>(*rhs.itemSeqs));
+                    itemSeqs = std::unique_ptr<std::vector<int64_t> >(new std::vector<int64_t>(*rhs.itemSeqs));
                     nextSeq = rhs.nextSeq;
                 }
 

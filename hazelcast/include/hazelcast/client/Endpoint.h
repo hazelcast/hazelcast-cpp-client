@@ -17,7 +17,7 @@
 #define HAZElCAST_CLIENT_ENDPOINT_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/Address.h"
 
@@ -34,25 +34,25 @@ namespace hazelcast {
          */
         class HAZELCAST_API Endpoint {
         public:
-            Endpoint(boost::shared_ptr<std::string> uuid, boost::shared_ptr<Address> socketAddress);
+            Endpoint(std::shared_ptr<std::string> uuid, std::shared_ptr<Address> socketAddress);
 
             /**
              * Returns the UUID of this endpoint
              *
              * @return the UUID of this endpoint
              */
-            const boost::shared_ptr<std::string> &getUuid() const;
+            const std::shared_ptr<std::string> &getUuid() const;
 
             /**
              * Returns the socket address for this endpoint.
              *
              * @return the socket address for this endpoint
              */
-            const boost::shared_ptr<Address> &getSocketAddress() const;
+            const std::shared_ptr<Address> &getSocketAddress() const;
 
         private:
-            boost::shared_ptr<std::string> uuid;
-            boost::shared_ptr<Address> socketAddress;
+            std::shared_ptr<std::string> uuid;
+            std::shared_ptr<Address> socketAddress;
         };
     }
 }

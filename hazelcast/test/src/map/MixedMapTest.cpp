@@ -91,7 +91,7 @@ namespace hazelcast {
                     }
 
                     virtual void *read(serialization::ObjectDataInput &in) {
-                        std::auto_ptr<BaseCustom> object(new BaseCustom);
+                        std::unique_ptr<BaseCustom> object(new BaseCustom);
                         object->setValue(in.readInt());
                         return object.release();
                     }
@@ -104,7 +104,7 @@ namespace hazelcast {
                     }
 
                     virtual void *read(serialization::ObjectDataInput &in) {
-                        std::auto_ptr<Derived1Custom> object(new Derived1Custom);
+                        std::unique_ptr<Derived1Custom> object(new Derived1Custom);
                         object->setValue(in.readInt());
                         return object.release();
                     }
@@ -117,7 +117,7 @@ namespace hazelcast {
                     }
 
                     virtual void *read(serialization::ObjectDataInput &in) {
-                        std::auto_ptr<Derived2Custom> object(new Derived2Custom);
+                        std::unique_ptr<Derived2Custom> object(new Derived2Custom);
                         object->setValue(in.readInt());
                         return object.release();
                     }
@@ -199,32 +199,32 @@ namespace hazelcast {
 
                 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
                 public:
-                    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
+                    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
                         switch (typeId) {
                             case 10:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
                             case 11:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
                             case 12:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
                             default:
-                                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
                         }
                     }
                 };
                 
                 class PolymorphicPortableFactory : public serialization::PortableFactory {
                 public:
-                    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+                    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
                         switch (classId) {
                             case 3:
-                                return std::auto_ptr<serialization::Portable>(new BasePortable);
+                                return std::unique_ptr<serialization::Portable>(new BasePortable);
                             case 4:
-                                return std::auto_ptr<serialization::Portable>(new Derived1Portable);
+                                return std::unique_ptr<serialization::Portable>(new Derived1Portable);
                             case 5:
-                                return std::auto_ptr<serialization::Portable>(new Derived2Portable);
+                                return std::unique_ptr<serialization::Portable>(new Derived2Portable);
                             default:
-                                return std::auto_ptr<serialization::Portable>();
+                                return std::unique_ptr<serialization::Portable>();
                         }
                     }
                 };
@@ -242,19 +242,19 @@ namespace hazelcast {
                     ClientConfig config;
                     SerializationConfig &serializationConfig = config.getSerializationConfig();
                     serializationConfig.addDataSerializableFactory(666,
-                                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                   std::shared_ptr<serialization::DataSerializableFactory>(
                                                                                        new PolymorphicDataSerializableFactory()));
-                    serializationConfig.addPortableFactory(666, boost::shared_ptr<serialization::PortableFactory>(
+                    serializationConfig.addPortableFactory(666, std::shared_ptr<serialization::PortableFactory>(
                             new PolymorphicPortableFactory));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
+                            std::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
+                            std::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
 
                     serializationConfig.registerSerializer(
-                            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
+                            std::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
 
                     client2 = new HazelcastClient(config);
                     imap = new IMap<int, BaseDataSerializable>(client2->getMap<int, BaseDataSerializable>("MyMap"));
@@ -324,13 +324,13 @@ namespace hazelcast {
 
                 TypedData result = mixedMap->get<int>(3);
                 ASSERT_EQ(-7, result.getType().typeId);
-                std::auto_ptr<int> value = result.get<int>();
+                std::unique_ptr<int> value = result.get<int>();
                 ASSERT_NE((int *)NULL, value.get());
                 ASSERT_EQ(5, *value);
 
                 result = mixedMap->get<int>(10);
                 ASSERT_EQ(-11, result.getType().typeId);
-                std::auto_ptr<std::string> strValue = result.get<std::string>();
+                std::unique_ptr<std::string> strValue = result.get<std::string>();
                 ASSERT_NE((std::string *)NULL, strValue.get());
                 ASSERT_EQ("MyStringValue", *strValue);
             }
@@ -352,7 +352,7 @@ namespace hazelcast {
                 for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
                     TypedData &keyData = (*it).first;
                     TypedData &valueData = (*it).second;
-                    std::auto_ptr<int> key = keyData.get<int>();
+                    std::unique_ptr<int> key = keyData.get<int>();
                     ASSERT_NE((int *)NULL, key.get());
                     serialization::pimpl::ObjectType objectType = valueData.getType();
                     switch (*key) {
@@ -362,7 +362,7 @@ namespace hazelcast {
                             ASSERT_EQ(-2, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(10, objectType.classId);
-                            std::auto_ptr<BaseDataSerializable> value = valueData.get<BaseDataSerializable>();
+                            std::unique_ptr<BaseDataSerializable> value = valueData.get<BaseDataSerializable>();
                             ASSERT_NE((BaseDataSerializable *)NULL, value.get());
                             break;
                         }
@@ -370,7 +370,7 @@ namespace hazelcast {
                             ASSERT_EQ(-2, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(11, objectType.classId);
-                            std::auto_ptr<BaseDataSerializable> value(valueData.get<Derived1DataSerializable>());
+                            std::unique_ptr<BaseDataSerializable> value(valueData.get<Derived1DataSerializable>());
                             ASSERT_NE((BaseDataSerializable *)NULL, value.get());
                             break;
                         }
@@ -378,7 +378,7 @@ namespace hazelcast {
                             ASSERT_EQ(-2, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(12, objectType.classId);
-                            std::auto_ptr<BaseDataSerializable> value(valueData.get<Derived2DataSerializable>());
+                            std::unique_ptr<BaseDataSerializable> value(valueData.get<Derived2DataSerializable>());
                             ASSERT_NE((BaseDataSerializable *)NULL, value.get());
                             break;
                         }
@@ -401,7 +401,7 @@ namespace hazelcast {
                 keys.insert(2);
                 keys.insert(3);
 
-                std::auto_ptr<EntryArray<int, BaseDataSerializable> > entries = rawPointerMap->getAll(keys);
+                std::unique_ptr<EntryArray<int, BaseDataSerializable> > entries = rawPointerMap->getAll(keys);
                 ASSERT_NE((EntryArray<int, BaseDataSerializable> *)NULL, entries.get());
                 ASSERT_EQ((size_t)3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {
@@ -448,7 +448,7 @@ namespace hazelcast {
                 for (std::vector<std::pair<TypedData, TypedData> >::iterator it = values.begin();it != values.end(); ++it) {
                     TypedData &keyData = (*it).first;
                     TypedData &valueData = (*it).second;
-                    std::auto_ptr<int> key = keyData.get<int>();
+                    std::unique_ptr<int> key = keyData.get<int>();
                     ASSERT_NE((int *)NULL, key.get());
                     serialization::pimpl::ObjectType objectType = valueData.getType();
                     switch (*key) {
@@ -458,7 +458,7 @@ namespace hazelcast {
                             ASSERT_EQ(-1, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(3, objectType.classId);
-                            std::auto_ptr<BasePortable> value = valueData.get<BasePortable>();
+                            std::unique_ptr<BasePortable> value = valueData.get<BasePortable>();
                             ASSERT_NE((BasePortable *)NULL, value.get());
                             break;
                         }
@@ -466,7 +466,7 @@ namespace hazelcast {
                             ASSERT_EQ(-1, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(4, objectType.classId);
-                            std::auto_ptr<BasePortable> value(valueData.get<Derived1Portable>());
+                            std::unique_ptr<BasePortable> value(valueData.get<Derived1Portable>());
                             ASSERT_NE((BasePortable *)NULL, value.get());
                             break;
                         }
@@ -474,7 +474,7 @@ namespace hazelcast {
                             ASSERT_EQ(-1, objectType.typeId);
                             ASSERT_EQ(666, objectType.factoryId);
                             ASSERT_EQ(5, objectType.classId);
-                            std::auto_ptr<BasePortable> value(valueData.get<Derived2Portable>());
+                            std::unique_ptr<BasePortable> value(valueData.get<Derived2Portable>());
                             ASSERT_NE((BasePortable *)NULL, value.get());
                             break;
                         }
@@ -497,7 +497,7 @@ namespace hazelcast {
                 keys.insert(2);
                 keys.insert(3);
 
-                std::auto_ptr<EntryArray<int, BasePortable> > entries = rawPointerMapPortable->getAll(keys);
+                std::unique_ptr<EntryArray<int, BasePortable> > entries = rawPointerMapPortable->getAll(keys);
                 ASSERT_NE((EntryArray<int, BasePortable> *)NULL, entries.get());
                 ASSERT_EQ((size_t)3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {
@@ -535,7 +535,7 @@ namespace hazelcast {
                 keys.insert(2);
                 keys.insert(3);
 
-                std::auto_ptr<EntryArray<int, BaseCustom> > entries = rawPointerMapCustom->getAll(keys);
+                std::unique_ptr<EntryArray<int, BaseCustom> > entries = rawPointerMapCustom->getAll(keys);
                 ASSERT_NE((EntryArray<int, BaseCustom> *)NULL, entries.get());
                 ASSERT_EQ((size_t)3, entries->size());
                 for (size_t i = 0; i < entries->size(); ++i) {

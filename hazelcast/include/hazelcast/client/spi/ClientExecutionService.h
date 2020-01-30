@@ -43,7 +43,7 @@ namespace hazelcast {
                 /**
                  * @return executorService that alien (user code) runs on
                  */
-                virtual const boost::shared_ptr<util::ExecutorService> getUserExecutor() const = 0;
+                virtual const std::shared_ptr<util::ExecutorService> getUserExecutor() const = 0;
             };
         }
     }

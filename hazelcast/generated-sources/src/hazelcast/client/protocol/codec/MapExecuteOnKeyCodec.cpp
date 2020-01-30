@@ -28,13 +28,13 @@ namespace hazelcast {
                 const bool MapExecuteOnKeyCodec::RETRYABLE = false;
                 const ResponseMessageConst MapExecuteOnKeyCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> MapExecuteOnKeyCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapExecuteOnKeyCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &entryProcessor,
                         const serialization::pimpl::Data &key,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, key, threadId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteOnKeyCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -72,7 +72,7 @@ namespace hazelcast {
 
                 MapExecuteOnKeyCodec::ResponseParameters::ResponseParameters(
                         const MapExecuteOnKeyCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

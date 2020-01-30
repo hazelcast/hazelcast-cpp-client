@@ -32,7 +32,7 @@ namespace hazelcast {
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 HazelcastClient client;
-                std::auto_ptr<IdGenerator> generator;
+                std::unique_ptr<IdGenerator> generator;
 
             };
 

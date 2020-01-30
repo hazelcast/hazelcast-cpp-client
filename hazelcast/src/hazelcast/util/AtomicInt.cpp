@@ -17,10 +17,10 @@
 
 namespace hazelcast {
     namespace util {
-        AtomicInt::AtomicInt() : Atomic<int>(0) {
+        AtomicInt::AtomicInt() : atomic<int>(0) {
         }
 
-        AtomicInt::AtomicInt(const int &value) : Atomic<int>(value) {
+        AtomicInt::AtomicInt(const int &value) : atomic<int>(value) {
         }
     }
 }

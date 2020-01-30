@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTMEMBERSHIPLISTENER_H
 
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "ClientClusterServiceImpl.h"
@@ -64,10 +64,10 @@ namespace hazelcast {
 
                     virtual void handleMemberAttributeChangeEventV10(const std::string &uuid, const std::string &key,
                                                              const int32_t &operationType,
-                                                             std::auto_ptr<std::string> value);
+                                                             std::unique_ptr<std::string> &value);
 
-                    void listenMembershipEvents(const boost::shared_ptr<ClientMembershipListener> &listener,
-                                                       const boost::shared_ptr<connection::Connection> &ownerConnection);
+                    void listenMembershipEvents(const std::shared_ptr<ClientMembershipListener> &listener,
+                                                       const std::shared_ptr<connection::Connection> &ownerConnection);
 
                 private:
                     static int INITIAL_MEMBERS_TIMEOUT_SECONDS;
@@ -78,7 +78,7 @@ namespace hazelcast {
                     ClientClusterServiceImpl &clusterService;
                     ClientPartitionServiceImpl &partitionService;
                     connection::ClientConnectionManagerImpl &connectionManager;
-                    util::Atomic<boost::shared_ptr<util::CountDownLatch> > initialListFetchedLatch;
+                    util::Sync<std::shared_ptr<util::CountDownLatch> > initialListFetchedLatch;
 
                     void memberAdded(const Member &member);
 
@@ -86,8 +86,8 @@ namespace hazelcast {
 
                     void memberRemoved(const Member &member);
 
-                    boost::shared_ptr<exception::IException> newTargetDisconnectedExceptionCausedByMemberLeftEvent(
-                            const boost::shared_ptr<connection::Connection> &connection);
+                    std::shared_ptr<exception::IException> newTargetDisconnectedExceptionCausedByMemberLeftEvent(
+                            const std::shared_ptr<connection::Connection> &connection);
 
                     std::vector<MembershipEvent> detectMembershipEvents(std::map<std::string, Member> &prevMembers);
 

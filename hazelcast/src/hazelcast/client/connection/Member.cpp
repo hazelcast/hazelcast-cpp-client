@@ -84,7 +84,7 @@ namespace hazelcast {
         }
 
         void Member::updateAttribute(Member::MemberAttributeOperationType operationType, const std::string &key,
-                                     std::auto_ptr<std::string> &value) {
+                                     std::unique_ptr<std::string> &value) {
             switch (operationType) {
                 case PUT:
                     attributes[key] = *value;

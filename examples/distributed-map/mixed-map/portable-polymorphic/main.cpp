@@ -79,7 +79,7 @@ public:
 int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
-    serializationConfig.addPortableFactory(666, boost::shared_ptr<serialization::PortableFactory>(
+    serializationConfig.addPortableFactory(666, std::shared_ptr<serialization::PortableFactory>(
                                                            new PolymorphicPortableFactory));
 
     HazelcastClient client(config);

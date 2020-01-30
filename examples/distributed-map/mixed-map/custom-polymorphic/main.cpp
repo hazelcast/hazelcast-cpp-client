@@ -111,13 +111,13 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
 
     HazelcastClient client(config);
 

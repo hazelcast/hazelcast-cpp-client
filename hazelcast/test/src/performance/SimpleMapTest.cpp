@@ -41,9 +41,9 @@ namespace hazelcast {
                         Stats() : getCount(0), putCount(0), removeCount(0) {
                         }
 
-                        Stats(const Stats &rhs) : getCount(const_cast<Stats &>(rhs).getCount.get()),
-                                                  putCount(const_cast<Stats &>(rhs).putCount.get()),
-                                                  removeCount(const_cast<Stats &>(rhs).removeCount.get()) {
+                        Stats(const Stats &rhs) : getCount(const_cast<Stats &>(rhs).getCount.load()),
+                                                  putCount(const_cast<Stats &>(rhs).putCount.load()),
+                                                  removeCount(const_cast<Stats &>(rhs).removeCount.load()) {
                         }
 
                         Stats getAndReset() {
@@ -54,9 +54,9 @@ namespace hazelcast {
                             return newOne;
                         }
 
-                        mutable hazelcast::util::Atomic<int64_t> getCount;
-                        mutable hazelcast::util::Atomic<int64_t> putCount;
-                        mutable hazelcast::util::Atomic<int64_t> removeCount;
+                        mutable std::atomic<int64_t> getCount;
+                        mutable std::atomic<int64_t> putCount;
+                        mutable std::atomic<int64_t> removeCount;
 
                         void print() const {
                             std::cerr << "Total = " << total() << ", puts = " << putCount << " , gets = " << getCount << " , removes = "
@@ -117,7 +117,7 @@ namespace hazelcast {
                                         map.get(key);
                                         ++getCount;
                                     } else if (operation < GET_PERCENTAGE + PUT_PERCENTAGE) {
-                                        boost::shared_ptr<std::vector<char> > vector = map.put(key, value);
+                                        std::shared_ptr<std::vector<char> > vector = map.put(key, value);
                                         ++putCount;
                                     } else {
                                         map.remove(key);
@@ -164,7 +164,7 @@ namespace hazelcast {
 
                         Stats &stats;
                         IMap<int, std::vector<char> > &map;
-                        boost::shared_ptr<hazelcast::util::ILogger> logger;
+                        std::shared_ptr<hazelcast::util::ILogger> logger;
                     };
 
 
@@ -183,21 +183,21 @@ namespace hazelcast {
                         clientConfig.setLogLevel(FINEST);
 
                         Stats stats;
-                        boost::shared_ptr<hazelcast::util::ILogger> logger(
+                        std::shared_ptr<hazelcast::util::ILogger> logger(
                                 new hazelcast::util::ILogger("SimpleMapTest", "SimpleMapTest", "testversion", config::LoggerConfig()));
-                        hazelcast::util::Thread monitor(boost::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)),
+                        hazelcast::util::Thread monitor(std::shared_ptr<hazelcast::util::Runnable>(new StatsPrinterTask(stats)),
                                                         *logger);
 
                         HazelcastClient hazelcastClient(clientConfig);
 
                         IMap<int, std::vector<char> > map = hazelcastClient.getMap<int, std::vector<char> >("cppDefault");
 
-                        std::vector<boost::shared_ptr<hazelcast::util::Thread> > threads;
+                        std::vector<std::shared_ptr<hazelcast::util::Thread> > threads;
 
                         for (int i = 0; i < THREAD_COUNT; i++) {
-                            boost::shared_ptr<hazelcast::util::Thread> thread = boost::shared_ptr<hazelcast::util::Thread>(
+                            std::shared_ptr<hazelcast::util::Thread> thread = std::shared_ptr<hazelcast::util::Thread>(
                                     new hazelcast::util::Thread(
-                                            boost::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map)), *logger));
+                                            std::shared_ptr<hazelcast::util::Runnable>(new Task(stats, map)), *logger));
                             thread->start();
                             threads.push_back(thread);
                         }

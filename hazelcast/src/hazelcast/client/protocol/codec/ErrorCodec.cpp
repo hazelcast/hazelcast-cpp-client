@@ -69,12 +69,12 @@ namespace hazelcast {
                     errorCode = rhs.errorCode;
                     className = rhs.className;
                     if (NULL != rhs.message.get()) {
-                        message = std::auto_ptr<std::string>(new std::string(*rhs.message));
+                        message = std::unique_ptr<std::string>(new std::string(*rhs.message));
                     }
                     stackTrace = rhs.stackTrace;
                     causeErrorCode = rhs.causeErrorCode;
                     if (NULL != rhs.causeClassName.get()) {
-                        causeClassName = std::auto_ptr<std::string>(new std::string(*rhs.causeClassName));
+                        causeClassName = std::unique_ptr<std::string>(new std::string(*rhs.causeClassName));
                     }
                 }
             }

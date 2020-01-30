@@ -47,7 +47,7 @@ namespace hazelcast {
                 :latch(latch) {
                 }
 
-                void onMessage(std::auto_ptr<topic::Message<std::string> > message) {
+                void onMessage(std::unique_ptr<topic::Message<std::string> > &message) {
                     latch.countDown();
                 }
             private:

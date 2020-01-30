@@ -80,7 +80,7 @@ std::ostream &operator<<(std::ostream &out, const test1::test2::Person &p) {
 int main() {
     hazelcast::client::ClientConfig config;
     hazelcast::client::SerializationConfig serializationConfig;
-    serializationConfig.registerSerializer(boost::shared_ptr<hazelcast::client::serialization::SerializerBase>(
+    serializationConfig.registerSerializer(std::shared_ptr<hazelcast::client::serialization::SerializerBase>(
             new CustomSerializer()));
     config.setSerializationConfig(serializationConfig);
     hazelcast::client::HazelcastClient hz(config);

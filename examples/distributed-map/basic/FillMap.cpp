@@ -33,7 +33,7 @@ int main() {
     binaryMap.put(key, value);
     std::cout << "Inserted an entry with key 3 and a binary value to the binary map." << std::endl;
 
-    boost::shared_ptr<std::vector<char> > valueFromMap = binaryMap.get(key);
+    std::shared_ptr<std::vector<char> > valueFromMap = binaryMap.get(key);
     if (NULL != valueFromMap.get()) {
         std::cout << "The binary map returned a binary array of size " << valueFromMap->size() << std::endl;
     }

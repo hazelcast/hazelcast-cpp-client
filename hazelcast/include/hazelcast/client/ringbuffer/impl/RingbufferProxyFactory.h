@@ -32,8 +32,8 @@ namespace hazelcast {
                     RingbufferProxyFactory(spi::ClientContext *clientContext) : clientContext(
                             clientContext) {}
 
-                    virtual boost::shared_ptr<spi::ClientProxy> create(const std::string &id) {
-                        return boost::shared_ptr<spi::ClientProxy>(
+                    virtual std::shared_ptr<spi::ClientProxy> create(const std::string &id) {
+                        return std::shared_ptr<spi::ClientProxy>(
                                 new proxy::ClientRingbufferProxy<T>(id, clientContext));
                     }
 

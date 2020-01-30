@@ -33,7 +33,8 @@ namespace hazelcast {
             public:
                 virtual ~OrPredicate();
 
-                OrPredicate &add(std::auto_ptr<Predicate> predicate);
+                OrPredicate &add(std::unique_ptr<Predicate> &predicate);
+                OrPredicate &add(std::unique_ptr<Predicate> &&predicate);
 
                 /**
                  * @return factory id

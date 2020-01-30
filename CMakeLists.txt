@@ -85,17 +85,18 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
+set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src)
 
 if (HZ_FIND_EXTERNAL_BOOST)
 	find_package(Boost REQUIRED)
 	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 else ()
-	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/)
+	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/boost_latest)
 endif(HZ_FIND_EXTERNAL_BOOST)
 
 include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
@@ -156,11 +157,11 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	if (HZ_COMPILE_WITH_SSL)
 		if ("${HZ_OPENSSL_LIB_DIR}" STREQUAL "")
-			SET(HZ_OPENSSL_LIB_DIR /usr/local/opt/openssl/lib/)
+			SET(HZ_OPENSSL_LIB_DIR /usr/local/Cellar/openssl/1.0.2s/lib/)
 		endif ()
 
 		if ("${HZ_OPENSSL_INCLUDE_DIR}" STREQUAL "")
-			SET(HZ_OPENSSL_INCLUDE_DIR /usr/local/opt/openssl/include)
+			SET(HZ_OPENSSL_INCLUDE_DIR /usr/local/Cellar/openssl/1.0.2s/include)
 		endif ()
 
 		message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
@@ -173,7 +174,7 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 		link_libraries(ssl crypto)
 	ENDIF()
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
@@ -263,6 +264,8 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	link_libraries(${HZ_LIB_NAME})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+add_definitions(-DBOOST_NO_AUTO_PTR -DASIO_STANDALONE)
 
 IF(HZ_BUILD_TESTS)
 	SET(BUILD_GTEST "ON")

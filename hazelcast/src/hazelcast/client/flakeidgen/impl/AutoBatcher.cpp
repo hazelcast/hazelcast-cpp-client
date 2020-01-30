@@ -23,25 +23,25 @@ namespace hazelcast {
             namespace impl {
 
                 AutoBatcher::AutoBatcher(int32_t batchSize, int64_t validity,
-                                         const boost::shared_ptr<AutoBatcher::IdBatchSupplier> &batchIdSupplier)
+                                         const std::shared_ptr<AutoBatcher::IdBatchSupplier> &batchIdSupplier)
                         : batchSize(batchSize), validity(validity), batchIdSupplier(batchIdSupplier),
-                          block(boost::shared_ptr<Block>(new Block(IdBatch(0, 0, 0), 0))) {}
+                          block(std::shared_ptr<Block>(new Block(IdBatch(0, 0, 0), 0))) {}
 
                 int64_t AutoBatcher::newId() {
                     for (;;) {
-                        boost::shared_ptr<Block> block = this->block;
+                        std::shared_ptr<Block> block = this->block;
                         int64_t res = block->next();
                         if (res != INT64_MIN) {
                             return res;
                         }
 
                         {
-                            util::LockGuard guard(lock);
+                            std::lock_guard guard(lock);
                             if (block != this->block.get()) {
                                 // new block was assigned in the meantime
                                 continue;
                             }
-                            this->block = boost::shared_ptr<Block>(
+                            this->block = std::shared_ptr<Block>(
                                     new Block(batchIdSupplier->newIdBatch(batchSize), validity));
                         }
                     }
@@ -61,7 +61,7 @@ namespace hazelcast {
                         if (index == idBatch.getBatchSize()) {
                             return INT64_MIN;
                         }
-                    } while (!numReturned.compareAndSet(index, index + 1));
+                    } while (!numReturned.compare_exchange_strong(index, index + 1));
 
                     return idBatch.getBase() + index * idBatch.getIncrement();
                 }

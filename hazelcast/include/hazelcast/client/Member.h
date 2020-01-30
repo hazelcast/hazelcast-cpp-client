@@ -109,7 +109,7 @@ namespace hazelcast {
             bool operator<(const Member &rhs) const;
 
             void updateAttribute(MemberAttributeOperationType operationType, const std::string &key,
-                                 std::auto_ptr<std::string> &value);
+                                 std::unique_ptr<std::string> &value);
 
         private:
             Address address;

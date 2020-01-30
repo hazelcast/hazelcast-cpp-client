@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <utility>
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/cluster/impl/VectorClock.h"
 
@@ -27,8 +27,7 @@ namespace hazelcast {
 
                 VectorClock::VectorClock(const VectorClock::TimestampVector &replicaLogicalTimestamps)
                         : replicaTimestampEntries(replicaLogicalTimestamps) {
-                    BOOST_FOREACH(const VectorClock::TimestampVector::value_type &replicaTimestamp,
-                                  replicaLogicalTimestamps) {
+                    for (const VectorClock::TimestampVector::value_type &replicaTimestamp : replicaLogicalTimestamps) {
                                     replicaTimestamps[replicaTimestamp.first] = replicaTimestamp.second;
                                 }
                 }
@@ -39,7 +38,7 @@ namespace hazelcast {
 
                 bool VectorClock::isAfter(VectorClock &other) {
                     bool anyTimestampGreater = false;
-                    BOOST_FOREACH(const VectorClock::TimestampMap::value_type &otherEntry, other.replicaTimestamps) {
+                    for (const VectorClock::TimestampMap::value_type &otherEntry : other.replicaTimestamps) {
                         const std::string &replicaId = otherEntry.first;
                                     int64_t otherReplicaTimestamp = otherEntry.second;
                                     std::pair<bool, int64_t> localReplicaTimestamp = getTimestampForReplica(replicaId);

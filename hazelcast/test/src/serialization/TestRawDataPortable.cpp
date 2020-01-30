@@ -47,7 +47,7 @@ namespace hazelcast {
             void TestRawDataPortable::readPortable(serialization::PortableReader &reader) {
                 l = reader.readLong("l");
                 c = *reader.readCharArray("c");
-                boost::shared_ptr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
+                std::shared_ptr<TestNamedPortable> ptr = reader.readPortable<TestNamedPortable>("p");
                 if (ptr != NULL)
                     p = *ptr;
                 serialization::ObjectDataInput &in = reader.getRawDataInput();
@@ -82,12 +82,12 @@ namespace hazelcast {
                 return !(*this == m);
             }
 
-            std::auto_ptr<serialization::Portable> TestDataPortableFactory::create(int32_t classId) const {
+            std::unique_ptr<serialization::Portable> TestDataPortableFactory::create(int32_t classId) const {
                 if (classId == TestRawDataPortable::CLASS_ID) {
-                    return std::auto_ptr<serialization::Portable>(new TestRawDataPortable());
+                    return std::unique_ptr<serialization::Portable>(new TestRawDataPortable());
                 }
 
-                return std::auto_ptr<serialization::Portable>();
+                return std::unique_ptr<serialization::Portable>();
             }
         }
     }

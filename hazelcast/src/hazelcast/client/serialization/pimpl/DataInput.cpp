@@ -18,7 +18,7 @@
 
 #include <string.h>
 #include <memory>
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/util/Util.h"
 #include "hazelcast/util/Bits.h"
@@ -143,10 +143,10 @@ namespace hazelcast {
                     return u.d;
                 }
 
-                std::auto_ptr<std::string> DataInput::readUTF() {
+                std::unique_ptr<std::string> DataInput::readUTF() {
                     int32_t charCount = readInt();
                     if (util::Bits::NULL_ARRAY == charCount) {
-                        return std::auto_ptr<std::string>();
+                        return std::unique_ptr<std::string>();
                     } else {
                         utfBuffer.clear();
                         utfBuffer.reserve((size_t) MAX_UTF_CHAR_SIZE * charCount);
@@ -156,7 +156,7 @@ namespace hazelcast {
                             util::UTFUtil::readUTF8Char(*this, b, utfBuffer);
                         }
 
-                        return std::auto_ptr<std::string>(new std::string(utfBuffer.begin(), utfBuffer.end()));
+                        return std::unique_ptr<std::string>(new std::string(utfBuffer.begin(), utfBuffer.end()));
                     }
                 }
 
@@ -172,48 +172,48 @@ namespace hazelcast {
                 }
                 //private functions
 
-                std::auto_ptr<std::vector<byte> > DataInput::readByteArray() {
+                std::unique_ptr<std::vector<byte> > DataInput::readByteArray() {
                     return readArray<byte>();
                 }
 
-                std::auto_ptr<std::vector<bool> > DataInput::readBooleanArray() {
+                std::unique_ptr<std::vector<bool> > DataInput::readBooleanArray() {
                     return readArray<bool>();
                 }
 
-                std::auto_ptr<std::vector<char> > DataInput::readCharArray() {
+                std::unique_ptr<std::vector<char> > DataInput::readCharArray() {
                     return readArray<char>();
                 }
 
-                std::auto_ptr<std::vector<int32_t> > DataInput::readIntArray() {
+                std::unique_ptr<std::vector<int32_t> > DataInput::readIntArray() {
                     return readArray<int32_t>();
                 }
 
-                std::auto_ptr<std::vector<int64_t> > DataInput::readLongArray() {
+                std::unique_ptr<std::vector<int64_t> > DataInput::readLongArray() {
                     return readArray<int64_t>();
                 }
 
-                std::auto_ptr<std::vector<double> > DataInput::readDoubleArray() {
+                std::unique_ptr<std::vector<double> > DataInput::readDoubleArray() {
                     return readArray<double>();
                 }
 
-                std::auto_ptr<std::vector<float> > DataInput::readFloatArray() {
+                std::unique_ptr<std::vector<float> > DataInput::readFloatArray() {
                     return readArray<float>();
                 }
 
-                std::auto_ptr<std::vector<int16_t> > DataInput::readShortArray() {
+                std::unique_ptr<std::vector<int16_t> > DataInput::readShortArray() {
                     return readArray<int16_t>();
                 }
 
-                std::auto_ptr<std::vector<std::string> > DataInput::readUTFArray() {
+                std::unique_ptr<std::vector<std::string> > DataInput::readUTFArray() {
                     int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
-                        return std::auto_ptr<std::vector<std::string> >();
+                        return std::unique_ptr<std::vector<std::string> >();
                     }
 
-                    std::auto_ptr<std::vector<std::string> > values(
+                    std::unique_ptr<std::vector<std::string> > values(
                             new std::vector<std::string>());
                     for (int32_t i = 0; i < len; ++i) {
-                        std::auto_ptr<std::string> value = readUTF();
+                        std::unique_ptr<std::string> value = readUTF();
                         // handle null pointer possibility
                         if ((std::string *)NULL == value.get()) {
                             values->push_back(std::string(""));
@@ -224,13 +224,13 @@ namespace hazelcast {
                     return values;
                 }
 
-                std::auto_ptr<std::vector<std::string *> > DataInput::readUTFPointerArray() {
+                std::unique_ptr<std::vector<std::string *> > DataInput::readUTFPointerArray() {
                     int32_t len = readInt();
                     if (util::Bits::NULL_ARRAY == len) {
-                        return std::auto_ptr<std::vector<std::string *> >();
+                        return std::unique_ptr<std::vector<std::string *> >();
                     }
 
-                    std::auto_ptr<std::vector<std::string *> > values(
+                    std::unique_ptr<std::vector<std::string *> > values(
                             new std::vector<std::string *>());
                     try {
                         for (int32_t i = 0; i < len; ++i) {
@@ -239,7 +239,7 @@ namespace hazelcast {
                     } catch (exception::IException &) {
                         // clean resources to avoid any leaks
                         typedef std::vector<std::string *> STRING_ARRAY;
-                        BOOST_FOREACH(STRING_ARRAY::value_type value , *values) {
+                        for (STRING_ARRAY::value_type value  : *values) {
                                         delete value;
                                     }
                         throw;

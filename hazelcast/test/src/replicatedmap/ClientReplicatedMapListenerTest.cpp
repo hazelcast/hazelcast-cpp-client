@@ -108,56 +108,56 @@ namespace hazelcast {
             HazelcastClient *ClientReplicatedMapListenerTest::client2 = NULL;
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryAdded) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
-                ASSERT_EQ_EVENTUALLY(1, listener->addCount.get());
+                ASSERT_EQ_EVENTUALLY(1, listener->addCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryUpdated) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
                 replicatedMap->put(1, 2);
-                ASSERT_EQ_EVENTUALLY(1, listener->updateCount.get());
+                ASSERT_EQ_EVENTUALLY(1, listener->updateCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testEntryRemoved) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
                 replicatedMap->remove(1);
-                ASSERT_EQ_EVENTUALLY(1, listener->removeCount.get());
+                ASSERT_EQ_EVENTUALLY(1, listener->removeCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testMapClear) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener);
                 replicatedMap->put(1, 1);
                 replicatedMap->clear();
-                ASSERT_EQ_EVENTUALLY(1, listener->mapClearCount.get());
+                ASSERT_EQ_EVENTUALLY(1, listener->mapClearCount.load());
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenToKeyForEntryAdded) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener, 1);
                 replicatedMap->put(1, 1);
                 replicatedMap->put(2, 2);
-                ASSERT_TRUE_EVENTUALLY(listener->keys.size() == 1U && listener->keys.pop() == 1 && listener->addCount.get() == 1);
+                ASSERT_TRUE_EVENTUALLY(listener->keys.size() == 1U && listener->keys.pop() == 1 && listener->addCount.load() == 1);
             }
 
             TEST_F(ClientReplicatedMapListenerTest, testListenWithPredicate) {
-                boost::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
-                boost::shared_ptr<EventCountingListener> listener(new EventCountingListener());
+                std::shared_ptr<ReplicatedMap<int, int> > replicatedMap = client->getReplicatedMap<int, int>(getTestName());
+                std::shared_ptr<EventCountingListener> listener(new EventCountingListener());
                 replicatedMap->addEntryListener(listener, query::FalsePredicate());
                 replicatedMap->put(2, 2);
                 // Check for 3 seconds
-                ASSERT_TRUE_ALL_THE_TIME((listener->addCount.get() == 0), 3);
+                ASSERT_TRUE_ALL_THE_TIME((listener->addCount.load() == 0), 3);
             }
 
         }

@@ -18,9 +18,10 @@
 #define HAZELCAST_CLIENT_SPI_IMPL_SEQUENCE_CALLIDSEQUENCEWITHOUTBACKPRESSURE_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "hazelcast/client/spi/impl/sequence/CallIdSequence.h"
-#include "hazelcast/util/Atomic.h"
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -49,7 +50,7 @@ namespace hazelcast {
                         virtual int64_t getLastCallId();
 
                     private:
-                        util::Atomic<int64_t> head;
+                        std::atomic<int64_t> head;
                     };
                 }
             }

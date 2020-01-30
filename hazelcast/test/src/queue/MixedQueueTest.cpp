@@ -121,7 +121,7 @@ namespace hazelcast {
 
                 util::StartedThread t2(testOfferPollThread2, q);
 
-                std::auto_ptr<std::string> item = q->poll(30 * 1000).get<std::string>();
+                std::unique_ptr<std::string> item = q->poll(30 * 1000).get<std::string>();
                 ASSERT_NE(item.get(), (std::string *) NULL);
                 ASSERT_EQ("item1", *item);
                 t2.join();
@@ -132,7 +132,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer<std::string>("peek 2"));
                 ASSERT_TRUE(q->offer<std::string>("peek 3"));
 
-                std::auto_ptr<std::string> item = q->peek().get<std::string>();
+                std::unique_ptr<std::string> item = q->peek().get<std::string>();
                 ASSERT_NE((std::string *)NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
             }
@@ -142,7 +142,7 @@ namespace hazelcast {
                 ASSERT_TRUE(q->offer<std::string>("peek 2"));
                 ASSERT_TRUE(q->offer<std::string>("peek 3"));
 
-                std::auto_ptr<std::string> item = q->take().get<std::string>();
+                std::unique_ptr<std::string> item = q->take().get<std::string>();
                 ASSERT_NE((std::string *)NULL, item.get());
                 ASSERT_EQ("peek 1", *item);
 

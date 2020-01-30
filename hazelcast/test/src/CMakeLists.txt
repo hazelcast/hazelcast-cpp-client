@@ -1,5 +1,7 @@
 project(HazelcastClientTest)
 
+set(CMAKE_CXX_STANDARD 17)
+
 find_package(Thrift QUIET)
 IF (NOT Thrift_FOUND)
     set(THRIFT_INCLUDE_DIRS /usr/local/opt/thrift/include)
@@ -42,4 +44,3 @@ ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 include_directories(${CMAKE_SOURCE_DIR}/hazelcast/include ${CMAKE_SOURCE_DIR}/hazelcast/test/src ${GOOGLETEST_INCLUDE_DIR} ${BOOST_HOME})
 
-add_definitions(-DHAZELCAST_VERSION=4.0-SNAPSHOT)

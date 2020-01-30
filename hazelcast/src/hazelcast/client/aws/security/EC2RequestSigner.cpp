@@ -17,8 +17,6 @@
 #include <sstream>
 #include <iomanip>
 
-#include <boost/algorithm/string/replace.hpp>
-
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/ssl.h>
 #endif

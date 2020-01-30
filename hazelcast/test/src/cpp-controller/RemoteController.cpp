@@ -6,7 +6,7 @@
  */
 #include "RemoteController.h"
 
-
+namespace hazelcast { namespace client { namespace test { namespace remote {
 
 
 RemoteController_ping_args::~RemoteController_ping_args() noexcept {
@@ -5533,5 +5533,5 @@ void RemoteControllerConcurrentClient::recv_executeOnController(Response& _retur
   } // end while(true)
 }
 
-
+}}}} // namespace
 

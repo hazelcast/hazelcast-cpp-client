@@ -29,7 +29,7 @@ namespace hazelcast {
                 public:
                     AtomicLongProxyFactory(spi::ClientContext *clientContext);
 
-                    virtual boost::shared_ptr<spi::ClientProxy> create(const std::string &id);
+                    virtual std::shared_ptr<spi::ClientProxy> create(const std::string &id);
 
                 private:
                     spi::ClientContext *clientContext;

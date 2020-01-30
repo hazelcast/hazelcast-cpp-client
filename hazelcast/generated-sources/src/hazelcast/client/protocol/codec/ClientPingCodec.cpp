@@ -27,9 +27,9 @@ namespace hazelcast {
                 const bool ClientPingCodec::RETRYABLE = true;
                 const ResponseMessageConst ClientPingCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> ClientPingCodec::encodeRequest() {
+                std::unique_ptr<ClientMessage> ClientPingCodec::encodeRequest() {
                     int32_t requiredDataSize = calculateDataSize();
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientPingCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->updateFrameLength();

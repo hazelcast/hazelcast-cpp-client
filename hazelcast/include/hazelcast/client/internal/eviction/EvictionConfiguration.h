@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTIONCONFIGURATION_H_
 
 #include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/internal/eviction/EvictionStrategyType.h"
 #include "hazelcast/client/internal/eviction/EvictionPolicyType.h"
@@ -67,9 +67,9 @@ namespace hazelcast {
                      *
                      * @return instance of the configured {@link EvictionPolicyComparator} implementation.
                      */
-                    virtual const boost::shared_ptr<EvictionPolicyComparator<K, V> > getComparator() const {
+                    virtual const std::shared_ptr<EvictionPolicyComparator<K, V> > getComparator() const {
                         assert(0);
-                        return boost::shared_ptr<EvictionPolicyComparator<K, V> >();
+                        return std::shared_ptr<EvictionPolicyComparator<K, V> >();
                     }
                 };
             }

@@ -17,8 +17,6 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTEXECUTIONSERVICEIMPL_H_
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include "hazelcast/client/spi/ClientExecutionService.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -41,14 +39,14 @@ namespace hazelcast {
         namespace spi {
             namespace impl {
             class HAZELCAST_API ClientExecutionServiceImpl : public ClientExecutionService,
-                    public boost::enable_shared_from_this<ClientExecutionServiceImpl> {
+                    public std::enable_shared_from_this<ClientExecutionServiceImpl> {
                 public:
                     static const int SHUTDOWN_CHECK_INTERVAL_SECONDS;
 
                     ClientExecutionServiceImpl(const std::string &name, const ClientProperties &clientProperties,
                                                int32_t poolSize, util::ILogger &logger);
 
-                    void execute(const boost::shared_ptr<util::Runnable> &command);
+                    void execute(const std::shared_ptr<util::Runnable> &command);
 
                     void shutdown();
 
@@ -56,19 +54,19 @@ namespace hazelcast {
                     shutdownExecutor(const std::string &name, util::ExecutorService &executor, util::ILogger &logger);
 
                     virtual void
-                    schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
+                    schedule(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis);
 
                     virtual void
-                    scheduleWithRepetition(const boost::shared_ptr<util::Runnable> &command,
+                    scheduleWithRepetition(const std::shared_ptr<util::Runnable> &command,
                                            int64_t initialDelayInMillis,
                                            int64_t periodInMillis);
 
-                virtual const boost::shared_ptr<util::ExecutorService> getUserExecutor() const;
+                virtual const std::shared_ptr<util::ExecutorService> getUserExecutor() const;
 
             private:
                     util::ILogger &logger;
-                    boost::shared_ptr<util::ScheduledExecutorService> internalExecutor;
-                    boost::shared_ptr<util::ExecutorService> userExecutor;
+                    std::shared_ptr<util::ScheduledExecutorService> internalExecutor;
+                    std::shared_ptr<util::ExecutorService> userExecutor;
                 };
             }
         }

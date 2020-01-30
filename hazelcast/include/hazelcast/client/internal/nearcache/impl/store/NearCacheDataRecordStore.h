@@ -39,7 +39,7 @@ namespace hazelcast {
                         public:
                             typedef AbstractNearCacheRecordStore<K, V, KS, record::NearCacheDataRecord, HeapNearCacheRecordMap<K, V, KS, record::NearCacheDataRecord> > ANCRS;
 
-                            static const int64_t REFERENCE_SIZE = sizeof(boost::shared_ptr<serialization::pimpl::Data>);
+                            static const int64_t REFERENCE_SIZE = sizeof(std::shared_ptr<serialization::pimpl::Data>);
 
                             NearCacheDataRecordStore(const std::string &name,
                                                      const client::config::NearCacheConfig<K, V> &config,
@@ -61,7 +61,7 @@ namespace hazelcast {
                                 if (record == NULL) {
                                     return 0L;
                                 }
-                                boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
+                                std::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 return
                                     // reference to this record inside map ("store" field)
                                         REFERENCE_SIZE
@@ -70,51 +70,51 @@ namespace hazelcast {
                                         // heap cost of this value data
                                         + (value.get() != NULL ? (int64_t) value->totalSize() : 0)
                                         // 3 primitive int64_t typed fields: "creationTime", "expirationTime" and "accessTime"
-                                        + (3 * (sizeof(hazelcast::util::Atomic<int64_t>)))
+                                        + (3 * (sizeof(std::atomic<int64_t>)))
                                         // reference to "accessHit" field
                                         + REFERENCE_SIZE
                                         // primitive int typed "value" field in "AtomicInteger" typed "accessHit" field
-                                        + (sizeof(hazelcast::util::Atomic<int32_t>));
+                                        + (sizeof(std::atomic<int32_t>));
                             }
 
                             //@Override
-                            std::auto_ptr<record::NearCacheDataRecord> valueToRecord(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            std::unique_ptr<record::NearCacheDataRecord> valueToRecord(
+                                    const std::shared_ptr<serialization::pimpl::Data> &value) {
                                 return valueToRecordInternal(value);
                             }
 
                             //@Override
-                            std::auto_ptr<record::NearCacheDataRecord> valueToRecord(
-                                    const boost::shared_ptr<V> &value) {
-                                const boost::shared_ptr<serialization::pimpl::Data> data = ANCRS::toData(value);
+                            std::unique_ptr<record::NearCacheDataRecord> valueToRecord(
+                                    const std::shared_ptr<V> &value) {
+                                const std::shared_ptr<serialization::pimpl::Data> data = ANCRS::toData(value);
                                 return valueToRecordInternal(data);
                             }
 
                             //@Override
-                            boost::shared_ptr<V> recordToValue(const record::NearCacheDataRecord *record) {
-                                const boost::shared_ptr<serialization::pimpl::Data> value = record->getValue();
+                            std::shared_ptr<V> recordToValue(const record::NearCacheDataRecord *record) {
+                                const std::shared_ptr<serialization::pimpl::Data> value = record->getValue();
                                 if (value.get() == NULL) {
                                     ANCRS::nearCacheStats.incrementMisses();
-                                    return boost::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
+                                    return std::static_pointer_cast<V>(NearCache<K, V>::NULL_OBJECT);
                                 }
                                 return ANCRS::dataToValue(value, (V *)NULL);
                             }
 
                             //@Override
-                            void putToRecord(boost::shared_ptr<record::NearCacheDataRecord> &record,
-                                             const boost::shared_ptr<V> &value) {
+                            void putToRecord(std::shared_ptr<record::NearCacheDataRecord> &record,
+                                             const std::shared_ptr<V> &value) {
                                 record->setValue(ANCRS::toData(value));
                             }
                         private:
-                            std::auto_ptr<record::NearCacheDataRecord> valueToRecordInternal(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &data) {
+                            std::unique_ptr<record::NearCacheDataRecord> valueToRecordInternal(
+                                    const std::shared_ptr<serialization::pimpl::Data> &data) {
                                 int64_t creationTime = util::currentTimeMillis();
                                 if (ANCRS::timeToLiveMillis > 0) {
-                                    return std::auto_ptr<record::NearCacheDataRecord>(
+                                    return std::unique_ptr<record::NearCacheDataRecord>(
                                             new record::NearCacheDataRecord(data, creationTime,
                                                                             creationTime + ANCRS::timeToLiveMillis));
                                 } else {
-                                    return std::auto_ptr<record::NearCacheDataRecord>(
+                                    return std::unique_ptr<record::NearCacheDataRecord>(
                                             new record::NearCacheDataRecord(data, creationTime,
                                                                             NearCacheRecord<V>::TIME_NOT_SET));
                                 }

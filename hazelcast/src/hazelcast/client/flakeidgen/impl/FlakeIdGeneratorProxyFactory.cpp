@@ -25,8 +25,8 @@ namespace hazelcast {
                 FlakeIdGeneratorProxyFactory::FlakeIdGeneratorProxyFactory(spi::ClientContext *clientContext) : clientContext(
                         clientContext) {}
 
-                boost::shared_ptr<spi::ClientProxy> FlakeIdGeneratorProxyFactory::create(const std::string &id) {
-                    return boost::shared_ptr<spi::ClientProxy>(
+                std::shared_ptr<spi::ClientProxy> FlakeIdGeneratorProxyFactory::create(const std::string &id) {
+                    return std::shared_ptr<spi::ClientProxy>(
                             new proxy::ClientFlakeIdGeneratorProxy(id, clientContext));
                 }
             }

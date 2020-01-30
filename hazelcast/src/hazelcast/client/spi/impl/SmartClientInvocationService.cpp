@@ -32,14 +32,14 @@ namespace hazelcast {
                           loadBalancer(*client.getClientConfig().getLoadBalancer()) {}
 
                 void
-                SmartClientInvocationService::invokeOnConnection(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                                                 boost::shared_ptr<connection::Connection> connection) {
+                SmartClientInvocationService::invokeOnConnection(std::shared_ptr<impl::ClientInvocation> invocation,
+                                                                 std::shared_ptr<connection::Connection> connection) {
                     send(invocation, connection);
                 }
 
                 void SmartClientInvocationService::invokeOnPartitionOwner(
-                        boost::shared_ptr<impl::ClientInvocation> invocation, int partitionId) {
-                    boost::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionId);
+                        std::shared_ptr<impl::ClientInvocation> invocation, int partitionId) {
+                    std::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionId);
                     if (owner.get() == NULL) {
                         throw (exception::ExceptionBuilder<exception::IOException>(
                                 "SmartClientInvocationService::invokeOnPartitionOwner")
@@ -51,42 +51,42 @@ namespace hazelcast {
                                                                                         << "' is not a member.").build();
                     }
                     invocation->getClientMessage()->setPartitionId(partitionId);
-                    boost::shared_ptr<connection::Connection> connection = getOrTriggerConnect(owner);
+                    std::shared_ptr<connection::Connection> connection = getOrTriggerConnect(owner);
                     send(invocation, connection);
                 }
 
                 void SmartClientInvocationService::invokeOnRandomTarget(
-                        boost::shared_ptr<impl::ClientInvocation> invocation) {
-                    boost::shared_ptr<Address> randomAddress = getRandomAddress();
+                        std::shared_ptr<impl::ClientInvocation> invocation) {
+                    std::shared_ptr<Address> randomAddress = getRandomAddress();
                     if (randomAddress.get() == NULL) {
                         throw (exception::ExceptionBuilder<exception::IOException>(
                                 "SmartClientInvocationService::invokeOnRandomTarget")
                                 << "No address found to invoke").build();
                     }
-                    boost::shared_ptr<connection::Connection> connection = getOrTriggerConnect(randomAddress);
+                    std::shared_ptr<connection::Connection> connection = getOrTriggerConnect(randomAddress);
                     send(invocation, connection);
                 }
 
-                void SmartClientInvocationService::invokeOnTarget(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                                                  const boost::shared_ptr<Address> &target) {
+                void SmartClientInvocationService::invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
+                                                                  const std::shared_ptr<Address> &target) {
                     if (!isMember(*target)) {
                         throw (exception::ExceptionBuilder<exception::TargetNotMemberException>(
                                 "SmartClientInvocationService::invokeOnTarget")
                                 << "Target '" << *target << "' is not a member.").build();
                     }
-                    boost::shared_ptr<connection::Connection> connection = getOrTriggerConnect(target);
+                    std::shared_ptr<connection::Connection> connection = getOrTriggerConnect(target);
                     invokeOnConnection(invocation, connection);
 
                 }
 
                 bool SmartClientInvocationService::isMember(const Address &target) const {
-                    boost::shared_ptr<Member> member = client.getClientClusterService().getMember(target);
+                    std::shared_ptr<Member> member = client.getClientClusterService().getMember(target);
                     return member.get() != NULL;
                 }
 
-                boost::shared_ptr<connection::Connection>
-                SmartClientInvocationService::getOrTriggerConnect(const boost::shared_ptr<Address> &target) const {
-                    boost::shared_ptr<connection::Connection> connection = connectionManager->getOrTriggerConnect(
+                std::shared_ptr<connection::Connection>
+                SmartClientInvocationService::getOrTriggerConnect(const std::shared_ptr<Address> &target) const {
+                    std::shared_ptr<connection::Connection> connection = connectionManager->getOrTriggerConnect(
                             *target);
                     if (connection.get() == NULL) {
                         throw (exception::ExceptionBuilder<exception::IOException>(
@@ -96,13 +96,13 @@ namespace hazelcast {
                     return connection;
                 }
 
-                boost::shared_ptr<Address> SmartClientInvocationService::getRandomAddress() {
+                std::shared_ptr<Address> SmartClientInvocationService::getRandomAddress() {
                     // TODO: Change loadBalancer to return pointer as in Java so that it is possible to denote the
                     // case where no address can be provided
-                    boost::shared_ptr<Address> address;
+                    std::shared_ptr<Address> address;
                     try {
                         Member member = loadBalancer.next();
-                        address = boost::shared_ptr<Address>(new Address(member.getAddress()));
+                        address = std::shared_ptr<Address>(new Address(member.getAddress()));
                     } catch (exception::IllegalStateException &) {
                         // do nothing, there is no available server
                     }

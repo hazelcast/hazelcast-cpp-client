@@ -52,7 +52,7 @@ namespace hazelcast {
                 const std::string &getTestName() const;
 
             private:
-                boost::shared_ptr<hazelcast::util::ILogger> logger;
+                std::shared_ptr<hazelcast::util::ILogger> logger;
                 std::string testName;
             };
         }

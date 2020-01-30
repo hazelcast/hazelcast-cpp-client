@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/exception/IException.h"
 #include "hazelcast/util/IOUtil.h"
@@ -38,7 +38,7 @@ namespace hazelcast {
                     std::vector<Address> addresses;
 
                     typedef std::map<std::string, std::string> LookupTable;
-                    BOOST_FOREACH(const LookupTable::value_type &privateAddress, lookupTable) {
+                    for (const LookupTable::value_type &privateAddress : lookupTable) {
                                     std::vector<Address> possibleAddresses = util::AddressHelper::getSocketAddresses(
                                             privateAddress.first + ":" + awsMemberPort, logger);
                                     addresses.insert(addresses.begin(), possibleAddresses.begin(),

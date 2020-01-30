@@ -28,7 +28,7 @@ namespace hazelcast {
                 const bool MapTryLockCodec::RETRYABLE = true;
                 const ResponseMessageConst MapTryLockCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> MapTryLockCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapTryLockCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         int64_t threadId,
@@ -36,7 +36,7 @@ namespace hazelcast {
                         int64_t timeout,
                         int64_t referenceId) {
                     int32_t requiredDataSize = calculateDataSize(name, key, threadId, lease, timeout, referenceId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapTryLockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

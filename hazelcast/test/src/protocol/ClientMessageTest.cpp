@@ -61,7 +61,7 @@ namespace hazelcast {
                 };
 
                 TEST_F(ClientMessageTest, testMessageFields) {
-                    std::auto_ptr<client::protocol::ClientMessage> msg =
+                    std::unique_ptr<client::protocol::ClientMessage> msg =
                             client::protocol::ClientMessage::createForEncode(22);
                     ASSERT_EQ(0, msg->getDataSize());
 

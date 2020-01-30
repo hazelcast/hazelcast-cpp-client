@@ -45,7 +45,7 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(SocketInterceptorTest, interceptSSLBasic) {
-                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
                 ClientConfig config = getConfig();
                 util::CountDownLatch interceptorLatch(1);

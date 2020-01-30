@@ -87,7 +87,7 @@ void generateUsers(IMap<std::string, User> &users) {
 int main() {
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().addPortableFactory(ThePortableFactory::FACTORY_ID,
-                                                             boost::shared_ptr<serialization::PortableFactory>(
+                                                             std::shared_ptr<serialization::PortableFactory>(
                                                                      new ThePortableFactory()));
     HazelcastClient hz(clientConfig);
     // Get a Distributed Map called "users"

@@ -30,7 +30,7 @@ namespace hazelcast {
 
                 bool offer(const serialization::pimpl::Data& e, long timeoutInMillis);
 
-                std::auto_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
+                std::unique_ptr<serialization::pimpl::Data> pollData(long timeoutInMillis);
 
                 int size();
             };

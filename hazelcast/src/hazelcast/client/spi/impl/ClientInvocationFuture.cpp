@@ -25,9 +25,9 @@ namespace hazelcast {
             namespace impl {
 
                 ClientInvocationFuture::ClientInvocationFuture(
-                        const boost::shared_ptr<Executor> &defaultExecutor, ILogger &logger,
-                        const boost::shared_ptr<protocol::ClientMessage> &request,
-                        const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence)
+                        const std::shared_ptr<Executor> &defaultExecutor, ILogger &logger,
+                        const std::shared_ptr<protocol::ClientMessage> &request,
+                        const std::shared_ptr<sequence::CallIdSequence> &callIdSequence)
                         : AbstractInvocationFuture<protocol::ClientMessage>(defaultExecutor, logger), request(request),
                           callIdSequence(callIdSequence) {}
 
@@ -38,15 +38,15 @@ namespace hazelcast {
                 }
 
                 void ClientInvocationFuture::andThen(
-                        const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback,
-                        const boost::shared_ptr<Executor> &executor) {
+                        const std::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback,
+                        const std::shared_ptr<Executor> &executor) {
                     AbstractInvocationFuture<protocol::ClientMessage>::andThen(
-                            boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> >(
+                            std::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> >(
                                     new InternalDelegatingExecutionCallback(callback, callIdSequence)), executor);
                 }
 
                 void ClientInvocationFuture::andThen(
-                        const boost::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback) {
+                        const std::shared_ptr<ExecutionCallback<protocol::ClientMessage> > &callback) {
                     AbstractInvocationFuture<protocol::ClientMessage>::andThen(callback);
                 }
 
@@ -54,12 +54,12 @@ namespace hazelcast {
                     callIdSequence->complete();
                 }
 
-                boost::shared_ptr<protocol::ClientMessage> ClientInvocationFuture::resolveAndThrowIfException(
-                        const boost::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::BaseState> &response) {
+                std::shared_ptr<protocol::ClientMessage> ClientInvocationFuture::resolveAndThrowIfException(
+                        const std::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::BaseState> &response) {
                     if (response->getType() == BaseState::Exception) {
-                        boost::shared_ptr<ExceptionState> exceptionState = boost::static_pointer_cast<ExceptionState>(
+                        std::shared_ptr<ExceptionState> exceptionState = std::static_pointer_cast<ExceptionState>(
                                 response);
-                        boost::shared_ptr<IException> exception = exceptionState->getException();
+                        std::shared_ptr<IException> exception = exceptionState->getException();
                         int32_t errorCode = exception->getErrorCode();
                         if (errorCode == ExecutionException::ERROR_CODE || errorCode == protocol::CANCELLATION ||
                             errorCode == protocol::INTERRUPTED) {
@@ -69,32 +69,32 @@ namespace hazelcast {
                         throw ExecutionException("ClientInvocationFuture::resolveAndThrowIfException",
                                                  "ExecutionException occured.", exception);
                     }
-                    boost::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::ValueState> valueState =
-                            boost::static_pointer_cast<AbstractInvocationFuture<protocol::ClientMessage>::ValueState>(
+                    std::shared_ptr<AbstractInvocationFuture<protocol::ClientMessage>::ValueState> valueState =
+                            std::static_pointer_cast<AbstractInvocationFuture<protocol::ClientMessage>::ValueState>(
                                     response);
 
                     return valueState->getValue();
                 }
 
-                const boost::shared_ptr<ClientInvocation> ClientInvocationFuture::getInvocation() {
+                const std::shared_ptr<ClientInvocation> ClientInvocationFuture::getInvocation() {
                     return invocation.lock();
                 }
 
                 void ClientInvocationFuture::setInvocation(
-                        const boost::weak_ptr<spi::impl::ClientInvocation> &invocation) {
+                        const std::weak_ptr<spi::impl::ClientInvocation> &invocation) {
                     this->invocation = invocation;
                 }
 
                 ClientInvocationFuture::InternalDelegatingExecutionCallback::InternalDelegatingExecutionCallback(
-                        const boost::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > &callback,
-                        const boost::shared_ptr<sequence::CallIdSequence> &callIdSequence) : callback(callback),
+                        const std::shared_ptr<client::ExecutionCallback<protocol::ClientMessage> > &callback,
+                        const std::shared_ptr<sequence::CallIdSequence> &callIdSequence) : callback(callback),
                                                                                              callIdSequence(
                                                                                                      callIdSequence) {
                     this->callIdSequence->forceNext();
                 }
 
                 void ClientInvocationFuture::InternalDelegatingExecutionCallback::onResponse(
-                        const boost::shared_ptr<protocol::ClientMessage> &message) {
+                        const std::shared_ptr<protocol::ClientMessage> &message) {
                     try {
                         callback->onResponse(message);
                         callIdSequence->complete();
@@ -104,7 +104,7 @@ namespace hazelcast {
                 }
 
                 void ClientInvocationFuture::InternalDelegatingExecutionCallback::onFailure(
-                        const boost::shared_ptr<exception::IException> &e) {
+                        const std::shared_ptr<exception::IException> &e) {
                     try {
                         callback->onFailure(e);
                         callIdSequence->complete();

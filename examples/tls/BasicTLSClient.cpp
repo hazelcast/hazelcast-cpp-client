@@ -39,7 +39,7 @@ int main() {
     map.put(1, 100);
     map.put(2, 200);
 
-    boost::shared_ptr<int> value = map.get(1);
+    std::shared_ptr<int> value = map.get(1);
 
     if (value.get()) {
         std::cout << "Value for key 1 is " << *value << std::endl;

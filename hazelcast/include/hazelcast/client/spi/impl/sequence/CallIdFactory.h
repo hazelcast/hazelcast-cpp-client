@@ -35,7 +35,7 @@ namespace hazelcast {
                 namespace sequence {
                     class HAZELCAST_API CallIdFactory {
                     public:
-                        static std::auto_ptr<CallIdSequence>
+                        static std::unique_ptr<CallIdSequence>
                         newCallIdSequence(bool isBackPressureEnabled, int32_t maxAllowedConcurrentInvocations,
                                           int64_t backoffTimeoutMs);
                     };

@@ -48,11 +48,11 @@ int main() {
     employees.put("Spencer", Employee(1000));
 
     EmployeeRaiseEntryProcessor processor;
-    std::map<std::string, boost::shared_ptr<int> > result =
+    std::map<std::string, std::shared_ptr<int> > result =
             employees.executeOnEntries<int, EmployeeRaiseEntryProcessor>(processor);
 
     std::cout << "The result after employees.executeOnEntries call is:" << std::endl;
-    for (std::map<std::string, boost::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
+    for (std::map<std::string, std::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
         std::cout << it->first << " salary: " << *it->second << std::endl;
     }
 
@@ -63,7 +63,7 @@ int main() {
     result = employees.executeOnKeys<int, EmployeeRaiseEntryProcessor>(keys, processor);
 
     std::cout << "The result after employees.executeOnKeys call is:" << std::endl;
-    for (std::map<std::string, boost::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
+    for (std::map<std::string, std::shared_ptr<int> >::const_iterator it = result.begin(); it != result.end(); ++it) {
         std::cout << it->first << " salary: " << *it->second << std::endl;
     }
     

@@ -59,21 +59,21 @@ namespace hazelcast {
                 setDataOffset(HEADER_SIZE);
             }
 
-            std::auto_ptr<ClientMessage> ClientMessage::createForEncode(int32_t size) {
-                std::auto_ptr<ClientMessage> msg(new ClientMessage(size));
+            std::unique_ptr<ClientMessage> ClientMessage::createForEncode(int32_t size) {
+                std::unique_ptr<ClientMessage> msg(new ClientMessage(size));
                 msg->wrapForEncode(size);
                 return msg;
             }
 
-            std::auto_ptr<ClientMessage> ClientMessage::createForDecode(const ClientMessage &msg) {
+            std::unique_ptr<ClientMessage> ClientMessage::createForDecode(const ClientMessage &msg) {
                 // copy constructor does not do deep copy of underlying buffer but just uses a shared_ptr
-                std::auto_ptr<ClientMessage> copy(new ClientMessage(msg));
+                std::unique_ptr<ClientMessage> copy(new ClientMessage(msg));
                 copy->wrapForRead(copy->getCapacity(), ClientMessage::HEADER_SIZE);
                 return copy;
             }
 
-            std::auto_ptr<ClientMessage> ClientMessage::create(int32_t size) {
-                return std::auto_ptr<ClientMessage>(new ClientMessage(size));
+            std::unique_ptr<ClientMessage> ClientMessage::create(int32_t size) {
+                return std::unique_ptr<ClientMessage>(new ClientMessage(size));
             }
 
             //----- Setter methods begin --------------------------------------
@@ -238,7 +238,7 @@ namespace hazelcast {
                 assert(checkReadAvailable(len));
 
                 byte *start = ix();
-                std::auto_ptr<std::vector<byte> > bytes = std::auto_ptr<std::vector<byte> >(new std::vector<byte>(start,
+                std::unique_ptr<std::vector<byte> > bytes = std::unique_ptr<std::vector<byte> >(new std::vector<byte>(start,
                                                                                                                   start +
                                                                                                                   len));
                 index += len;

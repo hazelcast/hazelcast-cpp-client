@@ -102,7 +102,7 @@ namespace hazelcast {
                 *
                 * @return the head of the queue. If queue is empty waits for an item to be added.
                 */
-                std::auto_ptr<T> take() {
+                std::unique_ptr<T> take() {
                     return serializationService.toObject<T>(queue.pollData(-1).get());
                 }
 
@@ -111,7 +111,7 @@ namespace hazelcast {
                 * @param timeoutInMillis time to wait if item is not available.
                 * @return the head of the queue. If queue is empty waits for specified time.
                 */
-                std::auto_ptr<T> poll(long timeoutInMillis) {
+                std::unique_ptr<T> poll(long timeoutInMillis) {
                     return serializationService.toObject<T>(queue.pollData(timeoutInMillis).get());
                 }
 
@@ -145,8 +145,8 @@ namespace hazelcast {
                 *
                 * @return The elements in the queue.
                 */
-                std::auto_ptr<DataArray<T> > drainTo() {
-                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(-1), serializationService));
+                std::unique_ptr<DataArray<T> > drainTo() {
+                    return std::unique_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(-1), serializationService));
                 }
 
                 /**
@@ -154,8 +154,8 @@ namespace hazelcast {
                 * @param maxElements upper limit to be filled.
                 * @return The elements in the queue.
                 */
-                std::auto_ptr<DataArray<T> > drainTo(size_t maxElements) {
-                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(maxElements), serializationService));
+                std::unique_ptr<DataArray<T> > drainTo(size_t maxElements) {
+                    return std::unique_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.drainToData(maxElements), serializationService));
                 }
 
                 /**
@@ -163,7 +163,7 @@ namespace hazelcast {
                 *
                 * @return removes head of the queue and returns it to user . If not available returns empty constructed shared_ptr.
                 */
-                std::auto_ptr<T> poll() {
+                std::unique_ptr<T> poll() {
                     return serializationService.toObject<T>(queue.pollData(0).get());
                 }
 
@@ -172,7 +172,7 @@ namespace hazelcast {
                 *
                 * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
                 */
-                std::auto_ptr<T> peek() {
+                std::unique_ptr<T> peek() {
                     return serializationService.toObject<T>(queue.peekData().get());
                 }
 
@@ -196,8 +196,8 @@ namespace hazelcast {
                 *
                 * @returns all elements
                 */
-                std::auto_ptr<DataArray<T> > toArray() {
-                    return std::auto_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.toArrayData(), serializationService));
+                std::unique_ptr<DataArray<T> > toArray() {
+                    return std::unique_ptr<DataArray<T> >(new hazelcast::client::impl::DataArrayImpl<T>(queue.toArrayData(), serializationService));
                 }
 
                 /**

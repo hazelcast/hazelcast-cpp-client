@@ -46,11 +46,11 @@ namespace hazelcast {
         }
 
         void RuntimeAvailableProcessors::override(int availableProcessors) {
-            RuntimeAvailableProcessors::currentAvailableProcessors.set(availableProcessors);
+            RuntimeAvailableProcessors::currentAvailableProcessors.store(availableProcessors);
         }
 
         void RuntimeAvailableProcessors::resetOverride() {
-            currentAvailableProcessors.set(getNumberOfProcessors());
+            currentAvailableProcessors.store(getNumberOfProcessors());
         }
     }
 }

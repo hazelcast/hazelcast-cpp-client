@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
-#include <boost/make_shared.hpp>
+
+
 
 #include "hazelcast/client/spi/impl/ClientClusterServiceImpl.h"
 #include "hazelcast/client/spi/ClientContext.h"
@@ -33,46 +33,46 @@ namespace hazelcast {
                 impl::ClientClusterServiceImpl::ClientClusterServiceImpl(hazelcast::client::spi::ClientContext &client)
                         : client(client) {
                     ClientConfig &config = client.getClientConfig();
-                    const std::set<boost::shared_ptr<MembershipListener> > &membershipListeners = config.getManagedMembershipListeners();
+                    const std::set<std::shared_ptr<MembershipListener> > &membershipListeners = config.getManagedMembershipListeners();
 
-                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, membershipListeners) {
+                    for (const std::shared_ptr<MembershipListener> &listener : membershipListeners) {
                                     addMembershipListenerWithoutInit(listener);
                                 }
                 }
 
                 std::string ClientClusterServiceImpl::addMembershipListenerWithoutInit(
-                        const boost::shared_ptr<MembershipListener> &listener) {
+                        const std::shared_ptr<MembershipListener> &listener) {
                     std::string id = util::UuidUtil::newUnsecureUuidString();
                     listeners.put(id, listener);
                     listener->setRegistrationId(id);
                     return id;
                 }
 
-                boost::shared_ptr<Member> ClientClusterServiceImpl::getMember(const Address &address) {
-                    std::map<Address, boost::shared_ptr<Member> > currentMembers = members.get();
-                    const std::map<hazelcast::client::Address, boost::shared_ptr<hazelcast::client::Member> >::iterator &it = currentMembers.find(
+                std::shared_ptr<Member> ClientClusterServiceImpl::getMember(const Address &address) {
+                    std::map<Address, std::shared_ptr<Member> > currentMembers = members.get();
+                    const std::map<hazelcast::client::Address, std::shared_ptr<hazelcast::client::Member> >::iterator &it = currentMembers.find(
                             address);
                     if (it == currentMembers.end()) {
-                        return boost::shared_ptr<Member>();
+                        return std::shared_ptr<Member>();
                     }
                     return it->second;
                 }
 
-                boost::shared_ptr<Member> ClientClusterServiceImpl::getMember(const std::string &uuid) {
+                std::shared_ptr<Member> ClientClusterServiceImpl::getMember(const std::string &uuid) {
                     std::vector<Member> memberList = getMemberList();
-                    BOOST_FOREACH(const Member &member, memberList) {
+                    for (const Member &member : memberList) {
                                     if (uuid == member.getUuid()) {
-                                        return boost::shared_ptr<Member>(new Member(member));
+                                        return std::shared_ptr<Member>(new Member(member));
                                     }
                                 }
-                    return boost::shared_ptr<Member>();
+                    return std::shared_ptr<Member>();
                 }
 
                 std::vector<Member> ClientClusterServiceImpl::getMemberList() {
-                    typedef std::map<Address, boost::shared_ptr<Member> > MemberMap;
+                    typedef std::map<Address, std::shared_ptr<Member> > MemberMap;
                     MemberMap memberMap = members.get();
                     std::vector<Member> memberList;
-                    BOOST_FOREACH(const MemberMap::value_type &entry, memberMap) {
+                    for (const MemberMap::value_type &entry : memberMap) {
                                     memberList.push_back(*entry.second);
                                 }
                     return memberList;
@@ -95,9 +95,9 @@ namespace hazelcast {
                 void ClientClusterServiceImpl::handleMembershipEvent(const MembershipEvent &event) {
                     util::LockGuard guard(initialMembershipListenerMutex);
                     const Member &member = event.getMember();
-                    std::map<Address, boost::shared_ptr<Member> > newMap = members.get();
+                    std::map<Address, std::shared_ptr<Member> > newMap = members.get();
                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
-                        newMap[member.getAddress()] = boost::shared_ptr<Member>(new Member(member));
+                        newMap[member.getAddress()] = std::shared_ptr<Member>(new Member(member));
                     } else {
                         newMap.erase(member.getAddress());
                     }
@@ -106,7 +106,7 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::fireMembershipEvent(const MembershipEvent &event) {
-                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                    for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
                                     if (event.getEventType() == MembershipEvent::MEMBER_ADDED) {
                                         listener->memberAdded(event);
                                     } else {
@@ -116,7 +116,7 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::fireMemberAttributeEvent(const MemberAttributeEvent &event) {
-                    BOOST_FOREACH(const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                    for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
                                     listener->memberAttributeChanged(event);
                                 }
                 }
@@ -124,9 +124,9 @@ namespace hazelcast {
                 void ClientClusterServiceImpl::handleInitialMembershipEvent(const InitialMembershipEvent &event) {
                     util::LockGuard guard(initialMembershipListenerMutex);
                     const std::vector<Member> &initialMembers = event.getMembers();
-                    std::map<Address, boost::shared_ptr<Member> > newMap;
-                    BOOST_FOREACH (const Member &initialMember, initialMembers) {
-                                    newMap[initialMember.getAddress()] = boost::shared_ptr<Member>(
+                    std::map<Address, std::shared_ptr<Member> > newMap;
+                    for (const Member &initialMember : initialMembers) {
+                                    newMap[initialMember.getAddress()] = std::shared_ptr<Member>(
                                             new Member(initialMember));
                                 }
                     members.set(newMap);
@@ -135,7 +135,7 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::fireInitialMembershipEvent(const InitialMembershipEvent &event) {
-                    BOOST_FOREACH (const boost::shared_ptr<MembershipListener> &listener, listeners.values()) {
+                    for (const std::shared_ptr<MembershipListener> &listener : listeners.values()) {
                                     if (listener->shouldRequestInitialMembers()) {
                                         ((InitialMembershipListener *) listener.get())->init(event);
                                     }
@@ -146,12 +146,12 @@ namespace hazelcast {
                 }
 
                 void ClientClusterServiceImpl::listenMembershipEvents(
-                        const boost::shared_ptr<connection::Connection> &ownerConnection) {
+                        const std::shared_ptr<connection::Connection> &ownerConnection) {
                     clientMembershipListener->listenMembershipEvents(clientMembershipListener, ownerConnection);
                 }
 
                 std::string
-                ClientClusterServiceImpl::addMembershipListener(const boost::shared_ptr<MembershipListener> &listener) {
+                ClientClusterServiceImpl::addMembershipListener(const std::shared_ptr<MembershipListener> &listener) {
                     if (listener.get() == NULL) {
                         throw exception::NullPointerException("ClientClusterServiceImpl::addMembershipListener",
                                                               "listener can't be null");
@@ -170,7 +170,7 @@ namespace hazelcast {
                 std::vector<Member>
                 ClientClusterServiceImpl::getMembers(const cluster::memberselector::MemberSelector &selector) {
                     std::vector<Member> result;
-                    BOOST_FOREACH(const Member &member, getMemberList()) {
+                    for (const Member &member : getMemberList()) {
                                     if (selector.select(member)) {
                                         result.push_back(member);
                                     }
@@ -185,14 +185,14 @@ namespace hazelcast {
 
                 Client ClientClusterServiceImpl::getLocalClient() const {
                     connection::ClientConnectionManagerImpl &cm = client.getConnectionManager();
-                    boost::shared_ptr<connection::Connection> connection = cm.getOwnerConnection();
-                    boost::shared_ptr<Address> inetSocketAddress =
-                            connection.get() != NULL ? boost::shared_ptr<Address>(connection->getLocalSocketAddress())
-                                                     : boost::shared_ptr<Address>();
-                    const boost::shared_ptr<protocol::Principal> principal = cm.getPrincipal();
-                    boost::shared_ptr<std::string> uuid =
-                            principal.get() != NULL ? boost::make_shared<std::string>(*principal->getUuid())
-                                                    : boost::shared_ptr<std::string>();
+                    std::shared_ptr<connection::Connection> connection = cm.getOwnerConnection();
+                    std::shared_ptr<Address> inetSocketAddress =
+                            connection.get() != NULL ? std::shared_ptr<Address>(connection->getLocalSocketAddress())
+                                                     : std::shared_ptr<Address>();
+                    const std::shared_ptr<protocol::Principal> principal = cm.getPrincipal();
+                    std::shared_ptr<std::string> uuid =
+                            principal.get() != NULL ? std::make_shared<std::string>(*principal->getUuid())
+                                                    : std::shared_ptr<std::string>();
                     return Client(uuid, inetSocketAddress, client.getName());
                 }
             }

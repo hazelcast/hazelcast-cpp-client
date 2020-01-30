@@ -24,8 +24,8 @@ namespace hazelcast {
                 AtomicLongProxyFactory::AtomicLongProxyFactory(spi::ClientContext *clientContext) : clientContext(
                         clientContext) {}
 
-                boost::shared_ptr<spi::ClientProxy> AtomicLongProxyFactory::create(const std::string &id) {
-                    return boost::shared_ptr<spi::ClientProxy>(new proxy::ClientAtomicLongProxy(id, clientContext));
+                std::shared_ptr<spi::ClientProxy> AtomicLongProxyFactory::create(const std::string &id) {
+                    return std::shared_ptr<spi::ClientProxy>(new proxy::ClientAtomicLongProxy(id, clientContext));
                 }
             }
         }

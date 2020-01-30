@@ -17,7 +17,7 @@
 #include "ClientTestSupport.h"
 
 #include <gtest/gtest.h>
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/Thread.h"
@@ -61,7 +61,7 @@ namespace hazelcast {
                                     case 1:
                                         ASSERT_NO_THROW(map.remove(i));
                                     case 2: {
-                                        boost::shared_ptr<int> val;
+                                        std::shared_ptr<int> val;
                                         ASSERT_NO_THROW(val = map.get(i));
                                         if ((int *) NULL != val.get()) {
                                             ASSERT_EQ(*val, i);
@@ -85,24 +85,24 @@ namespace hazelcast {
                     };
 
                     void addThread(IMap<int, int> &map, int numberOfOps, util::CountDownLatch &latch) {
-                        boost::shared_ptr<util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
-                        threads.push_back(boost::shared_ptr<util::Thread>(new util::Thread(task, getLogger())));
+                        std::shared_ptr<util::Runnable> task(new LoadClientTask(map, numberOfOps, latch));
+                        threads.push_back(std::shared_ptr<util::Thread>(new util::Thread(task, getLogger())));
                     }
 
                     void startThreads() {
-                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                        for (std::shared_ptr<util::Thread> &t : threads) {
                                         t->start();
                                     }
                     }
 
                     void waitForThreadsToFinish() {
-                        BOOST_FOREACH(boost::shared_ptr<util::Thread> &t, threads) {
+                        for (std::shared_ptr<util::Thread> &t : threads) {
                                         t->join();
                                     }
                     }
 
                 protected:
-                    std::vector<boost::shared_ptr<util::Thread> > threads;
+                    std::vector<std::shared_ptr<util::Thread> > threads;
                 };
 
                 void loadIntMapTestWithConfig(ClientConfig &config, LoadTest &test) {

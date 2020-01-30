@@ -28,7 +28,7 @@ namespace hazelcast {
                     os << "Default DataMemberSelector";
                 }
 
-                const std::auto_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
+                const std::unique_ptr<MemberSelector> MemberSelectors::DATA_MEMBER_SELECTOR(
                         new MemberSelectors::DataMemberSelector());
             }
         }

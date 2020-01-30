@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool SemaphoreInitCodec::RETRYABLE = false;
                 const ResponseMessageConst SemaphoreInitCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> SemaphoreInitCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> SemaphoreInitCodec::encodeRequest(
                         const std::string &name,
                         int32_t permits) {
                     int32_t requiredDataSize = calculateDataSize(name, permits);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) SemaphoreInitCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

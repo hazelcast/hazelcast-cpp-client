@@ -114,11 +114,11 @@ namespace hazelcast {
                 int n = 10;
                 util::CountDownLatch latch(n);
 
-                std::vector<boost::shared_ptr<util::Thread> > allThreads;
+                std::vector<std::shared_ptr<util::Thread> > allThreads;
                 for (int i = 0; i < n; i++) {
-                    boost::shared_ptr<util::Thread> t(
+                    std::shared_ptr<util::Thread> t(
                             new util::Thread(
-                                    boost::shared_ptr<util::Runnable>(new PutGetRemoveTestTask(client, mm, latch)),
+                                    std::shared_ptr<util::Runnable>(new PutGetRemoveTestTask(client, mm, latch)),
                                     getLogger()));
                     t->start();
                     allThreads.push_back(t);

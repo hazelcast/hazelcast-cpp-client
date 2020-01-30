@@ -107,21 +107,21 @@ namespace hazelcast {
                  * can be provided for execution upon completion, as demonstrated in the
                  * following examples:
                  * <pre><code>
-                 * boost::shared_ptr<ICompletableFuture<int64_t> > future = atomicLong.addAndGetAsync(13);
+                 * std::shared_ptr<ICompletableFuture<int64_t> > future = atomicLong.addAndGetAsync(13);
                  * // do something else, then read the result
                  *
                  * // this method will block until the result is available
                  * int64_t result = future.get();
                  * </code></pre>
                  * <pre><code>
-                 *   future->andThen(boost::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
+                 *   future->andThen(std::shared_ptr<ExecutionCallback<V> >(new  MyExecutionCallback()));
                  * </code></pre>
                  *
                  * @param delta the value to add
                  * @return an {@link ICompletableFuture} bearing the response
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta) = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > addAndGetAsync(int64_t delta) = 0;
 
                 /**
                  * Atomically sets the value to the given updated value
@@ -136,7 +136,7 @@ namespace hazelcast {
                  * or {@code false} if the actual value was not equal to the expected value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<bool> >
+                virtual std::shared_ptr<ICompletableFuture<bool> >
                 compareAndSetAsync(int64_t expect, int64_t update) = 0;
 
                 /**
@@ -148,7 +148,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the updated value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync() = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > decrementAndGetAsync() = 0;
 
                 /**
                  * Gets the current value. This method will dispatch a request and return
@@ -157,7 +157,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the current value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAsync() = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAsync() = 0;
 
                 /**
                  * Atomically adds the given value to the current value.
@@ -169,7 +169,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the old value before the addition
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta) = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAndAddAsync(int64_t delta) = 0;
 
                 /**
                  * Atomically sets the given value and returns the old value.
@@ -181,7 +181,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the old value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> >
+                virtual std::shared_ptr<ICompletableFuture<int64_t> >
                 getAndSetAsync(int64_t newValue) = 0;
 
                 /**
@@ -193,7 +193,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the updated value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync() = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > incrementAndGetAsync() = 0;
 
                 /**
                  * Atomically increments the current value by one.
@@ -204,7 +204,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture} with the old value
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync() = 0;
+                virtual std::shared_ptr<ICompletableFuture<int64_t> > getAndIncrementAsync() = 0;
 
                 /**
                  * Atomically sets the given value.
@@ -216,7 +216,7 @@ namespace hazelcast {
                  * @return an {@link ICompletableFuture}
                  * @since cluster version 3.7
                  */
-                virtual boost::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue) = 0;
+                virtual std::shared_ptr<ICompletableFuture<void> > setAsync(int64_t newValue) = 0;
             };
         }
     }

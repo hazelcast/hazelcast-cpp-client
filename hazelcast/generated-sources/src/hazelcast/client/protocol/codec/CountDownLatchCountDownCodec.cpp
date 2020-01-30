@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool CountDownLatchCountDownCodec::RETRYABLE = false;
                 const ResponseMessageConst CountDownLatchCountDownCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> CountDownLatchCountDownCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> CountDownLatchCountDownCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) CountDownLatchCountDownCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

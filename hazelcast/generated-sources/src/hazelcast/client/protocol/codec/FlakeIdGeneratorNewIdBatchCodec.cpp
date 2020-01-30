@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool FlakeIdGeneratorNewIdBatchCodec::RETRYABLE = true;
                 const ResponseMessageConst FlakeIdGeneratorNewIdBatchCodec::RESPONSE_TYPE = (ResponseMessageConst) 126;
 
-                std::auto_ptr<ClientMessage> FlakeIdGeneratorNewIdBatchCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> FlakeIdGeneratorNewIdBatchCodec::encodeRequest(
                         const std::string &name, 
                         int32_t batchSize) {
                     int32_t requiredDataSize = calculateDataSize(name, batchSize);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)FlakeIdGeneratorNewIdBatchCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

@@ -17,7 +17,7 @@
 // Created by İhsan Demir on Mar 6 2016.
 //
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <ClientTestSupport.h>
 #include "hazelcast/util/ConcurrentQueue.h"
@@ -122,10 +122,10 @@ namespace hazelcast {
 
                     int removalValue = 10;
 
-                    std::vector<boost::shared_ptr<hazelcast::util::Thread> > allThreads;
+                    std::vector<std::shared_ptr<hazelcast::util::Thread> > allThreads;
                     for (int i = 0; i < numThreads; i++) {
-                        boost::shared_ptr<hazelcast::util::Thread> t(
-                                new hazelcast::util::Thread(boost::shared_ptr<hazelcast::util::Runnable>(
+                        std::shared_ptr<hazelcast::util::Thread> t(
+                                new hazelcast::util::Thread(std::shared_ptr<hazelcast::util::Runnable>(
                                         new ConcurrentQueueTask(q, startLatch, startRemoveLatch, removalValue)),
                                                 getLogger()));
                         t->start();

@@ -164,9 +164,9 @@ namespace hazelcast {
                 util::CountDownLatch attributeLatch(7);
                 util::CountDownLatch attributeLatchInit(7);
 
-                boost::shared_ptr<MembershipListener> sampleInitialListener(
+                std::shared_ptr<MembershipListener> sampleInitialListener(
                         new SampleInitialListener(memberAddedInit, attributeLatchInit, memberRemovedInit));
-                boost::shared_ptr<MembershipListener> sampleListener(
+                std::shared_ptr<MembershipListener> sampleListener(
                         new SampleListenerInSimpleListenerTest(memberAdded, attributeLatch, memberRemoved));
 
                 std::string initialListenerRegistrationId = cluster.addMembershipListener(sampleInitialListener);

@@ -10,9 +10,9 @@
 #include <thrift/TDispatchProcessor.h>
 #include <thrift/async/TConcurrentClientSyncInfo.h>
 #include <memory>
-#include "remote-controller_types.h"
+#include "remote_controller_types.h"
 
-
+namespace hazelcast { namespace client { namespace test { namespace remote {
 
 #ifdef _MSC_VER
   #pragma warning( push )
@@ -1968,6 +1968,6 @@ class RemoteControllerConcurrentClient : virtual public RemoteControllerIf {
   #pragma warning( pop )
 #endif
 
-
+}}}} // namespace
 
 #endif

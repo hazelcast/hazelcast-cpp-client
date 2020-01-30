@@ -22,8 +22,8 @@ namespace hazelcast {
             namespace impl {
                 namespace listener {
                     ClientRegistrationKey::ClientRegistrationKey(const std::string &userRegistrationId,
-                                                                 const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
-                                                                 const boost::shared_ptr<ListenerMessageCodec> &codec)
+                                                                 const std::shared_ptr<EventHandler<protocol::ClientMessage> > &handler,
+                                                                 const std::shared_ptr<ListenerMessageCodec> &codec)
                             : userRegistrationId(userRegistrationId), handler(handler), codec(codec) {
                     }
 
@@ -35,12 +35,12 @@ namespace hazelcast {
                         return userRegistrationId;
                     }
 
-                    const boost::shared_ptr<EventHandler<protocol::ClientMessage> > &
+                    const std::shared_ptr<EventHandler<protocol::ClientMessage> > &
                     ClientRegistrationKey::getHandler() const {
                         return handler;
                     }
 
-                    const boost::shared_ptr<ListenerMessageCodec> &ClientRegistrationKey::getCodec() const {
+                    const std::shared_ptr<ListenerMessageCodec> &ClientRegistrationKey::getCodec() const {
                         return codec;
                     }
 

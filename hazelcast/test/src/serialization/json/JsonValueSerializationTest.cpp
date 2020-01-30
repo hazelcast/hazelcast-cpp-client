@@ -33,7 +33,7 @@ namespace hazelcast {
             TEST_F(JsonValueSerializationTest, testSerializeDeserializeJsonValue) {
                 HazelcastJsonValue jsonValue("{ \"key\": \"value\" }");
                 serialization::pimpl::Data jsonData = serializationService.toData(&jsonValue);
-                std::auto_ptr<HazelcastJsonValue> jsonDeserialized(
+                std::unique_ptr<HazelcastJsonValue> jsonDeserialized(
                         serializationService.toObject<HazelcastJsonValue>(jsonData));
                 ASSERT_EQ_PTR(jsonValue, jsonDeserialized.get(), HazelcastJsonValue);
             }

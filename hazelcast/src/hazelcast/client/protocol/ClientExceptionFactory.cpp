@@ -120,13 +120,13 @@ namespace hazelcast {
                 }
             }
 
-            std::auto_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
+            std::unique_ptr<exception::IException> ClientExceptionFactory::createException(const std::string &source,
                                                                                          protocol::ClientMessage &clientMessage) const {
                 codec::ErrorCodec error = codec::ErrorCodec::decode(clientMessage);
                 std::map<int, hazelcast::client::protocol::ExceptionFactory *>::const_iterator it = errorCodeToFactory.find(
                         error.errorCode);
                 if (errorCodeToFactory.end() == it) {
-                    return std::auto_ptr<exception::IException>(
+                    return std::unique_ptr<exception::IException>(
                             new exception::UndefinedErrorCodeException(source, "",
                                                                        error.errorCode,
                                                                        clientMessage.getCorrelationId(),

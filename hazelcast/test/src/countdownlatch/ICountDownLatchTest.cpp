@@ -31,7 +31,7 @@ namespace hazelcast {
                 HazelcastServer instance;
                 ClientConfig clientConfig;
                 HazelcastClient client;
-                std::auto_ptr<ICountDownLatch> l;
+                std::unique_ptr<ICountDownLatch> l;
             };
 
             ICountDownLatchTest::ICountDownLatchTest()

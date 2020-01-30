@@ -64,7 +64,7 @@ public:
 int main() {
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().addDataSerializableFactory(SampleDataSerializableFactory::FACTORY_ID,
-                                                                     boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                                     std::shared_ptr<serialization::DataSerializableFactory>(
                                                                              new SampleDataSerializableFactory()));
 
     HazelcastClient hz(clientConfig);

@@ -58,7 +58,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client->getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 context.commitTransaction();

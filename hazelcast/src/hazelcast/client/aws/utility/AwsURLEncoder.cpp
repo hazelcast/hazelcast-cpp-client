@@ -17,8 +17,7 @@
 #include <cctype>
 #include <sstream>
 #include <iomanip>
-
-#include <boost/algorithm/string/replace.hpp>
+#include <regex>
 
 #include "hazelcast/client/aws/utility/AwsURLEncoder.h"
 
@@ -28,8 +27,8 @@ namespace hazelcast {
             namespace utility {
                 std::string AwsURLEncoder::urlEncode(const std::string &value) {
                     std::string result = escapeEncode(value);
-                    boost::replace_all(result, "+", "%20");
-                    return result;
+                    std::regex re("\\+");
+                    return std::regex_replace(result, re, "%20");
                 }
 
                 std::string AwsURLEncoder::escapeEncode(const std::string &value) {

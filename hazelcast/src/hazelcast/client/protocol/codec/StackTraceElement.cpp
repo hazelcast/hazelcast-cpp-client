@@ -30,9 +30,9 @@ namespace hazelcast {
                 }
 
                 StackTraceElement::StackTraceElement(const std::string &className, const std::string &method,
-                                  std::auto_ptr<std::string> file, int line) : declaringClass(className),
+                                  std::unique_ptr<std::string> &file, int line) : declaringClass(className),
                                                                                  methodName(method),
-                                                                                 fileName(file),
+                                                                                 fileName(std::move(file)),
                                                                                  lineNumber(line) { }
 
 
@@ -40,9 +40,9 @@ namespace hazelcast {
                     declaringClass = rhs.declaringClass;
                     methodName = rhs.methodName;
                     if (NULL == rhs.fileName.get()) {
-                        fileName = std::auto_ptr<std::string>();
+                        fileName = std::unique_ptr<std::string>();
                     } else {
-                        fileName = std::auto_ptr<std::string>(new std::string(*rhs.fileName));
+                        fileName = std::unique_ptr<std::string>(new std::string(*rhs.fileName));
                     }
                     lineNumber = rhs.lineNumber;
                 }
@@ -51,9 +51,9 @@ namespace hazelcast {
                     declaringClass = rhs.declaringClass;
                     methodName = rhs.methodName;
                     if (NULL == rhs.fileName.get()) {
-                        fileName = std::auto_ptr<std::string>();
+                        fileName = std::unique_ptr<std::string>();
                     } else {
-                        fileName = std::auto_ptr<std::string>(new std::string(*rhs.fileName));
+                        fileName = std::unique_ptr<std::string>(new std::string(*rhs.fileName));
                     }
                     lineNumber = rhs.lineNumber;
                     return *this;

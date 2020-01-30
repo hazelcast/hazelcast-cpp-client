@@ -15,8 +15,6 @@
  */
 #include "HazelcastServerFactory.h"
 
-#include <boost/make_shared.hpp>
-
 #include "../ClientTestSupport.h"
 #include "../HazelcastServer.h"
 #include "../serialization/Employee.h"
@@ -41,8 +39,8 @@ namespace hazelcast {
                 protected:
                     class ReadOneWithLatchTask : public util::Runnable {
                     public:
-                        ReadOneWithLatchTask(const boost::shared_ptr<Ringbuffer<std::string> > &clientRingbuffer,
-                                             const boost::shared_ptr<CountDownLatch> &latch) : clientRingbuffer(
+                        ReadOneWithLatchTask(const std::shared_ptr<Ringbuffer<std::string> > &clientRingbuffer,
+                                             const std::shared_ptr<CountDownLatch> &latch) : clientRingbuffer(
                                 clientRingbuffer), latch(latch) {}
 
                         virtual const string getName() const {
@@ -60,8 +58,8 @@ namespace hazelcast {
                         }
 
                     private:
-                        const boost::shared_ptr<Ringbuffer<std::string> > clientRingbuffer;
-                        const boost::shared_ptr<util::CountDownLatch> latch;
+                        const std::shared_ptr<Ringbuffer<std::string> > clientRingbuffer;
+                        const std::shared_ptr<util::CountDownLatch> latch;
                         static const int CAPACITY;
                     };
 
@@ -90,8 +88,8 @@ namespace hazelcast {
                     static HazelcastServer *instance;
                     static HazelcastClient *client;
                     static HazelcastClient *client2;
-                    boost::shared_ptr<Ringbuffer<std::string> > clientRingbuffer;
-                    boost::shared_ptr<Ringbuffer<std::string> > client2Ringbuffer;
+                    std::shared_ptr<Ringbuffer<std::string> > clientRingbuffer;
+                    std::shared_ptr<Ringbuffer<std::string> > client2Ringbuffer;
                     std::vector<std::string> items;
 
                     static const int64_t CAPACITY;
@@ -104,7 +102,7 @@ namespace hazelcast {
                 HazelcastClient *RingbufferTest::client2 = NULL;
 
                 TEST_F(RingbufferTest, testAPI) {
-                    boost::shared_ptr<Ringbuffer<Employee> > rb = client->getRingbuffer<Employee>(getTestName() + "2");
+                    std::shared_ptr<Ringbuffer<Employee> > rb = client->getRingbuffer<Employee>(getTestName() + "2");
                     ASSERT_EQ(CAPACITY, rb->capacity());
                     ASSERT_EQ(0, rb->headSequence());
                     ASSERT_EQ(-1, rb->tailSequence());
@@ -159,22 +157,22 @@ namespace hazelcast {
                 }
 
                 TEST_F(RingbufferTest, readManyAsync_whenHitsStale_shouldNotBeBlocked) {
-                    boost::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
+                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
                             0, 1, 10, NULL);
                     client2Ringbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
                     try {
                         f->get();
                     } catch (exception::ExecutionException &e) {
-                        boost::shared_ptr<exception::IException> cause = e.getCause();
+                        std::shared_ptr<exception::IException> cause = e.getCause();
                         ASSERT_NOTNULL(cause.get(), exception::IException);
                         ASSERT_THROW(cause->raise(), exception::StaleSequenceException);
                     }
                 }
 
                 TEST_F(RingbufferTest, readOne_whenHitsStale_shouldNotBeBlocked) {
-                    boost::shared_ptr<hazelcast::util::CountDownLatch> latch = boost::make_shared<util::CountDownLatch>(
+                    std::shared_ptr<hazelcast::util::CountDownLatch> latch = std::make_shared<util::CountDownLatch>(
                             1);
-                    util::Thread consumer(boost::make_shared<ReadOneWithLatchTask>(clientRingbuffer, latch),
+                    util::Thread consumer(std::make_shared<ReadOneWithLatchTask>(clientRingbuffer, latch),
                                           getLogger());
                     consumer.start();
                     client2Ringbuffer->addAllAsync(items, Ringbuffer<std::string>::OVERWRITE);
@@ -216,14 +214,14 @@ namespace hazelcast {
                 TEST_F(RingbufferTest, add) {
                     clientRingbuffer->add("foo");
 
-                    std::auto_ptr<std::string> value = client2Ringbuffer->readOne(0);
+                    std::unique_ptr<std::string> value = client2Ringbuffer->readOne(0);
                     ASSERT_EQ_PTR("foo", value.get(), std::string);
                 }
 
                 TEST_F(RingbufferTest, addAsync) {
-                    boost::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAsync("foo",
+                    std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAsync("foo",
                                                                                                    Ringbuffer<std::string>::OVERWRITE);
-                    boost::shared_ptr<int64_t> result = f->get();
+                    std::shared_ptr<int64_t> result = f->get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->headSequence(), result.get(), int64_t);
                     ASSERT_EQ_PTR("foo", client2Ringbuffer->readOne(0).get(), std::string);
@@ -235,9 +233,9 @@ namespace hazelcast {
                     std::vector<std::string> items;
                     items.push_back("foo");
                     items.push_back("bar");
-                    boost::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAllAsync(items,
+                    std::shared_ptr<ICompletableFuture<int64_t> > f = clientRingbuffer->addAllAsync(items,
                                                                                                       Ringbuffer<std::string>::OVERWRITE);
-                    boost::shared_ptr<int64_t> result = f->get();
+                    std::shared_ptr<int64_t> result = f->get();
 
                     ASSERT_EQ_PTR(client2Ringbuffer->tailSequence(), result.get(), int64_t);
                     ASSERT_EQ_PTR("foo", client2Ringbuffer->readOne(0).get(), std::string);
@@ -256,9 +254,9 @@ namespace hazelcast {
                     client2Ringbuffer->add("2");
                     client2Ringbuffer->add("3");
 
-                    boost::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
+                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
                             0, 3, 3, NULL);
-                    boost::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
 
                     ASSERT_EQ(3, rs->readCount());
                     ASSERT_EQ_PTR("1", rs->getItems().get(0), std::string);
@@ -275,9 +273,9 @@ namespace hazelcast {
                     client2Ringbuffer->add("5");
                     client2Ringbuffer->add("6");
 
-                    boost::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
+                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<void>(
                             0, 3, 3, NULL);
-                    boost::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
 
                     ASSERT_EQ(3, rs->readCount());
                     DataArray<string> &items1 = rs->getItems();
@@ -295,10 +293,10 @@ namespace hazelcast {
                     client2Ringbuffer->add("bad3");
 
                     StartsWithStringFilter filter("good");
-                    boost::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<StartsWithStringFilter>(
+                    std::shared_ptr<ICompletableFuture<client::ringbuffer::ReadResultSet<std::string> > > f = clientRingbuffer->readManyAsync<StartsWithStringFilter>(
                             0, 3, 3, &filter);
 
-                    boost::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
+                    std::shared_ptr<client::ringbuffer::ReadResultSet<std::string> > rs = f->get();
 
                     ASSERT_EQ(5, rs->readCount());
                     DataArray<string> &items = rs->getItems();

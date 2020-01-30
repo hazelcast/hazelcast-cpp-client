@@ -31,9 +31,9 @@ namespace hazelcast {
                      */
                     class ClientPNCounterConsistencyLostTest : public ClientTestSupport {
                     protected:
-                        boost::shared_ptr<Address> getCurrentTargetReplicaAddress(
-                                const boost::shared_ptr<client::crdt::pncounter::PNCounter> &pnCounter) {
-                            return boost::static_pointer_cast<proxy::ClientPNCounterProxy>(pnCounter)->getCurrentTargetReplicaAddress();
+                        std::shared_ptr<Address> getCurrentTargetReplicaAddress(
+                                const std::shared_ptr<client::crdt::pncounter::PNCounter> &pnCounter) {
+                            return std::static_pointer_cast<proxy::ClientPNCounterProxy>(pnCounter)->getCurrentTargetReplicaAddress();
                         }
 
                         void terminateMember(const Address &address, HazelcastServer &server1, HazelcastServer &server2) {
@@ -56,14 +56,14 @@ namespace hazelcast {
 
                         HazelcastClient client;
 
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
 
                         pnCounter->addAndGet(5);
 
                         assertEquals(5, pnCounter->get());
 
-                        boost::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
+                        std::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
 
                         terminateMember(*currentTarget, instance, instance2);
 
@@ -77,14 +77,14 @@ namespace hazelcast {
 
                         HazelcastClient client;
 
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
 
                         pnCounter->addAndGet(5);
 
                         assertEquals(5, pnCounter->get());
 
-                        boost::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
+                        std::shared_ptr<Address> currentTarget = getCurrentTargetReplicaAddress(pnCounter);
 
                         terminateMember(*currentTarget, instance, instance2);
 

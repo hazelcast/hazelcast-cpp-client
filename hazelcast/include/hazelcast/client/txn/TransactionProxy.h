@@ -27,7 +27,7 @@
 
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <vector>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -83,7 +83,7 @@ namespace hazelcast {
             class HAZELCAST_API TransactionProxy {
             public:
 
-                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, boost::shared_ptr<connection::Connection> connection);
+                TransactionProxy(TransactionOptions&, spi::ClientContext& clientContext, std::shared_ptr<connection::Connection> connection);
 
                 TransactionProxy(const TransactionProxy &rhs);
 
@@ -101,14 +101,14 @@ namespace hazelcast {
 
                 serialization::pimpl::SerializationService& getSerializationService();
 
-                boost::shared_ptr<connection::Connection> getConnection();
+                std::shared_ptr<connection::Connection> getConnection();
 
                 spi::ClientContext &getClientContext() const;
 
             private:
                 TransactionOptions& options;
                 spi::ClientContext& clientContext;
-                boost::shared_ptr<connection::Connection> connection;
+                std::shared_ptr<connection::Connection> connection;
 
                 util::AtomicBoolean TRANSACTION_EXISTS;
 
@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 void checkTimeout();
 
-                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                std::shared_ptr<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
             };
         }
     }

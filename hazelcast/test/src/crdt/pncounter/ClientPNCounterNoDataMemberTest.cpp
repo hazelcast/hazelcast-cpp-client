@@ -34,7 +34,7 @@ namespace hazelcast {
 
                         HazelcastClient client;
 
-                        boost::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
+                        std::shared_ptr<client::crdt::pncounter::PNCounter> pnCounter = client.getPNCounter(
                                 testing::UnitTest::GetInstance()->current_test_info()->name());
 
                         ASSERT_THROW(pnCounter->addAndGet(5), exception::NoDataMemberInClusterException);

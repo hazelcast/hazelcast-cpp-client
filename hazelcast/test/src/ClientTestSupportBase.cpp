@@ -65,7 +65,7 @@ namespace hazelcast {
                 while (true) {
                     std::string id = randomString();
                     int partitionId = partitionService.getPartitionId(serializationService.toData<std::string>(&id));
-                    boost::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
+                    std::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
                     if (*partition->getOwner() == member) {
                         return id;
                     }
@@ -99,7 +99,7 @@ namespace hazelcast {
             threadArgs.arg3 = arg3;
             threadArgs.func = func;
             thread.reset(
-                    new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), *logger));
+                    new util::Thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), *logger));
             threadArgs.currentThread = thread.get();
             thread->start();
         }

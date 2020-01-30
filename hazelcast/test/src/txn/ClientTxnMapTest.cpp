@@ -55,7 +55,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 context.commitTransaction();
@@ -73,7 +73,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
@@ -97,7 +97,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ((std::string *)NULL, map.remove("key2").get());
@@ -121,7 +121,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_NO_THROW(map.deleteEntry("key1"));
@@ -144,7 +144,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_EQ("value1", *map.replace("key1", "myNewValue"));
@@ -164,7 +164,7 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(map.set("key1", "value1"));
 
-                boost::shared_ptr<std::string> val = map.get("key1");
+                std::shared_ptr<std::string> val = map.get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
@@ -196,7 +196,7 @@ namespace hazelcast {
 
                 ASSERT_NO_THROW(map.set("key1", "value1"));
 
-                boost::shared_ptr<std::string> val = map.get("key1");
+                std::shared_ptr<std::string> val = map.get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value1", *val);
 
@@ -218,7 +218,7 @@ namespace hazelcast {
 
                 ASSERT_EQ(map.put("key1", "value1").get(), (std::string *)NULL);
                 ASSERT_EQ("value1", *(map.get("key1")));
-                boost::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
+                std::shared_ptr<std::string> val = client.getMap<std::string, std::string>(name).get("key1");
                 ASSERT_EQ(val.get(), (std::string *)NULL);
 
                 ASSERT_FALSE(map.replace("key1", "valueNonExistent", "myNewValue"));
@@ -237,7 +237,7 @@ namespace hazelcast {
 
                 TransactionalMap<std::string, std::string> map = context.getMap<std::string, std::string>(name);
 
-                boost::shared_ptr<std::string> val = map.putIfAbsent("key1", "value1");
+                std::shared_ptr<std::string> val = map.putIfAbsent("key1", "value1");
                 ASSERT_EQ((std::string *)NULL, val.get());
                 val = map.get("key1");
                 ASSERT_NE((std::string *)NULL, val.get());
@@ -356,7 +356,7 @@ namespace hazelcast {
 
                 ASSERT_TRUE(map.isEmpty());
 
-                boost::shared_ptr<std::string> oldValue = map.put("key1", "value1");
+                std::shared_ptr<std::string> oldValue = map.put("key1", "value1");
                 ASSERT_NULL("old value should be null", oldValue.get(), std::string);
 
                 ASSERT_FALSE(map.isEmpty());

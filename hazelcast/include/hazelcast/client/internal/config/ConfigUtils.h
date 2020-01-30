@@ -31,19 +31,19 @@ namespace hazelcast {
                 class ConfigUtils {
                 public:
                     template<typename T>
-                    static boost::shared_ptr<T>
+                    static std::shared_ptr<T>
                     lookupByPattern(const client::config::ConfigPatternMatcher &configPatternMatcher,
                                     util::SynchronizedMap<std::string, T> &configPatterns, const std::string &itemName) {
-                        boost::shared_ptr<T> candidate = configPatterns.get(itemName);
+                        std::shared_ptr<T> candidate = configPatterns.get(itemName);
                         if (candidate.get() != NULL) {
                             return candidate;
                         }
-                        boost::shared_ptr<std::string> configPatternKey = configPatternMatcher.matches(
+                        std::shared_ptr<std::string> configPatternKey = configPatternMatcher.matches(
                                 configPatterns.keys(), itemName);
                         if (configPatternKey.get() != NULL) {
                             return configPatterns.get(*configPatternKey);
                         }
-                        return boost::shared_ptr<T>();
+                        return std::shared_ptr<T>();
                     }
                 };
             }
