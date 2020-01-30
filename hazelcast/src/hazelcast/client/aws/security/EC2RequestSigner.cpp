@@ -16,6 +16,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 #ifdef HZ_BUILD_WITH_SSL
 #include <openssl/ssl.h>
