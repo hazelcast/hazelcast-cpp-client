@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_IEXECUTORSERVICE_H_
 
 #include <vector>
+#include <atomic>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/cluster/memberselector/MemberSelectors.h"

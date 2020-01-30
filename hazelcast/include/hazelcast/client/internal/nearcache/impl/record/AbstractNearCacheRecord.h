@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/util/HazelcastDll.h"
 

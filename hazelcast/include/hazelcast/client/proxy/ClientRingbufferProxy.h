@@ -16,6 +16,8 @@
 #ifndef HAZELCAST_CLIENT_PROXY_CLIENTRINGBUFFERPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_CLIENTRINGBUFFERPROXY_H_
 
+#include <atomic>
+
 #include "hazelcast/util/ExceptionUtil.h"
 #include "hazelcast/client/protocol/codec/RingbufferReadManyCodec.h"
 #include "hazelcast/client/ringbuffer/ReadResultSet.h"

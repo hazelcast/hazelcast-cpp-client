@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_STORE_NEARCACHEDATARESCORDSTORE_H_
 
 #include <stdint.h>
+#include <atomic>
 
 #include "hazelcast/client/internal/nearcache/impl/store/BaseHeapNearCacheRecordStore.h"
 #include "hazelcast/client/internal/nearcache/impl/record/NearCacheDataRecord.h"

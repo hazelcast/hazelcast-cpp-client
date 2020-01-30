@@ -16,6 +16,7 @@
 #ifndef HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
 #define HAZELCAST_CLIENT_IMPL_HAZELCASTCLIENTIMPL_H_
 
+#include <atomic>
 #include <memory>
 #include <stdint.h>
 #include <vector>

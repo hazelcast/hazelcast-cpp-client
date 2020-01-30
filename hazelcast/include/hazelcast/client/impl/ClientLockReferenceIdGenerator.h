@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_IMPL_CLIENTLOCKREFERENCEIDGENERATOR_H_
 
 #include <stdint.h>
-#include <memory>
+#include <atomic>
 
 namespace hazelcast {
     namespace client {

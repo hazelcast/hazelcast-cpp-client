@@ -16,6 +16,8 @@
 #ifndef HAZELCAST_CLIENT_PROXY_IDGENERATORPROXY_H_
 #define HAZELCAST_CLIENT_PROXY_IDGENERATORPROXY_H_
 
+#include <atomic>
+
 #include "hazelcast/client/impl/IdGeneratorInterface.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"
 #include "hazelcast/client/IAtomicLong.h"

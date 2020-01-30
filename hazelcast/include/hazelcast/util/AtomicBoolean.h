@@ -21,7 +21,7 @@
 #ifndef HAZELCAST_AtomicBoolean
 #define HAZELCAST_AtomicBoolean
 
-#include <memory>
+#include <atomic>
 
 #include "hazelcast/util/HazelcastDll.h"
 

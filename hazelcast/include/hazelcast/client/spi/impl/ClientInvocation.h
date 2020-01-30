@@ -19,6 +19,7 @@
 
 #include <ostream>
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"

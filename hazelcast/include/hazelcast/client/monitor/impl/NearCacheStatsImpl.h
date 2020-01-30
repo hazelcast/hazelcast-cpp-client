@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <atomic>
 
 #include "hazelcast/client/monitor/NearCacheStats.h"
 #include "hazelcast/util/Sync.h"

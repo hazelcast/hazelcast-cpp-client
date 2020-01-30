@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+#include <atomic>
 
 #include "hazelcast/util/Thread.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"

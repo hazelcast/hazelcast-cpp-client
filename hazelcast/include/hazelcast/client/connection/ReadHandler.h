@@ -21,6 +21,7 @@
 #define HAZELCAST_ReadHandler
 
 #include<stdint.h>
+#include<atomic>
 
 
 #include "hazelcast/util/ByteBuffer.h"

@@ -17,6 +17,8 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTPARTITIONSERVICEIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTPARTITIONSERVICEIMPL_H_
 
+#include <atomic>
+
 #include "hazelcast/util/SynchronizedMap.h"
 #include "hazelcast/util/Runnable.h"
 #include "hazelcast/util/AtomicInt.h"

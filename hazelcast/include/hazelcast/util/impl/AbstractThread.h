@@ -19,6 +19,7 @@
 #include <cstdlib>
 
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"

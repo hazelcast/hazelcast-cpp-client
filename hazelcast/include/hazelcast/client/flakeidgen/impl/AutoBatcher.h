@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/util/Sync.h"
 #include "hazelcast/client/flakeidgen/impl/IdBatch.h"

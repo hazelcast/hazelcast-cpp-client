@@ -19,6 +19,7 @@
 #include <ostream>
 #include <set>
 #include <memory>
+#include <atomic>
 
 #include "hazelcast/client/crdt/pncounter/PNCounter.h"
 #include "hazelcast/client/proxy/ProxyImpl.h"

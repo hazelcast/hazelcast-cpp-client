@@ -19,7 +19,7 @@
 #ifndef HAZELCAST_CONNECTION_MANAGER
 #define HAZELCAST_CONNECTION_MANAGER
 
-#include <memory>
+#include <atomic>
 #include <stdint.h>
 #include <memory>
 #include <random>

@@ -17,6 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_NEARCACHE_KEYSTATEMARKERIMPL_H_
 
 #include <stdint.h>
+#include <atomic>
 
 #include "hazelcast/client/map/impl/nearcache/KeyStateMarker.h"
 

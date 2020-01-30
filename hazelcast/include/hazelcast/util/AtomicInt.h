@@ -20,7 +20,7 @@
 #ifndef HAZELCAST_AtomicInt
 #define HAZELCAST_AtomicInt
 
-#include <memory>
+#include <atomic>
 
 #include "hazelcast/util/HazelcastDll.h"
 
