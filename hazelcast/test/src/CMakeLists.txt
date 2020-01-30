@@ -1,6 +1,7 @@
 project(HazelcastClientTest)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
 
 find_package(Thrift QUIET)
 IF (NOT Thrift_FOUND)
