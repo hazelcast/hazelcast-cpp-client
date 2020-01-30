@@ -115,7 +115,7 @@ namespace hazelcast {
                             std::shared_ptr<T> result = callable->call();
                             future->set_value(result);
                         } catch (client::exception::IException &e) {
-                            future->set_exception(e.clone());
+                            future->complete(e);
                         }
                     }
 

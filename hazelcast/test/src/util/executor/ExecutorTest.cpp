@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <hazelcast/util/Executor.h>
 #include <hazelcast/util/CountDownLatch.h>
@@ -33,13 +35,13 @@ namespace hazelcast {
                     protected:
                         class StripedIntRunable : public StripedRunnable {
                         public:
-                            StripedIntRunable(int32_t key, CountDownLatch &latch, Atomic<int64_t> &threadId,
+                            StripedIntRunable(int32_t key, CountDownLatch &latch, std::atomic<int64_t> &threadId,
                                               bool controlThread)
                                     : key(key), latch(latch), threadId(threadId), isControlThread(controlThread) {}
 
                             virtual void run() {
                                 if (isControlThread) {
-                                    if (threadId.get() == hazelcast::util::getCurrentThreadId()) {
+                                    if (threadId.load() == hazelcast::util::getCurrentThreadId()) {
                                         latch.countDown();
                                     }
                                 } else {
@@ -59,7 +61,7 @@ namespace hazelcast {
                         private:
                             int32_t key;
                             CountDownLatch &latch;
-                            Atomic<int64_t> &threadId;
+                            std::atomic<int64_t> &threadId;
                             bool isControlThread;
                         };
 
@@ -192,7 +194,7 @@ namespace hazelcast {
                                                                                       numThreads);
 
                         CountDownLatch latch(1);
-                        Atomic<int64_t> threadId(0);
+                        std::atomic<int64_t> threadId(0);
                         int32_t key = 5;
                         // the following gets the thread id fr the key
                         executorService.execute(

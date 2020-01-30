@@ -58,7 +58,7 @@ namespace hazelcast {
                         }
                     }
 
-                    virtual void onMessage(std::unique_ptr<topic::Message<T> > &message) {
+                    virtual void onMessage(std::unique_ptr<topic::Message<T> > &&message) {
                         ++numberOfMessagesReceived;
 
                         messages.offer(message.release());

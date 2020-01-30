@@ -99,7 +99,7 @@ namespace hazelcast {
             }
 
             void IOSelector::shutdown() {
-                bool expected = false;
+                bool expected = true;
                 if (!isAlive.compare_exchange_strong(expected, false)) {
                     return;
                 }

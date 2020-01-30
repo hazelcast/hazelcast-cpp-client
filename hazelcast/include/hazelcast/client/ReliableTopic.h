@@ -262,7 +262,7 @@ namespace hazelcast {
             private:
                 void process(const topic::impl::reliable::ReliableTopicMessage *message) {
                     //  proxy.localTopicStats.incrementReceives();
-                    listener->onMessage(toMessage(message));
+                    listener->onMessage(std::move(toMessage(message)));
                 }
 
                 std::unique_ptr<topic::Message<T> > toMessage(const topic::impl::reliable::ReliableTopicMessage *m) {

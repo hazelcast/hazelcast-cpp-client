@@ -55,7 +55,7 @@ namespace hazelcast {
                         std::unique_ptr<E> object = serializationService.toObject<E>(item);
 
                         std::unique_ptr<Message<E> > listenerMsg(new impl::MessageImpl<E>(instanceName, object, publishTime, member));
-                        listener.onMessage(listenerMsg);
+                        listener.onMessage(std::move(listenerMsg));
                     }
                 private:
                     const std::string &instanceName;
@@ -89,7 +89,7 @@ namespace hazelcast {
 
                             std::unique_ptr<client::topic::Message<TypedData> > listenerMsg(
                                     new impl::MessageImpl(instanceName, object, publishTime, member));
-                            listener.onMessage(listenerMsg);
+                            listener.onMessage(std::move(listenerMsg));
                         }
                     private:
                         const std::string &instanceName;

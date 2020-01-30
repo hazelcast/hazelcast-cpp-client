@@ -132,7 +132,11 @@ namespace hazelcast {
                 onComplete();
             }
 
-            void set_exception(std::unique_ptr<client::exception::IException> exception) {
+            void set_exception(std::unique_ptr<client::exception::IException> &exception) {
+                set_exception(std::move(exception));
+            }
+
+            void set_exception(std::unique_ptr<client::exception::IException> &&exception) {
                 LockGuard guard(mutex);
                 if (cancelled) {
                     return;

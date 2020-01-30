@@ -4,14 +4,17 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Thrift QUIET)
 IF (NOT Thrift_FOUND)
-    set(THRIFT_INCLUDE_DIRS /usr/local/opt/thrift/include)
-    set(THRIFT_LIBRARIES /usr/local/opt/thrift/lib)
+    IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        set(THRIFT_INCLUDE_DIRS /usr/local/opt/thrift/include)
+        set(THRIFT_LIBRARIES /usr/local/opt/thrift/lib)
+    ENDIF()
 ENDIF(NOT Thrift_FOUND)
 
 message(STATUS "Using THRIFT_INCLUDE_DIRS: ${THRIFT_INCLUDE_DIRS}")
 message(STATUS "Using THRIFT_LIBRARIES: ${THRIFT_LIBRARIES}")
 
 include_directories(${THRIFT_INCLUDE_DIRS})
+link_directories(${THRIFT_LIBRARIES})
 
 FILE(GLOB_RECURSE HZ_TEST_SOURCES "./*cpp")
 FILE(GLOB_RECURSE HZ_TEST_HEADERS "./*h")

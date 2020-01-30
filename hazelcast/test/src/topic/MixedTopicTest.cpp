@@ -49,7 +49,7 @@ namespace hazelcast {
                         : latch(latch) {
                 }
 
-                virtual void onMessage(std::unique_ptr<topic::Message<TypedData> > &message) {
+                virtual void onMessage(std::unique_ptr<topic::Message<TypedData> > &&message) {
                     latch.countDown();
                 }
 

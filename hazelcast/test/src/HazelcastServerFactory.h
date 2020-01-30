@@ -28,7 +28,6 @@
 #include "cpp-controller/RemoteController.h"
 
 #include <memory>
-
 #include <ostream>
 
 #include <hazelcast/util/ILogger.h>
@@ -69,7 +68,7 @@ namespace hazelcast {
             private:
                 util::ILogger logger;
                 std::string serverAddress;
-                RemoteControllerClient remoteController;
+                std::shared_ptr<RemoteControllerClient> remoteController;
                 std::string clusterId;
 
                 std::string readFromXmlFile(const std::string &xmlFilePath);

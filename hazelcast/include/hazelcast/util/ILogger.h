@@ -87,6 +87,7 @@ namespace hazelcast {
             std::string prefix;
             el::Logger *easyLogger;
             client::config::LoggerConfig loggerConfig;
+            std::once_flag elOnceflag;
 
             void init();
 

@@ -16,8 +16,6 @@
 #include "HazelcastServerFactory.h"
 
 #include <iostream>
-#include <sstream>
-#include <fstream>
 
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/client/exception/IllegalStateException.h"
@@ -36,29 +34,41 @@ namespace hazelcast {
                     : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->getServerAddress(),
                                                                      serverXmlConfigFilePath) {
             }
+
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverAddress,
                                                            const std::string &serverXmlConfigFilePath)
                     : logger("HazelcastServerFactory", "HazelcastServerFactory", "testversion", config::LoggerConfig()),
-                      serverAddress(serverAddress), remoteController(make_shared<TBinaryProtocol>(
-                                    make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, 9701)))) {
+                      serverAddress(serverAddress) {
+
+                int port = 9701;
+                auto transport = make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, port));
+                try {
+                    transport->open();
+                } catch (apache::thrift::transport::TTransportException &e) {
+                    cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
+                         << port << ". The exception: " << e.what() << endl;
+                    exit(-1);
+                }
+
+                remoteController = make_shared<RemoteControllerClient>(make_shared<TBinaryProtocol>(transport));
 
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 
                 Cluster cluster;
-                remoteController.createCluster(cluster, HAZELCAST_VERSION, xmlConfig);
+                remoteController->createCluster(cluster, HAZELCAST_VERSION, xmlConfig);
 
                 this->clusterId = cluster.id;
             }
 
             HazelcastServerFactory::~HazelcastServerFactory() {
-                if (remoteController.shutdownCluster(clusterId)) {
+                if (remoteController->shutdownCluster(clusterId)) {
                     logger.severe() << "Failed to shutdown the cluster with id " << clusterId;
                 }
             }
 
             Member HazelcastServerFactory::startServer() {
                 Member member;
-                remoteController.startMember(member, clusterId);
+                remoteController->startMember(member, clusterId);
                 return member;
             }
 
@@ -77,16 +87,16 @@ namespace hazelcast {
 
 
                 Response response;
-                remoteController.executeOnController(response, clusterId, script.str().c_str(), Lang::JAVASCRIPT);
+                remoteController->executeOnController(response, clusterId, script.str().c_str(), Lang::JAVASCRIPT);
                 return response.success;
             }
 
             bool HazelcastServerFactory::shutdownServer(const Member &member) {
-                return remoteController.shutdownMember(clusterId, member.uuid);
+                return remoteController->shutdownMember(clusterId, member.uuid);
             }
 
             bool HazelcastServerFactory::terminateServer(const Member &member) {
-                return remoteController.terminateMember(clusterId, member.uuid);
+                return remoteController->terminateMember(clusterId, member.uuid);
             }
 
             const std::string &HazelcastServerFactory::getServerAddress() {
@@ -111,7 +121,7 @@ namespace hazelcast {
             }
 
             RemoteControllerClient &HazelcastServerFactory::getRemoteController() {
-                return remoteController;
+                return *remoteController;
             }
 
             const string &HazelcastServerFactory::getClusterId() const {
