@@ -51,7 +51,7 @@ namespace hazelcast {
             std::call_once(elOnceflag, el::Loggers::addFlag, el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 
             defaultConf.set(el::Level::Global, el::ConfigurationType::Format,
-                    std::string("%datetime %level: [%thread] ") + prefix + " %log");
+                    std::string("%datetime %level: [%thread] ") + prefix + " %msg");
 
             defaultConf.set(el::Level::Global, el::ConfigurationType::ToStandardOutput, "true");
 

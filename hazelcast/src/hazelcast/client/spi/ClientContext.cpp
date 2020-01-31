@@ -106,7 +106,7 @@ namespace hazelcast {
 
             std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
                     ClientContext::getHazelcastClientImplementation() {
-                std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.weak_from_this();
+                std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl = hazelcastClient.shared_from_this();
                 return clientImpl.lock();
             }
 
