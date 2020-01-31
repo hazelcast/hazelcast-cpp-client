@@ -21,10 +21,6 @@
 #include <crtdefs.h>
 #endif
 
-#include <thrift/protocol/TBinaryProtocol.h>
-#include <thrift/transport/TSocket.h>
-#include <thrift/transport/TTransportUtils.h>
-
 #include "cpp-controller/RemoteController.h"
 
 #include <memory>
@@ -61,14 +57,9 @@ namespace hazelcast {
 
                 ~HazelcastServerFactory();
 
-                RemoteControllerClient &getRemoteController();
-
-                const string &getClusterId() const;
-
             private:
                 util::ILogger logger;
                 std::string serverAddress;
-                std::shared_ptr<RemoteControllerClient> remoteController;
                 std::string clusterId;
 
                 std::string readFromXmlFile(const std::string &xmlFilePath);

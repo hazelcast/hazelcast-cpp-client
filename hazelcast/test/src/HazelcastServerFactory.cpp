@@ -29,6 +29,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             extern HazelcastServerFactory *g_srvFactory;
+            extern std::shared_ptr<RemoteControllerClient> remoteController;
 
             HazelcastServerFactory::HazelcastServerFactory(const std::string &serverXmlConfigFilePath)
                     : HazelcastServerFactory::HazelcastServerFactory(g_srvFactory->getServerAddress(),
@@ -39,18 +40,6 @@ namespace hazelcast {
                                                            const std::string &serverXmlConfigFilePath)
                     : logger("HazelcastServerFactory", "HazelcastServerFactory", "testversion", config::LoggerConfig()),
                       serverAddress(serverAddress) {
-
-                int port = 9701;
-                auto transport = make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, port));
-                try {
-                    transport->open();
-                } catch (apache::thrift::transport::TTransportException &e) {
-                    cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
-                         << port << ". The exception: " << e.what() << endl;
-                    exit(-1);
-                }
-
-                remoteController = make_shared<RemoteControllerClient>(make_shared<TBinaryProtocol>(transport));
 
                 std::string xmlConfig = readFromXmlFile(serverXmlConfigFilePath);
 
@@ -118,14 +107,6 @@ namespace hazelcast {
                 xmlFile.close();
 
                 return buffer.str();
-            }
-
-            RemoteControllerClient &HazelcastServerFactory::getRemoteController() {
-                return *remoteController;
-            }
-
-            const string &HazelcastServerFactory::getClusterId() const {
-                return clusterId;
             }
 
         }

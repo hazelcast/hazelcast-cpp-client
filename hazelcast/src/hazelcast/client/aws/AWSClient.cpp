@@ -33,7 +33,7 @@ namespace hazelcast {
                     }
                     std::regex re("ec2\\.");
                     std::string replacement("ec2.");
-                    replacement += awsConfig.getRegion() + "\\.";
+                    replacement += awsConfig.getRegion() + ".";
                     endpoint = std::regex_replace(endpoint, re, replacement);
                 }
             }
