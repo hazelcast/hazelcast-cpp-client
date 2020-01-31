@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <cassert>
 
 #include "hazelcast/client/spi/impl/NonSmartClientInvocationService.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"

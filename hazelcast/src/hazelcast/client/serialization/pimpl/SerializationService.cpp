@@ -21,6 +21,7 @@
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
 #include <ostream>
+#include <cassert>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/client/TypedData.h"

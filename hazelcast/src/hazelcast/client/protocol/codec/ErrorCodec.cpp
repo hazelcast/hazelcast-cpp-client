@@ -22,6 +22,8 @@
  */
 
 #include <sstream>
+#include <cassert>
+
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/protocol/ClientMessage.h"
 

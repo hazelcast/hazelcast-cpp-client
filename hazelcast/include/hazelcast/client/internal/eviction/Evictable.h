@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLE_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLE_H_
 
-#include <assert.h>
+#include <cassert>
 #include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

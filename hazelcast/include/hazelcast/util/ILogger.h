@@ -20,6 +20,20 @@
 #ifndef HAZELCAST_ILogger
 #define HAZELCAST_ILogger
 
+/*
+#ifndef ELPP_THREAD_SAFE
+#define ELPP_THREAD_SAFE
+#endif
+
+#ifndef ELPP_FORCE_USE_STD_THREAD
+#define ELPP_FORCE_USE_STD_THREAD
+#endif
+
+#ifndef ELPP_UNICODE
+#define ELPP_UNICODE
+#endif
+*/
+
 #include <string>
 #include <iostream>
 #include <sstream>

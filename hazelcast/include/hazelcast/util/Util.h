@@ -26,7 +26,8 @@
 
 #include "hazelcast/util/HazelcastDll.h"
 
-#define HAZELCAST_STRINGIZE(STR) #STR
+#define HAZELCAST_STRINGIZE(STR) HAZELCAST_INTERNAL_STRINGIZE(STR)
+#define HAZELCAST_INTERNAL_STRINGIZE(STR) #STR
 
 namespace hazelcast {
     namespace util {

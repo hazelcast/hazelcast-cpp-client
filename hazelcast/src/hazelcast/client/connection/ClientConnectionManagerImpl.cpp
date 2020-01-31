@@ -16,9 +16,9 @@
 //
 // Created by sancar koyunlu on 8/21/13.
 
-
-
 #include <random>
+#include <cassert>
+
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"
 #include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"

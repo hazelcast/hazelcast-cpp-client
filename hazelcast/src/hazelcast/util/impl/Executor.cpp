@@ -15,6 +15,7 @@
  */
 
 #include <cmath>
+#include <cassert>
 
 #include "hazelcast/util/impl/SimpleExecutorService.h"
 #include "hazelcast/util/HashUtil.h"

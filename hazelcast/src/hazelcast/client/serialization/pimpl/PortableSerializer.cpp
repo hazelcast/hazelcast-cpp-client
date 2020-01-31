@@ -20,6 +20,8 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include <cassert>
+
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"

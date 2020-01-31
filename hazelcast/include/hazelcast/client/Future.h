@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 #include <memory>
-#include <assert.h>
+#include <cassert>
 #include <memory>
 
 #include "hazelcast/client/spi/impl/ClientInvocationFuture.h"

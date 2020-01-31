@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLEENTRYVIEW_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLEENTRYVIEW_H_
 
-#include <assert.h>
+#include <cassert>
 #include <stdint.h>
 
 #include <memory>

@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <cassert>
 
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/config/NearCacheConfig.h"

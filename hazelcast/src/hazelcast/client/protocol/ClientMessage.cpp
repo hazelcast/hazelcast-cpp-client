@@ -21,7 +21,7 @@
  *      Author: ihsan
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "hazelcast/client/protocol/ClientMessage.h"
 #include <hazelcast/client/protocol/codec/UUIDCodec.h>

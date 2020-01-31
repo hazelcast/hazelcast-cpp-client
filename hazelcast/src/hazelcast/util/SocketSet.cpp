@@ -17,7 +17,7 @@
 // Created by sancar koyunlu on 16/12/13.
 //
 
-#include <assert.h>
+#include <cassert>
 #include <iosfwd>
 #include <string.h>
 

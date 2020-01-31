@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_CLIENTDELEGATINGFUTURE_H
 #define HAZELCAST_CLIENT_INTERNAL_CLIENTDELEGATINGFUTURE_H
 
-#include <assert.h>
+#include <cassert>
 
 #include <hazelcast/client/spi/InternalCompletableFuture.h>
 #include <hazelcast/client/spi/impl/ClientInvocationFuture.h>

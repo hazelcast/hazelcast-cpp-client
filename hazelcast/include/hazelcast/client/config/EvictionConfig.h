@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <memory>
 #include <ostream>
+#include <cassert>
 
 #include "hazelcast/client/internal/eviction/EvictionPolicyComparator.h"
 #include "hazelcast/util/Preconditions.h"

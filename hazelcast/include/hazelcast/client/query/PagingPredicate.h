@@ -18,6 +18,7 @@
 
 #include <string>
 #include <memory>
+#include <cassert>
 
 #include "hazelcast/client/exception/IllegalStateException.h"
 #include "hazelcast/client/exception/IllegalArgumentException.h"
