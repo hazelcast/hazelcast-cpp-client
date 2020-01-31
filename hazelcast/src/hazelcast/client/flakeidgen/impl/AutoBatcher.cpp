@@ -36,7 +36,7 @@ namespace hazelcast {
                         }
 
                         {
-                            std::lock_guard guard(lock);
+                            std::lock_guard<std::mutex> guard(lock);
                             if (block != this->block.get()) {
                                 // new block was assigned in the meantime
                                 continue;
