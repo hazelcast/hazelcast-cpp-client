@@ -215,11 +215,11 @@ namespace hazelcast {
 
                 std::string Statistics::escapeSpecialCharacters(const std::string &name) {
                     std::regex reComma(",");
-                    std::string escapedName = std::regex_replace(name, reComma, "\\,");
+                    std::string escapedName = std::regex_replace(name, reComma, std::string("\\,"));
                     std::regex reEqual("=");
-                    escapedName = std::regex_replace(escapedName, reEqual, "\\=");
+                    escapedName = std::regex_replace(escapedName, reEqual, std::string("\\="));
                     std::regex reBackslash("\\");
-                    escapedName = std::regex_replace(escapedName, reBackslash, "\\\\");
+                    escapedName = std::regex_replace(escapedName, reBackslash, std::string("\\\\"));
 
                     return name[0] == '/' ? escapedName.substr(1) : escapedName;
                 }

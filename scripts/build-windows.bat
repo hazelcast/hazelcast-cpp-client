@@ -32,10 +32,8 @@ if %HZ_BIT_VERSION% == 32 (
 
 if "%COMPILE_WITHOUT_SSL%" == "COMPILE_WITHOUT_SSL" (
     set HZ_COMPILE_WITH_SSL=OFF
-    set RUN_TESTS=%5
 ) else (
     set HZ_COMPILE_WITH_SSL=ON
-    set RUN_TESTS=%4
 )
 
 if %HZ_BUILD_TYPE% == Debug (
