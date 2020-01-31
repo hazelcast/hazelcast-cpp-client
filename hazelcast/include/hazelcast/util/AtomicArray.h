@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 
