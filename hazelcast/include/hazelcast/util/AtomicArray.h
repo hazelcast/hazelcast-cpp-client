@@ -51,7 +51,7 @@ namespace hazelcast {
              */
             T get(size_t i) {
                 checkIndexBound(i);
-                std::lock_guard guard(locks[i]);
+                std::lock_guard<std::mutex> guard(locks[i]);
                 return array[i];
             }
 
@@ -64,7 +64,7 @@ namespace hazelcast {
              */
             T getAndAdd(size_t i, T delta) {
                 checkIndexBound(i);
-                std::lock_guard guard(locks[i]);
+                std::lock_guard<std::mutex> guard(locks[i]);
                 T value = array[i];
                 array[i] = value + delta;
                 return value;
