@@ -18,13 +18,13 @@ git submodule update --init
 
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
-    set SOLUTIONTYPE="Visual Studio 12"
+    set SOLUTIONTYPE="Visual Studio 16 2019"
     @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
     @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win32\lib
     set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild
 ) else (
     set BUILDFORPLATFORM="x64"
-    set SOLUTIONTYPE="Visual Studio 12 Win64"
+    set SOLUTIONTYPE="Visual Studio 16 2019"
     @SET HZ_OPENSSL_INCLUDE_DIR=C:\OpenSSL-Win64\include
     @SET HZ_OPENSSL_LIB_DIR=C:\OpenSSL-Win64\lib
     set PYTHON_LIB_DIR=C:\Python-2.7.14\PCbuild\amd64
