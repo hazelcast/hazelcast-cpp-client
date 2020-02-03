@@ -46,13 +46,13 @@ public:
 
     Person(const Person &p) : male(p.male), age(p.age) {
         if (NULL != p.name.get()) {
-            name = std::auto_ptr<std::string>(new std::string(*p.name));
+            name = std::unique_ptr<std::string>(new std::string(*p.name));
         }
     }
 
     Person &operator=(const Person &p) {
         if (NULL != p.name.get()) {
-            name = std::auto_ptr<std::string>(new std::string(*p.name));
+            name = std::unique_ptr<std::string>(new std::string(*p.name));
         }
         male = p.male;
         age = p.age;
@@ -61,7 +61,7 @@ public:
     }
 
     Person(const char *n, bool male, int age)
-            : name(std::auto_ptr<std::string>(new std::string(n))), male(male), age(age) { }
+            : name(std::unique_ptr<std::string>(new std::string(n))), male(male), age(age) { }
 
     int getFactoryId() const {
         return 1;
@@ -97,7 +97,7 @@ public:
     }
 
 private:
-    std::auto_ptr<std::string> name;
+    std::unique_ptr<std::string> name;
     bool male;
     int age;
 };
@@ -216,7 +216,7 @@ void queryMapUsingPagingPredicate() {
     values = intMap.values(predicate);
 
     // PagingPredicate with inner predicate (value < 10)
-    std::auto_ptr<query::Predicate> lessThanTenPredicate(std::auto_ptr<query::Predicate>(
+    std::unique_ptr<query::Predicate> lessThanTenPredicate(std::unique_ptr<query::Predicate>(
             new query::GreaterLessPredicate<int>(query::QueryConstants::getValueAttributeName(), 9, false, true)));
     query::PagingPredicate<int, int> predicate2(lessThanTenPredicate, 5);
     values = intMap.values(predicate2);
@@ -246,7 +246,7 @@ void queryMapUsingPagingPredicate() {
     employees.put(8, empl6);
 
     predSize = 2;
-    std::auto_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
+    std::unique_ptr<query::EntryComparator<int, Employee> > comparator(new EmployeeEntryComparator());
     query::PagingPredicate<int, Employee> predicate3(comparator, (size_t)predSize);
     std::vector<Employee> result = employees.values(predicate3);
 
@@ -267,7 +267,7 @@ void queryMapUsingDifferentPredicates() {
     }
 
     std::vector<int> values = intMap.values();
-    std::auto_ptr<DataArray<int> > valuesArray = rawMap.values();
+    std::unique_ptr<DataArray<int> > valuesArray = rawMap.values();
 
     // EqualPredicate
     // key == 5
@@ -282,7 +282,7 @@ void queryMapUsingDifferentPredicates() {
 		std::cout << "First value:" << *firstValue << std::endl;
 		std::cout << "Pointer addresses:" << firstValue << ", as array index:" << firstValueAsArrayIndex << std::endl;
 	}
-        std::auto_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
+        std::unique_ptr<int> firstValueWithMemoryOwnership = valuesArray->release(0);
 	if (NULL != firstValueWithMemoryOwnership.get()) {
 		std::cout << "First value:" << *firstValueWithMemoryOwnership << std::endl;
 	}
@@ -372,39 +372,39 @@ void queryMapUsingDifferentPredicates() {
 
     // NotPredicate
     // !(5 <= key <= 10)
-    std::auto_ptr<query::Predicate> bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(
+    std::unique_ptr<query::Predicate> bp = std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>(
             query::QueryConstants::getKeyAttributeName(), 5, 10));
     query::NotPredicate notPredicate(bp);
     valuesArray = rawMap.values(notPredicate);
-    bp = std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
+    bp = std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
     query::NotPredicate notPredicate2(bp);
     values = intMap.values(notPredicate2);
 
     // AndPredicate
     // 5 <= key <= 10 AND Values in {4, 10, 19} = values {4, 10}
-    bp = std::auto_ptr<query::Predicate>(
+    bp = std::unique_ptr<query::Predicate>(
             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    std::auto_ptr<query::Predicate> inPred = std::auto_ptr<query::Predicate>(
+    std::unique_ptr<query::Predicate> inPred = std::unique_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
     valuesArray = rawMap.values(query::AndPredicate().add(bp).add(inPred));
 
-    bp = std::auto_ptr<query::Predicate>(
+    bp = std::unique_ptr<query::Predicate>(
             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::auto_ptr<query::Predicate>(
+    inPred = std::unique_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
     values = intMap.values(query::AndPredicate().add(bp).add(inPred));
 
     // OrPredicate
     // 5 <= key <= 10 OR Values in {4, 10, 19} = values {4, 10, 12, 14, 16, 18, 20}
-    bp = std::auto_ptr<query::Predicate>(
+    bp = std::unique_ptr<query::Predicate>(
             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::auto_ptr<query::Predicate>(
+    inPred = std::unique_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
     valuesArray = rawMap.values(query::OrPredicate().add(bp).add(inPred));
 
-    bp = std::auto_ptr<query::Predicate>(
+    bp = std::unique_ptr<query::Predicate>(
             new query::BetweenPredicate<int>(query::QueryConstants::getKeyAttributeName(), 5, 10));
-    inPred = std::auto_ptr<query::Predicate>(
+    inPred = std::unique_ptr<query::Predicate>(
             new query::InPredicate<int>(query::QueryConstants::getValueAttributeName(), inVals));
     values = intMap.values(query::OrPredicate().add(bp).add(inPred));
 
@@ -412,7 +412,7 @@ void queryMapUsingDifferentPredicates() {
     
     // LikePredicate
     // value LIKE "value1" : {"value1"}
-    std::auto_ptr<DataArray<int> > strValuesArray = rawMap.values(query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
+    std::unique_ptr<DataArray<int> > strValuesArray = rawMap.values(query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
     std::vector<std::string> strValues = imap.values(query::LikePredicate(query::QueryConstants::getValueAttributeName(), "value1"));
 
     // ILikePredicate

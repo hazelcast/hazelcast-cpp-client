@@ -131,7 +131,7 @@ int main() {
     ringBuffer->add(derived2Custom);
 
     int64_t sequence = ringBuffer->headSequence();
-    std::auto_ptr<BaseCustom> value = ringBuffer->readOne(sequence);
+    std::unique_ptr<BaseCustom> value = ringBuffer->readOne(sequence);
     std::cout << "Got the first value from the ringbuffer. The value is:" << value->getValue() << std::endl;
 
     value = ringBuffer->readOne(sequence + 1);

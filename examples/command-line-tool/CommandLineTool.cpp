@@ -1322,7 +1322,7 @@ private:
 //}
 //
 //
-//void onMessage(Message<std::sttng> msg) {
+//void onMessage(Message<std::sttng> &&msg) {
 //    mout << "Topic received = " << msg.getMessageObject() << "\n";
 //}
 

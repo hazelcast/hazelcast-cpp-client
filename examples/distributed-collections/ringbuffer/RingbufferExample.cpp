@@ -33,7 +33,7 @@ int main() {
 
     std::cout << "There are " << rb->size() << " items in the ring buffer " << std::endl;
 
-    std::auto_ptr<std::string> val = rb->readOne(sequenceNumber);
+    std::unique_ptr<std::string> val = rb->readOne(sequenceNumber);
 
     if ((std::string *)NULL != val.get()) {
         std::cout << "The item at read at sequence " << sequenceNumber << " is " << *val << std::endl;

@@ -62,16 +62,16 @@ public:
 
 class PolymorphicPortableFactory : public serialization::PortableFactory {
 public:
-    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
         switch (classId) {
             case 3:
-                return std::auto_ptr<serialization::Portable>(new BasePortable);
+                return std::unique_ptr<serialization::Portable>(new BasePortable);
             case 4:
-                return std::auto_ptr<serialization::Portable>(new Derived1Portable);
+                return std::unique_ptr<serialization::Portable>(new Derived1Portable);
             case 5:
-                return std::auto_ptr<serialization::Portable>(new Derived2Portable);
+                return std::unique_ptr<serialization::Portable>(new Derived2Portable);
             default:
-                return std::auto_ptr<serialization::Portable>();
+                return std::unique_ptr<serialization::Portable>();
         }
     }
 };
@@ -94,7 +94,7 @@ int main() {
     map.put(2, derived1Portable);
     map.put(3, derived2Portable);
 
-    std::auto_ptr<BasePortable> value = rawPointerMap.get(3);
+    std::unique_ptr<BasePortable> value = rawPointerMap.get(3);
     std::cout << "Got value for key 3. Class Id:" << value->getClassId() << std::endl;
 
     std::cout << "Finished" << std::endl;

@@ -50,12 +50,12 @@ class SampleDataSerializableFactory : public serialization::DataSerializableFact
 public:
     static const int FACTORY_ID = 1000;
 
-    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId) {
+    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId) {
         switch (classId) {
             case 100:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Employee());
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Employee());
             default:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
         }
 
     }

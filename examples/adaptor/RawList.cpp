@@ -38,7 +38,7 @@ int main() {
 
     std::cout << "There are " << list.size() << " values in the list" << std::endl;
 
-    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = list.subList(0, 2);
+    std::unique_ptr<hazelcast::client::DataArray<std::string> > vals = list.subList(0, 2);
     std::cout << "Got sublist between indexes 0 and 2. Size is:" << vals->size() << std::endl;
     for (size_t i = 0; i < vals->size(); ++i) {
         const std::string *val = vals->get(i);
@@ -49,7 +49,7 @@ int main() {
         }
     }
 
-    std::auto_ptr<std::string> item = list.get(1);
+    std::unique_ptr<std::string> item = list.get(1);
     if (NULL != item.get()) {
         std::cout << "Item at index 1 is " << *item << std::endl;
     } else {
@@ -59,7 +59,7 @@ int main() {
     vals = list.toArray();
 
     for (size_t i = 0; i < vals->size(); ++i) {
-        std::auto_ptr<std::string> val = vals->release(i);
+        std::unique_ptr<std::string> val = vals->release(i);
         if (NULL == val.get()) {
             std::cout << "Value " << i << " is NULL" << std::endl;
         } else {

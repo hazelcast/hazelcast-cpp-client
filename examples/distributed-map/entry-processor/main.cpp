@@ -71,7 +71,7 @@ int main() {
     hazelcast::client::Future<int> future = employees.submitToKey<int, EmployeeRaiseEntryProcessor>("Mark", processor);
     // wait for 1 second
     if (future.wait_for(1000) == hazelcast::client::future_status::ready) {
-        std::auto_ptr<int> result = future.get();
+        std::unique_ptr<int> result = future.get();
         std::cout << "Got the result of submitToKey in 1 second for Mark" << " new salary: " << *result << std::endl;
     } else {
         std::cout << "Could not get the result of submitToKey in 1 second for Mark" << std::endl;
@@ -96,7 +96,7 @@ int main() {
     }
 
     for (std::vector<hazelcast::client::Future<int> >::iterator it = allFutures.begin();it != allFutures.end();++it) {
-        std::auto_ptr<int> result = (*it).get();
+        std::unique_ptr<int> result = (*it).get();
         std::cout << "Result:" << *result << std::endl;
     }
 

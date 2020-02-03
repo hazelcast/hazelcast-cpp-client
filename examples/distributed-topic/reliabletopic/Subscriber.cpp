@@ -29,7 +29,7 @@ public:
     virtual ~MyListener() {
     }
 
-    virtual void onMessage(std::auto_ptr<hazelcast::client::topic::Message<std::string> > message) {
+    virtual void onMessage(std::unique_ptr<hazelcast::client::topic::Message<std::string> > &&message) {
         ++numberOfMessagesReceived;
 
         const std::string *object = message->getMessageObject();

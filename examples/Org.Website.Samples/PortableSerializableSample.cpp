@@ -53,12 +53,12 @@ class SamplePortableFactory : public serialization::PortableFactory {
 public:
     static const int FACTORY_ID = 1;
 
-    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
         switch (classId) {
             case 1:
-                return std::auto_ptr<serialization::Portable>(new PortableSerializableSample());
+                return std::unique_ptr<serialization::Portable>(new PortableSerializableSample());
             default:
-                return std::auto_ptr<serialization::Portable>();
+                return std::unique_ptr<serialization::Portable>();
         }
     }
 };

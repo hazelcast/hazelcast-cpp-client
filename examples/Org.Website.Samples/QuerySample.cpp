@@ -69,12 +69,12 @@ class ThePortableFactory : public serialization::PortableFactory {
 public:
     static const int FACTORY_ID = 1;
 
-    virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const {
+    virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const {
         if (classId == User::CLASS_ID) {
-            return std::auto_ptr<serialization::Portable>(new User());
+            return std::unique_ptr<serialization::Portable>(new User());
         }
 
-        return std::auto_ptr<serialization::Portable>();
+        return std::unique_ptr<serialization::Portable>();
     }
 };
 
@@ -98,8 +98,8 @@ int main() {
     query::SqlPredicate sqlQuery = query::SqlPredicate("active AND age BETWEEN 18 AND 21)");
     // Creating the same Predicate as above but with AndPredicate builder
     query::AndPredicate criteriaQuery;
-    criteriaQuery.add(std::auto_ptr<query::Predicate>(new query::EqualPredicate<bool>("active", true)))
-            .add(std::auto_ptr<query::Predicate>(new query::BetweenPredicate<int>("age", 18, 21)));
+    criteriaQuery.add(std::unique_ptr<query::Predicate>(new query::EqualPredicate<bool>("active", true)))
+            .add(std::unique_ptr<query::Predicate>(new query::BetweenPredicate<int>("age", 18, 21)));
     // Get result collections using the two different Predicates
     std::vector<User> result1 = users.values(sqlQuery);
     std::vector<User> result2 = users.values(criteriaQuery);
