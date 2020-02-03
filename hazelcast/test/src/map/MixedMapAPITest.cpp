@@ -74,7 +74,7 @@ namespace hazelcast {
                     MixedMapAPITest() : clientConfig(GetParam()) {
                         #ifdef HZ_BUILD_WITH_SSL
                         config::SSLConfig sslConfig;
-                        sslConfig.setEnabled(true).setProtocol(config::tlsv1).addVerifyFile(getCAFilePath());
+                        sslConfig.setEnabled(true).setProtocol(config::tlsv12).addVerifyFile(getCAFilePath());
                         clientConfig->getNetworkConfig().setSSLConfig(sslConfig);
                         #endif // HZ_BUILD_WITH_SSL
 
