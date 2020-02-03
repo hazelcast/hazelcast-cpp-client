@@ -14,7 +14,7 @@
 @echo EXECUTABLE_NAME=%EXECUTABLE_NAME%
 
 @REM Let the submodule code be downloaded
-git submodule update --init
+@REM git submodule update --init
 
 if %HZ_BIT_VERSION% == 32 (
     set BUILDFORPLATFORM="win32"
