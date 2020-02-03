@@ -248,7 +248,7 @@ namespace hazelcast {
 
                 try {
                     future->get(1, util::concurrent::TimeUnit::SECONDS());
-                } catch (TimeoutException ignored) {
+                } catch (TimeoutException &ignored) {
                 }
 
                 ASSERT_FALSE(future->isDone());
@@ -265,7 +265,7 @@ namespace hazelcast {
 
                 try {
                     future->get(1, util::concurrent::TimeUnit::SECONDS());
-                } catch (TimeoutException ignored) {
+                } catch (TimeoutException &ignored) {
                 }
 
                 ASSERT_TRUE(future->cancel(true));

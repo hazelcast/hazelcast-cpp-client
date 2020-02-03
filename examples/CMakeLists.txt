@@ -204,6 +204,10 @@ if (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
     ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 endif (NOT("${HAZELCAST_INSTALL_DIR}x" STREQUAL "x"))
 
+IF( ${CMAKE_SYSTEM_NAME} MATCHES "Linux" )
+    SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed -ldl")
+ENDIF()
+
 add_subdirectory(command-line-tool)
 add_subdirectory(transactions)
 add_subdirectory(spi)
