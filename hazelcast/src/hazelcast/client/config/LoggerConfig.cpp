@@ -27,7 +27,7 @@ namespace hazelcast {
                 LoggerConfig::configurationFileName = fileName;
             }
 
-            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), logLevel(LoggerLevel::INFO) {}
+            LoggerConfig::LoggerConfig() : type(Type::EASYLOGGINGPP), logLevel(LoggerLevel::INFO), m_pCallback(nullptr) {}
 
             LoggerConfig::Type::LoggerType LoggerConfig::getType() const {
                 return type;
@@ -44,6 +44,14 @@ namespace hazelcast {
             void LoggerConfig::setLogLevel(LoggerLevel::Level logLevel) {
                 LoggerConfig::logLevel = logLevel;
             }
+
+			LoggerCallback *LoggerConfig::getLoggerCallback() {
+				return m_pCallback;
+			}
+
+			void LoggerConfig::setLoggerCallback(LoggerCallback *pCallback) {
+				m_pCallback = pCallback;
+			}
         }
     }
 }
