@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-cmake_minimum_required (VERSION 2.6.4)
-project (HazelcastClient)
-
 # FLAGS
 #  -DHZ_LIB_TYPE=[STATIC | SHARED]
 #  -DHZ_BIT=[32 | 64]
@@ -26,7 +23,18 @@ project (HazelcastClient)
 #  -DHZ_BUILD_EXAMPLES=ON
 #  -DHZ_COMPILE_WITH_SSL=ON
 
+cmake_minimum_required (VERSION 3.0)
+project (HazelcastClient
+		VERSION 4.0
+		DESCRIPTION "Hazelcast C++ Client"
+		HOMEPAGE_URL https://hazelcast.org/clients/cplusplus/
+		LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
 INCLUDE(TestBigEndian)
+INCLUDE(FindOpenSSL)
 
 SET(HZ_VERSION 4.0-SNAPSHOT)
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -83,17 +91,18 @@ ENDIF (${IS_BIG_ENDIAN})
 
 FILE(GLOB_RECURSE HZ_SOURCES "./hazelcast/src/*cpp")
 FILE(GLOB_RECURSE HZ_GENERATED_SOURCES "./hazelcast/generated-sources/src/*cpp")
+set(EXTERNAL_SOURCES "${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src/easylogging++.cc")
 FILE(GLOB_RECURSE INLINE_SOURCES "./hazelcast/include/*inl")
 FILE(GLOB_RECURSE HZ_HEADERS "./hazelcast/include/*h")
 FILE(GLOB_RECURSE HZ_GENERATED_HEADERS "./hazelcast/generated-sources/include/*h")
 
-include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include)
+include_directories(${PROJECT_SOURCE_DIR}/hazelcast/include ${PROJECT_SOURCE_DIR}/hazelcast/generated-sources/include ${PROJECT_SOURCE_DIR}/external/include/easyloggingpp/src)
 
 if (HZ_FIND_EXTERNAL_BOOST)
 	find_package(Boost REQUIRED)
 	set(HZ_BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIRS})
 else ()
-	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/)
+	set(HZ_BOOST_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/include/boost_latest)
 endif(HZ_FIND_EXTERNAL_BOOST)
 
 include_directories(SYSTEM ${HZ_BOOST_INCLUDE_DIR})
@@ -137,16 +146,14 @@ IF(HZ_VALGRIND)
 	set(HZ_VALGRIND_LINK_FLAGS " -O0 ")
 ENDIF(HZ_VALGRIND)
 
-set(HZ_C11_FLAGS "")
-IF(HZ_USE_C11)
-	set(HZ_C11_FLAGS "-std=c++11")
-	message(STATUS "C++11 compiler is turned on.")
-ENDIF(HZ_USE_C11)
-
 if (HZ_COMPILE_WITH_SSL)
 	message(STATUS "Building the library with SSL support.")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DHZ_BUILD_WITH_SSL")
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DHZ_BUILD_WITH_SSL")
+
+	find_package(OpenSSL 1.0.2 REQUIRED)
+	include_directories(${OPENSSL_INCLUDE_DIR})
+	link_libraries(${OPENSSL_SSL_LIBRARIES} ${OPENSSL_CRYPTO_LIBRARIES})
 ELSE ()
 	message(STATUS "Building the library without SSL.")
 ENDIF()
@@ -155,29 +162,10 @@ message(STATUS "${CMAKE_SYSTEM}")
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	message(STATUS "APPLE ENVIRONMENT DETECTED")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror ${HZ_C11_FLAGS}")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall ${HZ_C11_FLAGS}")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -Werror")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -Wall")
 
-	if (HZ_COMPILE_WITH_SSL)
-		if ("${HZ_OPENSSL_LIB_DIR}" STREQUAL "")
-			SET(HZ_OPENSSL_LIB_DIR /usr/local/opt/openssl/lib/)
-		endif ()
-
-		if ("${HZ_OPENSSL_INCLUDE_DIR}" STREQUAL "")
-			SET(HZ_OPENSSL_INCLUDE_DIR /usr/local/opt/openssl/include)
-		endif ()
-
-		message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
-		message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
-
-		include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
-		# We need to set link directories before adding library for the path to be used
-		link_directories(${HZ_OPENSSL_LIB_DIR})
-
-		link_libraries(ssl crypto)
-	ENDIF()
-
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
@@ -194,28 +182,12 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 	message(STATUS "${HZ_BIT} Bit")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -g -Wall -Werror -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -O3 -Wall -D__STDC_LIMIT_MACROS -D__STDC_CONSTANT_MACROS ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS} ${HZ_C11_FLAGS}")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pipe -g -Wall -Werror ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -pipe -O3 -Wall ${HZ_BIT_FLAG} ${HZ_CODE_COVERAGE_COMPILE_FLAGS} ${HZ_VALGRIND_COMPILE_FLAGS}")
 
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME} pthread rt)
-
-	if (HZ_COMPILE_WITH_SSL)
-		if (HZ_OPENSSL_LIB_DIR)
-			message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
-			# We need to set link directories before adding library for the path to be used
-			link_directories(${HZ_OPENSSL_LIB_DIR})
-		endif ()
-
-		if (HZ_OPENSSL_INCLUDE_DIR)
-			message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
-			include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
-		endif ()
-
-		link_libraries(ssl crypto)
-	ENDIF()
-
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
@@ -228,49 +200,22 @@ IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 		add_definitions(-DHAZELCAST_EXPORTS=0)
 	ENDIF(${HZ_LIB_TYPE} MATCHES "SHARED")
 
-	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
-	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj ${HZ_C11_FLAGS}")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MP /EHsc /bigobj")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MP /EHsc /bigobj")
 
-	if (HZ_COMPILE_WITH_SSL)
-		if ("x${HZ_OPENSSL_INCLUDE_DIR}" MATCHES "x")
-			set (HZ_OPENSSL_INCLUDE_DIR C:\\OpenSSL-Win64\\include)
-		endif()
-
-		if ("x${HZ_OPENSSL_LIB_DIR}" MATCHES "x")
-			if(${HZ_BIT} MATCHES "32")
-				set (HZ_OPENSSL_LIB_DIR C:\\OpenSSL-Win32\\lib)
-			else()
-				set (HZ_OPENSSL_LIB_DIR C:\\OpenSSL-Win64\\lib)
-			endif()
-		endif()
-
-		set (HZ_OPENSSL_LIB_DIR ${HZ_OPENSSL_LIB_DIR}\\VC)
-		message(STATUS "Using HZ_OPENSSL_LIB_DIR: ${HZ_OPENSSL_LIB_DIR}")
-		message(STATUS "Using HZ_OPENSSL_INCLUDE_DIR: ${HZ_OPENSSL_INCLUDE_DIR}")
-
-		include_directories(SYSTEM ${HZ_OPENSSL_INCLUDE_DIR})
-		# We need to set link directories before adding library for the path to be used
-		link_directories(${HZ_OPENSSL_LIB_DIR})
-
-		if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-			SET(SSL_LIB_TYPE MDd)
-		else()
-			SET(SSL_LIB_TYPE MD)
-		endif ()
-		SET(SSL_LIBS libeay32${SSL_LIB_TYPE} ssleay32${SSL_LIB_TYPE} libcrypto${HZ_BIT}${SSL_LIB_TYPE} libssl${HZ_BIT}${SSL_LIB_TYPE})
-
-		link_libraries(${SSL_LIBS})
-	ENDIF()
-
-	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
+	add_library(${HZ_LIB_NAME} ${HZ_LIB_TYPE} ${HZ_SOURCES} ${INLINE_SOURCES} ${HZ_GENERATED_SOURCES} ${EXTERNAL_SOURCES} ${HZ_HEADERS} ${HZ_GENERATED_HEADERS})
 
 	link_libraries(${HZ_LIB_NAME})
 
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
+add_definitions(-DBOOST_NO_AUTO_PTR -DASIO_STANDALONE -DELPP_DISABLE_ASSERT)
+
 IF(HZ_BUILD_TESTS)
-	SET(BUILD_GTEST "ON")
-	SET(BUILD_GMOCK "OFF")
+	option(INSTALL_GMOCK "Install Googletest's GMock?" OFF)
+	option(INSTALL_GTEST "Install Googletest's GTest?" OFF)
+	option(BUILD_GTEST "Install Googletest's GMock?" ON)
+	option(BUILD_GMOCK "Install Googletest's GTest?" OFF)
 	ADD_SUBDIRECTORY(hazelcast/test)
 	message(STATUS "Configured to build the tests. BUILD_GTEST=${BUILD_GTEST} BUILD_GMOCK=${BUILD_GMOCK}")
 ENDIF(HZ_BUILD_TESTS)
