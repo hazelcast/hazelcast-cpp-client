@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool RingbufferCapacityCodec::RETRYABLE = true;
                 const ResponseMessageConst RingbufferCapacityCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
 
-                std::auto_ptr<ClientMessage> RingbufferCapacityCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> RingbufferCapacityCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferCapacityCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

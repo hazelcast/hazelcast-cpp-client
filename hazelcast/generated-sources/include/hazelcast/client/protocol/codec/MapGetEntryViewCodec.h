@@ -54,7 +54,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const std::string &name,
                             const serialization::pimpl::Data &key,
                             int64_t threadId);
@@ -68,12 +68,12 @@ namespace hazelcast {
                     //************************ RESPONSE STARTS *****************************************************************//
                     class HAZELCAST_API ResponseParameters {
                     public:
-                        std::auto_ptr<map::DataEntryView> response;
+                        std::unique_ptr<map::DataEntryView> response;
 
 
                         static ResponseParameters decode(ClientMessage &clientMessage);
 
-                        // define copy constructor (needed for auto_ptr variables)
+                        // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
 
                     private:

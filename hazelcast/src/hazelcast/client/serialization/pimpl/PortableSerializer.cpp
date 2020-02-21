@@ -20,6 +20,8 @@
 //  Created by sancar koyunlu on 1/10/13.
 //  Copyright (c) 2013 sancar koyunlu. All rights reserved.
 //
+#include <cassert>
+
 #include "hazelcast/client/serialization/pimpl/PortableSerializer.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
 #include "hazelcast/client/serialization/pimpl/ClassDefinitionWriter.h"
@@ -37,16 +39,15 @@ namespace hazelcast {
                 : context(portableContext) {
                 }
 
-                std::auto_ptr<Portable> PortableSerializer::read(ObjectDataInput &in, std::auto_ptr<Portable> portable,
-                                                                 int32_t factoryId, int32_t classId) {
+                void
+                PortableSerializer::read(ObjectDataInput &in, Portable &portable, int32_t factoryId, int32_t classId) {
                     int version = in.readInt();
 
-                    int portableVersion = findPortableVersion(factoryId, classId, *portable);
+                    int portableVersion = findPortableVersion(factoryId, classId, portable);
 
                     PortableReader reader = createReader(in, factoryId, classId, version, portableVersion);
-                    portable->readPortable(reader);
+                    portable.readPortable(reader);
                     reader.end();
-                    return portable;
                 }
 
                 PortableReader PortableSerializer::createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const {
@@ -56,7 +57,7 @@ namespace hazelcast {
                         effectiveVersion = context.getVersion();
                     }
 
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
+                    std::shared_ptr<ClassDefinition> cd = context.lookupClassDefinition(factoryId, classId, effectiveVersion);
                     if (cd == NULL) {
                         int begin = input.position();
                         cd = context.readClassDefinition(input, factoryId, classId, effectiveVersion);
@@ -83,15 +84,15 @@ namespace hazelcast {
                     return currentVersion;
                 }
 
-                std::auto_ptr<Portable>
+                std::unique_ptr<Portable>
                 PortableSerializer::createNewPortableInstance(int32_t factoryId, int32_t classId) {
-                    const std::map<int32_t, boost::shared_ptr<PortableFactory> > &portableFactories =
+                    const std::map<int32_t, std::shared_ptr<PortableFactory> > &portableFactories =
                             context.getSerializationConfig().getPortableFactories();
-                    std::map<int, boost::shared_ptr<hazelcast::client::serialization::PortableFactory> >::const_iterator factoryIt =
+                    std::map<int, std::shared_ptr<hazelcast::client::serialization::PortableFactory> >::const_iterator factoryIt =
                             portableFactories.find(factoryId);
                     
                     if (portableFactories.end() == factoryIt) {
-                        return std::auto_ptr<Portable>();
+                        return std::unique_ptr<Portable>();
                     }
 
                     return factoryIt->second->create(classId);
@@ -115,7 +116,7 @@ namespace hazelcast {
                 }
 
                 void PortableSerializer::writeInternal(ObjectDataOutput &out, const Portable *p) const {
-                    boost::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(*p);
+                    std::shared_ptr<ClassDefinition> cd = context.lookupOrRegisterClassDefinition(*p);
                     out.writeInt(cd->getVersion());
 
                     DefaultPortableWriter dpw(context, cd, out);

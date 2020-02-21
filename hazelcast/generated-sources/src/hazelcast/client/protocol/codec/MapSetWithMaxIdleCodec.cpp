@@ -28,7 +28,7 @@ namespace hazelcast {
                 const bool MapSetWithMaxIdleCodec::RETRYABLE = false;
                 const ResponseMessageConst MapSetWithMaxIdleCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> MapSetWithMaxIdleCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapSetWithMaxIdleCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &key,
                         const serialization::pimpl::Data &value,
@@ -36,7 +36,7 @@ namespace hazelcast {
                         int64_t ttl,
                         int64_t maxIdle) {
                     int32_t requiredDataSize = calculateDataSize(name, key, value, threadId, ttl, maxIdle);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapSetWithMaxIdleCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -80,7 +80,7 @@ namespace hazelcast {
 
                 MapSetWithMaxIdleCodec::ResponseParameters::ResponseParameters(
                         const MapSetWithMaxIdleCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

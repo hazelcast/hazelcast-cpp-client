@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
 
 #include <set>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <hazelcast/client/query/EqualPredicate.h>
 #include <hazelcast/client/query/QueryConstants.h>
 
@@ -58,24 +54,24 @@ namespace hazelcast {
                     }
                 }
 
-                boost::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
-                    boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
+                std::shared_ptr<config::NearCacheConfig<int, int> > newNoInvalidationNearCacheConfig() {
+                    std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig(newNearCacheConfig());
                     nearCacheConfig->setInMemoryFormat(config::OBJECT);
                     nearCacheConfig->setInvalidateOnChange(false);
                     return nearCacheConfig;
                 }
 
-                boost::shared_ptr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
-                    return boost::shared_ptr<config::NearCacheConfig<int, int> >(
+                std::shared_ptr<config::NearCacheConfig<int, int> > newNearCacheConfig() {
+                    return std::shared_ptr<config::NearCacheConfig<int, int> >(
                             new config::NearCacheConfig<int, int>());
                 }
 
-                std::auto_ptr<ClientConfig> newClientConfig() {
-                    return std::auto_ptr<ClientConfig>(new ClientConfig());
+                std::unique_ptr<ClientConfig> newClientConfig() {
+                    return std::unique_ptr<ClientConfig>(new ClientConfig());
                 }
 
-                boost::shared_ptr<ReplicatedMap<int, int> > getNearCachedMapFromClient(
-                        boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
+                std::shared_ptr<ReplicatedMap<int, int> > getNearCachedMapFromClient(
+                        std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig) {
                     std::string mapName = DEFAULT_NEAR_CACHE_NAME;
 
                     nearCacheConfig->setName(mapName);
@@ -83,7 +79,7 @@ namespace hazelcast {
                     clientConfig = newClientConfig();
                     clientConfig->addNearCacheConfig(nearCacheConfig);
 
-                    client = std::auto_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
+                    client = std::unique_ptr<HazelcastClient>(new HazelcastClient(*clientConfig));
                     map = client->getReplicatedMap<int, int>(mapName);
                     return map;
                 }
@@ -96,10 +92,10 @@ namespace hazelcast {
                     ASSERT_EQ(expected, getNearCacheStats(clientMap)->getOwnedEntryCount());
                 }
 
-                std::auto_ptr<ClientConfig> clientConfig;
-                boost::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
-                std::auto_ptr<HazelcastClient> client;
-                boost::shared_ptr<ReplicatedMap<int, int> > map;
+                std::unique_ptr<ClientConfig> clientConfig;
+                std::shared_ptr<config::NearCacheConfig<int, int> > nearCacheConfig;
+                std::unique_ptr<HazelcastClient> client;
+                std::shared_ptr<ReplicatedMap<int, int> > map;
                 static HazelcastServer *instance;
                 static HazelcastServer *instance2;
             };
@@ -109,7 +105,7 @@ namespace hazelcast {
             HazelcastServer *ClientReplicatedMapNearCacheTest::instance2 = NULL;
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllChecksNearCacheFirst) {
-                boost::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 int size = 1003;
                 for (int i = 0; i < size; i++) {
@@ -130,7 +126,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapNearCacheTest, testGetAllPopulatesNearCache) {
-                boost::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
+                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNoInvalidationNearCacheConfig());
 
                 int size = 1214;
                 for (int i = 0; i < size; i++) {
@@ -149,7 +145,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientReplicatedMapNearCacheTest, testRemoveAllNearCache) {
-                boost::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNearCacheConfig());
+                std::shared_ptr<ReplicatedMap<int, int> > map = getNearCachedMapFromClient(newNearCacheConfig());
 
 
                 int size = 1214;

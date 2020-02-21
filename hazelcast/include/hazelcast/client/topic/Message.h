@@ -47,9 +47,9 @@ namespace hazelcast {
                  * @return the published message object with the memory ownership
                  *
                  * Warning: This method can be called only one time, since the message kept internally will no longer
-                 * exist after this call, hence the method will only return a null auto_ptr in the second call.
+                 * exist after this call, hence the method will only return a null unique_ptr in the second call.
                  */
-                virtual std::auto_ptr<E> releaseMessageObject() = 0;
+                virtual std::unique_ptr<E> &&releaseMessageObject() = 0;
 
                 /**
                  * Return the time when the message is published

@@ -29,7 +29,7 @@ namespace hazelcast {
         namespace serialization {
             namespace pimpl {
                 DefaultPortableReader::DefaultPortableReader(PortableContext& portableContext,
-                                                             ObjectDataInput& input, boost::shared_ptr<ClassDefinition> cd)
+                                                             ObjectDataInput& input, std::shared_ptr<ClassDefinition> cd)
                 : PortableReaderBase(portableContext, input, cd) {
                 }
             }

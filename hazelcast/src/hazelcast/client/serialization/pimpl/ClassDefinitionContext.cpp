@@ -29,12 +29,12 @@ namespace hazelcast {
                 }
 
                 int ClassDefinitionContext::getClassVersion(int classId) {
-                    boost::shared_ptr<int> version = currentClassVersions.get(classId);
+                    std::shared_ptr<int> version = currentClassVersions.get(classId);
                     return version != NULL ? *version : -1;
                 }
 
                 void ClassDefinitionContext::setClassVersion(int classId, int version) {
-                    boost::shared_ptr<int> current = currentClassVersions.putIfAbsent(classId, boost::shared_ptr<int>(new int(version)));
+                    std::shared_ptr<int> current = currentClassVersions.putIfAbsent(classId, std::shared_ptr<int>(new int(version)));
                     if (current != NULL && *current != version) {
                         std::stringstream error;
                         error << "Class-id: " << classId << " is already registered!";
@@ -42,15 +42,15 @@ namespace hazelcast {
                     }
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
+                std::shared_ptr<ClassDefinition> ClassDefinitionContext::lookup(int classId, int version) {
                     long long key = combineToLong(classId, version);
                     return versionedDefinitions.get(key);
 
                 }
 
-                boost::shared_ptr<ClassDefinition> ClassDefinitionContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                std::shared_ptr<ClassDefinition> ClassDefinitionContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
                     if (cd.get() == NULL) {
-                        return boost::shared_ptr<ClassDefinition>();
+                        return std::shared_ptr<ClassDefinition>();
                     }
                     if (cd->getFactoryId() != factoryId) {
                         throw (exception::ExceptionBuilder<exception::HazelcastSerializationException>(
@@ -62,7 +62,7 @@ namespace hazelcast {
                     cd->setVersionIfNotSet(portableContext->getVersion());
 
                     long long versionedClassId = combineToLong(cd->getClassId(), cd->getVersion());
-                    boost::shared_ptr<ClassDefinition> currentCd = versionedDefinitions.putIfAbsent(versionedClassId, cd);
+                    std::shared_ptr<ClassDefinition> currentCd = versionedDefinitions.putIfAbsent(versionedClassId, cd);
                     if (currentCd.get() == NULL) {
                         return cd;
                     }

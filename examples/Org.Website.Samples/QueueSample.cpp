@@ -24,10 +24,10 @@ int main() {
     // Offer a String into the Distributed Queue
     queue.offer("item");
     // Poll the Distributed Queue and return the String
-    boost::shared_ptr<std::string> item = queue.poll();
+    std::shared_ptr<std::string> item = queue.poll();
     //Timed blocking Operations
     queue.offer("anotheritem", 500);
-    boost::shared_ptr<std::string> anotherItem = queue.poll(5 * 1000);
+    std::shared_ptr<std::string> anotherItem = queue.poll(5 * 1000);
     //Indefinitely blocking Operations
     queue.put("yetanotheritem");
     std::cout << *queue.take() << std::endl;

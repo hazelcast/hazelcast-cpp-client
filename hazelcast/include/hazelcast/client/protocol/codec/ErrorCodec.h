@@ -42,10 +42,10 @@ namespace hazelcast {
                 public:
                     int32_t errorCode;
                     std::string className;
-                    std::auto_ptr<std::string> message;
+                    std::unique_ptr<std::string> message;
                     std::vector<StackTraceElement> stackTrace;
                     int32_t causeErrorCode;
-                    std::auto_ptr<std::string> causeClassName;
+                    std::unique_ptr<std::string> causeClassName;
 
                     static const enum ResponseMessageConst TYPE = EXCEPTION;
 

@@ -19,7 +19,7 @@
 #include <string>
 #include <assert.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/config/InMemoryFormat.h"
 #include "hazelcast/util/HazelcastDll.h"
@@ -84,7 +84,7 @@ namespace hazelcast {
                     /**
                      * NULL Object
                      */
-                    static boost::shared_ptr<void> NULL_OBJECT;
+                    static std::shared_ptr<void> NULL_OBJECT;
 
                     virtual ~NearCache() {
                     }
@@ -109,9 +109,9 @@ namespace hazelcast {
                      * @param key the key of the requested value
                      * @return the value associated with the given <code>key</code>
                      */
-                    virtual boost::shared_ptr<V> get(const boost::shared_ptr<K> &key) {
+                    virtual std::shared_ptr<V> get(const std::shared_ptr<K> &key) {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return std::shared_ptr<V>();
                     }
 
                     /**
@@ -120,7 +120,7 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value will be stored
                      */
-                    virtual void put(const boost::shared_ptr<K> &key, const boost::shared_ptr<V> &value) {
+                    virtual void put(const std::shared_ptr<K> &key, const std::shared_ptr<V> &value) {
                         assert(0);
                     }
 
@@ -130,8 +130,8 @@ namespace hazelcast {
                      * @param key   the key of the value will be stored
                      * @param value the value as Data which will be stored
                      */
-                    virtual void put(const boost::shared_ptr<K> &key,
-                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                    virtual void put(const std::shared_ptr<K> &key,
+                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
                         assert(0);
                     }
 
@@ -141,7 +141,7 @@ namespace hazelcast {
                      *
                      * @param key the key of the value will be invalidated
                      */
-                    virtual bool invalidate(const boost::shared_ptr<K> &key) {
+                    virtual bool invalidate(const std::shared_ptr<K> &key) {
                         assert(0);
                         return false;
                     }
@@ -176,7 +176,7 @@ namespace hazelcast {
                 };
 
                 template<typename K, typename V>
-                boost::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
+                std::shared_ptr<void> NearCache<K, V>::NULL_OBJECT(new char);
             }
         }
     }

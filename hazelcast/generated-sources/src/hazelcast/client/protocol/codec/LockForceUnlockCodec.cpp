@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool LockForceUnlockCodec::RETRYABLE = true;
                 const ResponseMessageConst LockForceUnlockCodec::RESPONSE_TYPE = (ResponseMessageConst) 100;
 
-                std::auto_ptr<ClientMessage> LockForceUnlockCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> LockForceUnlockCodec::encodeRequest(
                         const std::string &name,
                         int64_t referenceId) {
                     int32_t requiredDataSize = calculateDataSize(name, referenceId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) LockForceUnlockCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

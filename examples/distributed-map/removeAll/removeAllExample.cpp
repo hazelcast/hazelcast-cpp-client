@@ -27,13 +27,13 @@ public:
 
     Person(const Person &p) : male(p.male), age(p.age) {
         if (NULL != p.name.get()) {
-            name = std::auto_ptr<std::string>(new std::string(*p.name));
+            name = std::unique_ptr<std::string>(new std::string(*p.name));
         }
     }
 
     Person &operator=(const Person &p) {
         if (NULL != p.name.get()) {
-            name = std::auto_ptr<std::string>(new std::string(*p.name));
+            name = std::unique_ptr<std::string>(new std::string(*p.name));
         }
         male = p.male;
         age = p.age;
@@ -42,7 +42,7 @@ public:
     }
 
     Person(const char *n, bool male, int age)
-            : name(std::auto_ptr<std::string>(new std::string(n))), male(male), age(age) { }
+            : name(std::unique_ptr<std::string>(new std::string(n))), male(male), age(age) { }
 
     int getFactoryId() const {
         return 666;
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    std::auto_ptr<std::string> name;
+    std::unique_ptr<std::string> name;
     bool male;
     int age;
 };

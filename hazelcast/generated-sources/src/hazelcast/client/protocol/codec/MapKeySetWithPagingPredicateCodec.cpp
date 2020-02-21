@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool MapKeySetWithPagingPredicateCodec::RETRYABLE = true;
                 const ResponseMessageConst MapKeySetWithPagingPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
 
-                std::auto_ptr<ClientMessage> MapKeySetWithPagingPredicateCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapKeySetWithPagingPredicateCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapKeySetWithPagingPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

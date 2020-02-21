@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/spi/impl/ClientExecutionServiceImpl.h"
 #include "hazelcast/util/IOUtil.h"
@@ -58,11 +58,12 @@ namespace hazelcast {
                                                                   INT32_MAX));
                 }
 
-                void ClientExecutionServiceImpl::execute(const boost::shared_ptr<util::Runnable> &command) {
+                void ClientExecutionServiceImpl::execute(const std::shared_ptr<util::Runnable> &command) {
                     internalExecutor->execute(command);
                 }
 
                 void ClientExecutionServiceImpl::shutdown() {
+                    shutdownExecutor("user", *userExecutor, logger);
                     shutdownExecutor("internal", *internalExecutor, logger);
                 }
 
@@ -87,18 +88,18 @@ namespace hazelcast {
                 }
 
                 void
-                ClientExecutionServiceImpl::scheduleWithRepetition(const boost::shared_ptr<util::Runnable> &command,
+                ClientExecutionServiceImpl::scheduleWithRepetition(const std::shared_ptr<util::Runnable> &command,
                                                                    int64_t initialDelayInMillis,
                                                                    int64_t periodInMillis) {
                     internalExecutor->scheduleAtFixedRate(command, initialDelayInMillis, periodInMillis);
                 }
 
-                void ClientExecutionServiceImpl::schedule(const boost::shared_ptr<util::Runnable> &command,
+                void ClientExecutionServiceImpl::schedule(const std::shared_ptr<util::Runnable> &command,
                                                           int64_t initialDelayInMillis) {
                     internalExecutor->schedule(command, initialDelayInMillis);
                 }
 
-                const boost::shared_ptr<util::ExecutorService> ClientExecutionServiceImpl::getUserExecutor() const {
+                const std::shared_ptr<util::ExecutorService> ClientExecutionServiceImpl::getUserExecutor() const {
                     return userExecutor;
                 }
             }

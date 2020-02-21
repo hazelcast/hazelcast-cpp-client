@@ -18,10 +18,10 @@
 
 #include <memory>
 #include <map>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/aws/AWSClient.h"
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/client/connection/AddressTranslator.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -58,8 +58,8 @@ namespace hazelcast {
                 private:
                     bool findFromCache(const Address &address, Address &translatedAddress);
 
-                    std::auto_ptr<AWSClient> awsClient;
-                    util::Atomic<boost::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
+                    std::unique_ptr<AWSClient> awsClient;
+                    util::Sync<std::shared_ptr<std::map<std::string, std::string> > > privateToPublic;
                     util::ILogger &logger;
                 };
             };

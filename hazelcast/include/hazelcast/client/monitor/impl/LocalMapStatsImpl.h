@@ -16,10 +16,11 @@
 #ifndef HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
 #define HAZELCAST_CLIENT_MONITOR_IMPL_LOCALMAPSTATSIMPL_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-#include "hazelcast/util/Atomic.h"
+
 #include "hazelcast/util/HazelcastDll.h"
+#include "hazelcast/util/Sync.h"
 #include "hazelcast/client/monitor/LocalMapStats.h"
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
@@ -39,7 +40,7 @@ namespace hazelcast {
 
                     void setNearCacheStats(NearCacheStats &stats);
                 private:
-                    util::Atomic<monitor::NearCacheStats* > nearCacheStats;
+                    util::Sync<monitor::NearCacheStats* > nearCacheStats;
                 };
             }
         }

@@ -25,16 +25,16 @@ namespace hazelcast {
             namespace impl {
                 namespace sequence {
 
-                    std::auto_ptr<CallIdSequence> CallIdFactory::newCallIdSequence(bool isBackPressureEnabled,
+                    std::unique_ptr<CallIdSequence> CallIdFactory::newCallIdSequence(bool isBackPressureEnabled,
                                                                                    int32_t maxAllowedConcurrentInvocations,
                                                                                    int64_t backoffTimeoutMs) {
                         if (!isBackPressureEnabled) {
-                            return std::auto_ptr<CallIdSequence>(new CallIdSequenceWithoutBackpressure());
+                            return std::unique_ptr<CallIdSequence>(new CallIdSequenceWithoutBackpressure());
                         } else if (backoffTimeoutMs <= 0) {
-                            return std::auto_ptr<CallIdSequence>(
+                            return std::unique_ptr<CallIdSequence>(
                                     new FailFastCallIdSequence(maxAllowedConcurrentInvocations));
                         } else {
-                            return std::auto_ptr<CallIdSequence>(
+                            return std::unique_ptr<CallIdSequence>(
                                     new CallIdSequenceWithBackpressure(maxAllowedConcurrentInvocations,
                                                                        backoffTimeoutMs));
                         }

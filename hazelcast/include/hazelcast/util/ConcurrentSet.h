@@ -22,7 +22,7 @@
 #include "hazelcast/util/Mutex.h"
 #include <set>
 #include <vector>
-#include <boost/foreach.hpp>
+
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -94,7 +94,7 @@ namespace hazelcast {
             std::vector<T> toArray() {
                 util::LockGuard lg(m);
                 std::vector<T> result;
-                BOOST_FOREACH(const typename std::set<T>::value_type &value , internalSet) {
+                for (const typename std::set<T>::value_type &value  : internalSet) {
                                 result.push_back(value);
                             }
                 return result;

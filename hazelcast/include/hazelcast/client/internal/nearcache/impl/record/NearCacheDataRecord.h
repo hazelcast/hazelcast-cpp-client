@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_RECORD_NEARCACHEDATARECORD_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/serialization/pimpl/Data.h"
@@ -41,7 +41,7 @@ namespace hazelcast {
                         class HAZELCAST_API NearCacheDataRecord
                                 : public AbstractNearCacheRecord<serialization::pimpl::Data> {
                         public:
-                            NearCacheDataRecord(const boost::shared_ptr<serialization::pimpl::Data> &dataValue,
+                            NearCacheDataRecord(const std::shared_ptr<serialization::pimpl::Data> &dataValue,
                                                 int64_t creationTime, int64_t expiryTime);
                         };
                     }

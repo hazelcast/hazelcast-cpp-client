@@ -28,13 +28,13 @@ namespace hazelcast {
                 const bool ExecutorServiceSubmitToPartitionCodec::RETRYABLE = false;
                 const ResponseMessageConst ExecutorServiceSubmitToPartitionCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> ExecutorServiceSubmitToPartitionCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ExecutorServiceSubmitToPartitionCodec::encodeRequest(
                         const std::string &name, 
                         const std::string &uuid, 
                         const serialization::pimpl::Data &callable, 
                         int32_t partitionId) {
                     int32_t requiredDataSize = calculateDataSize(name, uuid, callable, partitionId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ExecutorServiceSubmitToPartitionCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -71,7 +71,7 @@ namespace hazelcast {
                     }
 
                     ExecutorServiceSubmitToPartitionCodec::ResponseParameters::ResponseParameters(const ExecutorServiceSubmitToPartitionCodec::ResponseParameters &rhs) {
-                            response = std::auto_ptr<serialization::pimpl::Data >(new serialization::pimpl::Data(*rhs.response));
+                            response = std::unique_ptr<serialization::pimpl::Data >(new serialization::pimpl::Data(*rhs.response));
                     }
 
             }

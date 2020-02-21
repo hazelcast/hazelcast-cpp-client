@@ -38,6 +38,11 @@ namespace hazelcast {
             }
 
             bool HazelcastServer::start() {
+                if (!logger->start()) {
+                    throw (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
+                            "HazelcastServer::start") << "Could not start logger " << logger->getInstanceName()).build();
+                }
+
                 if (isStarted) {
                     return true;
                 }
@@ -91,7 +96,7 @@ namespace hazelcast {
                 return factory.setAttributes(memberStartOrder);
             }
 
-            const HazelcastServerFactory::MemberInfo &HazelcastServer::getMember() const {
+            const remote::Member &HazelcastServer::getMember() const {
                 return member;
             }
 

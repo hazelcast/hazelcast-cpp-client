@@ -112,7 +112,7 @@ namespace hazelcast {
             *
             * @return the head of the queue. If queue is empty waits for an item to be added.
             */
-            boost::shared_ptr<E> take() {
+            std::shared_ptr<E> take() {
                 return poll(-1);
             }
 
@@ -121,9 +121,8 @@ namespace hazelcast {
             * @param timeoutInMillis time to wait if item is not available.
             * @return the head of the queue. If queue is empty waits for specified time.
             */
-            boost::shared_ptr<E> poll(long timeoutInMillis) {
-                return boost::shared_ptr<E>(boost::shared_ptr<E>(toObject<E>(
-                        proxy::IQueueImpl::pollData(timeoutInMillis))));
+            std::shared_ptr<E> poll(long timeoutInMillis) {
+                return std::shared_ptr<E>(std::move(toObject<E>(proxy::IQueueImpl::pollData(timeoutInMillis))));
             }
 
             /**
@@ -161,7 +160,7 @@ namespace hazelcast {
             size_t drainTo(std::vector<E>& elements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData();
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
+                    std::unique_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
@@ -177,7 +176,7 @@ namespace hazelcast {
             size_t drainTo(std::vector<E>& elements, size_t maxElements) {
                 std::vector<serialization::pimpl::Data> coll = proxy::IQueueImpl::drainToData(maxElements);
                 for (std::vector<serialization::pimpl::Data>::const_iterator it = coll.begin(); it != coll.end(); ++it) {
-                    std::auto_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
+                    std::unique_ptr<E> e = getContext().getSerializationService().template toObject<E>(*it);
                     elements.push_back(*e);
                 }
                 return coll.size();
@@ -188,7 +187,7 @@ namespace hazelcast {
             *
             * @return removes head of the queue and returns it to user . If not available returns empty constructed shared_ptr.
             */
-            boost::shared_ptr<E> poll() {
+            std::shared_ptr<E> poll() {
                 return poll(0);
             }
 
@@ -197,8 +196,8 @@ namespace hazelcast {
             *
             * @return head of queue without removing it. If not available returns empty constructed shared_ptr.
             */
-            boost::shared_ptr<E> peek() {
-                return boost::shared_ptr<E>(toObject<E>(proxy::IQueueImpl::peekData()));
+            std::shared_ptr<E> peek() {
+                return std::shared_ptr<E>(toObject<E>(proxy::IQueueImpl::peekData()));
             }
 
             /**

@@ -28,8 +28,8 @@ namespace hazelcast {
                     }
 
                     ReliableTopicMessage::ReliableTopicMessage(
-                            hazelcast::client::serialization::pimpl::Data payloadData, std::auto_ptr<Address> address)
-                            : publishTime(util::currentTimeMillis()), publisherAddress(address), payload(payloadData) {
+                            hazelcast::client::serialization::pimpl::Data payloadData, std::unique_ptr<Address> &address)
+                            : publishTime(util::currentTimeMillis()), publisherAddress(std::move(address)), payload(payloadData) {
                     }
 
                     int64_t ReliableTopicMessage::getPublishTime() const {

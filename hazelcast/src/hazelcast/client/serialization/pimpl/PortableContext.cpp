@@ -52,11 +52,11 @@ namespace hazelcast {
                     getClassDefinitionContext(factoryId).setClassVersion(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
+                std::shared_ptr<ClassDefinition> PortableContext::lookupClassDefinition(int factoryId, int classId, int version) {
                     return getClassDefinitionContext(factoryId).lookup(classId, version);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(ObjectDataInput& in, int factoryId, int classId, int version) {
+                std::shared_ptr<ClassDefinition> PortableContext::readClassDefinition(ObjectDataInput& in, int factoryId, int classId, int version) {
                     bool shouldRegister = true;
                     ClassDefinitionBuilder builder(factoryId, classId, version);
 
@@ -114,20 +114,20 @@ namespace hazelcast {
                         FieldDefinition fieldDef(i, name, type, fieldFactoryId, fieldClassId, fieldVersion);
                         builder.addField(fieldDef);
                     }
-                    boost::shared_ptr<ClassDefinition> classDefinition = builder.build();
+                    std::shared_ptr<ClassDefinition> classDefinition = builder.build();
                     if (shouldRegister) {
                         classDefinition = registerClassDefinition(classDefinition);
                     }
                     return classDefinition;
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(boost::shared_ptr<ClassDefinition> cd) {
+                std::shared_ptr<ClassDefinition> PortableContext::registerClassDefinition(std::shared_ptr<ClassDefinition> cd) {
                     return getClassDefinitionContext(cd->getFactoryId()).registerClassDefinition(cd);
                 }
 
-                boost::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
+                std::shared_ptr<ClassDefinition> PortableContext::lookupOrRegisterClassDefinition(const Portable& portable) {
                     int portableVersion = PortableVersionHelper::getVersion(&portable, serializationConfig.getPortableVersion());
-                    boost::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
+                    std::shared_ptr<ClassDefinition> cd = lookupClassDefinition(portable.getFactoryId(), portable.getClassId(), portableVersion);
                     if (cd.get() == NULL) {
                         ClassDefinitionBuilder classDefinitionBuilder(portable.getFactoryId(), portable.getClassId(), portableVersion);
                         ClassDefinitionWriter cdw(*this, classDefinitionBuilder);
@@ -147,10 +147,10 @@ namespace hazelcast {
                 }
 
                 ClassDefinitionContext& PortableContext::getClassDefinitionContext(int factoryId) {
-                    boost::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
+                    std::shared_ptr<ClassDefinitionContext> value = classDefContextMap.get(factoryId);
                     if (value == NULL) {
-                        value = boost::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
-                        boost::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
+                        value = std::shared_ptr<ClassDefinitionContext>(new ClassDefinitionContext(factoryId, this));
+                        std::shared_ptr<ClassDefinitionContext> current = classDefContextMap.putIfAbsent(factoryId, value);
                         if (current != NULL) {
                             value = current;
                         }

@@ -50,7 +50,7 @@ namespace hazelcast {
                     static const bool RETRYABLE;
                     static const ResponseMessageConst RESPONSE_TYPE;
                     //************************ REQUEST STARTS ******************************************************************//
-                        static std::auto_ptr<ClientMessage> encodeRequest(
+                        static std::unique_ptr<ClientMessage> encodeRequest(
                                 const std::string &name, 
                                 const std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data > > &entries);
 

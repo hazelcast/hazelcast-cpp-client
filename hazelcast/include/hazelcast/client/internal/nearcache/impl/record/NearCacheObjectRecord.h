@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_INTERNAL_NEARCACHE_IMPL_RECORD_NEARCACHEOBJECTRECORD_H_
 
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/internal/nearcache/impl/record/AbstractNearCacheRecord.h"
 
@@ -42,7 +42,7 @@ namespace hazelcast {
                         class NearCacheObjectRecord
                                 : public AbstractNearCacheRecord<V> {
                         public:
-                            NearCacheObjectRecord(const boost::shared_ptr<V> &value,
+                            NearCacheObjectRecord(const std::shared_ptr<V> &value,
                                                 int64_t creationTime, int64_t expiryTime)
                                     : AbstractNearCacheRecord<V>(value, creationTime, expiryTime) {
                             }

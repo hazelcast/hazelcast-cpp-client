@@ -33,9 +33,9 @@ namespace hazelcast {
                     : dataOutput(NULL), serializerHolder(NULL), isEmpty(true) {
             }
 
-            std::auto_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
+            std::unique_ptr<std::vector<byte> > ObjectDataOutput::toByteArray() {
                 if (isEmpty)
-                    return std::auto_ptr<std::vector<byte> >((std::vector<byte> *) NULL);
+                    return std::unique_ptr<std::vector<byte> >((std::vector<byte> *) NULL);
                 return dataOutput->toByteArray();
             }
 
@@ -176,9 +176,9 @@ namespace hazelcast {
 
             template <>
             void ObjectDataOutput::writeInternal(const std::vector<std::string> *object,
-                                                 boost::shared_ptr<StreamSerializer> &streamSerializer) {
+                                                 std::shared_ptr<StreamSerializer> &streamSerializer) {
                 std::vector<std::string> *stringVector = const_cast<std::vector<std::string> *>(object);
-                std::auto_ptr<std::vector<std::string *> > result(new std::vector<std::string *>());
+                std::unique_ptr<std::vector<std::string *> > result(new std::vector<std::string *>());
                 for (std::vector<std::string>::iterator it = stringVector->begin();it != stringVector->end(); ++it) {
                     result->push_back(&(*it));
                 }

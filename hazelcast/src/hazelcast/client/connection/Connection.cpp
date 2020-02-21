@@ -80,11 +80,12 @@ namespace hazelcast {
             }
 
             void Connection::close(const char *reason) {
-                close(reason, boost::shared_ptr<exception::IException>());
+                close(reason, std::shared_ptr<exception::IException>());
             }
 
-            void Connection::close(const char *reason, const boost::shared_ptr<exception::IException> &cause) {
-                if (!closedTimeMillis.compareAndSet(0, util::currentTimeMillis())) {
+            void Connection::close(const char *reason, const std::shared_ptr<exception::IException> &cause) {
+                int64_t expected = 0;
+                if (!closedTimeMillis.compare_exchange_strong(expected, util::currentTimeMillis())) {
                     return;
                 }
 
@@ -107,7 +108,7 @@ namespace hazelcast {
                 clientContext.getConnectionManager().onClose(*this);
             }
 
-            bool Connection::write(const boost::shared_ptr<protocol::ClientMessage> &message) {
+            bool Connection::write(const std::shared_ptr<protocol::ClientMessage> &message) {
                 if (writeHandler.enqueueData(message)) {
                     return true;
                 }
@@ -122,11 +123,11 @@ namespace hazelcast {
                 return *socket;
             }
 
-            const boost::shared_ptr<Address> &Connection::getRemoteEndpoint() const {
+            const std::shared_ptr<Address> &Connection::getRemoteEndpoint() const {
                 return remoteEndpoint;
             }
 
-            void Connection::setRemoteEndpoint(const boost::shared_ptr<Address> &remoteEndpoint) {
+            void Connection::setRemoteEndpoint(const std::shared_ptr<Address> &remoteEndpoint) {
                 this->remoteEndpoint = remoteEndpoint;
             }
 
@@ -138,7 +139,7 @@ namespace hazelcast {
                 return writeHandler;
             }
 
-            void Connection::handleClientMessage(const boost::shared_ptr<protocol::ClientMessage> &message) {
+            void Connection::handleClientMessage(const std::shared_ptr<protocol::ClientMessage> &message) {
                 if (message->isFlagSet(protocol::ClientMessage::LISTENER_EVENT_FLAG)) {
                     spi::impl::listener::AbstractClientListenerService &listenerService =
                             (spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService();
@@ -153,7 +154,7 @@ namespace hazelcast {
             }
 
             bool Connection::isAlive() {
-                return closedTimeMillis.get() == 0;
+                return closedTimeMillis == 0;
             }
 
             const std::string &Connection::getCloseReason() const {
@@ -192,7 +193,7 @@ namespace hazelcast {
             }
 
             void Connection::setIsAuthenticatedAsOwner() {
-                authenticatedAsOwner = true;
+                authenticatedAsOwner.store(true);
             }
 
             bool Connection::operator==(const Connection &rhs) const {
@@ -216,7 +217,7 @@ namespace hazelcast {
                 return connectedServerVersion;
             }
 
-            std::auto_ptr<Address> Connection::getLocalSocketAddress() const {
+            std::unique_ptr<Address> Connection::getLocalSocketAddress() const {
                 return socket->localSocketAddress();
             }
 

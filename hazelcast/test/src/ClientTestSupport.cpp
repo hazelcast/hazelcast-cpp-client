@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <hazelcast/client/exception/IllegalStateException.h>
 #include "ClientTestSupport.h"
 
 namespace hazelcast {
@@ -24,7 +25,12 @@ namespace hazelcast {
                 std::ostringstream out;
                 out << testInfo->test_case_name() << "_" << testInfo->name();
                 testName = out.str();
-                logger.reset(new util::ILogger(testName, testName, "TestVersion", config::LoggerConfig()));
+                logger.reset(new util::ILogger("Test", testName, "TestVersion", config::LoggerConfig()));
+                if (!logger->start()) {
+                    throw (exception::ExceptionBuilder<exception::IllegalStateException>(
+                            "ClientTestSupport::ClientTestSupport()") << "Could not start logger "
+                                                                      << testInfo->name()).build();
+                }
             }
 
             util::ILogger &ClientTestSupport::getLogger() {

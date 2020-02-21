@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
-
 #include "ClientTestSupportBase.h"
 
 #include <hazelcast/client/ClientConfig.h>
+#include <hazelcast/client/exception/IllegalStateException.h>
 #include <hazelcast/client/HazelcastClient.h>
 #include <hazelcast/client/serialization/pimpl/SerializationService.h>
 #include <hazelcast/util/UuidUtil.h>
@@ -71,7 +66,7 @@ namespace hazelcast {
                 while (true) {
                     std::string id = randomString();
                     int partitionId = partitionService.getPartitionId(serializationService.toData<std::string>(&id));
-                    boost::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
+                    std::shared_ptr<impl::Partition> partition = partitionService.getPartition(partitionId);
                     if (*partition->getOwner() == member) {
                         return id;
                     }
@@ -104,8 +99,13 @@ namespace hazelcast {
             threadArgs.arg2 = arg2;
             threadArgs.arg3 = arg3;
             threadArgs.func = func;
+            if (!logger->start()) {
+                throw (client::exception::ExceptionBuilder<client::exception::IllegalStateException>(
+                        "StartedThread::init") << "Could not start logger " << logger->getInstanceName()).build();
+            }
+
             thread.reset(
-                    new util::Thread(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), *logger));
+                    new util::Thread(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), *logger));
             threadArgs.currentThread = thread.get();
             thread->start();
         }

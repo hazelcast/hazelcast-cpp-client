@@ -19,7 +19,7 @@
 #include "hazelcast/client/impl/ItemEventHandler.h"
 #include "hazelcast/client/protocol/codec/QueueAddListenerCodec.h"
 
-#include <boost/foreach.hpp>
+
 
 namespace hazelcast {
     namespace client {
@@ -53,9 +53,8 @@ namespace hazelcast {
                 typedef std::vector<serialization::pimpl::Data> DATA_VECTOR;
                 serialization::pimpl::SerializationService &serializationService = getContext().getSerializationService();
                 size_t numElements = 0;
-                BOOST_FOREACH(const DATA_VECTOR::value_type data,
-                              proxy::IQueueImpl::drainToData((size_t) maxElements)) {
-                                elements.push_back(TypedData(std::auto_ptr<serialization::pimpl::Data>(
+                for (const DATA_VECTOR::value_type data : proxy::IQueueImpl::drainToData((size_t) maxElements)) {
+                                elements.push_back(TypedData(std::unique_ptr<serialization::pimpl::Data>(
                                         new serialization::pimpl::Data(data)), serializationService));
                                 ++numElements;
                             }

@@ -20,6 +20,7 @@
 
 #include <asio.hpp>
 #include <asio/ssl.hpp>
+#include <asio/deadline_timer.hpp>
 
 #include "hazelcast/client/Socket.h"
 #include "hazelcast/client/Address.h"
@@ -108,7 +109,7 @@ namespace hazelcast {
                      */
                     std::vector<SSLSocket::CipherInfo> getCiphers() const;
 
-                    std::auto_ptr<Address> localSocketAddress() const;
+                    std::unique_ptr<Address> localSocketAddress() const;
 
                 private:
                     SSLSocket(const Socket &rhs);
@@ -146,8 +147,8 @@ namespace hazelcast {
 
                     asio::io_service ioService;
                     asio::ssl::context &sslContext;
-                    std::auto_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
-                    asio::deadline_timer deadline;
+                    std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+                    asio::system_timer deadline;
                     asio::error_code errorCode;
                     int socketId;
                     const client::config::SocketOptions &socketOptions;

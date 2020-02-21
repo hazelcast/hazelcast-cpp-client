@@ -16,8 +16,8 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLE_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLE_H_
 
-#include <assert.h>
-#include <boost/shared_ptr.hpp>
+#include <cassert>
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -62,9 +62,9 @@ namespace hazelcast {
                      *
                      * @return the value of this {@link Evictable}
                      */
-                    virtual boost::shared_ptr<V> getValue() const {
+                    virtual std::shared_ptr<V> getValue() const {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return std::shared_ptr<V>();
                     }
                 };
             }

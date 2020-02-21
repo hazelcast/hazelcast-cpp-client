@@ -60,7 +60,7 @@ namespace hazelcast {
                 *
                 * @see IQueue::poll()
                 */
-                std::auto_ptr<T> poll() {
+                std::unique_ptr<T> poll() {
                     return poll(0);
                 }
 
@@ -69,7 +69,7 @@ namespace hazelcast {
                 *
                 * @see IQueue::poll(long timeoutInMillis)
                 */
-                std::auto_ptr<T> poll(long timeoutInMillis) {
+                std::unique_ptr<T> poll(long timeoutInMillis) {
                     return serializationService.toObject<T>(queue.pollData(timeoutInMillis).get());
                 }
 

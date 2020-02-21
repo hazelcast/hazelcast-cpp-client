@@ -24,7 +24,7 @@
 
 #include <string>
 #include <stdint.h>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -46,8 +46,8 @@ namespace hazelcast {
                         ClientEventRegistration();
 
                         ClientEventRegistration(const std::string &serverRegistrationId, int64_t callId,
-                                                const boost::shared_ptr<connection::Connection> &subscriber,
-                                                const boost::shared_ptr<ListenerMessageCodec> &codec);
+                                                const std::shared_ptr<connection::Connection> &subscriber,
+                                                const std::shared_ptr<ListenerMessageCodec> &codec);
 
                         /**
                          * Alias registration ID is same as registration ID in the beginning. If listener had to be re-registered
@@ -72,9 +72,9 @@ namespace hazelcast {
                          *
                          * @return subscriber
                          */
-                        const boost::shared_ptr<connection::Connection> &getSubscriber() const;
+                        const std::shared_ptr<connection::Connection> &getSubscriber() const;
 
-                        const boost::shared_ptr<ListenerMessageCodec> &getCodec() const;
+                        const std::shared_ptr<ListenerMessageCodec> &getCodec() const;
 
                         bool operator==(const ClientEventRegistration &rhs) const;
 
@@ -85,8 +85,8 @@ namespace hazelcast {
                     private:
                         std::string serverRegistrationId;
                         int64_t callId;
-                        boost::shared_ptr<connection::Connection> subscriber;
-                        boost::shared_ptr<ListenerMessageCodec> codec;
+                        std::shared_ptr<connection::Connection> subscriber;
+                        std::shared_ptr<ListenerMessageCodec> codec;
                     };
                 }
             }

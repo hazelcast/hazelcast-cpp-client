@@ -30,7 +30,7 @@ namespace hazelcast {
     namespace util {
         class Thread : public impl::AbstractThread {
         public:
-            Thread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger)
+            Thread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger)
                     : impl::AbstractThread(runnable, logger) {
                 initAttributes();
             }
@@ -64,7 +64,7 @@ namespace hazelcast {
             static void *runnableThread(void *args) {
                 RunnableInfo *info = static_cast<RunnableInfo *>(args);
 
-                boost::shared_ptr<Runnable> target = info->target;
+                std::shared_ptr<Runnable> target = info->target;
                 try {
                     target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {

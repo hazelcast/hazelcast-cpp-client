@@ -25,7 +25,7 @@ int main() {
     const char *mapName = "ObjectMap";
     Address serverAddr("127.0.0.1", 5701);
     config.addAddress(serverAddr);
-    boost::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
+    std::shared_ptr<config::NearCacheConfig<int, std::string> > nearCacheConfig(
             new config::NearCacheConfig<int, std::string>(mapName, config::OBJECT));
     nearCacheConfig->setInvalidateOnChange(false);
     nearCacheConfig->getEvictionConfig()->setEvictionPolicy(config::NONE)
@@ -35,10 +35,10 @@ int main() {
 
     IMap<int, std::string> map = client.getMap<int, std::string>(mapName);
 
-    boost::shared_ptr<std::string> firstGet = map.get(1);
+    std::shared_ptr<std::string> firstGet = map.get(1);
     // the second and third get() will be served from the Near Cache
-    boost::shared_ptr<std::string> secondGet = map.get(1);
-    boost::shared_ptr<std::string> thirdGet = map.get(1);
+    std::shared_ptr<std::string> secondGet = map.get(1);
+    std::shared_ptr<std::string> thirdGet = map.get(1);
 
     NearCacheSupport::printNearCacheStats(map);
 

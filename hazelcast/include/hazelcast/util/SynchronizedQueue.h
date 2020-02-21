@@ -16,7 +16,7 @@
 #ifndef HAZELCAST_UTIL_SYNCHRONIZED_QUEUE_H_
 #define HAZELCAST_UTIL_SYNCHRONIZED_QUEUE_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/LockGuard.h"
@@ -36,13 +36,13 @@ namespace hazelcast {
         /* Non blocking - synchronized queue*/
         class SynchronizedQueue {
         public:
-            void offer(const boost::shared_ptr<T> &e) {
+            void offer(const std::shared_ptr<T> &e) {
                 util::LockGuard lg(m);
                 internalQueue.push_back(e);
             }
 
-            boost::shared_ptr<T> poll() {
-                boost::shared_ptr<T> e;
+            std::shared_ptr<T> poll() {
+                std::shared_ptr<T> e;
                 util::LockGuard lg(m);
                 if (!internalQueue.empty()) {
                     e = internalQueue.front();
@@ -56,10 +56,10 @@ namespace hazelcast {
                 return internalQueue.size();
             }
 
-            std::vector<boost::shared_ptr<T> > values() {
+            std::vector<std::shared_ptr<T> > values() {
                 util::LockGuard lg(m);
-                std::vector<boost::shared_ptr<T> > values;
-                for (typename std::deque<boost::shared_ptr<T> >::const_iterator it = internalQueue.begin();
+                std::vector<std::shared_ptr<T> > values;
+                for (typename std::deque<std::shared_ptr<T> >::const_iterator it = internalQueue.begin();
                      it != internalQueue.end(); ++it) {
                     values.push_back(*it);
                 }
@@ -72,7 +72,7 @@ namespace hazelcast {
              * Did not choose std::list which shall give better removeAll performance since deque is more efficient on
              * offer and poll due to data locality (best would be std::vector but it does not allow pop_front).
              */
-            std::deque<boost::shared_ptr<T> > internalQueue;
+            std::deque<std::shared_ptr<T> > internalQueue;
         };
     }
 }

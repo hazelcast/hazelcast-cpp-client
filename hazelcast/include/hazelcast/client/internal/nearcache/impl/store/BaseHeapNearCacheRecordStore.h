@@ -46,12 +46,12 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            const boost::shared_ptr<R> getRecord(const boost::shared_ptr<KS> &key) {
+                            const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) {
                                 return ANCRS::records->get(key);
                             }
 
                             //@Override
-                            void onEvict(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                          bool wasExpired) {
                                 ANCRS::onEvict(key,
                                                record,
@@ -62,12 +62,12 @@ namespace hazelcast {
 
                             //@Override
                             void doExpiration() {
-                                std::vector<std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > > entries = ANCRS::records->entrySet();
-                                for (typename std::vector<std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > >::const_iterator it = entries.begin();
+                                std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > > entries = ANCRS::records->entrySet();
+                                for (typename std::vector<std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > >::const_iterator it = entries.begin();
                                      it != entries.end(); ++it) {
-                                    const std::pair<boost::shared_ptr<KS>, boost::shared_ptr<R> > &entry = (*it);
-                                    const boost::shared_ptr<KS> &key = entry.first;
-                                    const boost::shared_ptr<R> &value = entry.second;
+                                    const std::pair<std::shared_ptr<KS>, std::shared_ptr<R> > &entry = (*it);
+                                    const std::shared_ptr<KS> &key = entry.first;
+                                    const std::shared_ptr<R> &value = entry.second;
                                     if (ANCRS::isRecordExpired(value)) {
                                         ANCRS::invalidate(key);
                                         ANCRS::onExpire(key, value);
@@ -76,12 +76,12 @@ namespace hazelcast {
                             }
                         protected:
                             //@Override
-                            std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
+                            std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
+                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
                                     const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 typename client::config::EvictionConfig<K, V>::MaxSizePolicy maxSizePolicy = evictionConfig->getMaximumSizePolicy();
                                 if (maxSizePolicy == client::config::EvictionConfig<K, V>::ENTRY_COUNT) {
-                                    return std::auto_ptr<eviction::MaxSizeChecker>(
+                                    return std::unique_ptr<eviction::MaxSizeChecker>(
                                             new maxsize::EntryCountNearCacheMaxSizeChecker<K, V, KS, R>(
                                                     evictionConfig->getSize(),
                                                     *ANCRS::records));
@@ -94,17 +94,17 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            std::auto_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
+                            std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> > createNearCacheRecordMap(
                                     const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
-                                return std::auto_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
+                                return std::unique_ptr<HeapNearCacheRecordMap<K, V, KS, R> >(
                                         new HeapNearCacheRecordMap<K, V, KS, R>(ANCRS::serializationService,
                                                                                 DEFAULT_INITIAL_CAPACITY));
                             }
 
                             //@Override
-                            boost::shared_ptr<R> putRecord(const boost::shared_ptr<KS> &key,
-                                                           const boost::shared_ptr<R> &record) {
-                                boost::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
+                            std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
+                                                           const std::shared_ptr<R> &record) {
+                                std::shared_ptr<R> oldRecord = ANCRS::records->put(key, record);
                                 ANCRS::nearCacheStats.incrementOwnedEntryMemoryCost(
                                         ANCRS::getTotalStorageMemoryCost(key, record));
                                 if (oldRecord.get() != NULL) {
@@ -115,12 +115,12 @@ namespace hazelcast {
                             }
 
                             //@OverrideR
-                            boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
+                            std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) {
                                 return ANCRS::records->remove(key);
                             }
 
                             //@Override
-                            bool containsRecordKey(const boost::shared_ptr<KS> &key) const {
+                            bool containsRecordKey(const std::shared_ptr<KS> &key) const {
                                 return ANCRS::records->containsKey(key);
                             }
 

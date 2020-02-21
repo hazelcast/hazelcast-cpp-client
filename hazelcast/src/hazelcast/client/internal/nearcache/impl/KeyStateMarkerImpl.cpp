@@ -23,7 +23,7 @@ namespace hazelcast {
             namespace nearcache {
                 namespace impl {
                     KeyStateMarkerImpl::KeyStateMarkerImpl(int count) : markCount(count),
-                                                                        marks(new util::Atomic<int32_t>[count]) {
+                                                                        marks(new std::atomic<int32_t>[count]) {
                         for (int i = 0; i < count; ++i) {
                             marks[i] = 0;
                         }
@@ -58,7 +58,8 @@ namespace hazelcast {
 
                     bool KeyStateMarkerImpl::casState(const serialization::pimpl::Data &key, STATE expect, STATE update) {
                         int slot = getSlot(key);
-                        return marks[slot].compareAndSet(expect, update);
+                        int expected = expect;
+                        return marks[slot].compare_exchange_strong(expected, update);
                     }
 
                     int KeyStateMarkerImpl::getSlot(const serialization::pimpl::Data &key) {

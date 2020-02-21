@@ -60,7 +60,7 @@ namespace hazelcast {
 
             class TestDataPortableFactory : public serialization::PortableFactory {
             public:
-                virtual std::auto_ptr<serialization::Portable> create(int32_t classId) const;
+                virtual std::unique_ptr<serialization::Portable> create(int32_t classId) const;
             };
         }
     }

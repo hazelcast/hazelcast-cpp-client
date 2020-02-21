@@ -111,13 +111,13 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new BaseCustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived1CustomSerializer));
 
     serializationConfig.registerSerializer(
-            boost::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
+            std::shared_ptr<serialization::SerializerBase>(new Derived2CustomSerializer));
 
     HazelcastClient client(config);
 
@@ -131,7 +131,7 @@ int main() {
     rawPointerMapCustom.put(2, derived1Custom );
     rawPointerMapCustom.put(3, derived2Custom );
 
-    std::auto_ptr<BaseCustom> value = rawPointerMapCustom.get(2);
+    std::unique_ptr<BaseCustom> value = rawPointerMapCustom.get(2);
     std::cout << "Got the value for key 2. The value is:" << value->getValue() << std::endl;
 
     std::set<int> keys;
@@ -139,7 +139,7 @@ int main() {
     keys.insert(2);
     keys.insert(3);
 
-    std::auto_ptr<EntryArray<int, BaseCustom> > entries = rawPointerMapCustom.getAll(keys);
+    std::unique_ptr<EntryArray<int, BaseCustom> > entries = rawPointerMapCustom.getAll(keys);
     size_t numberOfEntries = entries->size();
     std::cout << "Got " << numberOfEntries << " entries from the map." << std::endl;
     for (size_t i = 0; i < numberOfEntries; ++i) {

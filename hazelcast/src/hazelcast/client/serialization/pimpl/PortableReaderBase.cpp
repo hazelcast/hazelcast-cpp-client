@@ -26,7 +26,7 @@ namespace hazelcast {
     namespace client {
         namespace serialization {
             namespace pimpl {
-                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, ObjectDataInput& input, boost::shared_ptr<ClassDefinition> cd)
+                PortableReaderBase::PortableReaderBase(PortableContext& portableContext, ObjectDataInput& input, std::shared_ptr<ClassDefinition> cd)
                 : cd(cd)
                 , dataInput(input)
                 , serializerHolder(portableContext.getSerializerHolder())
@@ -93,47 +93,47 @@ namespace hazelcast {
                     return dataInput.readShort();
                 }
 
-                std::auto_ptr<std::string> PortableReaderBase::readUTF(const char *fieldName) {
+                std::unique_ptr<std::string> PortableReaderBase::readUTF(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_UTF);
                     return dataInput.readUTF();
                 }
 
-                std::auto_ptr<std::vector<byte> > PortableReaderBase::readByteArray(const char *fieldName) {
+                std::unique_ptr<std::vector<byte> > PortableReaderBase::readByteArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_BYTE_ARRAY);
                     return dataInput.readByteArray();
                 }
 
-                std::auto_ptr<std::vector<bool> > PortableReaderBase::readBooleanArray(const char *fieldName) {
+                std::unique_ptr<std::vector<bool> > PortableReaderBase::readBooleanArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_BOOLEAN_ARRAY);
                     return dataInput.readBooleanArray();
                 }
 
-                std::auto_ptr<std::vector<char> > PortableReaderBase::readCharArray(const char *fieldName) {
+                std::unique_ptr<std::vector<char> > PortableReaderBase::readCharArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_CHAR_ARRAY);
                     return dataInput.readCharArray();
                 }
 
-                std::auto_ptr<std::vector<int32_t> > PortableReaderBase::readIntArray(const char *fieldName) {
+                std::unique_ptr<std::vector<int32_t> > PortableReaderBase::readIntArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_INT_ARRAY);
                     return dataInput.readIntArray();
                 }
 
-                std::auto_ptr<std::vector<int64_t> > PortableReaderBase::readLongArray(const char *fieldName) {
+                std::unique_ptr<std::vector<int64_t> > PortableReaderBase::readLongArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_LONG_ARRAY);
                     return dataInput.readLongArray();
                 }
 
-                std::auto_ptr<std::vector<double> > PortableReaderBase::readDoubleArray(const char *fieldName) {
+                std::unique_ptr<std::vector<double> > PortableReaderBase::readDoubleArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_DOUBLE_ARRAY);
                     return dataInput.readDoubleArray();
                 }
 
-                std::auto_ptr<std::vector<float> > PortableReaderBase::readFloatArray(const char *fieldName) {
+                std::unique_ptr<std::vector<float> > PortableReaderBase::readFloatArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_FLOAT_ARRAY);
                     return dataInput.readFloatArray();
                 }
 
-                std::auto_ptr<std::vector<int16_t> > PortableReaderBase::readShortArray(const char *fieldName) {
+                std::unique_ptr<std::vector<int16_t> > PortableReaderBase::readShortArray(const char *fieldName) {
                     setPosition(fieldName, FieldTypes::TYPE_SHORT_ARRAY);
                     return dataInput.readShortArray();
                 }

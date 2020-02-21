@@ -16,10 +16,10 @@
 #ifndef HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLEENTRYVIEW_H_
 #define HAZELCAST_CLIENT_INTERNAL_EVICTION_EVICTABLEENTRYVIEW_H_
 
-#include <assert.h>
+#include <cassert>
 #include <stdint.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 #pragma warning(push)
@@ -67,9 +67,9 @@ namespace hazelcast {
                      *
                      * @return the key of the entry
                      */
-                    virtual boost::shared_ptr<K> getKey() const {
+                    virtual std::shared_ptr<K> getKey() const {
                         assert(0);
-                        return boost::shared_ptr<K>();
+                        return std::shared_ptr<K>();
                     }
 
                     /**
@@ -77,9 +77,9 @@ namespace hazelcast {
                      *
                      * @return the value of the entry
                      */
-                    virtual boost::shared_ptr<V> getValue() const {
+                    virtual std::shared_ptr<V> getValue() const {
                         assert(0);
-                        return boost::shared_ptr<V>();
+                        return std::shared_ptr<V>();
                     }
                 };
             }

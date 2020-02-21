@@ -1,17 +1,15 @@
-* ALL: // We need to start level with star '*' and end with colon ':'
-    FORMAT   				=	"%level: %log"  // Quotes are not necessary but to make it more readable we wrap quotes around.
+* GLOBAL:
+    FORMAT   				=	%datetime{%d/%M/%Y %h:%m:%s,%g} %level: [%thread] %msg
     FILENAME				= 	"testLog.txt"
     ENABLED					=	true
     TO_FILE					=	true
     TO_STANDARD_OUTPUT		=	false
-    MILLISECONDS_WIDTH		=	3
+    SUBSECOND_PRECISION		=	3
     PERFORMANCE_TRACKING	=	false
-    ROLL_OUT_SIZE           =  2097152 // Throw log files away after 2MB
+    MAX_LOG_FILE_SIZE           =  2097152
 
-// Following configuration only defines FORMAT for INFO, rest of the configurations are used from ALL configurations above
 * INFO:
-     FORMAT			=	"%datetime %level %log"
+     FORMAT			=	"%datetime{%d/%M/%Y %h:%m:%s,%g} %level %msg"
 
-// Following configuration disables the WARNING level
 * WARNING:
    ENABLED					=	false

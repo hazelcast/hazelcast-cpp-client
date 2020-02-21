@@ -19,7 +19,7 @@ using namespace hazelcast::client;
 int main() {
     // Start the Hazelcast Client and connect to an already running Hazelcast Cluster on 127.0.0.1
     HazelcastClient hz;
-    boost::shared_ptr<Ringbuffer<long> > rb = hz.getRingbuffer<long>("rb");
+    std::shared_ptr<Ringbuffer<long> > rb = hz.getRingbuffer<long>("rb");
     // add two items into ring buffer
     rb->add(100);
     rb->add(200);

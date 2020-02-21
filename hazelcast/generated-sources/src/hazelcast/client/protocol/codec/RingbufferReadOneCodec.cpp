@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool RingbufferReadOneCodec::RETRYABLE = true;
                 const ResponseMessageConst RingbufferReadOneCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> RingbufferReadOneCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> RingbufferReadOneCodec::encodeRequest(
                         const std::string &name,
                         int64_t sequence) {
                     int32_t requiredDataSize = calculateDataSize(name, sequence);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) RingbufferReadOneCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -64,7 +64,7 @@ namespace hazelcast {
 
                 RingbufferReadOneCodec::ResponseParameters::ResponseParameters(
                         const RingbufferReadOneCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

@@ -48,7 +48,7 @@ namespace hazelcast {
                      *
                      * @return a deep copy of the bytes by constructing a new byte array.
                      */
-                    std::auto_ptr<std::vector<byte> > toByteArray();
+                    std::unique_ptr<std::vector<byte> > toByteArray();
 
                     void write(const std::vector<byte> &bytes);
 
@@ -103,7 +103,7 @@ namespace hazelcast {
                     static size_t const DEFAULT_SIZE;
 
                 private:
-                    std::auto_ptr< std::vector<byte> > outputStream;
+                    std::unique_ptr< std::vector<byte> > outputStream;
 
                     DataOutput(const DataOutput &rhs);
 

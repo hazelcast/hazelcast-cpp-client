@@ -87,7 +87,7 @@ namespace hazelcast {
             virtual bool init(int64_t id);
 
         private:
-            FlakeIdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl);
+            FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl);
         };
     }
 }

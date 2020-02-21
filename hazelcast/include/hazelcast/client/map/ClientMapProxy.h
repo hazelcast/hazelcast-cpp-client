@@ -109,7 +109,7 @@ namespace hazelcast {
                 * then return NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                boost::shared_ptr<V> get(const K &key) {
+                std::shared_ptr<V> get(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
                     return getInternal(keyData);
                 }
@@ -122,7 +122,7 @@ namespace hazelcast {
                 * @throws IClassCastException if the type of the specified elements are incompatible with the server side.
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> put(const K &key, const V &value) {
+                std::shared_ptr<V> put(const K &key, const V &value) {
                     return put(key, value, -1);
                 }
 
@@ -137,11 +137,11 @@ namespace hazelcast {
                 * @return the previous value in shared_ptr, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
+                std::shared_ptr<V> put(const K &key, const V &value, int64_t ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    return boost::shared_ptr<V>(toObject<V>(putInternal(keyData, valueData, ttlInMillis)));
+                    return std::shared_ptr<V>(std::move(toObject<V>(putInternal(keyData, valueData, ttlInMillis))));
                 }
 
                 /**
@@ -151,11 +151,11 @@ namespace hazelcast {
                 * then returns NULL in shared_ptr.
                 * @throws IClassCastException if the type of the specified element is incompatible with the server side.
                 */
-                boost::shared_ptr<V> remove(const K &key) {
+                std::shared_ptr<V> remove(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
 
-                    std::auto_ptr<serialization::pimpl::Data> response = removeInternal(keyData);
-                    return boost::shared_ptr<V>(toObject<V>(response));
+                    std::unique_ptr<serialization::pimpl::Data> response = removeInternal(keyData);
+                    return std::shared_ptr<V>(toObject<V>(response));
                 }
 
                 /**
@@ -263,7 +263,7 @@ namespace hazelcast {
                 * @return the previous value in shared_ptr, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
+                std::shared_ptr<V> putIfAbsent(const K &key, const V &value) {
                     return putIfAbsent(key, value, -1);
                 }
 
@@ -278,13 +278,13 @@ namespace hazelcast {
                 * @return the previous value of the entry, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
+                std::shared_ptr<V> putIfAbsent(const K &key, const V &value, int64_t ttlInMillis) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    std::auto_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData,
+                    std::unique_ptr<serialization::pimpl::Data> response = putIfAbsentInternal(keyData, valueData,
                                                                                              ttlInMillis);
-                    return boost::shared_ptr<V>(toObject<V>(response));
+                    return std::shared_ptr<V>(toObject<V>(response));
                 }
 
                 /**
@@ -309,11 +309,11 @@ namespace hazelcast {
                 * @return the previous value of the entry, if there is no mapping for key
                 * then returns NULL in shared_ptr.
                 */
-                boost::shared_ptr<V> replace(const K &key, const V &value) {
+                std::shared_ptr<V> replace(const K &key, const V &value) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data valueData = toData(value);
 
-                    return boost::shared_ptr<V>(toObject<V>(replaceInternal(keyData, valueData)));
+                    return std::shared_ptr<V>(toObject<V>(replaceInternal(keyData, valueData)));
                 }
 
                 /**
@@ -582,8 +582,8 @@ namespace hazelcast {
                 */
                 EntryView<K, V> getEntryView(const K &key) {
                     serialization::pimpl::Data keyData = toData(key);
-                    std::auto_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(keyData);
-                    std::auto_ptr<V> v = toObject<V>(dataEntryView->getValue());
+                    std::unique_ptr<map::DataEntryView> dataEntryView = proxy::IMapImpl::getEntryViewData(keyData);
+                    std::unique_ptr<V> v = toObject<V>(dataEntryView->getValue());
                     EntryView<K, V> view(key, *v, *dataEntryView);
                     return view;
                 }
@@ -657,7 +657,7 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<K> keys(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<K> key = toObject<K>(dataResult[i]);
+                        std::unique_ptr<K> key = toObject<K>(dataResult[i]);
                         keys[i] = *key;
                     }
                     return keys;
@@ -696,7 +696,7 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<K> keys(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<K> key = toObject<K>(dataResult[i]);
+                        std::unique_ptr<K> key = toObject<K>(dataResult[i]);
                         keys[i] = *key;
                     }
                     return keys;
@@ -750,7 +750,7 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<V> values(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<V> value = toObject<V>(dataResult[i]);
+                        std::unique_ptr<V> value = toObject<V>(dataResult[i]);
                         values[i] = *value;
                     }
                     return values;
@@ -784,7 +784,7 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<V> values;
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<V> value = toObject<V>(dataResult[i]);
+                        std::unique_ptr<V> value = toObject<V>(dataResult[i]);
                         values.push_back(*value);
                     }
                     return values;
@@ -829,8 +829,8 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<std::pair<K, V> > entries(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
-                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
                         entries[i] = std::make_pair(*key, *value);
                     }
                     return entries;
@@ -854,8 +854,8 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<std::pair<K, V> > entries(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
-                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
                         entries[i] = std::make_pair(*key, *value);
                     }
                     return entries;
@@ -877,8 +877,8 @@ namespace hazelcast {
                     size_t size = dataResult.size();
                     std::vector<std::pair<K, V> > entries(size);
                     for (size_t i = 0; i < size; ++i) {
-                        std::auto_ptr<K> key = toObject<K>(dataResult[i].first);
-                        std::auto_ptr<V> value = toObject<V>(dataResult[i].second);
+                        std::unique_ptr<K> key = toObject<K>(dataResult[i].first);
+                        std::unique_ptr<V> value = toObject<V>(dataResult[i].second);
                         entries[i] = std::make_pair(*key, *value);
                     }
                     return entries;
@@ -962,13 +962,13 @@ namespace hazelcast {
                 * @return result of entry process.
                 */
                 template<typename ResultType, typename EntryProcessor>
-                boost::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
+                std::shared_ptr<ResultType> executeOnKey(const K &key, const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data keyData = toData(key);
                     serialization::pimpl::Data processorData = toData(entryProcessor);
 
-                    std::auto_ptr<serialization::pimpl::Data> response = executeOnKeyInternal(keyData, processorData);
+                    std::unique_ptr<serialization::pimpl::Data> response = executeOnKeyInternal(keyData, processorData);
 
-                    return boost::shared_ptr<ResultType>(toObject<ResultType>(response));
+                    return std::shared_ptr<ResultType>(toObject<ResultType>(response).release());
                 }
 
                 template<typename ResultType, typename EntryProcessor>
@@ -980,15 +980,15 @@ namespace hazelcast {
                 }
 
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> >
+                std::map<K, std::shared_ptr<ResultType> >
                 executeOnKeys(const std::set<K> &keys, const EntryProcessor &entryProcessor) {
                     EntryVector entries = executeOnKeysInternal<EntryProcessor>(keys, entryProcessor);
 
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, std::shared_ptr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
-                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
-                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
-                        result[*keyObj] = resObj;
+                        std::unique_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::unique_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = std::move(resObj);
                     }
                     return result;
                 }
@@ -1007,13 +1007,13 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
+                std::map<K, std::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor);
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, std::shared_ptr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
-                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
-                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
-                        result[*keyObj] = resObj;
+                        std::unique_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::unique_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = std::move(resObj);
                     }
                     return result;
                 }
@@ -1036,7 +1036,7 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
+                std::map<K, std::shared_ptr<ResultType> > executeOnEntries(const EntryProcessor &entryProcessor,
                                                                              const serialization::IdentifiedDataSerializable &predicate) {
                     const query::Predicate *p = (const query::Predicate *) (&predicate);
                     return executeOnEntries<ResultType, EntryProcessor>(entryProcessor, *p);
@@ -1057,15 +1057,15 @@ namespace hazelcast {
                 * @param entryProcessor that will be applied
                 */
                 template<typename ResultType, typename EntryProcessor>
-                std::map<K, boost::shared_ptr<ResultType> >
+                std::map<K, std::shared_ptr<ResultType> >
                 executeOnEntries(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     EntryVector entries = proxy::IMapImpl::executeOnEntriesData<EntryProcessor>(entryProcessor,
                                                                                                 predicate);
-                    std::map<K, boost::shared_ptr<ResultType> > result;
+                    std::map<K, std::shared_ptr<ResultType> > result;
                     for (size_t i = 0; i < entries.size(); ++i) {
-                        std::auto_ptr<K> keyObj = toObject<K>(entries[i].first);
-                        std::auto_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
-                        result[*keyObj] = resObj;
+                        std::unique_ptr<K> keyObj = toObject<K>(entries[i].first);
+                        std::unique_ptr<ResultType> resObj = toObject<ResultType>(entries[i].second);
+                        result[*keyObj] = std::move(resObj);
                     }
                     return result;
                 }
@@ -1132,49 +1132,49 @@ namespace hazelcast {
                     return stats;
                 }
 
-                virtual boost::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
-                    return boost::shared_ptr<ICompletableFuture<V> >(
+                virtual std::shared_ptr<ICompletableFuture<V> > getAsync(const K &key) {
+                    return std::shared_ptr<ICompletableFuture<V> >(
                             new internal::ClientDelegatingFuture<V>(getAsyncInternal(key), getSerializationService(),
                                                                     GET_ASYNC_RESPONSE_DECODER()));
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
+                std::shared_ptr<ICompletableFuture<V> > putAsync(const K &key, const V &value) {
                     return putAsyncInternal(DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS(), NULL,
                                             util::concurrent::TimeUnit::MILLISECONDS(), toData<K>(key), value);
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> >
+                std::shared_ptr<ICompletableFuture<V> >
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                     return putAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> >
+                std::shared_ptr<ICompletableFuture<V> >
                 putAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                     return putAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
-                boost::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
+                std::shared_ptr<ICompletableFuture<void> > setAsync(const K &key, const V &value) {
                     return setAsync(key, value, DEFAULT_TTL, util::concurrent::TimeUnit::MILLISECONDS());
                 }
 
-                boost::shared_ptr<ICompletableFuture<void> >
+                std::shared_ptr<ICompletableFuture<void> >
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit) {
                     return setAsyncInternal(ttl, ttlUnit, NULL, ttlUnit, toData<K>(key), value);
                 }
 
-                boost::shared_ptr<ICompletableFuture<void> >
+                std::shared_ptr<ICompletableFuture<void> >
                 setAsync(const K &key, const V &value, int64_t ttl, const util::concurrent::TimeUnit &ttlUnit,
                          int64_t maxIdle, const util::concurrent::TimeUnit &maxIdleUnit) {
                     return setAsyncInternal(ttl, ttlUnit, &maxIdle, maxIdleUnit, toData<K>(key), value);
                 }
 
-                boost::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
+                std::shared_ptr<ICompletableFuture<V> > removeAsync(const K &key) {
                     return removeAsyncInternal(toData<K>(key));
                 }
 
             protected:
-                typedef std::pair<const K *, boost::shared_ptr<serialization::pimpl::Data> > KEY_DATA_PAIR;
+                typedef std::pair<const K *, std::shared_ptr<serialization::pimpl::Data> > KEY_DATA_PAIR;
 
                 /**
                  * Default TTL value of a record.
@@ -1186,33 +1186,33 @@ namespace hazelcast {
                  */
                 static int64_t DEFAULT_MAX_IDLE;
 
-                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &GET_ASYNC_RESPONSE_DECODER() {
+                static const std::shared_ptr<client::impl::ClientMessageDecoder<V> > &GET_ASYNC_RESPONSE_DECODER() {
                     return client::impl::DataMessageDecoder<protocol::codec::MapGetCodec, V>::instance();
                 }
 
-                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &PUT_ASYNC_RESPONSE_DECODER() {
+                static const std::shared_ptr<client::impl::ClientMessageDecoder<V> > &PUT_ASYNC_RESPONSE_DECODER() {
                     return client::impl::DataMessageDecoder<protocol::codec::MapPutCodec, V>::instance();
                 }
 
-                static const boost::shared_ptr<client::impl::ClientMessageDecoder<void> > &
+                static const std::shared_ptr<client::impl::ClientMessageDecoder<void> > &
                 SET_ASYNC_RESPONSE_DECODER() {
                     return client::impl::VoidMessageDecoder::instance();
                 }
 
-                static const boost::shared_ptr<client::impl::ClientMessageDecoder<V> > &
+                static const std::shared_ptr<client::impl::ClientMessageDecoder<V> > &
                 REMOVE_ASYNC_RESPONSE_DECODER() {
                     return client::impl::DataMessageDecoder<protocol::codec::MapRemoveCodec, V>::instance();
                 }
 
-                virtual boost::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
-                    return boost::shared_ptr<V>(toObject<V>(proxy::IMapImpl::getData(keyData)));
+                virtual std::shared_ptr<V> getInternal(serialization::pimpl::Data &keyData) {
+                    return std::shared_ptr<V>(std::move(toObject<V>(proxy::IMapImpl::getData(keyData))));
                 }
 
                 virtual bool containsKeyInternal(const serialization::pimpl::Data &keyData) {
                     return proxy::IMapImpl::containsKey(keyData);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data> removeInternal(
+                virtual std::unique_ptr<serialization::pimpl::Data> removeInternal(
                         const serialization::pimpl::Data &keyData) {
                     return proxy::IMapImpl::removeData(keyData);
                 }
@@ -1222,20 +1222,20 @@ namespace hazelcast {
                     return proxy::IMapImpl::remove(keyData, valueData);
                 }
 
-                virtual boost::shared_ptr<ICompletableFuture<V> >
+                virtual std::shared_ptr<ICompletableFuture<V> >
                 removeAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
-                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapRemoveCodec::encodeRequest(
+                        std::unique_ptr<protocol::ClientMessage> request = protocol::codec::MapRemoveCodec::encodeRequest(
                                 name, keyData, util::getCurrentThreadId());
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
+                        std::shared_ptr<spi::impl::ClientInvocationFuture> future = invokeOnKeyOwner(request,
                                                                                                        keyData);
-                        return boost::shared_ptr<ICompletableFuture<V> >(
+                        return std::shared_ptr<ICompletableFuture<V> >(
                                 new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
                                                                         REMOVE_ASYNC_RESPONSE_DECODER()));
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(e);
                     }
-                    return boost::shared_ptr<ICompletableFuture<V> >();
+                    return std::shared_ptr<ICompletableFuture<V> >();
                 }
 
                 virtual void removeAllInternal(const serialization::pimpl::Data &predicateData) {
@@ -1255,7 +1255,7 @@ namespace hazelcast {
                     return proxy::IMapImpl::tryPut(keyData, valueData, timeoutInMillis);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &keyData,
+                virtual std::unique_ptr<serialization::pimpl::Data> putInternal(const serialization::pimpl::Data &keyData,
                                                                               const serialization::pimpl::Data &valueData,
                                                                               int64_t timeoutInMillis) {
                     return proxy::IMapImpl::putData(keyData, valueData, timeoutInMillis);
@@ -1266,7 +1266,7 @@ namespace hazelcast {
                     proxy::IMapImpl::putTransient(keyData, valueData, ttlInMillis);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data>
+                virtual std::unique_ptr<serialization::pimpl::Data>
                 putIfAbsentInternal(const serialization::pimpl::Data &keyData,
                                     const serialization::pimpl::Data &valueData,
                                     int64_t ttlInMillis) {
@@ -1279,7 +1279,7 @@ namespace hazelcast {
                     return proxy::IMapImpl::replace(keyData, valueData, newValueData);
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data>
+                virtual std::unique_ptr<serialization::pimpl::Data>
                 replaceInternal(const serialization::pimpl::Data &keyData,
                                 const serialization::pimpl::Data &valueData) {
                     return proxy::IMapImpl::replaceData(keyData, valueData);
@@ -1304,7 +1304,7 @@ namespace hazelcast {
                      * This map is needed so that we do not deserialize the response data keys but just use
                      * the keys at the original request
                      */
-                    std::map<boost::shared_ptr<serialization::pimpl::Data>, const K *> dataKeyPairMap;
+                    std::map<std::shared_ptr<serialization::pimpl::Data>, const K *> dataKeyPairMap;
 
                     std::map<int, std::vector<serialization::pimpl::Data> > partitionKeys;
 
@@ -1320,8 +1320,8 @@ namespace hazelcast {
                     EntryVector allData = proxy::IMapImpl::getAllData(partitionKeys);
                     EntryVector responseEntries;
                     for (EntryVector::iterator it = allData.begin(); it != allData.end(); ++it) {
-                        std::auto_ptr<V> value = toObject<V>(it->second);
-                        boost::shared_ptr<serialization::pimpl::Data> keyPtr = boost::shared_ptr<serialization::pimpl::Data>(
+                        std::unique_ptr<V> value = toObject<V>(it->second);
+                        std::shared_ptr<serialization::pimpl::Data> keyPtr = std::shared_ptr<serialization::pimpl::Data>(
                                 new serialization::pimpl::Data(it->first));
                         const K *&keyObject = dataKeyPairMap[keyPtr];
                         assert(keyObject != 0);
@@ -1335,7 +1335,7 @@ namespace hazelcast {
                     return responseEntries;
                 }
 
-                virtual std::auto_ptr<serialization::pimpl::Data>
+                virtual std::unique_ptr<serialization::pimpl::Data>
                 executeOnKeyInternal(const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &processor) {
                     return proxy::IMapImpl::executeOnKeyData(keyData, processor);
@@ -1347,20 +1347,20 @@ namespace hazelcast {
                                     const serialization::pimpl::Data &processor) {
                     int partitionId = getPartitionId(keyData);
 
-                    std::auto_ptr<protocol::ClientMessage> request =
+                    std::unique_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapSubmitToKeyCodec::encodeRequest(getName(),
                                                                                 processor,
                                                                                 keyData,
                                                                                 util::getCurrentThreadId());
 
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> clientInvocationFuture = invokeAndGetFuture(
                             request, partitionId);
 
                     return client::Future<ResultType>(clientInvocationFuture, getSerializationService(),
                                                       submitToKeyDecoder);
                 }
 
-                static std::auto_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response) {
+                static std::unique_ptr<serialization::pimpl::Data> submitToKeyDecoder(protocol::ClientMessage &response) {
                     return protocol::codec::MapExecuteOnKeyCodec::ResponseParameters::decode(response).response;
                 }
 
@@ -1385,71 +1385,71 @@ namespace hazelcast {
                     proxy::IMapImpl::putAllData(entries);
                 }
 
-                boost::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
-                    return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
+                std::shared_ptr<serialization::pimpl::Data> toShared(const serialization::pimpl::Data &data) {
+                    return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(data));
                 }
 
-                virtual boost::shared_ptr<spi::impl::ClientInvocationFuture> getAsyncInternal(const K &key) {
+                virtual std::shared_ptr<spi::impl::ClientInvocationFuture> getAsyncInternal(const K &key) {
                     try {
                         serialization::pimpl::Data keyData = toData<K>(key);
                         return getAsyncInternal(keyData);
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(e);
                     }
-                    return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+                    return std::shared_ptr<spi::impl::ClientInvocationFuture>();
                 }
 
-                virtual boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                virtual std::shared_ptr<spi::impl::ClientInvocationFuture>
                 getAsyncInternal(const serialization::pimpl::Data &keyData) {
                     try {
-                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapGetCodec::encodeRequest(
+                        std::unique_ptr<protocol::ClientMessage> request = protocol::codec::MapGetCodec::encodeRequest(
                                 name, keyData, util::getCurrentThreadId());
                         return invokeOnKeyOwner(request, keyData);
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(e);
                     }
-                    return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+                    return std::shared_ptr<spi::impl::ClientInvocationFuture>();
                 }
 
-                virtual boost::shared_ptr<ICompletableFuture<V> >
+                virtual std::shared_ptr<ICompletableFuture<V> >
                 putAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData,
                                  const V &value) {
                     try {
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = putAsyncInternalData(ttl, ttlUnit,
+                        std::shared_ptr<spi::impl::ClientInvocationFuture> future = putAsyncInternalData(ttl, ttlUnit,
                                                                                                            maxIdle,
                                                                                                            maxIdleUnit,
                                                                                                            keyData,
                                                                                                            valueData);
-                        return boost::shared_ptr<ICompletableFuture<V> >(
+                        return std::shared_ptr<ICompletableFuture<V> >(
                                 new internal::ClientDelegatingFuture<V>(future, getSerializationService(),
                                                                         PUT_ASYNC_RESPONSE_DECODER()));
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(e);
                     }
-                    return boost::shared_ptr<ICompletableFuture<V> >();
+                    return std::shared_ptr<ICompletableFuture<V> >();
                 }
 
-                virtual boost::shared_ptr<ICompletableFuture<void> >
+                virtual std::shared_ptr<ICompletableFuture<void> >
                 setAsyncInternal(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, int64_t *maxIdle,
                                  const util::concurrent::TimeUnit &maxIdleUnit,
                                  const serialization::pimpl::Data &keyData, const V &value) {
                     try {
                         serialization::pimpl::Data valueData = toData<V>(value);
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> future = setAsyncInternalData(ttl, ttlUnit,
+                        std::shared_ptr<spi::impl::ClientInvocationFuture> future = setAsyncInternalData(ttl, ttlUnit,
                                                                                                            maxIdle,
                                                                                                            maxIdleUnit,
                                                                                                            keyData,
                                                                                                            valueData);
-                        return boost::shared_ptr<ICompletableFuture<void> >(
+                        return std::shared_ptr<ICompletableFuture<void> >(
                                 new internal::ClientDelegatingFuture<void>(future, getSerializationService(),
                                                                            SET_ASYNC_RESPONSE_DECODER()));
                     } catch (exception::IException &e) {
                         util::ExceptionUtil::rethrow(e);
                     }
-                    return boost::shared_ptr<ICompletableFuture<void> >();
+                    return std::shared_ptr<ICompletableFuture<void> >();
                 }
 
             private:

@@ -18,9 +18,9 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    boost::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
+    std::shared_ptr<hazelcast::client::ReplicatedMap<std::string, std::string> > map = hz.getReplicatedMap<std::string, std::string>(
             "map");
-    boost::shared_ptr<hazelcast::client::LazyEntryArray<std::string, std::string> > entries = map->entrySet();
+    std::shared_ptr<hazelcast::client::LazyEntryArray<std::string, std::string> > entries = map->entrySet();
     for (size_t i = 0; i < entries->size(); ++i) {
         std::cout << *entries->getKey(i) << " " << entries->getValue(i) << std::endl;
     }

@@ -21,12 +21,12 @@ namespace hazelcast {
         TypedData::TypedData() : ss(NULL) {
         }
 
-        TypedData::TypedData(std::auto_ptr<serialization::pimpl::Data> data,
-                             serialization::pimpl::SerializationService &serializationService) : data(data),
+        TypedData::TypedData(std::unique_ptr<serialization::pimpl::Data> &data,
+                             serialization::pimpl::SerializationService &serializationService) : data(std::move(data)),
                                                                                                  ss(&serializationService) {
         }
 
-        TypedData::TypedData(const boost::shared_ptr<serialization::pimpl::Data> &data,
+        TypedData::TypedData(const std::shared_ptr<serialization::pimpl::Data> &data,
                              serialization::pimpl::SerializationService &serializationService) : data(data),
                                                                                                  ss(&serializationService) {
 
@@ -38,7 +38,7 @@ namespace hazelcast {
             return ss->getObjectType(data.get());
         }
 
-        const boost::shared_ptr<serialization::pimpl::Data> TypedData::getData() const {
+        const std::shared_ptr<serialization::pimpl::Data> TypedData::getData() const {
             return data;
         }
 

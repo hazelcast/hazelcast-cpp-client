@@ -40,11 +40,11 @@ namespace hazelcast {
                 public:
                     TopicListenerMessageCodec(const std::string &name);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -55,7 +55,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec();
             };
         }
     }

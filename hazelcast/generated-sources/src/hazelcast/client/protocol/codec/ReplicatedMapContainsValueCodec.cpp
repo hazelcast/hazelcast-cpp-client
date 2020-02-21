@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool ReplicatedMapContainsValueCodec::RETRYABLE = true;
                 const ResponseMessageConst ReplicatedMapContainsValueCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> ReplicatedMapContainsValueCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ReplicatedMapContainsValueCodec::encodeRequest(
                         const std::string &name, 
                         const serialization::pimpl::Data &value) {
                     int32_t requiredDataSize = calculateDataSize(name, value);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ReplicatedMapContainsValueCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

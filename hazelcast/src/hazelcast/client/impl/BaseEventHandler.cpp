@@ -27,9 +27,9 @@ namespace hazelcast {
             BaseEventHandler::~BaseEventHandler(){
             }
 
-            void BaseEventHandler::handle(const boost::shared_ptr<protocol::ClientMessage> &event) {
-                std::auto_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
-                handle(e);
+            void BaseEventHandler::handle(const std::shared_ptr<protocol::ClientMessage> &event) {
+                std::unique_ptr<protocol::ClientMessage> e(new protocol::ClientMessage(*event));
+                handle(std::move(e));
             }
 
             BaseEventHandler::BaseEventHandler() : logger(NULL) {}

@@ -18,7 +18,7 @@
 #define HAZELCAST_CLIENT_MULTIEXECUTIONCALLBACK_H_
 
 #include <map>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/Member.h"
@@ -49,7 +49,7 @@ namespace hazelcast {
              * @param member member that the task is submitted to.
              * @param value result of the execution
              */
-            virtual void onResponse(const Member &member, const boost::shared_ptr<V> &response) = 0;
+            virtual void onResponse(const Member &member, const std::shared_ptr<V> &response) = 0;
 
             /**
              * Called when an execution is completed with an exception on a member.
@@ -57,7 +57,7 @@ namespace hazelcast {
              * @param member member that the task is submitted to.
              * @param exception result of the execution
              */
-            virtual void onFailure(const Member &member, const boost::shared_ptr<exception::IException> &exception) = 0;
+            virtual void onFailure(const Member &member, const std::shared_ptr<exception::IException> &exception) = 0;
 
             /**
              * Called after all executions are completed.
@@ -65,8 +65,8 @@ namespace hazelcast {
              * @param values map of Member-Response pairs where no exception occured.
              * @param exceptions The exceptions produced by failing members.
              */
-            virtual void onComplete(const std::map<Member, boost::shared_ptr<V> > &values,
-                                    const std::map<Member, boost::shared_ptr<exception::IException> > &exceptions) = 0;
+            virtual void onComplete(const std::map<Member, std::shared_ptr<V> > &values,
+                                    const std::map<Member, std::shared_ptr<exception::IException> > &exceptions) = 0;
         };
     }
 }

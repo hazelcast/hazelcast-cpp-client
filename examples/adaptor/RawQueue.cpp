@@ -29,7 +29,7 @@ int main() {
     queue.offer("New York");
     std::cout << "Finished loading queue" << std::endl;
 
-    std::auto_ptr<hazelcast::client::DataArray<std::string> > vals = queue.toArray();
+    std::unique_ptr<hazelcast::client::DataArray<std::string> > vals = queue.toArray();
 
     std::cout << "There are " << queue.size() << " values in the queue" << std::endl;
 
@@ -42,7 +42,7 @@ int main() {
         }
     }
     
-    std::auto_ptr<std::string> item = queue.peek();
+    std::unique_ptr<std::string> item = queue.peek();
     if (NULL == item.get()) {
         std::cout << "Head of the queue is NULL" << std::endl;
     } else {

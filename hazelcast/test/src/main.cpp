@@ -20,12 +20,17 @@
 #include <stdio.h>
 #include <gtest/gtest.h>
 
+#include <thrift/protocol/TBinaryProtocol.h>
+#include <thrift/transport/TSocket.h>
+#include <thrift/transport/TTransportUtils.h>
+
 using namespace hazelcast::client::test;
 
 namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServerFactory *g_srvFactory = NULL;
+            std::shared_ptr<RemoteControllerClient> remoteController;
         }
     }
 }
@@ -36,17 +41,26 @@ public:
     }
 
     void SetUp() {
-        Py_Initialize();
-        HazelcastServerFactory::init(serverAddress);
-        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory("hazelcast/test/resources/hazelcast.xml");
+        int port = 9701;
+        auto transport = make_shared<TBufferedTransport>(make_shared<TSocket>(serverAddress, port));
+        try {
+            transport->open();
+        } catch (apache::thrift::transport::TTransportException &e) {
+            cerr << "Failed to open connection to remote controller server at address " << serverAddress << ":"
+                 << port << ". The exception: " << e.what() << endl;
+            exit(-1);
+        }
+
+        remoteController = make_shared<RemoteControllerClient>(make_shared<TBinaryProtocol>(transport));
+
+        hazelcast::client::test::g_srvFactory = new HazelcastServerFactory(serverAddress, "hazelcast/test/resources/hazelcast.xml");
     }
 
     void TearDown() {
         delete hazelcast::client::test::g_srvFactory;
-        Py_Finalize();
     }
 
-private :
+private:
     const char *serverAddress;
 };
 

@@ -60,16 +60,16 @@ public:
 
 class PolymorphicDataSerializableFactory : public serialization::DataSerializableFactory {
 public:
-    virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
+    virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t typeId) {
         switch (typeId) {
             case 10:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new BaseDataSerializable);
             case 11:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived1DataSerializable);
             case 12:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>(new Derived2DataSerializable);
             default:
-                return std::auto_ptr<serialization::IdentifiedDataSerializable>();
+                return std::unique_ptr<serialization::IdentifiedDataSerializable>();
         }
     }
 };
@@ -78,7 +78,7 @@ int main() {
     ClientConfig config;
     SerializationConfig &serializationConfig = config.getSerializationConfig();
     serializationConfig.addDataSerializableFactory(666,
-                                                   boost::shared_ptr<serialization::DataSerializableFactory>(
+                                                   std::shared_ptr<serialization::DataSerializableFactory>(
                                                            new PolymorphicDataSerializableFactory()));
 
     HazelcastClient client(config);
@@ -93,7 +93,7 @@ int main() {
     rawPointerMap.put(2, derived1);
     rawPointerMap.put(3, derived2);
 
-    std::auto_ptr<BaseDataSerializable> value = rawPointerMap.get(3);
+    std::unique_ptr<BaseDataSerializable> value = rawPointerMap.get(3);
     std::cout << "Got the value for key 3. The value class id is:" << value->getClassId() << std::endl;
 
     std::set<int> keys;
@@ -101,7 +101,7 @@ int main() {
     keys.insert(2);
     keys.insert(3);
 
-    std::auto_ptr<EntryArray<int, BaseDataSerializable> > entries = rawPointerMap.getAll(keys);
+    std::unique_ptr<EntryArray<int, BaseDataSerializable> > entries = rawPointerMap.getAll(keys);
     size_t numberOfEntries = entries->size();
     std::cout << "Got " << numberOfEntries << " entries from the map." << std::endl;
     for (size_t i = 0; i < numberOfEntries; ++i) {

@@ -35,7 +35,7 @@ int main() {
      */
     config.setProperty("hazelcast.client.statistics.period.seconds", "5");
 
-    config.addNearCacheConfig(boost::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>("MyMap")));
+    config.addNearCacheConfig(std::shared_ptr<config::NearCacheConfig<int, int> >(new config::NearCacheConfig<int, int>("MyMap")));
     hazelcast::client::HazelcastClient hz(config);
 
     hazelcast::client::IMap<int, int> map = hz.getMap<int, int>("MyMap");

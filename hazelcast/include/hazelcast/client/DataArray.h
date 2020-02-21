@@ -51,7 +51,7 @@ namespace hazelcast {
              * @return Deserializes the data and returns the pointer for the newly created object for the data at the provided index.
              * @throws IllegalArgumentException If provided index is greater than the maximum array index.
              */
-            virtual std::auto_ptr<T> release(size_t index) = 0;
+            virtual std::unique_ptr<T> release(size_t index) = 0;
 
             /**
              * Please note that this operation MAY (if the de-serialization is not done before) be costly due to

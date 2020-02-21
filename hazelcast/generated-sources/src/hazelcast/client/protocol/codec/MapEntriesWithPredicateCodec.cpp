@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool MapEntriesWithPredicateCodec::RETRYABLE = true;
                 const ResponseMessageConst MapEntriesWithPredicateCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
 
-                std::auto_ptr<ClientMessage> MapEntriesWithPredicateCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapEntriesWithPredicateCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &predicate) {
                     int32_t requiredDataSize = calculateDataSize(name, predicate);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapEntriesWithPredicateCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

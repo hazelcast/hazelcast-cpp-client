@@ -32,7 +32,7 @@ namespace hazelcast {
          */
         class HAZELCAST_API Client : public Endpoint {
         public:
-            Client(const boost::shared_ptr<std::string> &uuid, const boost::shared_ptr<Address> &socketAddress,
+            Client(const std::shared_ptr<std::string> &uuid, const std::shared_ptr<Address> &socketAddress,
                    const std::string &name);
 
             const std::string &getName() const;

@@ -41,11 +41,11 @@ namespace hazelcast {
                     LatchExecutionCallback(util::CountDownLatch &successLatch, util::CountDownLatch &failLatch)
                             : successLatch(successLatch), failLatch(failLatch) {}
 
-                    virtual void onResponse(const boost::shared_ptr<int> &response) {
+                    virtual void onResponse(const std::shared_ptr<int> &response) {
                         successLatch.countDown();
                     }
 
-                    virtual void onFailure(const boost::shared_ptr<exception::IException> &e) {
+                    virtual void onFailure(const std::shared_ptr<exception::IException> &e) {
                         failLatch.countDown();
                     }
 
@@ -66,7 +66,7 @@ namespace hazelcast {
 
                 static void setValueToFuture(util::ThreadArgs &args) {
                     util::Future<int> *future = (util::Future<int> *) args.arg0;
-                    boost::shared_ptr<int> value = *(boost::shared_ptr<int> *) args.arg1;
+                    std::shared_ptr<int> value = *(std::shared_ptr<int> *) args.arg1;
                     int wakeUpTime = *(int *) args.arg2;
                     util::sleep(wakeUpTime);
                     future->set_value(value);
@@ -76,7 +76,7 @@ namespace hazelcast {
                     util::Future<int> *future = (util::Future<int> *) args.arg0;
                     int wakeUpTime = *(int *) args.arg1;
                     util::sleep(wakeUpTime);
-                    std::auto_ptr<client::exception::IException> exception(
+                    std::unique_ptr<client::exception::IException> exception(
                             new exception::IOException("exceptionName", "details"));
                     future->set_exception(exception);
                 }
@@ -149,7 +149,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testFutureSetValue) {
                 util::Future<int> future(getLogger());
                 int waitSeconds = 3;
-                boost::shared_ptr<int> expectedValue(new int(2));
+                std::shared_ptr<int> expectedValue(new int(2));
                 future.set_value(expectedValue);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
                 int value = *future.get();
@@ -159,7 +159,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testFutureSetException) {
                 util::Future<int> future(getLogger());
 
-                std::auto_ptr<client::exception::IException> exception(
+                std::unique_ptr<client::exception::IException> exception(
                         new client::exception::IOException("testFutureSetException", "details"));
                 future.set_exception(exception);
 
@@ -181,7 +181,7 @@ namespace hazelcast {
             TEST_F (ClientUtilTest, testFutureSetUnclonedIOException) {
                 util::Future<int> future(getLogger());
 
-                std::auto_ptr<client::exception::IException> ioe(
+                std::unique_ptr<client::exception::IException> ioe(
                         new client::exception::IOException("testFutureSetUnclonedIOException", "details"));
                 future.set_exception(ioe);
 
@@ -198,10 +198,10 @@ namespace hazelcast {
                 util::Future<int> future(getLogger());
                 int waitSeconds = 30;
                 int wakeUpTime = 3;
-                boost::shared_ptr<int> expectedValue(new int(2));
+                std::shared_ptr<int> expectedValue(new int(2));
                 util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
                 ASSERT_TRUE(future.waitFor(waitSeconds * 1000));
-                boost::shared_ptr<int> value = future.get();
+                std::shared_ptr<int> value = future.get();
                 ASSERT_EQ(*expectedValue, *value);
 
             }
@@ -226,11 +226,11 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
-                future.andThen(boost::shared_ptr<ExecutionCallback<int> >(
+                future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
                 int wakeUpTime = 0;
-                boost::shared_ptr<int> expectedValue(new int(2));
+                std::shared_ptr<int> expectedValue(new int(2));
                 util::StartedThread thread(ClientUtilTest::setValueToFuture, &future, &expectedValue, &wakeUpTime);
 
                 ASSERT_OPEN_EVENTUALLY(successLatch);
@@ -242,9 +242,9 @@ namespace hazelcast {
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
 
-                boost::shared_ptr<int> value(new int(5));
+                std::shared_ptr<int> value(new int(5));
                 future.set_value(value);
-                future.andThen(boost::shared_ptr<ExecutionCallback<int> >(
+                future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
                 ASSERT_OPEN_EVENTUALLY(successLatch);
@@ -255,7 +255,7 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
-                future.andThen(boost::shared_ptr<ExecutionCallback<int> >(
+                future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
                 int wakeUpTime = 0;
@@ -271,9 +271,9 @@ namespace hazelcast {
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
 
-                future.set_exception(std::auto_ptr<client::exception::IException>(
+                future.set_exception(std::unique_ptr<client::exception::IException>(
                         new exception::IOException("exceptionName", "details")));
-                future.andThen(boost::shared_ptr<ExecutionCallback<int> >(
+                future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
                 ASSERT_OPEN_EVENTUALLY(failLatch);
@@ -362,8 +362,8 @@ namespace hazelcast {
 
             TEST_F (ClientUtilTest, testStringUtilTimeToString) {
                 std::string timeString = util::StringUtil::timeToString(util::currentTimeMillis());
-                //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280300
-                ASSERT_EQ((size_t) 26, timeString.length());
+                //expected format is "%Y-%m-%d %H:%M:%S.%f" it will be something like 2018-03-20 15:36:07.280
+                ASSERT_EQ((size_t) 23, timeString.length());
                 ASSERT_EQ(timeString[0], '2');
                 ASSERT_EQ(timeString[1], '0');
                 ASSERT_EQ(timeString[4], '-');

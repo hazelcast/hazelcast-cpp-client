@@ -71,7 +71,7 @@ namespace hazelcast {
                     return !(*this == m);
                 }
 
-                boost::shared_ptr<T> object;
+                std::shared_ptr<T> object;
             };
         }
     }

@@ -27,12 +27,12 @@ namespace hazelcast {
                 const bool MapExecuteOnKeysCodec::RETRYABLE = false;
                 const ResponseMessageConst MapExecuteOnKeysCodec::RESPONSE_TYPE = (ResponseMessageConst) 117;
 
-                std::auto_ptr<ClientMessage> MapExecuteOnKeysCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapExecuteOnKeysCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &entryProcessor,
                         const std::vector<serialization::pimpl::Data> &keys) {
                     int32_t requiredDataSize = calculateDataSize(name, entryProcessor, keys);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapExecuteOnKeysCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

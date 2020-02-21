@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool QueuePollCodec::RETRYABLE = false;
                 const ResponseMessageConst QueuePollCodec::RESPONSE_TYPE = (ResponseMessageConst) 105;
 
-                std::auto_ptr<ClientMessage> QueuePollCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> QueuePollCodec::encodeRequest(
                         const std::string &name,
                         int64_t timeoutMillis) {
                     int32_t requiredDataSize = calculateDataSize(name, timeoutMillis);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueuePollCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -63,7 +63,7 @@ namespace hazelcast {
                 }
 
                 QueuePollCodec::ResponseParameters::ResponseParameters(const QueuePollCodec::ResponseParameters &rhs) {
-                    response = std::auto_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
+                    response = std::unique_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(*rhs.response));
                 }
 
             }

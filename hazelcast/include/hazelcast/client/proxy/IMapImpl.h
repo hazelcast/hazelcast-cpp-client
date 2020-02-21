@@ -49,9 +49,9 @@ namespace hazelcast {
 
                 bool containsValue(const serialization::pimpl::Data &value);
 
-                std::auto_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data &key);
+                std::unique_ptr<serialization::pimpl::Data> getData(const serialization::pimpl::Data &key);
 
-                std::auto_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data &key);
+                std::unique_ptr<serialization::pimpl::Data> removeData(const serialization::pimpl::Data &key);
 
                 bool remove(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
@@ -66,21 +66,21 @@ namespace hazelcast {
                 bool tryPut(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
                             int64_t timeoutInMillis);
 
-                std::auto_ptr<serialization::pimpl::Data>
+                std::unique_ptr<serialization::pimpl::Data>
                 putData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
                         int64_t ttlInMillis);
 
                 void putTransient(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
                                   int64_t ttlInMillis);
 
-                std::auto_ptr<serialization::pimpl::Data>
+                std::unique_ptr<serialization::pimpl::Data>
                 putIfAbsentData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value,
                                 int64_t ttlInMillis);
 
                 bool replace(const serialization::pimpl::Data &key, const serialization::pimpl::Data &oldValue,
                              const serialization::pimpl::Data &newValue);
 
-                std::auto_ptr<serialization::pimpl::Data>
+                std::unique_ptr<serialization::pimpl::Data>
                 replaceData(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value);
 
                 void set(const serialization::pimpl::Data &key, const serialization::pimpl::Data &value, int64_t ttl);
@@ -115,7 +115,7 @@ namespace hazelcast {
                 addEntryListener(impl::BaseEventHandler *entryEventHandler, serialization::pimpl::Data &key,
                                  bool includeValue);
 
-                std::auto_ptr<map::DataEntryView> getEntryViewData(const serialization::pimpl::Data &key);
+                std::unique_ptr<map::DataEntryView> getEntryViewData(const serialization::pimpl::Data &key);
 
                 bool evict(const serialization::pimpl::Data &key);
 
@@ -155,7 +155,7 @@ namespace hazelcast {
 
                 virtual void clear();
 
-                std::auto_ptr<serialization::pimpl::Data> executeOnKeyData(const serialization::pimpl::Data &key,
+                std::unique_ptr<serialization::pimpl::Data> executeOnKeyData(const serialization::pimpl::Data &key,
                                                                            const serialization::pimpl::Data &processor);
 
                 EntryVector executeOnKeysData(const std::vector<serialization::pimpl::Data> &keys,
@@ -165,7 +165,7 @@ namespace hazelcast {
                 EntryVector executeOnEntriesData(const EntryProcessor &entryProcessor) {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
 
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::MapExecuteOnAllKeysCodec::encodeRequest(
                             getName(), processor);
 
                     std::vector<std::pair<serialization::pimpl::Data, serialization::pimpl::Data> > response =
@@ -180,7 +180,7 @@ namespace hazelcast {
                 executeOnEntriesData(const EntryProcessor &entryProcessor, const query::Predicate &predicate) {
                     serialization::pimpl::Data processor = toData<EntryProcessor>(entryProcessor);
                     serialization::pimpl::Data predData = toData<serialization::IdentifiedDataSerializable>(predicate);
-                    std::auto_ptr<protocol::ClientMessage> request =
+                    std::unique_ptr<protocol::ClientMessage> request =
                             protocol::codec::MapExecuteWithPredicateCodec::encodeRequest(getName(),
                                                                                                      processor,
                                                                                                      predData);
@@ -227,8 +227,8 @@ namespace hazelcast {
                     size_t pageSize = (size_t) predicate.getPageSize();
                     int page = (int) predicate.getPage();
                     for (size_t i = pageSize; i <= size && nearestPage < page; i += pageSize) {
-                        std::auto_ptr<K> key = entries.releaseKey(i - 1);
-                        std::auto_ptr<V> value = entries.releaseValue(i - 1);
+                        std::unique_ptr<K> key = entries.releaseKey(i - 1);
+                        std::unique_ptr<V> value = entries.releaseValue(i - 1);
                         std::pair<K *, V *> anchor(key.release(), value.release());
                         nearestPage++;
                         predicate.setAnchor((size_t) nearestPage, anchor);
@@ -237,13 +237,13 @@ namespace hazelcast {
 
                 virtual void onInitialize();
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                std::shared_ptr<spi::impl::ClientInvocationFuture>
                 putAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,
                                      const serialization::pimpl::Data &valueData);
 
-                boost::shared_ptr<spi::impl::ClientInvocationFuture>
+                std::shared_ptr<spi::impl::ClientInvocationFuture>
                 setAsyncInternalData(int64_t ttl, const util::concurrent::TimeUnit &ttlUnit, const int64_t *maxIdle,
                                      const util::concurrent::TimeUnit &maxIdleUnit,
                                      const serialization::pimpl::Data &keyData,
@@ -255,11 +255,11 @@ namespace hazelcast {
                                                               int32_t listenerFlags,
                                                               serialization::pimpl::Data &predicate);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -275,11 +275,11 @@ namespace hazelcast {
                 public:
                     MapEntryListenerMessageCodec(const std::string &name, bool includeValue, int32_t listenerFlags);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -295,11 +295,11 @@ namespace hazelcast {
                     MapEntryListenerToKeyCodec(const std::string &name, bool includeValue, int32_t listenerFlags,
                                                const serialization::pimpl::Data &key);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -311,16 +311,16 @@ namespace hazelcast {
                     serialization::pimpl::Data key;
                 };
 
-                boost::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
+                std::shared_ptr<impl::ClientLockReferenceIdGenerator> lockReferenceIdGenerator;
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                std::shared_ptr<spi::impl::ListenerMessageCodec>
                 createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags);
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                std::shared_ptr<spi::impl::ListenerMessageCodec>
                 createMapEntryListenerCodec(bool includeValue, serialization::pimpl::Data &predicate,
                                             int32_t listenerFlags);
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec>
+                std::shared_ptr<spi::impl::ListenerMessageCodec>
                 createMapEntryListenerCodec(bool includeValue, int32_t listenerFlags, serialization::pimpl::Data &key);
             };
         }

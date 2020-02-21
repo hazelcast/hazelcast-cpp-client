@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/ByteBuffer.h"
 #include "hazelcast/util/SynchronizedQueue.h"
@@ -54,7 +54,7 @@ namespace hazelcast {
 
                 void handle();
 
-                bool enqueueData(const boost::shared_ptr<protocol::ClientMessage> &message);
+                bool enqueueData(const std::shared_ptr<protocol::ClientMessage> &message);
 
                 void run();
 
@@ -62,7 +62,7 @@ namespace hazelcast {
                 util::SynchronizedQueue<protocol::ClientMessage> writeQueue;
                 bool ready;
                 util::AtomicBoolean informSelector;
-                boost::shared_ptr<protocol::ClientMessage> lastMessage;
+                std::shared_ptr<protocol::ClientMessage> lastMessage;
                 int32_t numBytesWrittenToSocketForMessage;
                 int32_t lastMessageFrameLen;
             };

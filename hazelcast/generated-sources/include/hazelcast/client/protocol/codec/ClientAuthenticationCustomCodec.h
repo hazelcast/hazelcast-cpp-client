@@ -54,7 +54,7 @@ namespace hazelcast {
                     static const ResponseMessageConst RESPONSE_TYPE;
 
                     //************************ REQUEST STARTS ******************************************************************//
-                    static std::auto_ptr<ClientMessage> encodeRequest(
+                    static std::unique_ptr<ClientMessage> encodeRequest(
                             const serialization::pimpl::Data &credentials,
                             const std::string *uuid,
                             const std::string *ownerUuid,
@@ -78,22 +78,22 @@ namespace hazelcast {
                     public:
                         uint8_t status;
 
-                        std::auto_ptr<Address> address;
+                        std::unique_ptr<Address> address;
 
-                        std::auto_ptr<std::string> uuid;
+                        std::unique_ptr<std::string> uuid;
 
-                        std::auto_ptr<std::string> ownerUuid;
+                        std::unique_ptr<std::string> ownerUuid;
 
                         uint8_t serializationVersion;
 
                         std::string serverHazelcastVersion;
                         bool serverHazelcastVersionExist;
-                        std::auto_ptr<std::vector<Member> > clientUnregisteredMembers;
+                        std::unique_ptr<std::vector<Member> > clientUnregisteredMembers;
                         bool clientUnregisteredMembersExist;
 
                         static ResponseParameters decode(ClientMessage &clientMessage);
 
-                        // define copy constructor (needed for auto_ptr variables)
+                        // define copy constructor (needed for unique_ptr variables)
                         ResponseParameters(const ResponseParameters &rhs);
 
                     private:

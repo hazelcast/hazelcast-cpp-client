@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 8/26/13.
-
 
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVERFACTORY_H_
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
-/**
- * This include is needed due to the Python.h include so that we do not see the linkage error:
- * unresolved external symbol __imp__invalid_parameter_noinfo_noreturn
- * It should be before the Python.h include
- */
 #include <crtdefs.h>
 #endif
 
-#include <Python.h>
+#include "cpp-controller/RemoteController.h"
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <ostream>
 
 #include <hazelcast/util/ILogger.h>
 #include <hazelcast/client/Address.h>
 
 using namespace std;
+using namespace apache::thrift;
+using namespace apache::thrift::protocol;
+using namespace apache::thrift::transport;
+using namespace hazelcast::client::test::remote;
 
 namespace hazelcast {
     namespace client {
@@ -46,59 +41,25 @@ namespace hazelcast {
 
             class HazelcastServerFactory {
             public:
-                enum Lang {
-                    JAVASCRIPT = 1,
-                    GROOVY = 2,
-                    PYTHON = 3,
-                    RUBY = 4
-                };
-
-                struct Response {
-                    bool success;
-                    std::string message;
-                    std::string result;
-                    /*3:binary result;*/
-                };
-
-                class MemberInfo {
-                public:
-                    MemberInfo();
-
-                    MemberInfo(const string &uuid, const string &ip, int port);
-
-                    friend ostream &operator<<(ostream &os, const MemberInfo &info);
-
-                    const string &getUuid() const;
-
-                    Address getAddress() const;
-                private:
-                    std::string uuid;
-                    std::string ip;
-                    int port;
-                };
-
                 HazelcastServerFactory(const std::string &serverXmlConfigFilePath);
 
-                static const std::string& getServerAddress();
+                HazelcastServerFactory(const std::string &serverAddress, const std::string &serverXmlConfigFilePath);
 
-                MemberInfo startServer();
+                const std::string& getServerAddress();
+
+                remote::Member startServer();
 
                 bool setAttributes(int memberStartOrder);
 
-                bool shutdownServer(const MemberInfo &member);
+                bool shutdownServer(const remote::Member &member);
 
-                bool terminateServer(const MemberInfo &member);
+                bool terminateServer(const remote::Member &member);
 
                 ~HazelcastServerFactory();
 
-                static void init(const std::string &server);
-
-                Response executeOnController(const std::string &script, Lang language);
-
             private:
-                boost::shared_ptr<util::ILogger> logger;
-                static std::string serverAddress;
-                static PyObject *rcObject;
+                util::ILogger logger;
+                std::string serverAddress;
                 std::string clusterId;
 
                 std::string readFromXmlFile(const std::string &xmlFilePath);

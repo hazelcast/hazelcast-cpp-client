@@ -47,7 +47,7 @@ namespace hazelcast {
             hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
             ::getaddrinfo(NULL, IOUtil::to_string(port).c_str(), &hints, &serverInfo);
             socketId = ::socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol);
-            isOpen = true;
+            isOpen.store(true);
 			if(serverInfo->ai_family == AF_INET){
 				ipv4 = true;
 			}else if(serverInfo->ai_family == AF_INET6){
@@ -71,7 +71,8 @@ namespace hazelcast {
 		}
 
         void ServerSocket::close() {
-            if (isOpen.compareAndSet(true, false)) {
+            bool expected = true;
+            if (isOpen.compare_exchange_strong(expected, false)) {
                 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
 				::shutdown(socketId, SD_RECEIVE);
 				char buffer[1];

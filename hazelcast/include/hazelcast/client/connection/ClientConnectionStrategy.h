@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_CLIENT_CONNECTION_CLIENTCONNECTIONSTRATEGY_H_
 #define HAZELCAST_CLIENT_CONNECTION_CLIENTCONNECTIONSTRATEGY_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -97,13 +97,13 @@ namespace hazelcast {
                  * this method will be called with the connection parameter
                  * @param connection the new established connection
                  */
-                virtual void onConnect(const boost::shared_ptr<Connection> &connection) = 0;
+                virtual void onConnect(const std::shared_ptr<Connection> &connection) = 0;
 
                 /**
                  * If a connection is disconnected, this method will be called with the connection parameter
                  * @param connection the closed connection
                  */
-                virtual void onDisconnect(const boost::shared_ptr<Connection> &connection) = 0;
+                virtual void onDisconnect(const std::shared_ptr<Connection> &connection) = 0;
 
                 /**
                  * The {@link ConnectionManager} will call this method as a last step of its shutdown.

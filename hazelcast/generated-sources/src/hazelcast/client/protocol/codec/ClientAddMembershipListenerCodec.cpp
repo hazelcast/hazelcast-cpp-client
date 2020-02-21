@@ -29,10 +29,10 @@ namespace hazelcast {
                 const bool ClientAddMembershipListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst ClientAddMembershipListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> ClientAddMembershipListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ClientAddMembershipListenerCodec::encodeRequest(
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) ClientAddMembershipListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(localOnly);
@@ -65,7 +65,7 @@ namespace hazelcast {
                 }
 
                 void ClientAddMembershipListenerCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_MEMBER: {
@@ -91,7 +91,7 @@ namespace hazelcast {
 
                             int32_t operationType = clientMessage->get<int32_t>();
 
-                            std::auto_ptr<std::string> value = clientMessage->getNullable<std::string>();
+                            std::unique_ptr<std::string> value = clientMessage->getNullable<std::string>();
 
 
                             handleMemberAttributeChangeEventV10(uuid, key, operationType, value);

@@ -68,17 +68,17 @@ namespace hazelcast {
                 }
 
                 template<typename T>
-                std::auto_ptr<T> toObject(const serialization::pimpl::Data& data) {
+                std::unique_ptr<T> toObject(const serialization::pimpl::Data& data) {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
-                std::auto_ptr<T> toObject(const serialization::pimpl::Data *data) {
+                std::unique_ptr<T> toObject(const serialization::pimpl::Data *data) {
                     return context->getSerializationService().template toObject<T>(data);
                 }
 
                 template<typename T>
-                std::auto_ptr<T> toObject(std::auto_ptr<serialization::pimpl::Data> data) {
+                std::unique_ptr<T> toObject(std::unique_ptr<serialization::pimpl::Data> data) {
                     return context->getSerializationService().template toObject<T>(data.get());
                 }
 
@@ -87,7 +87,7 @@ namespace hazelcast {
                     size_t size = keyDataSet.size();
                     std::vector<K> keys(size);
                     for (size_t i = 0; i < size; i++) {
-                        boost::shared_ptr<K> v(toObject<K>(keyDataSet[i]));
+                        std::shared_ptr<K> v(toObject<K>(keyDataSet[i]));
                         keys[i] = *v;
                     }
                     return keys;
@@ -97,11 +97,11 @@ namespace hazelcast {
 
                 int getTimeoutInMilliseconds() const;
 
-                boost::shared_ptr<protocol::ClientMessage> invoke(std::auto_ptr<protocol::ClientMessage> request);
+                std::shared_ptr<protocol::ClientMessage> invoke(std::unique_ptr<protocol::ClientMessage> &request);
 
                 template<typename T, typename CODEC>
-                T invokeAndGetResult(std::auto_ptr<protocol::ClientMessage> request) {
-                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
+                T invokeAndGetResult(std::unique_ptr<protocol::ClientMessage> &request) {
+                    std::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     return CODEC::decode(*response).response;
                 }

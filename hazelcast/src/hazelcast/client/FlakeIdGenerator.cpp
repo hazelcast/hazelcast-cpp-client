@@ -18,7 +18,7 @@
 
 namespace hazelcast {
     namespace client {
-        FlakeIdGenerator::FlakeIdGenerator(const boost::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(impl) {}
+        FlakeIdGenerator::FlakeIdGenerator(const std::shared_ptr<impl::IdGeneratorInterface> &impl) : IdGenerator(impl) {}
 
         int64_t FlakeIdGenerator::newId() {
             return IdGenerator::newId();

@@ -34,7 +34,7 @@ namespace hazelcast {
                         ClientPartitionServiceImpl &partitionService) : partitionService(partitionService) {}
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onResponse(
-                        const boost::shared_ptr<protocol::ClientMessage> &responseMessage) {
+                        const std::shared_ptr<protocol::ClientMessage> &responseMessage) {
                     if (!responseMessage.get()) {
                         return;
                     }
@@ -45,7 +45,7 @@ namespace hazelcast {
                 }
 
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onFailure(
-                        const boost::shared_ptr<exception::IException> &t) {
+                        const std::shared_ptr<exception::IException> &t) {
                     if (partitionService.client.getLifecycleService().isRunning()) {
                         partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:"
                                                           << *t;
@@ -66,11 +66,10 @@ namespace hazelcast {
                         util::LockGuard guard(lock);
                         if (!partitionStateVersionExist || partitionStateVersion > lastPartitionStateVersion) {
                             typedef std::vector<std::pair<Address, std::vector<int32_t> > > PARTITION_VECTOR;
-                            BOOST_FOREACH(const PARTITION_VECTOR::value_type &entry, partitions) {
+                            for (const PARTITION_VECTOR::value_type &entry : partitions) {
                                             const Address &address = entry.first;
-                                            BOOST_FOREACH(const std::vector<int32_t>::value_type &partition,
-                                                          entry.second) {
-                                                            this->partitions.put(partition, boost::shared_ptr<Address>(
+                                            for (const std::vector<int32_t>::value_type &partition : entry.second) {
+                                                            this->partitions.put(partition, std::shared_ptr<Address>(
                                                                     new Address(address)));
                                                         }
                                         }
@@ -90,19 +89,19 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::start() {
                     //scheduling left in place to support server versions before 3.9.
                     clientExecutionService.scheduleWithRepetition(
-                            boost::shared_ptr<util::Runnable>(new RefreshTask(client, *this)), INITIAL_DELAY, PERIOD);
+                            std::shared_ptr<util::Runnable>(new RefreshTask(client, *this)), INITIAL_DELAY, PERIOD);
                 }
 
                 void ClientPartitionServiceImpl::listenPartitionTable(
-                        const boost::shared_ptr<connection::Connection> &ownerConnection) {
+                        const std::shared_ptr<connection::Connection> &ownerConnection) {
                     //when we connect to cluster back we need to reset partition state version
                     lastPartitionStateVersion = -1;
                     if (ownerConnection->getConnectedServerVersion() >=
                         client::impl::BuildInfo::calculateVersion("3.9")) {
                         //Servers after 3.9 supports listeners
-                        std::auto_ptr<protocol::ClientMessage> clientMessage =
+                        std::unique_ptr<protocol::ClientMessage> clientMessage =
                                 protocol::codec::ClientAddPartitionListenerCodec::encodeRequest();
-                        boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client, clientMessage,
+                        std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client, clientMessage,
                                                                                                   "", ownerConnection);
                         invocation->setEventHandler(shared_from_this());
                         invocation->invokeUrgent()->get();
@@ -113,7 +112,7 @@ namespace hazelcast {
                     try {
                         // use internal execution service for all partition refresh process (do not use the user executor thread)
                         clientExecutionService.execute(
-                                boost::shared_ptr<util::Runnable>(new RefreshTask(client, *this)));
+                                std::shared_ptr<util::Runnable>(new RefreshTask(client, *this)));
                     } catch (exception::RejectedExecutionException &) {
                         // ignore
                     }
@@ -131,7 +130,7 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::onListenerRegister() {
                 }
 
-                boost::shared_ptr<Address> ClientPartitionServiceImpl::getPartitionOwner(int partitionId) {
+                std::shared_ptr<Address> ClientPartitionServiceImpl::getPartitionOwner(int partitionId) {
                     waitForPartitionsFetchedOnce();
                     return partitions.get(partitionId);
                 }
@@ -150,8 +149,8 @@ namespace hazelcast {
                     return partitionCount;
                 }
 
-                boost::shared_ptr<client::impl::Partition> ClientPartitionServiceImpl::getPartition(int partitionId) {
-                    return boost::shared_ptr<client::impl::Partition>(new PartitionImpl(partitionId, client, *this));
+                std::shared_ptr<client::impl::Partition> ClientPartitionServiceImpl::getPartition(int partitionId) {
+                    return std::shared_ptr<client::impl::Partition>(new PartitionImpl(partitionId, client, *this));
                 }
 
                 void ClientPartitionServiceImpl::waitForPartitionsFetchedOnce() {
@@ -161,12 +160,12 @@ namespace hazelcast {
                                     "ClientPartitionServiceImpl::waitForPartitionsFetchedOnce",
                                     "Partitions can't be assigned since all nodes in the cluster are lite members");
                         }
-                        std::auto_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
-                        boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
+                        std::unique_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
+                        std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                                   requestMessage, "");
-                        boost::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
+                        std::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         try {
-                            boost::shared_ptr<protocol::ClientMessage> responseMessage = future->get();
+                            std::shared_ptr<protocol::ClientMessage> responseMessage = future->get();
                             protocol::codec::ClientGetPartitionsCodec::ResponseParameters response =
                                     protocol::codec::ClientGetPartitionsCodec::ResponseParameters::decode(
                                             *responseMessage);
@@ -183,7 +182,7 @@ namespace hazelcast {
 
                 bool ClientPartitionServiceImpl::isClusterFormedByOnlyLiteMembers() {
                     ClientClusterService &clusterService = client.getClientClusterService();
-                    BOOST_FOREACH(const std::vector<Member>::value_type &member, clusterService.getMemberList()) {
+                    for (const std::vector<Member>::value_type &member : clusterService.getMemberList()) {
                                     if (!member.isLiteMember()) {
                                         return false;
                                     }
@@ -198,14 +197,14 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::RefreshTask::run() {
                     try {
                         connection::ClientConnectionManagerImpl &connectionManager = client.getConnectionManager();
-                        boost::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
+                        std::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
                         if (!connection.get()) {
                             return;
                         }
-                        std::auto_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
-                        boost::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
+                        std::unique_ptr<protocol::ClientMessage> requestMessage = protocol::codec::ClientGetPartitionsCodec::encodeRequest();
+                        std::shared_ptr<ClientInvocation> invocation = ClientInvocation::create(client,
                                                                                                   requestMessage, "");
-                        boost::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
+                        std::shared_ptr<ClientInvocationFuture> future = invocation->invokeUrgent();
                         future->andThen(partitionService.refreshTaskCallback);
                     } catch (exception::IException &e) {
                         if (client.getLifecycleService().isRunning()) {
@@ -228,12 +227,12 @@ namespace hazelcast {
                     return partitionId;
                 }
 
-                boost::shared_ptr<Member> ClientPartitionServiceImpl::PartitionImpl::getOwner() const {
-                    boost::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionId);
+                std::shared_ptr<Member> ClientPartitionServiceImpl::PartitionImpl::getOwner() const {
+                    std::shared_ptr<Address> owner = partitionService.getPartitionOwner(partitionId);
                     if (owner.get()) {
                         return client.getClientClusterService().getMember(*owner);
                     }
-                    return boost::shared_ptr<Member>();
+                    return std::shared_ptr<Member>();
                 }
 
                 ClientPartitionServiceImpl::PartitionImpl::PartitionImpl(int partitionId, ClientContext &client,

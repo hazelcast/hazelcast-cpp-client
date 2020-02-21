@@ -17,7 +17,7 @@
 #define HAZELCAST_CLIENT_CONFIG_MATCHINGPOINTCONFIGPATTERNMATCHER_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/client/config/ConfigPatternMatcher.h"
 
@@ -34,7 +34,7 @@ namespace hazelcast {
                  */
                 class HAZELCAST_API MatchingPointConfigPatternMatcher : public ConfigPatternMatcher {
                 public:
-                    virtual boost::shared_ptr<std::string>
+                    virtual std::shared_ptr<std::string>
                     matches(const std::vector<std::string> &configPatterns, const std::string &itemName) const;
 
                 private:

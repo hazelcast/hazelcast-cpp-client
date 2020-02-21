@@ -49,7 +49,7 @@ namespace hazelcast {
         }
 
         void ILock::lock(long leaseTimeInMillis) {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockLockCodec::encodeRequest(getName(), leaseTimeInMillis,
                                                                   util::getCurrentThreadId(),
                                                                   referenceIdGenerator->getNextReferenceId());
@@ -58,7 +58,7 @@ namespace hazelcast {
         }
 
         void ILock::unlock() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockUnlockCodec::encodeRequest(getName(), util::getCurrentThreadId(),
                                                                     referenceIdGenerator->getNextReferenceId());
 
@@ -66,7 +66,7 @@ namespace hazelcast {
         }
 
         void ILock::forceUnlock() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockForceUnlockCodec::encodeRequest(getName(),
                                                                          referenceIdGenerator->getNextReferenceId());
 
@@ -74,7 +74,7 @@ namespace hazelcast {
         }
 
         bool ILock::isLocked() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockIsLockedCodec::encodeRequest(getName());
 
             return invokeAndGetResult<bool, protocol::codec::LockIsLockedCodec::ResponseParameters>(request,
@@ -82,7 +82,7 @@ namespace hazelcast {
         }
 
         bool ILock::isLockedByCurrentThread() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockIsLockedByCurrentThreadCodec::encodeRequest(getName(),
                                                                                      util::getCurrentThreadId());
 
@@ -91,7 +91,7 @@ namespace hazelcast {
         }
 
         int ILock::getLockCount() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockGetLockCountCodec::encodeRequest(getName());
 
             return invokeAndGetResult<int, protocol::codec::LockGetLockCountCodec::ResponseParameters>(request,
@@ -99,7 +99,7 @@ namespace hazelcast {
         }
 
         long ILock::getRemainingLeaseTime() {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockGetRemainingLeaseTimeCodec::encodeRequest(getName());
 
             return invokeAndGetResult<long, protocol::codec::LockGetRemainingLeaseTimeCodec::ResponseParameters>(
@@ -111,7 +111,7 @@ namespace hazelcast {
         }
 
         bool ILock::tryLock(long timeInMillis) {
-            std::auto_ptr<protocol::ClientMessage> request =
+            std::unique_ptr<protocol::ClientMessage> request =
                     protocol::codec::LockTryLockCodec::encodeRequest(getName(), util::getCurrentThreadId(), LONG_MAX,
                                                                      timeInMillis,
                                                                      referenceIdGenerator->getNextReferenceId());

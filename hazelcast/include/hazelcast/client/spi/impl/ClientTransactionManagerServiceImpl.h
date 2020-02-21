@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_CLIENTTRANSACTIONMANAGERIMPL_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_CLIENTTRANSACTIONMANAGERIMPL_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/client/exception/ProtocolExceptions.h"
@@ -44,19 +44,19 @@ namespace hazelcast {
 
                     ClientContext &getClient() const;
 
-                    boost::shared_ptr<connection::Connection> connect();
+                    std::shared_ptr<connection::Connection> connect();
 
                 private:
                     ClientContext &client;
                     LoadBalancer &loadBalancer;
 
-                    boost::shared_ptr<connection::Connection> tryConnectSmart();
+                    std::shared_ptr<connection::Connection> tryConnectSmart();
 
                     Address getRandomAddress();
 
-                    boost::shared_ptr<connection::Connection> tryConnectUnisocket();
+                    std::shared_ptr<connection::Connection> tryConnectUnisocket();
 
-                    boost::shared_ptr<connection::Connection> throwException(bool smartRouting);
+                    std::shared_ptr<connection::Connection> throwException(bool smartRouting);
 
                     exception::OperationTimeoutException
                     newOperationTimeoutException(exception::IException &throwable, int64_t invocationTimeoutMillis,

@@ -17,7 +17,7 @@
 #ifndef HAZELCAST_UTIL_EXECUTOR_H_
 #define HAZELCAST_UTIL_EXECUTOR_H_
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/Runnable.h"
 
@@ -27,7 +27,7 @@ namespace hazelcast {
         public:
             virtual ~Executor();
 
-            virtual void execute(const boost::shared_ptr<Runnable> &command) = 0;
+            virtual void execute(const std::shared_ptr<Runnable> &command) = 0;
         };
 
         class HAZELCAST_API ExecutorService : public Executor {
@@ -90,7 +90,7 @@ namespace hazelcast {
              *         scheduled for execution
              * @throws NullPointerException if command is null
              */
-            virtual void schedule(const boost::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) = 0;
+            virtual void schedule(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis) = 0;
 
             /**
              * Creates and executes a periodic action that becomes enabled first
@@ -110,7 +110,7 @@ namespace hazelcast {
              * @throws NullPointerException if command is null
              * @throws IllegalArgumentException if period is less than or equal to zero
              */
-            virtual void scheduleAtFixedRate(const boost::shared_ptr<util::Runnable> &command,
+            virtual void scheduleAtFixedRate(const std::shared_ptr<util::Runnable> &command,
                                              int64_t initialDelayInMillis, int64_t periodInMillis) = 0;
 
         };

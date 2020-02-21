@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 
 #include "ClientTestSupport.h"
@@ -186,7 +182,7 @@ namespace hazelcast {
                 ASSERT_TRUE((mm->remove<std::string, std::string>("key1", "value1")));
                 ASSERT_EQ(1, mm->size());
                 coll = mm->get<std::string>("key1");
-                std::auto_ptr<std::string> val = coll[0].get<std::string>();
+                std::unique_ptr<std::string> val = coll[0].get<std::string>();
                 ASSERT_NE((std::string *)NULL, val.get());
                 ASSERT_EQ("value3", *val);
             }

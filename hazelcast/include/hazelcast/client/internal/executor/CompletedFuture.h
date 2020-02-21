@@ -26,21 +26,21 @@ namespace hazelcast {
                 template<typename V>
                 class CompletedFuture : public spi::InternalCompletableFuture<V> {
                 public:
-                    CompletedFuture(const boost::shared_ptr<V> &value,
-                                    const boost::shared_ptr<Executor> &userExecutor) : value(value),
+                    CompletedFuture(const std::shared_ptr<V> &value,
+                                    const std::shared_ptr<Executor> &userExecutor) : value(value),
                                                                                        userExecutor(userExecutor) {}
 
-                    CompletedFuture(const boost::shared_ptr<exception::IException> &exception,
-                                    const boost::shared_ptr<Executor> &userExecutor) : exception(exception),
+                    CompletedFuture(const std::shared_ptr<exception::IException> &exception,
+                                    const std::shared_ptr<Executor> &userExecutor) : exception(exception),
                                                                                        userExecutor(userExecutor) {}
 
-                    virtual void andThen(const boost::shared_ptr<ExecutionCallback<V> > &callback) {
+                    virtual void andThen(const std::shared_ptr<ExecutionCallback<V> > &callback) {
                         andThen(callback, userExecutor);
                     }
 
-                    virtual void andThen(const boost::shared_ptr<ExecutionCallback<V> > &callback,
-                                         const boost::shared_ptr<Executor> &executor) {
-                        executor->execute(boost::shared_ptr<hazelcast::util::Runnable>(
+                    virtual void andThen(const std::shared_ptr<ExecutionCallback<V> > &callback,
+                                         const std::shared_ptr<Executor> &executor) {
+                        executor->execute(std::shared_ptr<hazelcast::util::Runnable>(
                                 new CallbackExecutor(callback, value, exception)));
                     }
 
@@ -56,7 +56,7 @@ namespace hazelcast {
                         return true;
                     }
 
-                    virtual boost::shared_ptr<V> get() {
+                    virtual std::shared_ptr<V> get() {
                         if (exception.get()) {
                             if (exception->getErrorCode() == protocol::EXECUTION) {
                                 exception->raise();
@@ -68,11 +68,11 @@ namespace hazelcast {
                         return value;
                     }
 
-                    virtual boost::shared_ptr<V> get(int64_t timeout, const TimeUnit &unit) {
+                    virtual std::shared_ptr<V> get(int64_t timeout, const TimeUnit &unit) {
                         return get();
                     }
 
-                    virtual boost::shared_ptr<V> join() {
+                    virtual std::shared_ptr<V> join() {
                         try {
                             // this method is quite inefficient when there is unchecked exception, because it will be wrapped
                             // in a ExecutionException, and then it is unwrapped again.
@@ -80,23 +80,23 @@ namespace hazelcast {
                         } catch (exception::IException &e) {
                             util::ExceptionUtil::rethrow(e);
                         }
-                        return boost::shared_ptr<V>();
+                        return std::shared_ptr<V>();
                     }
 
-                    virtual bool complete(const boost::shared_ptr<V> &value) {
+                    virtual bool complete(const std::shared_ptr<V> &value) {
                         return false;
                     }
 
-                    virtual bool complete(const boost::shared_ptr<exception::IException> &value) {
+                    virtual bool complete(const std::shared_ptr<exception::IException> &value) {
                         return false;
                     }
 
                 private:
                     class CallbackExecutor : public hazelcast::util::Runnable {
                     public:
-                        CallbackExecutor(const boost::shared_ptr<ExecutionCallback<V> > &callback,
-                                         const boost::shared_ptr<V> &value,
-                                         const boost::shared_ptr<exception::IException> &exception) : callback(
+                        CallbackExecutor(const std::shared_ptr<ExecutionCallback<V> > &callback,
+                                         const std::shared_ptr<V> &value,
+                                         const std::shared_ptr<exception::IException> &exception) : callback(
                                 callback), value(value), exception(exception) {}
 
                         virtual const std::string getName() const {
@@ -112,14 +112,14 @@ namespace hazelcast {
                         }
 
                     private:
-                        const boost::shared_ptr<ExecutionCallback<V> > callback;
-                        const boost::shared_ptr<V> value;
-                        const boost::shared_ptr<exception::IException> exception;
+                        const std::shared_ptr<ExecutionCallback<V> > callback;
+                        const std::shared_ptr<V> value;
+                        const std::shared_ptr<exception::IException> exception;
                     };
 
-                    const boost::shared_ptr<V> value;
-                    const boost::shared_ptr<exception::IException> exception;
-                    const boost::shared_ptr<hazelcast::util::Executor> userExecutor;
+                    const std::shared_ptr<V> value;
+                    const std::shared_ptr<exception::IException> exception;
+                    const std::shared_ptr<hazelcast::util::Executor> userExecutor;
                 };
             }
         }

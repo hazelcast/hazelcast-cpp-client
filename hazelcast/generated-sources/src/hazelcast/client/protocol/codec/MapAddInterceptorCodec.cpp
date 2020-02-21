@@ -28,11 +28,11 @@ namespace hazelcast {
                 const bool MapAddInterceptorCodec::RETRYABLE = false;
                 const ResponseMessageConst MapAddInterceptorCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> MapAddInterceptorCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapAddInterceptorCodec::encodeRequest(
                         const std::string &name,
                         const serialization::pimpl::Data &interceptor) {
                     int32_t requiredDataSize = calculateDataSize(name, interceptor);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddInterceptorCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

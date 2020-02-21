@@ -49,7 +49,7 @@ namespace hazelcast {
                     static const bool RETRYABLE;
                     static const ResponseMessageConst RESPONSE_TYPE;
                     //************************ REQUEST STARTS ******************************************************************//
-                        static std::auto_ptr<ClientMessage> encodeRequest(
+                        static std::unique_ptr<ClientMessage> encodeRequest(
                                 const std::string &name, 
                                 bool includeValue, 
                                 bool localOnly);
@@ -79,7 +79,7 @@ namespace hazelcast {
                         public:
                             virtual ~AbstractEventHandler();
 
-                            void handle(std::auto_ptr<protocol::ClientMessage> message);
+                            void handle(std::unique_ptr<protocol::ClientMessage> message);
 
 
 
@@ -89,7 +89,7 @@ namespace hazelcast {
 
 
 
-                                    virtual void handleEntryEventV10(std::auto_ptr<serialization::pimpl::Data > key, std::auto_ptr<serialization::pimpl::Data > value, std::auto_ptr<serialization::pimpl::Data > oldValue, std::auto_ptr<serialization::pimpl::Data > mergingValue, const int32_t &eventType, const std::string &uuid, const int32_t &numberOfAffectedEntries) = 0;
+                                    virtual void handleEntryEventV10(std::unique_ptr<serialization::pimpl::Data > &key, std::unique_ptr<serialization::pimpl::Data > &value, std::unique_ptr<serialization::pimpl::Data > &oldValue, std::unique_ptr<serialization::pimpl::Data > &mergingValue, const int32_t &eventType, const std::string &uuid, const int32_t &numberOfAffectedEntries) = 0;
 
                     };
 

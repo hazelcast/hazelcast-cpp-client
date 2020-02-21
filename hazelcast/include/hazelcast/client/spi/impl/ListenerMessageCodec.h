@@ -39,11 +39,11 @@ namespace hazelcast {
                     virtual ~ListenerMessageCodec() {
                     }
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const = 0;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const = 0;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const = 0;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const = 0;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const = 0;

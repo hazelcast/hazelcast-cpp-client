@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool LockIsLockedByCurrentThreadCodec::RETRYABLE = true;
                 const ResponseMessageConst LockIsLockedByCurrentThreadCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> LockIsLockedByCurrentThreadCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> LockIsLockedByCurrentThreadCodec::encodeRequest(
                         const std::string &name,
                         int64_t threadId) {
                     int32_t requiredDataSize = calculateDataSize(name, threadId);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) LockIsLockedByCurrentThreadCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

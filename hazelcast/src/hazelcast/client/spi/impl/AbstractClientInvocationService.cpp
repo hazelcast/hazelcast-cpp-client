@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #include <memory>
-#include <boost/foreach.hpp>
+
 
 #include "hazelcast/client/spi/impl/AbstractClientInvocationService.h"
 #include "hazelcast/client/ClientConfig.h"
@@ -51,23 +51,23 @@ namespace hazelcast {
                                 CLEAN_RESOURCES_MILLIS.getDefaultValue());
                     }
 
-                    client.getClientExecutionService().scheduleWithRepetition(boost::shared_ptr<util::Runnable>(
+                    client.getClientExecutionService().scheduleWithRepetition(std::shared_ptr<util::Runnable>(
                             new CleanResourcesTask(invocations)), cleanResourcesMillis, cleanResourcesMillis);
 
                     return true;
                 }
 
                 void AbstractClientInvocationService::shutdown() {
-                    isShutdown = true;
+                    isShutdown.store(true);
 
                     responseThread.interrupt();
 
-                    typedef std::vector<std::pair<int64_t, boost::shared_ptr<ClientInvocation> > > InvocationEntriesVector;
+                    typedef std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation> > > InvocationEntriesVector;
                     InvocationEntriesVector allEntries = invocations.clear();
-                    boost::shared_ptr<exception::HazelcastClientNotActiveException> notActiveException(
+                    std::shared_ptr<exception::HazelcastClientNotActiveException> notActiveException(
                             new exception::HazelcastClientNotActiveException("AbstractClientInvocationService::shutdown",
                                     "Client is shutting down"));
-                    BOOST_FOREACH (InvocationEntriesVector::value_type & entry, allEntries) {
+                    for (InvocationEntriesVector::value_type & entry : allEntries) {
                                     entry.second->notifyException(notActiveException);
                                 }
                 }
@@ -85,27 +85,27 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::handleClientMessage(
-                        const boost::shared_ptr<connection::Connection> &connection,
-                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
+                        const std::shared_ptr<connection::Connection> &connection,
+                        const std::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     responseThread.responseQueue.push(clientMessage);
                 }
 
-                boost::shared_ptr<ClientInvocation> AbstractClientInvocationService::deRegisterCallId(int64_t callId) {
+                std::shared_ptr<ClientInvocation> AbstractClientInvocationService::deRegisterCallId(int64_t callId) {
                     return invocations.remove(callId);
                 }
 
-                void AbstractClientInvocationService::send(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                                           boost::shared_ptr<connection::Connection> connection) {
+                void AbstractClientInvocationService::send(std::shared_ptr<impl::ClientInvocation> invocation,
+                                                           std::shared_ptr<connection::Connection> connection) {
                     if (isShutdown) {
                         throw exception::HazelcastClientNotActiveException("AbstractClientInvocationService::send",
                                                                            "Client is shut down");
                     }
                     registerInvocation(invocation);
 
-                    const boost::shared_ptr<protocol::ClientMessage> &clientMessage = invocation->getClientMessage();
+                    const std::shared_ptr<protocol::ClientMessage> &clientMessage = invocation->getClientMessage();
                     if (!writeToConnection(*connection, clientMessage)) {
                         int64_t callId = clientMessage->getCorrelationId();
-                        boost::shared_ptr<ClientInvocation> clientInvocation = deRegisterCallId(callId);
+                        std::shared_ptr<ClientInvocation> clientInvocation = deRegisterCallId(callId);
                         if (clientInvocation.get() != NULL) {
                             std::ostringstream out;
                             out << "Packet not sent to ";
@@ -128,29 +128,29 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::registerInvocation(
-                        const boost::shared_ptr<ClientInvocation> &clientInvocation) {
-                    const boost::shared_ptr<protocol::ClientMessage> &clientMessage = clientInvocation->getClientMessage();
+                        const std::shared_ptr<ClientInvocation> &clientInvocation) {
+                    const std::shared_ptr<protocol::ClientMessage> &clientMessage = clientInvocation->getClientMessage();
                     int64_t correlationId = clientMessage->getCorrelationId();
                     invocations.put(correlationId, clientInvocation);
-                    const boost::shared_ptr<EventHandler<protocol::ClientMessage> > handler = clientInvocation->getEventHandler();
+                    const std::shared_ptr<EventHandler<protocol::ClientMessage> > handler = clientInvocation->getEventHandler();
                     if (handler.get() != NULL) {
                         clientListenerService->addEventHandler(correlationId, handler);
                     }
                 }
 
                 bool AbstractClientInvocationService::writeToConnection(connection::Connection &connection,
-                                                                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
+                                                                        const std::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     clientMessage->addFlag(protocol::ClientMessage::BEGIN_AND_END_FLAGS);
                     return connection.write(clientMessage);
                 }
 
                 void AbstractClientInvocationService::CleanResourcesTask::run() {
                     std::vector<int64_t> invocationsToBeRemoved;
-                    typedef std::vector<std::pair<int64_t, boost::shared_ptr<ClientInvocation> > > INVOCATION_ENTRIES;
-                    BOOST_FOREACH(const INVOCATION_ENTRIES::value_type &entry, invocations.entrySet()) {
+                    typedef std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation> > > INVOCATION_ENTRIES;
+                    for (const INVOCATION_ENTRIES::value_type &entry : invocations.entrySet()) {
                                     int64_t key = entry.first;
-                                    const boost::shared_ptr<ClientInvocation> &invocation = entry.second;
-                                    boost::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
+                                    const std::shared_ptr<ClientInvocation> &invocation = entry.second;
+                                    std::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
                                     if (!connection.get()) {
                                         continue;
                                     }
@@ -164,14 +164,14 @@ namespace hazelcast {
                                     notifyException(*invocation, connection);
                                 }
 
-                    BOOST_FOREACH(int64_t invocationId, invocationsToBeRemoved) {
+                    for (int64_t invocationId : invocationsToBeRemoved) {
                                     invocations.remove(invocationId);
                                 }
                 }
 
                 void AbstractClientInvocationService::CleanResourcesTask::notifyException(ClientInvocation &invocation,
-                                                                                          boost::shared_ptr<connection::Connection> &connection) {
-                    boost::shared_ptr<exception::IException> ex(
+                                                                                          std::shared_ptr<connection::Connection> &connection) {
+                    std::shared_ptr<exception::IException> ex(
                             new exception::TargetDisconnectedException("CleanResourcesTask::notifyException",
                                                                        connection->getCloseReason()));
                     invocation.notifyException(ex);
@@ -193,7 +193,7 @@ namespace hazelcast {
                                                                                 ClientContext &clientContext)
                         : responseQueue(100000), invocationLogger(invocationLogger),
                           invocationService(invocationService), client(clientContext),
-                          worker(boost::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), invocationLogger) {
+                          worker(std::shared_ptr<util::Runnable>(new util::RunnableDelegator(*this)), invocationLogger) {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::run() {
@@ -206,7 +206,7 @@ namespace hazelcast {
 
                 void AbstractClientInvocationService::ResponseThread::doRun() {
                     while (!invocationService.isShutdown) {
-                        boost::shared_ptr<protocol::ClientMessage> task;
+                        std::shared_ptr<protocol::ClientMessage> task;
                         try {
                             task = responseQueue.pop();
                         } catch (exception::InterruptedException &) {
@@ -217,7 +217,7 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::process(
-                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
+                        const std::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     try {
                         handleClientMessage(clientMessage);
                     } catch (exception::IException &e) {
@@ -228,17 +228,17 @@ namespace hazelcast {
                 }
 
                 void AbstractClientInvocationService::ResponseThread::handleClientMessage(
-                        const boost::shared_ptr<protocol::ClientMessage> &clientMessage) {
+                        const std::shared_ptr<protocol::ClientMessage> &clientMessage) {
                     int64_t correlationId = clientMessage->getCorrelationId();
 
-                    boost::shared_ptr<ClientInvocation> future = invocationService.deRegisterCallId(correlationId);
+                    std::shared_ptr<ClientInvocation> future = invocationService.deRegisterCallId(correlationId);
                     if (future.get() == NULL) {
                         invocationLogger.warning() << "No call for callId: " << correlationId << ", response: "
                                                    << *clientMessage;
                         return;
                     }
                     if (protocol::codec::ErrorCodec::TYPE == clientMessage->getMessageType()) {
-                        boost::shared_ptr<exception::IException> exception(client.getClientExceptionFactory().createException(
+                        std::shared_ptr<exception::IException> exception(client.getClientExceptionFactory().createException(
                                 "AbstractClientInvocationService::ResponseThread::handleClientMessage", *clientMessage));
                         future->notifyException(exception);
                     } else {

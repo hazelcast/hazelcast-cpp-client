@@ -20,7 +20,7 @@
 #define HAZELCAST_CLIENT_SPI_CLIENTPROXYFACTORY_H_
 
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 
@@ -49,7 +49,7 @@ namespace hazelcast {
                  * @param id the ID of the client proxy
                  * @return the client proxy
                  */
-                virtual boost::shared_ptr<ClientProxy> create(const std::string &id) = 0;
+                virtual std::shared_ptr<ClientProxy> create(const std::string &id) = 0;
             };
         }
     }

@@ -35,52 +35,52 @@ namespace hazelcast {
             return *this;
         }
 
-        std::vector<boost::shared_ptr<serialization::SerializerBase> > const &
+        std::vector<std::shared_ptr<serialization::SerializerBase> > const &
         SerializationConfig::getSerializers() const {
             return serializers;
         }
 
         SerializationConfig &
-        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::SerializerBase> serializer) {
+        SerializationConfig::registerSerializer(std::shared_ptr<serialization::SerializerBase> serializer) {
             serializers.push_back(serializer);
             return *this;
         }
 
         SerializationConfig &
-        SerializationConfig::registerSerializer(boost::shared_ptr<serialization::StreamSerializer> serializer) {
+        SerializationConfig::registerSerializer(std::shared_ptr<serialization::StreamSerializer> serializer) {
             serializers.push_back(serializer);
             return *this;
         }
 
         SerializationConfig &SerializationConfig::addDataSerializableFactory(int32_t factoryId,
-                                                                             boost::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory) {
+                                                                             std::shared_ptr<serialization::DataSerializableFactory> dataSerializableFactory) {
             dataSerializableFactories[factoryId] = dataSerializableFactory;
             return *this;
         }
 
         SerializationConfig &SerializationConfig::addPortableFactory(int32_t factoryId,
-                                                                     boost::shared_ptr<serialization::PortableFactory> portableFactory) {
+                                                                     std::shared_ptr<serialization::PortableFactory> portableFactory) {
             portableFactories[factoryId] = portableFactory;
             return *this;
         }
 
-        const std::map<int32_t, boost::shared_ptr<serialization::DataSerializableFactory> > &
+        const std::map<int32_t, std::shared_ptr<serialization::DataSerializableFactory> > &
         SerializationConfig::getDataSerializableFactories() const {
             return dataSerializableFactories;
         }
 
-        const std::map<int32_t, boost::shared_ptr<serialization::PortableFactory> > &
+        const std::map<int32_t, std::shared_ptr<serialization::PortableFactory> > &
         SerializationConfig::getPortableFactories() const {
             return portableFactories;
         }
 
         SerializationConfig &
-        SerializationConfig::setGlobalSerializer(const boost::shared_ptr<serialization::StreamSerializer> &serializer) {
+        SerializationConfig::setGlobalSerializer(const std::shared_ptr<serialization::StreamSerializer> &serializer) {
             globalSerializer = serializer;
             return *this;
         }
 
-        const boost::shared_ptr<serialization::StreamSerializer> &SerializationConfig::getGlobalSerializer() const {
+        const std::shared_ptr<serialization::StreamSerializer> &SerializationConfig::getGlobalSerializer() const {
             return globalSerializer;
         }
     }

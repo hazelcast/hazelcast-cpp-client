@@ -28,12 +28,12 @@ namespace hazelcast {
                 const bool PNCounterGetCodec::RETRYABLE = true;
                 const ResponseMessageConst PNCounterGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 127;
 
-                std::auto_ptr<ClientMessage> PNCounterGetCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> PNCounterGetCodec::encodeRequest(
                         const std::string &name, 
                         const std::vector<std::pair<std::string, int64_t > > &replicaTimestamps, 
                         const Address &targetReplica) {
                     int32_t requiredDataSize = calculateDataSize(name, replicaTimestamps, targetReplica);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)PNCounterGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

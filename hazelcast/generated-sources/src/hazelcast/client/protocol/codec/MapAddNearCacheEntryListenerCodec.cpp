@@ -30,12 +30,12 @@ namespace hazelcast {
                 const bool MapAddNearCacheEntryListenerCodec::RETRYABLE = false;
                 const ResponseMessageConst MapAddNearCacheEntryListenerCodec::RESPONSE_TYPE = (ResponseMessageConst) 104;
 
-                std::auto_ptr<ClientMessage> MapAddNearCacheEntryListenerCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> MapAddNearCacheEntryListenerCodec::encodeRequest(
                         const std::string &name,
                         int32_t listenerFlags,
                         bool localOnly) {
                     int32_t requiredDataSize = calculateDataSize(name, listenerFlags, localOnly);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) MapAddNearCacheEntryListenerCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);
@@ -75,11 +75,11 @@ namespace hazelcast {
                 }
 
                 void MapAddNearCacheEntryListenerCodec::AbstractEventHandler::handle(
-                        std::auto_ptr<protocol::ClientMessage> clientMessage) {
+                        std::unique_ptr<protocol::ClientMessage> clientMessage) {
                     int messageType = clientMessage->getMessageType();
                     switch (messageType) {
                         case protocol::EVENT_IMAPINVALIDATION: {
-                            std::auto_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
+                            std::unique_ptr<serialization::pimpl::Data> key = clientMessage->getNullable<serialization::pimpl::Data>();
 
                             if (clientMessage->isComplete()) {
                                 handleIMapInvalidationEventV10(key);

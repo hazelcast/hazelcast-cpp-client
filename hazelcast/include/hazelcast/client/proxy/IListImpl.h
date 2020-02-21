@@ -59,13 +59,13 @@ namespace hazelcast {
 
                 void clear();
 
-                std::auto_ptr<serialization::pimpl::Data> getData(int index);
+                std::unique_ptr<serialization::pimpl::Data> getData(int index);
 
-                std::auto_ptr<serialization::pimpl::Data> setData(int index, const serialization::pimpl::Data& element);
+                std::unique_ptr<serialization::pimpl::Data> setData(int index, const serialization::pimpl::Data& element);
 
                 void add(int index, const serialization::pimpl::Data& element);
 
-                std::auto_ptr<serialization::pimpl::Data> removeData(int index);
+                std::unique_ptr<serialization::pimpl::Data> removeData(int index);
 
                 int indexOf(const serialization::pimpl::Data& element);
 
@@ -78,11 +78,11 @@ namespace hazelcast {
                 public:
                     ListListenerMessageCodec(const std::string &name, bool includeValue);
 
-                    virtual std::auto_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
+                    virtual std::unique_ptr<protocol::ClientMessage> encodeAddRequest(bool localOnly) const;
 
                     virtual std::string decodeAddResponse(protocol::ClientMessage &responseMessage) const;
 
-                    virtual std::auto_ptr<protocol::ClientMessage>
+                    virtual std::unique_ptr<protocol::ClientMessage>
                     encodeRemoveRequest(const std::string &realRegistrationId) const;
 
                     virtual bool decodeRemoveResponse(protocol::ClientMessage &clientMessage) const;
@@ -94,7 +94,7 @@ namespace hazelcast {
 
                 int partitionId;
 
-                boost::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
+                std::shared_ptr<spi::impl::ListenerMessageCodec> createItemListenerCodec(bool includeValue);
             };
         }
     }

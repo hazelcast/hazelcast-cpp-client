@@ -56,7 +56,7 @@ namespace hazelcast {
                 * Internal Api constructor
                 */
                 PortableReader(pimpl::PortableContext& context, ObjectDataInput& dataInput,
-                                boost::shared_ptr<ClassDefinition> cd, bool isDefaultReader);
+                                std::shared_ptr<ClassDefinition> cd, bool isDefaultReader);
 
                 PortableReader(const PortableReader & reader);
 
@@ -123,63 +123,63 @@ namespace hazelcast {
                 * @return the utf string value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::string> readUTF(const char *fieldName);
+                std::unique_ptr<std::string> readUTF(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the byte array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<byte> > readByteArray(const char *fieldName);
+                std::unique_ptr<std::vector<byte> > readByteArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the bool array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
+                std::unique_ptr<std::vector<bool> > readBooleanArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the char array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<char> > readCharArray(const char *fieldName);
+                std::unique_ptr<std::vector<char> > readCharArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the int32_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
+                std::unique_ptr<std::vector<int32_t> > readIntArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the int64_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
+                std::unique_ptr<std::vector<int64_t> > readLongArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the double array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
+                std::unique_ptr<std::vector<double> > readDoubleArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the float array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<float> > readFloatArray(const char *fieldName);
+                std::unique_ptr<std::vector<float> > readFloatArray(const char *fieldName);
 
                 /**
                 * @param fieldName name of the field
                 * @return the int16_t array value read
                 * @throws IOException
                 */
-                std::auto_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
+                std::unique_ptr<std::vector<int16_t> > readShortArray(const char *fieldName);
 
                 /**
                 * @tparam type of the portable class
@@ -188,7 +188,7 @@ namespace hazelcast {
                 * @throws IOException
                 */
                 template<typename T>
-                boost::shared_ptr<T> readPortable(const char *fieldName) {
+                std::shared_ptr<T> readPortable(const char *fieldName) {
                     if (isDefaultReader)
                         return defaultPortableReader->readPortable<T>(fieldName);
                     return morphingPortableReader->readPortable<T>(fieldName);
@@ -225,8 +225,8 @@ namespace hazelcast {
 
             private:
                 bool isDefaultReader;
-                mutable std::auto_ptr<pimpl::DefaultPortableReader> defaultPortableReader;
-                mutable std::auto_ptr<pimpl::MorphingPortableReader> morphingPortableReader;
+                mutable std::unique_ptr<pimpl::DefaultPortableReader> defaultPortableReader;
+                mutable std::unique_ptr<pimpl::MorphingPortableReader> morphingPortableReader;
 
             };
         }

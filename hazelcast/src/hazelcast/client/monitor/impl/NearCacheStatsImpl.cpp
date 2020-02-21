@@ -132,7 +132,7 @@ namespace hazelcast {
                 }
 
                 int64_t NearCacheStatsImpl::getInvalidations() {
-                    return invalidations.get();
+                    return invalidations.load();
                 }
 
                 void NearCacheStatsImpl::incrementInvalidations() {
@@ -140,7 +140,7 @@ namespace hazelcast {
                 }
 
                 int64_t NearCacheStatsImpl::getInvalidationRequests() {
-                    return invalidationRequests.get();
+                    return invalidationRequests.load();
                 }
 
                 void NearCacheStatsImpl::incrementInvalidationRequests() {
@@ -196,8 +196,8 @@ namespace hazelcast {
                     << ", ratio=" << std::setprecision(1) << getRatio()
                     << ", evictions=" << evictions
                     << ", expirations=" << expirations
-                    << ", invalidations=" << invalidations.get()
-                    << ", invalidationRequests=" << invalidationRequests.get()
+                    << ", invalidations=" << invalidations.load()
+                    << ", invalidationRequests=" << invalidationRequests.load()
                     << ", lastPersistenceTime=" << lastPersistenceTime
                     << ", persistenceCount=" << persistenceCount
                     << ", lastPersistenceDuration=" << lastPersistenceDuration

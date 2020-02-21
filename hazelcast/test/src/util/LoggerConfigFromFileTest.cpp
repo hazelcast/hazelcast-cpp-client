@@ -39,8 +39,9 @@ namespace hazelcast {
 
             protected:
                 virtual void SetUp() {
-                    originalStdout = std::cout.rdbuf();
+                    ASSERT_TRUE(testLogger->start());
 
+                    originalStdout = std::cout.rdbuf();
                     std::cout.rdbuf(buffer.rdbuf());
                 }
 
@@ -64,7 +65,7 @@ namespace hazelcast {
             protected:
                 std::streambuf *originalStdout;
                 std::stringstream buffer;
-                std::auto_ptr<util::ILogger> testLogger;
+                std::unique_ptr<util::ILogger> testLogger;
             };
 
             TEST_F(LoggerConfigFromFileTest, testFinest) {
@@ -165,12 +166,6 @@ namespace hazelcast {
             TEST_F(LoggerConfigFromFileTest, testNonExistingConfigurationFileFailFast) {
                 ClientConfig clientConfig;
                 clientConfig.getLoggerConfig().setConfigurationFileName("NonExistent");
-                ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
-            }
-
-             TEST_F(LoggerConfigFromFileTest, testInvalidConfigurationFileFailFast) {
-                ClientConfig clientConfig;
-                clientConfig.getLoggerConfig().setConfigurationFileName("hazelcast/test/resources/invalid-logger-config.txt");
                 ASSERT_THROW(HazelcastClient client(clientConfig), exception::IllegalStateException);
             }
 

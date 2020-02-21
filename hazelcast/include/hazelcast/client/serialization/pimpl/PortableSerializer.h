@@ -56,7 +56,7 @@ namespace hazelcast {
                     PortableSerializer(PortableContext& portableContext);
 
                     template <typename T>
-                    std::auto_ptr<T> readObject(ObjectDataInput &in) {
+                    std::unique_ptr<T> readObject(ObjectDataInput &in) {
                         int32_t factoryId = readInt(in);
                         int32_t classId = readInt(in);
 
@@ -64,8 +64,8 @@ namespace hazelcast {
                     }
 
                     template <typename T>
-                    std::auto_ptr<T> read(ObjectDataInput &in, int32_t factoryId, int32_t classId) {
-                        std::auto_ptr<Portable> portableInstance = createNewPortableInstance(factoryId, classId);
+                    std::unique_ptr<T> read(ObjectDataInput &in, int32_t factoryId, int32_t classId) {
+                        std::unique_ptr<Portable> portableInstance = createNewPortableInstance(factoryId, classId);
 
                         #ifdef __clang__
                         #pragma clang diagnostic push
@@ -76,8 +76,8 @@ namespace hazelcast {
                             portableInstance.reset(reinterpret_cast<Portable *>(new T));
                         }
 
-                        std::auto_ptr<Portable> object = read(in, portableInstance, factoryId, classId);
-                        return std::auto_ptr<T>(reinterpret_cast<T *>(object.release()));
+                        read(in, *portableInstance, factoryId, classId);
+                        return std::unique_ptr<T>(reinterpret_cast<T *>(portableInstance.release()));
 
                         #ifdef __clang__
                         #pragma clang diagnostic pop
@@ -98,12 +98,11 @@ namespace hazelcast {
 
                     PortableReader createReader(ObjectDataInput& input, int factoryId, int classId, int version, int portableVersion) const;
 
-                    std::auto_ptr<Portable> createNewPortableInstance(int32_t factoryId, int32_t classId);
+                    std::unique_ptr<Portable> createNewPortableInstance(int32_t factoryId, int32_t classId);
 
                     int32_t readInt(ObjectDataInput &in) const;
 
-                    std::auto_ptr<Portable>
-                    read(ObjectDataInput &in, std::auto_ptr<Portable> portable, int32_t factoryId, int32_t classId);
+                    void read(ObjectDataInput &in, Portable &portable, int32_t factoryId, int32_t classId);
                 };
 
             }

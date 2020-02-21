@@ -43,8 +43,8 @@ namespace hazelcast {
             UndefinedErrorCodeException::~UndefinedErrorCodeException() throw() {
             }
 
-            std::auto_ptr<IException> UndefinedErrorCodeException::clone() const {
-                return std::auto_ptr<IException>(new UndefinedErrorCodeException(*this));
+            std::unique_ptr<IException> UndefinedErrorCodeException::clone() const {
+                return std::unique_ptr<IException>(new UndefinedErrorCodeException(*this));
             }
 
             void UndefinedErrorCodeException::raise() const {
@@ -74,7 +74,7 @@ namespace hazelcast {
 
             RetryableHazelcastException::RetryableHazelcastException(const std::string &source,
                                                                      const std::string &message,
-                                                                     const boost::shared_ptr<IException> &cause)
+                                                                     const std::shared_ptr<IException> &cause)
                     : IException("RetryableHazelcastException", source, message, protocol::RETRYABLE_HAZELCAST, cause, true, true),
                       HazelcastException(source, message, cause) {}
 
@@ -104,8 +104,8 @@ namespace hazelcast {
                 throw *this;
             }
 
-            std::auto_ptr<IException> MemberLeftException::clone() const {
-                return std::auto_ptr<IException>(new MemberLeftException(*this));
+            std::unique_ptr<IException> MemberLeftException::clone() const {
+                return std::unique_ptr<IException>(new MemberLeftException(*this));
             }
 
         }

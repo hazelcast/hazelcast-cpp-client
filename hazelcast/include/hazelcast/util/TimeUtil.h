@@ -17,8 +17,7 @@
 #ifndef HAZELCAST_UTIL_TIMEUTIL_H_
 #define HAZELCAST_UTIL_TIMEUTIL_H_
 
-#include <boost/date_time/posix_time/ptime.hpp>
-
+#include <cstdint>
 #include "hazelcast/util/HazelcastDll.h"
 
 namespace hazelcast {
@@ -28,11 +27,6 @@ namespace hazelcast {
         }
         class HAZELCAST_API TimeUtil {
         public:
-            /**
-             * @return the difference, measured in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-             */
-            static boost::posix_time::time_duration getDurationSinceEpoch();
-
             /**
              * Convert time to milliseconds based on the input time-unit.
              * If conversion results in the value 0, then it the value is replaced with the positive 1.

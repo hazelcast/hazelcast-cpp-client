@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//
-// Created by sancar koyunlu on 9/13/13.
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
-
-#include "hazelcast/client/HazelcastClient.h"
-
-#include "hazelcast/client/ClientConfig.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
+
+#include "hazelcast/client/HazelcastClient.h"
+#include "hazelcast/client/ClientConfig.h"
 #include "hazelcast/client/IList.h"
 
 namespace hazelcast {
@@ -65,7 +58,7 @@ namespace hazelcast {
 
                 static void SetUpTestCase() {
                     #ifdef HZ_BUILD_WITH_SSL
-                    sslFactory = new HazelcastServerFactory(getSslFilePath());
+                    sslFactory = new HazelcastServerFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                     instance = new HazelcastServer(*sslFactory);
                     #else
                     instance = new HazelcastServer(*g_srvFactory);
@@ -127,7 +120,7 @@ namespace hazelcast {
                 ASSERT_TRUE(list->add("item2"));
                 list->add(0, "item3");
                 ASSERT_EQ(3, list->size());
-                boost::shared_ptr<std::string> temp = list->set(2, "item4");
+                std::shared_ptr<std::string> temp = list->set(2, "item4");
                 ASSERT_EQ("item2", *temp);
 
                 ASSERT_EQ(3, list->size());

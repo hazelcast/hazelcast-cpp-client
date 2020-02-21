@@ -27,12 +27,12 @@ namespace hazelcast {
                 };
 
                 TEST_F(ExceptionTest, testExceptionCause) {
-                    boost::shared_ptr<exception::IException> cause = boost::shared_ptr<exception::IException>(
+                    std::shared_ptr<exception::IException> cause = std::shared_ptr<exception::IException>(
                             new exception::IOException("testExceptionCause test", "this is a test exception"));
                     exception::TargetDisconnectedException targetDisconnectedException("testExceptionCause",
                                                                                        "test message", cause);
 
-                    boost::shared_ptr<exception::IException> exceptionCause = targetDisconnectedException.getCause();
+                    std::shared_ptr<exception::IException> exceptionCause = targetDisconnectedException.getCause();
                     ASSERT_NE(static_cast<exception::IException *>(NULL), exceptionCause.get());
                     ASSERT_THROW((exceptionCause->raise()), exception::IOException);
                     ASSERT_EQ(exceptionCause->getMessage(), cause->getMessage());
@@ -51,7 +51,7 @@ namespace hazelcast {
                 }
 
                 TEST_F(ExceptionTest, testExceptionBuilderBuildShared) {
-                    boost::shared_ptr<exception::IOException> sharedException = exception::ExceptionBuilder<exception::IOException>(
+                    std::shared_ptr<exception::IOException> sharedException = exception::ExceptionBuilder<exception::IOException>(
                             "Exception from testExceptionBuilderBuildShared").buildShared();
                     ASSERT_THROW(throw *sharedException, exception::IOException);
                 }
@@ -79,13 +79,13 @@ namespace hazelcast {
 
                 TEST_F(ExceptionTest, testRaiseException) {
                     std::string source("testException");
-                    std::auto_ptr<std::string> originalMessage(new std::string("original message"));
+                    std::unique_ptr<std::string> originalMessage(new std::string("original message"));
                     std::string details("detail message");
                     int32_t code = protocol::IO;
                     int32_t causeCode = protocol::ILLEGAL_STATE;
 
                     protocol::ExceptionFactoryImpl<exception::IOException> ioExceptionFactory;
-                    boost::shared_ptr<exception::IException> exception(ioExceptionFactory.createException(source,
+                    std::shared_ptr<exception::IException> exception(ioExceptionFactory.createException(source,
                                                                                                           originalMessage,
                                                                                                           details,
                                                                                                           causeCode));

@@ -18,6 +18,7 @@
 
 #include <stdint.h>
 #include <memory>
+#include <cassert>
 
 #include "hazelcast/client/monitor/impl/NearCacheStatsImpl.h"
 #include "hazelcast/client/config/NearCacheConfig.h"
@@ -56,7 +57,7 @@ namespace hazelcast {
                                       timeToLiveMillis(cacheConfig.getTimeToLiveSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       maxIdleMillis(cacheConfig.getMaxIdleSeconds() * MILLI_SECONDS_IN_A_SECOND),
                                       serializationService(ss) {
-                                const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
+                                const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = cacheConfig.getEvictionConfig();
                                 if (NULL != evictionConfig.get()) {
                                     evictionPolicyType = evictionConfig->getEvictionPolicyType();
                                 }
@@ -64,7 +65,7 @@ namespace hazelcast {
 
                             //@override
                             void initialize() {
-                                const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
+                                const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig = nearCacheConfig.getEvictionConfig();
                                 this->records = createNearCacheRecordMap(nearCacheConfig);
                                 this->maxSizeChecker = createNearCacheMaxSizeChecker(evictionConfig, nearCacheConfig);
                                 this->evictionPolicyEvaluator = createEvictionPolicyEvaluator(evictionConfig);
@@ -84,13 +85,13 @@ namespace hazelcast {
 */
 
                             // public for tests.
-                            virtual const boost::shared_ptr<R> getRecord(const boost::shared_ptr<KS> &key) {
+                            virtual const std::shared_ptr<R> getRecord(const std::shared_ptr<KS> &key) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return std::shared_ptr<R>();
                             }
 
                             //@Override
-                            virtual void onEvict(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            virtual void onEvict(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                                  bool wasExpired) {
                                 if (wasExpired) {
                                     nearCacheStats.incrementExpirations();
@@ -101,18 +102,18 @@ namespace hazelcast {
                             }
 
                             //@Override
-                            boost::shared_ptr<V> get(const boost::shared_ptr<KS> &key) {
+                            std::shared_ptr<V> get(const std::shared_ptr<KS> &key) {
                                 checkAvailable();
 
-                                boost::shared_ptr<R> record;
-                                boost::shared_ptr<V> value;
+                                std::shared_ptr<R> record;
+                                std::shared_ptr<V> value;
                                 try {
                                     record = getRecord(key);
                                     if (record.get() != NULL) {
                                         if (isRecordExpired(record)) {
                                             invalidate(key);
                                             onExpire(key, record);
-                                            return boost::shared_ptr<V>();
+                                            return std::shared_ptr<V>();
                                         }
                                         onRecordAccess(record);
                                         nearCacheStats.incrementHits();
@@ -121,7 +122,7 @@ namespace hazelcast {
                                         return value;
                                     } else {
                                         nearCacheStats.incrementMisses();
-                                        return boost::shared_ptr<V>();
+                                        return std::shared_ptr<V>();
                                     }
                                 } catch (exception::IException &error) {
                                     onGetError(key, value, record, error);
@@ -131,21 +132,21 @@ namespace hazelcast {
 
 
                             //@Override
-                            void put(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value) {
+                            void put(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value) {
                                 putInternal<V>(key, value);
                             }
 
                             //@Override
-                            void put(const boost::shared_ptr<KS> &key,
-                                     const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            void put(const std::shared_ptr<KS> &key,
+                                     const std::shared_ptr<serialization::pimpl::Data> &value) {
                                 putInternal<serialization::pimpl::Data>(key, value);
                             }
 
                             //@Override
-                            bool invalidate(const boost::shared_ptr<KS> &key) {
+                            bool invalidate(const std::shared_ptr<KS> &key) {
                                 checkAvailable();
 
-                                boost::shared_ptr<R> record;
+                                std::shared_ptr<R> record;
                                 bool removed = false;
                                 try {
                                     record = removeRecord(key);
@@ -216,17 +217,17 @@ namespace hazelcast {
                                 }
                             }
                         protected:
-                            virtual std::auto_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
-                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
+                            virtual std::unique_ptr<eviction::MaxSizeChecker> createNearCacheMaxSizeChecker(
+                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig,
                                     const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 assert(0);
-                                return std::auto_ptr<eviction::MaxSizeChecker>();
+                                return std::unique_ptr<eviction::MaxSizeChecker>();
                             }
 
-                            virtual std::auto_ptr<NCRM> createNearCacheRecordMap(
+                            virtual std::unique_ptr<NCRM> createNearCacheRecordMap(
                                     const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
                                 assert(0);
-                                return std::auto_ptr<NCRM>();
+                                return std::unique_ptr<NCRM>();
                             }
 
                             virtual int64_t getKeyStorageMemoryCost(KS *key) const = 0;
@@ -237,39 +238,39 @@ namespace hazelcast {
                                 return getKeyStorageMemoryCost(key) + getRecordStorageMemoryCost(record);
                             }
 
-                            virtual std::auto_ptr<R> valueToRecord(const boost::shared_ptr<V> &value) {
+                            virtual std::unique_ptr<R> valueToRecord(const std::shared_ptr<V> &value) {
                                 assert(0);
-                                return std::auto_ptr<R>();
+                                return std::unique_ptr<R>();
                             }
 
-                            virtual std::auto_ptr<R> valueToRecord(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            virtual std::unique_ptr<R> valueToRecord(
+                                    const std::shared_ptr<serialization::pimpl::Data> &value) {
                                 assert(0);
-                                return std::auto_ptr<R>();
+                                return std::unique_ptr<R>();
                             }
 
-                            virtual boost::shared_ptr<V> recordToValue(const R *record) {
+                            virtual std::shared_ptr<V> recordToValue(const R *record) {
                                 assert(0);
-                                return boost::shared_ptr<V>();
+                                return std::shared_ptr<V>();
                             }
 
-                            virtual boost::shared_ptr<R> putRecord(const boost::shared_ptr<KS> &key,
-                                                                   const boost::shared_ptr<R> &record) {
+                            virtual std::shared_ptr<R> putRecord(const std::shared_ptr<KS> &key,
+                                                                   const std::shared_ptr<R> &record) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return std::shared_ptr<R>();
                             }
 
-                            virtual void putToRecord(boost::shared_ptr<R> &record,
-                                                     const boost::shared_ptr<V> &value) {
+                            virtual void putToRecord(std::shared_ptr<R> &record,
+                                                     const std::shared_ptr<V> &value) {
                                 assert(0);
                             }
 
-                            virtual boost::shared_ptr<R> removeRecord(const boost::shared_ptr<KS> &key) {
+                            virtual std::shared_ptr<R> removeRecord(const std::shared_ptr<KS> &key) {
                                 assert(0);
-                                return boost::shared_ptr<R>();
+                                return std::shared_ptr<R>();
                             }
 
-                            virtual bool containsRecordKey(const boost::shared_ptr<KS> &key) const {
+                            virtual bool containsRecordKey(const std::shared_ptr<KS> &key) const {
                                 assert(0);
                                 return false;
                             }
@@ -281,21 +282,21 @@ namespace hazelcast {
                                 }
                             }
 
-                            std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > createEvictionPolicyEvaluator(
-                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
+                            std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > createEvictionPolicyEvaluator(
+                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
                                 return eviction::EvictionPolicyEvaluatorProvider::getEvictionPolicyEvaluator<K, V, KS, R>(
                                         evictionConfig);
                             }
 
-                            boost::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
-                                    const boost::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
+                            std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > createEvictionStrategy(
+                                    const std::shared_ptr<client::config::EvictionConfig<K, V> > &evictionConfig) {
                                 return eviction::EvictionStrategyProvider<K, V, KS, R, NCRM>::getEvictionStrategy(
                                         evictionConfig);
                             }
 
-                            std::auto_ptr<eviction::EvictionChecker> createEvictionChecker(
+                            std::unique_ptr<eviction::EvictionChecker> createEvictionChecker(
                                     const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
-                                return std::auto_ptr<eviction::EvictionChecker>(
+                                return std::unique_ptr<eviction::EvictionChecker>(
                                         new MaxSizeEvictionChecker(maxSizeChecker.get()));
                             }
 
@@ -303,68 +304,68 @@ namespace hazelcast {
                                 return records.get() != NULL;
                             }
 
-                            boost::shared_ptr<serialization::pimpl::Data> valueToData(
-                                    const boost::shared_ptr<V> &value) {
+                            std::shared_ptr<serialization::pimpl::Data> valueToData(
+                                    const std::shared_ptr<V> &value) {
                                 if (value.get() != NULL) {
-                                    return boost::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(
+                                    return std::shared_ptr<serialization::pimpl::Data>(new serialization::pimpl::Data(
                                             serializationService.toData<V>(value.get())));
                                 } else {
-                                    return boost::shared_ptr<serialization::pimpl::Data>();
+                                    return std::shared_ptr<serialization::pimpl::Data>();
                                 }
                             }
 
-                            boost::shared_ptr<serialization::pimpl::Data> valueToData(
-                                    boost::shared_ptr<serialization::pimpl::Data> &value) {
+                            std::shared_ptr<serialization::pimpl::Data> valueToData(
+                                    std::shared_ptr<serialization::pimpl::Data> &value) {
                                 return value;
                             }
 
-                            boost::shared_ptr<V> dataToValue(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
-                                return boost::shared_ptr<V>(new TypedData(data, serializationService));
+                            std::shared_ptr<V> dataToValue(
+                                    const std::shared_ptr<serialization::pimpl::Data> &data, const TypedData *dummy) {
+                                return std::shared_ptr<V>(new TypedData(data, serializationService));
                             }
 
-                            boost::shared_ptr<V> dataToValue(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &data, void *dummy) {
+                            std::shared_ptr<V> dataToValue(
+                                    const std::shared_ptr<serialization::pimpl::Data> &data, void *dummy) {
                                 if (data.get() != NULL) {
-                                    std::auto_ptr<V> value = serializationService.toObject<V>(data.get());
-                                    return boost::shared_ptr<V>(value);
+                                    std::unique_ptr<V> value = serializationService.toObject<V>(data.get());
+                                    return std::shared_ptr<V>(std::move(value));
                                 } else {
-                                    return boost::shared_ptr<V>();
+                                    return std::shared_ptr<V>();
                                 }
                             }
 
-                            const boost::shared_ptr<serialization::pimpl::Data> toData(
-                                    const boost::shared_ptr<serialization::pimpl::Data> &obj) {
+                            const std::shared_ptr<serialization::pimpl::Data> toData(
+                                    const std::shared_ptr<serialization::pimpl::Data> &obj) {
                                 return obj;
                             }
 
-                            const boost::shared_ptr<serialization::pimpl::Data> toData(
-                                    const boost::shared_ptr<V> &obj) {
+                            const std::shared_ptr<serialization::pimpl::Data> toData(
+                                    const std::shared_ptr<V> &obj) {
                                 if (obj.get() == NULL) {
-                                    return boost::shared_ptr<serialization::pimpl::Data>();
+                                    return std::shared_ptr<serialization::pimpl::Data>();
                                 } else {
                                     return valueToData(obj);
                                 }
                             }
 
-                            boost::shared_ptr<V> toValue(boost::shared_ptr<serialization::pimpl::Data> &obj) {
+                            std::shared_ptr<V> toValue(std::shared_ptr<serialization::pimpl::Data> &obj) {
                                 if (obj.get() == NULL) {
-                                    return boost::shared_ptr<V>();
+                                    return std::shared_ptr<V>();
                                 } else {
                                     return dataToValue(obj, (V *)NULL);
                                 }
                             }
 
-                            boost::shared_ptr<V> toValue(boost::shared_ptr<V> &obj) {
+                            std::shared_ptr<V> toValue(std::shared_ptr<V> &obj) {
                                 return obj;
                             }
 
-                            int64_t getTotalStorageMemoryCost(const boost::shared_ptr<KS> &key,
-                                                              const boost::shared_ptr<R> &record) {
+                            int64_t getTotalStorageMemoryCost(const std::shared_ptr<KS> &key,
+                                                              const std::shared_ptr<R> &record) {
                                 return getKeyStorageMemoryCost(key.get()) + getRecordStorageMemoryCost(record.get());
                             }
 
-                            bool isRecordExpired(const boost::shared_ptr<R> &record) const {
+                            bool isRecordExpired(const std::shared_ptr<R> &record) const {
                                 int64_t now = util::currentTimeMillis();
                                 if (record->isExpiredAt(now)) {
                                     return true;
@@ -373,52 +374,52 @@ namespace hazelcast {
                                 }
                             }
 
-                            void onRecordCreate(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
+                            void onRecordCreate(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record) {
                                 record->setCreationTime(util::currentTimeMillis());
                             }
 
-                            void onRecordAccess(const boost::shared_ptr<R> &record) {
+                            void onRecordAccess(const std::shared_ptr<R> &record) {
                                 record->setAccessTime(util::currentTimeMillis());
                                 record->incrementAccessHit();
                             }
 
-                            void onGet(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                       const boost::shared_ptr<R> &record) {
+                            void onGet(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
+                                       const std::shared_ptr<R> &record) {
                             }
 
-                            void onGetError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                            const boost::shared_ptr<R> &record, const exception::IException &error) {
+                            void onGetError(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
+                                            const std::shared_ptr<R> &record, const exception::IException &error) {
                             }
 
-                            void onPut(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                       const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
+                            void onPut(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
+                                       const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
                             }
 
-                            void onPut(const boost::shared_ptr<KS> &key,
-                                       const boost::shared_ptr<serialization::pimpl::Data> &value,
-                                       const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord) {
+                            void onPut(const std::shared_ptr<KS> &key,
+                                       const std::shared_ptr<serialization::pimpl::Data> &value,
+                                       const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord) {
                             }
 
-                            void onPutError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<V> &value,
-                                            const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord,
+                            void onPutError(const std::shared_ptr<KS> &key, const std::shared_ptr<V> &value,
+                                            const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
 
-                            void onPutError(const boost::shared_ptr<KS> &key,
-                                            const boost::shared_ptr<serialization::pimpl::Data> &value,
-                                            const boost::shared_ptr<R> &record, const boost::shared_ptr<R> &oldRecord,
+                            void onPutError(const std::shared_ptr<KS> &key,
+                                            const std::shared_ptr<serialization::pimpl::Data> &value,
+                                            const std::shared_ptr<R> &record, const std::shared_ptr<R> &oldRecord,
                                             const exception::IException &error) {
                             }
 
-                            void onRemove(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onRemove(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                           bool removed) {
                             }
 
-                            void onRemoveError(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record,
+                            void onRemoveError(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record,
                                                bool removed, const exception::IException &error) {
                             }
 
-                            void onExpire(const boost::shared_ptr<KS> &key, const boost::shared_ptr<R> &record) {
+                            void onExpire(const std::shared_ptr<KS> &key, const std::shared_ptr<R> &record) {
                                 nearCacheStats.incrementExpirations();
                             }
 
@@ -445,12 +446,12 @@ namespace hazelcast {
                             serialization::pimpl::SerializationService &serializationService;
                             monitor::impl::NearCacheStatsImpl nearCacheStats;
 
-                            std::auto_ptr<eviction::MaxSizeChecker> maxSizeChecker;
-                            std::auto_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator;
-                            std::auto_ptr<eviction::EvictionChecker> evictionChecker;
-                            boost::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > evictionStrategy;
+                            std::unique_ptr<eviction::MaxSizeChecker> maxSizeChecker;
+                            std::unique_ptr<eviction::EvictionPolicyEvaluator<K, V, KS, R> > evictionPolicyEvaluator;
+                            std::unique_ptr<eviction::EvictionChecker> evictionChecker;
+                            std::shared_ptr<eviction::EvictionStrategy<K, V, KS, R, NCRM> > evictionStrategy;
                             eviction::EvictionPolicyType evictionPolicyType;
-                            std::auto_ptr<NCRM> records;
+                            std::unique_ptr<NCRM> records;
 
 /*
                             volatile StaleReadDetector staleReadDetector = ALWAYS_FRESH;
@@ -472,7 +473,7 @@ namespace hazelcast {
                             };
 
                             template<typename VALUE>
-                            void putInternal(const boost::shared_ptr<KS> &key, const boost::shared_ptr<VALUE> &value) {
+                            void putInternal(const std::shared_ptr<KS> &key, const std::shared_ptr<VALUE> &value) {
                                 checkAvailable();
 
                                 // if there is no eviction configured we return if the Near Cache is full and it's a new key
@@ -482,8 +483,8 @@ namespace hazelcast {
                                     return;
                                 }
 
-                                boost::shared_ptr<R> record;
-                                boost::shared_ptr<R> oldRecord;
+                                std::shared_ptr<R> record;
+                                std::shared_ptr<R> oldRecord;
                                 try {
                                     record = valueToRecord(value);
                                     onRecordCreate(key, record);

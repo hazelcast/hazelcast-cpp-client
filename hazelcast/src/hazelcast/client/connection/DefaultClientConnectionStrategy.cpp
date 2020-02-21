@@ -70,7 +70,7 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::onDisconnectFromCluster() {
-                disconnectedFromCluster = true;
+                disconnectedFromCluster.store(true);
                 if (reconnectMode == config::ClientConnectionStrategyConfig::OFF) {
                     shutdownWithExternalThread();
                     return;
@@ -84,10 +84,10 @@ namespace hazelcast {
                 }
             }
 
-            void DefaultClientConnectionStrategy::onConnect(const boost::shared_ptr<Connection> &connection) {
+            void DefaultClientConnectionStrategy::onConnect(const std::shared_ptr<Connection> &connection) {
             }
 
-            void DefaultClientConnectionStrategy::onDisconnect(const boost::shared_ptr<Connection> &connection) {
+            void DefaultClientConnectionStrategy::onDisconnect(const std::shared_ptr<Connection> &connection) {
             }
 
             void DefaultClientConnectionStrategy::shutdown() {
@@ -98,8 +98,8 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::shutdownWithExternalThread() {
-                boost::shared_ptr<util::Thread> shutdownThread(
-                        new util::Thread(boost::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)),logger));
+                std::shared_ptr<util::Thread> shutdownThread(
+                        new util::Thread(std::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)),logger));
                 shutdownThread->start();
                 shutdownThreads.offer(shutdownThread);
             }

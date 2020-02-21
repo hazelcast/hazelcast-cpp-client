@@ -18,7 +18,8 @@
 
 #include <cstdlib>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
+#include <atomic>
 
 #include "hazelcast/util/ConditionVariable.h"
 #include "hazelcast/util/Mutex.h"
@@ -49,7 +50,7 @@ namespace hazelcast {
                     AbstractThread *thread;
                 };
 
-                AbstractThread(const boost::shared_ptr<Runnable> &runnable, util::ILogger &logger);
+                AbstractThread(const std::shared_ptr<Runnable> &runnable, util::ILogger &logger);
 
                 virtual ~AbstractThread();
 
@@ -71,7 +72,7 @@ namespace hazelcast {
 
                 virtual int64_t getThreadId() = 0;
 
-                const boost::shared_ptr<Runnable> &getTarget() const;
+                const std::shared_ptr<Runnable> &getTarget() const;
 
                 bool waitMilliseconds(int64_t milliseconds);
 
@@ -84,13 +85,13 @@ namespace hazelcast {
                 };
 
                 struct RunnableInfo {
-                    RunnableInfo(const boost::shared_ptr<Runnable> &target,
-                                 const boost::shared_ptr<CountDownLatch> &finishWaitLatch,
-                                 const boost::shared_ptr<ILogger> &logger);
+                    RunnableInfo(const std::shared_ptr<Runnable> &target,
+                                 const std::shared_ptr<CountDownLatch> &finishWaitLatch,
+                                 const std::shared_ptr<ILogger> &logger);
 
-                    boost::shared_ptr<Runnable> target;
-                    boost::shared_ptr<util::CountDownLatch> finishWaitLatch;
-                    boost::shared_ptr<util::ILogger> logger;
+                    std::shared_ptr<Runnable> target;
+                    std::shared_ptr<util::CountDownLatch> finishWaitLatch;
+                    std::shared_ptr<util::ILogger> logger;
                 };
 
                 virtual void startInternal(RunnableInfo *info) = 0;
@@ -98,14 +99,14 @@ namespace hazelcast {
                 virtual bool innerJoin() = 0;
 
                 util::AtomicBoolean isJoined;
-                util::AtomicInt state;
+                std::atomic<ThreadState> state;
                 util::AtomicBoolean started;
                 util::AtomicBoolean cancelled;
                 ConditionVariable wakeupCondition;
                 static util::SynchronizedMap<int64_t, UnmanagedAbstractThreadPointer> startedThreads;
                 Mutex wakeupMutex;
-                boost::shared_ptr<Runnable> target;
-                boost::shared_ptr<util::CountDownLatch> finishedLatch;
+                std::shared_ptr<Runnable> target;
+                std::shared_ptr<util::CountDownLatch> finishedLatch;
                 util::ILogger &logger;
             };
         }

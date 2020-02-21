@@ -35,18 +35,18 @@ namespace hazelcast {
                 public:
                     NonSmartClientInvocationService(ClientContext &client);
 
-                    void invokeOnConnection(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                            boost::shared_ptr<connection::Connection> connection);
+                    void invokeOnConnection(std::shared_ptr<impl::ClientInvocation> invocation,
+                                            std::shared_ptr<connection::Connection> connection);
 
-                    void invokeOnPartitionOwner(boost::shared_ptr<impl::ClientInvocation> invocation,
+                    void invokeOnPartitionOwner(std::shared_ptr<impl::ClientInvocation> invocation,
                                                 int partitionId);
 
-                    void invokeOnRandomTarget(boost::shared_ptr<impl::ClientInvocation> invocation);
+                    void invokeOnRandomTarget(std::shared_ptr<impl::ClientInvocation> invocation);
 
-                    void invokeOnTarget(boost::shared_ptr<impl::ClientInvocation> invocation,
-                                        const boost::shared_ptr<Address> &target);
+                    void invokeOnTarget(std::shared_ptr<impl::ClientInvocation> invocation,
+                                        const std::shared_ptr<Address> &target);
 
-                    boost::shared_ptr<connection::Connection> getOwnerConnection();
+                    std::shared_ptr<connection::Connection> getOwnerConnection();
                 };
             }
         }

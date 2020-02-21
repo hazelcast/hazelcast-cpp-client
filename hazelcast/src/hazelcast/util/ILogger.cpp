@@ -30,64 +30,66 @@ namespace hazelcast {
             out << instanceName << "[" << groupName << "] [" << HAZELCAST_VERSION << "]";
             prefix = out.str();
 
-            easyLogger = easyloggingpp::Loggers::getLogger(instanceName);
-
-            init();
+            easyLogger = el::Loggers::getLogger(instanceName);
         }
 
         ILogger::~ILogger() {
         }
 
-        void ILogger::init() {
+        bool ILogger::start() {
             std::string configurationFileName = loggerConfig.getConfigurationFileName();
             if (!configurationFileName.empty()) {
-                easyloggingpp::Configurations confFromFile(configurationFileName);
-                easyloggingpp::Loggers::reconfigureLogger(easyLogger, confFromFile);
-                return;
+                el::Configurations defaultConf(configurationFileName);
+                if (!defaultConf.parseFromFile(configurationFileName)) {
+                    return false;
+                }
+                return el::Loggers::reconfigureLogger(easyLogger, defaultConf) != nullptr;
             }
 
-            easyloggingpp::Configurations defaultConf;
+            el::Configurations defaultConf;
 
-            defaultConf.setAll(easyloggingpp::ConfigurationType::Format,
-                    std::string("%datetime %level: [%thread] ") + prefix + " %log");
+            std::call_once(elOnceflag, el::Loggers::addFlag, el::LoggingFlag::DisableApplicationAbortOnFatalLog);
 
-            defaultConf.setAll(easyloggingpp::ConfigurationType::ToStandardOutput, "true");
+            defaultConf.set(el::Level::Global, el::ConfigurationType::Format,
+                    std::string("%datetime{%d/%M/%Y %h:%m:%s.%g} %level: [%thread] ") + prefix + " %msg");
 
-            defaultConf.setAll(easyloggingpp::ConfigurationType::ToFile, "false");
+            defaultConf.set(el::Level::Global, el::ConfigurationType::ToStandardOutput, "true");
+
+            defaultConf.set(el::Level::Global, el::ConfigurationType::ToFile, "false");
 
             // Disable all levels first and then enable the desired levels
-            defaultConf.setAll(easyloggingpp::ConfigurationType::Enabled, "false");
+            defaultConf.set(el::Level::Global, el::ConfigurationType::Enabled, "false");
 
             client::LoggerLevel::Level logLevel = loggerConfig.getLogLevel();
             if (logLevel <= client::LoggerLevel::FINEST) {
-                defaultConf.set(easyloggingpp::Level::Debug, easyloggingpp::ConfigurationType::Enabled, "true");
+                defaultConf.set(el::Level::Debug, el::ConfigurationType::Enabled, "true");
             }
             if (logLevel <= client::LoggerLevel::INFO) {
-                defaultConf.set(easyloggingpp::Level::Info, easyloggingpp::ConfigurationType::Enabled, "true");
+                defaultConf.set(el::Level::Info, el::ConfigurationType::Enabled, "true");
             }
             if (logLevel <= client::LoggerLevel::WARNING) {
-                defaultConf.set(easyloggingpp::Level::Warning, easyloggingpp::ConfigurationType::Enabled, "true");
+                defaultConf.set(el::Level::Warning, el::ConfigurationType::Enabled, "true");
             }
             if (logLevel <= client::LoggerLevel::SEVERE) {
-                defaultConf.set(easyloggingpp::Level::Fatal, easyloggingpp::ConfigurationType::Enabled, "true");
+                defaultConf.set(el::Level::Fatal, el::ConfigurationType::Enabled, "true");
             }
-            easyloggingpp::Loggers::reconfigureLogger(easyLogger, defaultConf);
+            return el::Loggers::reconfigureLogger(easyLogger, defaultConf) != nullptr;
         }
 
         void ILogger::severe(const std::string &message) {
-            CFATAL(instanceName) << message;
+            CLOG(FATAL, instanceName.c_str()) << message;
         }
 
         void ILogger::warning(const std::string &message) {
-            CWARNING(instanceName) << message;
+            CLOG(WARNING, instanceName.c_str()) << message;
         }
 
         void ILogger::info(const std::string &message) {
-            CINFO(instanceName) << message;
+            CLOG(INFO, instanceName.c_str()) << message;
         }
 
         void ILogger::finest(const std::string &message) {
-            CDEBUG(instanceName) << message;
+            CLOG(DEBUG, instanceName.c_str()) << message;
         }
 
         LeveledLogger ILogger::finest() {
@@ -118,6 +120,10 @@ namespace hazelcast {
             return isEnabled(client::LoggerLevel::FINEST);
         }
 
+        const std::string &ILogger::getInstanceName() const {
+            return instanceName;
+        }
+
         LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
                                                                                              requestedLogLevel(
                                                                                                      logLevel) {
@@ -126,16 +132,16 @@ namespace hazelcast {
         LeveledLogger::~LeveledLogger() {
             switch (requestedLogLevel) {
                 case client::LoggerLevel::FINEST:
-                    CDEBUG(logger.instanceName) << out.str();
+                    CLOG(DEBUG, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::INFO:
-                    CINFO(logger.instanceName) << out.str();
+                    CLOG(INFO, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::WARNING:
-                    CWARNING(logger.instanceName) << out.str();
+                    CLOG(WARNING, logger.instanceName.c_str()) << out.str();
                     break;
                 case client::LoggerLevel::SEVERE:
-                    CFATAL(logger.instanceName) << out.str();
+                    CLOG(FATAL, logger.instanceName.c_str()) << out.str();
                     break;
             }
         }

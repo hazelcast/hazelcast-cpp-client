@@ -17,15 +17,14 @@
 #ifndef HAZELCAST_CLIENT_SPI_IMPL_ABSTRACTINVOCATIONFUTURE_H_
 #define HAZELCAST_CLIENT_SPI_IMPL_ABSTRACTINVOCATIONFUTURE_H_
 
-#include <boost/enable_shared_from_this.hpp>
-
 #include <hazelcast/util/ConditionVariable.h>
 #include <hazelcast/util/ExceptionUtil.h>
+#include <hazelcast/util/Sync.h>
 #include "hazelcast/util/ILogger.h"
 #include "hazelcast/util/Util.h"
 #include "hazelcast/client/spi/InternalCompletableFuture.h"
 #include "hazelcast/util/Executor.h"
-#include "hazelcast/util/Atomic.h"
+
 #include "hazelcast/client/exception/ProtocolExceptions.h"
 #include "hazelcast/util/concurrent/TimeUnit.h"
 #include "hazelcast/util/Preconditions.h"
@@ -46,37 +45,37 @@ namespace hazelcast {
                 template<typename T>
                 class AbstractInvocationFuture
                         : public InternalCompletableFuture<T>,
-                          public boost::enable_shared_from_this<AbstractInvocationFuture<T> > {
+                          public std::enable_shared_from_this<AbstractInvocationFuture<T> > {
                 public:
                     virtual ~AbstractInvocationFuture() {
                     }
 
-                    virtual void andThen(const boost::shared_ptr<ExecutionCallback<T> > &callback) {
+                    virtual void andThen(const std::shared_ptr<ExecutionCallback<T> > &callback) {
                         andThen(callback, defaultExecutor);
                     }
 
-                    virtual void andThen(const boost::shared_ptr<ExecutionCallback<T> > &callback,
-                                         const boost::shared_ptr<Executor> &executor) {
+                    virtual void andThen(const std::shared_ptr<ExecutionCallback<T> > &callback,
+                                         const std::shared_ptr<Executor> &executor) {
                         Preconditions::isNotNull(callback, "callback");
                         Preconditions::isNotNull(executor, "executor");
 
-                        boost::shared_ptr<BaseState> waiter(new ExecutionCallbackState(callback));
-                        boost::shared_ptr<BaseState> response = registerWaiter(waiter, executor);
+                        std::shared_ptr<BaseState> waiter(new ExecutionCallbackState(callback));
+                        std::shared_ptr<BaseState> response = registerWaiter(waiter, executor);
                         if (response != VOIDOBJECT) {
                             unblock(callback, executor);
                         }
                     }
 
                     virtual bool cancel(bool mayInterruptIfRunning) {
-                        return complete(boost::shared_ptr<IException>(
+                        return complete(std::shared_ptr<IException>(
                                 new concurrent::CancellationException("AbstractInvocationFuture::cancel",
                                                                       "Task was cancelled.")));
                     }
 
                     virtual bool isCancelled() {
-                        const boost::shared_ptr<BaseState> currentState = state.get();
+                        const std::shared_ptr<BaseState> currentState = state.get();
                         return (currentState->getType() == BaseState::Exception &&
-                                boost::static_pointer_cast<ExceptionState>(
+                                std::static_pointer_cast<ExceptionState>(
                                         currentState)->getException()->getErrorCode() == protocol::CANCELLATION);
                     }
 
@@ -84,10 +83,10 @@ namespace hazelcast {
                         return isDone(state);
                     }
 
-                    virtual boost::shared_ptr<T> get() {
-                        boost::shared_ptr<ThreadState> thread = boost::shared_ptr<ThreadState>(
+                    virtual std::shared_ptr<T> get() {
+                        std::shared_ptr<ThreadState> thread = std::shared_ptr<ThreadState>(
                                 new ThreadState(util::getCurrentThreadId()));
-                        boost::shared_ptr<BaseState> response = registerWaiter(thread, boost::shared_ptr<Executor>());
+                        std::shared_ptr<BaseState> response = registerWaiter(thread, std::shared_ptr<Executor>());
                         if (response != VOIDOBJECT) {
                             // no registration was done since a value is available.
                             return resolveAndThrowIfException(response);
@@ -101,10 +100,10 @@ namespace hazelcast {
                         }
                     }
 
-                    virtual boost::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
-                        boost::shared_ptr<ThreadState> thread = boost::shared_ptr<ThreadState>(
+                    virtual std::shared_ptr<T> get(int64_t timeout, const TimeUnit &unit) {
+                        std::shared_ptr<ThreadState> thread = std::shared_ptr<ThreadState>(
                                 new ThreadState(util::getCurrentThreadId()));
-                        boost::shared_ptr<BaseState> response = registerWaiter(thread, boost::shared_ptr<Executor>());
+                        std::shared_ptr<BaseState> response = registerWaiter(thread, std::shared_ptr<Executor>());
                         if (response != VOIDOBJECT) {
                             return resolveAndThrowIfException(response);
                         }
@@ -125,13 +124,13 @@ namespace hazelcast {
                                 << "Timeout: " << unit.toMillis(timeout) << " msecs").build();
                     }
 
-                    virtual boost::shared_ptr<T> join() {
+                    virtual std::shared_ptr<T> join() {
                         try {
                             return get();
                         } catch (exception::IException &e) {
                             util::ExceptionUtil::rethrow(e);
                         }
-                        return boost::shared_ptr<T>();
+                        return std::shared_ptr<T>();
                     }
 
                     /**
@@ -144,14 +143,14 @@ namespace hazelcast {
                      * is returned, that means offered response is ignored because a final response
                      * is already set to this future.
                      */
-                    virtual bool complete(const boost::shared_ptr<T> &value) {
-                        boost::shared_ptr<BaseState> newState = boost::shared_ptr<BaseState>(new ValueState(value));
+                    virtual bool complete(const std::shared_ptr<T> &value) {
+                        std::shared_ptr<BaseState> newState = std::shared_ptr<BaseState>(new ValueState(value));
 
                         return innerComplete(newState);
                     }
 
-                    virtual bool complete(const boost::shared_ptr<exception::IException> &exception) {
-                        boost::shared_ptr<BaseState> newState = boost::shared_ptr<BaseState>(
+                    virtual bool complete(const std::shared_ptr<exception::IException> &exception) {
+                        std::shared_ptr<BaseState> newState = std::shared_ptr<BaseState>(
                                 new ExceptionState(exception));
 
                         return innerComplete(newState);
@@ -215,40 +214,40 @@ namespace hazelcast {
 
                     class ValueState : public BaseState {
                     public:
-                        ValueState(const boost::shared_ptr<T> &value) : BaseState(BaseState::Value), value(value) {}
+                        ValueState(const std::shared_ptr<T> &value) : BaseState(BaseState::Value), value(value) {}
 
-                        const boost::shared_ptr<T> &getValue() const {
+                        const std::shared_ptr<T> &getValue() const {
                             return value;
                         }
 
                     private:
-                        const boost::shared_ptr<T> value;
+                        const std::shared_ptr<T> value;
                     };
 
                     class ExceptionState : public BaseState {
                     public:
-                        ExceptionState(const boost::shared_ptr<IException> &exception) : BaseState(
+                        ExceptionState(const std::shared_ptr<IException> &exception) : BaseState(
                                 BaseState::Exception), exception(exception) {}
 
-                        const boost::shared_ptr<IException> &getException() const {
+                        const std::shared_ptr<IException> &getException() const {
                             return exception;
                         }
 
                     private:
-                        const boost::shared_ptr<exception::IException> exception;
+                        const std::shared_ptr<exception::IException> exception;
                     };
 
                     class ExecutionCallbackState : public BaseState {
                     public:
-                        ExecutionCallbackState(const boost::shared_ptr<CALLBACKTYPE> &callback)
+                        ExecutionCallbackState(const std::shared_ptr<CALLBACKTYPE> &callback)
                                 : BaseState(BaseState::ExecutionCallback), callback(callback) {}
 
-                        const boost::shared_ptr<CALLBACKTYPE> &getCallback() const {
+                        const std::shared_ptr<CALLBACKTYPE> &getCallback() const {
                             return callback;
                         }
 
                     private:
-                        const boost::shared_ptr<CALLBACKTYPE> callback;
+                        const std::shared_ptr<CALLBACKTYPE> callback;
                     };
 
                     class VoidState : public BaseState {
@@ -274,44 +273,44 @@ namespace hazelcast {
                      */
                     class WaitNode : public BaseState {
                     public:
-                        WaitNode(const boost::shared_ptr<BaseState> &waiter,
-                                 const boost::shared_ptr<Executor> &executor) : BaseState(BaseState::WaitNode),
+                        WaitNode(const std::shared_ptr<BaseState> &waiter,
+                                 const std::shared_ptr<Executor> &executor) : BaseState(BaseState::WaitNode),
                                                                                 waiter(waiter), executor(executor) {}
 
-                        const boost::shared_ptr<BaseState> &getWaiter() const {
+                        const std::shared_ptr<BaseState> &getWaiter() const {
                             return waiter;
                         }
 
-                        const boost::shared_ptr<Executor> &getExecutor() const {
+                        const std::shared_ptr<Executor> &getExecutor() const {
                             return executor;
                         }
 
-                        const boost::shared_ptr<BaseState> waiter;
-                        util::Atomic<boost::shared_ptr<BaseState> > next;
-                        boost::shared_ptr<Executor> executor;
+                        const std::shared_ptr<BaseState> waiter;
+                        util::Sync<std::shared_ptr<BaseState> > next;
+                        std::shared_ptr<Executor> executor;
                     };
 
-                    AbstractInvocationFuture(const boost::shared_ptr<Executor> &defaultExecutor, ILogger &logger)
+                    AbstractInvocationFuture(const std::shared_ptr<Executor> &defaultExecutor, ILogger &logger)
                             : defaultExecutor(defaultExecutor), logger(logger), state(VOIDOBJECT) {}
 
-                    const boost::shared_ptr<BaseState> getState() {
+                    const std::shared_ptr<BaseState> getState() {
                         return state.get();
                     }
 
-                    virtual const boost::shared_ptr<BaseState> resolve(const boost::shared_ptr<BaseState> &value) {
+                    virtual const std::shared_ptr<BaseState> resolve(const std::shared_ptr<BaseState> &value) {
                         if (value->getType() == BaseState::Exception) {
-                            return boost::shared_ptr<BaseState>(new ExceptionState(
-                                    boost::shared_ptr<exception::IException>(
+                            return std::shared_ptr<BaseState>(new ExceptionState(
+                                    std::shared_ptr<exception::IException>(
                                             new ExecutionException("AbstractInvocationFuture::resolve",
                                                                    "ExecutionException for the future.",
-                                                                   (boost::static_pointer_cast<ExceptionState>(
+                                                                   (std::static_pointer_cast<ExceptionState>(
                                                                            value))->getException()))));
                         }
                         return value;
                     }
 
-                    virtual boost::shared_ptr<T>
-                    resolveAndThrowIfException(const boost::shared_ptr<BaseState> &response) = 0;
+                    virtual std::shared_ptr<T>
+                    resolveAndThrowIfException(const std::shared_ptr<BaseState> &response) = 0;
 
                     virtual std::string invocationToString() const = 0;
 
@@ -319,8 +318,8 @@ namespace hazelcast {
                     }
 
                     // this method should not be needed; but there is a difference between client and server how it handles async throwables
-                    static boost::shared_ptr<exception::IException>
-                    unwrap(const boost::shared_ptr<exception::IException> &throwable) {
+                    static std::shared_ptr<exception::IException>
+                    unwrap(const std::shared_ptr<exception::IException> &throwable) {
                         if (throwable->getErrorCode() == exception::ExecutionException::ERROR_CODE &&
                             throwable->getCause().get() != NULL) {
                             return throwable->getCause();
@@ -328,18 +327,18 @@ namespace hazelcast {
                         return throwable;
                     }
 
-                    const boost::shared_ptr<Executor> defaultExecutor;
+                    const std::shared_ptr<Executor> defaultExecutor;
                     util::ILogger &logger;
 
-                    static const boost::shared_ptr<BaseState> VOIDOBJECT;
+                    static const std::shared_ptr<BaseState> VOIDOBJECT;
                 private:
 
-                    bool compareAndSetState(const boost::shared_ptr<BaseState> &oldState,
-                                            const boost::shared_ptr<BaseState> &newState) {
+                    bool compareAndSetState(const std::shared_ptr<BaseState> &oldState,
+                                            const std::shared_ptr<BaseState> &newState) {
                         return state.compareAndSet(oldState, newState);
                     }
 
-                    static bool isDone(const boost::shared_ptr<BaseState> &state) {
+                    static bool isDone(const std::shared_ptr<BaseState> &state) {
                         if (state.get() == NULL) {
                             return true;
                         }
@@ -360,16 +359,16 @@ namespace hazelcast {
                      * @return VOID if the registration was a success, anything else but void
                      * is the response.
                      */
-                    boost::shared_ptr<BaseState> registerWaiter(const boost::shared_ptr<BaseState> &waiter,
-                                                                const boost::shared_ptr<Executor> &executor) {
-                        boost::shared_ptr<WaitNode> waitNode;
+                    std::shared_ptr<BaseState> registerWaiter(const std::shared_ptr<BaseState> &waiter,
+                                                                const std::shared_ptr<Executor> &executor) {
+                        std::shared_ptr<WaitNode> waitNode;
                         for (;;) {
-                            const boost::shared_ptr<BaseState> oldState = state.get();
+                            const std::shared_ptr<BaseState> oldState = state.get();
                             if (isDone(oldState)) {
                                 return oldState;
                             }
 
-                            boost::shared_ptr<BaseState> newState;
+                            std::shared_ptr<BaseState> newState;
                             if (oldState->getType() == BaseState::VOIDTYPE &&
                                 (executor.get() == NULL || executor == defaultExecutor)) {
                                 // nothing is syncing on this future, so instead of creating a WaitNode, we just set the waiter
@@ -389,25 +388,25 @@ namespace hazelcast {
                         }
                     }
 
-                    void unregisterWaiter(const boost::shared_ptr<ThreadState> &waiter) {
-                        boost::shared_ptr<WaitNode> prev;
-                        boost::shared_ptr<BaseState> current = state;
+                    void unregisterWaiter(const std::shared_ptr<ThreadState> &waiter) {
+                        std::shared_ptr<WaitNode> prev;
+                        std::shared_ptr<BaseState> current = state;
 
                         while (current.get() != NULL) {
-                            boost::shared_ptr<BaseState> currentWaiter =
-                                    current->getType() == BaseState::WaitNode ? (boost::static_pointer_cast<WaitNode>(
+                            std::shared_ptr<BaseState> currentWaiter =
+                                    current->getType() == BaseState::WaitNode ? (std::static_pointer_cast<WaitNode>(
                                             current))->waiter : current;
-                            boost::shared_ptr<BaseState> next =
-                                    current->getType() == BaseState::WaitNode ? (boost::static_pointer_cast<WaitNode>(
-                                            current))->next.get() : boost::shared_ptr<BaseState>();
+                            std::shared_ptr<BaseState> next =
+                                    current->getType() == BaseState::WaitNode ? (std::static_pointer_cast<WaitNode>(
+                                            current))->next.get() : std::shared_ptr<BaseState>();
 
                             if (currentWaiter == waiter) {
                                 // it is the item we are looking for, so lets try to remove it
                                 if (prev.get() == NULL) {
                                     // it's the first item of the stack, so we need to change the head to the next
-                                    boost::shared_ptr<BaseState> n = next.get() == NULL ? VOIDOBJECT : next;
+                                    std::shared_ptr<BaseState> n = next.get() == NULL ? VOIDOBJECT : next;
                                     // if we manage to CAS we are done, else we need to restart
-                                    current = compareAndSetState(current, n) ? boost::shared_ptr<BaseState>()
+                                    current = compareAndSetState(current, n) ? std::shared_ptr<BaseState>()
                                                                              : state.get();
                                 } else {
                                     // remove the current item (this is done by letting the prev.next point to the next instead of current)
@@ -417,8 +416,8 @@ namespace hazelcast {
                                 }
                             } else {
                                 // it isn't the item we are looking for, so lets move on to the next
-                                prev = current->getType() == BaseState::WaitNode ? boost::static_pointer_cast<WaitNode>(
-                                        current) : boost::shared_ptr<WaitNode>();
+                                prev = current->getType() == BaseState::WaitNode ? std::static_pointer_cast<WaitNode>(
+                                        current) : std::shared_ptr<WaitNode>();
                                 current = next;
                             }
                         }
@@ -426,8 +425,8 @@ namespace hazelcast {
 
                 class CallbackRunner : public util::Runnable {
                     public:
-                        CallbackRunner(const boost::shared_ptr<AbstractInvocationFuture> &future,
-                                       const boost::shared_ptr<CALLBACKTYPE> &callback) : future(future),
+                        CallbackRunner(const std::shared_ptr<AbstractInvocationFuture> &future,
+                                       const std::shared_ptr<CALLBACKTYPE> &callback) : future(future),
                                                                                           callback(callback) {}
 
                         virtual const std::string getName() const {
@@ -436,16 +435,16 @@ namespace hazelcast {
 
                         virtual void run() {
                             try {
-                                boost::shared_ptr<BaseState> value = future->resolve(future->state.get());
+                                std::shared_ptr<BaseState> value = future->resolve(future->state.get());
                                 if (value->getType() == BaseState::Exception) {
-                                    boost::shared_ptr<ExceptionState> exceptionState = boost::static_pointer_cast<ExceptionState>(
+                                    std::shared_ptr<ExceptionState> exceptionState = std::static_pointer_cast<ExceptionState>(
                                             value);
 
-                                    boost::shared_ptr<exception::IException> error = AbstractInvocationFuture<T>::unwrap(
+                                    std::shared_ptr<exception::IException> error = AbstractInvocationFuture<T>::unwrap(
                                             exceptionState->getException());
                                     callback->onFailure(error);
                                 } else {
-                                    boost::shared_ptr<ValueState> valueState = boost::static_pointer_cast<ValueState>(
+                                    std::shared_ptr<ValueState> valueState = std::static_pointer_cast<ValueState>(
                                             value);
                                     callback->onResponse(valueState->getValue());
                                 }
@@ -458,37 +457,37 @@ namespace hazelcast {
                         }
 
                     private:
-                        const boost::shared_ptr<AbstractInvocationFuture> future;
-                        const boost::shared_ptr<CALLBACKTYPE> callback;
+                        const std::shared_ptr<AbstractInvocationFuture> future;
+                        const std::shared_ptr<CALLBACKTYPE> callback;
                     };
 
-                    void unblock(const boost::shared_ptr<CALLBACKTYPE> &callback,
-                                 const boost::shared_ptr<Executor> &executor) {
+                    void unblock(const std::shared_ptr<CALLBACKTYPE> &callback,
+                                 const std::shared_ptr<Executor> &executor) {
                         try {
-                            executor->execute(boost::shared_ptr<util::Runnable>(
+                            executor->execute(std::shared_ptr<util::Runnable>(
                                     new CallbackRunner(this->shared_from_this(), callback)));
                         } catch (RejectedExecutionException &e) {
-                            callback->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
+                            callback->onFailure(std::shared_ptr<exception::IException>(e.clone()));
                         }
                     }
 
-                    void unblockAll(const boost::shared_ptr<BaseState> &waiter,
-                                    const boost::shared_ptr<Executor> &executor) {
+                    void unblockAll(const std::shared_ptr<BaseState> &waiter,
+                                    const std::shared_ptr<Executor> &executor) {
                         while (waiter.get() != NULL) {
                             switch (waiter->getType()) {
                                 case BaseState::Thread: {
-                                    boost::shared_ptr<ThreadState> threadState = boost::static_pointer_cast<ThreadState>(
+                                    std::shared_ptr<ThreadState> threadState = std::static_pointer_cast<ThreadState>(
                                             waiter);
                                     threadState->unpark();
                                     return;
                                 }
                                 case BaseState::ExecutionCallback: {
-                                    unblock(boost::static_pointer_cast<ExecutionCallbackState>(waiter)->getCallback(),
+                                    unblock(std::static_pointer_cast<ExecutionCallbackState>(waiter)->getCallback(),
                                             executor);
                                     return;
                                 }
                                 case BaseState::WaitNode: {
-                                    boost::shared_ptr<WaitNode> waitNode = boost::static_pointer_cast<WaitNode>(waiter);
+                                    std::shared_ptr<WaitNode> waitNode = std::static_pointer_cast<WaitNode>(waiter);
                                     unblockAll(waitNode->getWaiter(), waitNode->getExecutor());
                                 }
                                 default:
@@ -497,9 +496,9 @@ namespace hazelcast {
                         }
                     }
 
-                    bool innerComplete(const boost::shared_ptr<BaseState> &newState) {
+                    bool innerComplete(const std::shared_ptr<BaseState> &newState) {
                         for (;;) {
-                            const boost::shared_ptr<BaseState> oldState = state;
+                            const std::shared_ptr<BaseState> oldState = state;
                             if (isDone(oldState)) {
                                 warnIfSuspiciousDoubleCompletion(oldState, newState);
                                 return false;
@@ -514,16 +513,15 @@ namespace hazelcast {
 
                     // it can be that this future is already completed, e.g. when an invocation already
                     // received a response, but before it cleans up itself, it receives a HazelcastInstanceNotActiveException
-                    void warnIfSuspiciousDoubleCompletion(const boost::shared_ptr<BaseState> &s0,
-                                                          const boost::shared_ptr<BaseState> &s1) {
+                    void warnIfSuspiciousDoubleCompletion(const std::shared_ptr<BaseState> &s0,
+                                                          const std::shared_ptr<BaseState> &s1) {
                         if (s0 != s1 && !(s0->getType() == BaseState::Exception &&
-                                          boost::static_pointer_cast<ExceptionState>(
+                                          std::static_pointer_cast<ExceptionState>(
                                                   s0)->getException()->getErrorCode() == protocol::CANCELLATION) &&
                             !(s1->getType() == BaseState::Exception &&
-                              boost::static_pointer_cast<ExceptionState>(s1)->getException()->getErrorCode() ==
+                              std::static_pointer_cast<ExceptionState>(s1)->getException()->getErrorCode() ==
                               protocol::CANCELLATION)) {
-                            logger.warning() << "Future.complete(Object) on completed future. Request: "
-                                             << invocationToString();// << ", current value: " << *s0 << ", offered value: " << *s1;
+                            logger.warning() << "Future.complete(Object) on completed future. " << invocationToString();
                         }
                     }
 
@@ -550,12 +548,12 @@ namespace hazelcast {
                      * response is an atomic operation and therefore not prone to data-races.
                      * There is no need to use synchronized blocks.
                      */
-                    util::Atomic<boost::shared_ptr<BaseState> > state;
+                    util::Sync<std::shared_ptr<BaseState> > state;
 
                 };
 
                 template<typename T>
-                const boost::shared_ptr<typename AbstractInvocationFuture<T>::BaseState> AbstractInvocationFuture<T>::VOIDOBJECT(
+                const std::shared_ptr<typename AbstractInvocationFuture<T>::BaseState> AbstractInvocationFuture<T>::VOIDOBJECT(
                         new typename AbstractInvocationFuture<T>::VoidState());
             }
         }

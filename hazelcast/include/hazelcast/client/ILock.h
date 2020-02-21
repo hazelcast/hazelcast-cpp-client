@@ -120,7 +120,7 @@ namespace hazelcast {
 
             serialization::pimpl::Data key;
             int partitionId;
-            boost::shared_ptr<impl::ClientLockReferenceIdGenerator> referenceIdGenerator;
+            std::shared_ptr<impl::ClientLockReferenceIdGenerator> referenceIdGenerator;
         };
     }
 }

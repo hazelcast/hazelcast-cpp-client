@@ -94,7 +94,7 @@ namespace hazelcast {
                         T portable;
                         int32_t factoryId = portable.getFactoryId();
                         int32_t classId = portable.getClassId();
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId, classId, context.getVersion());
+                        std::shared_ptr<ClassDefinition> nestedClassDef = context.lookupClassDefinition(factoryId, classId, context.getVersion());
                         if (nestedClassDef == NULL) {
                             throw exception::HazelcastSerializationException("ClassDefWriter::writeNullPortable",
                                      "Cannot write null portable without explicitly registering class definition!");
@@ -109,7 +109,7 @@ namespace hazelcast {
                                      "Cannot write null portable without explicitly registering class definition!");
                         }
 
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(*portable);
+                        std::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef(*portable);
                         builder.addPortableField(fieldName, nestedClassDef);
                     };
 
@@ -120,18 +120,18 @@ namespace hazelcast {
                                     "ClassDefinitionWriter::writePortableArray",
                                     "Cannot write null portable array without explicitly registering class definition!");
                         }
-                        boost::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef((*portables)[0]);
+                        std::shared_ptr<ClassDefinition> nestedClassDef = createNestedClassDef((*portables)[0]);
                         builder.addPortableArrayField(fieldName, nestedClassDef);
                     };
 
-                    boost::shared_ptr<ClassDefinition> registerAndGet();
+                    std::shared_ptr<ClassDefinition> registerAndGet();
 
                     ObjectDataOutput& getRawDataOutput();
 
                     void end();
 
                 private:
-                    boost::shared_ptr<ClassDefinition> createNestedClassDef(const Portable& portable);
+                    std::shared_ptr<ClassDefinition> createNestedClassDef(const Portable& portable);
 
                     ObjectDataOutput emptyDataOutput;
                     ClassDefinitionBuilder& builder;

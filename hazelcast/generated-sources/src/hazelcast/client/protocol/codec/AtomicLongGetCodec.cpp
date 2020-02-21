@@ -27,10 +27,10 @@ namespace hazelcast {
                 const bool AtomicLongGetCodec::RETRYABLE = false;
                 const ResponseMessageConst AtomicLongGetCodec::RESPONSE_TYPE = (ResponseMessageConst) 103;
 
-                std::auto_ptr<ClientMessage> AtomicLongGetCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> AtomicLongGetCodec::encodeRequest(
                         const std::string &name) {
                     int32_t requiredDataSize = calculateDataSize(name);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) AtomicLongGetCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

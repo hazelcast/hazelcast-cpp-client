@@ -32,10 +32,12 @@
 namespace hazelcast {
     namespace client {
         HazelcastClient::HazelcastClient() : clientImpl(new impl::HazelcastClientInstanceImpl(ClientConfig())) {
+            clientImpl->start();
         }
 
         HazelcastClient::HazelcastClient(const ClientConfig &config) : clientImpl(
                 new impl::HazelcastClientInstanceImpl(config)) {
+            clientImpl->start();
         }
 
         const std::string &HazelcastClient::getName() const {
@@ -54,8 +56,7 @@ namespace hazelcast {
             return clientImpl->getIAtomicLong(name);
         }
 
-
-        boost::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
+        std::shared_ptr<crdt::pncounter::PNCounter> HazelcastClient::getPNCounter(const std::string &name) {
             return clientImpl->getPNCounter(name);
         }
 
@@ -107,12 +108,16 @@ namespace hazelcast {
             return clientImpl->getLifecycleService();
         }
 
-        boost::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
+        std::shared_ptr<IExecutorService> HazelcastClient::getExecutorService(const std::string &name) {
             return clientImpl->getExecutorService(name);
         }
 
         Client HazelcastClient::getLocalEndpoint() const {
             return clientImpl->getLocalEndpoint();
+        }
+
+        HazelcastClient::~HazelcastClient() {
+            clientImpl->shutdown();
         }
     }
 }

@@ -27,12 +27,12 @@ namespace hazelcast {
                 const bool ExecutorServiceCancelOnPartitionCodec::RETRYABLE = false;
                 const ResponseMessageConst ExecutorServiceCancelOnPartitionCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> ExecutorServiceCancelOnPartitionCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> ExecutorServiceCancelOnPartitionCodec::encodeRequest(
                         const std::string &uuid, 
                         int32_t partitionId, 
                         bool interrupt) {
                     int32_t requiredDataSize = calculateDataSize(uuid, partitionId, interrupt);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t)ExecutorServiceCancelOnPartitionCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(uuid);

@@ -27,11 +27,11 @@ namespace hazelcast {
                 const bool QueueDrainToMaxSizeCodec::RETRYABLE = false;
                 const ResponseMessageConst QueueDrainToMaxSizeCodec::RESPONSE_TYPE = (ResponseMessageConst) 106;
 
-                std::auto_ptr<ClientMessage> QueueDrainToMaxSizeCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> QueueDrainToMaxSizeCodec::encodeRequest(
                         const std::string &name,
                         int32_t maxSize) {
                     int32_t requiredDataSize = calculateDataSize(name, maxSize);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) QueueDrainToMaxSizeCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

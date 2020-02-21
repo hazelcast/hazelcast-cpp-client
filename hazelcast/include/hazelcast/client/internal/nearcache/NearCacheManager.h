@@ -50,8 +50,8 @@ namespace hazelcast {
                      * associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    boost::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
-                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
+                    std::shared_ptr<NearCache<KS, V> > getNearCache(const std::string &name) {
+                        return std::static_pointer_cast<NearCache<KS, V> >(nearCacheMap.get(name));
                     };
 
                     /**
@@ -67,9 +67,9 @@ namespace hazelcast {
                      * @return the created or existing {@link NearCache} instance associated with given {@code name}
                      */
                     template<typename K, typename V, typename KS>
-                    boost::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
+                    std::shared_ptr<NearCache<KS, V> > getOrCreateNearCache(
                             const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
-                        boost::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
+                        std::shared_ptr<BaseNearCache> nearCache = nearCacheMap.get(name);
                         if (NULL == nearCache.get()) {
                             {
                                 util::LockGuard guard(mutex);
@@ -83,7 +83,7 @@ namespace hazelcast {
 
                             }
                         }
-                        return boost::static_pointer_cast<NearCache<KS, V> >(nearCache);
+                        return std::static_pointer_cast<NearCache<KS, V> >(nearCache);
                     }
 
                     /**
@@ -117,12 +117,12 @@ namespace hazelcast {
                      *
                      * @return all existing {@link NearCache} instances
                      */
-                    std::vector<boost::shared_ptr<BaseNearCache> > listAllNearCaches();
+                    std::vector<std::shared_ptr<BaseNearCache> > listAllNearCaches();
                 protected:
                     template<typename K, typename V, typename KS>
-                    std::auto_ptr<NearCache<KS, V> > createNearCache(
+                    std::unique_ptr<NearCache<KS, V> > createNearCache(
                             const std::string &name, const client::config::NearCacheConfig<K, V> &nearCacheConfig) {
-                        return std::auto_ptr<NearCache<KS, V> >(
+                        return std::unique_ptr<NearCache<KS, V> >(
                                 new impl::DefaultNearCache<K, V, KS>(
                                         name, nearCacheConfig, serializationService, logger));
                     }

@@ -19,11 +19,11 @@
 
 #include <stdint.h>
 #include <sstream>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "hazelcast/util/HazelcastDll.h"
 #include "hazelcast/util/Runnable.h"
-#include "hazelcast/util/Atomic.h"
+#include "hazelcast/util/Sync.h"
 
 namespace hazelcast {
     namespace util {
@@ -64,7 +64,7 @@ namespace hazelcast {
                         PeriodicStatistics(Statistics &statistics);
 
                         void fillMetrics(std::ostringstream &stats,
-                                         const boost::shared_ptr<connection::Connection> &ownerConnection);
+                                         const std::shared_ptr<connection::Connection> &ownerConnection);
 
                         void addNearCacheStats(std::ostringstream &stats);
 
@@ -104,12 +104,12 @@ namespace hazelcast {
 
                     void schedulePeriodicStatisticsSendTask(int64_t periodSeconds);
 
-                    boost::shared_ptr<connection::Connection> getOwnerConnection();
+                    std::shared_ptr<connection::Connection> getOwnerConnection();
 
                     void sendStats(const std::string &newStats,
-                                   const boost::shared_ptr<connection::Connection> &ownerConnection);
+                                   const std::shared_ptr<connection::Connection> &ownerConnection);
 
-                    bool isSameWithCachedOwnerAddress(const boost::shared_ptr<Address> &currentOwnerAddress);
+                    bool isSameWithCachedOwnerAddress(const std::shared_ptr<Address> &currentOwnerAddress);
 
                     static std::string escapeSpecialCharacters(const std::string &name);
 
@@ -118,7 +118,7 @@ namespace hazelcast {
                     util::ILogger &logger;
                     bool enabled;
                     PeriodicStatistics periodicStats;
-                    util::Atomic<boost::shared_ptr<Address> > cachedOwnerAddress;
+                    util::Sync<std::shared_ptr<Address> > cachedOwnerAddress;
                 };
 
                 template<>

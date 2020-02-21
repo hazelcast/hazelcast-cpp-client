@@ -48,7 +48,7 @@ namespace hazelcast {
                     checkKeysFromIamRoles();
 
                     std::string timeStamp = getFormattedTimestamp();
-                    rs = std::auto_ptr<security::EC2RequestSigner>(
+                    rs = std::unique_ptr<security::EC2RequestSigner>(
                             new security::EC2RequestSigner(awsConfig, timeStamp, endpoint));
                     attributes["Action"] = "DescribeInstances";
                     attributes["Version"] = impl::Constants::DOC_VERSION;
@@ -84,7 +84,7 @@ namespace hazelcast {
 
                 std::istream &DescribeInstances::callService() {
                     std::string query = rs->getCanonicalizedQueryString(attributes);
-                    httpsClient = std::auto_ptr<util::SyncHttpsClient>(
+                    httpsClient = std::unique_ptr<util::SyncHttpsClient>(
                             new util::SyncHttpsClient(endpoint.c_str(), QUERY_PREFIX + query));
                     return httpsClient->openConnection();
                 }

@@ -68,8 +68,8 @@ public:
         int size = in.readInt();
         if (size > 0) {
             for (int i = 0; i < size; ++i) {
-                std::auto_ptr<std::string> key = in.readUTF();
-                std::auto_ptr<std::string> value = in.readUTF();
+                std::unique_ptr<std::string> key = in.readUTF();
+                std::unique_ptr<std::string> value = in.readUTF();
                 attributes[*key] = *value;
             }
         } else {

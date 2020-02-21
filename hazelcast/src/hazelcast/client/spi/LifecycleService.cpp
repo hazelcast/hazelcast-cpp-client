@@ -37,16 +37,14 @@ namespace hazelcast {
 
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::set<LifecycleListener *> &lifecycleListeners,
-                                               util::CountDownLatch &shutdownLatch, LoadBalancer *const loadBalancer,
-                                               Cluster &cluster) : clientContext(clientContext),
-                                                                   shutdownLatch(shutdownLatch),
-                                                                   loadBalancer(loadBalancer),
-                                                                   cluster(cluster) {
+                                               LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
+                    clientContext), loadBalancer(loadBalancer), cluster(cluster) {
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
             }
 
             bool LifecycleService::start() {
-                if (!active.compareAndSet(false, true)) {
+                bool expected = false;
+                if (!active.compare_exchange_strong(expected, true)) {
                     return false;
                 }
 
@@ -74,7 +72,8 @@ namespace hazelcast {
             }
 
             void LifecycleService::shutdown() {
-                if (!active.compareAndSet(true, false)) {
+                bool expected = true;
+                if (!active.compare_exchange_strong(expected, false)) {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
@@ -88,7 +87,6 @@ namespace hazelcast {
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 clientContext.getSerializationService().dispose();
-                shutdownLatch.countDown();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {
@@ -147,7 +145,6 @@ namespace hazelcast {
             LifecycleService::~LifecycleService() {
                 if (active) {
                     shutdown();
-                    shutdownLatch.await();
                 }
             }
         }

@@ -24,7 +24,7 @@ namespace hazelcast {
             namespace impl {
                 namespace reliable {
                     ReliableTopicExecutor::ReliableTopicExecutor(Ringbuffer<ReliableTopicMessage> &rb, util::ILogger &logger)
-                    : ringbuffer(rb), runnerThread(boost::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
+                    : ringbuffer(rb), runnerThread(std::shared_ptr<util::Runnable>(new Task(ringbuffer, q, shutdown)), logger),
                       q(10), shutdown(false) {
                     }
 
@@ -37,7 +37,8 @@ namespace hazelcast {
                     }
 
                     void ReliableTopicExecutor::stop() {
-                        if (!shutdown.compareAndSet(false, true)) {
+                        bool expected = false;
+                        if (!shutdown.compare_exchange_strong(expected, true)) {
                             return;
                         }
 
@@ -63,8 +64,8 @@ namespace hazelcast {
                             try {
                                 proxy::ClientRingbufferProxy<ReliableTopicMessage> &ringbuffer =
                                         static_cast<proxy::ClientRingbufferProxy<ReliableTopicMessage> &>(rb);
-                                boost::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
-                                boost::shared_ptr<protocol::ClientMessage> responseMsg;
+                                std::shared_ptr<spi::impl::ClientInvocationFuture> future = ringbuffer.readManyAsync(m.sequence, 1, m.maxCount);
+                                std::shared_ptr<protocol::ClientMessage> responseMsg;
                                 do {
                                     if (future->get(1000, TimeUnit::MILLISECONDS())) {
                                         responseMsg = future->get(); // every one second
@@ -72,13 +73,13 @@ namespace hazelcast {
                                 } while (!shutdown && (protocol::ClientMessage *)NULL == responseMsg.get());
 
                                 if (!shutdown) {
-                                    boost::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(ringbuffer.getReadManyAsyncResponseObject(
+                                    std::shared_ptr<DataArray<ReliableTopicMessage> > allMessages(ringbuffer.getReadManyAsyncResponseObject(
                                             responseMsg));
 
                                     m.callback->onResponse(allMessages);
                                 }
                             } catch (exception::IException &e) {
-                                m.callback->onFailure(boost::shared_ptr<exception::IException>(e.clone()));
+                                m.callback->onFailure(std::shared_ptr<exception::IException>(e.clone()));
                             }
                         }
 

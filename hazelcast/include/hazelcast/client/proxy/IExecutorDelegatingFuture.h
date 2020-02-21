@@ -35,9 +35,9 @@ namespace hazelcast {
             class IExecutorDelegatingFuture : public internal::ClientDelegatingFuture<V> {
             public:
                 IExecutorDelegatingFuture(
-                        const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
-                        spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
-                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
+                        const std::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
+                        spi::ClientContext &context, const std::string &uuid, const std::shared_ptr<V> &defaultValue,
+                        const std::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
                         const std::string &objectName, const int partitionId)
                         : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),
@@ -45,9 +45,9 @@ namespace hazelcast {
                           context(context), uuid(uuid), partitionId(partitionId), objectName(objectName) {}
 
                 IExecutorDelegatingFuture(
-                        const boost::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
-                        spi::ClientContext &context, const std::string &uuid, const boost::shared_ptr<V> &defaultValue,
-                        const boost::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
+                        const std::shared_ptr<spi::impl::ClientInvocationFuture> &clientInvocationFuture,
+                        spi::ClientContext &context, const std::string &uuid, const std::shared_ptr<V> &defaultValue,
+                        const std::shared_ptr<impl::ClientMessageDecoder<V> > &clientMessageDecoder,
                         const std::string &objectName, const Address &address)
                         : internal::ClientDelegatingFuture<V>(clientInvocationFuture,
                                                                     context.getSerializationService(),
@@ -66,35 +66,40 @@ namespace hazelcast {
                         util::ExceptionUtil::rethrow(e);
                     }
 
-                    internal::ClientDelegatingFuture<V>::complete(boost::shared_ptr<exception::IException>(
+                    internal::ClientDelegatingFuture<V>::complete(std::shared_ptr<exception::IException>(
                             new exception::CancellationException("IExecutorDelegatingFuture::cancel(bool)")));
                     return cancelSuccessful;
                 }
 
             private:
                 void waitForRequestToBeSend() {
-                    boost::shared_ptr<spi::impl::ClientInvocationFuture> future = internal::ClientDelegatingFuture<V>::getFuture();
-                    future->getInvocation()->getSendConnectionOrWait();
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> future = internal::ClientDelegatingFuture<V>::getFuture();
+                    auto invocation = future->getInvocation();
+                    if (!invocation.get()) {
+                        return;
+                    }
+
+                    invocation->getSendConnectionOrWait();
                 }
 
                 bool invokeCancelRequest(bool mayInterruptIfRunning) {
                     waitForRequestToBeSend();
 
                     if (partitionId > -1) {
-                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceCancelOnPartitionCodec::encodeRequest(
+                        std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceCancelOnPartitionCodec::encodeRequest(
                                 uuid, partitionId,
                                 mayInterruptIfRunning);
-                        boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                        std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                                 context, request, objectName, partitionId);
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> f = clientInvocation->invoke();
+                        std::shared_ptr<spi::impl::ClientInvocationFuture> f = clientInvocation->invoke();
                         return protocol::codec::ExecutorServiceCancelOnPartitionCodec::ResponseParameters::decode(
                                 *f->get()).response;
                     } else {
-                        std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceCancelOnAddressCodec::encodeRequest(
+                        std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceCancelOnAddressCodec::encodeRequest(
                                 uuid, *target, mayInterruptIfRunning);
-                        boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                        std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                                 context, request, objectName, *target);
-                        boost::shared_ptr<spi::impl::ClientInvocationFuture> f = clientInvocation->invoke();
+                        std::shared_ptr<spi::impl::ClientInvocationFuture> f = clientInvocation->invoke();
                         return protocol::codec::ExecutorServiceCancelOnAddressCodec::ResponseParameters::decode(
                                 *f->get()).response;
                     }
@@ -102,7 +107,7 @@ namespace hazelcast {
 
                 spi::ClientContext &context;
                 const std::string uuid;
-                const boost::shared_ptr<Address> target;
+                const std::shared_ptr<Address> target;
                 const int partitionId;
                 const std::string objectName;
             };

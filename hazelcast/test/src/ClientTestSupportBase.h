@@ -105,8 +105,8 @@ namespace hazelcast {
         private:
             ThreadArgs threadArgs;
             std::string name;
-            std::auto_ptr<util::Thread> thread;
-            boost::shared_ptr<util::ILogger> logger;
+            std::unique_ptr<util::Thread> thread;
+            std::shared_ptr<util::ILogger> logger;
 
             void init(void (func)(ThreadArgs &), void *arg0, void *arg1, void *arg2, void *arg3);
         };

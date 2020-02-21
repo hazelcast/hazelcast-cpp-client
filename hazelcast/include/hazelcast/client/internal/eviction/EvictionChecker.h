@@ -39,7 +39,7 @@ namespace hazelcast {
                     /**
                      * Empty {@link} EvictionChecker to allow eviction always.
                      */
-                    static const std::auto_ptr <EvictionChecker> EVICT_ALWAYS;
+                    static const std::unique_ptr <EvictionChecker> EVICT_ALWAYS;
 
                     /**
                      * Checks for if eviction is required or not.

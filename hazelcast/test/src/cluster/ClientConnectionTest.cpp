@@ -13,10 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * This has to be the first include, so that Python.h is the first include. Otherwise, compilation warning such as
- * "_POSIX_C_SOURCE" redefined occurs.
- */
 #include "HazelcastServerFactory.h"
 #include "ClientTestSupport.h"
 #include "HazelcastServer.h"
@@ -37,9 +33,9 @@ namespace hazelcast {
                 std::vector<internal::socket::SSLSocket::CipherInfo> getCiphers(ClientConfig &config) {
                     HazelcastClient client(config);
                     spi::ClientContext context(client);
-                    std::vector<boost::shared_ptr<connection::Connection> > conns = context.getConnectionManager().getActiveConnections();
+                    std::vector<std::shared_ptr<connection::Connection> > conns = context.getConnectionManager().getActiveConnections();
                     EXPECT_GT(conns.size(), (size_t) 0);
-                    boost::shared_ptr<connection::Connection> aConnection = conns[0];
+                    std::shared_ptr<connection::Connection> aConnection = conns[0];
                     internal::socket::SSLSocket &socket = (internal::socket::SSLSocket &) aConnection->getSocket();
                     return socket.getCiphers();
                 }
@@ -57,7 +53,7 @@ namespace hazelcast {
 
             #ifdef HZ_BUILD_WITH_SSL
             TEST_F(ClientConnectionTest, testSslSocketTimeoutToOutsideNetwork) {
-                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
                 ClientConfig config;
                 config.getNetworkConfig().setConnectionAttemptPeriod(1000).setConnectionTimeout(2000).addAddress(
@@ -66,7 +62,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConnectionTest, testSSLWrongCAFilePath) {
-                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
                 ClientConfig config = getConfig();
                 config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile("abc");
@@ -74,7 +70,7 @@ namespace hazelcast {
             }
 
             TEST_F(ClientConnectionTest, testExcludedCipher) {
-                HazelcastServerFactory sslFactory(getSslFilePath());
+                HazelcastServerFactory sslFactory(g_srvFactory->getServerAddress(), getSslFilePath());
                 HazelcastServer instance(sslFactory);
 
                 ClientConfig config = getConfig();

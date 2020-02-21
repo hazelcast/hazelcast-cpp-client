@@ -29,7 +29,11 @@ namespace hazelcast {
                 }
             }
 
-            OrPredicate &OrPredicate::add(std::auto_ptr<Predicate> predicate) {
+            OrPredicate &OrPredicate::add(std::unique_ptr<Predicate> &predicate) {
+                return add(std::move(predicate));
+            }
+
+            OrPredicate &OrPredicate::add(std::unique_ptr<Predicate> &&predicate) {
                 predicates.push_back(predicate.release());
                 return *this;
             }

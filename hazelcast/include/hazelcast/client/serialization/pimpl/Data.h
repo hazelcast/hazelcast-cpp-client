@@ -25,6 +25,7 @@
 #define HAZELCAST_DATA
 
 #include <vector>
+#include <memory>
 #include <stdint.h>
 #include "hazelcast/client/serialization/ClassDefinition.h"
 #include "hazelcast/client/serialization/pimpl/PortableContext.h"
@@ -55,11 +56,9 @@ namespace hazelcast {
 
                     Data();
 
-/*
-                    Data(const boost::shared_ptr<std::vector<byte> > &data);
-*/
+                    Data(std::unique_ptr<std::vector<byte> > &buffer);
 
-                    Data(std::auto_ptr<std::vector<byte> > buffer);
+                    Data(std::unique_ptr<std::vector<byte> > &&buffer);
 
                     size_t dataSize() const;
 
@@ -82,7 +81,7 @@ namespace hazelcast {
                     bool operator<(const Data &rhs) const;
 
                 private:
-                    boost::shared_ptr<std::vector<byte> > data;
+                    std::shared_ptr<std::vector<byte> > data;
                     int cachedHashValue;
 
                     inline int calculateHash() const;
@@ -93,10 +92,13 @@ namespace hazelcast {
     }
 }
 
-namespace boost {
-    template<>
-    bool HAZELCAST_API operator<(const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
-                   const boost::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) BOOST_NOEXCEPT;
+namespace std {
+    template <>
+    class less<std::shared_ptr<hazelcast::client::serialization::pimpl::Data> > {
+    public:
+        bool HAZELCAST_API operator() (const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &lhs,
+                                     const std::shared_ptr<hazelcast::client::serialization::pimpl::Data> &rhs) const noexcept;
+    };
 }
 
 #if  defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)

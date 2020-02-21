@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <boost/foreach.hpp>
+
 #include <hazelcast/client/IExecutorService.h>
 
 
@@ -34,11 +34,11 @@ namespace hazelcast {
         IExecutorService::selectMembers(const cluster::memberselector::MemberSelector &memberSelector) {
             std::vector<Member> selected;
             std::vector<Member> members = getContext().getClientClusterService().getMemberList();
-            BOOST_FOREACH (const Member &member, members) {
-                            if (memberSelector.select(member)) {
-                                selected.push_back(member);
-                            }
-                        }
+            for (const Member &member : members) {
+                if (memberSelector.select(member)) {
+                    selected.push_back(member);
+                }
+            }
             if (selected.empty()) {
                 throw (exception::ExceptionBuilder<exception::RejectedExecutionException>(
                         "IExecutorService::selectMembers") << "No member selected with memberSelector["
@@ -47,28 +47,28 @@ namespace hazelcast {
             return selected;
         }
 
-        boost::shared_ptr<spi::impl::ClientInvocationFuture>
-        IExecutorService::invokeOnTarget(std::auto_ptr<protocol::ClientMessage> &request, const Address &target) {
+        std::shared_ptr<spi::impl::ClientInvocationFuture>
+        IExecutorService::invokeOnTarget(std::unique_ptr<protocol::ClientMessage> &request, const Address &target) {
             try {
-                boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), target);
                 return clientInvocation->invoke();
             } catch (exception::IException &e) {
                 util::ExceptionUtil::rethrow(e);
             }
-            return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+            return std::shared_ptr<spi::impl::ClientInvocationFuture>();
         }
 
-        boost::shared_ptr<spi::impl::ClientInvocationFuture>
-        IExecutorService::invokeOnPartitionOwner(std::auto_ptr<protocol::ClientMessage> &request, int partitionId) {
+        std::shared_ptr<spi::impl::ClientInvocationFuture>
+        IExecutorService::invokeOnPartitionOwner(std::unique_ptr<protocol::ClientMessage> &request, int partitionId) {
             try {
-                boost::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
+                std::shared_ptr<spi::impl::ClientInvocation> clientInvocation = spi::impl::ClientInvocation::create(
                         getContext(), request, getName(), partitionId);
                 return clientInvocation->invoke();
             } catch (exception::IException &e) {
                 util::ExceptionUtil::rethrow(e);
             }
-            return boost::shared_ptr<spi::impl::ClientInvocationFuture>();
+            return std::shared_ptr<spi::impl::ClientInvocationFuture>();
         }
 
         bool IExecutorService::isSyncComputation(bool preventSync) {
@@ -78,7 +78,7 @@ namespace hazelcast {
             lastSubmitTime = now;
 
             if (last + MIN_TIME_RESOLUTION_OF_CONSECUTIVE_SUBMITS < now) {
-                consecutiveSubmits.set(0);
+                consecutiveSubmits = 0;
                 return false;
             }
 
@@ -86,7 +86,7 @@ namespace hazelcast {
         }
 
         Address IExecutorService::getMemberAddress(const Member &member) {
-            boost::shared_ptr<Member> m = getContext().getClientClusterService().getMember(member.getUuid());
+            std::shared_ptr<Member> m = getContext().getClientClusterService().getMember(member.getUuid());
             if (m.get() == NULL) {
                 throw (exception::ExceptionBuilder<exception::HazelcastException>(
                         "IExecutorService::getMemberAddress(Member)") << member << " is not available!").build();
@@ -100,13 +100,13 @@ namespace hazelcast {
         }
 
         void IExecutorService::shutdown() {
-            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
+            std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceShutdownCodec::encodeRequest(
                     getName());
             invoke(request);
         }
 
         bool IExecutorService::isShutdown() {
-            std::auto_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
+            std::unique_ptr<protocol::ClientMessage> request = protocol::codec::ExecutorServiceIsShutdownCodec::encodeRequest(
                     getName());
             return invokeAndGetResult<bool, protocol::codec::ExecutorServiceIsShutdownCodec::ResponseParameters>(
                     request);

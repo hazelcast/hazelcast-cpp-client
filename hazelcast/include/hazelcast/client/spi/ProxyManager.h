@@ -43,7 +43,7 @@ namespace hazelcast {
             public:
                 ProxyManager(ClientContext &context);
 
-                boost::shared_ptr<ClientProxy> getOrCreateProxy(const std::string &service,
+                std::shared_ptr<ClientProxy> getOrCreateProxy(const std::string &service,
                                                                 const std::string &id,
                                                                 spi::ClientProxyFactory &factory);
 
@@ -68,11 +68,11 @@ namespace hazelcast {
                 void destroy();
 
             private:
-                void initializeWithRetry(const boost::shared_ptr<ClientProxy> &clientProxy);
+                void initializeWithRetry(const std::shared_ptr<ClientProxy> &clientProxy);
 
-                boost::shared_ptr<Address> findNextAddressToSendCreateRequest();
+                std::shared_ptr<Address> findNextAddressToSendCreateRequest();
 
-                void initialize(const boost::shared_ptr<ClientProxy> &clientProxy);
+                void initialize(const std::shared_ptr<ClientProxy> &clientProxy);
 
                 util::SynchronizedMap<DefaultObjectNamespace, util::Future<ClientProxy> > proxies;
                 int64_t invocationTimeoutMillis;

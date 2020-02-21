@@ -24,7 +24,7 @@
 
 namespace hazelcast {
     namespace util {
-        const boost::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> ExceptionUtil::hazelcastExceptionFactory(
+        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> ExceptionUtil::hazelcastExceptionFactory(
                 new HazelcastExceptionFactory());
 
         void ExceptionUtil::rethrow(const client::exception::IException &e) {
@@ -32,14 +32,14 @@ namespace hazelcast {
         }
 
         void ExceptionUtil::rethrow(const client::exception::IException &e,
-                                    const boost::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtimeExceptionFactory) {
+                                    const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &runtimeExceptionFactory) {
             if (e.isRuntimeException()) {
                 e.raise();
             }
 
             int32_t errorCode = e.getErrorCode();
             if (errorCode == client::exception::ExecutionException::ERROR_CODE) {
-                boost::shared_ptr<client::exception::IException> cause = e.getCause();
+                std::shared_ptr<client::exception::IException> cause = e.getCause();
                 if (cause.get() != NULL) {
                     return rethrow(*cause, runtimeExceptionFactory);
                 }
@@ -48,7 +48,7 @@ namespace hazelcast {
             runtimeExceptionFactory->rethrow(e, "");
         }
 
-        const boost::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &ExceptionUtil::HAZELCAST_EXCEPTION_FACTORY() {
+        const std::shared_ptr<ExceptionUtil::RuntimeExceptionFactory> &ExceptionUtil::HAZELCAST_EXCEPTION_FACTORY() {
             return hazelcastExceptionFactory;
         }
 
@@ -58,7 +58,7 @@ namespace hazelcast {
         void ExceptionUtil::HazelcastExceptionFactory::rethrow(
                 const client::exception::IException &throwable, const std::string &message) {
             throw client::exception::HazelcastException("HazelcastExceptionFactory::create", message,
-                                                        boost::shared_ptr<client::exception::IException>(
+                                                        std::shared_ptr<client::exception::IException>(
                                                                 throwable.clone()));
         }
     }

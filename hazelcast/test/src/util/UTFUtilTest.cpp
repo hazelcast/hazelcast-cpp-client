@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/foreach.hpp>
+
 
 #include <hazelcast/client/exception/IOException.h>
 #include <hazelcast/client/serialization/pimpl/DataInput.h>
@@ -47,7 +47,7 @@ namespace hazelcast {
 
                 TEST_F(UTFUtilTest, readValidUTF8) {
                     std::vector<byte> strBytes;
-                    BOOST_FOREACH(char b, VALID_UTF_STRING) {
+                    for (char b : VALID_UTF_STRING) {
                                     strBytes.push_back((byte) b);
                                 }
                     serialization::pimpl::DataInput in(strBytes);
@@ -66,7 +66,7 @@ namespace hazelcast {
 
                 TEST_F(UTFUtilTest, readInvalidUTF8) {
                     std::vector<byte> strBytes;
-                    BOOST_FOREACH(char b, INVALID_UTF_STRING_INSUFFICIENT_BYTES) {
+                    for (char b : INVALID_UTF_STRING_INSUFFICIENT_BYTES) {
                                     strBytes.push_back((byte) b);
                                 }
                     serialization::pimpl::DataInput in(strBytes);

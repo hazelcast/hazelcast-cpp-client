@@ -139,11 +139,11 @@ int main(int argc, char *args[]) {
 
     registerSignalHandler();
 
-    vector<boost::shared_ptr<Thread> > threads(threadCount);
+    vector<std::shared_ptr<Thread> > threads(threadCount);
 
     for (int i = 0; i < threadCount; i++) {
-        boost::shared_ptr<Thread> thread(
-                new Thread(boost::shared_ptr<Runnable>(new SoakTestTask(map, logger)), logger));
+        std::shared_ptr<Thread> thread(
+                new Thread(std::shared_ptr<Runnable>(new SoakTestTask(map, logger)), logger));
         threads[i] = thread;
         thread->start();
     }

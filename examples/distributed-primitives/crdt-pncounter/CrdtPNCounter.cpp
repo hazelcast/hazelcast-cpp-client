@@ -18,7 +18,7 @@
 int main() {
     hazelcast::client::HazelcastClient hz;
 
-    boost::shared_ptr<hazelcast::client::crdt::pncounter::PNCounter> pnCounter = hz.getPNCounter("pncounterexample");
+    std::shared_ptr<hazelcast::client::crdt::pncounter::PNCounter> pnCounter = hz.getPNCounter("pncounterexample");
 
     std::cout << "Counter started with value:" << pnCounter->get() << std::endl;
 

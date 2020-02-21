@@ -31,7 +31,7 @@ namespace hazelcast {
 #define MILLISECOND_IN_A_SECOND 1000
 
             TransactionProxy::TransactionProxy(TransactionOptions &txnOptions, spi::ClientContext &clientContext,
-                                               boost::shared_ptr<connection::Connection> connection)
+                                               std::shared_ptr<connection::Connection> connection)
                     : options(txnOptions), clientContext(clientContext), connection(connection),
                       threadId(util::getCurrentThreadId()), state(TxnState::NO_TXN), startTime(0) {
             }
@@ -45,7 +45,7 @@ namespace hazelcast {
                                                                               startTime(rhs.startTime) {
                 TransactionProxy &nonConstRhs = const_cast<TransactionProxy &>(rhs);
 
-                TRANSACTION_EXISTS = static_cast<bool>(nonConstRhs.TRANSACTION_EXISTS);
+                TRANSACTION_EXISTS.store(nonConstRhs.TRANSACTION_EXISTS.load());
             }
 
             const std::string &TransactionProxy::getTxnId() const {
@@ -76,20 +76,20 @@ namespace hazelcast {
                         throw exception::IllegalStateException("TransactionProxy::begin()",
                                                                "Nested transactions are not allowed!");
                     }
-                    TRANSACTION_EXISTS = true;
+                    TRANSACTION_EXISTS.store(true);
                     startTime = util::currentTimeMillis();
-                    std::auto_ptr<protocol::ClientMessage> request = protocol::codec::TransactionCreateCodec::encodeRequest(
+                    std::unique_ptr<protocol::ClientMessage> request = protocol::codec::TransactionCreateCodec::encodeRequest(
                             options.getTimeout() * MILLISECOND_IN_A_SECOND, options.getDurability(),
                             options.getTransactionType(), threadId);
 
-                    boost::shared_ptr<protocol::ClientMessage> response = invoke(request);
+                    std::shared_ptr<protocol::ClientMessage> response = invoke(request);
 
                     protocol::codec::TransactionCreateCodec::ResponseParameters result =
                             protocol::codec::TransactionCreateCodec::ResponseParameters::decode(*response);
                     txnId = result.response;
                     state = TxnState::ACTIVE;
                 } catch (exception::IException &) {
-                    TRANSACTION_EXISTS = false;
+                    TRANSACTION_EXISTS.store(false);
                     throw;
                 }
             }
@@ -104,7 +104,7 @@ namespace hazelcast {
                     checkThread();
                     checkTimeout();
 
-                    std::auto_ptr<protocol::ClientMessage> request =
+                    std::unique_ptr<protocol::ClientMessage> request =
                             protocol::codec::TransactionCommitCodec::encodeRequest(txnId, threadId);
 
                     invoke(request);
@@ -112,7 +112,7 @@ namespace hazelcast {
                     state = TxnState::COMMITTED;
                 } catch (exception::IException &e) {
                     state = TxnState::COMMIT_FAILED;
-                    TRANSACTION_EXISTS = false;
+                    TRANSACTION_EXISTS.store(false);
                     util::ExceptionUtil::rethrow(e);
                 }
             }
@@ -126,7 +126,7 @@ namespace hazelcast {
                     state = TxnState::ROLLING_BACK;
                     checkThread();
                     try {
-                        std::auto_ptr<protocol::ClientMessage> request =
+                        std::unique_ptr<protocol::ClientMessage> request =
                                 protocol::codec::TransactionRollbackCodec::encodeRequest(txnId, threadId);
 
                         invoke(request);
@@ -135,9 +135,9 @@ namespace hazelcast {
                                 << "Exception while rolling back the transaction. Exception:" << exception;
                     }
                     state = TxnState::ROLLED_BACK;
-                    TRANSACTION_EXISTS = false;
+                    TRANSACTION_EXISTS.store(false);
                 } catch (exception::IException &) {
-                    TRANSACTION_EXISTS = false;
+                    TRANSACTION_EXISTS.store(false);
                     throw;
                 }
             }
@@ -146,7 +146,7 @@ namespace hazelcast {
                 return clientContext.getSerializationService();
             }
 
-            boost::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
+            std::shared_ptr<connection::Connection> TransactionProxy::getConnection() {
                     return connection;
             }
 
@@ -186,8 +186,8 @@ namespace hazelcast {
                 value = values[i];
             }
 
-            boost::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
-                    std::auto_ptr<protocol::ClientMessage> request) {
+            std::shared_ptr<protocol::ClientMessage> TransactionProxy::invoke(
+                    std::unique_ptr<protocol::ClientMessage> &request) {
                 return ClientTransactionUtil::invoke(request, getTxnId(), clientContext, connection);
             }
 

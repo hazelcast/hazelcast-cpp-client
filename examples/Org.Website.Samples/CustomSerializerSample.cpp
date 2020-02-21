@@ -70,7 +70,7 @@ public:
 int main() {
     ClientConfig clientConfig;
     clientConfig.getSerializationConfig().registerSerializer(
-            boost::shared_ptr<serialization::StreamSerializer>(new CustomSerializer()));
+            std::shared_ptr<serialization::StreamSerializer>(new CustomSerializer()));
 
     HazelcastClient hz(clientConfig);
 

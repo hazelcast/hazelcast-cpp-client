@@ -28,7 +28,7 @@ namespace hazelcast {
                 const bool TransactionalMapReplaceIfSameCodec::RETRYABLE = false;
                 const ResponseMessageConst TransactionalMapReplaceIfSameCodec::RESPONSE_TYPE = (ResponseMessageConst) 101;
 
-                std::auto_ptr<ClientMessage> TransactionalMapReplaceIfSameCodec::encodeRequest(
+                std::unique_ptr<ClientMessage> TransactionalMapReplaceIfSameCodec::encodeRequest(
                         const std::string &name,
                         const std::string &txnId,
                         int64_t threadId,
@@ -36,7 +36,7 @@ namespace hazelcast {
                         const serialization::pimpl::Data &oldValue,
                         const serialization::pimpl::Data &newValue) {
                     int32_t requiredDataSize = calculateDataSize(name, txnId, threadId, key, oldValue, newValue);
-                    std::auto_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
+                    std::unique_ptr<ClientMessage> clientMessage = ClientMessage::createForEncode(requiredDataSize);
                     clientMessage->setMessageType((uint16_t) TransactionalMapReplaceIfSameCodec::REQUEST_TYPE);
                     clientMessage->setRetryable(RETRYABLE);
                     clientMessage->set(name);

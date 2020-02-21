@@ -25,7 +25,7 @@ namespace hazelcast {
         namespace test {
             class TestDataSerializableFactory : public serialization::DataSerializableFactory {
             public:
-                virtual std::auto_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId);
+                virtual std::unique_ptr<serialization::IdentifiedDataSerializable> create(int32_t classId);
             };
             
             class TestDataSerializable : public serialization::IdentifiedDataSerializable {
