@@ -19,6 +19,7 @@
 #include <random>
 #include <cassert>
 #include <thread>
+#include <future>
 
 #include "hazelcast/client/ExecutionCallback.h"
 #include "hazelcast/client/LifecycleEvent.h"

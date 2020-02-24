@@ -7,7 +7,7 @@ RUN dnf install -y gcc-c++ gdb compat-openssl10-devel.i686 cmake
 RUN dnf -y install glibc-devel.i686 glibc-devel libstdc++.i686
 
 # needed for test
-RUN dnf install -y maven net-tools python2
+RUN dnf install -y maven net-tools gcovr
 RUN dnf install -y fedora-repos-rawhide
 RUN dnf --disablerepo=* --enablerepo=rawhide --nogpg install -y thrift-devel.i686
 
