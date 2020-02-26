@@ -46,7 +46,7 @@ endif ()
 
 add_definitions(-DHAZELCAST_VERSION="${HZ_VERSION}")
 
-execute_process(COMMAND git show -s --format="%cd" --date=short OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_DATE RESULT_VARIABLE GIT_DATE_RESULT)
+execute_process(COMMAND git show -s --format=%cd OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_DATE RESULT_VARIABLE GIT_DATE_RESULT)
 if (NOT (${GIT_DATE_RESULT} EQUAL 0))
 	message(WARNING "Could not execute command git show for obtaining the git commit date. Process exit result:${GIT_DATE_RESULT}")
 	set(HAZELCAST_GIT_COMMIT_DATE "NOT_FOUND")
@@ -60,7 +60,7 @@ endif ()
 message(STATUS "HAZELCAST_GIT_COMMIT_DATE = ${HAZELCAST_GIT_COMMIT_DATE}" )
 add_definitions(-DHAZELCAST_GIT_COMMIT_DATE=${HAZELCAST_GIT_COMMIT_DATE})
 
-execute_process(COMMAND git show -s --format="%h" OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_ID RESULT_VARIABLE GIT_COMMIT_ID_RESULT)
+execute_process(COMMAND git show -s --format=%h OUTPUT_VARIABLE HAZELCAST_GIT_COMMIT_ID RESULT_VARIABLE GIT_COMMIT_ID_RESULT)
 if (NOT (${GIT_COMMIT_ID_RESULT} EQUAL 0))
 	message(WARNING "Could not execute command git show for obtaining the git commit id. Process exit result:${GIT_DATE_RESULT}")
 	set(HAZELCAST_GIT_COMMIT_ID "NOT_FOUND")
