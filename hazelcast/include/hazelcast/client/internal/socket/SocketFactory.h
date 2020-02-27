@@ -46,12 +46,13 @@ namespace hazelcast {
 
                     bool start();
 
-                    std::unique_ptr<Socket> create(const Address &address) const;
+                    std::unique_ptr<Socket> create(const Address &address);
                 private:
                     spi::ClientContext &clientContext;
 
                     #ifdef HZ_BUILD_WITH_SSL
                     std::unique_ptr<asio::ssl::context> sslContext;
+                    asio::io_service ioService;
                     #endif
                 };
             }

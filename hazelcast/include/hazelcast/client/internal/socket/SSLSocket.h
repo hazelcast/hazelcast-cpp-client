@@ -18,6 +18,8 @@
 
 #ifdef HZ_BUILD_WITH_SSL
 
+#include <atomic>
+
 #include <asio.hpp>
 #include <asio/ssl.hpp>
 #include <asio/deadline_timer.hpp>
@@ -56,8 +58,8 @@ namespace hazelcast {
                     /**
                      * Constructor
                      */
-                    SSLSocket(const client::Address &address, asio::ssl::context &sslContext,
-                            client::config::SocketOptions &socketOptions);
+                    SSLSocket(asio::io_service &ioService, asio::ssl::context &context, const client::Address &address,
+                              client::config::SocketOptions &socketOptions);
 
                     /**
                      * Destructor
@@ -107,7 +109,7 @@ namespace hazelcast {
                     /**
                      * @return Returns the supported ciphers. Uses SSL_get_ciphers.
                      */
-                    std::vector<SSLSocket::CipherInfo> getCiphers() const;
+                    std::vector<SSLSocket::CipherInfo> getCiphers();
 
                     std::unique_ptr<Address> localSocketAddress() const;
 
@@ -145,13 +147,13 @@ namespace hazelcast {
 
                     client::Address remoteEndpoint;
 
-                    asio::io_service ioService;
-                    asio::ssl::context &sslContext;
-                    std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> > socket;
+                    asio::ssl::stream<asio::ip::tcp::socket> socket;
+                    asio::io_service &ioService;
                     asio::system_timer deadline;
                     asio::error_code errorCode;
                     int socketId;
                     const client::config::SocketOptions &socketOptions;
+                    std::atomic_bool isOpen;
                 };
 
                 std::ostream &operator<<(std::ostream &out, const SSLSocket::CipherInfo &info);

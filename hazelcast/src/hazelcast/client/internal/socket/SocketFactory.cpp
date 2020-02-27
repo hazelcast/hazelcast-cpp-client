@@ -89,11 +89,11 @@ namespace hazelcast {
                     return true;
                 }
 
-                std::unique_ptr<Socket> SocketFactory::create(const Address &address) const {
+                std::unique_ptr<Socket> SocketFactory::create(const Address &address) {
                     #ifdef HZ_BUILD_WITH_SSL
                     if (sslContext.get()) {
-                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(address, *sslContext,
-                                clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
+                        return std::unique_ptr<Socket>(new internal::socket::SSLSocket(ioService, *sslContext, address,
+                                                                                       clientContext.getClientConfig().getNetworkConfig().getSocketOptions()));
                     }
                     #endif
 

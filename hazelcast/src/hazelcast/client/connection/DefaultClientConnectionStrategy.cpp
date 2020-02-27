@@ -67,6 +67,7 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::onConnectToCluster() {
+                disconnectedFromCluster.store(false);
             }
 
             void DefaultClientConnectionStrategy::onDisconnectFromCluster() {

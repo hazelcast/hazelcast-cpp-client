@@ -38,13 +38,10 @@ namespace hazelcast {
     namespace client {
         namespace internal {
             namespace socket {
-                SSLSocket::SSLSocket(const client::Address &address, asio::ssl::context &context,
-                                     client::config::SocketOptions &socketOptions) : remoteEndpoint(address),
-                                                                                     sslContext(context),
-                                                                                     deadline(ioService), socketId(-1),
-                                                                                     socketOptions(socketOptions) {
-                    socket = std::unique_ptr<asio::ssl::stream<asio::ip::tcp::socket> >(
-                            new asio::ssl::stream<asio::ip::tcp::socket>(ioService, sslContext));
+                SSLSocket::SSLSocket(asio::io_service &ioService, asio::ssl::context &context,
+                                     const client::Address &address, client::config::SocketOptions &socketOptions)
+                        : remoteEndpoint(address), socket(ioService, context), ioService(ioService),
+                          deadline(ioService), socketId(-1), socketOptions(socketOptions), isOpen(true) {
                 }
 
                 SSLSocket::~SSLSocket() {
@@ -70,7 +67,7 @@ namespace hazelcast {
                         // asynchronous operations are cancelled. This allows the blocked
                         // connect(), read_line() or write_line() functions to return.
                         asio::error_code ignored_ec;
-                        socket->lowest_layer().close(ignored_ec);
+                        socket.lowest_layer().close(ignored_ec);
 
                         return;
                     }
@@ -100,7 +97,7 @@ namespace hazelcast {
 
                         // Start the asynchronous operation itself. a callback will update the ec variable when the
                         // operation completes.
-                        asio::async_connect(socket->lowest_layer(), iterator,
+                        asio::async_connect(socket.lowest_layer(), iterator,
                                             std::bind(&SSLSocket::handleConnect, this, std::placeholders::_1));
 
                         // Block until the asynchronous operation has completed.
@@ -117,7 +114,7 @@ namespace hazelcast {
                         deadline.cancel();
 
                         // Cancel async connect operation if it is still in operation
-                        socket->lowest_layer().cancel();
+                        socket.lowest_layer().cancel();
 
                         if (ioRunErrorCode) {
                             return ioRunErrorCode.value();
@@ -132,16 +129,16 @@ namespace hazelcast {
                         // though the connect operation notionally succeeded. Therefore we must
                         // check whether the socket is still open before deciding if we succeeded
                         // or failed.
-                        if (!socket->lowest_layer().is_open()) {
+                        if (!socket.lowest_layer().is_open()) {
                             return asio::error::operation_aborted;
                         }
 
-                        socket->handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
+                        socket.handshake(asio::ssl::stream<asio::ip::tcp::socket>::client);
 
                         setSocketOptions();
 
                         setBlocking(false);
-                        socketId = socket->lowest_layer().native_handle();
+                        socketId = socket.lowest_layer().native_handle();
                     } catch (asio::system_error &e) {
                         return e.code().value();
                     }
@@ -150,11 +147,11 @@ namespace hazelcast {
                 }
 
                 void SSLSocket::setBlocking(bool blocking) {
-                    socket->lowest_layer().non_blocking(!blocking);
+                    socket.lowest_layer().non_blocking(!blocking);
                 }
 
-                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() const {
-                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket->native_handle());
+                std::vector<SSLSocket::CipherInfo> SSLSocket::getCiphers() {
+                    STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(socket.native_handle());
                     std::vector<CipherInfo> supportedCiphers;
                     for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
                         struct SSLSocket::CipherInfo info;
@@ -174,10 +171,10 @@ namespace hazelcast {
                     asio::error_code ec;
 
                     if (flag == MSG_WAITALL) {
-                        size = asio::write(*socket, asio::buffer(buffer, (size_t) len),
+                        size = asio::write(socket, asio::buffer(buffer, (size_t) len),
                                            asio::transfer_exactly((size_t) len), ec);
                     } else {
-                        size = socket->write_some(asio::buffer(buffer, (size_t) len), ec);
+                        size = socket.write_some(asio::buffer(buffer, (size_t) len), ec);
                     }
 
                     return handleError("SSLSocket::send", size, ec);
@@ -191,7 +188,7 @@ namespace hazelcast {
                     asio::error_code ioRunErrorCode;
                     ioService.restart();
                     if (flag == MSG_WAITALL) {
-                        asio::async_read(*socket, asio::buffer(buffer, (size_t) len),
+                        asio::async_read(socket, asio::buffer(buffer, (size_t) len),
                                          asio::transfer_exactly((size_t) len), readHandler);
                         do {
                             ioService.run_one(ioRunErrorCode);
@@ -200,7 +197,7 @@ namespace hazelcast {
 
                         return (int) readHandler.getNumRead();
                     } else {
-                        size = asio::read(*socket, asio::buffer(buffer, (size_t) len),
+                        size = asio::read(socket, asio::buffer(buffer, (size_t) len),
                                           asio::transfer_exactly((size_t) len), ec);
                     }
 
@@ -212,13 +209,13 @@ namespace hazelcast {
                 }
 
                 client::Address SSLSocket::getAddress() const {
-                    return client::Address(socket->lowest_layer().remote_endpoint().address().to_string(),
+                    return client::Address(socket.lowest_layer().remote_endpoint().address().to_string(),
                                            remoteEndpoint.getPort());
                 }
 
                 std::unique_ptr<Address> SSLSocket::localSocketAddress() const {
                     asio::error_code ec;
-                    asio::ip::basic_endpoint<asio::ip::tcp> localEndpoint = socket->lowest_layer().local_endpoint(ec);
+                    asio::ip::basic_endpoint<asio::ip::tcp> localEndpoint = socket.lowest_layer().local_endpoint(ec);
                     if (ec) {
                         return std::unique_ptr<Address>();
                     }
@@ -229,7 +226,7 @@ namespace hazelcast {
                 void SSLSocket::close() {
                     asio::error_code ec;
                     // Call the non-exception throwing versions of the following method
-                    socket->lowest_layer().close(ec);
+                    socket.lowest_layer().close(ec);
                 }
 
                 int SSLSocket::handleError(const std::string &source, size_t numBytes,
@@ -241,7 +238,7 @@ namespace hazelcast {
                 }
 
                 void SSLSocket::setSocketOptions() {
-                    auto &lowestLayer = socket->lowest_layer();
+                    auto &lowestLayer = socket.lowest_layer();
 
                     lowestLayer.set_option(asio::ip::tcp::no_delay(socketOptions.isTcpNoDelay()));
 
