@@ -123,7 +123,7 @@ namespace hazelcast {
                     // before giving up, attempt to discover whether we're running in an ECS Container,
                     // in which case, AWS_CONTAINER_CREDENTIALS_RELATIVE_URI will exist as an env var.
                     const char *uri = getenv(Constants::ECS_CREDENTIALS_ENV_VAR_NAME);
-                    if (uri) {
+                    if (!uri) {
                         throw exception::IllegalArgumentException("getKeysFromIamTaskRole",
                                                                   "Could not acquire credentials! Did not find declared AWS access key or IAM Role, and could not discover IAM Task Role or default role.");
                     }
