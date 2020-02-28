@@ -195,7 +195,7 @@ namespace hazelcast {
 
             void SimpleExecutorService::Worker::run() {
                 std::shared_ptr<Runnable> task;
-                while (executorService.live || !workQueue.isEmpty()) {
+                while (executorService.live) {
                     try {
                         task = workQueue.pop();
                         if (task.get()) {
@@ -209,8 +209,6 @@ namespace hazelcast {
                         executorService.logger.warning() << getName() << " caused an exception" << t;
                     }
                 }
-
-                assert(workQueue.isEmpty());
             }
 
             SimpleExecutorService::Worker::~Worker() {

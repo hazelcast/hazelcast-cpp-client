@@ -43,8 +43,8 @@ namespace hazelcast {
             virtual ~Thread() {
                 cancel();
 
-                bool expected = false;
-                if (handleClosed.compare_exchange_strong(expected, true)) {
+                bool expected = true;
+                if (handleSet.compare_exchange_strong(expected, false)) {
                     CloseHandle(thread);
                 }
             }
@@ -105,7 +105,7 @@ namespace hazelcast {
 
             HANDLE thread;
             DWORD id;
-            util::AtomicBoolean handleClosed;
+            util::AtomicBoolean handleSet;
         };
     }
 }

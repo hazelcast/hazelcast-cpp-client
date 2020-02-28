@@ -606,7 +606,9 @@ namespace hazelcast {
 
             void ClientConnectionManagerImpl::stopEventLoopGroup() {
                 inSelector.shutdown();
+                inSelectorThread.join();
                 outSelector.shutdown();
+                outSelectorThread.join();
             }
 
             void ClientConnectionManagerImpl::onClose(Connection &connection) {
