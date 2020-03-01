@@ -309,7 +309,7 @@ namespace hazelcast {
                                 new AuthCallback(connection, asOwner, target, future, *this)));
 
                 // TODO: let this return a future and pass it to AuthCallback as in Java
-                std::async([=] {
+                std::thread([=] {
                     std::this_thread::sleep_for(std::chrono::milliseconds(connectionTimeoutMillis));
                     if (invocationFuture->isDone()) {
                         return;
@@ -318,7 +318,8 @@ namespace hazelcast {
                             "ClientConnectionManagerImpl::authenticate")
                             << "Authentication response did not come back in " << connectionTimeoutMillis
                             << " millis").buildShared());
-                });
+                }).detach();
+
             }
 
             const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {

@@ -77,12 +77,12 @@ namespace hazelcast {
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
+                clientContext.getClientExecutionService().shutdown();
                 clientContext.getProxyManager().destroy();
                 clientContext.getConnectionManager().shutdown();
                 ((spi::impl::ClientClusterServiceImpl &) clientContext.getClientClusterService()).shutdown();
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).stop();
                 ((spi::impl::AbstractClientInvocationService &) clientContext.getInvocationService()).shutdown();
-                clientContext.getClientExecutionService().shutdown();
                 ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).shutdown();
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);

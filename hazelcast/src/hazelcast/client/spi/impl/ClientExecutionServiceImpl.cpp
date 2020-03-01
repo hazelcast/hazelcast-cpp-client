@@ -70,13 +70,19 @@ namespace hazelcast {
                 void
                 ClientExecutionServiceImpl::shutdownExecutor(const std::string &name, util::ExecutorService &executor,
                                                              util::ILogger &logger) {
-                    executor.shutdown();
                     try {
                         int64_t startTimeMilliseconds = util::currentTimeMillis();
                         bool success = false;
                         // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
                         while (!success) {
-                            success = executor.awaitTerminationSeconds(SHUTDOWN_CHECK_INTERVAL_SECONDS);
+                            int64_t waitTimeMillis = 100;
+                            while (!success && util::currentTimeMillis() - startTimeMilliseconds <
+                                               1000 * SHUTDOWN_CHECK_INTERVAL_SECONDS) {
+                                executor.shutdown();
+                                auto &executorService = static_cast<util::impl::SimpleExecutorService &>(executor);
+                                success = executorService.awaitTerminationMilliseconds(waitTimeMillis);
+                            }
+
                             if (!success) {
                                 logger.warning() << name << " executor awaitTermination could not be completed in "
                                                  << (util::currentTimeMillis() - startTimeMilliseconds) << " msecs.";

@@ -84,10 +84,7 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::shutdown() {
-                bool expected = true;
-                if (!live.compare_exchange_strong(expected, false)) {
-                    return;
-                }
+                live.store(false);
 
                 size_t numberOfWorkers = workers.size();
                 size_t numberOfDelayedRunners = delayedRunners.size();

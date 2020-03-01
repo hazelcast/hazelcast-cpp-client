@@ -69,7 +69,13 @@ namespace hazelcast {
                         processListenerQueue();
                         listenInternal();
                     }catch(exception::IException &e){
-                        logger.warning(std::string("Exception at IOSelector::listen() ") + e.what());
+                        if (isAlive) {
+                            logger.warning(std::string("Exception at IOSelector::run() ") + e.what());
+                        } else {
+                            if (logger.isFinestEnabled()) {
+                                logger.finest(std::string("Exception at IOSelector::run() ") + e.what());
+                            }
+                        }
                     }
                 }
             }

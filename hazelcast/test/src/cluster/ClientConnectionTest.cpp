@@ -78,19 +78,20 @@ namespace hazelcast {
                         "HIGH");
                 std::vector<internal::socket::SSLSocket::CipherInfo> supportedCiphers = getCiphers(config);
 
-                std::string unsupportedCipher = supportedCiphers[0].name;
+                std::string unsupportedCipher = supportedCiphers[supportedCiphers.size() - 1].name;
                 config = getConfig();
                 config.getNetworkConfig().getSSLConfig().setEnabled(true).addVerifyFile(getCAFilePath()).
                         setCipherList(std::string("HIGH:!") + unsupportedCipher);
 
                 std::vector<internal::socket::SSLSocket::CipherInfo> newCiphers = getCiphers(config);
 
-                ASSERT_EQ(supportedCiphers.size() - 1, newCiphers.size());
-
                 for (std::vector<internal::socket::SSLSocket::CipherInfo>::const_iterator it = newCiphers.begin();
                      it != newCiphers.end(); ++it) {
-                    ASSERT_NE(unsupportedCipher, it->name);
+                    ASSERT_NE(unsupportedCipher, it->name) << ", expected ciphers list lis:" << supportedCiphers.size()
+                                                           << ", actual size of new ciphers:" << newCiphers.size();
                 }
+
+                ASSERT_EQ(supportedCiphers.size() - 1, newCiphers.size());
             }
             #endif
         }
