@@ -148,7 +148,6 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::~SimpleExecutorService() {
-                shutdown();
             }
 
             void SimpleExecutorService::schedule(const std::shared_ptr<util::Runnable> &command,
