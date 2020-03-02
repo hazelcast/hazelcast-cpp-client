@@ -96,6 +96,11 @@ namespace hazelcast {
                                 worker->shutdown();
                             }
 
+                for (auto &t : delayedRunners.values()) {
+                    std::static_pointer_cast<DelayedRunner>(t->getTarget())->shutdown();
+                    t->wakeup();
+                }
+
                 std::shared_ptr<util::Thread> runner;
                 while ((runner = delayedRunners.poll()).get()) {
                     std::static_pointer_cast<DelayedRunner>(runner->getTarget())->shutdown();
@@ -118,13 +123,15 @@ namespace hazelcast {
                                                     << " for a maximum of " << waitMilliseconds << " msecs.";
                                 }
 
-                                if (!worker->getThread().waitMilliseconds(waitMilliseconds)) {
+                    auto &t = worker->getThread();
+                    if (!t.waitMilliseconds(waitMilliseconds)) {
                                     logger.info() << "ExecutorService could not stop worker thread " << worker->getName()
                                                     << " in " << timeoutMilliseconds << " msecs. Will retry stopping.";
 
                                     return false;
-                                }
-                            }
+                    }
+                    t.join();
+                }
 
                 for (const std::shared_ptr<Thread> &t : delayedRunners.values()) {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
@@ -140,7 +147,8 @@ namespace hazelcast {
 
                                     return false;
                                 }
-                            }
+                                t->join();
+                }
 
                 return true;
             }

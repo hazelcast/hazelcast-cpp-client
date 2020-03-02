@@ -306,22 +306,9 @@ namespace hazelcast {
                         client, clientMessage, "", connection);
                 std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture = clientInvocation->invokeUrgent();
 
-                invocationFuture->andThen(
-                        std::shared_ptr<ExecutionCallback<protocol::ClientMessage> >(
-                                new AuthCallback(connection, asOwner, target, future, *this)));
-
-                // TODO: let this return a future and pass it to AuthCallback as in Java
-                std::thread([=] {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(connectionTimeoutMillis));
-                    if (invocationFuture->isDone()) {
-                        return;
-                    }
-                    invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
-                            "ClientConnectionManagerImpl::authenticate")
-                            << "Authentication response did not come back in " << connectionTimeoutMillis
-                            << " millis").buildShared());
-                }).detach();
-
+                auto authCallback = std::make_shared<AuthCallback>(invocationFuture, connection, asOwner, target,
+                                                                   future, *this);
+                invocationFuture->andThen(authCallback);
             }
 
             const std::shared_ptr<protocol::Principal> ClientConnectionManagerImpl::getPrincipal() {
@@ -683,27 +670,50 @@ namespace hazelcast {
                 return connectionManager.createSocketConnection(address);
             }
 
-            ClientConnectionManagerImpl::AuthCallback::AuthCallback(const std::shared_ptr<Connection> &connection,
-                                                                    bool asOwner,
-                                                                    const Address &target,
-                                                                    std::shared_ptr<AuthenticationFuture> &future,
-                                                                    ClientConnectionManagerImpl &connectionManager)
-                    : connection(connection), asOwner(asOwner), target(target), future(future),
-                      connectionManager(connectionManager) {
+            ClientConnectionManagerImpl::AuthCallback::AuthCallback(
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
+                    const std::shared_ptr<Connection> &connection,
+                    bool asOwner,
+                    const Address &target,
+                    std::shared_ptr<AuthenticationFuture> &future,
+                    ClientConnectionManagerImpl &connectionManager) : invocationFuture(invocationFuture),
+                                                                      connection(connection), asOwner(asOwner),
+                                                                      target(target), future(future),
+                                                                      connectionManager(connectionManager) {
+                scheduleTimeoutTask();
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
+                timeoutCondition.notify_one();
+                timeoutTaskFuture.get();
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
+                timeoutTaskFuture = std::async([&] {
+                    std::unique_lock<std::mutex> uniqueLock(timeoutMutex);
+                    timeoutCondition.wait_for(uniqueLock,
+                                              std::chrono::milliseconds(connectionManager.connectionTimeoutMillis));
+
+                    if (invocationFuture->isDone()) {
+                        return;
+                    }
+                    invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
+                            "ClientConnectionManagerImpl::authenticate")
+                            << "Authentication response did not come back in " << connectionManager.connectionTimeoutMillis
+                            << " millis").buildShared());
+                });
             }
 
             void ClientConnectionManagerImpl::AuthCallback::onResponse(
                     const std::shared_ptr<protocol::ClientMessage> &response) {
-/*              TODO
-                timeoutTaskFuture.cancel(true);
-*/
+                cancelTimeoutTask();
 
                 std::unique_ptr<protocol::codec::ClientAuthenticationCodec::ResponseParameters> result;
                 try {
                     result.reset(new protocol::codec::ClientAuthenticationCodec::ResponseParameters(
                             protocol::codec::ClientAuthenticationCodec::ResponseParameters::decode(*response)));
                 } catch (exception::IException &e) {
-                    onFailure(std::shared_ptr<exception::IException>(e.clone()));
+                    handleAuthenticationException(std::shared_ptr<exception::IException>(e.clone()));
                     return;
                 }
                 protocol::AuthenticationStatus authenticationStatus = (protocol::AuthenticationStatus) result->status;
@@ -738,11 +748,11 @@ namespace hazelcast {
                                     "ConnectionManager::AuthCallback::onResponse",
                                     "Invalid credentials! No principal."));
                         }
-                        onFailure(exception);
+                        handleAuthenticationException(exception);
                         break;
                     }
                     default: {
-                        onFailure((exception::ExceptionBuilder<exception::AuthenticationException>(
+                        handleAuthenticationException((exception::ExceptionBuilder<exception::AuthenticationException>(
                                 "ConnectionManager::AuthCallback::onResponse")
                                 << "Authentication status code not supported. status: "
                                 << authenticationStatus).buildShared());
@@ -752,11 +762,15 @@ namespace hazelcast {
 
             void
             ClientConnectionManagerImpl::AuthCallback::onFailure(const std::shared_ptr<exception::IException> &e) {
-/*
-                timeoutTaskFuture.cancel(true);
-*/
-                onAuthenticationFailed(target, connection, e);
-                future->onFailure(e);
+                cancelTimeoutTask();
+
+                handleAuthenticationException(e);
+            }
+
+            void ClientConnectionManagerImpl::AuthCallback::handleAuthenticationException(
+                    const std::shared_ptr<exception::IException> &e) {
+                this->onAuthenticationFailed(this->target, this->connection, e);
+                this->future->onFailure(e);
             }
 
             void ClientConnectionManagerImpl::AuthCallback::onAuthenticationFailed(const Address &target,

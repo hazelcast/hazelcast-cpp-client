@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <memory>
 #include <random>
+#include <future>
 
 #include "hazelcast/client/serialization/pimpl/SerializationService.h"
 #include "hazelcast/util/BlockingConcurrentQueue.h"
@@ -220,7 +221,8 @@ namespace hazelcast {
 
                 class AuthCallback : public ExecutionCallback<protocol::ClientMessage> {
                 public:
-                    AuthCallback(const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
+                    AuthCallback(std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture,
+                                 const std::shared_ptr<Connection> &connection, bool asOwner, const Address &target,
                                  std::shared_ptr<AuthenticationFuture> &future,
                                  ClientConnectionManagerImpl &connectionManager);
 
@@ -229,14 +231,24 @@ namespace hazelcast {
                     virtual void onFailure(const std::shared_ptr<exception::IException> &e);
 
                 private:
+                    std::shared_ptr<spi::impl::ClientInvocationFuture> invocationFuture;
                     const std::shared_ptr<Connection> connection;
                     bool asOwner;
                     Address target;
                     std::shared_ptr<AuthenticationFuture> future;
                     ClientConnectionManagerImpl &connectionManager;
+                    std::future<void> timeoutTaskFuture;
+                    std::mutex timeoutMutex;
+                    std::condition_variable timeoutCondition;
 
                     void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
                                                 const std::shared_ptr<exception::IException> &cause);
+
+                    virtual void handleAuthenticationException(const std::shared_ptr<exception::IException> &e);
+
+                    void cancelTimeoutTask();
+
+                    void scheduleTimeoutTask();
                 };
 
                 class DisconnecFromClusterTask : public util::Runnable {
