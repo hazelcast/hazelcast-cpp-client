@@ -30,18 +30,6 @@ namespace hazelcast {
                                                          int32_t maximumQueueCapacity)
                     : logger(logger), threadNamePrefix(threadNamePrefix), threadCount(threadCount), live(true),
                       threadIdGenerator(0), workers(threadCount), maximumQueueCapacity(maximumQueueCapacity) {
-                startWorkers();
-            }
-
-            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
-                                                         int threadCount)
-                    : logger(logger), threadNamePrefix(threadNamePrefix), threadCount(threadCount), live(true),
-                      threadIdGenerator(0), workers(threadCount),
-                      maximumQueueCapacity(DEFAULT_EXECUTOR_QUEUE_CAPACITY) {
-                startWorkers();
-            }
-
-            void SimpleExecutorService::startWorkers() {
                 // `maximumQueueCapacity` is the given max capacity for this executor. Each worker in this executor should consume
                 // only a portion of that capacity. Otherwise we will have `threadCount * maximumQueueCapacity` instead of
                 // `maximumQueueCapacity`.
@@ -49,6 +37,16 @@ namespace hazelcast {
                         (double) 1.0 * maximumQueueCapacity / threadCount));
                 for (int i = 0; i < threadCount; i++) {
                     workers[i].reset(new Worker(*this, perThreadMaxQueueCapacity));
+                }
+            }
+
+            SimpleExecutorService::SimpleExecutorService(ILogger &logger, const std::string &threadNamePrefix,
+                                                         int threadCount)
+                    : SimpleExecutorService::SimpleExecutorService(logger, threadNamePrefix, threadCount,
+                                                                   DEFAULT_EXECUTOR_QUEUE_CAPACITY) {}
+
+            void SimpleExecutorService::start() {
+                for (int i = 0; i < threadCount; i++) {
                     workers[i]->start();
                 }
 
@@ -298,11 +296,6 @@ namespace hazelcast {
                 startTimeMillis = util::currentTimeMillis() + initialDelayInMillis;
             }
 
-        }
-
-        std::shared_ptr<ExecutorService> Executors::newSingleThreadExecutor(const std::string &name,
-                util::ILogger &logger) {
-            return std::shared_ptr<ExecutorService>(new impl::SimpleExecutorService(logger, name, 1));
         }
 
         Executor::~Executor() {

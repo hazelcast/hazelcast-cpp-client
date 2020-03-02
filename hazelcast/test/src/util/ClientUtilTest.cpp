@@ -226,6 +226,7 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
+                executorService.start();
                 future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -241,7 +242,7 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
-
+                executorService.start();
                 std::shared_ptr<int> value(new int(5));
                 future.set_value(value);
                 future.andThen(std::shared_ptr<ExecutionCallback<int> >(
@@ -255,6 +256,7 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
+                executorService.start();
                 future.andThen(std::shared_ptr<ExecutionCallback<int> >(
                         new LatchExecutionCallback(successLatch, failLatch)), executorService);
 
@@ -270,7 +272,7 @@ namespace hazelcast {
                 util::CountDownLatch successLatch(1);
                 util::CountDownLatch failLatch(1);
                 util::impl::SimpleExecutorService executorService(getLogger(), "testFutureAndThen", 3);
-
+                executorService.start();
                 future.set_exception(std::unique_ptr<client::exception::IException>(
                         new exception::IOException("exceptionName", "details")));
                 future.andThen(std::shared_ptr<ExecutionCallback<int> >(

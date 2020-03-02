@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <memory>
+
 #include <hazelcast/client/executor/impl/ExecutorServiceProxyFactory.h>
 #include "hazelcast/client/crdt/pncounter/impl/PNCounterProxyFactory.h"
 #include "hazelcast/client/proxy/ClientPNCounterProxy.h"
@@ -54,22 +56,12 @@ namespace hazelcast {
             std::atomic<int32_t> HazelcastClientInstanceImpl::CLIENT_ID(0);
 
             HazelcastClientInstanceImpl::HazelcastClientInstanceImpl(const ClientConfig &config)
-                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()),
+                    : clientConfig(config), clientProperties(const_cast<ClientConfig &>(config).getProperties()), clientContext(*this),
                       serializationService(clientConfig.getSerializationConfig()), clusterService(clientContext),
                       transactionManager(clientContext, *clientConfig.getLoadBalancer()), cluster(clusterService),
                       lifecycleService(clientContext, clientConfig.getLifecycleListeners(),
                                        clientConfig.getLoadBalancer(), cluster), proxyManager(clientContext),
                       id(++CLIENT_ID), TOPIC_RB_PREFIX("_hz_rb_") {
-            }
-
-            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
-                lifecycleService.shutdown();
-            }
-
-
-            void HazelcastClientInstanceImpl::start() {
-                clientContext.setClientImplementation(shared_from_this());
-
                 const std::shared_ptr<std::string> &name = clientConfig.getInstanceName();
                 if (name.get() != NULL) {
                     instanceName = *name;
@@ -79,7 +71,8 @@ namespace hazelcast {
                     instanceName = out.str();
                 }
 
-                startLogger();
+                logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
+                                               clientConfig.getLoggerConfig()));
 
                 initalizeNearCacheManager();
 
@@ -96,10 +89,9 @@ namespace hazelcast {
 
                 std::vector<std::shared_ptr<connection::AddressProvider> > addressProviders = createAddressProviders();
 
-
                 connectionManager = initConnectionManagerService(addressProviders);
 
-                partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext));
+                partitionService.reset(new spi::impl::ClientPartitionServiceImpl(clientContext, *executionService));
 
                 invocationService = initInvocationService();
                 listenerService = initListenerService();
@@ -109,26 +101,40 @@ namespace hazelcast {
                 lockReferenceIdGenerator.reset(new impl::ClientLockReferenceIdGenerator());
 
                 statistics.reset(new statistics::Statistics(clientContext));
+            }
+
+            HazelcastClientInstanceImpl::~HazelcastClientInstanceImpl() {
+            }
+
+            void HazelcastClientInstanceImpl::start() {
+                startLogger();
 
                 lifecycleService.fireLifecycleEvent(LifecycleEvent::STARTING);
 
                 try {
                     if (!lifecycleService.start()) {
+                        try {
+                            lifecycleService.shutdown();
+                        } catch (exception::IException &) {
+                            // ignore
+                        }
                         throw exception::IllegalStateException("HazelcastClient",
                                                                "HazelcastClient could not be started!");
                     }
                 } catch (exception::IException &) {
-                    lifecycleService.shutdown();
+                    try {
+                        lifecycleService.shutdown();
+                    } catch (exception::IException &) {
+                        // ignore
+                    }
                     throw;
                 }
-                mixedTypeSupportAdaptor.reset(new mixedtype::impl::HazelcastClientImpl(*this));
+
+                mixedTypeSupportAdaptor = std::make_unique<mixedtype::impl::HazelcastClientImpl>(*this);
             }
 
             void HazelcastClientInstanceImpl::startLogger() {
                 try {
-                    logger.reset(new util::ILogger(instanceName, clientConfig.getGroupConfig().getName(), HAZELCAST_VERSION,
-                                                   clientConfig.getLoggerConfig()));
-
                     if (!logger->start()) {
                         throw (exception::ExceptionBuilder<exception::IllegalStateException>(
                                 "HazelcastClientInstanceImpl::initLogger")

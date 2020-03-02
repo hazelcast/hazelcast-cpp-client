@@ -122,14 +122,17 @@ namespace hazelcast {
                     };
 
                     TEST_F(ExecutorTest, testSingleThreadSequentialExecution) {
-                        std::shared_ptr<ExecutorService> singleThreadExecutor = Executors::newSingleThreadExecutor(
-                                "testGetPossibleSocketAddresses", getLogger());
+                        hazelcast::util::impl::SimpleExecutorService singleThreadExecutor(getLogger(),
+                                                                                          "testGetPossibleSocketAddresses",
+                                                                                          1);
+
+                        singleThreadExecutor.start();
 
                         int numThreads = 10;
                         CountDownLatch latch(numThreads);
 
                         for (int i = 0; i < numThreads; ++i) {
-                            singleThreadExecutor->execute(
+                            singleThreadExecutor.execute(
                                     std::shared_ptr<Runnable>(new SequentialLatchDecrementer(latch, i, numThreads)));
                         }
 

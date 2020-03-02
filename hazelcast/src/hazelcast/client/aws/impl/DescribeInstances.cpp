@@ -114,7 +114,7 @@ namespace hazelcast {
                         awsConfig.setIamRole(roleName);
                     } catch (exception::IOException &e) {
                         throw exception::InvalidConfigurationException("tryGetDefaultIamRole",
-                                                                       std::string("Invalid Aws Configuration") +
+                                                                       std::string("Invalid Aws Configuration. ") +
                                                                        e.what());
                     }
                 }

@@ -48,6 +48,8 @@ namespace hazelcast {
 
                     void execute(const std::shared_ptr<util::Runnable> &command);
 
+                    void start();
+
                     void shutdown();
 
                     static void

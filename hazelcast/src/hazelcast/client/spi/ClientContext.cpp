@@ -27,118 +27,99 @@
 namespace hazelcast {
     namespace client {
         namespace spi {
-            ClientContext::ClientContext() {}
 
             ClientContext::ClientContext(const client::HazelcastClient &hazelcastClient) : hazelcastClient(
-                    hazelcastClient.clientImpl) {
+                    *hazelcastClient.clientImpl) {
             }
 
-            ClientContext::ClientContext(
-                    const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &hazelcastClient)
+            ClientContext::ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient)
                     : hazelcastClient(hazelcastClient) {
             }
 
             serialization::pimpl::SerializationService &ClientContext::getSerializationService() {
-                return getHazelcastClientImplementationChecked()->serializationService;
+                return hazelcastClient.serializationService;
             }
 
             ClientClusterService &ClientContext::getClientClusterService() {
-                return getHazelcastClientImplementationChecked()->clusterService;
+                return hazelcastClient.clusterService;
             }
 
             ClientInvocationService &ClientContext::getInvocationService() {
-                return *getHazelcastClientImplementationChecked()->invocationService;
+                return *hazelcastClient.invocationService;
             }
 
             ClientConfig &ClientContext::getClientConfig() {
-                return getHazelcastClientImplementationChecked()->clientConfig;
+                return hazelcastClient.clientConfig;
             }
 
             ClientPartitionService &ClientContext::getPartitionService() {
-                return *getHazelcastClientImplementationChecked()->partitionService;
+                return *hazelcastClient.partitionService;
             }
 
             LifecycleService &ClientContext::getLifecycleService() {
-                return getHazelcastClientImplementationChecked()->lifecycleService;
+                return hazelcastClient.lifecycleService;
             }
 
             ClientListenerService &ClientContext::getClientListenerService() {
-                return *getHazelcastClientImplementationChecked()->listenerService;
+                return *hazelcastClient.listenerService;
             }
 
             connection::ClientConnectionManagerImpl &ClientContext::getConnectionManager() {
-                return *getHazelcastClientImplementationChecked()->connectionManager;
+                return *hazelcastClient.connectionManager;
             }
 
             internal::nearcache::NearCacheManager &ClientContext::getNearCacheManager() {
-                return *getHazelcastClientImplementationChecked()->nearCacheManager;
+                return *hazelcastClient.nearCacheManager;
             }
 
             ClientProperties &ClientContext::getClientProperties() {
-                return getHazelcastClientImplementationChecked()->clientProperties;
+                return hazelcastClient.clientProperties;
             }
 
             Cluster &ClientContext::getCluster() {
-                return getHazelcastClientImplementationChecked()->cluster;
+                return hazelcastClient.cluster;
             }
 
             std::shared_ptr<impl::sequence::CallIdSequence> &ClientContext::getCallIdSequence() const {
-                return getHazelcastClientImplementationChecked()->callIdSequence;
+                return hazelcastClient.callIdSequence;
             }
 
             const protocol::ClientExceptionFactory &ClientContext::getClientExceptionFactory() const {
-                return getHazelcastClientImplementationChecked()->getExceptionFactory();
+                return hazelcastClient.getExceptionFactory();
             }
 
             const std::string &ClientContext::getName() const {
-                return getHazelcastClientImplementationChecked()->getName();
+                return hazelcastClient.getName();
             }
 
             impl::ClientExecutionServiceImpl &ClientContext::getClientExecutionService() const {
-                return *getHazelcastClientImplementationChecked()->executionService;
+                return *hazelcastClient.executionService;
             }
 
             void ClientContext::onClusterConnect(const std::shared_ptr<connection::Connection> &ownerConnection) {
-                getHazelcastClientImplementationChecked()->onClusterConnect(ownerConnection);
+                hazelcastClient.onClusterConnect(ownerConnection);
             }
 
             const std::shared_ptr<client::impl::ClientLockReferenceIdGenerator> &
             ClientContext::getLockReferenceIdGenerator() {
-                return getHazelcastClientImplementationChecked()->getLockReferenceIdGenerator();
+                return hazelcastClient.getLockReferenceIdGenerator();
             }
 
-            std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
-            ClientContext::getHazelcastClientImplementation() {
-                return hazelcastClient.lock();
-            }
-
-            void ClientContext::setClientImplementation(
-                    const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &clientImpl) {
-                hazelcastClient = clientImpl;
+            std::shared_ptr<client::impl::HazelcastClientInstanceImpl> ClientContext::getHazelcastClientImplementation() {
+                return hazelcastClient.shared_from_this();
             }
 
             spi::ProxyManager &ClientContext::getProxyManager() {
-                return getHazelcastClientImplementationChecked()->getProxyManager();
+                return hazelcastClient.getProxyManager();
             }
 
             util::ILogger &ClientContext::getLogger() {
-                return *getHazelcastClientImplementationChecked()->logger;
+                return *hazelcastClient.logger;
             }
 
             client::impl::statistics::Statistics &ClientContext::getClientstatistics() {
-                return *getHazelcastClientImplementationChecked()->statistics;
+                return *hazelcastClient.statistics;
             }
-
-            std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
-            ClientContext::getHazelcastClientImplementationChecked() const {
-                auto client = hazelcastClient.lock();
-                if (!client) {
-                    throw exception::IllegalStateException("ClientContext::getHazelcastClientImplementationChecked",
-                                                           "Client is already shutdown and destructed.");
-                }
-                return client;
-            }
-
         }
 
     }

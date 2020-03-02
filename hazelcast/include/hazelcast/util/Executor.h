@@ -33,6 +33,11 @@ namespace hazelcast {
         class HAZELCAST_API ExecutorService : public Executor {
         public:
             /**
+             * Does the initial active start action (e.g. if needed starts the threads)
+             */
+            virtual void start() = 0;
+
+            /**
              * Initiates an orderly shutdown in which previously submitted
              * tasks are executed, but no new tasks will be accepted.
              * Invocation has no additional effect if already shut down.

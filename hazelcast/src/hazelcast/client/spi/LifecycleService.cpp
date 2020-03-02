@@ -50,6 +50,10 @@ namespace hazelcast {
 
                 fireLifecycleEvent(LifecycleEvent::STARTED);
 
+                clientContext.getClientExecutionService().start();
+
+                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
+
                 if (!((impl::AbstractClientInvocationService &) clientContext.getInvocationService()).start()) {
                     return false;
                 }
@@ -61,8 +65,6 @@ namespace hazelcast {
                 }
 
                 loadBalancer->init(cluster);
-
-                ((spi::impl::listener::AbstractClientListenerService &) clientContext.getClientListenerService()).start();
 
                 ((spi::impl::ClientPartitionServiceImpl &) clientContext.getPartitionService()).start();
 

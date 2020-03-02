@@ -137,6 +137,8 @@ namespace hazelcast {
                     }
 
                     void AbstractClientListenerService::start() {
+                        registrationExecutor.start();
+                        eventExecutor.start();
                         clientConnectionManager.addConnectionListener(shared_from_this());
                     }
 

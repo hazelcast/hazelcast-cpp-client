@@ -86,7 +86,8 @@ namespace hazelcast {
 
                 connectionStrategy = initializeStrategy(client);
 
-                clusterConnectionExecutor = createSingleThreadExecutorService(client);
+                clusterConnectionExecutor.reset(
+                        new util::impl::SimpleExecutorService(logger, client.getName() + ".cluster-", 1));
 
                 ClientProperties &clientProperties = client.getClientProperties();
                 shuffleMemberList = clientProperties.getBoolean(clientProperties.getShuffleMemberList());
@@ -113,6 +114,8 @@ namespace hazelcast {
                     return true;
                 }
                 alive.store(true);
+
+                clusterConnectionExecutor->start();
 
                 if (!socketFactory.start()) {
                     return false;
@@ -459,12 +462,6 @@ namespace hazelcast {
                 clusterConnectionExecutor->execute(
                         std::shared_ptr<util::Runnable>(
                                 new DisconnecFromClusterTask(connection, *this, *connectionStrategy)));
-            }
-
-            std::shared_ptr<util::impl::SimpleExecutorService>
-            ClientConnectionManagerImpl::createSingleThreadExecutorService(spi::ClientContext &client) {
-                return std::static_pointer_cast<util::impl::SimpleExecutorService>(
-                        util::Executors::newSingleThreadExecutor(client.getName() + ".cluster-", logger));
             }
 
             void

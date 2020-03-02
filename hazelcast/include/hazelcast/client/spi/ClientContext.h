@@ -99,11 +99,10 @@ namespace hazelcast {
 
             class HAZELCAST_API ClientContext {
             public:
-                ClientContext();
-
+                // This constructor is used from tests
                 ClientContext(const client::HazelcastClient &hazelcastClient);
 
-                ClientContext(const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &hazelcastClient);
+                ClientContext(client::impl::HazelcastClientInstanceImpl &hazelcastClient);
 
                 serialization::pimpl::SerializationService &getSerializationService();
 
@@ -141,20 +140,13 @@ namespace hazelcast {
 
                 std::shared_ptr<client::impl::HazelcastClientInstanceImpl> getHazelcastClientImplementation();
 
-                void
-                setClientImplementation(const std::shared_ptr<client::impl::HazelcastClientInstanceImpl> &clientImpl);
-
                 spi::ProxyManager &getProxyManager();
 
                 util::ILogger &getLogger();
 
                 client::impl::statistics::Statistics &getClientstatistics();
-
             private:
-                std::shared_ptr<client::impl::HazelcastClientInstanceImpl>
-                getHazelcastClientImplementationChecked() const;
-
-                std::weak_ptr<client::impl::HazelcastClientInstanceImpl> hazelcastClient;
+                client::impl::HazelcastClientInstanceImpl &hazelcastClient;
             };
         }
     }

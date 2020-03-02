@@ -62,6 +62,11 @@ namespace hazelcast {
                     internalExecutor->execute(command);
                 }
 
+                void ClientExecutionServiceImpl::start() {
+                    userExecutor->start();
+                    internalExecutor->start();
+                }
+
                 void ClientExecutionServiceImpl::shutdown() {
                     shutdownExecutor("user", *userExecutor, logger);
                     shutdownExecutor("internal", *internalExecutor, logger);

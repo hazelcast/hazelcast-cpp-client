@@ -184,9 +184,6 @@ namespace hazelcast {
 
                 void disconnectFromCluster(const std::shared_ptr<Connection> &connection);
 
-                std::shared_ptr<util::impl::SimpleExecutorService>
-                createSingleThreadExecutorService(spi::ClientContext &client);
-
                 void fireConnectionEvent(const hazelcast::client::LifecycleEvent::LifeCycleState &state);
 
                 void connectToClusterInternal();

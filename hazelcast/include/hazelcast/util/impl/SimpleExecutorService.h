@@ -86,6 +86,8 @@ namespace hazelcast {
                 scheduleAtFixedRate(const std::shared_ptr<util::Runnable> &command, int64_t initialDelayInMillis,
                                     int64_t periodInMillis);
 
+                void start() ;
+
                 /**
                  * Shuts down this Executor.
                  * <p>
@@ -193,8 +195,6 @@ namespace hazelcast {
 
                 virtual std::shared_ptr<Worker> getWorker(const std::shared_ptr<Runnable> &runnable);
 
-                void startWorkers() ;
-
                 util::ILogger &logger;
                 const std::string threadNamePrefix;
                 int threadCount;
@@ -206,12 +206,6 @@ namespace hazelcast {
             };
 
         }
-
-        class HAZELCAST_API Executors {
-        public:
-            static std::shared_ptr<ExecutorService> newSingleThreadExecutor(const std::string &name,
-                    util::ILogger &logger);
-        };
 
     }
 }

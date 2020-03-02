@@ -52,9 +52,10 @@ namespace hazelcast {
                     }
                 }
 
-                ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client)
+                ClientPartitionServiceImpl::ClientPartitionServiceImpl(ClientContext &client,
+                                                                       hazelcast::client::spi::impl::ClientExecutionServiceImpl &executionService)
                         : client(client), logger(client.getLogger()),
-                          clientExecutionService(client.getClientExecutionService()),
+                          clientExecutionService(executionService),
                           refreshTaskCallback(new RefreshTaskCallback(*this)), partitionCount(0),
                           lastPartitionStateVersion(0) {
                 }

@@ -48,11 +48,14 @@ namespace hazelcast {
             class ClientExecutionService;
 
             namespace impl {
+                class ClientExecutionServiceImpl;
+
                 class HAZELCAST_API ClientPartitionServiceImpl : public ClientPartitionService,
                                                                  public std::enable_shared_from_this<ClientPartitionServiceImpl>,
                                                                  public protocol::codec::ClientAddPartitionListenerCodec::AbstractEventHandler {
                 public:
-                    ClientPartitionServiceImpl(ClientContext &client);
+                    ClientPartitionServiceImpl(ClientContext &client,
+                                               hazelcast::client::spi::impl::ClientExecutionServiceImpl &executionService);
 
                     void start();
 
