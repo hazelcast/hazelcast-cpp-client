@@ -119,8 +119,8 @@ namespace hazelcast {
                                 }
 
                                 if (!worker->getThread().waitMilliseconds(waitMilliseconds)) {
-                                    logger.warning() << "ExecutorService could not stop worker thread " << worker->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs.";
+                                    logger.info() << "ExecutorService could not stop worker thread " << worker->getName()
+                                                    << " in " << timeoutMilliseconds << " msecs. Will retry stopping.";
 
                                     return false;
                                 }
@@ -135,8 +135,8 @@ namespace hazelcast {
                                 }
 
                                 if (!t->waitMilliseconds(waitMilliseconds)) {
-                                    logger.warning() << "ExecutorService could not stop delayed runner thread " << t->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs.";
+                                    logger.info() << "ExecutorService could not stop delayed runner thread " << t->getName()
+                                                    << " in " << timeoutMilliseconds << " msecs. Will retry stopping.";
 
                                     return false;
                                 }
@@ -146,6 +146,12 @@ namespace hazelcast {
             }
 
             SimpleExecutorService::~SimpleExecutorService() {
+                bool expected = true;
+                if (!live.compare_exchange_weak(expected, false)) {
+                    return;
+                }
+
+                shutdown();
             }
 
             void SimpleExecutorService::schedule(const std::shared_ptr<util::Runnable> &command,

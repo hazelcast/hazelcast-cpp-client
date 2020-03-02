@@ -81,7 +81,8 @@ namespace hazelcast {
                         // Wait indefinitely until the threads gracefully shutdown an log the problem periodically.
                         while (!success) {
                             int64_t waitTimeMillis = 100;
-                            while (!success && util::currentTimeMillis() - startTimeMilliseconds <
+                            auto intervalStartTimeMillis = util::currentTimeMillis();
+                            while (!success && util::currentTimeMillis() - intervalStartTimeMillis <
                                                1000 * SHUTDOWN_CHECK_INTERVAL_SECONDS) {
                                 executor.shutdown();
                                 auto &executorService = static_cast<util::impl::SimpleExecutorService &>(executor);
