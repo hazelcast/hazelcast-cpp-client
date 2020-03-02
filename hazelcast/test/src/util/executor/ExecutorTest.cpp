@@ -145,6 +145,8 @@ namespace hazelcast {
                                                                                      "testMultiThreadExecution",
                                                                                      numThreads);
 
+                        executorService.start();
+
                         CountDownLatch latch(numThreads);
 
                         for (int i = 0; i < numThreads; ++i) {
@@ -161,6 +163,8 @@ namespace hazelcast {
                         hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                      "testRejectExecuteAfterShutdown",
                                                                                      numThreads);
+                        executorService.start();
+
                         executorService.shutdown();
                         CountDownLatch latch(numThreads);
                         ASSERT_THROW(executorService.execute(std::shared_ptr<Runnable>(new LatchDecrementer(latch))),
@@ -177,6 +181,7 @@ namespace hazelcast {
                                                                                      "testExecutorSubmit",
                                                                                      numThreads);
 
+                        executorService.start();
 
                         std::vector<std::shared_ptr<Future<int> > > futures;
                         for (int i = 0; i < numJobs; ++i) {
@@ -195,6 +200,8 @@ namespace hazelcast {
                         hazelcast::util::impl::SimpleExecutorService executorService(getLogger(),
                                                                                       "testMultiThreadExecution",
                                                                                       numThreads);
+
+                        executorService.start();
 
                         CountDownLatch latch(1);
                         std::atomic<int64_t> threadId(0);
