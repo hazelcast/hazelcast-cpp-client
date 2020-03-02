@@ -211,6 +211,7 @@ namespace hazelcast {
                     HMAC_CTX *hmac = HMAC_CTX_new();
                     #else
                     HMAC_CTX *hmac = new HMAC_CTX;
+                    HMAC_CTX_init(hmac);
                     #endif
 
                     HMAC_Init_ex(hmac, keyBuffer, keyLen, EVP_sha256(), NULL);
