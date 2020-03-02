@@ -27,6 +27,9 @@
 
 namespace hazelcast {
     namespace client {
+        namespace impl {
+            class HazelcastClientInstanceImpl;
+        }
         namespace connection {
 
             /**
@@ -54,28 +57,16 @@ namespace hazelcast {
 
                 virtual void shutdown();
 
+                static void
+                shutdownWithExternalThread(std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl);
+
             private:
-                class ShutdownTask : public util::Runnable {
-                public:
-                    ShutdownTask(spi::ClientContext &clientContext);
-
-                    virtual void run();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    spi::ClientContext &clientContext;
-                };
-
                 util::AtomicBoolean disconnectedFromCluster;
                 bool clientStartAsync;
                 config::ClientConnectionStrategyConfig::ReconnectMode reconnectMode;
-                // This queue is used for avoiding memory leak
-                util::SynchronizedQueue<util::Thread> shutdownThreads;
 
                 bool isClusterAvailable() const;
 
-                void shutdownWithExternalThread();
             };
         }
     }

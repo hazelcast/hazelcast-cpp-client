@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#include <thread>
+
 #include "hazelcast/client/connection/DefaultClientConnectionStrategy.h"
 #include "hazelcast/client/spi/ClientContext.h"
 #include "hazelcast/client/connection/ClientConnectionManagerImpl.h"
@@ -21,6 +23,7 @@
 #include "hazelcast/client/spi/LifecycleService.h"
 #include "hazelcast/client/connection/Connection.h"
 #include "hazelcast/util/Executor.h"
+#include "hazelcast/client/impl/HazelcastClientInstanceImpl.h"
 
 namespace hazelcast {
     namespace client {
@@ -73,14 +76,14 @@ namespace hazelcast {
             void DefaultClientConnectionStrategy::onDisconnectFromCluster() {
                 disconnectedFromCluster.store(true);
                 if (reconnectMode == config::ClientConnectionStrategyConfig::OFF) {
-                    shutdownWithExternalThread();
+                    shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
                     return;
                 }
                 if (clientContext.getLifecycleService().isRunning()) {
                     try {
                         clientContext.getConnectionManager().connectToClusterAsync();
                     } catch (exception::RejectedExecutionException &) {
-                        shutdownWithExternalThread();
+                        shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
                     }
                 }
             }
@@ -98,26 +101,26 @@ namespace hazelcast {
                 return clientContext.getConnectionManager().getOwnerConnectionAddress().get() != NULL;
             }
 
-            void DefaultClientConnectionStrategy::shutdownWithExternalThread() {
-                std::shared_ptr<util::Thread> shutdownThread(
-                        new util::Thread(std::shared_ptr<util::Runnable>(new ShutdownTask(clientContext)),logger));
-                shutdownThread->start();
-                shutdownThreads.offer(shutdownThread);
-            }
+            void
+            DefaultClientConnectionStrategy::shutdownWithExternalThread(
+                    std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl) {
 
-            DefaultClientConnectionStrategy::ShutdownTask::ShutdownTask(spi::ClientContext &clientContext)
-                    : clientContext(clientContext) {}
+                std::thread shutdownThread([=] {
+                    std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
+                    if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
+                        return;
+                    }
 
-            void DefaultClientConnectionStrategy::ShutdownTask::run() {
-                try {
-                    clientContext.getLifecycleService().shutdown();
-                } catch (exception::IException &exception) {
-                    clientContext.getLogger().severe() << "Exception during client shutdown " << exception;
-                }
-            }
+                    try {
+                        clientInstance->getLifecycleService().shutdown();
+                    } catch (exception::IException &exception) {
+                        clientInstance->getLogger()->severe() << "Exception during client shutdown task "
+                                                              << clientInstance->getName() + ".clientShutdown-" << ":"
+                                                              << exception;
+                    }
+                });
 
-            const std::string DefaultClientConnectionStrategy::ShutdownTask::getName() const {
-                return clientContext.getName() + ".clientShutdown-";
+                shutdownThread.detach();
             }
         }
     }

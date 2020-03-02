@@ -72,7 +72,7 @@ namespace hazelcast {
 
                         virtual const std::string getName() const;
 
-                        void interrupt();
+                        void shutdown();
 
                         void start();
 

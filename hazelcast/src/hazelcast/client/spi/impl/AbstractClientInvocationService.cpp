@@ -60,7 +60,7 @@ namespace hazelcast {
                 void AbstractClientInvocationService::shutdown() {
                     isShutdown.store(true);
 
-                    responseThread.interrupt();
+                    responseThread.shutdown();
 
                     typedef std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation> > > InvocationEntriesVector;
                     InvocationEntriesVector allEntries = invocations.clear();
@@ -246,8 +246,12 @@ namespace hazelcast {
                     }
                 }
 
-                void AbstractClientInvocationService::ResponseThread::interrupt() {
-                    responseQueue.interrupt();
+                void AbstractClientInvocationService::ResponseThread::shutdown() {
+                    do {
+                        responseQueue.interrupt();
+                    } while (!worker.waitMilliseconds(100));
+
+                    worker.join();
                 }
 
                 void AbstractClientInvocationService::ResponseThread::start() {

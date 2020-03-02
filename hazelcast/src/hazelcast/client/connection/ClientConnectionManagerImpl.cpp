@@ -812,12 +812,8 @@ namespace hazelcast {
                             << "Could not connect to cluster, shutting down the client. "
                             << e.getMessage();
 
-                    std::shared_ptr<ShutdownTask> task(
-                            new ShutdownTask(clientContext.getHazelcastClientImplementation()));
-                    std::shared_ptr<util::Thread> shutdownThread(new util::Thread(task, clientContext.getLogger()));
-                    shutdownThread->start();
-                    clientContext.getConnectionManager().shutdownThreads.offer(shutdownThread);
-
+                    static_cast<DefaultClientConnectionStrategy &>(*connectionManager.connectionStrategy).shutdownWithExternalThread(
+                            clientContext.getHazelcastClientImplementation());
                     throw;
                 } catch (...) {
                     throw;
@@ -826,34 +822,6 @@ namespace hazelcast {
 
             const std::string ClientConnectionManagerImpl::ConnectToClusterTask::getName() const {
                 return "ClientConnectionManagerImpl::ConnectToClusterTask";
-            }
-
-            ClientConnectionManagerImpl::ShutdownTask::ShutdownTask(
-                    std::weak_ptr<client::impl::HazelcastClientInstanceImpl> &&client) : clientImpl(client) {
-            }
-
-            void ClientConnectionManagerImpl::ShutdownTask::run() {
-                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
-                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
-                    return;
-                }
-
-                try {
-                    clientInstance->getLifecycleService().shutdown();
-                } catch (exception::IException &exception) {
-                    clientInstance->getLogger()->severe() << "Exception during client shutdown task "
-                                                          << clientInstance->getName() + ".clientShutdown-" << ":"
-                                                          << exception;
-                }
-            }
-
-            const std::string ClientConnectionManagerImpl::ShutdownTask::getName() const {
-                std::shared_ptr<client::impl::HazelcastClientInstanceImpl> clientInstance = clientImpl.lock();
-                if (!clientInstance.get() || !clientInstance->getLifecycleService().isRunning()) {
-                    return "ClientConnectionManagerImpl::ShutdownTask";
-                }
-
-                return clientInstance->getName();
             }
         }
     }

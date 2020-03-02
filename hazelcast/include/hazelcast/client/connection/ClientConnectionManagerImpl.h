@@ -267,19 +267,6 @@ namespace hazelcast {
                     spi::ClientContext clientContext;
                 };
 
-                class ShutdownTask : public util::Runnable {
-                public:
-                    ShutdownTask(std::weak_ptr<client::impl::HazelcastClientInstanceImpl> &&client);
-
-                    virtual void run();
-
-                    virtual const std::string getName() const;
-
-                private:
-                    // Keep weak_ptr for preventing cyclic dependency
-                    std::weak_ptr<client::impl::HazelcastClientInstanceImpl> clientImpl;
-                };
-
                 util::AtomicBoolean alive;
 
                 util::ILogger &logger;
@@ -320,9 +307,6 @@ namespace hazelcast {
 
                 util::Mutex lock;
                 std::unique_ptr<HeartbeatManager> heartbeat;
-
-                // This queue is used for avoiding memory leak
-                util::SynchronizedQueue<util::Thread> shutdownThreads;
             };
         }
     }
