@@ -46,6 +46,11 @@ namespace hazelcast {
                                                                    DEFAULT_EXECUTOR_QUEUE_CAPACITY) {}
 
             void SimpleExecutorService::start() {
+                bool expected = false;
+                if (!isStarted.compare_exchange_strong(expected, true)) {
+                    return;
+                }
+
                 for (int i = 0; i < threadCount; i++) {
                     workers[i]->start();
                 }
@@ -82,6 +87,11 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::shutdown() {
+                bool expected = true;
+                if (!isStarted.compare_exchange_strong(expected, false)) {
+                    return;
+                }
+
                 live.store(false);
 
                 size_t numberOfWorkers = workers.size();

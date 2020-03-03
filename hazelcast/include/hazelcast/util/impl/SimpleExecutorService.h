@@ -199,6 +199,7 @@ namespace hazelcast {
                 const std::string threadNamePrefix;
                 int threadCount;
                 util::AtomicBoolean live;
+                util::AtomicBoolean isStarted;
                 std::atomic<int64_t> threadIdGenerator;
                 std::vector<std::shared_ptr<Worker> > workers;
                 int32_t maximumQueueCapacity;
