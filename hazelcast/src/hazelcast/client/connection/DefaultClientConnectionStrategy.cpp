@@ -32,7 +32,8 @@ namespace hazelcast {
             DefaultClientConnectionStrategy::DefaultClientConnectionStrategy(spi::ClientContext &clientContext,
                                                                              util::ILogger &logger,
                                                                              const config::ClientConnectionStrategyConfig &clientConnectionStrategyConfig)
-                    : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig) {
+                    : ClientConnectionStrategy(clientContext, logger, clientConnectionStrategyConfig),
+                      isShutdown(false) {
             }
 
             void DefaultClientConnectionStrategy::start() {
@@ -46,6 +47,8 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::beforeGetConnection(const Address &target) {
+                checkShutdown("DefaultClientConnectionStrategy::beforeGetConnection");
+
                 if (isClusterAvailable()) {
                     return;
                 }
@@ -60,6 +63,8 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::beforeOpenConnection(const Address &target) {
+                checkShutdown("DefaultClientConnectionStrategy::beforeOpenConnection");
+
                 if (isClusterAvailable()) {
                     return;
                 }
@@ -70,10 +75,14 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::onConnectToCluster() {
+                checkShutdown("DefaultClientConnectionStrategy::onConnectToCluster");
+
                 disconnectedFromCluster.store(false);
             }
 
             void DefaultClientConnectionStrategy::onDisconnectFromCluster() {
+                checkShutdown("DefaultClientConnectionStrategy::onDisconnectFromCluster");
+
                 disconnectedFromCluster.store(true);
                 if (reconnectMode == config::ClientConnectionStrategyConfig::OFF) {
                     shutdownWithExternalThread(clientContext.getHazelcastClientImplementation());
@@ -89,12 +98,15 @@ namespace hazelcast {
             }
 
             void DefaultClientConnectionStrategy::onConnect(const std::shared_ptr<Connection> &connection) {
+                checkShutdown("DefaultClientConnectionStrategy::onConnect");
             }
 
             void DefaultClientConnectionStrategy::onDisconnect(const std::shared_ptr<Connection> &connection) {
+                checkShutdown("DefaultClientConnectionStrategy::onDisconnect");
             }
 
             void DefaultClientConnectionStrategy::shutdown() {
+                isShutdown = true;
             }
 
             bool DefaultClientConnectionStrategy::isClusterAvailable() const {
@@ -121,6 +133,12 @@ namespace hazelcast {
                 });
 
                 shutdownThread.detach();
+            }
+
+            void DefaultClientConnectionStrategy::checkShutdown(const std::string &methodName) {
+                if (isShutdown) {
+                    throw exception::IllegalStateException(methodName, "Client is shutdown.");
+                }
             }
         }
     }

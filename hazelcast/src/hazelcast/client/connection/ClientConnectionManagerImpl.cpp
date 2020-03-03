@@ -145,19 +145,32 @@ namespace hazelcast {
                 }
                 alive.store(false);
 
+                stopEventLoopGroup();
+                heartbeat->shutdown();
+
+                connectionStrategy->shutdown();
+
+                // let the waiting authentication futures not block anymore
+                for (auto &authFuture : connectionsInProgress.values()) {
+                    authFuture->onFailure(
+                            std::make_shared<exception::IllegalStateException>("ClientConnectionManagerImpl::shutdown",
+                                                                               "Client is shutting down"));
+                }
+
                 // close connections
-                for (std::shared_ptr<Connection> connection : activeConnections.values()) {
+                for (auto &connection : activeConnections.values()) {
+                    // prevent any exceptions
+                    util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
+                }
+
+                for (auto &connection : pendingSocketIdToConnection.values()) {
                     // prevent any exceptions
                     util::IOUtil::closeResource(connection.get(), "Hazelcast client is shutting down");
                 }
 
                 spi::impl::ClientExecutionServiceImpl::shutdownExecutor("cluster", *clusterConnectionExecutor, logger);
-                stopEventLoopGroup();
+
                 connectionListeners.clear();
-                heartbeat->shutdown();
-
-                connectionStrategy->shutdown();
-
                 activeConnectionsFileDescriptors.clear();
                 activeConnections.clear();
                 socketConnections.clear();

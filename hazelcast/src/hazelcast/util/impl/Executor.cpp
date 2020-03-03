@@ -224,7 +224,7 @@ namespace hazelcast {
                             executorService.logger.finest() << getName() << " is interrupted.";
                         }
                     } catch (client::exception::IException &t) {
-                        executorService.logger.warning() << getName() << " caused an exception" << t;
+                        executorService.logger.warning() << getName() << " caused an exception. " << t;
                     }
                 }
             }
@@ -233,6 +233,10 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::Worker::schedule(const std::shared_ptr<Runnable> &runnable) {
+                if (!executorService.live) {
+                    throw exception::IllegalStateException("SimpleExecutorService::Worker::schedule",
+                                                           "Executor is shudown.");
+                }
                 workQueue.push(runnable);
             }
 
@@ -252,6 +256,17 @@ namespace hazelcast {
 
             void SimpleExecutorService::Worker::shutdown() {
                 workQueue.interrupt();
+
+                // process all pending messages instead of dropping silently, the result may be needed by some other
+                // thread which may be blocked.
+                while (!workQueue.isEmpty()) {
+                    try {
+                        auto runnable = workQueue.pop();
+                        runnable->run();
+                    } catch (...) {
+                        // suppress
+                    }
+                }
             }
 
             SimpleExecutorService::Worker::Worker(SimpleExecutorService &executorService, int32_t maximumQueueCapacity)

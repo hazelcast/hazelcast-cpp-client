@@ -64,9 +64,11 @@ namespace hazelcast {
                 util::AtomicBoolean disconnectedFromCluster;
                 bool clientStartAsync;
                 config::ClientConnectionStrategyConfig::ReconnectMode reconnectMode;
+                std::atomic_bool isShutdown;
 
                 bool isClusterAvailable() const;
 
+                void checkShutdown(const std::string &methodName);
             };
         }
     }
