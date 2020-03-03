@@ -103,8 +103,8 @@ namespace hazelcast {
                 }
 
                 for (std::shared_ptr<Worker> &worker : workers) {
-                                worker->shutdown();
-                            }
+                    worker->shutdown();
+                }
 
                 for (auto &t : delayedRunners.values()) {
                     std::static_pointer_cast<DelayedRunner>(t->getTarget())->shutdown();
@@ -205,6 +205,10 @@ namespace hazelcast {
                 delayedRunners.offer(thread);
             }
 
+            const std::string &SimpleExecutorService::getThreadNamePrefix() const {
+                return threadNamePrefix;
+            }
+
             void SimpleExecutorService::Worker::run() {
                 std::shared_ptr<Runnable> task;
                 while (executorService.live) {
@@ -288,19 +292,21 @@ namespace hazelcast {
 
             void SimpleExecutorService::DelayedRunner::shutdown() {
                 live.store(false);
+                runnerThread->wakeup();
             }
 
             void SimpleExecutorService::DelayedRunner::run() {
                 bool isNotRepeating = periodInMillis < 0;
-                while (live || isNotRepeating) {
-                    if (live) {
-                        int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
-                        if (waitTimeMillis > 0) {
-                            assert(runnerThread != NULL);
-                            runnerThread->interruptibleSleepMillis(waitTimeMillis);
-                        }
+                while (live) {
+                    int64_t waitTimeMillis = startTimeMillis - util::currentTimeMillis();
+                    if (waitTimeMillis > 0) {
+                        assert(runnerThread != NULL);
+                        runnerThread->interruptibleSleepMillis(waitTimeMillis);
                     }
 
+                    if (!live) {
+                        return;
+                    }
 
                     try {
                         command->run();

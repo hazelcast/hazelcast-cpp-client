@@ -198,6 +198,7 @@ namespace hazelcast {
                     intMap.destroy();
                     imap.destroy();
                     client.getMap<std::string, std::string>(MapClientConfig::ONE_SECOND_MAP_NAME).destroy();
+                    client.getMap<Employee, int>("tradeMap").destroy();
                 }
                 
                 void fillMap() {
@@ -2270,8 +2271,7 @@ namespace hazelcast {
             }
 
             TEST_P(ClientMapTest, testListenerWithPortableKey) {
-                IMap<Employee, int> tradeMap = client.getMap<Employee, int>(
-                        "tradeMap");
+                IMap<Employee, int> tradeMap = client.getMap<Employee, int>("tradeMap");
                 util::CountDownLatch countDownLatch(1);
                 util::AtomicInt atomicInteger(0);
                 SampleEntryListenerForPortableKey listener(countDownLatch,
@@ -2281,7 +2281,7 @@ namespace hazelcast {
                 Employee key2("a", 2);
                 tradeMap.put(key2, 1);
                 tradeMap.put(key, 3);
-                ASSERT_TRUE(countDownLatch.await(5));
+                ASSERT_OPEN_EVENTUALLY(countDownLatch);
                 ASSERT_EQ(1, (int) atomicInteger);
 
                 ASSERT_TRUE(tradeMap.removeEntryListener(id));

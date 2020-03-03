@@ -101,6 +101,8 @@ namespace hazelcast {
 
                 virtual bool awaitTerminationMilliseconds(int64_t timeoutMilliseconds);
 
+                const std::string &getThreadNamePrefix() const;
+
             protected:
                 template<typename T>
                 class CallableRunnableAdaptor : public Runnable {

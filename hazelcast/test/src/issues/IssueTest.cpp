@@ -139,7 +139,7 @@ namespace hazelcast {
                 t.join();
 
                 // 9. Shut down the server
-                ASSERT_TRUE(server.shutdown());
+                ASSERT_TRUE(server2.shutdown());
             }
 
             TEST_F(IssueTest, testIssue221) {

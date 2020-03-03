@@ -29,6 +29,7 @@ namespace hazelcast {
     namespace client {
         namespace test {
             HazelcastServer::HazelcastServer(HazelcastServerFactory &factory) : factory(factory), isStarted(false),
+                                                                                isShutdown(false),
                                                                                 logger(new util::ILogger(
                                                                                         "HazelcastServer",
                                                                                         "HazelcastServer",
@@ -43,7 +44,8 @@ namespace hazelcast {
                             "HazelcastServer::start") << "Could not start logger " << logger->getInstanceName()).build();
                 }
 
-                if (isStarted) {
+                bool expected = false;
+                if (!isStarted.compare_exchange_strong(expected, true)) {
                     return true;
                 }
 
@@ -55,11 +57,17 @@ namespace hazelcast {
                     std::ostringstream out;
                     out << "Could not start new member!!! " << illegalStateException.what();
                     logger->severe(out.str());
+                    isStarted = false;
                     return false;
                 }
             }
 
             bool HazelcastServer::shutdown() {
+                bool expected = false;
+                if (!isShutdown.compare_exchange_strong(expected, true)) {
+                    return false;
+                }
+
                 if (!isStarted) {
                     return true;
                 }
@@ -73,6 +81,11 @@ namespace hazelcast {
             }
 
             bool HazelcastServer::terminate() {
+                bool expected = false;
+                if (!isShutdown.compare_exchange_strong(expected, true)) {
+                    return false;
+                }
+
                 if (!isStarted) {
                     return true;
                 }

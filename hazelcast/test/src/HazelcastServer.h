@@ -24,6 +24,8 @@
 #ifndef HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 #define HAZELCAST_CLIENT_TEST_HAZELCASTSERVER_H_
 
+#include <atomic>
+
 #include "HazelcastServerFactory.h"
 
 using namespace hazelcast::client::test::remote;
@@ -54,7 +56,8 @@ namespace hazelcast {
 
             private:
                 HazelcastServerFactory & factory;
-                bool isStarted;
+                std::atomic_bool isStarted;
+                std::atomic_bool isShutdown;
                 remote::Member member;
                 std::shared_ptr<util::ILogger> logger;
             };

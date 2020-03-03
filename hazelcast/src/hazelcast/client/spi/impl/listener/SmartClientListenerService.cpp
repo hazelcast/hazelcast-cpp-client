@@ -131,6 +131,9 @@ namespace hazelcast {
                         std::vector<Member> memberList = clientContext.getClientClusterService().getMemberList();
                         for (const Member &member : memberList) {
                                         try {
+                                            if (!clientContext.getLifecycleService().isRunning()) {
+                                                return;
+                                            }
                                             clientContext.getConnectionManager().getOrTriggerConnect(
                                                     member.getAddress());
                                         } catch (exception::IOException &) {
