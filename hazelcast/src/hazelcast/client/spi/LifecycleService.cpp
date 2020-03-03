@@ -38,7 +38,7 @@ namespace hazelcast {
             LifecycleService::LifecycleService(ClientContext &clientContext,
                                                const std::set<LifecycleListener *> &lifecycleListeners,
                                                LoadBalancer *const loadBalancer, Cluster &cluster) : clientContext(
-                    clientContext), loadBalancer(loadBalancer), cluster(cluster) {
+                    clientContext), loadBalancer(loadBalancer), cluster(cluster), shutdownCompletedLatch(1) {
                 listeners.insert(lifecycleListeners.begin(), lifecycleListeners.end());
             }
 
@@ -76,6 +76,7 @@ namespace hazelcast {
             void LifecycleService::shutdown() {
                 bool expected = true;
                 if (!active.compare_exchange_strong(expected, false)) {
+                    shutdownCompletedLatch.await();
                     return;
                 }
                 fireLifecycleEvent(LifecycleEvent::SHUTTING_DOWN);
@@ -89,6 +90,7 @@ namespace hazelcast {
                 clientContext.getNearCacheManager().destroyAllNearCaches();
                 fireLifecycleEvent(LifecycleEvent::SHUTDOWN);
                 clientContext.getSerializationService().dispose();
+                shutdownCompletedLatch.countDown();
             }
 
             void LifecycleService::addLifecycleListener(LifecycleListener *lifecycleListener) {

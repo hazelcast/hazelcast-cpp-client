@@ -110,12 +110,6 @@ namespace hazelcast {
                     std::static_pointer_cast<DelayedRunner>(t->getTarget())->shutdown();
                     t->wakeup();
                 }
-
-                std::shared_ptr<util::Thread> runner;
-                while ((runner = delayedRunners.poll()).get()) {
-                    std::static_pointer_cast<DelayedRunner>(runner->getTarget())->shutdown();
-                    runner->wakeup();
-                }
             }
 
             bool SimpleExecutorService::awaitTerminationSeconds(int timeoutSeconds) {

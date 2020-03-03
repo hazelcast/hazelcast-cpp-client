@@ -75,6 +75,7 @@ namespace hazelcast {
                 util::AtomicBoolean active;
                 LoadBalancer *loadBalancer;
                 Cluster &cluster;
+                util::CountDownLatch shutdownCompletedLatch;
             };
 
         }
