@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-#include "hazelcast/util/Mutex.h"
-#include "hazelcast/util/ConditionVariable.h"
+#include <mutex>
+#include <chrono>
+
 #include "hazelcast/util/concurrent/locks/LockSupport.h"
 
 namespace hazelcast {
@@ -28,9 +29,10 @@ namespace hazelcast {
                         return;
                     }
 
-                    Mutex lock;
-                    ConditionVariable conditionVariable;
-                    conditionVariable.waitNanos(lock, nanos);
+                    std::condition_variable conditionVariable;
+                    std::mutex mtx;
+                    std::unique_lock<std::mutex> lock(mtx);
+                    conditionVariable.wait_for(lock, std::chrono::nanoseconds(nanos));
                 }
             }
         }

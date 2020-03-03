@@ -377,8 +377,7 @@ namespace hazelcast {
             }
 
             TEST_F (ClientUtilTest, testLockSupport) {
-                // we can not set less then a millisecond since windows platform can not support less than a millisecond
-                int64_t parkDurationNanos = 1000 * 1000;
+                int64_t parkDurationNanos = 100;
                 int64_t start = util::currentTimeNanos();
                 util::concurrent::locks::LockSupport::parkNanos(parkDurationNanos);
                 int64_t end = util::currentTimeNanos();
