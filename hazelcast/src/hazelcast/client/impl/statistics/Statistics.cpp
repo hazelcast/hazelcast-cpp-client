@@ -56,17 +56,17 @@ namespace hazelcast {
 
                         int64_t defaultValue = util::IOUtil::to_value<int64_t>(
                                 clientProperties.getStatisticsPeriodSeconds().getDefaultValue());
-                        logger.warning() << "Provided client statistics "
-                                         << clientProperties.getStatisticsPeriodSeconds().getName()
-                                         << " cannot be less than or equal to 0. You provided " << periodSeconds
-                                         << " seconds as the configuration. Client will use the default value of "
-                                         << defaultValue << " instead.";
+                        logger.warning("Provided client statistics ",
+                                       clientProperties.getStatisticsPeriodSeconds().getName(),
+                                       " cannot be less than or equal to 0. You provided ", periodSeconds,
+                                       " seconds as the configuration. Client will use the default value of ",
+                                       defaultValue, " instead.");
                         periodSeconds = defaultValue;
                     }
 
                     schedulePeriodicStatisticsSendTask(periodSeconds);
 
-                    logger.info() << "Client statistics is enabled with period " << periodSeconds << " seconds.";
+                    logger.info("Client statistics is enabled with period ", periodSeconds, " seconds.");
 
                 }
 
@@ -89,10 +89,7 @@ namespace hazelcast {
                         // do not print too many logs if connected to an old version server
                         if (!isSameWithCachedOwnerAddress(currentOwnerAddress)) {
                             if (logger.isFinestEnabled()) {
-                                logger.finest() << "Client statistics cannot be sent to server "
-                                                << *currentOwnerAddress
-                                                << " since, connected owner server version is less than the minimum supported server version "
-                                                << FEATURE_SUPPORTED_SINCE_VERSION_STRING;
+                                logger.finest("Client statistics cannot be sent to server ", *currentOwnerAddress, " since, connected owner server version is less than the minimum supported server version ", FEATURE_SUPPORTED_SINCE_VERSION_STRING);
                             }
                         }
 
@@ -121,7 +118,7 @@ namespace hazelcast {
                     } catch (exception::IException &e) {
                         // suppress exception, do not print too many messages
                         if (logger.isFinestEnabled()) {
-                            logger.finest() << "Could not send stats " << e;
+                            logger.finest("Could not send stats " , e);
                         }
                     }
                 }
@@ -137,8 +134,7 @@ namespace hazelcast {
 
                     std::shared_ptr<connection::Connection> ownerConnection = statistics.getOwnerConnection();
                     if (NULL == ownerConnection.get()) {
-                        statistics.logger.finest()
-                                << "Cannot send client statistics to the server. No owner connection.";
+                        statistics.logger.finest("Cannot send client statistics to the server. No owner connection.");
                         return;
                     }
 

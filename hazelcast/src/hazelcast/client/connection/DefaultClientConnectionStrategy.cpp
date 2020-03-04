@@ -126,9 +126,9 @@ namespace hazelcast {
                     try {
                         clientInstance->getLifecycleService().shutdown();
                     } catch (exception::IException &exception) {
-                        clientInstance->getLogger()->severe() << "Exception during client shutdown task "
-                                                              << clientInstance->getName() + ".clientShutdown-" << ":"
-                                                              << exception;
+                        clientInstance->getLogger()->severe("Exception during client shutdown task ",
+                                                            clientInstance->getName() + ".clientShutdown-", ":",
+                                                            exception);
                     }
                 });
 

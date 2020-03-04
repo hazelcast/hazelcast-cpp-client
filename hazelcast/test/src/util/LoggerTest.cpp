@@ -57,7 +57,7 @@ namespace hazelcast {
             };
 
             TEST_F(LoggerTest, testPrintObject) {
-                logger.info() << "This is an info message. " << TestObject(5);
+                logger.info("This is an info message. ", TestObject(5));
 
                 const std::string &printedString = buffer.str();
                 size_t index = printedString.find("This is an info message. objectCount: 5");

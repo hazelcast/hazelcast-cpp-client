@@ -68,7 +68,7 @@ namespace hazelcast {
 
                 if (now - connection->lastReadTimeMillis() > heartbeatTimeout) {
                     if (connection->isAlive()) {
-                        logger.warning() << "Heartbeat failed over the connection: " << *connection;
+                        logger.warning("Heartbeat failed over the connection: " , *connection);
                         onHeartbeatStopped(connection, "Heartbeat timed out");
                     }
                 }

@@ -51,7 +51,7 @@ namespace hazelcast {
                     try {
                         privateToPublic = awsClient.getAddresses();
                     } catch (exception::IException &e) {
-                        logger.warning() << "Aws addresses failed to load: " << e.getMessage();
+                        logger.warning("Aws addresses failed to load: " , e.getMessage());
                     }
                 }
 

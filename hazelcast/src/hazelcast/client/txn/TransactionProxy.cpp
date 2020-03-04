@@ -131,8 +131,7 @@ namespace hazelcast {
 
                         invoke(request);
                     } catch (exception::IException &exception) {
-                        clientContext.getLogger().warning()
-                                << "Exception while rolling back the transaction. Exception:" << exception;
+                        clientContext.getLogger().warning("Exception while rolling back the transaction. Exception:" , exception);
                     }
                     state = TxnState::ROLLED_BACK;
                     TRANSACTION_EXISTS.store(false);

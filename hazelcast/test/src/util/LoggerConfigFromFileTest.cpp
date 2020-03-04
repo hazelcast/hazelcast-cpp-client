@@ -80,9 +80,7 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testFinest2) {
                 const std::string log("First finest log");
-                {
-                    testLogger->info() << log;
-                }
+                testLogger->info(log);
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
@@ -102,9 +100,7 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testInfo2) {
                 const std::string log("First info log");
-                {
-                    testLogger->info() << log;
-                }
+                testLogger->info(log);
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(1U, lines.size());
                 ASSERT_NE(std::string::npos, lines[0].find(log));
@@ -121,9 +117,8 @@ namespace hazelcast {
 
             TEST_F(LoggerConfigFromFileTest, testWarning2) {
                 const std::string log("First warning log");
-                {
-                    testLogger->warning() << log;
-                }
+                testLogger->warning(log);
+
                 std::vector<std::string> lines = getLogLines();
                 ASSERT_EQ(0U, lines.size());
             }
@@ -147,9 +142,7 @@ namespace hazelcast {
 
                 ASSERT_NE(std::string::npos, lines[2].find(firstFatalLog));
 
-                {
-                    testLogger->warning() << "This log should not be printed";
-                }
+                testLogger->warning("This log should not be printed");
 
                 lines = getLogLines();
                 ASSERT_EQ(3U, lines.size());

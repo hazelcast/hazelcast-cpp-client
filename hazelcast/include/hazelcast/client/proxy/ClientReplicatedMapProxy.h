@@ -652,8 +652,7 @@ namespace hazelcast {
                                         new ReplicatedMapAddNearCacheEventHandler(nearCache,
                                                                                   getContext().getSerializationService())));
                     } catch (exception::IException &e) {
-                        getContext().getLogger().severe()
-                                << "-----------------\nNear Cache is not initialized!\n-----------------" << e;
+                        getContext().getLogger().severe("-----------------\nNear Cache is not initialized!\n-----------------" , e);
                     }
                 }
 

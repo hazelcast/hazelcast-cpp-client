@@ -76,38 +76,6 @@ namespace hazelcast {
             return el::Loggers::reconfigureLogger(easyLogger, defaultConf) != nullptr;
         }
 
-        void ILogger::severe(const std::string &message) {
-            CLOG(FATAL, instanceName.c_str()) << message;
-        }
-
-        void ILogger::warning(const std::string &message) {
-            CLOG(WARNING, instanceName.c_str()) << message;
-        }
-
-        void ILogger::info(const std::string &message) {
-            CLOG(INFO, instanceName.c_str()) << message;
-        }
-
-        void ILogger::finest(const std::string &message) {
-            CLOG(DEBUG, instanceName.c_str()) << message;
-        }
-
-        LeveledLogger ILogger::finest() {
-            return LeveledLogger(*this, client::LoggerLevel::FINEST);
-        }
-
-        LeveledLogger ILogger::info() {
-            return LeveledLogger(*this, client::LoggerLevel::INFO);
-        }
-
-        LeveledLogger ILogger::warning() {
-            return LeveledLogger(*this, client::LoggerLevel::WARNING);
-        }
-
-        LeveledLogger ILogger::severe() {
-            return LeveledLogger(*this, client::LoggerLevel::SEVERE);
-        }
-
         bool ILogger::isEnabled(const client::LoggerLevel::Level &logLevel) const {
             return logLevel >= this->loggerConfig.getLogLevel();
         }
@@ -122,33 +90,6 @@ namespace hazelcast {
 
         const std::string &ILogger::getInstanceName() const {
             return instanceName;
-        }
-
-        LeveledLogger::LeveledLogger(ILogger &logger, client::LoggerLevel::Level logLevel) : logger(logger),
-                                                                                             requestedLogLevel(
-                                                                                                     logLevel) {
-        }
-
-        LeveledLogger::~LeveledLogger() {
-            switch (requestedLogLevel) {
-                case client::LoggerLevel::FINEST:
-                    CLOG(DEBUG, logger.instanceName.c_str()) << out.str();
-                    break;
-                case client::LoggerLevel::INFO:
-                    CLOG(INFO, logger.instanceName.c_str()) << out.str();
-                    break;
-                case client::LoggerLevel::WARNING:
-                    CLOG(WARNING, logger.instanceName.c_str()) << out.str();
-                    break;
-                case client::LoggerLevel::SEVERE:
-                    CLOG(FATAL, logger.instanceName.c_str()) << out.str();
-                    break;
-            }
-        }
-
-        LeveledLogger::LeveledLogger(const LeveledLogger &rhs) : logger(rhs.logger),
-                                                                 requestedLogLevel(rhs.requestedLogLevel) {
-            out << out.str();
         }
     }
 }

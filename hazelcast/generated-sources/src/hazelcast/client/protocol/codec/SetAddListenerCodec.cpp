@@ -88,9 +88,8 @@ namespace hazelcast {
                             break;
                         }
                         default:
-                            getLogger()->warning()
-                                    << "[SetAddListenerCodec::AbstractEventHandler::handle] Unknown message type ("
-                                    << messageType << ") received on event handler.";
+                            getLogger()->warning("[SetAddListenerCodec::AbstractEventHandler::handle] Unknown message type ("
+                                    , messageType, ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//

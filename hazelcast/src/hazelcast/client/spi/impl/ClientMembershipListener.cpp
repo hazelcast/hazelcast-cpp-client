@@ -48,7 +48,7 @@ namespace hazelcast {
                             memberRemoved(member);
                             break;
                         default:
-                            logger.warning() << "Unknown event type: " << eventType;
+                            logger.warning("Unknown event type: " , eventType);
                     }
                     partitionService.refreshPartitions();
                 }
@@ -102,7 +102,7 @@ namespace hazelcast {
 
                 void ClientMembershipListener::memberAdded(const Member &member) {
                     members.insert(member);
-                    logger.info() << membersString();
+                    logger.info(membersString());
                     MembershipEvent event(client.getCluster(), member, MembershipEvent::MEMBER_ADDED,
                                           std::vector<Member>(members.begin(), members.end()));
                     clusterService.handleMembershipEvent(event);
@@ -122,7 +122,7 @@ namespace hazelcast {
 
                 void ClientMembershipListener::memberRemoved(const Member &member) {
                     members.erase(member);
-                    logger.info() << membersString();
+                    logger.info(membersString());
                     std::shared_ptr<connection::Connection> connection = connectionManager.getActiveConnection(
                             member.getAddress());
                     if (connection.get() != NULL) {

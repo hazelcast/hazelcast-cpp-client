@@ -194,13 +194,13 @@ namespace hazelcast {
             std::shared_ptr<Connection> ClientConnectionManagerImpl::connectAsOwner(const Address &address) {
                 std::shared_ptr<Connection> connection;
                 try {
-                    logger.info() << "Trying to connect to " << address << " as owner member";
+                    logger.info("Trying to connect to ", address, " as owner member");
                     connection = getOrConnect(address, true);
                     client.onClusterConnect(connection);
                     fireConnectionEvent(LifecycleEvent::CLIENT_CONNECTED);
                     connectionStrategy->onConnectToCluster();
                 } catch (exception::IException &e) {
-                    logger.warning() << "Exception during initial connection to " << address << ", exception " << e;
+                    logger.warning("Exception during initial connection to ", address, ", exception ", e);
                     if (NULL != connection.get()) {
                         std::ostringstream reason;
                         reason << "Could not connect to " << address << " as owner";
@@ -375,13 +375,13 @@ namespace hazelcast {
 
                 if (oldConnection.get() == NULL) {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Authentication succeeded for " << *connection
-                                        << " and there was no old connection to this end-point";
+                        logger.finest("Authentication succeeded for ", *connection,
+                                      " and there was no old connection to this end-point");
                     }
                     fireConnectionAddedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Re-authentication succeeded for " << *connection;
+                        logger.finest("Re-authentication succeeded for " , *connection);
                     }
                     assert(*connection == *oldConnection);
                 }
@@ -393,10 +393,10 @@ namespace hazelcast {
                 } else {
                     out << "null";
                 }
-                logger.info() << "Authenticated with server " << out.str() << ", server version:"
-                              << connection->getConnectedServerVersionString() << " Local address: "
-                              << (connection->getLocalSocketAddress().get() != NULL
-                                  ? connection->getLocalSocketAddress()->toString() : "null");
+                logger.info("Authenticated with server ", out.str(), ", server version:"
+                              , connection->getConnectedServerVersionString(), " Local address: "
+                              , (connection->getLocalSocketAddress().get() != NULL
+                                  ? connection->getLocalSocketAddress()->toString() : "null"));
 
                 /* check if connection is closed by remote before authentication complete, if that is the case
                 we need to remove it back from active connections.
@@ -427,21 +427,18 @@ namespace hazelcast {
 
                 if (endpoint.get() == NULL) {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Destroying " << *connection << ", but it has end-point set to null "
-                                        << "-> not removing it from a connection map";
+                        logger.finest("Destroying " , *connection , ", but it has end-point set to null ", "-> not removing it from a connection map");
                     }
                     return;
                 }
 
                 if (activeConnections.remove(*endpoint, connection)) {
-                    logger.info() << "Removed connection to endpoint: " << *endpoint << ", connection: " << *connection;
+                    logger.info("Removed connection to endpoint: ", *endpoint, ", connection: ", *connection);
                     activeConnectionsFileDescriptors.remove(connection->getSocket().getSocketId());
                     fireConnectionRemovedEvent(connection);
                 } else {
                     if (logger.isFinestEnabled()) {
-                        logger.finest() << "Destroying a connection, but there is no mapping " << endpoint << " -> "
-                                        << *connection
-                                        << " in the connection map.";
+                        logger.finest("Destroying a connection, but there is no mapping " , endpoint , " -> ", *connection,  " in the connection map.");
                     }
                 }
             }
@@ -512,16 +509,16 @@ namespace hazelcast {
 
                     if (attempt < connectionAttemptLimit) {
                         const int64_t remainingTime = nextTry - util::currentTimeMillis();
-                        logger.warning() << "Unable to get alive cluster connection, try in "
-                                         << (remainingTime > 0 ? remainingTime : 0) << " ms later, attempt " << attempt
-                                         << " of " << connectionAttemptLimit << ".";
+                        logger.warning("Unable to get alive cluster connection, try in ",
+                                       (remainingTime > 0 ? remainingTime : 0), " ms later, attempt ", attempt,
+                                       " of ", connectionAttemptLimit, ".");
 
                         if (remainingTime > 0) {
                             util::Thread::sleep(remainingTime);
                         }
                     } else {
-                        logger.warning() << "Unable to get alive cluster connection, attempt " << attempt << " of "
-                                         << connectionAttemptLimit << ".";
+                        logger.warning("Unable to get alive cluster connection, attempt ", attempt, " of ",
+                                       connectionAttemptLimit, ".");
                     }
                 }
                 std::ostringstream out;
@@ -648,7 +645,7 @@ namespace hazelcast {
                 try {
                     connection = getConnection(target);
                 } catch (exception::IException &e) {
-                    logger.finest() << e;
+                    logger.finest(e);
                     future->onFailure(std::shared_ptr<exception::IException>(e.clone()));
                     connectionManager.connectionsInProgress.remove(target);
                     return;
@@ -751,8 +748,8 @@ namespace hazelcast {
                             //setting owner connection is moved to here(before onAuthenticated/before connected event)
                             //so that invocations that requires owner connection on this connection go through
                             connectionManager.setOwnerConnectionAddress(connection->getRemoteEndpoint());
-                            connectionManager.logger.info() << "Setting " << *connection << " as owner with principal "
-                                                            << *principal;
+                            connectionManager.logger.info("Setting ", *connection, " as owner with principal ",
+                                                          *principal);
                         }
                         connectionManager.onAuthenticated(target, connection);
                         future->onSuccess(connection);
@@ -799,7 +796,7 @@ namespace hazelcast {
                                                                                    const std::shared_ptr<Connection> &connection,
                                                                                    const std::shared_ptr<exception::IException> &cause) {
                 if (connectionManager.logger.isFinestEnabled()) {
-                    connectionManager.logger.finest() << "Authentication of " << connection << " failed." << cause;
+                    connectionManager.logger.finest("Authentication of " , connection , " failed." , cause);
                 }
                 connection->close("", cause);
                 connectionManager.pendingSocketIdToConnection.remove(connection->getSocket().getSocketId());
@@ -844,9 +841,7 @@ namespace hazelcast {
                     connectionManager.connectToClusterInternal();
                     return std::shared_ptr<bool>(new bool(true));
                 } catch (exception::IException &e) {
-                    connectionManager.getLogger().warning()
-                            << "Could not connect to cluster, shutting down the client. "
-                            << e.getMessage();
+                    connectionManager.getLogger().warning("Could not connect to cluster, shutting down the client. ", e.getMessage());
 
                     static_cast<DefaultClientConnectionStrategy &>(*connectionManager.connectionStrategy).shutdownWithExternalThread(
                             clientContext.getHazelcastClientImplementation());

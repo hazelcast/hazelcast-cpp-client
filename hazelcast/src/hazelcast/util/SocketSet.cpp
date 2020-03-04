@@ -67,8 +67,7 @@ namespace hazelcast {
             }
 
             if (!found) {
-                logger.finest() << "[SocketSet::removeSocket] Socket with id " << socketId
-                                                    << "  was not found among the sockets.";
+                logger.finest("[SocketSet::removeSocket] Socket with id " , socketId, "  was not found among the sockets.");
             }
         }
 

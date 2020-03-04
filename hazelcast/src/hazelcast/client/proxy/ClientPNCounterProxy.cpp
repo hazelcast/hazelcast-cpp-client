@@ -266,8 +266,7 @@ namespace hazelcast {
                             getName(), observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
-                    logger.finest() << "Exception occurred while invoking operation on target " << *target <<
-                                    ", choosing different target. Cause: " << e;
+                    logger.finest("Exception occurred while invoking operation on target " , *target , ", choosing different target. Cause: " , e);
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
                         excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());
@@ -300,8 +299,7 @@ namespace hazelcast {
                             getName(), delta, getBeforeUpdate, observedClock.get()->entrySet(), *target);
                     return invokeOnAddress(request, *target);
                 } catch (exception::HazelcastException &e) {
-                    logger.finest() << "Unable to provide session guarantees when sending operations to " << *target <<
-                                    ", choosing different target. Cause: " << e;
+                    logger.finest("Unable to provide session guarantees when sending operations to " , *target , ", choosing different target. Cause: " , e);
                     if (excludedAddresses == EMPTY_ADDRESS_LIST) {
                         // TODO: Make sure that this only affects the local variable of the method
                         excludedAddresses = std::shared_ptr<std::set<Address> >(new std::set<Address>());

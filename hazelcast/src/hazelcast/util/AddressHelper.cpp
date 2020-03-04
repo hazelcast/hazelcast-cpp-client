@@ -46,8 +46,7 @@ namespace hazelcast {
             try {
                 inetAddress.reset(new asio::ip::address(AddressUtil::getByName(scopedAddress)));
             } catch (client::exception::UnknownHostException &ignored) {
-                logger.finest() << "Address " << scopedAddress << " ip number is not available"
-                                                          << ignored.what();
+                logger.finest("Address " , scopedAddress , " ip number is not available", ignored.what());
             }
 
             int possiblePort = port;

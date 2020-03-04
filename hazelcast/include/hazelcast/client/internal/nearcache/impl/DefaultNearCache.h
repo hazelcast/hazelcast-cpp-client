@@ -223,8 +223,8 @@ namespace hazelcast {
 
                                 task->cancel();
                                 task->join();
-                                logger.info() << "Near cache expiration thread is stopped for map "
-                                                                     << name << " since near cache is being destroyed.";
+                                logger.info("Near cache expiration thread is stopped for map ", name,
+                                            " since near cache is being destroyed.");
                             }
 
                         private:

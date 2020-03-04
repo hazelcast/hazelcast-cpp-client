@@ -449,9 +449,8 @@ namespace hazelcast {
                                     callback->onResponse(valueState->getValue());
                                 }
                             } catch (exception::IException &cause) {
-                                future->logger.severe()
-                                        << "Failed asynchronous execution of execution callback: for call "
-                                        << future->invocationToString() << cause;
+                                future->logger.severe("Failed asynchronous execution of execution callback: for call "
+                                        , future->invocationToString(), cause);
                             }
 
                         }
@@ -521,7 +520,7 @@ namespace hazelcast {
                             !(s1->getType() == BaseState::Exception &&
                               std::static_pointer_cast<ExceptionState>(s1)->getException()->getErrorCode() ==
                               protocol::CANCELLATION)) {
-                            logger.warning() << "Future.complete(Object) on completed future. " << invocationToString();
+                            logger.warning("Future.complete(Object) on completed future. ", invocationToString());
                         }
                     }
 

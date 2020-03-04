@@ -102,7 +102,7 @@ namespace hazelcast {
                 try {
                     innerClose();
                 } catch (exception::IException &e) {
-                    clientContext.getLogger().warning() << "Exception while closing connection" << e.getMessage();
+                    clientContext.getLogger().warning("Exception while closing connection" , e.getMessage());
                 }
 
                 clientContext.getConnectionManager().onClose(*this);
@@ -114,7 +114,7 @@ namespace hazelcast {
                 }
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest() << "Connection is closed, dropping frame -> " << message;
+                    logger.finest("Connection is closed, dropping frame -> " , message);
                 }
                 return false;
             }
@@ -175,15 +175,15 @@ namespace hazelcast {
                 util::ILogger &logger = clientContext.getLogger();
                 if (clientContext.getLifecycleService().isRunning()) {
                     if (!closeCause.get()) {
-                        logger.info() << message.str();
+                        logger.info(message.str());
                     } else {
-                        logger.warning() << message.str() << *closeCause;
+                        logger.warning(message.str(), *closeCause);
                     }
                 } else {
                     if (closeCause.get() == NULL) {
-                        logger.finest() << message.str();
+                        logger.finest(message.str());
                     } else {
-                        logger.finest() << message.str() << *closeCause;
+                        logger.finest(message.str(), *closeCause);
                     }
                 }
             }

@@ -59,8 +59,8 @@ namespace hazelcast {
                     try {
                         callback->onResponse(sharedObj);
                     } catch (client::exception::IException &cause) {
-                        logger.severe() << "Failed asynchronous execution of execution success callback: " << callback
-                                        << "for call " << future.invocationToString() << ", Cause:" << cause;
+                        logger.severe("Failed asynchronous execution of execution success callback: ", callback
+                                        , "for call ", future.invocationToString(), ", Cause:", cause);
                     }
                 }
 
@@ -89,8 +89,8 @@ namespace hazelcast {
                     try {
                         callback->onFailure(std::shared_ptr<client::exception::IException>(exception->clone()));
                     } catch (client::exception::IException &cause) {
-                        logger.severe() << "Failed asynchronous execution of execution failure callback: " << callback
-                                        << "for call " << future << ", Cause:" << cause;
+                        logger.severe("Failed asynchronous execution of execution failure callback: ", callback
+                                        , "for call ", future, ", Cause:", cause);
                     }
                 }
 

@@ -56,7 +56,7 @@ namespace hazelcast {
                 }
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest() << "ExecutorService " << threadNamePrefix << " started " << threadCount << " workers.";
+                    logger.finest("ExecutorService " , threadNamePrefix , " started " , threadCount ,  " workers.");
                 }
             }
 
@@ -98,8 +98,8 @@ namespace hazelcast {
                 size_t numberOfDelayedRunners = delayedRunners.size();
 
                 if (logger.isFinestEnabled()) {
-                    logger.finest() << "ExecutorService " << threadNamePrefix << " has " << numberOfWorkers << " workers and "
-                                    << numberOfDelayedRunners << " delayed runners " << " to shutdown.";
+                    logger.finest("ExecutorService ", threadNamePrefix, " has ", numberOfWorkers, " workers and ",
+                                  numberOfDelayedRunners, " delayed runners to shutdown.");
                 }
 
                 for (std::shared_ptr<Worker> &worker : workers) {
@@ -123,14 +123,13 @@ namespace hazelcast {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 if (logger.isFinestEnabled()) {
-                                    logger.finest() << "ExecutorService is waiting worker thread " << worker->getName()
-                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                    logger.finest("ExecutorService is waiting worker thread " , worker->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
                                 }
 
                     auto &t = worker->getThread();
                     if (!t.waitMilliseconds(waitMilliseconds)) {
-                                    logger.info() << "ExecutorService could not stop worker thread " << worker->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs. Will retry stopping.";
+                                    logger.info("ExecutorService could not stop worker thread ", worker->getName()
+                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
 
                                     return false;
                     }
@@ -141,13 +140,12 @@ namespace hazelcast {
                                 int64_t waitMilliseconds = endTimeMilliseconds - currentTimeMillis();
 
                                 if (logger.isFinestEnabled()) {
-                                    logger.finest() << "ExecutorService is waiting delayed runner thread " << t->getName()
-                                                    << " for a maximum of " << waitMilliseconds << " msecs.";
+                                    logger.finest("ExecutorService is waiting delayed runner thread " , t->getName(), " for a maximum of " , waitMilliseconds ,  " msecs.");
                                 }
 
                                 if (!t->waitMilliseconds(waitMilliseconds)) {
-                                    logger.info() << "ExecutorService could not stop delayed runner thread " << t->getName()
-                                                    << " in " << timeoutMilliseconds << " msecs. Will retry stopping.";
+                                    logger.info("ExecutorService could not stop delayed runner thread ", t->getName()
+                                                    , " in ", timeoutMilliseconds, " msecs. Will retry stopping.");
 
                                     return false;
                                 }
@@ -219,10 +217,10 @@ namespace hazelcast {
                         }
                     } catch (client::exception::InterruptedException &) {
                         if (executorService.logger.isFinestEnabled()) {
-                            executorService.logger.finest() << getName() << " is interrupted.";
+                            executorService.logger.finest(getName() , " is interrupted.");
                         }
                     } catch (client::exception::IException &t) {
-                        executorService.logger.warning() << getName() << " caused an exception. " << t;
+                        executorService.logger.warning(getName() , " caused an exception. " , t);
                     }
                 }
             }
@@ -308,9 +306,9 @@ namespace hazelcast {
                         command->run();
                     } catch (client::exception::IException &e) {
                         if (isNotRepeating) {
-                            logger.warning() << "Runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning("Runnable " , getName() , " run method caused exception:" , e);
                         } else {
-                            logger.warning() << "Repeated runnable " << getName() << " run method caused exception:" << e;
+                            logger.warning("Repeated runnable " , getName(), " run method caused exception:" , e);
                         }
                     }
 

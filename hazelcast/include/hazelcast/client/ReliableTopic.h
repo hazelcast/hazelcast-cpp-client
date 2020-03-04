@@ -201,8 +201,8 @@ namespace hazelcast {
                     int32_t err = throwable->getErrorCode();
                     if (protocol::TIMEOUT == err) {
                         if (logger.isFinestEnabled()) {
-                            logger.finest() << "MessageListener " << listener << " on topic: " << name << " timed out. "
-                                          << "Continuing from last known sequence: " << sequence;
+                            logger.finest("MessageListener ", listener, " on topic: ", name, " timed out. ",
+                                          "Continuing from last known sequence: ", sequence);
                         }
                         next();
                         return;

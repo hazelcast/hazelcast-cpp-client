@@ -65,11 +65,11 @@ namespace hazelcast {
                 try {
                     target->run();
                 } catch (hazelcast::client::exception::InterruptedException &e) {
-                    info->logger->warning() << "Thread " << target->getName() << " is interrupted. " << e;
+                    info->logger->warning("Thread ", target->getName(), " is interrupted. ", e);
                 } catch (hazelcast::client::exception::IException &e) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with exception " << e;
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with exception ", e);
                 } catch (...) {
-                    info->logger->warning() << "Thread " << target->getName() << " is cancelled with an unexpected exception";
+                    info->logger->warning("Thread ", target->getName(), " is cancelled with an unexpected exception");
 
                     info->finishWaitLatch->countDown();
 
@@ -78,7 +78,7 @@ namespace hazelcast {
                     return 1L;
                 }
 
-                info->logger->finest() << "Thread " << target->getName() << " is finished.";
+                info->logger->finest("Thread ", target->getName(), " is finished.");
 
                 info->finishWaitLatch->countDown();
 

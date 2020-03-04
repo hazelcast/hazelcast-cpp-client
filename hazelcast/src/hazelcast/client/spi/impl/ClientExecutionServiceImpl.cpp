@@ -90,12 +90,12 @@ namespace hazelcast {
                             }
 
                             if (!success) {
-                                logger.warning() << name << " executor awaitTermination could not be completed in "
-                                                 << (util::currentTimeMillis() - startTimeMilliseconds) << " msecs.";
+                                logger.warning(name, " executor awaitTermination could not be completed in ",
+                                               (util::currentTimeMillis() - startTimeMilliseconds), " msecs.");
                             }
                         }
                     } catch (exception::InterruptedException &e) {
-                        logger.warning() << name << " executor await termination is interrupted. " << e;
+                        logger.warning(name, " executor await termination is interrupted. " , e);
                     }
                 }
 

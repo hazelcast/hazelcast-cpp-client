@@ -117,8 +117,7 @@ namespace hazelcast {
                             throw exception::IOException("AbstractClientInvocationService::send", out.str());
                         } else {
                             if (invocationLogger.isFinestEnabled()) {
-                                invocationLogger.finest() << "Invocation not found to deregister for call ID "
-                                                          << callId;
+                                invocationLogger.finest("Invocation not found to deregister for call ID ", callId);
                             }
                             return;
                         }
@@ -200,7 +199,7 @@ namespace hazelcast {
                     try {
                         doRun();
                     } catch (exception::IException &t) {
-                        invocationLogger.severe() << t;
+                        invocationLogger.severe(t);
                     }
                 }
 
@@ -221,9 +220,8 @@ namespace hazelcast {
                     try {
                         handleClientMessage(clientMessage);
                     } catch (exception::IException &e) {
-                        invocationLogger.severe() << "Failed to process task: " << clientMessage
-                                                  << " on responseThread: "
-                                                  << getName() << e;
+                        invocationLogger.severe("Failed to process task: ", clientMessage, " on responseThread: ",
+                                                getName(), e);
                     }
                 }
 
@@ -233,8 +231,7 @@ namespace hazelcast {
 
                     std::shared_ptr<ClientInvocation> future = invocationService.deRegisterCallId(correlationId);
                     if (future.get() == NULL) {
-                        invocationLogger.warning() << "No call for callId: " << correlationId << ", response: "
-                                                   << *clientMessage;
+                        invocationLogger.warning("No call for callId: ", correlationId, ", response: ", *clientMessage);
                         return;
                     }
                     if (protocol::codec::ErrorCodec::TYPE == clientMessage->getMessageType()) {

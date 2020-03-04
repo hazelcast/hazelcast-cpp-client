@@ -47,8 +47,7 @@ namespace hazelcast {
                 void ClientPartitionServiceImpl::RefreshTaskCallback::onFailure(
                         const std::shared_ptr<exception::IException> &t) {
                     if (partitionService.client.getLifecycleService().isRunning()) {
-                        partitionService.logger.warning() << "Error while fetching cluster partition table! Cause:"
-                                                          << *t;
+                        partitionService.logger.warning("Error while fetching cluster partition table! Cause:", *t);
                     }
                 }
 
@@ -77,10 +76,10 @@ namespace hazelcast {
                             partitionCount = this->partitions.size();
                             lastPartitionStateVersion = partitionStateVersion;
                             if (logger.isFinestEnabled()) {
-                                logger.finest() << "Processed partition response. partitionStateVersion : "
-                                                << (partitionStateVersionExist ? util::IOUtil::to_string<int32_t>(
-                                                        partitionStateVersion) : "NotAvailable")
-                                                << ", partitionCount :" << (int) partitionCount;
+                                logger.finest("Processed partition response. partitionStateVersion : ",
+                                              (partitionStateVersionExist ? util::IOUtil::to_string<int32_t>(
+                                                      partitionStateVersion) : "NotAvailable"), ", partitionCount :",
+                                              (int) partitionCount);
                             }
                         }
                     }
@@ -175,7 +174,7 @@ namespace hazelcast {
                                                      response.partitionStateVersionExist);
                         } catch (exception::IException &e) {
                             if (client.getLifecycleService().isRunning()) {
-                                logger.warning() << "Error while fetching cluster partition table!" << e;
+                                logger.warning("Error while fetching cluster partition table!" , e);
                             }
                         }
                     }

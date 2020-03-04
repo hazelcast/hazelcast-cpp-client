@@ -123,7 +123,7 @@ namespace hazelcast {
                                             new ClientEventProcessor(clientMessage, connection, eventHandlerMap,
                                                                      logger)));
                         } catch (exception::RejectedExecutionException &e) {
-                            logger.warning() << "Event clientMessage could not be handled. " << e;
+                            logger.warning("Event clientMessage could not be handled. " , e);
                         }
                     }
 
@@ -145,8 +145,7 @@ namespace hazelcast {
                         std::shared_ptr<EventHandler<protocol::ClientMessage> > eventHandler = eventHandlerMap.get(
                                 correlationId);
                         if (eventHandler.get() == NULL) {
-                            logger.warning() << "No eventHandler for callId: " << correlationId << ", event: "
-                                             << *clientMessage;
+                            logger.warning("No eventHandler for callId: ", correlationId, ", event: ", *clientMessage);
                             return;
                         }
 
@@ -297,10 +296,9 @@ namespace hazelcast {
                                     } else {
                                         endpoint << "null";
                                     }
-                                    logger.warning() << "AbstractClientListenerService::deregisterListenerInternal"
-                                                     << "Deregistration of listener with ID " << userRegistrationId
-                                                     << " has failed to address " << subscriber->getRemoteEndpoint()
-                                                     << e;
+                                    logger.warning("AbstractClientListenerService::deregisterListenerInternal",
+                                                   "Deregistration of listener with ID ", userRegistrationId,
+                                                   " has failed to address ", subscriber->getRemoteEndpoint(), e);
                                 }
                             }
                         }
@@ -344,9 +342,8 @@ namespace hazelcast {
                         try {
                             invoke(registrationKey, connection);
                         } catch (exception::IException &e) {
-                            logger.warning() << "Listener " << registrationKey
-                                             << " can not be added to a new connection: "
-                                             << *connection << ", reason: " << e.getMessage();
+                            logger.warning("Listener ", registrationKey, " can not be added to a new connection: ",
+                                           *connection, ", reason: ", e.getMessage());
                         }
                     }
 

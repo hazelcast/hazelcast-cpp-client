@@ -97,7 +97,7 @@ namespace hazelcast {
                                 break;
                         }
                         default:
-                            getLogger()->warning() << "[ReplicatedMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type (" << messageType << ") received on event handler.";
+                            getLogger()->warning("[ReplicatedMapAddEntryListenerToKeyCodec::AbstractEventHandler::handle] Unknown message type (", messageType, ") received on event handler.");
                     }
                 }
                 //************************ EVENTS END **************************************************************************//
