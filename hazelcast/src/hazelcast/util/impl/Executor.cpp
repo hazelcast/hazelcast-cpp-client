@@ -87,12 +87,12 @@ namespace hazelcast {
             }
 
             void SimpleExecutorService::shutdown() {
+                live.store(false);
+
                 bool expected = true;
                 if (!isStarted.compare_exchange_strong(expected, false)) {
                     return;
                 }
-
-                live.store(false);
 
                 size_t numberOfWorkers = workers.size();
                 size_t numberOfDelayedRunners = delayedRunners.size();
@@ -302,10 +302,6 @@ namespace hazelcast {
                     if (waitTimeMillis > 0) {
                         assert(runnerThread != NULL);
                         runnerThread->interruptibleSleepMillis(waitTimeMillis);
-                    }
-
-                    if (!live) {
-                        return;
                     }
 
                     try {

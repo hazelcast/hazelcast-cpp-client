@@ -68,8 +68,8 @@ namespace hazelcast {
                             new exception::HazelcastClientNotActiveException("AbstractClientInvocationService::shutdown",
                                     "Client is shutting down"));
                     for (InvocationEntriesVector::value_type & entry : allEntries) {
-                                    entry.second->notifyException(notActiveException);
-                                }
+                        entry.second->notifyException(notActiveException);
+                    }
                 }
 
                 int64_t AbstractClientInvocationService::getInvocationTimeoutMillis() const {
@@ -148,25 +148,25 @@ namespace hazelcast {
                     std::vector<int64_t> invocationsToBeRemoved;
                     typedef std::vector<std::pair<int64_t, std::shared_ptr<ClientInvocation> > > INVOCATION_ENTRIES;
                     for (const INVOCATION_ENTRIES::value_type &entry : invocations.entrySet()) {
-                                    int64_t key = entry.first;
-                                    const std::shared_ptr<ClientInvocation> &invocation = entry.second;
-                                    std::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
-                                    if (!connection.get()) {
-                                        continue;
-                                    }
+                        int64_t key = entry.first;
+                        const std::shared_ptr<ClientInvocation> &invocation = entry.second;
+                        std::shared_ptr<connection::Connection> connection = invocation->getSendConnection();
+                        if (!connection.get()) {
+                            continue;
+                        }
 
-                                    if (connection->isAlive()) {
-                                        continue;
-                                    }
+                        if (connection->isAlive()) {
+                            continue;
+                        }
 
-                                    invocationsToBeRemoved.push_back(key);
+                        invocationsToBeRemoved.push_back(key);
 
-                                    notifyException(*invocation, connection);
-                                }
+                        notifyException(*invocation, connection);
+                    }
 
                     for (int64_t invocationId : invocationsToBeRemoved) {
-                                    invocations.remove(invocationId);
-                                }
+                        invocations.remove(invocationId);
+                    }
                 }
 
                 void AbstractClientInvocationService::CleanResourcesTask::notifyException(ClientInvocation &invocation,

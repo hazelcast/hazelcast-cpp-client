@@ -27,6 +27,7 @@
 #include "hazelcast/client/internal/nearcache/NearCacheManager.h"
 #include "hazelcast/client/protocol/codec/ClientStatisticsCodec.h"
 #include "hazelcast/client/spi/impl/ClientInvocation.h"
+#include "hazelcast/client/spi/LifecycleService.h"
 
 namespace hazelcast {
     namespace client {
@@ -130,6 +131,10 @@ namespace hazelcast {
                 }
 
                 void Statistics::CollectStatisticsTask::run() {
+                    if (!statistics.clientContext.getLifecycleService().isRunning()) {
+                        return;
+                    }
+
                     std::shared_ptr<connection::Connection> ownerConnection = statistics.getOwnerConnection();
                     if (NULL == ownerConnection.get()) {
                         statistics.logger.finest()

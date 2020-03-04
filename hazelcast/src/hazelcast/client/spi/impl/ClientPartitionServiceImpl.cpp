@@ -196,6 +196,10 @@ namespace hazelcast {
                 }
 
                 void ClientPartitionServiceImpl::RefreshTask::run() {
+                    if (!client.getLifecycleService().isRunning()) {
+                        return;
+                    }
+
                     try {
                         connection::ClientConnectionManagerImpl &connectionManager = client.getConnectionManager();
                         std::shared_ptr<connection::Connection> connection = connectionManager.getOwnerConnection();
