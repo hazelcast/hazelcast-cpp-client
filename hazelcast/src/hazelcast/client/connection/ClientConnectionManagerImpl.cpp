@@ -692,11 +692,16 @@ namespace hazelcast {
                     ClientConnectionManagerImpl &connectionManager) : invocationFuture(invocationFuture),
                                                                       connection(connection), asOwner(asOwner),
                                                                       target(target), future(future),
-                                                                      connectionManager(connectionManager) {
+                                                                      connectionManager(connectionManager),
+                                                                      cancelled(false) {
                 scheduleTimeoutTask();
             }
 
             void ClientConnectionManagerImpl::AuthCallback::cancelTimeoutTask() {
+                {
+                    std::lock_guard<std::mutex> g(timeoutMutex);
+                    cancelled = true;
+                }
                 timeoutCondition.notify_one();
                 timeoutTaskFuture.get();
             }
@@ -704,12 +709,16 @@ namespace hazelcast {
             void ClientConnectionManagerImpl::AuthCallback::scheduleTimeoutTask() {
                 timeoutTaskFuture = std::async([&] {
                     std::unique_lock<std::mutex> uniqueLock(timeoutMutex);
-                    timeoutCondition.wait_for(uniqueLock,
-                                              std::chrono::milliseconds(connectionManager.connectionTimeoutMillis));
-
-                    if (invocationFuture->isDone()) {
+                    if (cancelled) {
                         return;
                     }
+
+                    if (timeoutCondition.wait_for(uniqueLock,
+                                              std::chrono::milliseconds(connectionManager.connectionTimeoutMillis),
+                                              [&] { return cancelled; })) {
+                        return;
+                    }
+
                     invocationFuture->complete((exception::ExceptionBuilder<exception::TimeoutException>(
                             "ClientConnectionManagerImpl::authenticate")
                             << "Authentication response did not come back in " << connectionManager.connectionTimeoutMillis

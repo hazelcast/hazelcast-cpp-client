@@ -240,6 +240,7 @@ namespace hazelcast {
                     std::future<void> timeoutTaskFuture;
                     std::mutex timeoutMutex;
                     std::condition_variable timeoutCondition;
+                    bool cancelled;
 
                     void onAuthenticationFailed(const Address &target, const std::shared_ptr<Connection> &connection,
                                                 const std::shared_ptr<exception::IException> &cause);
