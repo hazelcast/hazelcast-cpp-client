@@ -16,6 +16,12 @@
 
 #include "hazelcast/client/protocol/codec/ProtocolCodecs.h"
 #include "hazelcast/client/protocol/EventMessageConst.h"
+#include "hazelcast/client/Member.h"
+#include "hazelcast/client/Address.h"
+#include "hazelcast/client/map/DataEntryView.h"
+#include "hazelcast/client/protocol/ResponseMessageConst.h"
+#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include "hazelcast/util/UUID.h"
 
 namespace hazelcast {
     namespace client {

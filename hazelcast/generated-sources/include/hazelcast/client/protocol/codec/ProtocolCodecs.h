@@ -30,7 +30,7 @@
 #include "hazelcast/client/protocol/codec/DataEntryViewCodec.h"
 #include "hazelcast/client/protocol/codec/ErrorCodec.h"
 #include "hazelcast/client/protocol/codec/MemberCodec.h"
-#include "hazelcast/client/protocol/codec/StackTraceElement.h"
+#include "hazelcast/client/protocol/codec/StackTraceElementCodec.h"
 #include "hazelcast/client/protocol/codec/UUIDCodec.h"
 
 namespace hazelcast {
